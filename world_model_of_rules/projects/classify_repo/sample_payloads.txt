@@ -1,0 +1,86 @@
+REPO: 01101001x01101100x01111001/ou-formal-system
+stars: 0  topics: []
+description: A formal axiomatic system in Lean 4 built from the act of distinction. Zero imports in the foundation file. 406 declarations, zero sorry, zero declared axioms. Axiom-free categoricity, inexhaustibility, and ground determination. Clean constructive/classical partition. Cayley-Dickson cascade. Nine ZFC axioms reduced to 7 across a 3-1-3 distribution.
+dependencies: aesop, batteries, cli, importgraph, leansearchclient, mathlib, plausible, proofwidgets, qq
+primary_area: non-mathlib
+mathlib_areas: (none)
+mathlib_submodules: (none)
+import_roots: OUFoundation:3, OUDiscrete:2, OUSymmetry:2, OUTransformation:2, Mathlib:2, OUMembrane:2, OUArithmetic:2, Continuum:1
+structure_flags: reachability
+declaration_kinds: theorem:317, def:126, lemma:15, inductive:10, abbrev:5, structure:12, instance:2
+proof_health: sorry/admit:2  custom_axioms:2  examples:0  named_decls:487
+sample_declarations: list_length_append, project, InfObj, list_replicate_succ', Field, seen, ObjKind, mem_append_ax, project_length, infKind, list_replicate_mem, fieldModel, TransitField, System, mem_of_mem_left_ax, project_compatible, Visible, visible_both_of_neq, field_construction_complete, transitMap
+snake_case_conformance: 0.699 (over 332 lemmas)
+readme_domain_hits: {'visual': ['geometry']}
+has_blueprint: False
+README_excerpt: {Ø,U} Formal System Akash Kumar (Independent Researcher) https://orcid.org/0009-0009-6115-1930 Project Summary The {Ø,U} formal system is a foundational axiom system formalized in Lean 4 across seven source files containing 406 public declarations. All proofs compile without sorry and without any axiom declarations. The system formalizes: (1) a five-axiom geometric foundation with finite and infinite models; (2) an Observer structure with categoricity (every Observer is isomorphic to the infinite model); (3) the Cayley-Dickson cascade (ℝ → ℂ → ℍ → 𝕆 → 𝕊) as algebraic levels of the discrete model; (4) a transit field extending the proportional model with √(−1); (5) a lossy binary membrane projecting ℝ into the observer's tree; (6) nine ZFC axioms recovered across the membrane via the ContinuumAcross structure; (7) ground determination (ground membership is fully settled by the binary path from origin); and (8) the ground essential theorem (only ground survives infinite observation). Distribution Summary The system has seven irreducible axioms arranged in a 3-1-3 distribution. Three axioms live on the observer's side: Identity (= ZFC Extensionality), Inexhaustibility (= ZFC Infinity), and Directionality (= ZFC Regularity). One axiom is the membrane itself: Choice (the lossy binary projection ℝ → List Bool). Three axioms live across the membrane: Totality (= ZFC Power Set), Closure (= ZFC Replacement), and Flattening (= ZFC Union). Void is not an independent axiom; it is an embedding constraint. Identity is a bridge axiom: proved on the observer's side, it persists into the continuum. Together the seven axioms recover all nine ZFC axioms. The observer's axioms and the distribution verification theorems (sixacross, threewithin) are proved without Classical.choice. Observer categoricity (observercategoricity) is axiom-free: every Observer is isomorphic to the infinite model, and the proof uses no logical axioms. Ground is the unique survivor of infinite observation (groundessential), proved constructively. Ground membership is fully determined by the binary path from origin (grounddetermined), axiom-free. Inexhaustibility is derived, not assumed (Observer.inexhaustible), axiom-free. Observer-Geometry Axiom-Freedom Every declaration about observer structure compiles on Lean's kernel alone. OUFoundation, the observer-geometry portion of OUDiscrete, and OUSymmetry contain zero declarations that depend on propositional extensionality, quotient soundness, or classical choice. The System, MObj, InfObj, Visible, Observer, infModel, swap involution, boundary flip, sigma symmetry group, discrete wall, and no-quarter-turn theorems are all axiom-free. The claim "mathematics before axioms" is literally and mechanically true for the observer-geometry arm. Foundation Independence OUFoundation.lean has zero imports — no import statements of any kind. The axiom system, Observer structure, Reachable predicate, inexhaustibility theorem, ground determination theorem, locusAt function, and relativized axiom block are all stated and verified using only Lean's kernel, before any mathematical library is available. All are axiom-free. Mathematics (Mathlib) enters the build chain at OUDiscrete and OUArithmetic; the foundation precedes it. Ontological Bookends The corpus
+docstrings: Flip the first element of a list. || The flip at boundary p. For objects whose path strictly extends p, flip the first bit of the suffix. Everything else is fixed. || The boundary flip is an involution: applying it twice returns every object to its original position. || Subtree embedding: prepend a prefix to every path.
+------------------------------------------------------------
+REPO: 01tpaabr/lean_graph
+stars: 0  topics: []
+description: My graph theory knowledge base formalized in Lean
+dependencies: (none)
+primary_area: non-mathlib
+mathlib_areas: (none)
+mathlib_submodules: (none)
+import_roots: LeanGraph:2
+structure_flags: (none)
+declaration_kinds: def:30, structure:4, theorem:1
+proof_health: sorry/admit:1  custom_axioms:0  examples:0  named_decls:35
+sample_declarations: main, node, hello, edge, graph, path, edge.rev, node.eqv, edge.eqv, edge.hasNode, edge.listNodes, edgeHasAlwaysTwoNodes, edge.otherNode, graph.hasEdge, graph.hasNode, graph.filterSameEdges, graph.ocurrencesOfEdge, graph.edgeIsUnique, graph.isProper, graph.incidentEdgesOnNode
+snake_case_conformance: 0.0 (over 1 lemmas)
+readme_domain_hits: (none)
+has_blueprint: False
+README_excerpt: leangraph
+------------------------------------------------------------
+REPO: 0art0/CategoryTheory
+stars: 0  topics: []
+description: Basic category theory in Lean4
+dependencies: (none)
+primary_area: non-mathlib
+mathlib_areas: (none)
+mathlib_submodules: (none)
+import_roots: CategoryTheory:9, Lean:4, Lake:1
+structure_flags: (none)
+declaration_kinds: def:41, structure:9
+proof_health: sorry/admit:5  custom_axioms:0  examples:1  named_decls:50
+sample_declarations: hello, main, dual, sSet, getTargetType, cov_yoneda, Monoid, Category, list, findProofTU, contr_yoneda, Group, Typ, Hom_, findProofT, yoneda_embedding, AbelianGroup, Functor, _Hom, convolutedexample
+snake_case_conformance: None (over 0 lemmas)
+readme_domain_hits: (none)
+has_blueprint: False
+------------------------------------------------------------
+REPO: 0art0/ComputationalComplexity
+stars: 0  topics: []
+description: An attempt at formally proving runtime bounds on some standard algorithms
+dependencies: aesop, batteries, cli, importgraph, mathlib, proofwidgets, qq
+primary_area: non-mathlib
+mathlib_areas: (none)
+mathlib_submodules: (none)
+import_roots: Lake:1, Lean:1
+structure_flags: (none)
+declaration_kinds: def:4
+proof_health: sorry/admit:0  custom_axioms:0  examples:0  named_decls:4
+sample_declarations: main, hello, sum, sum
+snake_case_conformance: None (over 0 lemmas)
+readme_domain_hits: (none)
+has_blueprint: False
+README_excerpt: ComputationalComplexity An attempt at formally proving runtime bounds on some standard algorithms
+------------------------------------------------------------
+REPO: 0art0/HoTT-UF-Lean
+stars: 0  topics: []
+description: (none)
+dependencies: batteries, canonical, lean4lean
+primary_area: non-mathlib
+mathlib_areas: (none)
+mathlib_submodules: (none)
+import_roots: HoTTUFLean:2
+structure_flags: interpreter
+declaration_kinds: def:8, inductive:1, abbrev:1
+proof_health: sorry/admit:0  custom_axioms:0  examples:0  named_decls:10
+sample_declarations: main, Identification, transport, act, flip, flipInv, paste, pasteAssoc, pasteFlipTrivial, pasteFlipTrivial'
+snake_case_conformance: None (over 0 lemmas)
+readme_domain_hits: (none)
+has_blueprint: False
+README_excerpt: HoTT-UF-Lean
+docstrings: Lean's equality type `Eq` has `Prop` as its target universe, which makes it incompatible with the homotopy interpretation of type theory. `Identification` is a type-valued inductive type of the same shape as `Eq` that is used throughout this formalization to || The type of identifications between two terms of a given type. || The `𝒥` rule describing the elimination rule for the identification type. || The unbiased elimination rule for identification types.
+------------------------------------------------------------
