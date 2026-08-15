@@ -1,0 +1,53 @@
+{
+  "capture": "RedLightCompliant",
+  "source": "../../sg/carla_scene_graphs/database/RedLightCompliant",
+  "annotator": "DRAFT by claude-sonnet-5 from the scenario script's own config (red_light_scenario.py --mode compliant) — NOT from footage. NEEDS HUMAN CONFIRMATION from database/RedLightCompliant/camera/*.png and rsv/*.png before trusting this file.",
+  "evidence": [
+    "Scripted via carla_scene_graphs/red_light_scenario.py --mode compliant: ego is driven by CARLA's Traffic Manager with traffic_manager.ignore_lights_percentage(ego, 0.0), i.e. default law-abiding behavior at every signal it approaches.",
+    "traffic_manager.vehicle_percentage_speed_difference(ego, 20.0) keeps ego ~20% under the posted limit for the whole run (CARLA's convention: positive percentage = slower than the limit).",
+    "Everything else (whether the ego actually reaches a junction, whether any background vehicle triggers a following/junction-yield situation) depends on the random spawn/background traffic for this specific run and is NOT pre-verified here."
+  ],
+  "caveat": "Only EX-SIGNAL-001 and EX-SPEED-001 are asserted from the script's own deterministic configuration. Every other law below is left `not_applicable` as a placeholder — confirm each one against the actual capture (camera stills + rsv graphs) before running `scripts.run_spec monitor` for real, and fix any that turn out to be engaged (e.g. a background vehicle ahead engages EX-FOLLOW-001, a shared junction engages EX-JUNCTION-001).",
+  "labels": [
+    {
+      "law": "EX-FOLLOW-001",
+      "verdict": "not_applicable",
+      "note": "placeholder — confirm whether ego ever follows a background vehicle within the capture; fix if a lead vehicle appears"
+    },
+    {
+      "law": "EX-SPEED-001",
+      "verdict": "compliant",
+      "note": "Traffic Manager holds ego ~20% under the posted limit for the whole run (vehicle_percentage_speed_difference=+20)"
+    },
+    {
+      "law": "EX-SPEED-002",
+      "verdict": "not_applicable",
+      "note": "placeholder — confirm whether ego actually crosses a junction in this capture"
+    },
+    {
+      "law": "EX-JUNCTION-001",
+      "verdict": "not_applicable",
+      "note": "placeholder — confirm whether ego shares a junction with another vehicle in this capture"
+    },
+    {
+      "law": "EX-LANE-001",
+      "verdict": "not_applicable",
+      "note": "placeholder — confirm lane discipline from the camera stills"
+    },
+    {
+      "law": "EX-STOP-001",
+      "verdict": "not_applicable",
+      "note": "placeholder — confirm whether the route in this capture passes a stop sign at all"
+    },
+    {
+      "law": "EX-SIGNAL-001",
+      "verdict": "compliant",
+      "note": "ego driven with traffic_manager.ignore_lights_percentage(ego, 0.0) — obeys every red light it approaches. CONFIRM this law is actually engaged (ego reaches at least one red signal) by checking camera stills; if the run never nears a signalized junction, this should be not_applicable instead."
+    },
+    {
+      "law": "EX-EMERGENCY-001",
+      "verdict": "not_applicable",
+      "note": "placeholder — no emergency vehicle is spawned by the script"
+    }
+  ]
+}
