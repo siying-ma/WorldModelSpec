@@ -126,6 +126,30 @@ def summarize_schema(schema: dict) -> str:
             f"{tb.get('capture_hz')} Hz ({tb.get('frame_interval_seconds')} s per frame), "
             f"so a duration becomes a frame count via `TrafficSpec.secondsToFrames`. "
             f"This is a modelling assumption to record, not a missing field.",
+            "",
+            "**A duration also sets a minimum trace length.** "
+            "`Core/Semantics.lean` reads a `.bounded n` window that runs off the "
+            "end of the trace as false, so `□ (¬ₛ .bounded n bad)` — the usual "
+            "safety shape — reports *compliant* on any trace shorter than `n`, "
+            "whatever it contains. Every scenario trace you plan must therefore "
+            "be at least as long as the longest duration the rule uses, and the "
+            "gate rejects shorter ones as `TRACE_TOO_SHORT`. Prefer the shortest "
+            "persistence window the clause actually justifies: a 4-second window "
+            "needs 80-frame traces and cannot be checked on a shorter capture.",
+        ]
+
+    pre = schema.get("capture_preconditions")
+    if pre:
+        lines += [
+            "",
+            "**Capture preconditions — figures above that are assumptions, not "
+            "facts.** Each is a caller-supplied default of the generator or the "
+            "simulator, and none is recorded in a capture, so nothing downstream "
+            "can confirm the capture you will be judged on used it. Treat a rule "
+            "whose correctness turns on one of these as carrying a stated "
+            "residue:",
+            *[f"- `{key}` — {text}" for key, text in pre.items()
+              if not key.startswith("$") and key != "how_to_fix"],
         ]
 
     lines += [

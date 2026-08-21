@@ -41,6 +41,7 @@ MISSED = "MISSED VIOLATION"            # unlawful footage reported as compliant
 UNTESTED = "UNTESTED"                  # spec grounds 0 times, label says engaged
 SPURIOUS = "SPURIOUS GROUNDING"        # label says not engaged, spec grounded
 NOT_FORMALIZED = "NO RULE"             # no rule in the library covers this law
+INSUFFICIENT = "INSUFFICIENT TRACE"    # capture shorter than the rule's frame span
 
 
 @dataclass
@@ -56,6 +57,10 @@ class LawOutcome:
     @property
     def is_disagreement(self) -> bool:
         return self.status not in (AGREE, NOT_FORMALIZED)
+
+    @property
+    def is_untested(self) -> bool:
+        return self.status == INSUFFICIENT
 
 
 def load_labels(path: Path) -> tuple[str, str, dict[str, dict]]:
@@ -94,8 +99,23 @@ def parse_capture_report(output: str) -> tuple[int, list[dict]]:
                 "law_refs": [r for r in parts[2].split(",") if r],
                 "groundings": int(parts[3]),
                 "holds": parts[4].strip() == "true",
+                # Frames the formula needs before its bounded operators can
+                # complete. Older harnesses did not emit it; 0 disables the
+                # check rather than silently failing every rule.
+                "span": int(parts[5]) if len(parts) >= 6 and parts[5].strip().isdigit() else 0,
             })
     return frames, rows
+
+
+def too_short(rows: list[dict], frames: int) -> list[dict]:
+    """Rules whose frame span exceeds the capture length.
+
+    Their verdict on this capture is not evidence: `loopBounded` reads a window
+    that runs off the end of the trace as false, so `□ (¬ₛ .bounded n bad)` — the
+    shape most safety rules use — reports *compliant* regardless of content,
+    while still grounding, which is what the vacuity guard checks.
+    """
+    return [r for r in rows if r["span"] > frames]
 
 
 def spec_verdict(rows: list[dict]) -> tuple[str, int, list[str]]:
@@ -134,11 +154,29 @@ def classify(label: str, spec: str) -> str:
     return "MISMATCH"
 
 
-def evaluate(labels: dict[str, dict], rows: list[dict]) -> list[LawOutcome]:
-    """One outcome per labelled law, in label-file order."""
+def evaluate(labels: dict[str, dict], rows: list[dict],
+             frames: int = 0) -> list[LawOutcome]:
+    """One outcome per labelled law, in label-file order.
+
+    Rules whose frame span exceeds the capture length are dropped before the
+    verdict is aggregated: their `compliant` is an artefact of the trace being
+    too short, and counting it would report a missed violation as agreement.
+    A law left with no evaluable rule is reported `INSUFFICIENT TRACE`.
+    """
     outcomes: list[LawOutcome] = []
     for law, entry in labels.items():
         covering = [r for r in rows if law in r["law_refs"]]
+        evaluable = [r for r in covering
+                     if frames <= 0 or r["span"] <= frames]
+        if covering and not evaluable:
+            need = min(r["span"] for r in covering)
+            outcomes.append(LawOutcome(
+                law=law, label=entry["verdict"], spec="untestable",
+                groundings=0, status=INSUFFICIENT,
+                nodes=[r["node_id"] for r in covering],
+                note=f"needs at least {need} frames; the capture has {frames}"))
+            continue
+        covering = evaluable
         spec, groundings, nodes = spec_verdict(covering)
         outcomes.append(LawOutcome(
             law=law,

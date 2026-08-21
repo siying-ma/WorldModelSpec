@@ -12,7 +12,9 @@ token on the first line so the prompt can branch on it:
     VOCAB_VIOLATION      an ad-hoc predicate, or a Pred.* that does not exist
     CARLA_INCOMPATIBLE   references scene-graph data CARLA cannot produce
     HYGIENE_FAIL         sorry / axiom / native_decide / partial def
+    GROUNDING_BUDGET     the binder cross product is too large to evaluate
     COMPILE_FAIL         Lean errors
+    TRACE_TOO_SHORT      a scenario trace is shorter than the formula's frame span
     SCENARIO_VACUOUS     a scenario has zero groundings, so it tests nothing
     SCENARIO_FAIL        a scenario's verdict disagrees with the plan
     OK                   accepted, pending integration
@@ -80,6 +82,38 @@ ADHOC_PATTERNS = [
 
 REQUIRED_DECLS = ["schema", "entry", "scenarios"]
 
+# Binder helper name -> the census key in carla/schema.json whose count it ranges
+# over. `Core/Grounding.lean` is the authority for what each helper admits.
+BINDER_CENSUS_KEY = {
+    "vehicleBinder": "vehicle",
+    "proximityVehicleBinder": "proximityVehicle",
+    "proximityRoadUserBinder": "roadUser",
+    "roadUserBinder": "roadUser",
+    "pedestrianBinder": "pedestrian",
+    "laneBinder": "lane",
+    "roadBinder": "road",
+    "junctionBinder": "junction",
+    "trafficLightBinder": "trafficLight",
+    "stopSignBinder": "stopSign",
+    "controlDeviceBinder": "controlDevice",
+    "landmarkBinder": "landmark",
+}
+BINDER_USE_RE = re.compile(r"\b(\w+Binder)\s+\"")
+
+# Groundings one rule may cost on a reference capture.
+#
+# `PropertySchema.bindings` is the cross product of every binder's candidates, so
+# each binder MULTIPLIES the cost, and every grounding is a full `satisfies` over
+# the whole trace — measured at ~20 ms for a 240-frame capture. 500 therefore
+# caps one rule at ~10 s per capture, which keeps a 20-rule library inside a
+# few minutes.
+#
+# This exists because the gate cannot otherwise see the cost: a scenario trace
+# holds 3-4 lanes, so a rule binding two lanes grounds a handful of times at the
+# gate and ~1,200 times on a capture. Two captures were reported unevaluable
+# before this check existed.
+GROUNDING_BUDGET = 500
+
 # Attribute keys are the one place a syntactically valid spec can still demand
 # data CARLA does not carry, so string literals passed to attribute predicates
 # are checked against the schema manifest.
@@ -90,6 +124,30 @@ ATTR_CALL_RE = re.compile(
 )
 PRED_USE_RE = re.compile(r"\bPred\.([A-Za-z][A-Za-z0-9_']*)")
 DEF_RE = re.compile(r"^\s*(?:private\s+)?def\s+([A-Za-z][A-Za-z0-9_']*)", re.M)
+
+
+def predicted_groundings(code: str, census: dict) -> tuple[int, list[str]]:
+    """Estimate a schema's grounding count on a reference capture.
+
+    Same-type binders use a falling factorial because `distinctIds` forbids two
+    binders sharing an entity: two lane binders give n*(n-1), not n^2.
+    Returns ``(estimate, ["laneBinder x lane=35", ...])`` for the message.
+    """
+    names = BINDER_USE_RE.findall(code)
+    total = 1
+    seen: dict[str, int] = {}
+    detail: list[str] = []
+    for name in names:
+        key = BINDER_CENSUS_KEY.get(name)
+        if key is None:                       # unknown helper: cannot estimate
+            return 0, []
+        count = int(census.get(key, 0))
+        available = max(0, count - seen.get(key, 0))
+        seen[key] = seen.get(key, 0) + 1
+        detail.append(f"{name} -> {key}={count}" +
+                      (f" (distinct: {available})" if available != count else ""))
+        total *= max(available, 1) if count else 1
+    return total, detail
 
 
 def strip_lean_comments(text: str) -> str:
@@ -286,6 +344,9 @@ class NodeReport:
         self.carla_verdict = "none"
         self.result = "FAIL"
         self.binders = 0
+        # Frames the formula must be able to look at before its bounded
+        # operators can complete (`Core/Formula.lean::SFProp.frameSpan`).
+        self.span = 0
         for line in text.splitlines():
             parts = line.rstrip("\n").split("\t")
             tag = parts[0].strip()
@@ -306,6 +367,8 @@ class NodeReport:
                 self.carla_verdict = parts[2]
             elif tag == "BINDERS" and len(parts) >= 2:
                 self.binders = int(parts[1]) if parts[1].isdigit() else 0
+            elif tag == "SPAN" and len(parts) >= 2:
+                self.span = int(parts[1]) if parts[1].isdigit() else 0
             elif tag == "RESULT" and len(parts) >= 2:
                 self.result = parts[1]
 
@@ -465,7 +528,6 @@ def main() -> int:
         return 1
 
     allowed_attrs = set(schema["attribute_keys"]["tier_a"])
-    observed_attrs = set(schema["attribute_keys"]["tier_b"])
     unavailable = schema.get("unavailable", {})
 
     bad_attrs = sorted({k for k in ATTR_CALL_RE.findall(code) if k not in allowed_attrs})
@@ -488,12 +550,14 @@ def main() -> int:
              "different attribute.")
         return finish("CARLA_INCOMPATIBLE", "attrs: " + ", ".join(bad_attrs))
 
+    # No "attribute absent from the sample trace" warning here any more. It read
+    # `attribute_keys.tier_b`, a hand-maintained list of what
+    # `Carla/Sample.lean` contains — and that file is hand-authored, so the list
+    # described our own fixture rather than anything CARLA produces, and had
+    # already drifted (it claimed `light_brake`, which Sample.lean never sets).
+    # The same question is answered further down, computed rather than declared,
+    # by the CARLA grounding count against that trace.
     warnings: list[str] = []
-    unobserved = sorted({k for k in ATTR_CALL_RE.findall(code)
-                         if k in allowed_attrs and k not in observed_attrs})
-    if unobserved:
-        warnings.append("attributes not present in the bundled sample trace "
-                        f"(no smoke coverage): {', '.join(unobserved)}")
 
     # ── 6. hygiene ──────────────────────────────────────────────────────
     found = [msg for pat, msg in HYGIENE_PATTERNS if pat.search(code)]
@@ -502,6 +566,42 @@ def main() -> int:
              "The rule file contains constructs that are not allowed:",
              *[f"  - {m}" for m in found])
         return finish("HYGIENE_FAIL", "; ".join(found))
+
+    # ── 6b. grounding budget ────────────────────────────────────────────
+    # Before the build, because this is the cheapest check that can save the
+    # most work — and because the failure it prevents is invisible later: the
+    # scenario traces are small enough that an over-quantified rule passes the
+    # gate in milliseconds and then cannot be evaluated on a capture at all.
+    census = (schema.get("capture_reference_census") or {}).get("counts") or {}
+    if census:
+        estimate, detail = predicted_groundings(code, census)
+        if estimate > GROUNDING_BUDGET:
+            emit("GROUNDING_BUDGET",
+                 f"This schema would instantiate about {estimate:,} times on a "
+                 f"real capture, against a budget of {GROUNDING_BUDGET:,}.",
+                 "",
+                 "Binder cross product, using the measured entity census in "
+                 "carla/schema.json:",
+                 *[f"  - {d}" for d in detail],
+                 "",
+                 "Every binder MULTIPLIES the grounding count, and each grounding "
+                 "is a full evaluation over the whole trace (~20 ms for 240 "
+                 "frames). A binder over a structural type — `lane`, `road` — "
+                 "multiplies by tens, and almost all of the resulting pairs are "
+                 "unrelated: lanes on different roads with no edge between them. "
+                 "Those make the antecedent false, so they are vacuously "
+                 "satisfied and change no verdict — they only cost time.",
+                 "",
+                 "Express the relation with a predicate that quantifies "
+                 "internally instead of binding the entities: `inRightmostLane`, "
+                 "`hasLaneToTheRight`, `inLane` with `laneTravelsTo`, "
+                 "`opposingLanes`, `governs`. One scan per frame, no extra "
+                 "binder. If the relation you need has no such predicate, that is "
+                 "a vocabulary gap: stop, and report it as a blocker naming the "
+                 "predicate you want — do not bind two structural entities to "
+                 "work around it.")
+            return finish("GROUNDING_BUDGET",
+                          f"~{estimate} groundings > {GROUNDING_BUDGET}")
 
     # ── 7. compile ──────────────────────────────────────────────────────
     try:
@@ -539,6 +639,27 @@ def main() -> int:
              "Every scenario named in node_spec.json must appear, with the "
              "planned `expected` value.")
         return finish("STRUCTURE_FAIL", "missing scenarios: " + ", ".join(missing))
+
+    short = [s for s in report.scenarios if s["status"] == "SHORT"]
+    if short:
+        emit("TRACE_TOO_SHORT",
+             f"This rule's formula needs {report.span} frames before its bounded "
+             f"operators can complete, and these scenario traces are shorter:",
+             *[f"  - `{s['name']}`" for s in short],
+             "",
+             "A trace shorter than that cannot test the rule in either "
+             "direction. `Core/Semantics.lean::loopBounded` reads a window that "
+             "runs off the end of the trace as false, so a formula shaped "
+             "`□ (¬ₛ .bounded n bad)` is satisfied on every short trace no "
+             "matter what it contains — a positive scenario then passes for the "
+             "wrong reason, and a negative one cannot fail at all.",
+             "",
+             f"Lengthen every scenario trace to at least {report.span} frames. "
+             "Padding with repeats of a representative frame is fine; the point "
+             "is that the window has room to complete.")
+        return finish("TRACE_TOO_SHORT",
+                      f"traces shorter than the {report.span}-frame span: "
+                      + ", ".join(s["name"] for s in short))
 
     vacuous = [s for s in report.scenarios if s["status"] == "VACUOUS"]
     if vacuous:

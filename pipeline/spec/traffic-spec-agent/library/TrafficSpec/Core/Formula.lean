@@ -63,6 +63,44 @@ scoped prefix:90 "□"   => SFProp.always
 
 end SFProp
 
+/-- How many frames, counting the evaluation position itself, the formula must
+    be able to look at before its bounded operators can complete.
+
+    **This is a soundness precondition, not a diagnostic.** `Semantics.loopBounded`
+    returns `false` when a window overruns the end of the trace, and the common
+    safety shape in this library is `□ (¬ₛ .bounded n bad)` — so on a trace
+    shorter than `n`, `.bounded n bad` is false everywhere, `¬ₛ` makes it true
+    everywhere, and the rule reports **compliant no matter what the trace
+    contains**. Measured against `Rules/Lane/R0011` (window 80) on a trace of
+    flagrant, every-frame violation:
+
+        frames = 80 → check = false   (violation reported)
+        frames = 79 → check = true    (compliant, same content)
+
+    The grounding count stays ≥ 1 throughout, so the vacuity guard does not
+    catch it. A trace shorter than `frameSpan` cannot be used to clear a rule;
+    `Grounding.report` publishes this number so the Python side can refuse.
+
+    `always` / `eventually` / `until` / `release` do not add to the span: they
+    are already clamped to the end of the trace by their fuel, so they degrade
+    gracefully rather than silently inverting. -/
+def SFProp.frameSpan : SFProp → Nat
+  | .atom _        => 1
+  | .top           => 0
+  | .bot           => 0
+  | .neg ψ         => ψ.frameSpan
+  | .conj ψ₁ ψ₂    => max ψ₁.frameSpan ψ₂.frameSpan
+  | .disj ψ₁ ψ₂    => max ψ₁.frameSpan ψ₂.frameSpan
+  | .impl ψ₁ ψ₂    => max ψ₁.frameSpan ψ₂.frameSpan
+  | .next ψ        => 1 + ψ.frameSpan
+  | .until ψ₁ ψ₂   => max ψ₁.frameSpan ψ₂.frameSpan
+  | .release ψ₁ ψ₂ => max ψ₁.frameSpan ψ₂.frameSpan
+  | .eventually ψ  => ψ.frameSpan
+  | .always ψ      => ψ.frameSpan
+  | .bounded n ψ   => match n with
+                      | 0      => 0
+                      | k + 1  => k + ψ.frameSpan
+
 /-- Build an atomic predicate formula from a label and a scene test. -/
 def mkAtom (label : String) (test : Scene → Bool) : SFProp :=
   .atom ⟨label, test⟩

@@ -33,6 +33,7 @@ import fire
 
 from . import capture_eval, index_sync
 from .lean_check import (
+    CAPTURE_EVAL_TIMEOUT,
     LeanUnavailable,
     eval_harness,
     first_errors,
@@ -148,7 +149,11 @@ class Cli:
 
             harness = REPO_ROOT / "results" / "_verify_harness.lean"
             write_library_harness(harness)
-            ok, output = eval_harness(library, harness)
+            # Whole-library scale, not node scale: every rule against every one
+            # of its scenarios, and a rule with several binders grounds many
+            # times even on a short trace.
+            ok, output = eval_harness(library, harness,
+                                      timeout=CAPTURE_EVAL_TIMEOUT)
         except LeanUnavailable as exc:
             print(f"[error] {exc}", file=sys.stderr)
             return 1
@@ -174,13 +179,31 @@ class Cli:
                 ego_log: Optional[str] = None, library_root: str = "library",
                 module_name: str = "Captured", max_frames: Optional[int] = None,
                 adapter_python: Optional[str] = None,
-                skip_convert: bool = False) -> int:
-        """Evaluate every registered rule against a real CARLA capture and diff the
-        verdicts against human labels.
+                skip_convert: bool = False,
+                database: Optional[str] = None,
+                capture: Optional[str] = None,
+                eval_timeout: Optional[float] = None) -> int:
+        """Evaluate every registered rule against real CARLA captures and diff the
+        verdicts against ground-truth labels.
 
         `verify` checks a spec against scenarios the plan agent wrote for it;
-        this checks it against footage a person labelled, which is the only
-        signal in the pipeline independent of that agent.
+        this checks it against footage labelled independently of that agent, and
+        is the external check to run after the loop.
+
+        **A whole capture set at once** — one directory per capture, each with
+        `rsv/`, `ego_logs.json` and its own `labels.json`, as written by
+        `../../sg/carla_scene_graphs/src/run_capture.py`:
+
+            python -m scripts.run_spec monitor \\
+                --database ../../sg/carla_scene_graphs/database \\
+                --adapter-python $(which python)
+
+        Captures named `<scenario>_compliant` / `<scenario>_violation` are also
+        paired, which is the question a single capture cannot answer: does the
+        library separate lawful from unlawful? Add `--capture NAME` to restrict
+        the run to one directory.
+
+        **A single capture** with an external label file:
 
             python -m scripts.run_spec monitor \\
                 --rsv-dir  .../sceneflow_sample/data/rsv \\
@@ -189,15 +212,27 @@ class Cli:
 
         Pass `--adapter-python` when the interpreter running this CLI lacks
         `networkx`, which unpickling a capture needs. `--skip-convert` reuses an
-        already-converted trace module.
+        already-converted trace module (single-capture mode only).
         """
+        library = _resolve(library_root)
+        if database is not None:
+            from scripts import capture_bench
+            root = Path(database).expanduser()
+            if not root.is_absolute():
+                root = (REPO_ROOT / root).resolve()
+            if not root.is_dir():
+                print(f"[error] no such directory: {root}", file=sys.stderr)
+                return 2
+            return capture_bench.run(
+                root, REPO_ROOT, library, adapter_python or sys.executable,
+                capture, eval_timeout or capture_bench.CAPTURE_EVAL_TIMEOUT)
+
         if labels is None:
             print("[error] --labels is required: the point of `monitor` is the "
                   "comparison against human ground truth. Write a label file "
                   "first (see scripts/capture_eval.py for the format).",
                   file=sys.stderr)
             return 2
-        library = _resolve(library_root)
         labels_file = _resolve(labels)
         if not labels_file.exists():
             print(f"[error] label file not found: {labels_file}", file=sys.stderr)
@@ -248,7 +283,9 @@ class Cli:
             harness = REPO_ROOT / "results" / "_capture_harness.lean"
             write_capture_harness(harness, module, trace_name)
             print("[3/3] Evaluating every rule against the capture...")
-            ok, output = eval_harness(library, harness)
+            ok, output = eval_harness(
+                library, harness,
+                timeout=eval_timeout or CAPTURE_EVAL_TIMEOUT)
         except LeanUnavailable as exc:
             print(f"[error] {exc}", file=sys.stderr)
             return 1
@@ -269,7 +306,7 @@ class Cli:
             print(f"[error] {exc}", file=sys.stderr)
             return 2
 
-        outcomes = capture_eval.evaluate(label_map, rows)
+        outcomes = capture_eval.evaluate(label_map, rows, frames)
         missing = capture_eval.unlabelled_rules(label_map, rows)
         print("")
         print(capture_eval.format_report(capture, annotator, frames, outcomes,

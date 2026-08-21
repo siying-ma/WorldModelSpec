@@ -34,6 +34,11 @@ structure Binder where
     actually emits proximity edges for (see `Core/Scene.lean`, `RelLabel`). -/
 def vehicleBinder (label : String) : Binder := ⟨label, vehicleTypes⟩
 def proximityVehicleBinder (label : String) : Binder := ⟨label, proximityVehicleTypes⟩
+/-- Any road user a distance to which actually exists — vehicles plus
+    pedestrians and cycles. Use this, not `roadUserBinder`, whenever the rule
+    needs `withinMetres` / `following` / an angular relation: `roadUserTypes`
+    admits `van` and `vehicle`, which carry no proximity edge at all. -/
+def proximityRoadUserBinder (label : String) : Binder := ⟨label, proximityTypes⟩
 def roadUserBinder (label : String) : Binder := ⟨label, roadUserTypes⟩
 def pedestrianBinder (label : String) : Binder := ⟨label, [.pedestrian]⟩
 def laneBinder (label : String) : Binder := ⟨label, [.lane]⟩
@@ -97,9 +102,28 @@ private def rawBindings (τ : Trace) : List Binder → List (List EntityId)
   | []      => [[]]
   | b :: bs => extend τ b (rawBindings τ bs)
 
-/-- All distinct groundings of a schema against a trace. -/
+/-- Do all the bound entities appear together in at least one frame?
+
+    `traceEntityIds` collects candidates across the whole trace, because
+    entities enter and leave the graph. Without this filter the cross product
+    also pairs entities that were never present at the same time — a car that
+    left before another arrived. Such a binding cannot make any relation true,
+    so it is trivially satisfied and cannot change `check`, but it *does* inflate
+    the grounding count, and the grounding count is what `capture_eval` reads to
+    decide whether a law was engaged at all. Measured on a real capture:
+    `EX-FOLLOW-001` reported 12 groundings on footage where the ego never
+    followed anything, which scores as an engaged, agreeing result. -/
+def coPresent (τ : Trace) (env : List EntityId) : Bool :=
+  τ.any (fun s => env.all (fun e => (s.getEntity e).isSome))
+
+/-- All distinct groundings of a schema against a trace.
+
+    Filtered to bindings whose entities are distinct *and* co-present in some
+    frame. Dropping a non-co-present binding never hides a violation: every
+    atom over an absent entity is false, so the binding was vacuously satisfied
+    and contributed nothing to `check`. -/
 def PropertySchema.bindings (sch : PropertySchema) (τ : Trace) : List (List EntityId) :=
-  (rawBindings τ sch.binders).filter distinctIds
+  ((rawBindings τ sch.binders).filter distinctIds).filter (coPresent τ)
 
 /-- Render a binding as `v=e9, w=e12`. -/
 def describeBinding (bs : List Binder) (env : List EntityId) : String :=
@@ -120,6 +144,18 @@ def RuleEntry.groundingCount (r : RuleEntry) (τ : Trace) : Nat :=
 def RuleEntry.check (r : RuleEntry) (τ : Trace) : Bool :=
   (r.groundings τ).all (fun p => p.2)
 
+/-- Frames the rule's formula needs before its bounded operators can complete.
+
+    Independent of which entities are bound — binders only reach atoms, and every
+    atom spans one frame — so it is computed on a placeholder environment. A
+    trace shorter than this **cannot clear the rule**: see `SFProp.frameSpan`. -/
+def RuleEntry.frameSpan (r : RuleEntry) : Nat :=
+  (r.schema.formula (List.replicate r.schema.binders.length ⟨0⟩)).frameSpan
+
+/-- Is `τ` long enough for this rule's verdict to mean anything? -/
+def RuleEntry.traceLongEnough (r : RuleEntry) (τ : Trace) : Bool :=
+  decide (r.frameSpan ≤ τ.length)
+
 /-- Instantiate to closed named properties, for `checkAll`-style reporting. -/
 def RuleEntry.instantiate (r : RuleEntry) (τ : Trace) : List NamedProperty :=
   (r.schema.bindings τ).map fun env =>
@@ -134,7 +170,8 @@ private def scenarioLine (r : RuleEntry) (s : Scenario) : String :=
   let n      := r.groundingCount s.trace
   let actual := r.check s.trace
   let status :=
-    if n == 0 then "VACUOUS"
+    if !r.traceLongEnough s.trace then "SHORT"
+    else if n == 0 then "VACUOUS"
     else if actual == s.expected then "PASS"
     else "FAIL"
   s!"SCEN\t{s.name}\t{s.expected}\t{actual}\t{n}\t{status}"
@@ -152,8 +189,15 @@ private def frameLines (r : RuleEntry) (s : Scenario) : List String :=
     let desc := describeBinding r.schema.binders env
     s!"FRAMES\t{s.name}\t{desc}\t{bits}"
 
+/-- A scenario counts only if the trace is long enough for the rule's bounded
+    operators, grounds at least once, and matches the declared expectation.
+    The length test comes first: a trace shorter than `frameSpan` reports
+    `compliant` whatever it contains, so a positive scenario would "pass" for
+    the wrong reason. -/
 private def scenarioOk (r : RuleEntry) (s : Scenario) : Bool :=
-  !(r.groundingCount s.trace == 0) && (r.check s.trace == s.expected)
+  r.traceLongEnough s.trace
+    && !(r.groundingCount s.trace == 0)
+    && (r.check s.trace == s.expected)
 
 /-- Full report for one node. `carla` is the bundled CARLA-shaped smoke trace:
     its grounding count tells us whether the rule can fire on realistic scene
@@ -166,11 +210,15 @@ def report (r : RuleEntry) (ss : List Scenario) (carla : Trace) : String :=
     , s!"NAME\t{r.schema.name}"
     , s!"LAWREFS\t{refs}"
     , s!"BINDERS\t{r.schema.binders.length}"
+    , s!"SPAN\t{r.frameSpan}"
     , s!"SCENARIOS\t{ss.length}" ]
   let body := ss.foldr
     (fun s acc => (scenarioLine r s :: (groundingLines r s ++ frameLines r s)) ++ acc) []
   let carlaCount := r.groundingCount carla
-  let carlaVal   := if carlaCount == 0 then "none" else toString (r.check carla)
+  let carlaVal   :=
+    if !r.traceLongEnough carla then "short"
+    else if carlaCount == 0 then "none"
+    else toString (r.check carla)
   let footer :=
     [ s!"CARLA\t{carlaCount}\t{carlaVal}"
     , if ok then "RESULT\tOK" else "RESULT\tFAIL" ]

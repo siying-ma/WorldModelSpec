@@ -52,6 +52,16 @@ def lake_build(library_root: Path, target: Optional[str] = None,
     return code == 0, out
 
 
+# A node harness evaluates one rule over 3-5 traces of 6-100 frames; 300 s is
+# generous for that. A *capture* harness evaluates every registered rule over a
+# 240-frame trace, and its cost is (groundings x frames^2) because `Trace` is a
+# `List Scene` and scene lookup is O(i). Measured on a 21-rule library against a
+# 240-frame Town03 capture: 16,637 groundings, 327.5 s — i.e. the node default
+# killed it 27 s from the end and the capture was reported as unevaluable.
+# ~20 ms per grounding is the figure to scale from.
+CAPTURE_EVAL_TIMEOUT = 1800.0
+
+
 def eval_harness(library_root: Path, harness: Path,
                  timeout: float = 300.0) -> tuple[bool, str]:
     """Elaborate a standalone `.lean` file, returning its `#eval` output.
@@ -147,11 +157,16 @@ def write_capture_harness(harness_path: Path, module: str, trace: str) -> None:
     """Emit the harness that evaluates every registered rule against a captured
     trace, rather than against the rules' own declared scenarios.
 
-    One `CAP` line per rule: node id, law refs, grounding count, verdict. The
-    grounding count is the load-bearing column — a rule that grounds zero times
-    on a capture has not been tested by it, and reporting that as agreement with
-    a human `not_applicable` label is the difference between a benchmark and a
-    rubber stamp.
+    One `CAP` line per rule: node id, law refs, grounding count, verdict, and
+    the formula's frame span.
+
+    Two columns are load-bearing. The **grounding count** — a rule that grounds
+    zero times on a capture has not been tested by it, and reporting that as
+    agreement with a `not_applicable` label is the difference between a
+    benchmark and a rubber stamp. And the **span**: a capture shorter than it
+    cannot clear the rule, because `loopBounded` reads a window running off the
+    end of the trace as false and the safety shape `□ (¬ₛ .bounded n bad)` is
+    then satisfied whatever the footage shows.
     """
     harness_path.parent.mkdir(parents=True, exist_ok=True)
     harness_path.write_text(
@@ -168,7 +183,7 @@ def write_capture_harness(harness_path: Path, module: str, trace: str) -> None:
             "  for r in allRules do",
             "    let refs := String.intercalate \",\" r.lawRefs",
             "    IO.println s!\"CAP\\t{r.nodeId}\\t{refs}\\t{r.groundingCount τ}"
-            "\\t{r.check τ}\"",
+            "\\t{r.check τ}\\t{r.frameSpan}\"",
             "",
             "#eval captureReportIO",
             "",

@@ -277,13 +277,111 @@ def classify(name: str, base_class: Optional[str], sem_class: Optional[str]) -> 
     return "other"
 
 
-def fmt_num(value: Any, default: str = "0.0") -> str:
-    """Render a numeric attribute the way `str(float)` does, so the decimal
-    parser sees the same shapes a capture produces."""
+# What the Lean library assumes about how a capture was recorded. These are
+# hard-coded in frozen Core — `Core/Scene.lean::captureHz` and `distanceBands` —
+# so a capture made with other settings would be read against the wrong numbers.
+# Nothing in a capture used to record what it was made with, which is why this
+# check exists rather than a comment.
+ASSUMED_CAPTURE_HZ = 20
+ASSUMED_PROXIMITY_THRESHOLDS = [["safety_hazard", 2], ["near_coll", 4],
+                                ["super_near", 7], ["very_near", 10],
+                                ["near", 16], ["visible", 25]]
+
+
+class CapturePreconditionError(ValueError):
+    """The capture was recorded with settings the library does not assume."""
+
+
+def check_capture_preconditions(rsv_dir: Path) -> None:
+    """Fail closed when a capture's own manifest contradicts frozen Core.
+
+    The manifest is `simulation.json` beside the frame directory, written by
+    `sg/carla_scene_graphs/src/carlaspec/runner.py`. It is optional: captures
+    predating it convert with a warning, because refusing them outright would
+    break the bundled `sceneflow_sample`. When it *is* present its numbers are
+    binding.
+
+    The failure this prevents is a silent one and it runs in the missed-violation
+    direction. `secondsToFrames 1` is 20 frames; at a 40 Hz capture that is half
+    a second, so a rolling stop satisfies a one-second dwell rule. Nothing in the
+    trace would reveal it — `time_base` in the schema records that frames carry
+    no timestamp.
+    """
+    manifest = rsv_dir.parent / "simulation.json"
+    if not manifest.exists():
+        print(f"[warn] {manifest.name} not found beside {rsv_dir}; assuming the "
+              f"capture was recorded at {ASSUMED_CAPTURE_HZ} Hz with default "
+              f"proximity bands. Nothing verifies that.")
+        return
     try:
-        return str(float(value))
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise CapturePreconditionError(f"{manifest} is not valid JSON: {exc}")
+
+    gen = data.get("generator") or {}
+    hz = gen.get("capture_hz", data.get("fps"))
+    if hz is not None and int(hz) != ASSUMED_CAPTURE_HZ:
+        raise CapturePreconditionError(
+            f"{manifest} records capture_hz={hz}, but the library hard-codes "
+            f"{ASSUMED_CAPTURE_HZ} Hz in Core/Scene.lean::captureHz, and every "
+            f"duration in every rule is a frame count at that rate. Converting "
+            f"would silently scale every window by {hz}/{ASSUMED_CAPTURE_HZ}. "
+            f"Re-record at {ASSUMED_CAPTURE_HZ} Hz, or change captureHz and "
+            f"re-verify the whole library.")
+
+    bands = gen.get("proximity_thresholds")
+    if bands is not None:
+        normalised = [[str(name), int(metres)] for name, metres in bands]
+        if normalised != ASSUMED_PROXIMITY_THRESHOLDS:
+            raise CapturePreconditionError(
+                f"{manifest} records proximity_thresholds={bands}, but "
+                f"Core/Scene.lean::distanceBands hard-codes "
+                f"{ASSUMED_PROXIMITY_THRESHOLDS}. The RSV keeps only the band "
+                f"label, not the metres, so every `Pred.withinMetres` bound "
+                f"would mean a different distance than the rule says.")
+
+
+# Frames per generated chunk definition. 25 keeps each chunk near 100 KB on a
+# dense junction capture, comfortably under the ~500 KB where Lean's code
+# generator starts to fail, with plenty of margin for denser scenes.
+CHUNK_FRAMES = 25
+
+# Enough decimals to preserve everything `Core/Decimal.lean` keeps — it
+# truncates to thousandths — with margin, and few enough to stay readable.
+_NUM_DECIMALS = 6
+
+
+def fmt_num(value: Any, default: str = "0.0") -> str:
+    """Render a numeric attribute in plain fixed-point notation.
+
+    Must NOT be `str(float(value))`. Python switches to scientific notation
+    below 1e-4, and `Core/Decimal.lean` accepts only
+    `[+-]? digit+ ( '.' digit+ )?` — it documents that exponent notation yields
+    `none`, and `leMilli`/`geMilli` both return **false** for an unparseable
+    value.
+
+    The consequence was not a missing comparison but an inverted one. A
+    stationary ego has `speed` around 5e-05 m/s, which `str(float)` renders
+    `"4.935048855259083e-05"`; `speedLeKph v 50` then reads false, and
+    `□ (isEgo v ⟹ speedLeKph v 50)` reports a **speeding violation for a
+    parked car**. `Pred.stopped` is false at the same time, since `speedLe`
+    fails identically, so the vehicle is simultaneously not-stopped and
+    over the limit. Every rule reading a numeric ego channel — speed, accel,
+    throttle, brake, steer, yaw_rate — was affected on any capture where the
+    ego came to rest, which is exactly what the compliant red-light and
+    stop-sign captures are for.
+
+    Fixed-point avoids the exponent for every magnitude CARLA produces.
+    """
+    try:
+        number = float(value)
     except (TypeError, ValueError):
         return default
+    # `nan`/`inf` are rejected by the parser too, and there is no honest
+    # numeral for them; the default keeps the attribute readable as zero.
+    if number != number or number in (float("inf"), float("-inf")):
+        return default
+    return f"{number:.{_NUM_DECIMALS}f}"
 
 
 def fmt_bool(value: Any) -> str:
@@ -349,10 +447,31 @@ def is_ego(name: str, attr: dict) -> bool:
 
 
 def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
-                 max_frames: Optional[int]) -> tuple[str, dict]:
+                 max_frames: Optional[int],
+                 start_frame: int = 0) -> tuple[str, dict]:
+    """Convert a window of a capture into a Lean `Trace`.
+
+    `start_frame` exists because the whole trace is emitted as one Lean list
+    literal, and Lean's *code generator* — not its elaborator — overflows on
+    large ones with "maximum recursion depth reached in the code generator".
+    The limit tracks the size of the generated literal rather than the frame
+    count: a Town03 junction capture built at ~470 KB and failed at ~640 KB.
+
+    Taking only a prefix (`--max-frames` alone) is not enough, because the
+    moment a rule is about — the frame a vehicle crosses into a junction — is
+    usually in the middle of a capture. A window keeps that moment and its
+    surrounding context while staying under the limit.
+    """
+    check_capture_preconditions(rsv_dir)
     files = sorted(rsv_dir.glob("*.pkl"), key=lambda p: natural_key(p.name))
     if not files:
         raise ValueError(f"no .pkl frames found in {rsv_dir}")
+    if start_frame < 0:
+        raise ValueError(f"--start-frame must not be negative: {start_frame}")
+    if start_frame >= len(files):
+        raise ValueError(f"--start-frame {start_frame} is past the last of "
+                         f"{len(files)} frames in {rsv_dir}")
+    files = files[start_frame:]
     if max_frames:
         files = files[:max_frames]
 
@@ -397,7 +516,12 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                             stats["unlifted_attrs"].get(key, 0) + 1
 
             if is_ego(name, attr):
-                record = ego_records[index] if index < len(ego_records) else None
+                # The ego log is indexed by absolute capture frame, so a window
+                # starting at `start_frame` must offset into it or every ego
+                # dynamic channel is silently taken from the wrong frame.
+                log_index = start_frame + index
+                record = (ego_records[log_index]
+                          if log_index < len(ego_records) else None)
                 args = " ".join(f'"{lean_str(v)}"'
                                 for v in ego_channels(attr, record))
                 entity_src.append(f"mkEgo {eid} .{lean_type} {args}")
@@ -456,6 +580,32 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
 
     stats["entities"] = len(ids)
 
+    # Emit the trace in chunks, not as one list literal.
+    #
+    # Lean's *code generator* — not its elaborator — recurses over a literal and
+    # dies with "maximum recursion depth reached in the code generator" once it
+    # gets large. The limit tracks the literal's size rather than the frame
+    # count: a Town03 junction capture built at ~470 KB and failed at ~640 KB.
+    #
+    # A window was the previous workaround, and it was unsound: a rule's verdict
+    # then depended on how many frames were converted, because
+    # `Core/Semantics.lean::loopBounded` reads a window that overruns the trace
+    # as false, which for a `□ (¬ₛ .bounded n bad)` rule means *compliant*.
+    # Chunking removes the trade-off — every frame of the capture is evaluated,
+    # and each chunk is small enough for the code generator on its own.
+    chunks = [frames[i:i + CHUNK_FRAMES]
+              for i in range(0, len(frames), CHUNK_FRAMES)] or [[]]
+    chunk_defs: list[str] = []
+    for index, chunk in enumerate(chunks):
+        chunk_defs += [
+            f"private def {module_name}Chunk{index} : Trace :=",
+            "  [",
+            ",\n".join(chunk),
+            "  ]",
+            "",
+        ]
+    joined = " ++ ".join(f"{module_name}Chunk{i}" for i in range(len(chunks)))
+
     lines = [
         "/- Generated by carla/adapter.py. Do not edit by hand. -/",
         "import TrafficSpec.Core.Builders",
@@ -464,12 +614,13 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
         "",
         "open TrafficSpec",
         "",
-        f"/-- Captured from {rsv_dir.name}: {stats['frames']} frames, "
-        f"{stats['entities']} distinct entities. -/",
+        *chunk_defs,
+        f"/-- Captured from {rsv_dir.name}: {stats['frames']} frames "
+        f"(capture frames {start_frame}..{start_frame + stats['frames'] - 1}), "
+        f"{stats['entities']} distinct entities, in "
+        f"{len(chunks)} chunk(s) of at most {CHUNK_FRAMES}. -/",
         f"def {module_name}Trace : Trace :=",
-        "  [",
-        ",\n".join(frames),
-        "  ]",
+        f"  {joined}",
         "",
         "end TrafficSpec.Carla",
         "",
@@ -485,11 +636,17 @@ def main() -> int:
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--module-name", default="Captured")
     ap.add_argument("--max-frames", type=int, default=None)
+    ap.add_argument("--start-frame", type=int, default=0,
+                    help="first capture frame to convert; with --max-frames "
+                         "this selects a window, which is how a long capture "
+                         "is kept under Lean's code-generator limit without "
+                         "dropping the moment the rule is about")
     args = ap.parse_args()
 
     try:
         text, stats = build_module(args.rsv_dir, args.ego_log,
-                                   args.module_name, args.max_frames)
+                                   args.module_name, args.max_frames,
+                                   args.start_frame)
     except Exception as exc:
         print(f"[error] {exc}")
         return 1

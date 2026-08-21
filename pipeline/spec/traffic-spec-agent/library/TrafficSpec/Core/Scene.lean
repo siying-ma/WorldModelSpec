@@ -84,9 +84,32 @@ inductive EntityType where
 def vehicleTypes : List EntityType :=
   [.car, .truck, .van, .bus, .motorcycle, .vehicle]
 
-/-- Vehicle types that proximity and angular edges are actually emitted for. -/
+/-- Every base class the generator actually emits a proximity or angular edge
+    for, transcribed from `sgg_abstractor.py::DEFAULT_PROXIMITY_RELATIONS`
+    intersected with the range of `actors.py::get_base_type`.
+
+    The table pairs `ego` with `person`, `bicycle`, `car`, `motorcycle`, `bus`,
+    `truck` and a number of classes `get_base_type` never returns; `van`,
+    `vehicle`, `speed_limit` and `landmark` are absent, and `traffic_light` /
+    `stop_sign` are present only under names the equality test never matches
+    (`traffic light` / `stop sign`, with a space). A binder that admits a type
+    outside this list grounds on entities that can never carry a distance edge:
+    the binding is trivially satisfied, cannot report a violation, and inflates
+    the grounding count that says whether the law was engaged at all. -/
+def proximityTypes : List EntityType :=
+  [.pedestrian, .bicycle, .car, .motorcycle, .bus, .truck]
+
+/-- The vehicle subset of `proximityTypes`.
+
+    `bicycle` belongs here: the generator emits proximity edges for it, and a
+    traffic code that says "vehicle" generally includes a cycle. Omitting it
+    made a following-distance rule unable to convict a driver tailgating a
+    cyclist — a missed violation, which is the failure direction that matters.
+    `van` and `vehicle` are deliberately absent even though they are vehicles,
+    because no distance to them exists; use `vehicleTypes` when the rule needs
+    no distance. -/
 def proximityVehicleTypes : List EntityType :=
-  [.car, .truck, .bus, .motorcycle]
+  [.bicycle, .car, .truck, .bus, .motorcycle]
 
 /-- Everything a traffic law is likely to call a "road user". -/
 def roadUserTypes : List EntityType :=
