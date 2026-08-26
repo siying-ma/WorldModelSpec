@@ -27,6 +27,8 @@ from ..preprocessor import (
 )
 from ..task import SpecNode, SpecNodeResult, SpecNodeTask
 from .base import Phase, PhaseResult
+from .plan import (summarize_binders, summarize_builders, summarize_example,
+                   summarize_formula)
 
 
 def sha256_file(path: Path) -> str:
@@ -81,6 +83,13 @@ def build_prompt(task: SpecNodeTask, repo_root: Path, schema_summary: str,
         namespace=node.namespace,
         binders=", ".join(f"`{b}`" for b in node.binders),
         binder_count=len(node.binders),
+        # The schema skeleton is rendered for THIS node's binders rather than
+        # shown as a fixed pair. A worked two-vehicle skeleton is copied: nodes
+        # with one binder inherited a spare `w`, and the labels the planner
+        # chose were quietly replaced by the example's.
+        binders_lean=", ".join(f'<binderHelper> "{b}"' for b in node.binders),
+        binder_lets="\n".join(f"    let {b} := arg env {i}"
+                               for i, b in enumerate(node.binders)),
         scenarios_block=format_scenarios(node),
         scenario_count=len(node.scenarios),
         library_root=str(task.library_root),
@@ -90,9 +99,11 @@ def build_prompt(task: SpecNodeTask, repo_root: Path, schema_summary: str,
         check_spec_path=str(repo_root / TOOL_REL),
         vocab_file=str(task.library_root / "TrafficSpec" / "Core" / "Vocab.lean"),
         builders_file=str(task.library_root / "TrafficSpec" / "Core" / "Builders.lean"),
-        example_file=str(task.library_root / "TrafficSpec" / "Rules" / "Following"
-                         / "R0001_following_distance.lean"),
+        example_block=summarize_example(task.library_root),
         vocab_summary=vocab_summary,
+        formula_summary=summarize_formula(task.library_root),
+        binder_summary=summarize_binders(task.library_root),
+        builder_summary=summarize_builders(task.library_root),
         schema_summary=schema_summary,
     )
 
@@ -139,7 +150,7 @@ class CodePhase(Phase):
             (ctx.repo_root / "carla" / "schema.json").read_text(encoding="utf-8")
         )
         from .plan import summarize_schema, summarize_vocab
-        schema_summary = summarize_schema(schema)
+        schema_summary = summarize_schema(schema, ctx.library_root)
         vocab_summary = summarize_vocab(ctx.library_root)
 
         all_tasks = [

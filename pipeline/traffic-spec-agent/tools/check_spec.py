@@ -97,6 +97,12 @@ BINDER_CENSUS_KEY = {
     "stopSignBinder": "stopSign",
     "controlDeviceBinder": "controlDevice",
     "landmarkBinder": "landmark",
+    "speedLimitSignBinder": "speedLimitSign",
+    "signBinder": "sign",
+    "structureBinder": "structure",
+    "truckBinder": "truck",
+    "busBinder": "bus",
+    "bicycleBinder": "bicycle",
 }
 BINDER_USE_RE = re.compile(r"\b(\w+Binder)\s+\"")
 
@@ -112,6 +118,40 @@ BINDER_USE_RE = re.compile(r"\b(\w+Binder)\s+\"")
 # holds 3-4 lanes, so a rule binding two lanes grounds a handful of times at the
 # gate and ~1,200 times on a capture. Two captures were reported unevaluable
 # before this check existed.
+# Distinct entities of each binder type a typical capture contains — the
+# calibration the grounding budget is sized against.
+#
+# This is a MEASUREMENT OF ONE CAPTURE, not a fact about the scene-graph format,
+# which is why it does not live in `carla/schema.json`. It was taken on a
+# 240-frame Town03 capture, and Town03 is one CARLA map among many: a busier map
+# or a longer capture changes every number here. The schema must stay true for
+# any capture; this only has to be a defensible order of magnitude for sizing a
+# budget, and it is deliberately rounded UP from the measurement so the check
+# does not pass a rule that would then blow up on real traffic.
+#
+# Raw measurement: vehicle 2 · lane 35 · road 23 · junction 2 · trafficLight 3 ·
+# stopSign 0 · landmark 3 · pedestrian 0.
+# Re-measure with `traceEntityIds` on a representative capture if the towns or
+# traffic densities you record change materially.
+CAPTURE_ENTITY_CENSUS = {
+    "vehicle": 8, "proximityVehicle": 8, "roadUser": 10, "pedestrian": 6,
+    "lane": 35, "road": 23, "junction": 4,
+    "trafficLight": 6, "stopSign": 4, "controlDevice": 8, "landmark": 6,
+    # Vehicle sub-classes. Bounded above by "vehicle", and deliberately loose:
+    # the estimate exists to REFUSE an expensive schema, so over-counting costs
+    # a false refusal the author can argue with, while under-counting admits a
+    # rule that then cannot be evaluated on a capture at all.
+    "truck": 3, "bus": 2, "bicycle": 3,
+    "speedLimitSign": 6,
+    # Group binders: the sum of their members, since a group binder ranges over
+    # all of them. `sign` = trafficLight + stopSign + speedLimitSign + landmark;
+    # `structure` = lane + road + junction + the single Off Road node.
+    "sign": 22, "structure": 63,
+}
+
+# Cost of one grounding: a full `satisfies` over the whole trace. Measured at
+# ~20 ms for a 240-frame capture (16,637 groundings in 327 s of `lake env lean`),
+# and growing with frames^2 because `Trace` is a `List Scene`.
 GROUNDING_BUDGET = 500
 
 # Attribute keys are the one place a syntactically valid spec can still demand
@@ -528,26 +568,60 @@ def main() -> int:
         return 1
 
     allowed_attrs = set(schema["attribute_keys"]["tier_a"])
-    unavailable = schema.get("unavailable", {})
+
+    # Present-but-unlifted keys, declared per group in the schema. The verdict
+    # message must separate these from genuinely unknown attributes: an unlifted
+    # key means the law is formalizable once the adapter and vocabulary are
+    # extended, and telling the agent "does not exist" instead pushes it toward
+    # `unsupported` — discarding a formalizable law, which is the expensive
+    # direction. The schema used to carry a flat list of absent CONCEPTS for this
+    # message; that list could only be written by guessing which laws would want
+    # them, so it is gone and the distinction below is derived instead.
+    unlifted: dict[str, str] = {}
+    for group, body in (schema.get("available_not_exposed") or {}).items():
+        if group.startswith("$") or not isinstance(body, dict):
+            continue
+        for key in (body.get("keys") or []):
+            unlifted[key] = group
 
     bad_attrs = sorted({k for k in ATTR_CALL_RE.findall(code) if k not in allowed_attrs})
     if bad_attrs:
-        hints = []
+        hints, blocked, absent = [], [], []
         for key in bad_attrs:
-            hints.append(f"  - attribute `{key}` is never emitted by the CARLA "
-                         f"scene-graph generator")
+            if key in unlifted:
+                blocked.append(key)
+                hints.append(f"  - attribute `{key}` IS in the scene graph but "
+                             f"carla/adapter.py does not lift it "
+                             f"(available_not_exposed.{unlifted[key]})")
+            else:
+                absent.append(key)
+                hints.append(f"  - attribute `{key}` is not in the generator's "
+                             f"attribute surface at all")
+        guidance = []
+        if blocked:
+            guidance += [
+                "",
+                f"{', '.join(blocked)}: this is a VOCABULARY GAP, not missing "
+                f"data. Do NOT record the law as unsupported. Report a blocker "
+                f"asking for the adapter and Core/Vocab.lean to lift the key, "
+                f"naming it.",
+            ]
+        if absent:
+            guidance += [
+                "",
+                f"{', '.join(absent)}: check the schema's `deciding_unsupported` "
+                f"steps before concluding it is absent — the concept may be "
+                f"computable from keys that ARE lifted. If it truly is not, "
+                f"report it as a blocker naming what you looked for. Do not "
+                f"approximate it with a different attribute.",
+            ]
         emit("CARLA_INCOMPATIBLE",
-             "This specification reads scene-graph data that does not exist, so "
-             "it could never fire on real traces:",
+             "This specification reads scene-graph data it cannot read, so it "
+             "could never fire on real traces:",
              *hints,
              "",
              f"Available attribute keys: {', '.join(sorted(allowed_attrs))}.",
-             "Concepts CARLA scene graphs do NOT carry: "
-             + "; ".join(sorted(unavailable.keys())) + ".",
-             "",
-             "If the law genuinely requires one of those, stop and report it as "
-             "a blocker naming the missing field — do not approximate it with a "
-             "different attribute.")
+             *guidance)
         return finish("CARLA_INCOMPATIBLE", "attrs: " + ", ".join(bad_attrs))
 
     # No "attribute absent from the sample trace" warning here any more. It read
@@ -572,7 +646,7 @@ def main() -> int:
     # most work — and because the failure it prevents is invisible later: the
     # scenario traces are small enough that an over-quantified rule passes the
     # gate in milliseconds and then cannot be evaluated on a capture at all.
-    census = (schema.get("capture_reference_census") or {}).get("counts") or {}
+    census = CAPTURE_ENTITY_CENSUS
     if census:
         estimate, detail = predicted_groundings(code, census)
         if estimate > GROUNDING_BUDGET:

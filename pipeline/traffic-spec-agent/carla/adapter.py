@@ -143,6 +143,63 @@ VEHICLE_LIGHTS: dict[str, str] = {
 LANDMARK_FIELDS = ("landmark_type", "landmark_value", "landmark_unit",
                    "landmark_sub_type", "landmark_country", "landmark_text")
 
+# ── Keys lifted because the generator emits them, not because a law asked ────
+#
+# What follows was previously reported to the agent as `available_not_exposed`,
+# on reasons that did not survive being written down: "no statute in the corpus
+# refers to gear selection" is a fact about one law corpus, and this library is
+# meant to take any law. The criterion is now the only one that generalises —
+# is the key on the node, can Lean read it decidably, and what does it cost —
+# and the cost is measured, not guessed.
+#
+# Measured on the 240-frame junction_yield_violation capture, bytes added to the
+# generated trace (baseline 614,946 bytes in 10 chunks, ~61 KB per chunk against
+# Lean's ~500 KB per-definition codegen limit):
+#
+#   vertex 130,250   forward 125,490   ego vectors 82,650   carla_id 25,620
+#   light_Interior/Special1/Special2 26,040   landmark_lane_validities 21,200
+#   gear + manual_gear_shift 15,120        -> ~426 KB, ~43 KB per chunk
+#
+# Position as three decimal strings. `Core/Decimal.lean` reads them into integer
+# milli-units, so a squared separation is exact integer arithmetic and needs no
+# square root: this is what makes actor-to-actor distance recoverable even
+# though `process_to_junction_rsv` drops the metric edge attribute.
+GEOMETRY_VECTORS: dict[str, tuple[str, str, str]] = {
+    "vertex": ("pos_x", "pos_y", "pos_z"),
+    "forward": ("fwd_x", "fwd_y", "fwd_z"),
+}
+
+# Ego vector channels. `carla_ang_vel_z` was already lifted as the yaw rate;
+# leaving its siblings out was an inconsistency, not a decision.
+# Keyed Lean-name -> base-graph key, the same direction as `VEHICLE_LIGHTS`.
+# Written the other way round it reads plausibly, emits nothing, and — because
+# CONSUMED_ATTRS then swallows the raw keys — stops the unlifted-key report from
+# showing the omission. Keep every mapping in this file pointing the same way.
+EGO_VECTOR_CHANNELS: dict[str, str] = {
+    "vel_x": "carla_vel_x", "vel_y": "carla_vel_y", "vel_z": "carla_vel_z",
+    "acc_x": "carla_acc_x", "acc_y": "carla_acc_y", "acc_z": "carla_acc_z",
+    "roll_rate": "carla_ang_vel_x", "pitch_rate": "carla_ang_vel_y",
+    "gear": "carla_gear", "manual_gear_shift": "carla_manual_gear_shift",
+}
+
+# The remaining per-light booleans. `light_Special1` / `light_Special2` are
+# CARLA's emergency beacons, which is the one dynamic signal that distinguishes
+# a responding emergency vehicle from an idle one.
+EXTRA_VEHICLE_LIGHTS: dict[str, str] = {
+    "light_interior": "light_Interior",
+    "light_special_1": "light_Special1",
+    "light_special_2": "light_Special2",
+}
+
+# Stable cross-frame identity. The adapter keys entities by NAME, which merges
+# two nodes that share one; `carla_id` is the repair.
+IDENTITY_ATTRS: dict[str, str] = {"carla_id": "carla_id"}
+
+# Which lanes a landmark is valid for — the governance the `mayAffect` edge
+# only approximates.
+LANDMARK_EXTRA: dict[str, str] = {
+    "landmark_lane_validities": "landmark_lane_validities"}
+
 # Base-graph attribute keys this adapter consumes. Everything else on an actor
 # node is reported as unlifted, so the gap is visible instead of silent.
 CONSUMED_ATTRS = frozenset(
@@ -152,6 +209,11 @@ CONSUMED_ATTRS = frozenset(
      "carla_affected_by_traffic_light"}
     | set(VEHICLE_LIGHTS.values())
     | set(LANDMARK_FIELDS)
+    | set(GEOMETRY_VECTORS)
+    | set(EGO_VECTOR_CHANNELS.values())
+    | set(EXTRA_VEHICLE_LIGHTS.values())
+    | set(IDENTITY_ATTRS.values())
+    | set(LANDMARK_EXTRA)
 )
 
 
@@ -277,15 +339,49 @@ def classify(name: str, base_class: Optional[str], sem_class: Optional[str]) -> 
     return "other"
 
 
-# What the Lean library assumes about how a capture was recorded. These are
-# hard-coded in frozen Core — `Core/Scene.lean::captureHz` and `distanceBands` —
-# so a capture made with other settings would be read against the wrong numbers.
-# Nothing in a capture used to record what it was made with, which is why this
-# check exists rather than a comment.
+# What the Lean library assumes about how a capture was recorded, keyed by the
+# manifest field that records it. `runner.py::_generator_manifest` writes twelve
+# such fields; every one of them is a caller-supplied default of the generator or
+# the simulator, not a property of the scene-graph format, so every one of them
+# can differ in a capture this pipeline did not produce.
+#
+# The split below is the whole point. A parameter is SEMANTIC when changing it
+# leaves the trace well-formed but changes what a rule's constants mean — those
+# must refuse, because the resulting error is silent and runs in the
+# missed-violation direction. A parameter is VISIBILITY-ONLY when changing it
+# alters which entities and edges appear at all — those must warn, because a rule
+# can still be evaluated soundly on a thinner scene, it just grounds less often,
+# and refusing would reject legitimate captures.
 ASSUMED_CAPTURE_HZ = 20
 ASSUMED_PROXIMITY_THRESHOLDS = [["safety_hazard", 2], ["near_coll", 4],
                                 ["super_near", 7], ["very_near", 10],
                                 ["near", 16], ["visible", 25]]
+# carla_sgg.sgg_abstractor.DEFAULT_DIRECTIONAL_THRESHOLDS, reduced to the split
+# the vocabulary actually depends on: `Pred.oncoming`/`inFrontOf`/`behind` are
+# sound only if front/rear divide at 180 degrees and the D/S (direct/side) split
+# falls at 45 degrees off-axis.
+ASSUMED_DIRECTIONAL_DEGREES = {
+    "inDFrontOf": [[45, 90], [90, 135]], "inSFrontOf": [[0, 45], [135, 180]],
+    "atDRearOf": [[225, 270], [270, 315]], "atSRearOf": [[180, 225], [315, 360]],
+}
+# The base classes a proximity or angular edge can be drawn for. Rules binding a
+# road user by proximity ground only over these; a capture whose table omits one
+# makes those rules vacuous on it rather than wrong.
+ASSUMED_PROXIMITY_CLASSES = {"person", "bicycle", "car", "motorcycle", "bus",
+                             "truck"}
+ASSUMED_ABSTRACTION = "process_to_junction_rsv"
+# Visibility-only defaults, for the warning text. Value -> what a rule loses.
+VISIBILITY_DEFAULTS = {
+    "render_dist": (50.0, "entities beyond this radius are absent, so a rule "
+                          "quantified over them grounds less often"),
+    "segment_length": (1.0, "lane sampling granularity; affects which lane and "
+                            "road nodes exist"),
+    "check_occlusion": (False, "with occlusion culling on, a hidden actor is "
+                               "dropped entirely and rules about it go vacuous"),
+    "parse_junction_boundaries": (False, "changes which frames carry junction "
+                                         "entities, so `Pred.inJunction` "
+                                         "grounds differently"),
+}
 
 
 class CapturePreconditionError(ValueError):
@@ -301,17 +397,21 @@ def check_capture_preconditions(rsv_dir: Path) -> None:
     break the bundled `sceneflow_sample`. When it *is* present its numbers are
     binding.
 
-    The failure this prevents is a silent one and it runs in the missed-violation
-    direction. `secondsToFrames 1` is 20 frames; at a 40 Hz capture that is half
-    a second, so a rolling stop satisfies a one-second dwell rule. Nothing in the
-    trace would reveal it — `time_base` in the schema records that frames carry
-    no timestamp.
+    Measured on the current library, 17 of 21 rules carry at least one constant
+    whose meaning comes from one of these settings — 9 use `secondsToFrames`, 6 a
+    metre bound, 8 an angular relation. A capture that breaks a precondition does
+    not make those rules fail loudly; it makes them mean something else.
+    `secondsToFrames 1` is 20 frames, which at a 40 Hz capture is half a second,
+    so a rolling stop satisfies a one-second dwell rule. Nothing in the trace
+    would reveal it: `time_base` in the schema records that frames carry no
+    timestamp.
     """
     manifest = rsv_dir.parent / "simulation.json"
     if not manifest.exists():
         print(f"[warn] {manifest.name} not found beside {rsv_dir}; assuming the "
-              f"capture was recorded at {ASSUMED_CAPTURE_HZ} Hz with default "
-              f"proximity bands. Nothing verifies that.")
+              f"capture was recorded at {ASSUMED_CAPTURE_HZ} Hz with the "
+              f"generator's default thresholds and abstraction. Nothing "
+              f"verifies that.")
         return
     try:
         data = json.loads(manifest.read_text(encoding="utf-8"))
@@ -319,26 +419,96 @@ def check_capture_preconditions(rsv_dir: Path) -> None:
         raise CapturePreconditionError(f"{manifest} is not valid JSON: {exc}")
 
     gen = data.get("generator") or {}
+    if not gen:
+        # A manifest without a `generator` block is NOT the same as no manifest,
+        # and it used to be treated as one: eleven of the twelve settings simply
+        # went unchecked and the capture passed in silence. Four of the recorded
+        # captures predate the block. Say so, once, rather than implying the
+        # settings were verified.
+        print(f"[warn] {manifest.name} predates the generator manifest: it "
+              f"records only `fps`, so the thresholds, the abstraction and the "
+              f"visibility settings this capture was made with are unknown and "
+              f"assumed to be the defaults. Nothing verifies that. Re-record to "
+              f"get them checked.")
+    fatal: list[str] = []
+
+    # --- semantic: refuse ---------------------------------------------------
     hz = gen.get("capture_hz", data.get("fps"))
     if hz is not None and int(hz) != ASSUMED_CAPTURE_HZ:
-        raise CapturePreconditionError(
-            f"{manifest} records capture_hz={hz}, but the library hard-codes "
-            f"{ASSUMED_CAPTURE_HZ} Hz in Core/Scene.lean::captureHz, and every "
-            f"duration in every rule is a frame count at that rate. Converting "
-            f"would silently scale every window by {hz}/{ASSUMED_CAPTURE_HZ}. "
-            f"Re-record at {ASSUMED_CAPTURE_HZ} Hz, or change captureHz and "
-            f"re-verify the whole library.")
+        fatal.append(
+            f"capture_hz={hz}, but the library hard-codes {ASSUMED_CAPTURE_HZ} "
+            f"in Core/Scene.lean::captureHz and every duration in every rule is "
+            f"a frame count at that rate; converting would scale every window "
+            f"by {hz}/{ASSUMED_CAPTURE_HZ}")
+
+    delta = gen.get("fixed_delta_seconds")
+    if delta and hz and abs(float(delta) * float(hz) - 1.0) > 1e-6:
+        fatal.append(
+            f"fixed_delta_seconds={delta} and capture_hz={hz} disagree "
+            f"({float(delta) * float(hz):.4f} != 1.0); one frame is not one "
+            f"simulation step, so a frame count is not a duration at all")
 
     bands = gen.get("proximity_thresholds")
     if bands is not None:
         normalised = [[str(name), int(metres)] for name, metres in bands]
         if normalised != ASSUMED_PROXIMITY_THRESHOLDS:
-            raise CapturePreconditionError(
-                f"{manifest} records proximity_thresholds={bands}, but "
+            fatal.append(
+                f"proximity_thresholds={bands}, but "
                 f"Core/Scene.lean::distanceBands hard-codes "
-                f"{ASSUMED_PROXIMITY_THRESHOLDS}. The RSV keeps only the band "
+                f"{ASSUMED_PROXIMITY_THRESHOLDS}; the RSV keeps only the band "
                 f"label, not the metres, so every `Pred.withinMetres` bound "
-                f"would mean a different distance than the rule says.")
+                f"would mean a different distance than the rule says")
+
+    angles = gen.get("directional_thresholds")
+    if angles is not None:
+        got = {str(name): [[int(a), int(b)] for a, b in arcs]
+               for name, arcs in angles}
+        if got != ASSUMED_DIRECTIONAL_DEGREES:
+            fatal.append(
+                f"directional_thresholds={angles}, but Core/Vocab.lean reads "
+                f"the four angular labels as the arcs "
+                f"{ASSUMED_DIRECTIONAL_DEGREES}; `Pred.oncoming`, "
+                f"`Pred.inFrontOf` and `Pred.behind` are exactly those labels, "
+                f"so a re-cut sector silently redefines in front of and behind")
+
+    abstraction = gen.get("abstraction")
+    if abstraction is not None and abstraction != ASSUMED_ABSTRACTION:
+        fatal.append(
+            f"abstraction={abstraction!r}, but the vocabulary is derived from "
+            f"{ASSUMED_ABSTRACTION!r}; another abstraction emits a different "
+            f"entity and relation set, and Core/Scene.lean enumerates only this "
+            f"one's")
+
+    if fatal:
+        raise CapturePreconditionError(
+            f"{manifest} contradicts what the library assumes:\n  - "
+            + "\n  - ".join(fatal)
+            + "\n\nRe-record with the defaults, or change frozen Core and "
+              "re-verify the whole library. See carla/schema.json -> "
+              "capture_preconditions.")
+
+    # --- visibility-only: warn ---------------------------------------------
+    classes = gen.get("proximity_relation_classes")
+    if classes is not None:
+        missing = sorted(ASSUMED_PROXIMITY_CLASSES - set(classes))
+        if missing:
+            print(f"[warn] {manifest.name} records a proximity table without "
+                  f"{missing}; a rule binding one of those road users by "
+                  f"proximity cannot ground on this capture and will read as "
+                  f"compliant for want of evidence, not because it is.")
+
+    for key, (default, consequence) in VISIBILITY_DEFAULTS.items():
+        got = gen.get(key)
+        if got is not None and got != default:
+            print(f"[warn] {manifest.name} records {key}={got} (assumed "
+                  f"{default}): {consequence}. Verdicts stay sound; grounding "
+                  f"counts are not comparable with other captures.")
+
+    excluded = [i for i in (gen.get("exclude_ids") or []) if i != "ego"]
+    if excluded:
+        print(f"[warn] {manifest.name} excludes {excluded} from every frame in "
+              f"addition to the ego; rules quantified over those actors are "
+              f"vacuous on this capture.")
 
 
 # Frames per generated chunk definition. 25 keeps each chunk near 100 KB on a
@@ -386,6 +556,56 @@ def fmt_num(value: Any, default: str = "0.0") -> str:
 
 def fmt_bool(value: Any) -> str:
     return "true" if bool(value) else "false"
+
+
+# Deliberately NOT lifted, each for a reason that holds for any law corpus:
+#   threedbbox    734,510 bytes — 54% of everything unlifted, and it is eight
+#                 corners of a box whose centre `vertex` already gives.
+#   vertex_point  127,870 — the same x,y as `vertex`, as a shapely POINT.
+#   right, up     238,970 — an orthonormal frame with `forward`; for a vehicle
+#                 on a road surface, `forward` alone fixes the heading.
+#   light_All,    enum masks (all-on / no-lights), not lamps.
+#   light_NONE
+#   carla_type_id 52,380 — the blueprint id, already lifted as `sem_class`.
+#   entity_id     45,580 — an SGG-internal index, and None on traffic lights.
+#   vehicle_light_state  the packed integer whose bits are lifted individually.
+#   landmark physical geometry (pitch, roll, height, width, offsets,
+#                 orientation, id, name, is_dynamic) — 168,000 bytes of sign
+#                 shape, and no predicate can use it while lane nodes carry no
+#                 coordinates to relate it to.
+
+
+def vector_attrs(attr: dict) -> list:
+    """Position and heading, one decimal string per component."""
+    out = []
+    for key, names in GEOMETRY_VECTORS.items():
+        raw = attr.get(key)
+        if raw is None:
+            continue
+        try:
+            comps = list(raw)
+        except TypeError:
+            continue
+        for lean_name, value in zip(names, comps):
+            out.append((lean_name, fmt_num(value)))
+    return out
+
+
+def scalar_attrs(attr: dict, mapping: dict) -> list:
+    """Lift `mapping`'s keys, rendering numbers fixed-point and bools as
+    `"true"`/`"false"` so `Core/Decimal.lean` and `attrTrue` can read them."""
+    out = []
+    for lean_name, raw_key in mapping.items():
+        if raw_key not in attr:
+            continue
+        value = attr[raw_key]
+        if isinstance(value, bool):
+            out.append((lean_name, "true" if value else "false"))
+        elif isinstance(value, (int, float)):
+            out.append((lean_name, fmt_num(value)))
+        else:
+            out.append((lean_name, str(value)))
+    return out
 
 
 def lean_attr_list(pairs: list[tuple[str, str]]) -> str:
@@ -500,6 +720,14 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                 ids[name] = next_id
                 next_id += 1
 
+        def emit(built: str, extra: list) -> None:
+            """One place where an entity's lifted attributes are attached, so a
+            new key reaches signals, landmarks and vehicles alike instead of
+            only whichever branch someone remembered."""
+            if extra:
+                built = f"(({built}).withAttrs {lean_attr_list(extra)})"
+            entity_src.append(built)
+
         entity_src: list[str] = []
         for name in sorted(nodes, key=natural_key):
             node = nodes[name]
@@ -515,6 +743,16 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                         stats["unlifted_attrs"][key] = \
                             stats["unlifted_attrs"].get(key, 0) + 1
 
+            # Everything the generator put on this node that a builder does
+            # not already take, appended uniformly. Structure nodes (lane, road,
+            # junction, offRoad) carry no attributes at all — measured: 19 of 23
+            # nodes on a real frame have `attr == {}` — so they get nothing.
+            extra = (vector_attrs(attr)
+                     + scalar_attrs(attr, IDENTITY_ATTRS)
+                     + scalar_attrs(attr, LANDMARK_EXTRA))
+            if is_ego(name, attr):
+                extra += scalar_attrs(attr, EGO_VECTOR_CHANNELS)
+
             if is_ego(name, attr):
                 # The ego log is indexed by absolute capture frame, so a window
                 # starting at `start_frame` must offset into it or every ego
@@ -524,39 +762,39 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                           if log_index < len(ego_records) else None)
                 args = " ".join(f'"{lean_str(v)}"'
                                 for v in ego_channels(attr, record))
-                entity_src.append(f"mkEgo {eid} .{lean_type} {args}")
+                emit(f"mkEgo {eid} .{lean_type} {args}", extra)
             elif lean_type == "lane":
-                entity_src.append(f'mkLane {eid} "{lean_str(name)}"')
+                emit(f'mkLane {eid} "{lean_str(name)}"', extra)
             elif lean_type == "road":
-                entity_src.append(f'mkRoad {eid} "{lean_str(name)}"')
+                emit(f'mkRoad {eid} "{lean_str(name)}"', extra)
             elif lean_type == "junction":
-                entity_src.append(f'mkJunction {eid} "{lean_str(name)}"')
+                emit(f'mkJunction {eid} "{lean_str(name)}"', extra)
             elif lean_type == "offRoad":
-                entity_src.append(f"mkOffRoad {eid}")
+                emit(f"mkOffRoad {eid}", extra)
             elif lean_type == "trafficLight":
                 state = lean_str(str(attr.get("light_state", "Unknown")))
-                entity_src.append(
-                    f'mkTrafficLight {eid} "{lean_str(name)}" "{state}"')
+                emit(f'mkTrafficLight {eid} "{lean_str(name)}" "{state}"',
+                     extra)
             elif lean_type == "stopSign":
-                entity_src.append(f'mkStopSign {eid} "{lean_str(name)}"')
+                emit(f'mkStopSign {eid} "{lean_str(name)}"', extra)
             elif lean_type == "speedLimitSign":
                 kph = posted_limit_kph(sem) or ""
-                entity_src.append(
-                    f'mkSpeedLimitSign {eid} "{lean_str(name)}" "{lean_str(kph)}"')
+                emit(f'mkSpeedLimitSign {eid} "{lean_str(name)}" '
+                     f'"{lean_str(kph)}"', extra)
             elif lean_type == "landmark":
                 fields = " ".join(
                     f'"{lean_str(str(attr.get(k, "")))}"' for k in LANDMARK_FIELDS)
-                entity_src.append(f'mkLandmark {eid} "{lean_str(name)}" {fields}')
+                emit(f'mkLandmark {eid} "{lean_str(name)}" {fields}', extra)
             else:
                 special = attr.get("special_class")
                 special_arg = f'(some "{lean_str(special)}")' if special else "none"
                 sem_arg = f'(some "{lean_str(str(sem))}")' if sem else "none"
                 actor = (f'mkActor {eid} "{lean_str(name)}" .{lean_type} '
                          f'{special_arg} {sem_arg}')
-                lights = light_attrs(attr) if lean_type in VEHICLE_TYPES else []
-                if lights:
-                    actor = f"(({actor}).withAttrs {lean_attr_list(lights)})"
-                entity_src.append(actor)
+                if lean_type in VEHICLE_TYPES:
+                    extra = (light_attrs(attr)
+                             + scalar_attrs(attr, EXTRA_VEHICLE_LIGHTS) + extra)
+                emit(actor, extra)
 
         rel_src: list[str] = []
         for u, v, data in graph.edges(data=True):

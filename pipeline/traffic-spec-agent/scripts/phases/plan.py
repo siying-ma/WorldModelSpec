@@ -13,8 +13,10 @@ the session succeeds — a crashed plan leaves the feedback intact for the retry
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
+from typing import Optional
 
 from .. import runner
 from ..state import clear_auto_notes, clear_temporary_hints
@@ -65,12 +67,79 @@ def summarize_library(library_root: Path) -> str:
     return "\n".join(lines) + "\n" if lines else "(the library contains no rules yet)\n"
 
 
+def pick_example_rule(library_root: Path) -> str:
+    """An existing rule file to hold up as the worked example.
+
+    Resolved from disk, never hard-coded. Both prompts used to name
+    `Rules/Following/R0001_following_distance.lean`, which stopped existing the
+    first time a run renumbered its nodes — so the agent was told to read a file
+    that was not there. That matters more than it sounds: the example rule is the
+    only place either prompt shows the formula notation in context, so operators
+    like `⟹` and `⋁` (which appear in no prompt and no schema recipe) were being
+    learned from it or not at all.
+
+    Preference order: the shortest rule under `Speed` (the simplest clauses), then
+    the shortest rule anywhere. Shortest, because the example is read for shape
+    rather than for subject matter.
+
+    Returns `""` when the library carries no rules. That is the state the
+    library is FROZEN in — Core, the schema and the prompts are fixed before any
+    law is seen, so the first iteration of every run has no example by
+    construction. `summarize_example` renders that case as its own block rather
+    than interpolating a path that does not exist.
+    """
+    rules = sorted((library_root / "TrafficSpec" / "Rules").rglob("*.lean"))
+    if not rules:
+        return ""
+    speed = [r for r in rules if r.parent.name == "Speed"]
+    pool = speed or rules
+    return str(min(pool, key=lambda r: r.stat().st_size))
+
+
+def summarize_example(library_root: Path) -> str:
+    """The worked-example section, or the honest absence of one.
+
+    Both prompts used to interpolate a path into "Read `{path}` to see the shape
+    of a finished rule", which reads as an instruction even when the path is a
+    placeholder saying no rule exists — and no rule exists on the first
+    iteration of every run, because the library is frozen empty. The section is
+    generated whole so the absent case can say something true instead.
+
+    The example is held up for SHAPE. Its subject matter is one clause the loop
+    happened to formalize first, and a plan agent that reads it for content
+    inherits that clause's decompositions.
+    """
+    path = pick_example_rule(library_root)
+    if not path:
+        return (
+            "## Worked example\n\n"
+            "The library carries no rules yet, so there is no finished rule to "
+            "read. The generated tables above are the whole of what a rule may "
+            "use, and nothing a rule needs is missing from them. What you write "
+            "now sets the shape everything later is read against, so keep it "
+            "small and make the acceptance tests discriminating.\n"
+        )
+    return (
+        "## Worked example\n\n"
+        f"Read `{path}` for the shape of a finished rule: a `PropertySchema` "
+        "with binders, a `RuleEntry` carrying `lawRefs`, and scenarios as "
+        "concrete traces. Read it for shape, not for subject matter — it "
+        "formalizes one clause of one corpus, and its decompositions and "
+        "thresholds are that clause's, not a template. Note whether it records "
+        "the formalization choices its text did not dictate; every rule must, "
+        "so that a reviewer can challenge a reading without rerunning the "
+        "pipeline.\n"
+    )
+
+
 def summarize_vocab(library_root: Path) -> str:
     """The available predicates, grouped by the section headings in Vocab.lean."""
     vocab = library_root / "TrafficSpec" / "Core" / "Vocab.lean"
     if not vocab.exists():
         return "(Core/Vocab.lean not found)\n"
-    out: list[str] = []
+    out: list[str] = ["**Predicates** — generated from `Core/Vocab.lean` "
+                      "(`def`, grouped by its own section headings). These are the "
+                      "only predicates that exist; a rule may not build its own."]
     section = ""
     for line in vocab.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
@@ -84,7 +153,191 @@ def summarize_vocab(library_root: Path) -> str:
     return "\n".join(out) + "\n"
 
 
-def summarize_schema(schema: dict) -> str:
+def _lean_ctors(scene_src: str, inductive: str) -> list[str]:
+    """Constructor names of a Lean `inductive`, in declaration order.
+
+    The agent-facing entity and relation lists are generated with this rather
+    than copied out of `carla/schema.json`, so the prompt cannot name a
+    constructor the core does not define.
+    """
+    m = re.search(
+        rf"inductive {inductive}\b(.*?)(?=\ninductive |\ndef |\nnamespace |\Z)",
+        scene_src, re.S)
+    return re.findall(r"^\s*\|\s*(\w+)", m.group(1), re.M) if m else []
+
+
+def summarize_formula(library_root: Path) -> str:
+    """The formula language, generated from `Core/Formula.lean`.
+
+    Neither prompt used to name the operators, and neither points at
+    `Formula.lean` or `Semantics.lean`. Counting what the rules actually use
+    against what the agent was shown: `⟹` appeared 21 times in the library and
+    zero times in any prompt or schema recipe; `⋁` 6 times and zero. The agent
+    was inferring the language from one example rule — and that example was a
+    path that no longer existed. Generating the table from the notation
+    declarations keeps it complete and unable to drift.
+
+    The end-of-trace notes are the part that fails *silently*: a wrong operator
+    will not compile, but a formula that quietly reads false past the last frame
+    is accepted and monitors nothing.
+    """
+    formula = library_root / "TrafficSpec" / "Core" / "Formula.lean"
+    if not formula.exists():
+        return "(Core/Formula.lean not found)\n"
+    pairs: list[tuple[str, str]] = []
+    for line in formula.read_text(encoding="utf-8").splitlines():
+        m = re.search(r'scoped (?:prefix|infixl|infixr|notation)[^"]*"([^"]+)"\s*=>\s*SFProp\.(\w+)',
+                      line.strip())
+        if m:
+            pairs.append((m.group(1).strip(), m.group(2)))
+    out = ["**Formula language** — generated from `Core/Formula.lean` "
+           "(`scoped notation`). These are the only operators that exist:"]
+    for sym, ctor in pairs:
+        out.append(f"- `{sym}` — `SFProp.{ctor}`")
+    out.append("- `.bounded n φ` — φ holds for `n` consecutive frames from here")
+    out += [
+        "",
+        "**End-of-trace behaviour, which decides whether a rule can fire at all:**",
+        "- An atom past the last frame reads **false**. So `◯ p` is false at the end, "
+        "but `¬ₛ ◯ p` is **true** there — a transition can never be observed from the "
+        "final frame.",
+        "- `.bounded n φ` whose window runs off the end is **false**. So "
+        "`□ (¬ₛ .bounded n bad)` is satisfied on any trace shorter than `n`, "
+        "*whatever the trace contains*, and the last `n-1` frames of every trace are "
+        "a blind zone. Give every scenario trace at least `n` frames; the gate "
+        "rejects shorter ones as `TRACE_TOO_SHORT`.",
+        "- `□`, `𝒰` and `ℛ` are clamped to the end of the trace, so they degrade "
+        "gracefully rather than inverting.",
+    ]
+    return "\n".join(out) + "\n"
+
+
+def summarize_builders(library_root: Path) -> str:
+    """The trace constructors, generated from `Core/Builders.lean`.
+
+    The last piece of Core a rule uses that the agent was never told. Measured
+    across the library: of 12 `Builders` names the rules use, 11 appeared in no
+    prompt — the agent had to open the file to learn them.
+
+    That matters most for `mkEgo`, which takes NINE positional `String`
+    arguments. A permuted order compiles (they are all strings), passes the gate,
+    and silently changes which dynamics the scenario tests — the agent also wrote
+    the expected verdict, so nothing disagrees. Showing the signature verbatim is
+    cheaper than any check that could catch it afterwards.
+    """
+    builders = library_root / "TrafficSpec" / "Core" / "Builders.lean"
+    if not builders.exists():
+        return "(Core/Builders.lean not found)\n"
+    text = builders.read_text(encoding="utf-8")
+    out = ["**Trace constructors** — generated from `Core/Builders.lean` "
+           "(`def mk*`). Scenario traces are built only from these:"]
+    for m in re.finditer(r"^def (mk\w+|frame)\s*(.*?)\s*:\s*(Entity|Relation|Scene)\b",
+                         text, re.M | re.S):
+        args = " ".join(m.group(2).split())
+        out.append(f"- `{m.group(1)} {args}` → `{m.group(3)}`")
+    out.append("")
+    out.append("Argument order is load-bearing and unchecked: every dynamics "
+               "channel of `mkEgo` is a `String`, so a permuted order compiles "
+               "and quietly tests something else. Copy the order above.")
+    return "\n".join(out) + "\n"
+
+
+def _gate_module():
+    """`tools/check_spec.py`, imported for the numbers that size a binder.
+
+    Imported rather than regex-parsed, and read from the gate rather than
+    restated in the prompt template: `CAPTURE_ENTITY_CENSUS` is a measurement of
+    one capture, so a template that quoted it would go on asserting the old
+    figures after a re-measurement — and the templates are frozen before any
+    capture exists, which is exactly why no figure obtained by running the
+    simulator may be written into one.
+    """
+    import importlib.util
+    path = Path(__file__).resolve().parents[2] / "tools" / "check_spec.py"
+    if not path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("_gate_for_prompt", path)
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except Exception:                          # the prompt still renders without it
+        return None
+    return module
+
+
+def summarize_binders(library_root: Path) -> str:
+    """The binder helpers, generated from `Core/Grounding.lean`, with what each costs.
+
+    Seven of them were shown nowhere agent-facing. Each binder MULTIPLIES the
+    grounding count, so the choice is a cost decision as well as a modelling one
+    — and the two numbers that decide it belong to the gate
+    (`CAPTURE_ENTITY_CENSUS`, `GROUNDING_BUDGET`). Rendering them from there
+    keeps the agent's arithmetic and the gate's identical by construction, and
+    the over-budget combinations below are computed with the gate's own
+    `predicted_groundings`, so they cannot drift from what it will actually
+    reject.
+    """
+    grounding = library_root / "TrafficSpec" / "Core" / "Grounding.lean"
+    if not grounding.exists():
+        return "(Core/Grounding.lean not found)\n"
+    gate = _gate_module()
+    census = getattr(gate, "CAPTURE_ENTITY_CENSUS", {}) or {}
+    keys = getattr(gate, "BINDER_CENSUS_KEY", {}) or {}
+    budget = getattr(gate, "GROUNDING_BUDGET", None)
+
+    out = ["**Binder helpers** — generated from `Core/Grounding.lean` "
+           "(`def *Binder`). One per planned binder:"]
+    names: list[str] = []
+    for m in re.finditer(r"^def (\w+Binder) \(label : String\) : Binder := \u27e8label, ([^\u27e9]+)\u27e9",
+                         grounding.read_text(encoding="utf-8"), re.M):
+        name, types = m.group(1), m.group(2).strip()
+        names.append(name)
+        count = census.get(keys.get(name, ""))
+        cost = f" — about {count} candidates per capture" if count else ""
+        out.append(f"- `{name}` ranges over `{types}`{cost}")
+
+    if not (gate and census and budget):
+        return "\n".join(out) + "\n"
+
+    out += [
+        "",
+        "**Every binder multiplies.** `PropertySchema.bindings` is the cross "
+        "product of the binders' candidates, and each grounding is a full "
+        "evaluation over the whole trace. The gate predicts that product from "
+        f"the counts above and rejects a schema over {budget:,} groundings with "
+        "`GROUNDING_BUDGET`; two binders of the same type contribute "
+        "n × (n−1), because `distinctIds` forbids them sharing an entity.",
+        "",
+        "The counts and the budget come from `tools/check_spec.py` "
+        "(`CAPTURE_ENTITY_CENSUS`, `GROUNDING_BUDGET`). They calibrate one "
+        "reference capture, not the scene-graph format: a busier map or a longer "
+        "capture changes every one of them, so treat them as the order of "
+        "magnitude the gate will hold you to rather than as facts about the "
+        "data.",
+    ]
+
+    predict = getattr(gate, "predicted_groundings", None)
+    if predict:
+        pairs = []
+        for i, a in enumerate(names):
+            for b in names[i:]:
+                estimate, _ = predict(f'{a} "x" {b} "y"', census)
+                if estimate > budget:
+                    pairs.append((estimate, a, b))
+        if pairs:
+            shown = sorted(pairs, reverse=True)[:6]
+            out += [
+                "",
+                "Two binders and nothing else already exceed the budget in these "
+                "combinations: "
+                + ", ".join(f"`{a}` × `{b}` ({n:,})" for n, a, b in shown)
+                + (", …" if len(pairs) > len(shown) else "") + ".",
+            ]
+    return "\n".join(out) + "\n"
+
+
+def summarize_schema(schema: dict,
+                     library_root: Optional[Path] = None) -> str:
     """Render the CARLA contract for the plan agent.
 
     Every availability tier is shown, because the distinction between them is
@@ -96,12 +349,32 @@ def summarize_schema(schema: dict) -> str:
     rl = schema["relation_labels"]
     ak = schema["attribute_keys"]
     tb = schema.get("time_base", {})
+    # Generated from Core/Scene.lean, not read from the schema. A hand-maintained
+    # copy of an enumeration can list a constructor that no longer exists, and the
+    # agent has no way to tell. `run_spec doctor` checks the two still agree, so a
+    # drift is a failed check rather than a rule that will not compile.
+    entity_src = "carla/schema.json → entity_types.tier_a"
+    relation_src = "carla/schema.json → relation_labels.tier_a"
+    entities, relations = list(ek["tier_a"]), list(rl["tier_a"])
+    if library_root is not None:
+        scene = library_root / "TrafficSpec" / "Core" / "Scene.lean"
+        if scene.exists():
+            text = scene.read_text(encoding="utf-8")
+            gen_e = _lean_ctors(text, "EntityType")
+            gen_r = _lean_ctors(text, "RelLabel")
+            if gen_e:
+                entities, entity_src = gen_e, "Core/Scene.lean → inductive EntityType"
+            if gen_r:
+                relations, relation_src = gen_r, "Core/Scene.lean → inductive RelLabel"
+
     lines = [
         "These are the Lean constructor names verbatim — write `.car`, not `.vehicle_car`.",
         "",
-        "**Entity types** (`EntityType`): " + ", ".join(f"`.{t}`" for t in ek["tier_a"]),
+        f"**Entity types** (`EntityType`, from {entity_src}): "
+        + ", ".join(f"`.{t}`" for t in entities),
         "",
-        "**Relation labels** (`RelLabel`): " + ", ".join(f"`.{t}`" for t in rl["tier_a"]),
+        f"**Relation labels** (`RelLabel`, from {relation_src}): "
+        + ", ".join(f"`.{t}`" for t in relations),
         "",
         "**Proximity bands, closest first** — `safetyHazard` <2 m, `nearCollision` 2–4 m, "
         "`superNear` 4–7 m, `veryNear` 7–10 m, `near` 10–16 m, `visible` 16–25 m. "
@@ -110,6 +383,11 @@ def summarize_schema(schema: dict) -> str:
     ]
 
     cov = schema.get("relation_coverage", {}).get("proximity_and_angular_pairs", {})
+    # `rule`, `excluded_and_why` and `lean_binders` are agent-facing: they say
+    # which pairs an edge exists for and which binder to reach for. They used to
+    # render nowhere.
+    if cov.get("rule"):
+        pass  # rendered with the coverage block below
     if cov:
         lines += [
             "",
@@ -138,18 +416,81 @@ def summarize_schema(schema: dict) -> str:
             "needs 80-frame traces and cannot be checked on a shorter capture.",
         ]
 
+    # Measured facts about the generator that used to sit in `notes` and reach
+    # nobody. 55 of 118 long-form schema entries were never rendered, and two of
+    # the hardest-won findings — that parked map geometry becomes a `.car` with
+    # full proximity edges, and that a light's `controls` edge only reaches
+    # junction-internal lanes — were among them. `run_spec doctor` now fails if
+    # any entry is undelivered, so this block is not optional decoration.
+    never = (schema.get("entity_types") or {}).get("never_bind") or []
+    if never:
+        lines += ["", "**Never bind these entity types**: "
+                  + ", ".join(f"`.{t}`" for t in never)]
+    mult = (schema.get("entity_types") or {}).get("multiplicity") or {}
+    if mult:
+        lines += ["", "**How many entities of a type one situation contributes** "
+                  "(this is what a binder multiplies over):"]
+        lines += [f"- `.{k}` — {v}" for k, v in mult.items()]
+
+    for key, label in (("governance_edges", "Governance edges (`controls`)"),
+                       ("isIn_edges", "`isIn` edges")):
+        obj = (schema.get("relation_coverage") or {}).get(key) or {}
+        body = {k: v for k, v in obj.items() if k != "$comment"}
+        if body:
+            lines += ["", f"**{label}**: "
+                      + " ".join(f"{k}: {v}" for k, v in body.items())]
+
+    lane_edges = (schema.get("relation_coverage") or {}).get("inter_lane_edges") or {}
+    presence = (schema.get("relation_coverage") or {}).get("entity_presence") or {}
+    for name, obj in (("Inter-lane edges", lane_edges), ("Entity presence", presence)):
+        if obj:
+            lines += ["", f"**{name}**: " + " ".join(str(v) for v in obj.values())]
+
+    dec = (schema.get("attribute_keys") or {}).get("decimal_note")
+    if dec:
+        lines += ["", f"**Comparing numeric attributes**: {dec}"]
+
+    if cov:
+        excl = cov.get("excluded_and_why") or {}
+        lines += ["", "**Which pairs carry a distance or angular edge**: "
+                  + str(cov.get("rule", ""))]
+        if excl:
+            lines += ["Excluded base classes, and why: "
+                      + "; ".join(f"`{k}` — {v}" for k, v in excl.items())]
+        if cov.get("lean_binders"):
+            lines += ["Binder choice: " + cov["lean_binders"]]
+        if cov.get("static_background_vehicles"):
+            lines += ["Not every covered entity is a real actor: "
+                      + cov["static_background_vehicles"]]
+
     pre = schema.get("capture_preconditions")
     if pre:
         lines += [
             "",
             "**Capture preconditions — figures above that are assumptions, not "
             "facts.** Each is a caller-supplied default of the generator or the "
-            "simulator, and none is recorded in a capture, so nothing downstream "
-            "can confirm the capture you will be judged on used it. Treat a rule "
-            "whose correctness turns on one of these as carrying a stated "
-            "residue:",
-            *[f"- `{key}` — {text}" for key, text in pre.items()
-              if not key.startswith("$") and key != "how_to_fix"],
+            "simulator, and none is recorded in a capture, so nothing "
+            "downstream can confirm the capture you will be judged on used it. "
+            "Frozen Core encodes four of them as constants, which is why a "
+            "capture made with other settings does not fail loudly — the trace "
+            "still type-checks and still grounds, but its keys no longer MEAN "
+            "what Core assumes. Treat a rule whose correctness turns on one of "
+            "these as carrying a stated residue:",
+            *[f"- `{key}`"
+              + (f" (parameter: {', '.join(entry['parameters'])})"
+                 if isinstance(entry, dict) and entry.get("parameters") else "")
+              + (f" — mirrored in {entry['mirrored_in_core']}"
+                 if isinstance(entry, dict) and entry.get("mirrored_in_core")
+                 else "")
+              + f" — {entry['note'] if isinstance(entry, dict) and 'note' in entry else entry}"
+              for key, entry in pre.items()
+              if not key.startswith("$") and key != "how_to_fix"
+              and not isinstance(entry, dict) or (
+                  isinstance(entry, dict) and "note" in entry)],
+            *[f"- `{key}` (parameter, no effect on this abstraction) — {text}"
+              for key, text in (pre.get("no_effect_on_this_abstraction")
+                                or {}).items()
+              if not key.startswith("$") and key != "parameters"],
         ]
 
     lines += [
@@ -174,61 +515,65 @@ def summarize_schema(schema: dict) -> str:
     if partial:
         lines += [
             "",
-            "**Reachable, with a residue to record in the rule's notes.** These are "
-            "*not* `unsupported` — formalize them and state the caveat:",
+            "**How to read each part of the generator's output.** Keyed by the "
+            "data element, not by any statutory concept, and `covers` names the "
+            "entity types and relation labels each one explains — every element "
+            "of the data model appears here or is plain enough to need no note. "
+            "None of this is `unsupported`. How to combine them into a rule is "
+            "your decision, not the schema's:",
         ]
-        for key, entry in sorted(partial.items()):
-            if key.startswith("$"):
+        for key, entry in partial.items():
+            if key.startswith("$") or key == "no_note_needed":
                 continue
-            lines.append(f"- `{key}` — available: {entry.get('available', '')} "
-                         f"Residue: {entry.get('residue', '')} "
-                         f"Vocabulary: {entry.get('vocabulary', '')}")
+            covers = ", ".join(f"`{c}`" for c in (entry.get("covers") or []))
+            lines += [f"- `{key}`" + (f" — covers {covers}" if covers else ""),
+                      f"  - available: {entry.get('available', '')}",
+                      f"  - mechanism: {entry.get('mechanism', '')}",
+                      f"  - data limit: {entry.get('data_limit', '')}",
+                      f"  - vocabulary: {entry.get('vocabulary', '')}"]
             # Rendered last and on its own line: this is the field that says which
             # predicate is *wrong* for the concept, and a reading that misses it
             # produces a rule that passes every scenario and fails on real data.
             if entry.get("do_not_use"):
-                lines.append(f"  **DO NOT USE** for `{key}`: {entry['do_not_use']}")
+                lines.append(f"  - **DO NOT USE** for `{key}`: {entry['do_not_use']}")
 
-    not_exposed = schema.get("available_not_exposed", {})
-    if not_exposed:
-        lines += [
-            "",
-            "**Present in the captured data but not yet lifted into Lean.** A law "
-            "needing one of these is blocked on a *vocabulary/adapter extension*, "
-            "not on CARLA. Say so in your plan and request the predicate — do "
-            "**not** record the law as `unsupported`:",
-        ]
-        for key, why in sorted(not_exposed.items()):
+    # How absence is DERIVED. The schema is frozen before the pipeline sees any
+    # law, so it cannot pre-enumerate which absences a corpus will ask about.
+    # Rendered before the two key lists because it is what tells the agent how to
+    # use them: a list of absences could be read off, a derivation must be
+    # applied.
+    steps = schema.get("deciding_unsupported", {})
+    if steps:
+        lines += ["", "**Deciding whether a law is unsupported** — work down "
+                      "these in order. There is no list of absent things: the "
+                      "two key lists below enumerate everything that exists, so "
+                      "absence is what you derive when both come up empty:"]
+        for key, text in steps.items():
             if key.startswith("$"):
                 continue
-            lines.append(f"- `{key}` — {why}")
+            lines.append(f"- **{key}** — {text}")
 
-    lines += [
-        "",
-        "**NOT available in CARLA scene graphs** — this is the only tier that "
-        "justifies `unsupported`, and you must say which key it needs:",
-    ]
-    for key, why in sorted(schema.get("unavailable", {}).items()):
-        if key.startswith("$"):
-            continue
-        lines.append(f"- `{key}` — {why}")
-
-    pitfalls = schema.get("pitfalls", [])
-    if pitfalls:
-        lines += ["", "**Pitfalls**:"]
-        lines += [f"- {p}" for p in pitfalls]
-
-    recipes = schema.get("recipes", {})
-    if recipes:
-        lines += [
-            "",
-            "**Recipes** — statutory concept → construction with today's vocabulary. "
-            "Use these instead of re-deriving what is possible:",
-        ]
-        for concept, how in recipes.items():
-            if concept.startswith("$"):
-                continue
-            lines.append(f"- *{concept}* → {how}")
+    # The unlifted side of the key partition. Rendered with the actual key
+    # names, because this is the section that decides whether a law is
+    # `unsupported` or merely blocked, and a group heading alone does not let the
+    # agent recognise the key its law needs.
+    ane = schema.get("available_not_exposed", {})
+    groups = {g: b for g, b in ane.items()
+              if not g.startswith("$") and isinstance(b, dict)}
+    if groups:
+        lines += ["", "**Present in the data, NOT lifted into Lean.** Together "
+                      "with the attribute keys above this is the whole of what "
+                      "the generator writes — two sides, nothing else exists. A "
+                      "law needing one of these is blocked on a vocabulary and "
+                      "adapter extension, NOT unsupported: say so in the plan "
+                      "and request the key by name:"]
+        for group, body in groups.items():
+            keys = ", ".join(f"`{k}`" for k in (body.get("keys") or []))
+            lines.append(f"- `{group}`" + (f": {keys}" if keys else ""))
+            for k, v in body.items():
+                if k == "keys" or k.startswith("$") or not isinstance(v, str):
+                    continue
+                lines.append(f"  - {k}: {v}")
 
     return "\n".join(lines) + "\n"
 
@@ -262,16 +607,15 @@ class PlanPhase(Phase):
             laws_block=format_laws(laws),
             law_count=len(laws),
             library_summary=summarize_library(ctx.library_root),
+            binder_summary=summarize_binders(ctx.library_root),
             vocab_summary=summarize_vocab(ctx.library_root),
-            schema_summary=summarize_schema(schema),
+            formula_summary=summarize_formula(ctx.library_root),
+            schema_summary=summarize_schema(schema, ctx.library_root),
             objectives_file=str(ctx.objectives_file),
             plan_file=str(ctx.plan_file),
             progress_file=str(ctx.progress_file),
             library_root=str(ctx.library_root),
-            example_file=str(
-                ctx.library_root / "TrafficSpec" / "Rules" / "Following"
-                / "R0001_following_distance.lean"
-            ),
+            example_block=summarize_example(ctx.library_root),
             max_nodes=ctx.options.max_nodes_per_iter,
             auto_notes=auto_notes.strip() or "(none — this is the first iteration)",
             user_hints=hints.strip() or "(none)",

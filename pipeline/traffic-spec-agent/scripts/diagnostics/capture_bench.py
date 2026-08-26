@@ -11,7 +11,7 @@ outcomes — `BLIND`, `TRIGGER-HAPPY` — instead of two unrelated rows in two
 separate reports.
 
 Captures are produced by the sibling CARLA pipeline
-(`../../sg/carla_scene_graphs/src/run_capture.py`), one directory each, carrying
+(`../sg/carla_scene_graphs/src/run_capture.py`), one directory each, carrying
 `rsv/`, `ego_logs.json` and a `labels.json` derived from CARLA-server ground
 truth. Pairing is by directory name: `<scenario>_compliant` / `<scenario>_violation`.
 """
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from scripts import capture_eval
+from scripts.diagnostics import capture_eval
 from scripts.lean_check import (
     CAPTURE_EVAL_TIMEOUT,
     LeanUnavailable,

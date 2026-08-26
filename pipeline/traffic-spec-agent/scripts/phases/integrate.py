@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 
-from .. import index_sync
+from .. import index_sync, sample_sync
 from ..lean_check import (
     LeanUnavailable,
     eval_harness,
@@ -66,6 +66,13 @@ class IntegratePhase(Phase):
         if ctx.options.dry_run:
             print(f"[dry-run] would integrate {len(candidates)} node(s)")
             return PhaseResult(skipped=True)
+
+        # The coverage fixture is derived from Core/Scene.lean, so regenerate it
+        # before the build: a stale one measures reachability against an older
+        # data model and reports a correct rule as unable to ground.
+        _, fixture_changed = sample_sync.sync(ctx.library_root)
+        if fixture_changed:
+            print("[info] Regenerated Carla/Sample.lean from Core/Scene.lean")
 
         # Register everything first: an unregistered rule is invisible to the
         # library, so the registry has to be in place before the build.

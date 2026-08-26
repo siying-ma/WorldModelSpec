@@ -47,6 +47,24 @@ def existing_node_ids(library_root: Path) -> set[str]:
     return out
 
 
+def namespace_key(theme: str, slug: str) -> str:
+    """The Lean namespace two rules would share, `<Theme>.<prefix>`.
+
+    `SpecNode.namespace` keeps only the slug's leading `_`-delimited segment, so
+    two slugs sharing that prefix within a theme land in the SAME namespace and
+    their `schema` / `entry` / `scenarios` collide at build time. Nothing else
+    catches it: each file passes its own gate, and the clash only appears when
+    the integrate phase builds the library, by which point both coding sessions
+    have been paid for.
+    """
+    return f"{theme}.{slug.split('_', 1)[0]}"
+
+
+def existing_namespaces(library_root: Path) -> set[str]:
+    return {namespace_key(n.split("/", 1)[0], n.split("/", 1)[1])
+            for n in existing_node_ids(library_root)}
+
+
 def validate(
     objectives_file: Path,
     laws_file: Path,
@@ -64,7 +82,9 @@ def validate(
 
     law_ids = load_law_ids(laws_file)
     already = existing_node_ids(library_root)
+    already_ns = existing_namespaces(library_root)
     seen: set[str] = set()
+    seen_ns: dict[str, str] = {}
     nodes: list[SpecNode] = []
 
     with open(objectives_file, "r", encoding="utf-8") as f:
@@ -114,6 +134,20 @@ def validate(
         if node.node_id in seen:
             errors.append(f"{where}: duplicate node_id within this plan")
         seen.add(node.node_id)
+
+        ns = namespace_key(node.theme, node.slug)
+        if ns in seen_ns:
+            errors.append(f"{where}: slug `{node.slug}` shares the namespace "
+                          f"`{ns}` with `{seen_ns[ns]}` — the Lean namespace is "
+                          f"the theme plus the slug's first `_`-delimited "
+                          f"segment, so both rules would declare `schema`, "
+                          f"`entry` and `scenarios` in it and the library would "
+                          f"not build. Give the slugs distinct prefixes.")
+        elif ns in already_ns:
+            errors.append(f"{where}: slug `{node.slug}` shares the namespace "
+                          f"`{ns}` with a rule already in the library. Give it a "
+                          f"distinct first `_`-delimited segment.")
+        seen_ns.setdefault(ns, node.node_id)
 
         if node.node_id in already:
             errors.append(f"{where}: a rule file for this node already exists "

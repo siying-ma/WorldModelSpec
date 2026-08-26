@@ -18,13 +18,24 @@ You must implement every one of these, with exactly the `expected` value shown. 
 
 {scenarios_block}
 
-## The one file you may write
+## Key constraints
 
-**`{target_file}`** (absolute: `{target_path}`)
+- **One file, one rule.** The node above is the whole of your work. Another clause, another reading, a helper you would like to share — none of them belong in this session.
+- **The gate decides, not you.** `check_spec.py` is the only thing that accepts a rule. Your own judgement that it looks right is not evidence, and neither is an `OK` obtained by changing what the gate measures.
+- **The vocabulary is closed.** Build the formula from `Pred.*` and the temporal operators listed below. A rule file that writes its own scene test is rejected — that boundary is what keeps every rule readable against real scene graphs. A predicate you need and cannot find is a blocker to report, not a thing to hand-roll.
+- **Record every choice the text did not dictate.** Thresholds, persistence windows, how you read an ambiguous phrase, and any restriction the data forced on you. The comment block in your file is the durable record; a reviewer must be able to challenge your reading without rerunning you.
+- **An honest blocker beats a weakened rule.** Do not drop a conjunct, loosen a bound, or soften a scenario to reach `OK`. A blocked node is re-planned and lands next iteration; a rule that passes by saying less than the law does is not detectable afterwards.
 
-Nothing else. Not `Core/`, not `Index.lean`, not another rule. The gate hashes the whole library before your session and rejects any other change. Registration in the index is the harness's job, not yours.
+## Write permissions
 
-The file must have exactly this shape:
+- ✅ `{target_file}` (absolute: `{target_path}`) — the rule file, and nothing else in it but this rule
+- ✅ `{node_report_file}` — your report, written once, at the end
+- ❌ `Core/`, `Index.lean`, any other rule, the gate, `baseline.json`, the node spec
+- ❌ Registering your rule anywhere — the harness does that after you
+
+The gate hashes the whole library before your session and rejects any other change.
+
+## The shape of the file
 
 ```lean
 import TrafficSpec.Core
@@ -35,39 +46,37 @@ open TrafficSpec TrafficSpec.SFProp TrafficSpec.Pred
 
 /-  A comment block recording:
     - the law text you are formalizing,
-    - every formalization choice the text did not dictate (thresholds,
-      persistence windows, how you read an ambiguous phrase).
-    A reviewer must be able to challenge your reading without rerunning you.  -/
+    - every formalization choice the text did not dictate,
+    - every restriction the data forced that the law does not make.
+    This is the audit trail; nothing else survives in a readable form.  -/
 
 def schema : PropertySchema where
   name    := "<short_snake_case_name>"
-  binders := [vehicleBinder "v", vehicleBinder "w"]   -- one per planned binder
+  binders := [{binders_lean}]
   formula := fun env =>
-    let v := arg env 0
-    let w := arg env 1
-    -- the property, built from Pred.* and the temporal operators
-    □ (...)
+{binder_lets}
+    -- the property, built from `Pred.*` and the temporal operators
+    ...
 
 def entry : RuleEntry where
   nodeId  := "{node_id}"
   lawRefs := [{law_refs_lean}]
   schema  := schema
 
--- scenario traces, then:
+-- one `def` per scenario trace, built from `Core/Builders.lean`, then:
 
 def scenarios : List Scenario :=
-  [ {{ name := "...", trace := ..., expected := true }}
-  , {{ name := "...", trace := ..., expected := false }} ]
+  [ {{ name := "<declared name>", trace := <trace>, expected := <true/false> }} ]
 
 end {namespace}
 ```
 
-`def schema`, `def entry`, and `def scenarios` are mandatory and must have those exact names.
+`def schema`, `def entry`, and `def scenarios` are mandatory and must have those exact names, inside that exact namespace. `binders` must have one entry per planned binder, with the planned labels, and `arg env i` reads them in that order.
 
 ## Workflow
 
 1. Read `{node_spec_file}` — the planner's node, verbatim.
-2. Read `{vocab_file}` for the available predicates and `{builders_file}` for the trace constructors. Read `{example_file}` for a finished rule.
+2. Read `{vocab_file}` for the available predicates and `{builders_file}` for the trace constructors. The generated tables below are the whole of what a rule may use; the worked-example section says whether a finished rule exists to read as well.
 3. Write the formula. Then write one trace per declared scenario.
 4. Run the gate:
 
@@ -82,18 +91,26 @@ python3 {check_spec_path} \
 
 | Verdict | What it means and what to do |
 |---|---|
-| `OK` | Accepted. Write `{node_report_file}` (below) and **stop**. |
+| `OK` | Accepted. Read any `WARNING:` lines under it (below), write `{node_report_file}`, and **stop**. |
 | `MISSING_FILE` | You have not created the rule file at the required path. Create it. |
 | `SCOPE_VIOLATION` | You changed a file outside your node. Revert *your own* changes exactly. If the detail names another node's rule file that you never touched, you have hit a harness fault: say so in `{node_report_file}` and **stop**. Do not delete the file, and see "The gate is not yours to reconfigure" below. |
-| `STRUCTURE_FAIL` | A required declaration, the namespace, or a declared scenario is missing. Add it. |
+| `STRUCTURE_FAIL` | A required declaration, the namespace, or a declared scenario is missing. Add it — the scenario names must match the plan character for character. |
 | `VOCAB_VIOLATION` | You wrote your own scene test, or used a `Pred.*` that does not exist. Use the listed alternatives. If the predicate you need genuinely does not exist, **stop** and report `missing_vocab`. |
 | `CARLA_INCOMPATIBLE` | You read an attribute CARLA never emits. **Stop** and report it as a blocker naming the field. Do not substitute a different attribute. |
-| `HYGIENE_FAIL` | Remove the `sorry` / `axiom` / `native_decide` / `partial def`. |
+| `HYGIENE_FAIL` | Remove the `sorry` / `axiom` / `native_decide` / `partial def` / `unsafe`. |
 | `COMPILE_FAIL` | Fix the Lean errors shown, then re-run the gate. |
+| `TRACE_TOO_SHORT` | A scenario trace is shorter than the number of frames your formula needs before its bounded operators can complete. A window that runs off the end of the trace reads as false, so `□ (¬ₛ .bounded n bad)` is satisfied on a short trace **whatever it contains** — a positive scenario passes for the wrong reason and a negative one cannot fail at all. Lengthen every scenario trace to the frame count the verdict names; padding with repeats of a representative frame is fine. |
+| `GROUNDING_BUDGET` | Your binders would instantiate the schema too many times to evaluate on a real capture. Each binder MULTIPLIES the count, a binder over a structural type multiplies it by tens (the binder table below carries the counts and the budget), and almost all of the combinations that produces are unrelated entities that satisfy the antecedent vacuously. Bind the actors the clause is about, and express the structural relation with a predicate that quantifies it internally — the road-structure and lane-topology sections of the vocabulary. If no such predicate exists, **stop** and report a blocker naming the predicate you need. |
 | `SCENARIO_VACUOUS` | A scenario grounds zero times, so it tests nothing. Its trace lacks distinct entities for every binder. Add them. |
 | `SCENARIO_FAIL` | Your formula disagrees with the acceptance tests. Read the frame bitmap before editing — see below. |
 
 Re-run the gate after every edit. It is the only thing that decides whether your work is accepted; your own judgement that the rule looks right does not.
+
+## Warnings printed with `OK`
+
+`OK` can arrive with `WARNING:` lines under it. They are not rejections and you must not try to make them go away by editing the rule into something the clause does not say — but they are the only signal in this session about how the rule behaves on data nobody wrote for it, so never ignore one silently.
+
+The one that matters most reports that the rule grounds **zero** times on the bundled sample trace: nothing in that trace instantiates your binders, so the rule has no smoke coverage against realistic data. That is expected when the clause concerns entity types the sample does not contain, and suspicious otherwise — a rule that also cannot ground on a real capture monitors nothing while passing every test you wrote. Say which of the two it is, in the comment block and in your report.
 
 ## The gate is not yours to reconfigure
 
@@ -112,23 +129,35 @@ If the gate seems wrong, that is worth reporting and is sometimes true: write wh
 
 The gate prints, per grounding, a per-frame bitmap of where the grounded formula holds (position 0 leftmost, `1` = holds). Two patterns account for most failures:
 
-- **all zeros** — the formula is false everywhere. Usually an inverted relation argument order. `rel a lbl b` means "**a** is `lbl` **b**": `Pred.behind v w` says v is behind w, so in a following rule *v is the follower*. Check that your antecedent is not describing the opposite vehicle.
-- **all ones** — the formula is true everywhere, so the antecedent never fires. Usually a proximity band that does not match the trace, or an attribute read on a non-ego vehicle.
+- **all zeros** — the formula is false everywhere. Usually an inverted relation argument order: `rel a lbl b` means "**a** is `lbl` **b**", so the first argument is the entity the relation is predicated of. Check that your antecedent is not describing the opposite actor.
+- **all ones** — the formula is true everywhere, so the antecedent never fires. Usually a proximity band that does not match the trace, or an attribute read on an entity that does not carry it.
 
 Then check the scenario trace itself. A negative scenario that fails to violate the rule is as often a trace that does not actually depict the forbidden conduct as it is a wrong formula.
 
-## Traps specific to this domain
+## Critical anti-patterns
 
-- **Proximity band names do not mean what they say in English.** `near` is the 10–16 m band, the second *farthest*. `safetyHazard` is the *closest* (<2 m). For "within N metres" always use `Pred.withinMetres N`, never a raw band.
-- **The five dynamics channels — `speed`, `accel`, `throttle`, `brake`, `steer` — exist on the ego vehicle only.** A speed predicate on a non-ego binder is always false, which silently makes your rule vacuous. Gate such rules on `Pred.isEgo`.
-- **Numeric attributes are decimal strings.** Never compare them with `attrEq`; use `Pred.speedLe`, `Pred.speedLeKph`, `Pred.attrMilliLe`, etc. Bounds are milli-units: 1 m/s is `1000`.
-- **`isIn` is overloaded** across entity→lane, lane→road, and road→junction. Use the structural predicates (`Pred.inLane`, `Pred.inJunction`, `Pred.approachingJunction`) rather than raw `isIn`.
-- **Strong-next semantics.** `.bounded n φ` requires `n` in-bounds frames; running off the end of the trace is false. Give scenario traces enough frames for the window you use.
-- **Distance and angular relations hold between the ego vehicle and others** in default captures. A rule relating two non-ego actors by proximity may never ground on real data.
+| Pattern | Why it fails | Instead |
+|---|---|---|
+| Reading an attribute the schema marks `EGO ONLY` on a non-ego binder | the attribute is simply absent on other actors, and an absent attribute reads **false** — the clause never fires, the rule is vacuous, and it still passes scenarios built the same way | gate the obligation on `Pred.isEgo`, and say in the comment block that this is a data restriction, not a reading of the law |
+| Picking a proximity band by what its name suggests in English | the bands are not ordered the way the names read; their metre ranges are listed with the schema below | use `Pred.withinMetres` for "within N metres", and check the band list before naming one |
+| Comparing a numeric attribute with `attrEq` | numeric attributes are decimal strings, so this is string equality — `"5.0"` and `"5.00"` are different values | use the milli-unit predicates (`Pred.attrMilliLe`, `Pred.speedLe`, …), with the conversion the attribute-key note gives |
+| Using raw `isIn` | it is overloaded across entity→lane, lane→road and road→junction, so a raw test can match a level you did not mean | use the structural predicates (`Pred.inLane`, `Pred.inJunction`, `Pred.approachingJunctionWithin`, …) |
+| A bounded window longer than the traces you wrote | a window running off the end of a trace reads false, so the usual safety shape is satisfied by any short trace regardless of content | give every trace at least the span the gate names, and prefer the shortest window the clause justifies |
+| Relating two non-ego actors by distance or angle | those edges exist only between the ego and another actor, so the rule may never ground on a real capture even when its scenarios pass | put the ego at one end, or report the gap as a blocker |
+| Inventing a predicate-like helper because the one you want is missing | the vocabulary is the compatibility boundary; a hand-rolled scene test can read what CARLA never emits | **stop** and report `missing_vocab`, precisely enough for the plan agent to specify it |
+| Weakening a scenario, a bound, or a conjunct to turn a red verdict green | the acceptance tests are the only check that the formalization means what the statute says; weakening them removes the check rather than passing it | fix the formula, or report `blocked` with what you observed |
 
 ## Available predicates
 
 {vocab_summary}
+
+{formula_summary}
+
+{binder_summary}
+
+{builder_summary}
+
+{example_block}
 
 ## CARLA scene-graph schema
 
@@ -141,20 +170,20 @@ When the gate prints `OK`, or when you must stop because of a blocker, write `{n
 ```json
 {{"node_id": "{node_id}",
   "status": "ok",
-  "formalization_choices": ["three-frame persistence threshold for 'persistently'"],
+  "formalization_choices": ["<a reading the text did not settle, and what you chose>"],
   "blockers": [],
   "missing_vocab": [],
   "suggest_decompose": []}}
 ```
 
 - `status`: `"ok"` or `"blocked"`.
-- `formalization_choices`: every reading you had to pick that the text did not settle. This is how a human audits your work.
+- `formalization_choices`: every reading you had to pick that the text did not settle, plus any warning you were left with. This is read by people, not by the harness — the comment block in the rule file is the copy that lasts, so write it there first.
 - `blockers`: why you stopped, if you did. Name the missing scene-graph field for a `CARLA_INCOMPATIBLE` stop.
 - `missing_vocab`: predicates you needed that do not exist, described precisely enough for the plan agent to specify them.
 - `suggest_decompose`: if this clause is really several obligations, name them. The plan agent will split it.
 
-An honest `blocked` report is a better outcome than a rule that passes by weakening what the law says. Do not weaken a scenario, or drop a conjunct, to make the gate pass.
+`blockers`, `missing_vocab` and `suggest_decompose` are the three fields the harness forwards to the next planning iteration. Anything you leave out of them is not seen again.
 
 ## Begin
 
-Read `{node_spec_file}`, then `{vocab_file}`, then `{example_file}`. Write `{target_file}`. Run the gate. Iterate until `OK`.
+Read `{node_spec_file}`, then `{vocab_file}`. Write `{target_file}`. Run the gate. Iterate until `OK`.

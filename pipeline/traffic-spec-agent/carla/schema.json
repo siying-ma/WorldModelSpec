@@ -6,23 +6,25 @@
     "carla_sgg/sgg_abstractor.py::process_to_junction_rsv (the abstraction this",
     "repository consumes) and carla_sgg/actors.py (the class maps). Every claim",
     "below cites where it comes from. Do NOT amend this file from memory or by",
-    "analogy with another project's adapter: it is the input a plan agent uses to",
+    "analogy with another project's adapter: it is the input whoever plans a formalization uses to",
     "decide whether a law can be formalized at all, and a wrong entry here",
     "silently converts a formalizable law into an `unsupported` one.",
     "",
-    "outside Tier A is hard-failed by tools/check_spec.py because it could never",
-    "",
     "Tier A is what the pipeline can produce at all; a spec referencing anything",
     "outside Tier A is hard-failed by tools/check_spec.py because it could never",
-    "fire on real data.",
+    "fire on real data. The enumerations this file used to own — entity types and",
+    "relation labels — are now generated for the agent from Core/Scene.lean; the",
+    "copies below remain only as the thing `run_spec doctor` checks them against.",
+    "",
     "The four availability tiers below are the important part:",
     "  attribute_keys        - readable from a rule today",
-    "  partially_available   - the concept is reachable, with a stated residue",
+    "  partially_available   - the concept is reachable, with a limit the data imposes",
     "  available_not_exposed - in the captured data, not yet lifted; this is a",
     "                          vocabulary/adapter gap you may ASK for, not a",
     "                          reason to declare a law unsupported",
-    "  unavailable           - genuinely absent from the graph; the only tier",
-    "                          that justifies `unsupported`"
+    "                          that justifies `unsupported`",
+    "THE KEY PARTITION. Everything carla_sgg writes onto a scene-graph node is on exactly one of two sides: `attribute_keys` (lifted into Lean, readable from a rule) or `available_not_exposed` (present in the data, not lifted). Two sides, disjoint, complete over the surface scripts/sgg_surface.py derives from `carla_sgg/*.py`. run_spec doctor fails if a key is on both sides or on neither.",
+    "This file is FROZEN BEFORE the pipeline sees any law and before any capture exists. It therefore carries no worked example, no reference to any particular rule or statute, and no figure obtained by running the simulator. Everything in it is derived from the generator source, the Lean Core, or the CARLA API, and every claim names where it comes from so it can be re-checked rather than believed."
   ],
   "version": 2,
   "provenance": {
@@ -30,14 +32,14 @@
     "abstraction_consumed": "carla_sgg.sgg_abstractor.process_to_junction_rsv",
     "why_that_one": "It is the only abstraction whose node naming (`Lane <road>_<±lane>`, `Road <n>`, `Junction <n>`, `Off Road`), `special_class` attribute and entity→lane→road→junction `isIn` chain match this library. `process_to_rsv` names lanes `Ego Lane` / `Left 1 of Ego Lane` / `Opposing Lane 0` / `Root Road` instead, which carla/adapter.py would classify as `other`, silently making every lane predicate false.",
     "base_graph": "carla_sgg.sgg.SGG.generate_graph_for_frame, pickled per frame by SGG.save",
-    "ego_log": "capture_sensor_data.py and sg/carla_scene_graphs/src/carlaspec/runner.py both write ego_logs.json: one record per frame with state.velocity/acceleration/transform/angular_velocity and control.throttle/brake/steer/gear/hand_brake/reverse. Indexed by absolute capture frame — a converted window must offset into it."
+    "ego_log": "A capture writes `ego_logs.json` alongside the pickled frames: one record per frame with state.velocity/acceleration/transform/angular_velocity and control.throttle/brake/steer/gear/hand_brake/reverse. Indexed by absolute capture frame — a converted window must offset into it."
   },
   "time_base": {
     "frames_carry_no_timestamp": true,
     "capture_hz": 20,
     "frame_interval_seconds": 0.05,
-    "evidence": "capture_sensor_data.py: `FPS = 20`, `settings.fixed_delta_seconds = 1 / FPS`",
-    "how_to_use": "A statutory duration becomes a frame count: `TrafficSpec.secondsToFrames 1 = 20`. State the assumed rate in the rule. This is a modelling assumption, not a missing field — a capture that saved every tick has exactly 50 ms frames."
+    "evidence": "Not derivable from the generator: the rate is a simulator setting the capture fixes, and frames carry no timestamp to confirm it against. It is asserted here as a precondition and enforced by carla/adapter.py, which refuses a capture whose manifest disagrees. See capture_preconditions.",
+    "how_to_use": "A duration in a law becomes a frame count, via `TrafficSpec.secondsToFrames`, which multiplies by `Core/Scene.lean::captureHz`. State the assumption in the rule. This is a modelling assumption rather than a missing field — a capture that saved every simulation tick has frames exactly one tick apart — but the rate itself is a caller-supplied default, so see capture_preconditions.capture_rate. The figure lives at time_base.capture_hz and nowhere else; do not restate it, here or in a rule comment, in seconds or milliseconds."
   },
   "entity_types": {
     "$comment": "These are the Lean `EntityType` constructors verbatim — write `.car`, not `.vehicle_car`. Each corresponds to a base class from actors.py::get_base_type, or to a structure node process_to_junction_rsv creates.",
@@ -76,19 +78,12 @@
       "landmark": "landmark_<country>_<type>_<sub_type>",
       "junctionBoundary": "junction_boundary"
     },
-    "notes": {
-      "van": "CARLA's ambulance (`vehicle.ford.ambulance`) and sprinter are vans. NO proximity or angular edge is ever emitted for a van — see relation_coverage.",
-      "vehicle": "Base class for CARLA's single old `Vehicles` semantic label, which IS excluded from the proximity tables. Do not read this as 'background vehicles are excluded' — see static_background_vehicles.",
-      "pedestrian": "Base class `person`, from any `walker.*` blueprint.",
-      "trafficLight": "MEASURED: one node per traffic-light ACTOR, not per light box. sgg.py tries `actor.get_light_boxes()` first but that block raises AttributeError on CARLA 0.9.16 and the `except` fallback (sgg.py:613) runs instead, emitting one node carrying only `carla_id` and `carla_type_id` plus `light_state`. `carla_parent_id`, `carla_semantic_tags`, `carla_actor_state` and `carla_attr` are set only by the branch that does not run, so they never reach a capture (0 occurrences in 480 frames). A junction still contributes several traffic-light entities, one per approach.",
-      "speedLimitSign": "`traffic.speed_limit.<kph>` actor. Carries the posted value but NO `controls` edge.",
-      "landmark": "The map's own OpenDRIVE sign record, linked to lanes by `mayAffect`. This is the authoritative source for posted restrictions.",
-      "junctionBoundary": "Only present if the map was initialised with `init_to_world(parse_junction_boundaries=True)`; the default is False, so treat it as absent unless the capture says otherwise.",
-      "lane": "One node per (junction, road, lane) triple. All waypoint-level attributes are dropped; only the name survives.",
-      "offRoad": "The single `Off Road` node. Every actor with no driving-lane edge is `isIn` it — pedestrians on the pavement included, because sidewalk nodes are filtered out.",
-      "other": "Anything carla/adapter.py could not classify. A rule should never bind this.",
-      "absent_on_purpose": "`Sidewalk` nodes and any blueprint for which get_base_type returns None (`traffic.unknown`, `static.prop`, `CityObjectLabel.*` background props) never reach the RSV graph.",
-      "static_background_vehicles": "MEASURED, and a trap. `sgg.py` Step 4 (\"add static vehicles\", ~line 411) ingests the map's PARKED-CAR LEVEL GEOMETRY via `world.get_environment_objects(CityObjectLabel.Car/Bus/Truck/Bicycle/Motorcycle)` and names each node with the enum string as `sem_class` ('Car', 'Bus', ...). `actors.py::base_type_map` maps those strings to the REAL base classes ('Car'->'car', 'Bus'->'bus', 'Truck'->'truck', 'Bicycle'->'bicycle', 'Motorcycle'->'motorcycle') — every one of which IS in DEFAULT_PROXIMITY_RELATIONS. So parked scenery becomes a `.car` entity with the same proximity and angular edges as moving traffic, and Lean cannot tell them apart: same EntityType, same bands, same `special_class` ('').\nDistinguishing marks in the captured data: `carla_id` and `carla_type_id` are ABSENT (a real actor has both), `entity_id` is negative, `sem_class` is the capitalised label rather than a `vehicle.*` blueprint id, and the node has NO `isIn` edge to any driving lane.\nConsequence 1 — grounding inflation: `vehicleBinder` and `proximityVehicleBinder` ground on parked scenery. Measured on capture `max_speed_violation`, which contains ZERO real vehicle actors: two static `car_*` nodes at 16-31 m for 40 frames, and every two-binder vehicle rule grounded 6 times. That inflates the count `scripts/capture_eval.py` uses to decide whether a law was engaged.\nConsequence 2 — a false-positive risk that is currently masked: every distance-using rule in the library also requires `Pred.sameLane` or `Pred.isEmergency`, and a static node satisfies neither (no lane edge, empty special_class). That is luck, not a guarantee. A rule of the form 'do not pass within N metres of a cyclist', which needs a band and an angular edge but no shared lane, would convict lawful driving past a parked bicycle. If a rule needs a distance WITHOUT a lane test, gate it on evidence of a real actor."
+    "never_bind": [
+      "other"
+    ],
+    "multiplicity": {
+      "trafficLight": "One node per traffic-light ACTOR, so one junction contributes several — typically one per approach. A rule binding a traffic light grounds once per approach, not once per junction.",
+      "lane": "One node per (junction, road, lane) triple, so a junction contributes many. This is the multiplier behind the grounding budget."
     }
   },
   "relation_labels": {
@@ -197,20 +192,13 @@
         "visible",
         25
       ]
-    ],
-    "notes": {
-      "safety_hazard_spelling": "The generator's code emits `safety_hazard` (DEFAULT_PROXIMITY_THRESHOLDS) while its own docs/Abstractions.md says `safe_hazard`. The adapter accepts both; one that accepts only the documented spelling drops every closest-band edge.",
-      "band_names_are_not_english": "`safetyHazard` is the CLOSEST band (<2 m) and `near` is the second FARTHEST (10-16 m). Exactly one band is emitted per pair. Always use `Pred.withinMetres`, which takes the union of every band at or below the bound.",
-      "controls_is_the_only_governance_edge": "`controlsTrafficOf` is built from a traffic light's affected lane waypoints (sgg.py:628, `actor.get_affected_lane_waypoints()`) and from a stop sign's trigger volume (sgg.py:676). CRITICAL, MEASURED: every waypoint `get_affected_lane_waypoints()` returns is INSIDE the junction (Town03: 112 junction, 0 non-junction), so every `controls` edge from a traffic light targets a junction-internal lane (2635 of 2635 edges across two captures). `Pred.governs d v` therefore ENTAILS `Pred.inAnyJunction v`, which makes `governs d v ⋀ ¬ₛ inAnyJunction v` — the natural reading of 'facing a red before entering' — UNSATISFIABLE on generator output. Rules/Signal/R0004 has that shape and its antecedent held on 0 of 240 frames of a capture where the ego demonstrably ran a red light. CARLA exposes the approach-lane association as `TrafficLight.get_stop_waypoints()` (Town03: 49 non-junction waypoints) but the generator never calls it, so it is absent from every capture. A stop sign's trigger volume sits on the approach, so `facingStopSign` may not have this problem — UNVERIFIED, no capture yet contains a stop-sign controls edge.",
-      "isIn_from_a_sign_is_not_governance": "Every actor gets `isIn` edges to the driving nodes its bounding box overlaps (sgg.py::__add_to_graph), signs included. A sign's `isIn` therefore matches the sign facing the cross street just as well; it is a weak proxy.",
-      "isIn_is_overloaded": "entity→lane, lane→road, road→junction all use `isIn`. Query it type-filtered (`Scene.relatedToTyped`, or the typed predicates in Core/Vocab.lean)."
-    }
+    ]
   },
   "relation_coverage": {
     "$comment": "WHICH PAIRS the distance and angular edges are actually emitted for. This is the single most common source of a spec that compiles, passes its hand-written scenarios, and can never fire on a capture.",
     "proximity_and_angular_pairs": {
       "rule": "Emitted only for ordered pairs matching DEFAULT_PROXIMITY_RELATIONS / DEFAULT_DIRECTIONAL_RELATIONS, every entry of which pairs the base class `ego` with one other base class.",
-      "ego_is_always_one_end": "There is NEVER a proximity or angular edge between two non-ego actors. A two-vehicle rule must bind the ego vehicle as one of the two, or it grounds and is trivially satisfied forever.",
+      "ego_is_always_one_end": "There is NEVER a proximity or angular edge between two non-ego actors. Any two non-ego actors are therefore unrelated by distance and by angle, and a schema binding such a pair grounds while nothing it asks about can ever hold.",
       "covered_base_classes": [
         "person",
         "bicycle",
@@ -228,7 +216,8 @@
         "landmark": "not listed"
       },
       "consequence": "No distance to any sign or signal exists. Use `controls` / `mayAffect`. And a rule about an emergency vehicle plus a distance can only ground on the police car (`car`) and the firetruck (`truck`), never the ambulance (`van`).",
-      "lean_binders": "Core/Scene.lean::proximityTypes is this list verbatim; proximityVehicleTypes is its vehicle subset (bicycle, car, truck, bus, motorcycle). Use proximityVehicleBinder / proximityRoadUserBinder for any rule needing a distance. roadUserTypes and vehicleTypes admit `van` and `vehicle`, which carry no proximity edge: binding them grounds and can never report a violation."
+      "lean_binders": "Core/Scene.lean::proximityTypes is this list verbatim; proximityVehicleTypes is its vehicle subset (bicycle, car, truck, bus, motorcycle). Use proximityVehicleBinder / proximityRoadUserBinder for any rule needing a distance. roadUserTypes and vehicleTypes admit `van` and `vehicle`, which carry no proximity edge: binding them grounds and can never report a violation.",
+      "static_background_vehicles": "The covered base classes include entities that are NOT actors. sgg.py Step 4 (~line 411) ingests the map's parked-vehicle level geometry via `world.get_environment_objects(CityObjectLabel.Car/Bus/Truck/Bicycle/Motorcycle)` with the enum string as `sem_class`, and `actors.py::base_type_map` maps those strings to the real base classes ('Car'->'car', …) — every one of which is in the proximity table. So parked scenery becomes a `.car` carrying the same proximity and angular edges as moving traffic, and is indistinguishable in Lean: same EntityType, same bands, same empty `special_class`. Distinguishing marks, from the two code paths: the scenery branch reaches __add_to_graph with `entity_id=-static_id` (sgg.py:462) and never runs the `carla_id`/`carla_type_id` writes at :607-608, so those keys are ABSENT and `entity_id` is negative; `sem_class` is the capitalised enum name rather than a `vehicle.*` blueprint id. Consequence: any binder over a vehicle type grounds on scenery, so a distance test with no lane test attached can hold against a static map object rather than a road user."
     },
     "inter_lane_edges": {
       "rule": "`opposes`, `toLeftOf` and `toRightOf` between lane nodes are emitted only for ADJACENT lane ids of the same road (`zip(sorted_lanes, sorted_lanes[1:])`).",
@@ -238,10 +227,25 @@
       "render_distance": "Only nodes inside the ego's render bbox (default 50 m forward) are in a frame.",
       "occlusion": "With `check_occlusion=True`, actors the ego cannot see are omitted entirely.",
       "consequence": "Absence of an entity is NOT evidence that it does not exist. Never write a rule whose violation depends on something not being in the graph."
+    },
+    "governance_edges": {
+      "$comment": "Which edges carry GOVERNANCE — the fact that a signal or sign applies to a vehicle. Only `controls` and `mayAffect` do. Both are built from a geometric test, and the two signal kinds do not use the same one, which is the single most consequential asymmetry in this data model.",
+      "built_from": "Both are drawn from a signal or sign to DRIVING NODES, never to a vehicle. A vehicle is associated with a signal transitively: the vehicle is `isIn` a lane and the signal `controls` that lane.",
+      "traffic_light_targets": "A traffic light's `controls` edges come from `TrafficLight.get_affected_lane_waypoints()`, matched to a driving node within `segment_length * 0.5`. CARLA's API documents that method as returning \"the positions and lanes where the traffic light is having an effect\", and documents a SEPARATE method, `get_stop_waypoints()`, as returning \"the stop position for the traffic light ... where a vehicle should stop\". The generator calls the first and never the second. So a light's `controls` edge marks the lanes the signal acts ON, not the place a driver is required to stop, and the approach-side stop position is absent from the graph entirely.",
+      "stop_sign_targets": "A stop sign's `controls` edges come from the sign's `trigger_volume`, intersected against driving nodes. A trigger volume is the region in which the sign takes effect on an approaching vehicle, so this edge and the traffic light's are built from different geometry despite sharing one relation label. A rule that reads `controls` uniformly across both signal kinds is reading two different things.",
+      "consequence_for_a_formula": "Requiring a light's `controls` governance AND the vehicle being outside the intersection may be unsatisfiable on generator output, because the two conditions are built from different geometry. An unsatisfiable antecedent is never a false positive — it is silently always-compliant, and it still grounds, so the vacuity guard does not catch it either. Read the grounding count the gate reports rather than predicting satisfiability.",
+      "landmarks": "`mayAffect` links an OpenDRIVE landmark to a lane within render distance. `landmark_lane_validities`, which states the lane range a signal is actually valid for, is lifted and is the stronger statement of governance.",
+      "recovering_the_approach_association": "The approach-side association is NOT lost, only indirect. The lane a driver waits in leads into the lane the signal acts on, and the generator records that as `travelsTo`, so the connection exists in the data. No predicate currently walks it: `Pred.governs` reads the `controls` edge directly and therefore holds only once a vehicle is already in the controlled lane. Expressing governance from the approach is a VOCABULARY GAP — name it in the plan, per deciding_unsupported.step_3 — not a data gap, and not grounds for recording a law unsupported. How many `travelsTo` hops such a predicate should walk is not something the data settles: a lane node exists per (junction, road, lane) triple, so an approach spanning several roads spans several nodes, and any fixed depth is a modelling choice rather than a generator fact.",
+      "what_is_still_absent": "A stop-line POSITION. CARLA computes stop waypoints from a light's trigger boxes and exposes them as a separate call the generator never makes, so no node or edge marks where a vehicle is required to halt. Lane nodes carry no coordinates either, so the distance to a stop line is not expressible. The signal HEAD does carry a position (lifted as pos_x/pos_y/pos_z), so a metric separation from the signal itself is the nearest available substitute — a different quantity, and one to state as a residue rather than pass off as the stop line. Emitting the stop association as its own edge is a generator extension, not missing data."
+    },
+    "isIn_edges": {
+      "$comment": "WHICH PAIRS `isIn` relates. It is overloaded across three levels.",
+      "levels": "entity→lane, lane→road, road→junction all use `isIn`. Query it type-filtered (`Scene.relatedToTyped`, or the typed predicates in Core/Vocab.lean); an unfiltered query mixes the three.",
+      "from_a_sign_is_not_governance": "Every actor gets `isIn` edges to the driving nodes its bounding box overlaps (sgg.py::__add_to_graph), signs included, so a sign's `isIn` matches the sign facing the cross street just as well. Use `controls` or `mayAffect` for governance."
     }
   },
   "attribute_keys": {
-    "$comment": "Readable from a rule today, via the Pred.attr* family. Anything not listed here is rejected by tools/check_spec.py.",
+    "$comment": "Readable from a rule today, via the Pred.attr* family. Anything not listed here is rejected by tools/check_spec.py. `from_generator_key` names the carla_sgg attribute each Lean key is lifted from — the only record of the rename, taken from carla/adapter.py's own mapping tables, and what lets run_spec doctor prove that every key carla_sgg emits is either lifted here or accounted for as unlifted.",
     "tier_a": [
       "name",
       "sem_class",
@@ -274,141 +278,108 @@
       "landmark_sub_type",
       "landmark_value",
       "landmark_unit",
-      "landmark_text"
+      "landmark_text",
+      "pos_x",
+      "pos_y",
+      "pos_z",
+      "fwd_x",
+      "fwd_y",
+      "fwd_z",
+      "vel_x",
+      "vel_y",
+      "vel_z",
+      "acc_x",
+      "acc_y",
+      "acc_z",
+      "roll_rate",
+      "pitch_rate",
+      "gear",
+      "manual_gear_shift",
+      "light_interior",
+      "light_special_1",
+      "light_special_2",
+      "carla_id",
+      "landmark_lane_validities"
     ],
     "kinds": {
       "name": {
         "kind": "string",
         "on": "all entities",
-        "examples": [
-          "ego",
-          "car_0",
-          "walker_0",
-          "traffic_light_0",
-          "Lane 9_-1",
-          "Road 9",
-          "Junction 5",
-          "Off Road"
-        ],
-        "source": "RSV node name"
+        "source": "The RSV node name, and the ENTITY IDENTITY: carla/adapter.py builds its entity table keyed by this string, so two nodes sharing a name become one Lean entity carrying both their attributes, and a binder can then bind a merged entity. The generator composes actor names from the semantic class and the CARLA actor id, and structure names from map ids. `carla_id` is lifted as the collision-free identity."
       },
       "sem_class": {
         "kind": "string",
         "on": "all entities",
-        "examples": [
-          "ego",
-          "vehicle.tesla.model3",
-          "traffic.traffic_light",
-          "traffic.speed_limit.50",
-          "Driving"
-        ],
         "source": "the CARLA blueprint / type id the generator copies into Node.attr"
       },
       "base_class": {
         "kind": "string",
         "on": "actors",
-        "examples": [
-          "ego",
-          "car",
-          "person",
-          "traffic_light",
-          "stop_sign",
-          "speed_limit"
-        ],
-        "source": "NOT read from the RSV graph, which carries no `base_class` key in node.attr (0 occurrences in 480 frames) — it lives on the Node object as a Python field. carla/adapter.py reads it there to choose the Lean EntityType, and Core/Builders.lean re-derives the attribute from that type via EntityType.baseClass. So it IS readable, with one exception: `mkEgo` hard-codes base_class = \"ego\", so the ego's value is \"ego\" and NOT \"car\". A rule writing `Pred.baseClass v \"car\"` to mean 'v is a car' silently excludes the ego."
+        "source": "NOT an entry in the RSV node's attribute dict. The RSV `Node` is `(name, base_class, attr)`, so base_class is a field on the node OBJECT, set from `actors.py::get_base_type`; the attr dict the abstraction copies never contains it. carla/adapter.py reads the field to choose the Lean EntityType, and Core/Builders.lean re-derives the attribute from that type via EntityType.baseClass. So it IS readable, with one exception: the ego builder hard-codes base_class to \"ego\" rather than to its vehicle class, so a base-class test written to mean 'is a vehicle of this kind' excludes the ego. Use the type predicates instead."
       },
       "special_class": {
         "kind": "string",
         "on": "actors",
-        "examples": [
-          "ego",
-          "emergency",
-          "taxi",
-          "electric",
-          ""
-        ],
         "source": "actors.py::get_special_type; empty string when ordinary. Prefer Pred.isEgo / isEmergency"
       },
       "speed": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "m/s",
-        "examples": [
-          "0.4003869891166687"
-        ],
-        "source": "carla_speed (vel.length()), or ego_logs state.velocity.value"
+        "source": "carla_speed (vel.length()), or ego_logs state.velocity.value",
+        "from_generator_key": "carla_speed"
       },
       "accel": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "m/s^2",
-        "examples": [
-          "7.799561977386475"
-        ],
         "source": "ego_logs state.acceleration.value — the graph carries only the component vector carla_acc_x/y/z, whose magnitude would need a square root"
       },
       "throttle": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "0..1",
-        "examples": [
-          "0.0"
-        ],
-        "source": "carla_throttle / ego_logs control.throttle"
+        "source": "carla_throttle / ego_logs control.throttle",
+        "from_generator_key": "carla_throttle"
       },
       "brake": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "0..1",
-        "examples": [
-          "0.0"
-        ],
-        "source": "carla_brake / ego_logs control.brake"
+        "source": "carla_brake / ego_logs control.brake",
+        "from_generator_key": "carla_brake"
       },
       "steer": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "-1..1",
-        "examples": [
-          "0.0"
-        ],
-        "source": "carla_steer / ego_logs control.steer"
+        "source": "carla_steer / ego_logs control.steer",
+        "from_generator_key": "carla_steer"
       },
       "yaw_rate": {
         "kind": "decimal",
         "on": "EGO ONLY",
         "unit": "deg/s",
-        "examples": [
-          "-3.25"
-        ],
-        "source": "carla_ang_vel_z / ego_logs state.angular_velocity.z"
+        "source": "carla_ang_vel_z / ego_logs state.angular_velocity.z",
+        "from_generator_key": "carla_ang_vel_z"
       },
       "hand_brake": {
         "kind": "boolean",
         "on": "EGO ONLY",
-        "examples": [
-          "true",
-          "false"
-        ],
-        "source": "carla_hand_brake"
+        "source": "carla_hand_brake",
+        "from_generator_key": "carla_hand_brake"
       },
       "reverse": {
         "kind": "boolean",
         "on": "EGO ONLY",
-        "examples": [
-          "true",
-          "false"
-        ],
-        "source": "carla_reverse"
+        "source": "carla_reverse",
+        "from_generator_key": "carla_reverse"
       },
       "at_traffic_light": {
         "kind": "boolean",
         "on": "EGO ONLY",
-        "examples": [
-          "true",
-          "false"
-        ],
-        "source": "carla_affected_by_traffic_light (ego.is_at_traffic_light()) — inside a governing signal's trigger volume, says nothing about its colour"
+        "source": "carla_affected_by_traffic_light (ego.is_at_traffic_light()) — inside a governing signal's trigger volume, says nothing about its colour",
+        "from_generator_key": "carla_affected_by_traffic_light"
       },
       "light_state": {
         "kind": "enum",
@@ -420,261 +391,531 @@
           "Off",
           "Unknown"
         ],
-        "source": "sgg.py: sub_graph.nodes[name]['light_state'] = str(actor.state)"
+        "source": "sgg.py:639 writes `light_state = str(actor.state)` on each traffic-light node every frame; values are `carla.TrafficLightState.names` (Red / Yellow / Green / Off / Unknown)."
       },
       "light_brake": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "sgg.py: actor.get_light_state() unpacked per carla.VehicleLightState member. MEASURED: the ego is appended to `exclude_ids` in generate_graph_for_frame, so it never enters the actor loop and carries NO light_* attribute at all (0 occurrences on the ego node in 480 frames). `Pred.brakeLightOn v` is always false when v is the ego."
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_Brake"
       },
       "light_left_blinker": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_LeftBlinker"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_LeftBlinker"
       },
       "light_right_blinker": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_RightBlinker"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_RightBlinker"
       },
       "light_high_beam": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_HighBeam"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_HighBeam"
       },
       "light_low_beam": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_LowBeam"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_LowBeam"
       },
       "light_position": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_Position"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_Position"
       },
       "light_fog": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_Fog"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_Fog"
       },
       "light_reverse": {
         "kind": "boolean",
         "on": "every vehicle EXCEPT the ego",
-        "source": "light_Reverse"
+        "source": "sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` in the actor loop. The ego is NOT in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575), so the ego node carries no `light_*` attribute at all and `Pred.brakeLightOn ego` is always false.",
+        "from_generator_key": "light_Reverse"
       },
       "road_id": {
         "kind": "integer-as-decimal",
         "on": "lane, road",
-        "examples": [
-          "9"
-        ],
         "source": "re-read from the node name by Core/Builders.lean"
       },
       "lane_id": {
         "kind": "integer-as-decimal",
         "on": "lane",
-        "examples": [
-          "-1",
-          "+2"
-        ],
         "source": "re-read from the node name; sign is the OpenDRIVE side of the road reference line, negative right / positive left, and all lanes of one travel direction share a sign"
       },
       "junction_id": {
         "kind": "integer-as-decimal",
         "on": "junction",
-        "examples": [
-          "5"
-        ],
         "source": "re-read from the node name"
       },
       "posted_limit_kph": {
         "kind": "integer-as-decimal",
         "on": "speedLimitSign",
         "unit": "km/h",
-        "examples": [
-          "30",
-          "50"
-        ],
         "source": "the trailing number of the blueprint id traffic.speed_limit.<kph>"
       },
       "landmark_country": {
         "kind": "string",
-        "on": "landmark",
-        "examples": [
-          "OpenDRIVE"
-        ]
+        "on": "landmark"
       },
       "landmark_type": {
         "kind": "string",
         "on": "landmark",
-        "examples": [
-          "274",
-          "206",
-          "205"
-        ],
-        "meaning": "OpenDRIVE type code: 274 speed limit, 206 stop, 205 give way"
+        "meaning": "Sign-catalogue code, from `landmark.type` (sgg.py:705). Meaningful only within the catalogue named by `landmark_country`: the same code denotes different signs in different catalogues, so a rule that reads one must pin the country too. Not a value — the magnitude is `landmark_value` and its unit is `landmark_unit`."
       },
       "landmark_sub_type": {
         "kind": "string",
-        "on": "landmark",
-        "examples": [
-          "-1",
-          "50"
-        ]
+        "on": "landmark"
       },
       "landmark_value": {
         "kind": "decimal",
         "on": "landmark",
-        "examples": [
-          "50.0"
-        ],
         "meaning": "the posted value, in landmark_unit"
       },
       "landmark_unit": {
         "kind": "string",
-        "on": "landmark",
-        "examples": [
-          "km/h",
-          "m"
-        ]
+        "on": "landmark"
       },
       "landmark_text": {
         "kind": "string",
         "on": "landmark"
+      },
+      "pos_x": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "metres",
+        "source": "`vertex` component x, written for every actor and static node by sgg.py:798 __add_to_graph. Structure nodes (lane, road, junction, offRoad) are built with no attr dict at all (sgg_abstractor.py:145,147,152,222) and so carry no position.",
+        "from_generator_key": "vertex"
+      },
+      "pos_y": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "metres",
+        "source": "`vertex` component y, written for every actor and static node by sgg.py:798 __add_to_graph. Structure nodes (lane, road, junction, offRoad) are built with no attr dict at all (sgg_abstractor.py:145,147,152,222) and so carry no position.",
+        "from_generator_key": "vertex"
+      },
+      "pos_z": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "metres",
+        "source": "`vertex` component z, written for every actor and static node by sgg.py:798 __add_to_graph. Structure nodes (lane, road, junction, offRoad) are built with no attr dict at all (sgg_abstractor.py:145,147,152,222) and so carry no position.",
+        "from_generator_key": "vertex"
+      },
+      "fwd_x": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "unit vector component",
+        "source": "`forward` component x, sgg.py:798 __add_to_graph. Gives an actor's absolute heading. A LANE has no direction vector, so this cannot be compared against the lane occupied — a lane node carries no attributes at all, so see deciding_unsupported.step_4_only_then_unsupported.",
+        "from_generator_key": "forward"
+      },
+      "fwd_y": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "unit vector component",
+        "source": "`forward` component y, sgg.py:798 __add_to_graph. Gives an actor's absolute heading. A LANE has no direction vector, so this cannot be compared against the lane occupied — a lane node carries no attributes at all, so see deciding_unsupported.step_4_only_then_unsupported.",
+        "from_generator_key": "forward"
+      },
+      "fwd_z": {
+        "kind": "decimal",
+        "on": "every actor-like entity",
+        "unit": "unit vector component",
+        "source": "`forward` component z, sgg.py:798 __add_to_graph. Gives an actor's absolute heading. A LANE has no direction vector, so this cannot be compared against the lane occupied — a lane node carries no attributes at all, so see deciding_unsupported.step_4_only_then_unsupported.",
+        "from_generator_key": "forward"
+      },
+      "vel_x": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s",
+        "source": "`carla_vel_x`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_vel_x"
+      },
+      "vel_y": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s",
+        "source": "`carla_vel_y`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_vel_y"
+      },
+      "vel_z": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s",
+        "source": "`carla_vel_z`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_vel_z"
+      },
+      "acc_x": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s^2",
+        "source": "`carla_acc_x`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_acc_x"
+      },
+      "acc_y": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s^2",
+        "source": "`carla_acc_y`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_acc_y"
+      },
+      "acc_z": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "m/s^2",
+        "source": "`carla_acc_z`, written by copy_carla_actor_state via copy_vector (sgg.py:864-873), which sgg.py:563 calls for the ego node alone. The scalar magnitude `speed` is also available; these are the components, so a direction can be tested without a square root.",
+        "from_generator_key": "carla_acc_z"
+      },
+      "roll_rate": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "deg/s",
+        "source": "`carla_ang_vel_x`, copy_carla_actor_state (sgg.py:865), ego only. `yaw_rate` is the z component and was already available.",
+        "from_generator_key": "carla_ang_vel_x"
+      },
+      "pitch_rate": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "deg/s",
+        "source": "`carla_ang_vel_y`, copy_carla_actor_state (sgg.py:865), ego only.",
+        "from_generator_key": "carla_ang_vel_y"
+      },
+      "gear": {
+        "kind": "decimal",
+        "on": "EGO ONLY",
+        "unit": "gear index, negative in reverse",
+        "source": "`carla_gear`, copy_carla_control (sgg.py:859), which sgg.py:562 calls for the ego node alone. Distinct from `reverse`: that is the control input, which can be set while the vehicle still rolls forward. Read with Pred.inReverseGear.",
+        "from_generator_key": "carla_gear"
+      },
+      "manual_gear_shift": {
+        "kind": "boolean",
+        "on": "EGO ONLY",
+        "source": "`carla_manual_gear_shift`, copy_carla_control (sgg.py:858).",
+        "from_generator_key": "carla_manual_gear_shift"
+      },
+      "light_interior": {
+        "kind": "boolean",
+        "on": "every vehicle EXCEPT the ego",
+        "source": "`light_Interior`, one of the booleans sgg.py:689 writes per member of `carla.VehicleLightState.names` for every `carla.Vehicle`. The cabin light. Special1/Special2 are read together by Pred.beaconOn, and are the only attributes that distinguish a RESPONDING emergency vehicle from one at rest — the blueprint name does not.",
+        "from_generator_key": "light_Interior"
+      },
+      "light_special_1": {
+        "kind": "boolean",
+        "on": "every vehicle EXCEPT the ego",
+        "source": "`light_Special1`, one of the booleans sgg.py:689 writes per member of `carla.VehicleLightState.names` for every `carla.Vehicle`. An emergency beacon. Special1/Special2 are read together by Pred.beaconOn, and are the only attributes that distinguish a RESPONDING emergency vehicle from one at rest — the blueprint name does not.",
+        "from_generator_key": "light_Special1"
+      },
+      "light_special_2": {
+        "kind": "boolean",
+        "on": "every vehicle EXCEPT the ego",
+        "source": "`light_Special2`, one of the booleans sgg.py:689 writes per member of `carla.VehicleLightState.names` for every `carla.Vehicle`. An emergency beacon. Special1/Special2 are read together by Pred.beaconOn, and are the only attributes that distinguish a RESPONDING emergency vehicle from one at rest — the blueprint name does not.",
+        "from_generator_key": "light_Special2"
+      },
+      "carla_id": {
+        "kind": "decimal",
+        "on": "all actors",
+        "source": "`carla_id`, the CARLA actor id (sgg.py:607, and again in the get_light_boxes fallback at :623). Stable across frames, unlike the RSV node name that carla/adapter.py keys entities by — see attribute_keys.kinds.name.",
+        "from_generator_key": "carla_id"
+      },
+      "landmark_lane_validities": {
+        "kind": "string",
+        "on": "landmark entities",
+        "source": "`landmark_lane_validities` (sgg.py:719), the lane range an OpenDRIVE signal is valid for. This is the governance the `mayAffect` edge only approximates: the edge says the landmark was within render distance of a lane, this says which lanes the sign actually governs. Rendered as the raw OpenDRIVE tuple list. Read by Pred.landmarkValidForLane / landmarkGoverns, which narrow `mayAffect` to the lanes the sign actually governs.",
+        "from_generator_key": "landmark_lane_validities"
       }
     },
     "decimal_note": "Decimal and integer attributes are float- or int-formatted strings of arbitrary precision. Compare them with TrafficSpec.Pred.attrMilli* (milli-unit integer comparison; 1 m/s = 1000, and \"-1\" is -1000), never by string equality. Booleans are the literal strings \"true\" / \"false\"; read them with Pred.attrTrue, and note that an absent boolean reads as false, which is the correct default for a light that is off.",
     "no_float_ever": "There is no Float anywhere in the library. Comparisons stay decidable and kernel-clean."
   },
   "partially_available": {
-    "$comment": "The concept is reachable, but with a residue you must state in the rule's notes. This is the tier that most often gets misfiled as `unsupported`.",
-    "posted_speed_limit": {
-      "available": "OpenDRIVE landmarks (`landmark_type == \"274\"`, value in km/h) linked to lanes by `mayAffect`; plus `traffic.speed_limit.<kph>` sign actors carrying `posted_limit_kph`.",
-      "residue": "A landmark reaches the graph only if it is within the capture's render distance of a driving node, so its absence does not prove the road is unrestricted. The sign actors have no governance edge, only bounding-box `isIn`.",
-      "vocabulary": "Pred.withinPostedSpeedLimit / exceedsPostedSpeedLimit / landmarkType / landmarkValueAtMost / postedLimitSignAtMostKph"
+    "$comment": [
+      "How to READ each part of the generator's output: what it gives, the code that produces it, what it cannot express, and which predicates read it.",
+      "Keyed by the DATA ELEMENT, never by a statutory concept. The previous keys were concepts — `posted_speed_limit`, `off_the_carriageway`, `another_vehicle_braking_or_signalling` — and a concept-keyed list is selected by whichever laws someone happened to be formalizing. Keyed by the data, the selection is decided by the artifact instead: `covers` names the entity types, relation labels and attribute keys each entry explains, and `run_spec doctor` fails when an element of Core/Scene.lean is neither covered here nor listed in `no_note_needed`.",
+      "It does NOT say which construction to use, or how a limit compares with a statute's wording. Both are formalization decisions, and formalizing is the agent's job."
+    ],
+    "landmark_nodes_and_mayAffect": {
+      "covers": [
+        "landmark",
+        "speedLimitSign",
+        "mayAffect"
+      ],
+      "available": "OpenDRIVE landmarks carrying a catalogue code in `landmark_type`, a magnitude in `landmark_value` and its unit in `landmark_unit`, linked to lanes by `mayAffect` and narrowed to the governed lanes by `landmark_lane_validities`. The code space is the whole catalogue, not one restriction: priority, prohibition, mandatory direction and dimensional limits are all reached by naming their code, and no vocabulary extension is needed for a sign kind the library has not seen. Separately, `traffic.speed_limit.<kph>` sign actors carry `posted_limit_kph`, whose unit is fixed by the CARLA blueprint id rather than by the map.",
+      "mechanism": "carla_sgg/sgg.py:695 collects a driving node's landmarks with `get_landmarks(render_dist)`.",
+      "data_limit": "A landmark reaches the graph only within the capture's render distance of a driving node, so its absence does not establish that the road is unrestricted. The sign ACTORS carry no governance edge at all — only bounding-box `isIn`. Neither the catalogue code nor the unit is assumed by the library. A rule supplies the code; a magnitude is comparable only against a bound in the unit the sign itself states, because a code fixes what is restricted but not which dimension the value is in, so no conversion is possible here. Every one of these — no landmark, unknown code, mismatched unit, unreadable value — makes the predicate FALSE, which is the compliant direction, so pair it with Pred.hasSpeedLimitOfType or Pred.landmarkOfTypeApplies where absence and satisfaction must be told apart.",
+      "vocabulary": "Pred.landmarkOfTypeApplies / landmarkOfTypeGoverns / landmarkType / landmarkSubType / landmarkCountry / landmarkUnit / landmarkStatesAtMost / landmarkStatesAtLeast / landmarkValidForLane / landmarkGoverns / landmarkApplies, and for speed specifically Pred.withinSpeedLimitOfType / exceedsSpeedLimitOfType / hasSpeedLimitOfType / postedLimitSignAtMostKph"
     },
-    "which_half_of_the_roadway": {
-      "available": "Lane-to-lane `toLeftOf` / `toRightOf`, each computed in the TARGET lane's own forward frame. That makes the edge pattern between two lanes reveal their relative direction of travel: asymmetric (`a toLeftOf b` with `b toRightOf a`) means same direction, mutual (`a toLeftOf b` and `b toLeftOf a`) means opposite, because each lane is judged from its own heading. So 'am I keeping right' is decidable relative to the vehicle's own direction of travel: a driver keeping right has no same-direction lane to the right.",
-      "residue": "`inRightmostLane` is slightly stricter than the statutory 'right half': on a three-lane carriageway it demands the rightmost lane, not merely the right-hand half, so pair it with the statute's own overtaking or manoeuvring exception. It is also false for a vehicle occupying no lane at all, which is why `hasLaneToTheRight` exists as the positive form.",
-      "vocabulary": "Pred.inRightmostLane / hasLaneToTheRight / laneRightOfSameDirection",
-      "do_not_use": "The `lane_id` SIGN (Pred.laneRightOfReference / laneLeftOfReference / inLaneRightOfReference / inLaneLeftOfReference). It records which side of the OpenDRIVE reference line a lane was authored on, not a legal side of the road: every lane of one direction of travel shares the sign, so the lawful carriageway of a divided road, or a one-way street the map numbers positively, is entirely `left of reference`. A rule built on it reports a violation on every frame of lawful driving there. This was measured, not predicted: rule `Lane/R0009` formalized 'the right half of the roadway' that way, passed all four of its own scenarios, and then convicted 50 frames of compliant driving in the bundled sceneflow capture."
+    "inter_lane_left_right_edges": {
+      "covers": [
+        "toLeftOf",
+        "toRightOf",
+        "opposes",
+        "lane"
+      ],
+      "available": "Lane-to-lane `toLeftOf` / `toRightOf`, each computed in the TARGET lane's own forward frame. The edge PATTERN between two lanes therefore reveals their relative direction of travel: asymmetric (`a toLeftOf b` with `b toRightOf a`) means same direction, mutual (`a toLeftOf b` and `b toLeftOf a`) means opposite, because each lane is judged from its own heading.",
+      "mechanism": "carla_sgg/sgg_abstractor.py:161 pairs consecutive sorted lane ids; :193-195 chooses the label from the bearing between them.",
+      "data_limit": "The only lateral structure is lane adjacency. There is no carriageway, no kerb, no centre line and no lane width, so no node or edge denotes a fraction or half of the roadway. A vehicle occupying no lane at all satisfies no lane predicate.",
+      "vocabulary": "Pred.inOutermostLane / hasLaneToTheSide / laneBesideSameDirection, and the left- and right-hand specialisations of each",
+      "do_not_use": "The `lane_id` SIGN (Pred.laneRightOfReference / laneLeftOfReference / inLaneRightOfReference / inLaneLeftOfReference). It records which side of the OpenDRIVE reference line a lane was authored on. Every lane of one direction of travel shares the sign, so on a divided road, or a one-way street the map numbers positively, an entire lawful carriageway is `left of reference`. The sign is a property of how the map was drawn, and the abstraction preserves no relation between it and any direction of travel."
     },
-    "wrong_way_driving": {
-      "available": "Two routes. (1) Relative heading: the angular edges are computed from the source actor's forward vector, so two actors are mutually `inFrontOf` exactly when their headings differ by more than 90° — an oncoming pair. (2) Lane connectivity over time: if v is in l1 now and in l2 next frame while the graph says `l2 travelsTo l1`, v moved against the lane's direction of travel.",
-      "residue": "Route (1) is symmetric — it establishes that a pair is converging, not which one is misplaced. Route (2) needs the vehicle to actually change lane node between frames, and only the ego reliably has the lane membership to observe it.",
-      "vocabulary": "Pred.oncoming / sameHeading / opposingLanes / laneTravelsTo / inLane"
+    "angular_edges_and_lane_connectivity": {
+      "covers": [
+        "inDFrontOf",
+        "inSFrontOf",
+        "atDRearOf",
+        "atSRearOf",
+        "travelsTo",
+        "laneChange"
+      ],
+      "available": "Angular edges are computed from the SOURCE actor's forward vector, so two actors are mutually `inFrontOf` exactly when their headings differ by more than 90 degrees. Separately, lane connectivity is directed: `l2 travelsTo l1` states the direction of travel between two lane nodes, and an actor's lane membership is observable per frame.",
+      "mechanism": "carla_sgg/sgg_abstractor.py:185-195; the arcs are DEFAULT_DIRECTIONAL_THRESHOLDS — see capture_preconditions.directional_split_degrees.",
+      "data_limit": "A mutual angular pair is SYMMETRIC: it establishes that two actors converge, not which of them is misplaced. Lane membership changes only when the actor crosses into another lane node, and the dynamics channels are written for the ego node alone (sgg.py:562-563), so the ego is the only actor whose membership is reliably tracked frame to frame. No lane node carries a direction vector, so an actor's absolute heading cannot be compared with its own lane.",
+      "vocabulary": "Pred.oncoming / sameHeading / headingAlignedWith / headingOpposedTo / opposingLanes / laneTravelsTo / inLane"
     },
-    "stop_before_intersection": {
-      "available": "`stopped` (ego speed ≤ 0.1 m/s), `inAnyJunction` / `inJunction`, `approachingJunction` (lane `travelsTo` a junction lane), and `facingStopSign` via the `controls` edge.",
-      "residue": "There is no stop-line position, so 'before entering' becomes 'while approaching and not yet in the junction'. The duration becomes a frame count at 20 Hz.",
-      "vocabulary": "Pred.stopped / facingStopSign / approachingJunction / inAnyJunction, plus TrafficSpec.secondsToFrames"
+    "junction_membership_and_controls": {
+      "covers": [
+        "junction",
+        "junctionBoundary",
+        "road",
+        "isIn",
+        "controls",
+        "stopSign",
+        "trafficLight"
+      ],
+      "available": "`stopped` (ego speed <= 0.1 m/s), `inAnyJunction` / `inJunction`, `approachingJunctionWithin` (the actor's lane reaches a junction lane in a caller-supplied number of `travelsTo` steps; the graph settles no reach of its own), and `facingStopSign` via the `controls` edge.",
+      "mechanism": "carla_sgg/sgg_abstractor.py:150 draws `isIn` from road to junction; junction membership is bounding-box containment.",
+      "data_limit": "No stop line, give-way line or junction boundary has a position, because structure nodes carry no attributes at all (sgg_abstractor.py:19-23), so the only positions distinguishable are inside a junction, in a lane that leads to one, and neither. Durations are frame counts; the rate lives at time_base.capture_hz.",
+      "vocabulary": "Pred.stopped / facingStopSign / approachingJunctionWithin / inAnyJunction, plus TrafficSpec.secondsToFrames"
     },
-    "another_vehicle_braking_or_signalling": {
-      "available": "`light_brake`, `light_left_blinker`, `light_right_blinker` on every vehicle.",
-      "residue": "A light is evidence of the driver's action, not of the resulting motion, and stays false if the simulated traffic manager never actuates it — check the grounding count on a real capture.",
+    "vehicle_light_booleans": {
+      "covers": [
+        "car",
+        "truck",
+        "van",
+        "bus",
+        "motorcycle",
+        "vehicle",
+        "bicycle"
+      ],
+      "available": "`light_brake`, `light_left_blinker`, `light_right_blinker` on every vehicle EXCEPT the ego.",
+      "mechanism": "carla_sgg/sgg.py:689 writes one boolean per member of `carla.VehicleLightState.names` for every `carla.Vehicle` reached by the actor loop. The ego is never in that loop: generate_graph_for_frame appends `self.ego_id` to `exclude_ids` unconditionally (sgg.py:543-544) and the loop filters on `actor.id not in exclude_ids` (:575). Conversely the `carla_*` state and control channels are written for the ego node alone (:562-563), so the two families never appear on the same node.",
+      "data_limit": "A light reports an actuation, not the motion that follows, and it is false whenever nothing actuated it — in simulation that means false unless the Traffic Manager was told to drive vehicle lights. These booleans are the ONLY dynamic evidence the abstraction keeps about a non-ego vehicle.",
       "vocabulary": "Pred.brakeLightOn / leftBlinkerOn / rightBlinkerOn / hazardLightsOn"
     },
-    "pedestrian_off_the_carriageway": {
-      "available": "A pedestrian with no driving-lane edge is `isIn` the `Off Road` node (`Pred.offRoadway`).",
-      "residue": "Sidewalk nodes are filtered out by process_to_junction_rsv, so pavement, verge and central reservation are indistinguishable from each other.",
+    "off_road_node": {
+      "covers": [
+        "offRoad",
+        "pedestrian"
+      ],
+      "available": "An actor with no driving-lane edge is `isIn` the single `Off Road` node (`Pred.offRoadway`).",
+      "mechanism": "carla_sgg/sgg_abstractor.py:248 attaches any such actor to the `Off Road` node.",
+      "data_limit": "`Sidewalk` nodes are filtered out by process_to_junction_rsv, so pavement, verge and central reservation collapse into that one node and are indistinguishable from each other.",
       "vocabulary": "Pred.offRoadway / onRoadway / isPedestrian"
     },
-    "signal_change_event": {
-      "available": "A change of `light_state` between adjacent frames — a temporal formula, no extra field needed.",
-      "residue": "Frame granularity is 50 ms; a change is only observed if both frames were captured.",
+    "light_state_attribute": {
+      "covers": [
+        "trafficLight"
+      ],
+      "available": "A change of `light_state` between adjacent frames, readable with the temporal operators; no extra field is needed.",
+      "mechanism": "carla_sgg/sgg.py:639 writes `light_state = str(actor.state)` on each traffic-light node every frame.",
+      "data_limit": "A change is observable only between two captured frames, so the resolution is one frame — the interval lives at time_base.capture_hz. Amber is a distinct `light_state` value, not an interpolation.",
       "vocabulary": "Pred.signalState with the temporal operators (`◯`, `𝒰`)"
+    },
+    "node_coordinates": {
+      "covers": [
+        "safetyHazard",
+        "nearCollision",
+        "superNear",
+        "veryNear",
+        "near",
+        "visible"
+      ],
+      "available": "Every actor-like node carries `vertex` and `forward`, lifted by carla/adapter.py as `pos_x`/`pos_y`/`pos_z` and `fwd_x`/`fwd_y`/`fwd_z`. `Core/Decimal.lean` reads them as integer millimetres, so a SQUARED separation is exact integer arithmetic and needs no square root: an exact metric distance is available even though the six proximity bands are all the edges carry. `forward` is an absolute heading on every actor-like node, so two NON-EGO actors' directions of travel can be compared — which the angular relations, drawn from the ego only and relative, cannot express. The ego additionally carries `vel_*` and `acc_*` as components; the scalar `speed` and `accel` are magnitudes and so carry no sign, and projecting the vector onto the heading is what recovers travelling-backwards from moving, and braking from accelerating.",
+      "mechanism": "carla_sgg/sgg.py:798 `__add_to_graph` creates every actor-like node with `vertex`, `forward`, `right`, `up`, `vertex_point` and `threedbbox`, and sgg_abstractor.py:241 copies that dict into the RSV node whole. Every code path that adds an actor, a signal, a sign, a landmark or map scenery goes through __add_to_graph, so the coordinates are always there.",
+      "data_limit": "Structure nodes — lane, road, junction, offRoad — carry NO attributes at all: sgg_abstractor.py builds them as `Node(name=...)` with the `attr` default (:145, :147, :152, :222, :337, :340), and the class defines `self.attr = {} if attr is None` (:19-23). So they have no position and no separation can be computed to or between them. A separation predicate is false, not unknown, when a node lacks coordinates; pair it with `Pred.hasPosition` when that distinction matters.",
+      "vocabulary": "Pred.withinCentimetres / withinMetresExact / beyondCentimetres / hasPosition, alongside the band-based Pred.withinMetres, and the vector family Pred.hasHeading / headingAlignedWith / headingOpposedTo / movingForward / movingBackward / deceleratingAtLeast / acceleratingAtLeast"
+    },
+    "no_note_needed": {
+      "$comment": "Elements of Core/Scene.lean that need no reading note: their meaning is exactly what the enumeration says. Listed explicitly so `doctor` can prove this section covers the whole data model rather than the parts one law corpus happened to need.",
+      "entity_types": [
+        "other"
+      ],
+      "relation_labels": []
     }
   },
   "available_not_exposed": {
-    "$comment": "Present in the captured data, not yet lifted into Lean by carla/adapter.py. A law needing one of these is NOT unsupported — it is blocked on a vocabulary/adapter extension, which you should request explicitly in the plan rather than recording the law as unsupported. Extending it means changing carla/adapter.py, Core/Vocab.lean and this file together.",
-    "actor_geometry": "Every actor node carries `vertex` (x,y,z) and unit `forward` / `right` / `up` vectors (sgg.py::__add_to_graph). Not lifted because exact distances and absolute headings need square roots and pairwise arithmetic, which the milli-unit Int model does not provide; squared-distance comparisons would be the decidable way in.",
-    "ego_transform": "ego_logs.json carries per-frame `state.transform` (x, y, z, pitch, yaw, roll) and the full velocity/acceleration/angular_velocity vectors. Only the scalar channels are lifted.",
-    "carla_identity": "`carla_id`, `carla_type_id`, `carla_semantic_tags`, `carla_actor_state`, `carla_attr` on each actor — stable cross-frame identity and the exact blueprint attributes.",
-    "vehicle_light_state_raw": "The packed `vehicle_light_state` integer, alongside the per-light booleans that are lifted.",
-    "ego_gear": "`carla_gear`, `carla_manual_gear_shift`.",
-    "landmark_geometry_and_validity": "`landmark_orientation`, `landmark_height`, `landmark_width`, `landmark_pitch`, `landmark_roll`, `landmark_z_offset`, `landmark_h_offset`, `landmark_id`, `landmark_name`, `landmark_lane_validities`, `landmark_is_dynamic`.",
-    "waypoint_detail_needs_a_different_abstraction": "Lane width, both lane markings (colour / type / width / lane_change), `waypoint_s`, `is_junction`, `angle` and `curve` exist on the BASE graph's waypoint nodes, but process_to_junction_rsv collapses each waypoint run into one lane node carrying only a name. Reaching them means capturing a different abstraction, not just extending the adapter."
-  },
-  "unavailable": {
-    "$comment": "Genuinely absent. This is the ONLY tier that justifies recording a law as `unsupported`, and the note must name the key. Before adding an entry here, find the line in carla_sgg/ that would have produced it and confirm it does not exist.",
-    "non_ego_dynamics": "speed / accel / throttle / brake / steer / yaw_rate / hand_brake / reverse exist for the ego vehicle only: copy_carla_actor_state and copy_carla_control are called for the ego node alone. Another vehicle's motion is observable only through its light states and through its proximity band changing across frames.",
-    "exact_distance": "Proximity is quantised into the six bands above. The base graph puts a metric `distance` on each edge, but process_to_junction_rsv does not copy it, so no numeric separation is recoverable.",
-    "heading_relative_to_lane": "The abstraction keeps no direction vector for a lane node, so a vehicle's absolute heading cannot be compared with the lane it occupies. Relative heading between two actors IS recoverable — see partially_available.wrong_way_driving.",
-    "lane_width_and_markings": "Collapsed away with the waypoint nodes; there is no carriageway width, no lane-marking type and no kerb.",
-    "stop_line_and_junction_geometry": "No coordinates survive for structure nodes, so a stop line, a give-way line, a crossing and a junction boundary have no position to test against.",
-    "right_of_way": "No explicit priority or right-of-way annotation. Signals and stop signs give de facto priority; otherwise derive it from occupancy order.",
-    "timestamps": "No frame carries a clock. Durations must become frame counts — see time_base.",
-    "sidewalk_context": "process_to_junction_rsv filters out `Sidewalk` nodes, so everything off the carriageway collapses into one `Off Road` node.",
-    "environment": "No weather, time of day, road-surface or visibility state anywhere in the graph.",
-    "occupants_and_load": "No occupancy, seatbelt, cargo, mass or dimension data.",
-    "traffic_light_grouping": "`carla_parent_id` would tie the light boxes of one junction to a parent signal, but sgg.py sets it only in the get_light_boxes() branch, which raises on CARLA 0.9.16; the fallback branch that actually runs does not. MEASURED absent from every traffic-light node in 480 frames, and `actor.parent` is None for lights in any case. No adapter change can lift it — it is not captured."
-  },
-  "pitfalls": [
-    "A vocabulary gap is not a data gap. If the field exists but no predicate reads it, request the predicate — do not record the law as `unsupported`.",
-    "A map convention is not a legal fact. OpenDRIVE lane-id signs, road ids and junction ids describe how the map was authored, not what a driver is permitted to do. Where a statute talks about sides, edges or directions, prefer a predicate defined relative to the vehicle's own direction of travel. Picking the predicate whose NAME matches the statute's words is how `Lane/R0009` came to convict 50 frames of lawful driving.",
-    "A rule that passes all of its own scenarios can still be wrong on every real capture, because the same reasoning wrote the formula and the scenarios. `run_spec monitor` against a human-labelled capture is the only check that is independent of it — assume any rule it has not seen is unvalidated.",
-    "Cite the generator, not this file's history. Every availability claim above names a file and a mechanism; if you believe something else is true, find the line.",
-    "No proximity or angular edge exists between two non-ego actors, or to any sign or signal, or to a van. Check relation_coverage before writing an antecedent that needs a distance.",
-    "`safetyHazard` is the closest band and `near` is nearly the farthest. Use Pred.withinMetres.",
-    "Relation direction reads 'src is <rel> tgt': `Pred.behind v w` means v is behind w, so in a following rule v is the follower. Inverting this silently reverses the rule.",
-    "Ego-only channels on a non-ego binder are silently false, which makes the whole antecedent false and the rule vacuously true.",
-    "A sign's `isIn` edge is bounding-box overlap, not governance. Use `controls` (lights, stop signs) or `mayAffect` (landmarks).",
-    "Absence of an entity is not evidence of absence in the world: render distance and occlusion filtering both drop entities.",
-    "Inter-lane `opposes` / `toLeftOf` / `toRightOf` only relate ADJACENT lane ids of the same road.",
-    "Two RSV nodes that happen to share a name collapse into one entity in carla/adapter.py, which keys entities by name.",
-    "Every rule needs a positive and a negative scenario, and every binder needs a distinct entity in every scenario trace, or the rule grounds zero times and tests nothing.",
-    "A rule's verdict must not depend on how long the capture is. Core/Semantics.lean::loopBounded reads a `.bounded n` window that overruns the trace as false, so `□ (¬ₛ .bounded n bad)` reports compliant on any trace shorter than n, with groundings >= 1 so the vacuity guard misses it. Measured on R0011 (n=80): 80 frames of an every-frame violation report false, 79 report true. Core/Formula.lean::SFProp.frameSpan computes the requirement and check_spec rejects short scenario traces as TRACE_TOO_SHORT.",
-    "The last n-1 frames of any trace are a blind zone for a `.bounded n` rule: a violation confined to them cannot be reported. Measured: 79 violating frames at the end of a 200-frame trace read as compliant.",
-    "Every binder MULTIPLIES the grounding count, and a binder over a structural type (lane, road) multiplies it by tens. `laneBinder \"a\", laneBinder \"b\"` is ~1,200 lane pairs on a real capture, of which only the pairs joined by an actual edge do any work — the rest make the antecedent false and are vacuously satisfied, so they cost a full trace evaluation each and contribute nothing. Prefer a predicate that quantifies lanes internally (`inRightmostLane`, `hasLaneToTheRight`, `laneTravelsTo` with `inLane`, `opposingLanes`): one scan per frame instead of a cross product. If the relation you need has no such predicate, request one rather than binding two lanes — see capture_reference_census."
-  ],
-  "recipes": {
-    "$comment": "Common statutory concepts and the construction that expresses them with today's vocabulary. Use these instead of re-deriving what is possible.",
-    "a vehicle is following another within N metres": "Pred.followingWithin N v w — same lane, v behind w, band union at or below N. Bind the ego as one of the pair.",
-    "a driver faces a steady red signal": "Pred.facingRedSignal v, or trafficLightBinder d + Pred.governs d v ⋀ Pred.signalRed d when the rule must name the signal. WARNING: both reduce to the same `controls` lookup, and that edge only exists once the vehicle is already inside the junction — see relation_labels.notes.controls_is_the_only_governance_edge. Do NOT conjoin either with `¬ₛ Pred.inAnyJunction v`: the conjunction is unsatisfiable on real captures and the rule will report compliant on every red-light runner.",
-    "the signal changed while the vehicle was inside the junction": "Pred.signalGreen d ⋀ Pred.inJunction v j at one position, then ◯ (Pred.signalRed d) — a temporal formula over light_state, no extra field.",
-    "a driver approaching a stop sign must stop": "Pred.facingStopSign v ⋀ Pred.approachingJunction v j ⋀ ¬ₛ Pred.inAnyJunction v, with .bounded (secondsToFrames 1) (Pred.stopped v) for the dwell, then Pred.inJunction v j. CAUTION: this is the same shape that makes R0004 unsatisfiable. A stop sign's `controls` edge comes from its trigger volume, which sits on the approach rather than inside the junction, so it probably survives — but that is UNVERIFIED against a capture. Check the grounding count.",
-    "not more than N km/h": "Pred.speedLeKph v N (ego only). For a posted rather than a literal limit, Pred.withinPostedSpeedLimit v.",
-    "for at least one second": "SFProp.bounded (TrafficSpec.secondsToFrames 1) φ — 20 frames at the reference capture rate. Record the assumption.",
-    "an oncoming vehicle is approaching in my lane": "Pred.oncoming v w ⋀ Pred.sameLane v w, tightening bands across frames for 'approaching'.",
-    "a vehicle is driving against the flow": "Pred.inLane v l₁ ⋀ ◯ (Pred.inLane v l₂) ⋀ Pred.laneTravelsTo l₂ l₁ — movement opposite to lane connectivity.",
-    "yield to an emergency vehicle": "Pred.isEmergency w with a proximityVehicleBinder for w (an ambulance is a van and carries no distance edges), plus Pred.following / withinMetres.",
-    "the vehicle ahead is braking": "Pred.brakeLightOn w — the only braking evidence for a non-ego vehicle.",
-    "the driver signalled before changing lane": "Pred.rightBlinkerOn v (or left) at a position, then ◯ (Pred.inLane v l₂) with Pred.canLaneChangeTo l₁ l₂.",
-    "clear of any intersection": "¬ₛ Pred.inAnyJunction v.",
-    "on the right-hand half of the roadway": "Pred.inRightmostLane v, or ¬ₛ Pred.hasLaneToTheRight v when a vehicle off the roadway should not be convicted. Relative to the vehicle's own direction of travel, so no map convention is involved. Do NOT use the lane_id sign — see partially_available.which_half_of_the_roadway.do_not_use.",
-    "drive to the right-hand edge of the roadway": "Same construction: Pred.inRightmostLane v. The graph has no kerb or carriageway edge, so 'the right-hand edge' degrades to 'the rightmost lane of my direction'; record that as the residue.",
-    "a duration in seconds": "SFProp.bounded (TrafficSpec.secondsToFrames k) φ. The trace must be at least `SFProp.frameSpan` frames long or the rule reports compliant no matter what the trace contains — Core/Semantics.lean::loopBounded reads a window running off the end as false. Core/Grounding.lean publishes the span and tools/check_spec.py rejects short scenario traces with TRACE_TOO_SHORT."
+    "$comment": [
+      "Keys the generator puts on a node that carla/adapter.py does not lift. Derived, not curated: scripts/sgg_surface.py reads `carla_sgg/*.py` and the CARLA enums the generator iterates, and `run_spec doctor` fails when a key it finds is accounted for neither here nor in attribute_keys. 65 keys are emitted; the ones below are not lifted.",
+      "A law needing one of these is NOT unsupported. It is blocked on an adapter and vocabulary extension, which the plan must request explicitly.",
+      "Every entry gives a reason that holds for any law: volume, redundancy with a key already lifted, or a value that is not a measurement. Reasons of the form 'no statute refers to this' were removed — they describe one corpus."
+    ],
+    "redundant_with_a_key_already_lifted": {
+      "keys": [
+        "carla_type_id",
+        "vehicle_light_state"
+      ],
+      "carla_type_id": "The blueprint id, already lifted as `sem_class`.",
+      "vehicle_light_state": "The packed integer whose bits are lifted individually as the light_* booleans."
+    },
+    "not_a_usable_value": {
+      "keys": [
+        "light_All",
+        "light_NONE",
+        "entity_id"
+      ],
+      "light_All": "An enum mask over `carla.VehicleLightState.names` meaning all lamps, not a lamp. sgg.py:689 writes one boolean per enum member and this is a member.",
+      "light_NONE": "The complementary mask, meaning no lamps. Same mechanism.",
+      "entity_id": "An SGG-internal index. `__add_to_graph` takes `entity_id=None` by default (sgg.py:787) and the traffic-light call sites at :601 and :617 pass none, so it is None there; the map-scenery path passes `-static_id` (:462), so it is negative there. It cannot serve as identity — `carla_id` is lifted instead."
+    },
+    "landmark_physical_geometry": {
+      "keys": [
+        "landmark_id",
+        "landmark_name",
+        "landmark_is_dynamic",
+        "landmark_orientation",
+        "landmark_pitch",
+        "landmark_roll",
+        "landmark_height",
+        "landmark_width",
+        "landmark_z_offset",
+        "landmark_h_offset"
+      ],
+      "why": "The shape and pose of a sign. Nothing can relate it to the lanes it governs: lane, road and junction nodes carry no attributes at all (sgg_abstractor.py:19-23 and the attribute-free `Node(name=...)` constructions at :145, :147, :152), so there are no coordinates on the other side of the comparison. `landmark_lane_validities`, which states the governance directly, IS lifted."
+    },
+    "a_different_abstraction_would_be_needed_for": {
+      "waypoint_detail": "Lane width, both lane markings (colour / type / width / lane_change), `waypoint_s`, `is_junction`, `angle` and `curve` exist on the BASE graph's waypoint nodes, but process_to_junction_rsv collapses every waypoint of a lane into one lane node and keeps none of them. Not reachable by extending the adapter."
+    },
+    "volume": {
+      "$comment": "Sized from the generator, not from a capture: the count of numbers each key contributes PER NODE PER FRAME, which is fixed by the code that writes it. The generated Lean trace is chunked at 25 frames per definition to stay under Lean's per-definition codegen limit, so what matters is numbers per node per frame rather than any one capture's total.",
+      "threedbbox": "8 corners x 3 components = 24 numbers per node per frame, from `parse3dbb` / `get_local_vertices`. The single largest key in the surface, and it describes a box whose centre `vertex` already gives (lifted as pos_x/pos_y/pos_z).",
+      "right_and_up": "3 numbers each. With `forward` (lifted) they form an orthonormal frame; for a body on a road surface `forward` alone fixes the heading, so the other two are derivable rather than informative.",
+      "keys": [
+        "threedbbox",
+        "right",
+        "up",
+        "vertex_point"
+      ],
+      "vertex_point": "The same x,y as `vertex`, as a shapely POINT. `vertex` is lifted as pos_x/pos_y/pos_z, so this is a second copy in a form Lean cannot read."
+    },
+    "conditional_on_the_carla_version": {
+      "keys": [
+        "carla_parent_id",
+        "carla_semantic_tags",
+        "carla_actor_state",
+        "carla_attr"
+      ],
+      "why": "Written only inside the `for bbox in actor.get_light_boxes()` branch, guarded by `except AttributeError` for CARLA builds lacking that method; the fallback writes `carla_id` and `carla_type_id` only. `TrafficLight.get_light_boxes` is present on the CARLA line this pipeline targets, so the branch runs and these keys are emitted. `carla_parent_id` is the one with content: it ties the individual light boxes of a junction to a parent signal, which is the signal grouping nothing else provides. Not lifted, so a rule needing it is a vocabulary gap to request."
+    }
   },
   "capture_preconditions": {
-    "$comment": "Values this contract states as fact that are really CALLER-SUPPLIED DEFAULTS of the generator or the simulator. None of them is recorded in a capture, so nothing downstream can verify that the capture it is reading was made with them. They hold only for a capture recorded with generator defaults. A mismatch shifts every threshold silently, and because an unparseable or absent value makes both `leMilli` and `geMilli` false, the error direction is a MISSED violation.",
-    "capture_rate": "time_base.capture_hz = 20 is world.settings.fixed_delta_seconds, chosen by the capture script (capture_sensor_data.py FPS=20; src/run_capture.py --fps). Core/Scene.lean freezes `captureHz := 20`, and time_base itself states that frames carry no timestamp — so the rate is unverifiable from the data by construction. At 40 Hz `secondsToFrames 1` = 20 frames means 0.5 s and a half-second rolling stop satisfies R0005.",
-    "proximity_band_metres": "proximity_bands_closest_first is DEFAULT_PROXIMITY_THRESHOLDS, an overridable parameter of process_to_junction_rsv. The RSV keeps only the band LABEL, not the metres (verified: edge data keys are exactly {'label'}), so the mapping cannot be checked against a capture. Core/Scene.lean::distanceBands hard-codes it.",
-    "proximity_pair_table": "relation_coverage is DEFAULT_PROXIMITY_RELATIONS / DEFAULT_DIRECTIONAL_RELATIONS, also overridable. 'ego is always one end' is a property of the default table.",
-    "directional_split_degrees": "DEFAULT_DIRECTIONAL_THRESHOLDS (45/90/135). Pred.oncoming's 'headings differ by more than 90 degrees' depends on it.",
-    "render_distance": "generate_graph_for_frame(render_dist=50), a per-call default.",
-    "occlusion": "SGG(check_occlusion=False), a constructor default.",
-    "junction_boundaries": "init_to_world(parse_junction_boundaries=False).",
-    "segment_length": "SGG(segment_length=1.0). NOT documented elsewhere in this file, though it sets lane-node granularity AND appears in the controls-edge test (`get_distance(...) < self.segment_length * 0.5`), so the governance edge R0004/R0005 depend on has a tolerance this contract never stated.",
-    "how_to_fix": "Record the generator/simulator parameters alongside each capture and have carla/adapter.py hard-fail on disagreement with what Core assumes. Until then these are assumptions, not facts, and a plan agent should be told so."
-  },
-  "capture_reference_census": {
-    "$comment": "How many DISTINCT entities of each binder type a real capture contains, measured on a 240-frame Town03 capture (red_light_compliant) with `traceEntityIds`. This is the basis for the grounding budget the gate enforces: `PropertySchema.bindings` is the cross product of these, so each extra binder MULTIPLIES the work, and a binder over a structural type multiplies it by a large number. Values below are rounded UP from the measurement to leave headroom for a busier capture — a budget check must not pass a rule that would then blow up on real traffic.",
-    "measured_on": "240 frames, Town03, 2 vehicles, ClearNoon",
-    "counts": {
-      "vehicle": 8,
-      "proximityVehicle": 8,
-      "roadUser": 10,
-      "pedestrian": 6,
-      "lane": 35,
-      "road": 23,
-      "junction": 4,
-      "trafficLight": 6,
-      "stopSign": 4,
-      "controlDevice": 8,
-      "landmark": 6
+    "$comment": [
+      "Settings a CALLER chooses, which no capture is obliged to record. Each entry names the generator parameter(s) it accounts for, says where the value lives, and says what breaks if a capture used a different one — it never restates the value, so there is one place to change it.",
+      "Complete over the generator's own signature, not over the settings someone thought of: `parameters` is checked against scripts/sgg_surface.py::parameters(), which reads the keyword arguments of SGG.__initialization, init_to_world, generate_graph_for_frame and process_to_junction_rsv. `run_spec doctor` fails when a parameter exists in the generator and is accounted for nowhere here.",
+      "Why they must be FIXED, not merely recorded: frozen Core encodes several of them as constants — Core/Scene.lean::captureHz, ::distanceBands, ::proximityTypes, and the four angular labels Vocab.lean reads. A trace built from a capture made with other settings still type-checks and still grounds, but its keys no longer MEAN what Core assumes: the same band label denotes a different distance, the same frame count a different duration. The rules then evaluate correctly against the wrong world. Nothing in the trace reveals it, and an unparseable or out-of-range value makes both `leMilli` and `geMilli` false, so the error direction is a MISSED violation.",
+      "So the four that Core mirrors are refused by carla/adapter.py, and the rest warn. A capture is only comparable with another when both used the same settings."
+    ],
+    "capture_rate": {
+      "parameters": [
+        "fixed_delta_seconds (simulator, not an SGG parameter)"
+      ],
+      "mirrored_in_core": "Core/Scene.lean::captureHz",
+      "note": "value_lives_at: time_base.capture_hz. It is `world.settings.fixed_delta_seconds`, chosen by the capture script, and frozen again in Core/Scene.lean::captureHz, which `secondsToFrames` multiplies by. `time_base.frames_carry_no_timestamp` is true, so the rate is unverifiable from the data by construction. Halving or doubling it rescales every duration in every rule: a one-second dwell requirement becomes half a second, and a rolling stop satisfies it."
     },
-    "raw_measurement": "vehicle 2 · lane 35 · road 23 · junction 2 · trafficLight 3 · stopSign 0 · landmark 3 · pedestrian 0",
-    "cost_per_grounding": "Each grounding is one full `satisfies` over the whole trace. Measured: 16,637 groundings over 240 frames took 327 s of `lake env lean`, i.e. ~20 ms per grounding. Cost also grows with frames^2 because `Trace` is a `List Scene` and scene lookup is O(i).",
-    "why_it_bit": "A 21-rule library in which 7 rules bound one or two LANES produced 8,775 to 16,637 groundings per capture and 239-327 s of evaluation, against a 300 s harness ceiling — so two of four captures were reported as unevaluable. Two captures with an identical 16,637 groundings landed on opposite sides of the ceiling, which is what a budget cliff looks like. The gate never saw it: a scenario trace holds 3-4 lanes, so the same rule grounds a handful of times there and passes in milliseconds."
+    "proximity_band_metres": {
+      "parameters": [
+        "proximity_thresholds"
+      ],
+      "mirrored_in_core": "Core/Scene.lean::distanceBands",
+      "note": "value_lives_at: relation_labels.proximity_bands_closest_first. It is `DEFAULT_PROXIMITY_THRESHOLDS`, an overridable parameter of process_to_junction_rsv, and frozen again in Core/Scene.lean::distanceBands. The RSV keeps only the band LABEL, not the metres (verified: edge data keys are exactly {'label'}), so the mapping cannot be recovered from a capture. Different thresholds silently redefine what every `Pred.withinMetres N` bound means."
+    },
+    "proximity_pair_table": {
+      "parameters": [
+        "proximity_relations",
+        "directional_relations"
+      ],
+      "mirrored_in_core": "Core/Scene.lean::proximityTypes",
+      "note": "value_lives_at: relation_coverage.proximity_and_angular_pairs.covered_base_classes. It is `DEFAULT_PROXIMITY_RELATIONS` / `DEFAULT_DIRECTIONAL_RELATIONS`, both overridable. 'ego is always one end' is a property of the default table, not of the generator."
+    },
+    "directional_split_degrees": {
+      "parameters": [
+        "directional_thresholds"
+      ],
+      "mirrored_in_core": "the four angular RelLabels in Core/Scene.lean, read by Pred.oncoming / inFrontOf / behind",
+      "note": "`DEFAULT_DIRECTIONAL_THRESHOLDS`, overridable. `Pred.oncoming`'s 'headings differ by more than 90 degrees' is a property of that table."
+    },
+    "render_distance": {
+      "parameters": [
+        "render_dist"
+      ],
+      "note": "generate_graph_for_frame(render_dist=50), a per-call default."
+    },
+    "occlusion": {
+      "parameters": [
+        "check_occlusion"
+      ],
+      "note": "SGG(check_occlusion=False), a constructor default."
+    },
+    "junction_boundaries": {
+      "parameters": [
+        "parse_junction_boundaries"
+      ],
+      "note": "init_to_world(parse_junction_boundaries=False)."
+    },
+    "segment_length": {
+      "parameters": [
+        "segment_length"
+      ],
+      "note": "SGG(segment_length=1.0). Sets lane-node granularity, and also appears in the `controls`-edge test (`get_distance(...) < self.segment_length * 0.5`), so every governance edge carries a tolerance derived from it. Any rule reading `controls` or `mayAffect` inherits that tolerance."
+    },
+    "excluded_actors": {
+      "parameters": [
+        "exclude_ids"
+      ],
+      "note": "generate_graph_for_frame(exclude_ids=None). Actors listed here are dropped from the frame entirely. The ego is always appended to it, which is WHY the ego carries no light_* attributes — see attribute_keys. A caller passing more ids removes those actors from the graph with no trace in the capture, so a rule about them would ground zero times for a reason nothing records."
+    },
+    "which_actor_is_the_ego": {
+      "parameters": [
+        "ego_id"
+      ],
+      "note": "SGG(ego_id=None). Selects which CARLA actor becomes the `ego` node, and the ego node is privileged throughout: it is the only node carrying the dynamics channels (sgg.py:562-563), the only one excluded from every frame's actor list, and one end of every proximity and angular edge. Pointing it at a different vehicle does not rename a node — it changes which vehicle every ego-scoped predicate is about, and so which vehicle any verdict describes."
+    },
+    "ego_control_source": {
+      "parameters": [
+        "ego_control"
+      ],
+      "note": "generate_graph_for_frame(ego_control=None). When a `carla.VehicleControl` is passed, copy_carla_control writes the seven control channels (sgg.py:562); when a dict is passed instead, sgg.py:570 writes `ego_control_{key}` keys that carla/adapter.py does not read, so throttle, brake and steer arrive ABSENT rather than wrong. An absent decimal makes both `leMilli` and `geMilli` false, so a braking or throttle antecedent is silently false and the rule reports compliant."
+    },
+    "base_graph_construction": {
+      "parameters": [
+        "init",
+        "perform_init",
+        "frame_buffer"
+      ],
+      "note": "SGG(init=True, frame_buffer=10) and generate_graph_for_frame(perform_init=False). `init` builds the whole base graph at construction; `perform_init` does it lazily on the first frame instead. Either way the road structure is fixed before frame 0 — see when_they_are_fixed. `frame_buffer` sizes the generator's internal snapshot history and changes no node, edge or attribute."
+    },
+    "how_to_fix": "Record the generator/simulator parameters alongside each capture and have carla/adapter.py hard-fail on disagreement with what Core assumes. Until then these are assumptions, not facts, and must be presented as such to anyone planning against them.",
+    "when_they_are_fixed": "All SGG parameters are INIT-ONLY. `SGG.__initialization` calls `init_to_world()` when `init=True` (the default), which builds the whole base graph — road structure, lane nodes, lane bounding boxes, waypoint sampling — from these values in one pass. Every setter then calls `_check_init()`, which raises `ValueError: Cannot initialize or alter parameters after initialization. You must use a separate SGG object per map and configuration`. So they cannot drift mid-capture: they are per-capture constants decided before frame 0. `SGG.__new__` is a singleton that DELETES and recreates the instance when called with arguments, so constructing SGG again with different values rebuilds the base graph — which is the only way to change them, and it changes every frame that follows. Nothing in a capture records which values were used; sg/carla_scene_graphs/src/carlaspec/runner.py writes them into simulation.json → generator, and carla/adapter.py refuses a capture whose recorded values contradict what Core assumes.",
+    "no_effect_on_this_abstraction": {
+      "parameters": [
+        "angular_precision",
+        "closeness_inflation"
+      ],
+      "$comment": "Parameters that look as though they should matter and do not. Each was traced through the generator source to every use site, and reaches no node, edge or attribute of this abstraction. Recorded so they are not mistaken for silent hazards.",
+      "closeness_inflation": "SGG(closeness_inflation=0.25). Feeds `hashable_location(vert, waypoint_precision, inflation)`, which buckets waypoint vertices onto a grid of `segment_length / inflation` = 4 m, building `closeness_map`. That map is stored on the base graph (sgg.py:346) and then DELETED from every frame subgraph (sgg.py:725) without ever being read. No edge, node or attribute depends on it.",
+      "angular_precision": "SGG(angular_precision=[1, 2.5, 5, 7.5, 10]). Buckets each waypoint's turn angle into the node attributes `angle` and `curve`. Only `process_to_abstract()` reads `curve` (sgg_abstractor.py:58), and this pipeline consumes `process_to_junction_rsv`, which reads neither — waypoint runs are collapsed into one lane node carrying only a name.",
+      "frame_buffer": "SGG(frame_buffer=10). Sizes two LRU caches of recent frames. Affects memory and recomputation, not output."
+    }
+  },
+  "deciding_unsupported": {
+    "$comment": "When a law needs something, work down this list. The schema is frozen before the pipeline sees any law, so it cannot pre-enumerate which absences a corpus will ask about. These steps let the answer be derived for a law nobody anticipated.",
+    "step_1_is_it_lifted": "Look in attribute_keys, entity_types and relation_labels. Those enumerate everything a rule can read today. If it is there, formalize it — and check partially_available for how to read it, because several elements do not mean what their names suggest.",
+    "step_2_is_it_present_but_unlifted": "Look in available_not_exposed. If the data carries it and carla/adapter.py does not lift it, the law is NOT unsupported: it is blocked on an adapter and vocabulary extension. Request that extension explicitly in the plan, naming the key. Recording such a law as `unsupported` is the most expensive mistake available here, because it discards a formalizable law silently.",
+    "step_3_is_it_reachable_from_what_is_lifted": "Some concepts are not a key at all but a computation over keys — a distance from two positions, a change from two frames, a direction from a heading and a lane connection. partially_available says what each element supports and what it cannot express. If the computation is decidable over integers, it is available whether or not any single key names it.",
+    "step_4_only_then_unsupported": "If it is on neither side of the key partition, not in the entity or relation enumerations, and not computable from them, it is absent. Say so, and name what you looked for. Two structural boundaries account for most true absences, and both are properties of the abstraction rather than of any law: STRUCTURE NODES CARRY NO ATTRIBUTES — sgg_abstractor.py:19-23 defines `Node(name, base_class=None, attr=None)` with `self.attr = {}` when none is given, and every lane, road, junction and Off Road node is built that way (:145, :147, :152, :222, :337), so nothing about the road structure has a position, width, marking, or direction vector; and WAYPOINT DETAIL IS COLLAPSED — process_to_junction_rsv folds every waypoint of a lane into one such attribute-free node, so anything the base graph put on a waypoint (lane width, both lane markings, `angle`, `curve`) is unreachable by any adapter change."
   }
 }

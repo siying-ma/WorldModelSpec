@@ -3,6 +3,7 @@
     python -m scripts.run_spec init
     python -m scripts.run_spec loop    --run-id ca_w32 --laws laws/example/laws.jsonl
     python -m scripts.run_spec verify
+    python -m scripts.run_spec doctor
     python -m scripts.run_spec monitor --rsv-dir <capture>/rsv --labels labels/<name>.json
     python -m scripts.run_spec index
     python -m scripts.run_spec cleanup --run-id ca_w32
@@ -31,7 +32,8 @@ from typing import Optional
 
 import fire
 
-from . import capture_eval, index_sync
+from . import index_sync
+from .diagnostics import capture_eval
 from .lean_check import (
     CAPTURE_EVAL_TIMEOUT,
     LeanUnavailable,
@@ -103,7 +105,7 @@ class Cli:
         laws: str = DEFAULT_LAWS,
         library_root: str = "library",
         max_iterations: int = 3,
-        max_nodes_per_iter: int = 4,
+        max_nodes_per_iter: int = 8,
         max_turns: int = 60,
         timeout_minutes: Optional[float] = 45,
         model: Optional[str] = None,
@@ -135,6 +137,26 @@ class Cli:
                            library_root=_resolve(library_root))
         Loop(ctx).run()
         return 0
+
+    def doctor(self, library_root: str = "library", verbose: bool = False) -> int:
+        """Cross-check every agent-facing claim against the artifact it describes.
+
+        The two artifacts that decide spec quality — `carla/schema.json` and
+        `prompts/*.txt` — describe things they do not own: the Lean core, the
+        adapter, the generator, the gate's verdict set. This compares each
+        description with the thing described and names both sources on failure.
+
+        No model, no Lean, no CARLA server. Checks needing the sibling CARLA repo
+        are skipped rather than failed, so it runs anywhere:
+
+            python -m scripts.run_spec doctor
+            PYTHONPATH=../sg/carla_scene_graphs python -m scripts.run_spec doctor
+
+        Returns 1 if any check fails, so it belongs in CI. Note `fire` prints the
+        return value rather than exiting with it.
+        """
+        from .diagnostics import doctor as doctor_mod
+        return doctor_mod.run(REPO_ROOT, _resolve(library_root), verbose)
 
     def verify(self, library_root: str = "library") -> int:
         """Build the library and re-run every rule's scenarios. No agent involved."""
@@ -192,10 +214,10 @@ class Cli:
 
         **A whole capture set at once** — one directory per capture, each with
         `rsv/`, `ego_logs.json` and its own `labels.json`, as written by
-        `../../sg/carla_scene_graphs/src/run_capture.py`:
+        `../sg/carla_scene_graphs/src/run_capture.py`:
 
             python -m scripts.run_spec monitor \\
-                --database ../../sg/carla_scene_graphs/database \\
+                --database ../sg/carla_scene_graphs/database \\
                 --adapter-python $(which python)
 
         Captures named `<scenario>_compliant` / `<scenario>_violation` are also
@@ -216,7 +238,7 @@ class Cli:
         """
         library = _resolve(library_root)
         if database is not None:
-            from scripts import capture_bench
+            from scripts.diagnostics import capture_bench
             root = Path(database).expanduser()
             if not root.is_absolute():
                 root = (REPO_ROOT / root).resolve()
@@ -230,7 +252,7 @@ class Cli:
         if labels is None:
             print("[error] --labels is required: the point of `monitor` is the "
                   "comparison against human ground truth. Write a label file "
-                  "first (see scripts/capture_eval.py for the format).",
+                  "first (see scripts/diagnostics/capture_eval.py for the format).",
                   file=sys.stderr)
             return 2
         labels_file = _resolve(labels)
@@ -324,6 +346,14 @@ class Cli:
             return 1
         print("Index.lean " + ("updated" if changed else "already current")
               + f" ({index_sync.registered_count(library)} rule(s))")
+        return 0
+
+    def sample(self, library_root: str = "library") -> int:
+        """Regenerate the coverage fixture from Core/Scene.lean."""
+        from scripts import sample_sync
+        library = _resolve(library_root)
+        path, changed = sample_sync.sync(library)
+        print(f"{path.name} " + ("regenerated" if changed else "already current"))
         return 0
 
     def cleanup(self, run_id: str = "default", results: bool = False) -> int:

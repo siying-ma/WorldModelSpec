@@ -138,7 +138,7 @@ def clear_temporary_hints(path: Path) -> None:
 @dataclass
 class LoopOptions:
     max_iterations: int = 3
-    max_nodes_per_iter: int = 4
+    max_nodes_per_iter: int = 8
     max_turns: int = 60
     timeout_minutes: Optional[float] = 45
     model: Optional[str] = None
