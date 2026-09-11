@@ -18,8 +18,10 @@ IMPORT_BEGIN = "-- BEGIN GENERATED IMPORTS"
 IMPORT_END = "-- END GENERATED IMPORTS"
 RULES_BEGIN = "  -- BEGIN GENERATED RULES"
 RULES_END = "  -- END GENERATED RULES"
-SCEN_BEGIN = "  -- BEGIN GENERATED SCENARIOS"
-SCEN_END = "  -- END GENERATED SCENARIOS"
+WIT_BEGIN = "  -- BEGIN GENERATED WITNESSES"
+WIT_END = "  -- END GENERATED WITNESSES"
+WIT_IMPORT_BEGIN = "-- BEGIN GENERATED IMPORTS"
+WIT_IMPORT_END = "-- END GENERATED IMPORTS"
 
 
 class RuleFile:
@@ -47,7 +49,7 @@ class RuleFile:
         out = []
         if not self.namespace:
             out.append(f"{self.rel}: no `namespace TrafficSpec.Rules.…` declaration")
-        for decl in ("schema", "entry", "scenarios"):
+        for decl in ("schema", "entry"):
             if decl not in self.defs:
                 out.append(f"{self.rel}: missing `def {decl}`")
         return out
@@ -68,6 +70,58 @@ def _replace_block(text: str, begin: str, end: str, body: list[str]) -> str:
     return text[:start + len(begin)] + "\n" + "\n".join(body) + "\n" + text[stop:]
 
 
+def witness_path(library_root: Path, rule: "RuleFile") -> Path:
+    """Where the witnesses for a rule file live.
+
+    Mirrors the rule's own path under a different library root, so the pairing
+    is a fact about the file system rather than a registry someone has to keep
+    in step.
+    """
+    rel = rule.path.relative_to(library_root / "TrafficSpec" / "Rules")
+    return library_root / "TrafficSpecWitness" / rel
+
+
+def _sync_witnesses(library_root: Path, files: list, dry_run: bool
+                    ) -> tuple[bool, list[str]]:
+    root = library_root / "TrafficSpecWitness.lean"
+    if not root.exists():
+        return False, [f"{root} does not exist"]
+    problems: list[str] = []
+    imports: list[str] = []
+    pairs: list[str] = []
+    for f in files:
+        wit = witness_path(library_root, f)
+        if not wit.exists():
+            problems.append(
+                f"{f.rel}: no witness file at "
+                f"{wit.relative_to(library_root)} — every rule needs the two "
+                f"traces that show it can be violated and can be complied with")
+            continue
+        text = wit.read_text(encoding="utf-8", errors="replace")
+        ns = next((ln.split()[1] for ln in text.splitlines()
+                   if ln.startswith("namespace TrafficSpecWitness")), None)
+        if ns is None:
+            problems.append(f"{wit.name}: no `namespace TrafficSpecWitness.…`")
+            continue
+        if "def scenarios" not in text:
+            problems.append(f"{wit.name}: missing `def scenarios`")
+            continue
+        rel = wit.relative_to(library_root).with_suffix("")
+        imports.append("import " + ".".join(rel.parts))
+        pairs.append(f"({f.short_namespace}.entry, {ns}.scenarios)")
+    if problems:
+        return False, problems
+    original = root.read_text(encoding="utf-8")
+    text = _replace_block(original, WIT_IMPORT_BEGIN, WIT_IMPORT_END, imports)
+    text = _replace_block(text, WIT_BEGIN, WIT_END,
+                          [f"  [ {', '.join(pairs)} ]" if pairs else "  []"])
+    changed = text != original
+    if changed and not dry_run:
+        root.write_text(text, encoding="utf-8")
+        print(f"[info] Registered {len(pairs)} witness module(s) in {root.name}")
+    return changed, []
+
+
 def sync(library_root: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
     """Rewrite Index.lean. Returns ``(changed, problems)``.
 
@@ -85,19 +139,22 @@ def sync(library_root: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
 
     imports = [f"import {f.module}" for f in files]
     rules = ", ".join(f"{f.short_namespace}.entry" for f in files)
-    scens = ", ".join(
-        f"({f.short_namespace}.entry, {f.short_namespace}.scenarios)" for f in files
-    )
 
     original = index_path.read_text(encoding="utf-8")
     text = _replace_block(original, IMPORT_BEGIN, IMPORT_END, imports)
     text = _replace_block(text, RULES_BEGIN, RULES_END, [f"  [ {rules} ]" if rules else "  []"])
-    text = _replace_block(text, SCEN_BEGIN, SCEN_END, [f"  [ {scens} ]" if scens else "  []"])
 
     changed = text != original
     if changed and not dry_run:
         index_path.write_text(text, encoding="utf-8")
         print(f"[info] Registered {len(files)} rule(s) in {index_path.name}")
+
+    # The witness root is generated from the same file list, so a rule and its
+    # witness cannot drift apart: a rule with no witness file is a structural
+    # problem reported here, not a silently missing acceptance test.
+    changed_w, problems_w = _sync_witnesses(library_root, files, dry_run)
+    changed = changed or changed_w
+    problems += problems_w
     return changed, []
 
 

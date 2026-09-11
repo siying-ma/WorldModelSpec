@@ -10,7 +10,7 @@ the spec, and the expectation comes from someone who watched the footage.
 Label file (one per capture), granularity: one verdict per law per capture.
 
     {
-      "capture": "sceneflow_sample",
+      "capture": "the capture directory this file labels",
       "annotator": "who labelled it, and from what evidence",
       "labels": [
         {"law": "EX-LANE-001", "verdict": "compliant", "note": "rightmost lane"},
@@ -103,6 +103,12 @@ def parse_capture_report(output: str) -> tuple[int, list[dict]]:
                 # complete. Older harnesses did not emit it; 0 disables the
                 # check rather than silently failing every rule.
                 "span": int(parts[5]) if len(parts) >= 6 and parts[5].strip().isdigit() else 0,
+                # Groundings whose antecedent held at some frame. `None` means
+                # the harness could not read the formula's shape — unknown, not
+                # zero. Older harnesses did not emit it, and absence reads the
+                # same way: nothing is claimed about engagement.
+                "live": (int(parts[6]) if len(parts) >= 7
+                         and parts[6].strip().isdigit() else None),
             })
     return frames, rows
 

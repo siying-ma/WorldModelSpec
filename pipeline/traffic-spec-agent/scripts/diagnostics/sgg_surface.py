@@ -51,11 +51,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Where the generator lives, alongside this repository.
-SGG_DIR = REPO_ROOT.parent / "sg" / "carla_scene_graphs" / "carla_sgg"
+SGG_DIR = REPO_ROOT.parent / "carla_scene_graphs" / "carla_sgg"
 
 # Node index expressions that denote an ACTOR node, whose attributes the
 # abstraction copies into the RSV.
 ACTOR_INDICES = ("actor_name", "'ego'", '"ego"')
+
+
+# The abstraction this pipeline consumes; edges from any other abstraction are
+# not in our graphs. Listed with the helpers it calls that also add edges.
+ABSTRACTION = "process_to_junction_rsv"
+EDGE_HELPERS = ("__add_to_graph", "init_to_world", "generate_graph_for_frame")
 
 
 def _src(name: str) -> str:
@@ -218,6 +224,43 @@ def parameters() -> dict[str, str]:
     return out
 
 
+def edge_label_sites() -> dict[str, list[str]]:
+    """Relation label -> the sites that emit it, within OUR abstraction.
+
+    A label emitted at more than one site is OVERLOADED: the same word denotes
+    different things depending on which loop drew it, and a rule reading it as
+    one meaning silently accepts the other. Labels whose value is an expression
+    rather than a literal — the proximity band and the directional relation —
+    appear under a placeholder naming that expression, since their concrete
+    values come from the threshold tables.
+    """
+    out: dict[str, list[str]] = {}
+    for fname in ("sgg.py", "sgg_abstractor.py"):
+        for fn in ast.walk(_tree(fname)):
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            if fn.name != ABSTRACTION and fn.name not in EDGE_HELPERS:
+                continue
+            for node in ast.walk(fn):
+                if not (isinstance(node, ast.Call)
+                        and isinstance(node.func, ast.Attribute)
+                        and node.func.attr == "add_edge"):
+                    continue
+                for kw in node.keywords:
+                    if kw.arg not in ("label", "dist_relationship"):
+                        continue
+                    label = (kw.value.value
+                             if isinstance(kw.value, ast.Constant)
+                             else f"<{ast.unparse(kw.value)}>")
+                    out.setdefault(label, []).append(f"{fname}:{node.lineno}")
+    return {k: sorted(set(v)) for k, v in sorted(out.items())}
+
+
+def overloaded_labels() -> dict[str, list[str]]:
+    """Labels emitted at more than one site in the abstraction we consume."""
+    return {k: v for k, v in edge_label_sites().items() if len(v) > 1}
+
+
 if __name__ == "__main__":
     s = surface()
     print(f"{len(s)} RSV attribute keys derived from {SGG_DIR}\n")
@@ -232,3 +275,52 @@ if __name__ == "__main__":
     print(f"\n{len(ps)} caller-supplied parameters:")
     for k, where in sorted(ps.items()):
         print(f"  {k:<34} {where}")
+
+
+# Python 3.9 introduced `ast.unparse`, which this module needs to recover the
+# expression a key is written through. On an older interpreter every such call
+# fails, the scope classification silently degrades, and the derived surface
+# comes back SMALLER than the truth — which reads downstream as "the generator
+# does not emit this", the direction that discards a formalizable law. Refuse
+# instead of under-reporting.
+if not hasattr(ast, "unparse"):                              # pragma: no cover
+    raise RuntimeError(
+        "scripts/diagnostics/sgg_surface.py needs Python 3.9+ for ast.unparse; "
+        "on an older interpreter it under-reports the generator's surface. "
+        "Run the diagnostics with the project interpreter, not the simulator's."
+    )
+
+
+def default_tables() -> dict[str, object]:
+    """The generator's default threshold and relation tables, parsed as literals.
+
+    Read from source rather than imported. Importing `carla_sgg` drags in
+    `carla`, which exists only in the simulator's own environment — an old
+    interpreter this module cannot run correctly under. These three names are
+    module-level list literals, so the parser gets them exactly, and the
+    diagnostics then need no second interpreter and no simulator at all.
+    """
+    wanted = ("DEFAULT_PROXIMITY_THRESHOLDS", "DEFAULT_DIRECTIONAL_THRESHOLDS",
+              "DEFAULT_PROXIMITY_RELATIONS")
+    out: dict[str, object] = {}
+    for node in ast.walk(_tree("sgg_abstractor.py")):
+        if not isinstance(node, ast.Assign):
+            continue
+        for t in node.targets:
+            if isinstance(t, ast.Name) and t.id in wanted:
+                out[t.id] = ast.literal_eval(node.value)
+    missing = [w for w in wanted if w not in out]
+    if missing:
+        raise RuntimeError(f"sgg_abstractor.py no longer defines {missing}")
+    return out
+
+
+def proximity_base_classes() -> list[str]:
+    """Base classes a proximity or angular edge can be drawn for."""
+    return sorted({pair[1] for pair in default_tables()["DEFAULT_PROXIMITY_RELATIONS"]})
+
+
+def proximity_bands() -> list[tuple[str, int]]:
+    """Band label and its upper bound in metres, closest first."""
+    return [(str(n), int(m))
+            for n, m in default_tables()["DEFAULT_PROXIMITY_THRESHOLDS"]]

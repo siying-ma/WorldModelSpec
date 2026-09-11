@@ -7,10 +7,14 @@ library/.lake/
 results/
 state/
 *harness*.lean
-library/TrafficSpec/Carla/Captured.lean
-library/TrafficSpec/Carla/Bench.lean
+# Converted captures. The evaluation set itself is meant to be tracked here —
+# it is the benchmark — so only the two ad-hoc modules a `monitor` or `bench`
+# run overwrites are ignored, by name.
+library/TrafficSpecEval/Captured.lean
+library/TrafficSpecEval/Bench.lean
 
 # python
 __pycache__/
 *.pyc
 .venv/
+

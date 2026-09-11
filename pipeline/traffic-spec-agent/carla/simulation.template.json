@@ -1,0 +1,78 @@
+{
+  "$comment": [
+    "Capture settings, to be filled in and placed beside a capture's frame",
+    "directory as `simulation.json`, or passed with `--manifest`.",
+    "",
+    "WHY IT IS REQUIRED. Every duration, metre bound and angular relation in",
+    "the rule library is interpreted against these settings. A capture recorded",
+    "with other values still type-checks, still grounds, and still reports",
+    "verdicts — the verdicts are simply about a different world. `secondsToFrames",
+    "1` is 20 frames, which at 40 Hz is half a second, so a rolling stop",
+    "satisfies a one-second dwell rule and nothing in the trace reveals it.",
+    "",
+    "`carla_scene_graphs/src/carlaspec/runner.py::_generator_manifest` writes",
+    "exactly this block for captures it records. For a capture from elsewhere,",
+    "fill it in from how that capture was produced — never by guessing, and",
+    "never by reading it back off the frames, which do not carry it.",
+    "",
+    "The four settings marked REFUSED are mirrored as constants in frozen Core;",
+    "carla/adapter.py rejects a capture that contradicts them. The rest are",
+    "recorded and warned about: they change which situations arise, not what a",
+    "verdict means."
+  ],
+
+  "capture": "<name of this capture>",
+  "source": "<where the frames came from>",
+
+  "recording": {
+    "capture_mode": "live",
+    "dynamics_valid": true,
+    "ego_log_frame_offset": 0
+  },
+
+  "generator": {
+    "capture_hz": 20,
+    "fixed_delta_seconds": 0.05,
+
+    "abstraction": "process_to_junction_rsv",
+
+    "proximity_thresholds": [
+      ["safety_hazard", 2], ["near_coll", 4], ["super_near", 7],
+      ["very_near", 10], ["near", 16], ["visible", 25]
+    ],
+
+    "directional_thresholds": [
+      ["inDFrontOf", [[45, 90], [90, 135]]],
+      ["inSFrontOf", [[0, 45], [135, 180]]],
+      ["atDRearOf", [[225, 270], [270, 315]]],
+      ["atSRearOf", [[180, 225], [315, 360]]]
+    ],
+
+    "proximity_relation_classes": [
+      "bicycle", "bus", "car", "motorcycle", "person", "truck"
+    ],
+
+    "render_dist": 50.0,
+    "segment_length": 1.0,
+    "check_occlusion": false,
+    "parse_junction_boundaries": false,
+    "exclude_ids": ["ego"]
+  },
+
+  "$fields": {
+    "capture_hz": "REFUSED on mismatch. The simulator's own rate, not an SGG parameter: `world.settings.fixed_delta_seconds` inverted. Mirrored in Core/Scene.lean::captureHz, which every `secondsToFrames` multiplies by.",
+    "fixed_delta_seconds": "REFUSED. Must satisfy capture_hz * fixed_delta_seconds = 1, or one frame is not one simulation step and a frame count is not a duration at all.",
+    "abstraction": "REFUSED. Only `process_to_junction_rsv` emits the entity and relation set Core/Scene.lean enumerates.",
+    "proximity_thresholds": "REFUSED. The RSV keeps only the band LABEL, never the metres, so the mapping cannot be recovered from a capture. Different thresholds silently redefine every `Pred.withinMetres N`.",
+    "directional_thresholds": "REFUSED. `Pred.oncoming`, `inFrontOf` and `behind` ARE these four arcs; a re-cut sector silently redefines in-front-of and behind.",
+    "proximity_relation_classes": "warned. A table missing a class means a rule binding that road user by proximity cannot ground, and reads compliant for want of evidence rather than because it is.",
+    "render_dist": "warned. Actors beyond it are absent from the frame.",
+    "segment_length": "warned. Sets lane-node granularity, and appears in the `controls`-edge test, so every governance edge inherits a tolerance derived from it.",
+    "check_occlusion": "warned, and the most consequential for transfer: false means the graph contains actors the camera could not see. A rule validated on such a capture may be firing on a vehicle behind a building, and has no counterpart in video.",
+    "parse_junction_boundaries": "warned. Changes which frames carry junction entities, so `Pred.inJunction` grounds differently.",
+    "capture_mode": "`live` or `replay`. A CARLA recorder replay TELEPORTS actors instead of integrating physics, so get_velocity(), get_acceleration() and get_angular_velocity() all return zero while get_control() still returns the real inputs. Measured: 882 of 882 moving frames of HazardAtSideLaneTwoWays report a stationary vehicle.",
+    "dynamics_valid": "false suppresses speed, accel and yaw_rate, which are then emitted as `unmeasured` -- a value Core/Decimal cannot parse, so every comparison over them reads false in both directions, which is what `we did not measure it` means. A fabricated 0.0 is NOT neutral: it makes speedLe, and therefore Pred.stopped, true, and 12 of the 24 rule files read stopped.",
+    "ego_log_frame_offset": "frames added when indexing ego_logs.json, for a capture whose frame origin differs from its log's. carla_sgg's capture_sensor_data.py ticks the world 10 times to warm 5 sensors up AFTER replay_file() has started and takes start_frame after those ticks, while add_agent_delay re-bases the log to tick 0 -- so rsv/i.pkl is replay tick i+10 and the correct offset is +10. Verified by position, which both files record independently: mean error 3.45 m at 0, 0.039 m at +10, on all three logged captures.",
+    "exclude_ids": "warned. Actors listed here are dropped from every frame with no trace in the capture, so a rule about them grounds zero times for a reason nothing records. The ego is always excluded by the generator itself."
+  }
+}

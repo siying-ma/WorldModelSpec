@@ -1,7 +1,11 @@
 """Loop state: PROGRESS.md, iteration directories, and the shared context.
 
-Deliberately small. `PROGRESS.md` carries one machine-read field — the stage —
-and is otherwise a human-readable log the plan agent appends to.
+`PROGRESS.md` used to carry one machine-read field, the stage, and was otherwise
+prose. It now also carries the coverage table that `scripts/coverage.py` reads,
+because convergence has to be computed from the state rather than declared by
+the session that would otherwise keep planning: one run's planning session was
+told to set the stage when nothing remained, declined, and planned five more
+nodes over three iterations.
 """
 
 from __future__ import annotations
@@ -21,13 +25,26 @@ PROGRESS_TEMPLATE = """# PROGRESS
 
 ## Coverage
 
-<!-- The plan agent maintains this table: one row per law id in the corpus,
-     with status `pending`, `formalized`, `partial`, or `unsupported`.
-     `unsupported` MUST name the scene-graph field the law needs and CARLA
-     does not provide. -->
+<!-- One row per law id in the corpus. The harness reads this table: statuses
+     and their meanings are `scripts/coverage.py::STATUSES`, and convergence is
+     computed from it rather than declared.
 
-| law id | status | node(s) | note |
-|--------|--------|---------|------|
+       pending                  no rule yet, nothing blocking one
+       formalized               every obligation the clause states is expressed
+       formalized_with_residue  TERMINAL. A rule exists and says less than the
+                                clause does; the note names the residue and
+                                which way it errs
+       blocked_on_gap           a named gap must retire first; the `gap` column
+                                carries its id, from gaps/ledger.jsonl
+       unsupported              the simulator does not have it in any form; the
+                                note cites the gap whose owner is `absent`
+
+     `blocked_on_gap` is not a failure and not a to-do: it is where a clause
+     rests while the capability it needs is open. The harness flips the row back
+     to `pending` when that gap retires, and only then. -->
+
+| law id | status | node(s) | gap | note |
+|--------|--------|---------|-----|------|
 
 ## Log
 
@@ -185,6 +202,17 @@ class LoopContext:
     @property
     def plan_file(self) -> Path:
         return self.iter_dir / "PLAN.md"
+
+    @property
+    def gaps_file(self) -> Path:
+        """Gap PROPOSALS from this iteration's planning session.
+
+        Per-iteration and agent-writable, unlike `gaps/ledger.jsonl`, which the
+        harness and the operator own. A session that could edit the ledger could
+        accept its own proposals and retire its own blockers, which is the one
+        thing the ledger exists to prevent.
+        """
+        return self.iter_dir / "gaps.jsonl"
 
     @property
     def nodes_dir(self) -> Path:

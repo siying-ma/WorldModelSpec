@@ -36,7 +36,9 @@ from . import index_sync
 from .diagnostics import capture_eval
 from .lean_check import (
     CAPTURE_EVAL_TIMEOUT,
+    EVAL_LIB_ROOT,
     LeanUnavailable,
+    captures_under,
     eval_harness,
     first_errors,
     lake_build,
@@ -121,6 +123,36 @@ class Cli:
             print(f"[error] law corpus not found: {laws_file}", file=sys.stderr)
             return 1
 
+        # No capture inside the tree the formalization agents read.
+        #
+        # The prompts send both agents into `library/TrafficSpec/` — Core, the
+        # vocabulary, the builders — and an agent with a shell reads the rest of
+        # that directory. A converted capture there is not a file it is told to
+        # read; it is a file it can find, and one run shows what that costs: a
+        # plan agent counted an attribute's occurrences in a converted capture
+        # and used the count to argue that a predicate was not dead. That is a
+        # claim about one recording standing in for a claim about the data
+        # model, and it inverts the pipeline, because a capture is what a rule
+        # is TESTED against.
+        #
+        # This is not a rule against captures in the library: the evaluation
+        # set is Lean traces and belongs there. It is a rule about where they
+        # sit — `library/TrafficSpecEval/`, its own library root, which no
+        # prompt names. Refusing to start is deliberate: a warning here would be
+        # read after the run, and by then the reasoning is already in the rule
+        # comments and in PROGRESS.md, where the next iteration inherits it.
+        library = _resolve(library_root)
+        stray = captures_under(library / "TrafficSpec")
+        if stray:
+            print("[error] converted capture(s) inside the tree the agents read:",
+                  file=sys.stderr)
+            for path in stray:
+                print(f"          {path.relative_to(library)}", file=sys.stderr)
+            print(f"        Move them under {EVAL_LIB_ROOT}/ (their own library "
+                  f"root) and re-run. A capture is evidence for `monitor`, not "
+                  f"for formalization.", file=sys.stderr)
+            return 1
+
         options = LoopOptions(
             max_iterations=max_iterations,
             max_nodes_per_iter=max_nodes_per_iter,
@@ -134,7 +166,7 @@ class Cli:
             dry_run=dry_run,
         )
         ctx = build_context(REPO_ROOT, laws_file, run_id, options,
-                           library_root=_resolve(library_root))
+                           library_root=library)
         Loop(ctx).run()
         return 0
 
@@ -150,7 +182,7 @@ class Cli:
         are skipped rather than failed, so it runs anywhere:
 
             python -m scripts.run_spec doctor
-            PYTHONPATH=../sg/carla_scene_graphs python -m scripts.run_spec doctor
+            PYTHONPATH=../carla_scene_graphs python -m scripts.run_spec doctor
 
         Returns 1 if any check fails, so it belongs in CI. Note `fire` prints the
         return value rather than exiting with it.
@@ -202,6 +234,9 @@ class Cli:
                 module_name: str = "Captured", max_frames: Optional[int] = None,
                 adapter_python: Optional[str] = None,
                 skip_convert: bool = False,
+                manifest: Optional[str] = None,
+                declare_capture_hz: Optional[int] = None,
+                declare_generator_defaults: bool = False,
                 database: Optional[str] = None,
                 capture: Optional[str] = None,
                 eval_timeout: Optional[float] = None) -> int:
@@ -214,10 +249,10 @@ class Cli:
 
         **A whole capture set at once** — one directory per capture, each with
         `rsv/`, `ego_logs.json` and its own `labels.json`, as written by
-        `../sg/carla_scene_graphs/src/run_capture.py`:
+        `../carla_scene_graphs/src/run_capture.py`:
 
             python -m scripts.run_spec monitor \\
-                --database ../sg/carla_scene_graphs/database \\
+                --database ../carla_scene_graphs/database \\
                 --adapter-python $(which python)
 
         Captures named `<scenario>_compliant` / `<scenario>_violation` are also
@@ -228,9 +263,9 @@ class Cli:
         **A single capture** with an external label file:
 
             python -m scripts.run_spec monitor \\
-                --rsv-dir  .../sceneflow_sample/data/rsv \\
-                --ego-log  .../sceneflow_sample/data/ego_logs.json \\
-                --labels   labels/sceneflow_sample.json
+                --rsv-dir  <capture>/rsv \\
+                --ego-log  <capture>/ego_logs.json \\
+                --labels   <capture>/labels.json
 
         Pass `--adapter-python` when the interpreter running this CLI lacks
         `networkx`, which unpickling a capture needs. `--skip-convert` reuses an
@@ -260,9 +295,9 @@ class Cli:
             print(f"[error] label file not found: {labels_file}", file=sys.stderr)
             return 2
 
-        module = f"TrafficSpec.Carla.{module_name}"
-        trace_name = f"TrafficSpec.Carla.{module_name}Trace"
-        out_lean = library / "TrafficSpec" / "Carla" / f"{module_name}.lean"
+        module = f"{EVAL_LIB_ROOT}.{module_name}"
+        trace_name = f"{module}Trace"
+        out_lean = library / EVAL_LIB_ROOT / f"{module_name}.lean"
 
         if not skip_convert:
             if rsv_dir is None:
@@ -276,6 +311,15 @@ class Cli:
                    "--module-name", module_name]
             if ego_log:
                 cmd += ["--ego-log", str(_resolve(ego_log))]
+            # The capture's settings are never assumed: the adapter refuses a
+            # capture that supplies neither a manifest nor a declaration, so
+            # both routes have to reach it from here too.
+            if manifest:
+                cmd += ["--manifest", str(_resolve(manifest))]
+            if declare_capture_hz is not None:
+                cmd += ["--declare-capture-hz", str(declare_capture_hz)]
+            if declare_generator_defaults:
+                cmd += ["--declare-generator-defaults"]
             if max_frames:
                 cmd += ["--max-frames", str(max_frames)]
             print("[1/3] Converting the capture...")
@@ -346,14 +390,6 @@ class Cli:
             return 1
         print("Index.lean " + ("updated" if changed else "already current")
               + f" ({index_sync.registered_count(library)} rule(s))")
-        return 0
-
-    def sample(self, library_root: str = "library") -> int:
-        """Regenerate the coverage fixture from Core/Scene.lean."""
-        from scripts import sample_sync
-        library = _resolve(library_root)
-        path, changed = sample_sync.sync(library)
-        print(f"{path.name} " + ("regenerated" if changed else "already current"))
         return 0
 
     def cleanup(self, run_id: str = "default", results: bool = False) -> int:

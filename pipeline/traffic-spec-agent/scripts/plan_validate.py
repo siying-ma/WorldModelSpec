@@ -13,9 +13,38 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from .coverage import Assessment
 from .task import IDENT_RE, SpecNode
 
 REQUIRED_KEYS = {"node_id", "theme", "slug", "law_refs", "description", "binders", "scenarios"}
+
+#: The two acceptance witnesses, and what each one rules out. They are not
+#: interchangeable and neither is decoration.
+#:
+#: `forbid` is the only evidence anywhere in this pipeline that a formula says
+#: something. A rule equivalent to `□ ⊤` grounds, engages and holds on every
+#: capture ever recorded, so no amount of real data separates it from a correct
+#: rule until a capture happens to violate it — and most rules are never
+#: violated in most captures. `permit` is the only evidence that the antecedent
+#: is satisfiable and the obligation reachable at the same time.
+#:
+#: A third role, `antecedent_off`, was required until it was measured and found
+#: to be a theorem rather than a test. It showed that the rule imposes nothing
+#: when the situation is absent — which, for a formula shaped `□ (A ⟹ B)`, is
+#: what the semantics of implication already guarantee. Across the library it
+#: held for 55 of 55 such traces, and it accounted for more than half of all
+#: trace-writing work. The fact it was meant to establish is now reported
+#: instead by the antecedent-liveness column of a capture run, where it is a
+#: measurement rather than a restatement.
+SCENARIO_ROLES = {
+    "permit":         (True,  "the clause applies and the conduct complies"),
+    "forbid":         (False, "the same situation, differing in exactly the fact "
+                              "the clause governs"),
+}
+
+#: Exactly two: one `permit`, one `forbid`. The cap is the count, because a
+#: third witness of either role adds nothing to what the first one established.
+MAX_SCENARIOS = 2
 SLUG_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
 
@@ -70,8 +99,16 @@ def validate(
     laws_file: Path,
     library_root: Path,
     max_nodes: Optional[int] = None,
+    assessment: Optional[Assessment] = None,
 ) -> tuple[list[SpecNode], list[str]]:
-    """Return ``(valid_nodes, errors)``. A non-empty error list blocks the phase."""
+    """Return ``(valid_nodes, errors)``. A non-empty error list blocks the phase.
+
+    `assessment` is the coverage table read together with the gap ledger. When
+    it is supplied, a node is additionally required to be about a clause the
+    state says is plannable — see :func:`_actionability_errors`. It is optional
+    so the validator stays usable on a plan alone, which the tests and the
+    dry-run path do.
+    """
     errors: list[str] = []
 
     if not objectives_file.exists():
@@ -168,15 +205,35 @@ def validate(
             if not IDENT_RE.match(b):
                 errors.append(f"{where}: binder label `{b}` must be an identifier")
 
-        positives = [s for s in node.scenarios if s.expected]
-        negatives = [s for s in node.scenarios if not s.expected]
-        if not positives:
-            errors.append(f"{where}: needs at least one positive scenario "
-                          f"(expected=true) — conduct the law permits")
-        if not negatives:
-            errors.append(f"{where}: needs at least one negative scenario "
-                          f"(expected=false) — conduct the law forbids. Without one, "
-                          f"a vacuously true rule would pass.")
+        roles = [s.role for s in node.scenarios]
+        for s in node.scenarios:
+            if s.role not in SCENARIO_ROLES:
+                errors.append(f"{where}: scenario `{s.name}` has role "
+                              f"{s.role or '(missing)'!r}; it must be one of "
+                              f"{sorted(SCENARIO_ROLES)}")
+                continue
+            wants, means = SCENARIO_ROLES[s.role]
+            if s.expected is not wants:
+                errors.append(f"{where}: scenario `{s.name}` is `{s.role}` — "
+                              f"{means} — so `expected` must be "
+                              f"{str(wants).lower()}, not {str(s.expected).lower()}. "
+                              f"A role and a verdict that disagree were written "
+                              f"from two different readings of the clause.")
+        if roles.count("permit") != 1:
+            errors.append(f"{where}: needs exactly one `permit` scenario, found "
+                          f"{roles.count('permit')} — the compliant conduct the "
+                          f"clause governs")
+        if roles.count("forbid") != 1:
+            errors.append(f"{where}: needs exactly one `forbid` scenario, found "
+                          f"{roles.count('forbid')} — none lets a vacuously true "
+                          f"rule pass, and a second adds nothing to that "
+                          f"guarantee that the first has not already given.")
+        if len(node.scenarios) > MAX_SCENARIOS:
+            errors.append(f"{where}: {len(node.scenarios)} witnesses, at most "
+                          f"{MAX_SCENARIOS} — exactly one `permit` and one "
+                          f"`forbid`. A second witness of either role restates "
+                          f"what the first already established, at the cost of "
+                          f"another trace to build.")
         names = [s.name for s in node.scenarios]
         if len(names) != len(set(names)):
             errors.append(f"{where}: duplicate scenario names")
@@ -189,6 +246,8 @@ def validate(
             errors.append(f"{where}: parent `{node.parent}` is neither in this plan "
                           f"nor in the library")
 
+        errors.extend(_actionability_errors(node, where, assessment))
+
         nodes.append(node)
 
     if max_nodes is not None and len(nodes) > max_nodes:
@@ -199,6 +258,57 @@ def validate(
         )
 
     return nodes, errors
+
+
+def _actionability_errors(node: SpecNode, where: str,
+                          assessment: Optional[Assessment]) -> list[str]:
+    """Refuse a node about a clause the state says is not plannable.
+
+    WHAT THIS PREVENTS, from a run that happened. By its second iteration every
+    clause in the corpus had a rule or a recorded verdict and the plan agent
+    wrote that there was nothing left to plan. Iterations three, four and five
+    then planned five, one and three more nodes — each one reversing an earlier
+    `unsupported` verdict, and each reversal a WEAKER reading than the clause
+    deserved: a curve-warning sign standing in for road curvature, a brake lamp
+    standing in for a vehicle at rest, a town-boundary sign standing in for a
+    built-up area. Cost rose by a third of the run's total while the library got
+    worse, and nothing in the pipeline could see it happening, because a node
+    for an already-decided clause was indistinguishable from a node for a new
+    one.
+
+    The rule is therefore: a clause is plannable when its row says `pending`,
+    when a gap it was blocked on has retired, or when the operator has written
+    `reopen: <law id>` in USER_HINTS.md. Anything else is refused HERE, before a
+    coding session is paid for. A planning session that disagrees with a
+    terminal verdict has two cheap moves — say so in the plan file, and file a
+    dispute on the gap — and no expensive one.
+
+    A clause with no row at all is allowed: that is a corpus the table has not
+    caught up with, and refusing it would stall a run on a bookkeeping lapse.
+    """
+    if assessment is None:
+        return []
+    actionable = set(assessment.actionable) | set(assessment.missing)
+    by_law = {r.law: r for r in assessment.rows}
+    out: list[str] = []
+    for ref in node.law_refs:
+        if ref in actionable or ref not in by_law:
+            continue
+        row = by_law[ref]
+        if row.status == "blocked_on_gap":
+            out.append(
+                f"{where}: `{ref}` is `blocked_on_gap` on `{row.gap or '?'}`, "
+                f"which is still open. Formalizing it now means formalizing a "
+                f"weaker reading than the clause deserves. Leave the row alone; "
+                f"if you believe the gap is wrong, file a dispute on it.")
+        else:
+            out.append(
+                f"{where}: `{ref}` is `{row.status}`, a terminal status — this "
+                f"pipeline has already decided it. Reversing that decision "
+                f"needs either a retired gap or an operator `reopen: {ref}` "
+                f"line in USER_HINTS.md. Record the disagreement in the plan "
+                f"file instead of planning a node.")
+    return out
 
 
 def write_auto_notes(auto_notes_file: Path, sections: list[tuple[str, list[str]]]) -> None:

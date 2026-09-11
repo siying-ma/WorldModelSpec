@@ -2,12 +2,19 @@
 """Convert CARLA RSV scene-graph frames into a Lean `Trace`.
 
     python3 carla/adapter.py --rsv-dir <dir of .pkl> --ego-log <ego_logs.json> \
-        --output library/TrafficSpec/Carla/Captured.lean --module-name Captured
+        --output library/TrafficSpecEval/Captured.lean --module-name Captured
 
 Reads the RoadScene2Vec-style abstraction produced by
 `carla_sgg.sgg_abstractor.process_to_junction_rsv` (see
 https://github.com/less-lab-uva/carla_scene_graphs) and emits a Lean module
-defining `TrafficSpec.Carla.<module_name>Trace`.
+defining `TrafficSpecEval.<module_name>Trace`.
+
+**Where the output goes.** `library/TrafficSpecEval/`, which is its own Lean
+library root (`library/lakefile.lean`) and is NOT under `TrafficSpec/`. The
+formalization agents read `TrafficSpec/` for Core and the builders; a capture
+inside that tree is evidence they can reach, and a capture is what a rule is
+tested against rather than what it is written from. `run_spec loop` refuses to
+start while a module carrying this file's banner sits under `TrafficSpec/`.
 
 **Which abstraction.** It must be `process_to_junction_rsv`. That is the only one
 whose node naming (`Lane <road>_<±lane>`, `Road <n>`, `Junction <n>`,
@@ -152,7 +159,7 @@ LANDMARK_FIELDS = ("landmark_type", "landmark_value", "landmark_unit",
 # is the key on the node, can Lean read it decidably, and what does it cost —
 # and the cost is measured, not guessed.
 #
-# Measured on the 240-frame junction_yield_violation capture, bytes added to the
+# Bytes added to the
 # generated trace (baseline 614,946 bytes in 10 chunks, ~61 KB per chunk against
 # Lean's ~500 KB per-definition codegen limit):
 #
@@ -175,6 +182,41 @@ GEOMETRY_VECTORS: dict[str, tuple[str, str, str]] = {
 # Written the other way round it reads plausibly, emits nothing, and — because
 # CONSUMED_ATTRS then swallows the raw keys — stops the unlifted-key report from
 # showing the omission. Keep every mapping in this file pointing the same way.
+#: Emitted in place of a numeric ego channel the capture cannot supply.
+#:
+#: NOT a fabricated zero, and not an arbitrary marker. `Core/Decimal.lean`
+#: accepts only `[+-]? digit+ ( '.' digit+ )?`; `parseMilli` returns `none` for
+#: anything else, and `leMilli` / `ltMilli` / `geMilli` / `gtMilli` /
+#: `absLeMilli` each document that an unparseable value compares **false**. That
+#: is exactly the semantics of an absent attribute — `Pred.attrMilli*` returns
+#: `false` on `getAttr = none` — so a channel carrying this reads as NO EVIDENCE
+#: in both directions, which is what "we did not measure it" means.
+#:
+#: The alternative that was in place is worse than it looks. A fabricated `0.0`
+#: is not neutral: it makes `speedLe`, and therefore `Pred.stopped`, TRUE. 12 of
+#: the 24 rule files read `stopped`, and on a replay-derived capture every one
+#: of them saw an ego that never moved. `Speed/urban_default_limit` is
+#: `□ (situation ⟹ ¬ₛ .bounded n (¬ₛ speedLeKph ego 50))`, which with speed 0
+#: reports COMPLIANT on a capture where the ego did 90 km/h.
+#:
+#: `mkEgo` cannot omit a channel — it writes all nine pairs into `attrs`
+#: unconditionally — so absence is expressed through the value rather than
+#: through the key. No Core change is needed, because Core already specifies
+#: this behaviour on every comparison it defines.
+UNMEASURED = "unmeasured"
+
+#: The `EGO_VECTOR_CHANNELS` entries that a CARLA recorder replay destroys.
+#: The replayer teleports actors instead of integrating physics, so
+#: `get_velocity()` / `get_acceleration()` / `get_angular_velocity()` have
+#: nothing to report while `get_control()` still does. These keys are suppressed
+#: entirely (`scalar_attrs` already skips a key it is not given) rather than
+#: lifted as zeros; `gear` and `manual_gear_shift` are NOT here, because they
+#: come from `copy_carla_control` and survive replay intact.
+EGO_REPLAY_INVALID_VECTORS: frozenset = frozenset({
+    "vel_x", "vel_y", "vel_z", "acc_x", "acc_y", "acc_z",
+    "roll_rate", "pitch_rate",
+})
+
 EGO_VECTOR_CHANNELS: dict[str, str] = {
     "vel_x": "carla_vel_x", "vel_y": "carla_vel_y", "vel_z": "carla_vel_z",
     "acc_x": "carla_acc_x", "acc_y": "carla_acc_y", "acc_z": "carla_acc_z",
@@ -388,35 +430,210 @@ class CapturePreconditionError(ValueError):
     """The capture was recorded with settings the library does not assume."""
 
 
-def check_capture_preconditions(rsv_dir: Path) -> None:
-    """Fail closed when a capture's own manifest contradicts frozen Core.
+class RecordingPolicy:
+    """How the capture was recorded, and therefore which channels are evidence.
 
-    The manifest is `simulation.json` beside the frame directory, written by
-    `sg/carla_scene_graphs/src/carlaspec/runner.py`. It is optional: captures
-    predating it convert with a warning, because refusing them outright would
-    break the bundled `sceneflow_sample`. When it *is* present its numbers are
-    binding.
+    Separate from the `generator` settings block because it is a property of the
+    RUN, not of the abstraction: the same generator configuration produces
+    trustworthy dynamics live and none at all under replay.
 
-    Measured on the current library, 17 of 21 rules carry at least one constant
-    whose meaning comes from one of these settings — 9 use `secondsToFrames`, 6 a
-    metre bound, 8 an angular relation. A capture that breaks a precondition does
-    not make those rules fail loudly; it makes them mean something else.
-    `secondsToFrames 1` is 20 frames, which at a 40 Hz capture is half a second,
-    so a rolling stop satisfies a one-second dwell rule. Nothing in the trace
-    would reveal it: `time_base` in the schema records that frames carry no
-    timestamp.
+    `ego_log_frame_offset` exists because the scene-graph frame index and the
+    ego-log record index can have different origins and neither file records
+    its own. In `carla_sgg`'s `capture_sensor_data.py` they do: `replay_file()`
+    starts the replay, then ten `world.tick()` calls warm the five sensors up
+    before `start_frame` is taken, so `rsv/i.pkl` is replay tick *i*+10 while
+    `add_agent_delay` has already re-based `ego_logs.json` to tick 0. Measured
+    on all three logged SceneFlowLang captures by matching positions, which both
+    files record independently: mean error 3.45 m at offset 0, 0.039 m at +10.
     """
-    manifest = rsv_dir.parent / "simulation.json"
+
+    def __init__(self, capture_mode="unknown", dynamics_valid=True,
+                 ego_log_frame_offset=0, provenance="default"):
+        self.capture_mode = capture_mode
+        self.dynamics_valid = dynamics_valid
+        self.ego_log_frame_offset = int(ego_log_frame_offset)
+        self.provenance = provenance
+
+    def as_dict(self) -> dict:
+        return {"capture_mode": self.capture_mode,
+                "dynamics_valid": self.dynamics_valid,
+                "ego_log_frame_offset": self.ego_log_frame_offset,
+                "_provenance": self.provenance}
+
+    def __repr__(self):
+        return ("RecordingPolicy(mode=%s, dynamics_valid=%s, ego_log_offset=%+d)"
+                % (self.capture_mode, self.dynamics_valid,
+                   self.ego_log_frame_offset))
+
+
+#: Frames sampled when deciding whether a capture is replay-derived. The
+#: signature is overwhelming when present — 882 of 882 moving frames report a
+#: stationary vehicle on `HazardAtSideLaneTwoWays` — so a sample settles it
+#: without unpickling the whole capture a second time.
+REPLAY_PROBE_FRAMES = 40
+#: Consecutive positions implying at least this speed count the frame as moving.
+REPLAY_MOVING_MPS = 0.5
+#: A reported speed below this counts as "the server says stationary".
+REPLAY_STATIONARY_MPS = 0.1
+#: Fraction of moving frames that must report stationary to call it a replay.
+REPLAY_FRACTION = 0.95
+
+
+def detect_replay_zeroing(files: list, capture_hz: Optional[int]) -> Optional[bool]:
+    """Does this capture carry dynamics, judged from the frames themselves?
+
+    Returns True when the ego demonstrably moves while the graph reports it
+    stationary, False when the graph's speed tracks the motion, and None when
+    the question cannot be answered (the ego never moves, or the rate is
+    unknown).
+
+    This is a detection, not a declaration, and it is used only to choose the
+    SAFE direction when nobody declared: suppressing a channel that might have
+    been valid costs a rule its evidence, while emitting a zero that is not a
+    measurement inverts the rule's verdict. A manifest overrides it either way.
+    """
+    if not files or not capture_hz:
+        return None
+    dt = 1.0 / float(capture_hz)
+    step = max(1, len(files) // REPLAY_PROBE_FRAMES)
+    picked = list(range(0, len(files) - 1, step))[:REPLAY_PROBE_FRAMES]
+
+    moving = stationary_reported = 0
+    for i in picked:
+        try:
+            with files[i].open("rb") as fh:
+                a = SGUnpickler(fh).load()
+            with files[i + 1].open("rb") as fh:
+                b = SGUnpickler(fh).load()
+        except Exception:                                   # noqa: BLE001
+            continue
+        ego_a = _ego_node(a)
+        ego_b = _ego_node(b)
+        if ego_a is None or ego_b is None:
+            continue
+        pa, pb = _node_xy(ego_a), _node_xy(ego_b)
+        if pa is None or pb is None:
+            continue
+        implied = ((pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2) ** 0.5 / dt
+        if implied < REPLAY_MOVING_MPS:
+            continue
+        moving += 1
+        reported = (getattr(ego_a, "attr", {}) or {}).get("carla_speed")
+        if reported is None or abs(float(reported)) < REPLAY_STATIONARY_MPS:
+            stationary_reported += 1
+    if moving == 0:
+        return None
+    return (stationary_reported / float(moving)) >= REPLAY_FRACTION
+
+
+def _ego_node(graph):
+    for node in graph.nodes:
+        if str(getattr(node, "name", node)) == "ego":
+            return node
+    return None
+
+
+def _node_xy(node):
+    vertex = (getattr(node, "attr", {}) or {}).get("vertex")
+    if vertex is None:
+        return None
+    return (float(vertex[0]), float(vertex[1]))
+
+
+def resolve_recording_policy(rsv_dir: Path, files: list, settings: dict,
+                             manifest_path: Optional[Path],
+                             declared_recording: Optional[dict]) -> RecordingPolicy:
+    """Declaration first, manifest second, detection last."""
+    if declared_recording:
+        return RecordingPolicy(
+            capture_mode=declared_recording.get("capture_mode", "unknown"),
+            dynamics_valid=declared_recording.get("dynamics_valid", True),
+            ego_log_frame_offset=declared_recording.get("ego_log_frame_offset", 0),
+            provenance="declared by the caller; nothing verifies it")
+
+    manifest = manifest_path or (rsv_dir.parent / "simulation.json")
+    if manifest.exists():
+        try:
+            block = json.loads(manifest.read_text(encoding="utf-8")).get("recording")
+        except ValueError:
+            block = None
+        if block:
+            return RecordingPolicy(
+                capture_mode=block.get("capture_mode", "unknown"),
+                dynamics_valid=block.get("dynamics_valid", True),
+                ego_log_frame_offset=block.get("ego_log_frame_offset", 0),
+                provenance=f"read from {manifest}")
+
+    replayed = detect_replay_zeroing(files, settings.get("capture_hz"))
+    if replayed is True:
+        print("[warn] this capture is replay-derived: the ego's position "
+              "advances while the graph reports it stationary. Speed, "
+              "acceleration and yaw rate are NOT measurements here and are "
+              "emitted as `%s`, which every Core comparison reads as false. "
+              "Declare `recording.ego_log_frame_offset` in the manifest if an "
+              "ego log is also being used." % UNMEASURED)
+        return RecordingPolicy("replay", dynamics_valid=False,
+                               provenance="detected from the frames: motion "
+                                          "without reported velocity")
+    if replayed is False:
+        return RecordingPolicy("live", dynamics_valid=True,
+                               provenance="detected from the frames: reported "
+                                          "velocity tracks the motion")
+    return RecordingPolicy(provenance="undetermined: the ego never moves in "
+                                      "this capture, so nothing distinguishes "
+                                      "a replay from a stationary run")
+
+
+def check_capture_preconditions(
+        rsv_dir: Path,
+        manifest_path: Optional[Path] = None,
+        declared: Optional[dict] = None) -> dict:
+    """Fail closed when the capture's settings contradict frozen Core.
+
+    **The settings must be supplied; they are never assumed.** This used to warn
+    and continue on a missing manifest, and every capture that took that branch
+    converted with all five preconditions *assumed rather than checked* — which
+    is indistinguishable, in the output, from a capture that was verified. There
+    are two ways to supply them, and one of them must be taken:
+
+      1. a manifest — `--manifest FILE`, or a `simulation.json` beside the frame
+         directory, in the shape `carlaspec/runner.py::_generator_manifest`
+         writes;
+      2. a declaration — `--declare-capture-hz N --declare-generator-defaults`,
+         by which the CALLER asserts the rate and that the generator ran with
+         its default thresholds, tables and abstraction.
+
+    Route 2 is not a weaker route 1: it records an assertion someone made and
+    can be held to, where the old default recorded nothing at all. Returns the
+    settings block that was checked, so the caller can put it in the output.
+    """
+    manifest = manifest_path or (rsv_dir.parent / "simulation.json")
+    if manifest_path is not None and not manifest.exists():
+        raise CapturePreconditionError(f"--manifest {manifest} does not exist")
+
     if not manifest.exists():
-        print(f"[warn] {manifest.name} not found beside {rsv_dir}; assuming the "
-              f"capture was recorded at {ASSUMED_CAPTURE_HZ} Hz with the "
-              f"generator's default thresholds and abstraction. Nothing "
-              f"verifies that.")
-        return
-    try:
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-    except ValueError as exc:
-        raise CapturePreconditionError(f"{manifest} is not valid JSON: {exc}")
+        if not declared:
+            raise CapturePreconditionError(
+                f"no capture settings for {rsv_dir}.\n"
+                f"  Every duration, metre bound and angular relation in the "
+                f"library is interpreted against them, so they are required "
+                f"rather than assumed. Supply either:\n"
+                f"    --manifest FILE                 (a simulation.json)\n"
+                f"  or, if the capture has none:\n"
+                f"    --declare-capture-hz N --declare-generator-defaults\n"
+                f"  See carla/schema.json -> capture_preconditions, and "
+                f"carla/simulation.template.json for the manifest shape.")
+        gen = dict(declared)
+        gen["_provenance"] = "declared by the caller; nothing verifies it"
+        print(f"[info] capture settings DECLARED by the caller: "
+              f"capture_hz={gen.get('capture_hz')}, generator defaults assumed "
+              f"for thresholds, tables and abstraction.")
+        data = {"generator": gen}
+    else:
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except ValueError as exc:
+            raise CapturePreconditionError(f"{manifest} is not valid JSON: {exc}")
 
     gen = data.get("generator") or {}
     if not gen:
@@ -509,12 +726,171 @@ def check_capture_preconditions(rsv_dir: Path) -> None:
         print(f"[warn] {manifest.name} excludes {excluded} from every frame in "
               f"addition to the ego; rules quantified over those actors are "
               f"vacuous on this capture.")
+    return gen
 
 
-# Frames per generated chunk definition. 25 keeps each chunk near 100 KB on a
-# dense junction capture, comfortably under the ~500 KB where Lean's code
-# generator starts to fail, with plenty of margin for denser scenes.
-CHUNK_FRAMES = 25
+class CrossCheck:
+    """Contradictions between two descriptions of the same fact in one capture.
+
+    Normalising a value at this boundary is only as good as the interpretation
+    it applies, so the interpretation has to be checkable. Each test below
+    compares two INDEPENDENT descriptions of one physical fact and reports a
+    disagreement; none of them decides which side is right, because that is a
+    judgement about how the capture was produced and belongs in the manifest.
+
+    Cost is negligible: every test reuses the pass the conversion already makes
+    over each frame and each entity, and adds only arithmetic. Conversion is a
+    fraction of a percent of a pipeline run whose time is spent in Lean.
+    """
+
+    # A speed this small is indistinguishable from a parked vehicle.
+    MOVING_MPS = 0.5
+    # Relative disagreement below this is measurement noise, not a contradiction.
+    SPEED_TOLERANCE = 0.25
+
+    def __init__(self, capture_hz: Optional[float]) -> None:
+        self.dt = (1.0 / capture_hz) if capture_hz else None
+        self.ego_pos: dict[int, tuple[float, float, float]] = {}
+        self.ego_graph_speed: dict[int, float] = {}
+        self.ego_log_speed: dict[int, float] = {}
+        self.landmarks: set[tuple[str, str]] = set()
+        self.sign_kph: set[str] = set()
+
+    @staticmethod
+    def _f(value: Any) -> Optional[float]:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def observe_ego(self, index: int, attr: dict, record: Optional[dict]) -> None:
+        # `vertex` is the same 3-vector `vector_attrs` lifts into pos_x/y/z.
+        try:
+            comps = [self._f(v) for v in list(attr.get("vertex"))][:3]
+        except TypeError:
+            comps = []
+        if len(comps) == 3 and all(c is not None for c in comps):
+            self.ego_pos[index] = (comps[0], comps[1], comps[2])
+        graph_speed = self._f(attr.get("carla_speed"))
+        if graph_speed is not None:
+            self.ego_graph_speed[index] = graph_speed
+        if record:
+            log_speed = self._f(((record.get("state") or {})
+                                 .get("velocity") or {}).get("value"))
+            if log_speed is not None:
+                self.ego_log_speed[index] = log_speed
+
+    def observe_landmark(self, attr: dict) -> None:
+        value, unit = attr.get("landmark_value"), attr.get("landmark_unit")
+        if value is not None and unit is not None:
+            self.landmarks.add((str(value), str(unit)))
+
+    def observe_sign(self, attr: dict) -> None:
+        type_id = str(attr.get("carla_type_id") or "")
+        if "speed_limit." in type_id:
+            self.sign_kph.add(type_id.rsplit(".", 1)[-1])
+
+    # ── the tests ────────────────────────────────────────────────────────
+    def _displacement_speeds(self) -> list[tuple[int, float]]:
+        """Implied speed between consecutive frames, from position alone."""
+        out = []
+        if self.dt is None:
+            return out
+        for i, p in self.ego_pos.items():
+            q = self.ego_pos.get(i + 1)
+            if q is None:
+                continue
+            d = sum((a - b) ** 2 for a, b in zip(p, q)) ** 0.5
+            out.append((i, d / self.dt))
+        return out
+
+    def report(self) -> list[str]:
+        findings: list[str] = []
+        implied = self._displacement_speeds()
+
+        # 1. The ego moves between frames but the graph says it is stationary.
+        #    A replayed actor is teleported, so `get_velocity()` returns zero
+        #    while its position still advances. Reads as a parked vehicle to
+        #    every dynamics predicate, and the direction is a missed violation.
+        if implied and self.ego_graph_speed:
+            moving = [i for i, v in implied if v > self.MOVING_MPS]
+            zero = [i for i in moving
+                    if self.ego_graph_speed.get(i, 1.0) <= 1e-6]
+            if moving and len(zero) > 0.5 * len(moving):
+                findings.append(
+                    f"the ego's position advances on {len(moving)} frame(s) "
+                    f"while `carla_speed` reads zero on {len(zero)} of them. "
+                    f"The graph's speed is not evidence on this capture; the "
+                    f"ego log is. Record `capture_mode` in the manifest so the "
+                    f"conversion can prefer the log rather than guess.")
+
+        # 2. Two sources for one quantity that disagree beyond noise.
+        both = set(self.ego_graph_speed) & set(self.ego_log_speed)
+        if both:
+            bad = [i for i in both
+                   if abs(self.ego_graph_speed[i] - self.ego_log_speed[i])
+                   > self.SPEED_TOLERANCE * max(self.ego_log_speed[i], 1.0)]
+            if len(bad) > 0.1 * len(both):
+                findings.append(
+                    f"graph `carla_speed` and the ego log's velocity disagree "
+                    f"on {len(bad)} of {len(both)} shared frame(s). One of the "
+                    f"two describes a different vehicle state than the other.")
+
+        # 3. The same sign, described twice, with incompatible units. The sign
+        #    ACTOR's unit is fixed by the blueprint id; the landmark's is
+        #    written by the map author. Equal numbers under different unit
+        #    claims mean the claim is wrong, not the number.
+        if self.landmarks and self.sign_kph:
+            # Compared numerically: the landmark writes "90.0" where the
+            # blueprint id writes "90", and string equality would miss it.
+            values = {self._f(v) for v, _ in self.landmarks} - {None}
+            units = {u for _, u in self.landmarks}
+            signs = {self._f(k) for k in self.sign_kph} - {None}
+            if values & signs and units and "km/h" not in units:
+                findings.append(
+                    f"landmark values {sorted(values & signs)} match "
+                    f"speed-limit sign blueprints, whose unit is km/h by "
+                    f"construction, while the map labels them {sorted(units)}. "
+                    f"The map's unit label contradicts the simulator's own; a "
+                    f"rule matching on it exactly will never fire, and one "
+                    f"converting from it will read a limit that is too high.")
+
+        # 4. The rate the motion implies, against the rate that was declared.
+        if implied and self.dt:
+            ratios = []
+            for i, v in implied:
+                speed = self.ego_log_speed.get(i) or self.ego_graph_speed.get(i)
+                if speed and speed > self.MOVING_MPS:
+                    ratios.append(v / speed)
+            if len(ratios) >= 20:
+                ratios.sort()
+                med = ratios[len(ratios) // 2]
+                if abs(med - 1.0) > 0.2:
+                    findings.append(
+                        f"displacement per frame implies a rate {med:.2f}x the "
+                        f"declared one. Every duration in every rule is a frame "
+                        f"count at the declared rate, so this rescales all of "
+                        f"them.")
+        return findings
+
+
+# Frames per generated chunk definition, sized so each chunk stays under the
+# ~500 KB where Lean's code generator starts to fail.
+#
+# 25 was calibrated on captures carrying a handful of distinct entities, and it
+# is not enough: chunk size scales with entities-per-frame, not frames. The
+# SceneFlowLang agent routes carry 214 distinct entities against 6 for its
+# replayed scenario captures, and every one of those 30 routes failed to build
+# at 25 with `depends on declaration ...Chunk1, which has no executable code`.
+# 8 builds all of them.
+CHUNK_FRAMES = 8
+
+# Lean namespace and library root of every converted capture. Kept as one
+# constant because three consumers agree on it by name: `library/lakefile.lean`
+# declares the root, `scripts/run_spec.py` imports the module the harness
+# needs, and `scripts/lean_check.py` holds the same string for the check that
+# keeps captures out of the tree the formalization agents read.
+EVAL_NAMESPACE = "TrafficSpecEval"
 
 # Enough decimals to preserve everything `Core/Decimal.lean` keeps — it
 # truncates to thousandths — with margin, and few enough to stay readable.
@@ -613,31 +989,88 @@ def lean_attr_list(pairs: list[tuple[str, str]]) -> str:
     return f"[{inner}]"
 
 
-def ego_channels(attr: dict, record: Optional[dict]) -> list[str]:
-    """The nine `mkEgo` channels, preferring the graph and falling back to the
-    ego log.
+def _num_or_none(value: Any) -> Optional[float]:
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
 
-    `accel` is the one channel the graph cannot supply: it carries only the
-    component vector `carla_acc_{x,y,z}`, whose magnitude needs a square root,
-    so the scalar comes from the log's `state.acceleration.value`.
+
+def ego_accel(attr: dict, state: dict, policy: "RecordingPolicy") -> str:
+    """The scalar `accel` channel.
+
+    Taken from the GRAPH's own `carla_acc_{x,y,z}` magnitude in preference to
+    the ego log, which reverses the previous order for two reasons.
+
+    First, correctness of frame position. The log is indexed separately from the
+    frames and can be offset from them; the graph's components are in the frame
+    they are read from, by construction. A channel whose value is right and
+    whose frame is wrong is not usable — `Core` attaches it to a scene, and the
+    scene is the other one.
+
+    Second, availability. Taking it from the log alone meant that a capture with
+    no ego log got `0.0`, silently, from `state.get(...).get("value", 0.0)`.
+    That is every one of the 30 agent-rollout captures in the SceneFlowLang
+    corpus — and their graphs carry an acceleration magnitude of up to
+    12.69 m/s^2. `Pred.accelMagnitudeAtLeast` read a stationary vehicle on all
+    of them.
+
+    A square root over three components the graph already carries is a
+    computation on this frame's own data, not a substitution from another
+    source, so it does not weaken the guarantee the rest of this function makes.
+    """
+    if not policy.dynamics_valid:
+        return UNMEASURED
+    comps = [_num_or_none(attr.get(k))
+             for k in ("carla_acc_x", "carla_acc_y", "carla_acc_z")]
+    if all(c is not None for c in comps):
+        return fmt_num(sum(c * c for c in comps) ** 0.5)
+    logged = _num_or_none((state.get("acceleration") or {}).get("value"))
+    return UNMEASURED if logged is None else fmt_num(logged)
+
+
+def ego_channels(attr: dict, record: Optional[dict],
+                 policy: "RecordingPolicy") -> list[str]:
+    """The nine `mkEgo` channels.
+
+    **No channel is ever filled with a number the capture did not supply.** A
+    missing measurement is emitted as `UNMEASURED`, which every `Core/Decimal`
+    comparison reads as false in both directions — the same verdict an absent
+    attribute gets, and the only honest one. See `UNMEASURED` for why the
+    fabricated `0.0` this replaced was not neutral.
+
+    Three of the nine are destroyed by a recorder replay and are gated on
+    `policy.dynamics_valid`: `speed`, `accel` and `yaw_rate`. The other six are
+    not: `throttle`, `brake` and `steer` come from `get_control()`, which the
+    replayer restores, and the three booleans are graph state. Measured on the
+    replayed `HazardAtSideLaneTwoWays` capture: `carla_throttle` takes 0.8 and
+    `carla_brake` 0.3 across frames while `carla_speed` and `carla_ang_vel_z`
+    are identically zero on all 962.
     """
     record = record or {}
     state = record.get("state", {}) or {}
     control = record.get("control", {}) or {}
 
     def graph_or_log(graph_key: str, log_value: Any) -> str:
-        if graph_key in attr:
-            return fmt_num(attr[graph_key])
-        return fmt_num(log_value)
+        """Graph first — it is in the frame being emitted. The log is a
+        fallback whose alignment is the caller's to establish."""
+        graphed = _num_or_none(attr.get(graph_key))
+        if graphed is not None:
+            return fmt_num(graphed)
+        logged = _num_or_none(log_value)
+        return UNMEASURED if logged is None else fmt_num(logged)
+
+    def dynamic(graph_key: str, log_value: Any) -> str:
+        """A channel a replay teleports away. Never guessed."""
+        if not policy.dynamics_valid:
+            return UNMEASURED
+        return graph_or_log(graph_key, log_value)
 
     return [
-        graph_or_log("carla_speed", state.get("velocity", {}).get("value", 0.0)),
-        fmt_num(state.get("acceleration", {}).get("value", 0.0)),
-        graph_or_log("carla_throttle", control.get("throttle", 0.0)),
-        graph_or_log("carla_brake", control.get("brake", 0.0)),
-        graph_or_log("carla_steer", control.get("steer", 0.0)),
-        graph_or_log("carla_ang_vel_z",
-                     state.get("angular_velocity", {}).get("z", 0.0)),
+        dynamic("carla_speed", (state.get("velocity") or {}).get("value")),
+        ego_accel(attr, state, policy),
+        graph_or_log("carla_throttle", control.get("throttle")),
+        graph_or_log("carla_brake", control.get("brake")),
+        graph_or_log("carla_steer", control.get("steer")),
+        dynamic("carla_ang_vel_z",
+                (state.get("angular_velocity") or {}).get("z")),
         fmt_bool(attr.get("carla_affected_by_traffic_light", False)),
         fmt_bool(attr.get("carla_hand_brake", control.get("hand_brake", False))),
         fmt_bool(attr.get("carla_reverse", control.get("reverse", False))),
@@ -668,21 +1101,24 @@ def is_ego(name: str, attr: dict) -> bool:
 
 def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                  max_frames: Optional[int],
-                 start_frame: int = 0) -> tuple[str, dict]:
+                 start_frame: int = 0,
+                 manifest_path: Optional[Path] = None,
+                 declared: Optional[dict] = None,
+                 declared_recording: Optional[dict] = None) -> tuple[str, dict]:
     """Convert a window of a capture into a Lean `Trace`.
 
     `start_frame` exists because the whole trace is emitted as one Lean list
     literal, and Lean's *code generator* — not its elaborator — overflows on
     large ones with "maximum recursion depth reached in the code generator".
     The limit tracks the size of the generated literal rather than the frame
-    count: a Town03 junction capture built at ~470 KB and failed at ~640 KB.
+    count: a dense junction capture built at ~470 KB and failed at ~640 KB.
 
     Taking only a prefix (`--max-frames` alone) is not enough, because the
     moment a rule is about — the frame a vehicle crosses into a junction — is
     usually in the middle of a capture. A window keeps that moment and its
     surrounding context while staying under the limit.
     """
-    check_capture_preconditions(rsv_dir)
+    settings = check_capture_preconditions(rsv_dir, manifest_path, declared)
     files = sorted(rsv_dir.glob("*.pkl"), key=lambda p: natural_key(p.name))
     if not files:
         raise ValueError(f"no .pkl frames found in {rsv_dir}")
@@ -695,6 +1131,10 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
     if max_frames:
         files = files[:max_frames]
 
+    policy = resolve_recording_policy(rsv_dir, files, settings, manifest_path,
+                                      declared_recording)
+    print(f"[info] recording policy: {policy} ({policy.provenance})")
+
     ego_records: list[dict] = []
     if ego_log and ego_log.exists():
         ego_records = json.loads(ego_log.read_text(encoding="utf-8")).get("records", [])
@@ -703,10 +1143,12 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
     next_id = 1
     frames: list[str] = []
     stats = {
+        "recording": policy.as_dict(),
         "frames": 0, "entities": 0,
         "unmapped_labels": {}, "types": {}, "labels": {},
-        "unlifted_attrs": {},
+        "unlifted_attrs": {}, "contradictions": [],
     }
+    xcheck = CrossCheck(settings.get("capture_hz"))
 
     for index, pkl in enumerate(files):
         with pkl.open("rb") as fh:
@@ -751,17 +1193,35 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                      + scalar_attrs(attr, IDENTITY_ATTRS)
                      + scalar_attrs(attr, LANDMARK_EXTRA))
             if is_ego(name, attr):
-                extra += scalar_attrs(attr, EGO_VECTOR_CHANNELS)
+                lifted = scalar_attrs(attr, EGO_VECTOR_CHANNELS)
+                if not policy.dynamics_valid:
+                    # Suppress the KEY, not the value. `Pred.acceleratingAtLeast`
+                    # reads `acc_x/y/z` through `alongHeading`, which returns
+                    # `none` when a component is missing and `false` from there
+                    # — whereas three zeros are a well-formed vector of
+                    # magnitude zero and read as "definitely not accelerating".
+                    lifted = [(k, v) for k, v in lifted
+                              if k not in EGO_REPLAY_INVALID_VECTORS]
+                extra += lifted
+            elif lean_type == "landmark":
+                xcheck.observe_landmark(attr)
+            elif lean_type == "speedLimitSign":
+                xcheck.observe_sign(attr)
 
             if is_ego(name, attr):
                 # The ego log is indexed by absolute capture frame, so a window
                 # starting at `start_frame` must offset into it or every ego
                 # dynamic channel is silently taken from the wrong frame.
-                log_index = start_frame + index
+                # The ego log is indexed by absolute capture frame, so a
+                # window starting at `start_frame` must offset into it, and so
+                # must a capture whose frame origin differs from the log's —
+                # see `RecordingPolicy.ego_log_frame_offset`.
+                log_index = start_frame + index + policy.ego_log_frame_offset
                 record = (ego_records[log_index]
-                          if log_index < len(ego_records) else None)
+                          if 0 <= log_index < len(ego_records) else None)
+                xcheck.observe_ego(index, attr, record)
                 args = " ".join(f'"{lean_str(v)}"'
-                                for v in ego_channels(attr, record))
+                                for v in ego_channels(attr, record, policy))
                 emit(f"mkEgo {eid} .{lean_type} {args}", extra)
             elif lean_type == "lane":
                 emit(f'mkLane {eid} "{lean_str(name)}"', extra)
@@ -823,7 +1283,7 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
     # Lean's *code generator* — not its elaborator — recurses over a literal and
     # dies with "maximum recursion depth reached in the code generator" once it
     # gets large. The limit tracks the literal's size rather than the frame
-    # count: a Town03 junction capture built at ~470 KB and failed at ~640 KB.
+    # count: a dense junction capture built at ~470 KB and failed at ~640 KB.
     #
     # A window was the previous workaround, and it was unsound: a rule's verdict
     # then depended on how many frames were converted, because
@@ -848,7 +1308,7 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
         "/- Generated by carla/adapter.py. Do not edit by hand. -/",
         "import TrafficSpec.Core.Builders",
         "",
-        "namespace TrafficSpec.Carla",
+        f"namespace {EVAL_NAMESPACE}",
         "",
         "open TrafficSpec",
         "",
@@ -860,9 +1320,10 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
         f"def {module_name}Trace : Trace :=",
         f"  {joined}",
         "",
-        "end TrafficSpec.Carla",
+        f"end {EVAL_NAMESPACE}",
         "",
     ]
+    stats["contradictions"] = xcheck.report()
     return "\n".join(lines), stats
 
 
@@ -874,6 +1335,33 @@ def main() -> int:
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--module-name", default="Captured")
     ap.add_argument("--max-frames", type=int, default=None)
+    ap.add_argument("--manifest", type=Path, default=None,
+                    help="capture settings, in the shape of "
+                         "carla/simulation.template.json. Defaults to "
+                         "simulation.json beside --rsv-dir. Required unless "
+                         "--declare-capture-hz is given: every duration, metre "
+                         "bound and angular relation in the library is read "
+                         "against these settings, so they are never assumed.")
+    ap.add_argument("--declare-capture-hz", type=int, default=None,
+                    metavar="N",
+                    help="assert the capture rate for a capture that has no "
+                         "manifest. Must accompany --declare-generator-defaults.")
+    ap.add_argument("--declare-capture-mode", choices=("live", "replay"),
+                    default=None,
+                    help="how the capture was recorded. `replay` means a CARLA "
+                         "recorder log was replayed, which teleports actors: "
+                         "speed, accel and yaw_rate are not measurements and "
+                         "are emitted as `unmeasured` rather than as zeros. "
+                         "Overrides the adapter's own detection.")
+    ap.add_argument("--declare-ego-log-offset", type=int, default=None,
+                    help="frames to add when indexing the ego log, for a "
+                         "capture whose frame origin differs from its log's. "
+                         "carla_sgg's capture_sensor_data.py produces +10.")
+    ap.add_argument("--declare-generator-defaults", action="store_true",
+                    help="assert that the generator ran with its default "
+                         "proximity thresholds, directional thresholds, "
+                         "relation tables and the process_to_junction_rsv "
+                         "abstraction. An assertion by the caller, not a check.")
     ap.add_argument("--start-frame", type=int, default=0,
                     help="first capture frame to convert; with --max-frames "
                          "this selects a window, which is how a long capture "
@@ -881,10 +1369,38 @@ def main() -> int:
                          "dropping the moment the rule is about")
     args = ap.parse_args()
 
+    declared_recording = None
+    if args.declare_capture_mode is not None or args.declare_ego_log_offset is not None:
+        declared_recording = {
+            "capture_mode": args.declare_capture_mode or "unknown",
+            "dynamics_valid": args.declare_capture_mode != "replay",
+            "ego_log_frame_offset": args.declare_ego_log_offset or 0,
+        }
+
+    declared = None
+    if args.declare_capture_hz is not None:
+        if not args.declare_generator_defaults:
+            print("[error] --declare-capture-hz must accompany "
+                  "--declare-generator-defaults: the rate alone leaves the "
+                  "thresholds, tables and abstraction unstated, and those are "
+                  "three of the five preconditions.")
+            return 2
+        declared = {"capture_hz": args.declare_capture_hz,
+                    "fixed_delta_seconds": 1.0 / args.declare_capture_hz,
+                    "abstraction": ASSUMED_ABSTRACTION}
+    elif args.declare_generator_defaults:
+        print("[error] --declare-generator-defaults must accompany "
+              "--declare-capture-hz: the rate is the one setting no default "
+              "can supply.")
+        return 2
+
     try:
         text, stats = build_module(args.rsv_dir, args.ego_log,
                                    args.module_name, args.max_frames,
-                                   args.start_frame)
+                                   args.start_frame,
+                                   manifest_path=args.manifest,
+                                   declared=declared,
+                                   declared_recording=declared_recording)
     except Exception as exc:
         print(f"[error] {exc}")
         return 1
@@ -894,6 +1410,12 @@ def main() -> int:
     print(f"Wrote {args.output}: {stats['frames']} frames, {stats['entities']} entities")
     print(f"  entity types : {stats['types']}")
     print(f"  relations    : {stats['labels']}")
+    if stats.get("contradictions"):
+        print("  CONTRADICTIONS — two descriptions of one fact disagree in this "
+              "capture. Each makes some rule read the wrong thing, and every "
+              "one of them errs toward reporting compliance:")
+        for finding in stats["contradictions"]:
+            print(f"    - {finding}")
     if stats["unmapped_labels"]:
         print("  UNMAPPED relation labels (dropped) — check carla/schema.json:")
         for label, count in sorted(stats["unmapped_labels"].items()):
@@ -908,3 +1430,56 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# ── What a rule can read: derived, never declared ──────────────────────────
+
+def lifted_attribute_keys(library_root: Path) -> set[str]:
+    """Every attribute key a Lean rule can read, derived from what puts it there.
+
+    Two sources, and between them they are exhaustive: the mapping tables above,
+    which say what THIS file lifts out of a scene graph, and the literal keys in
+    `Core/Builders.lean`, which say what the constructors set on an entity
+    regardless of any capture.
+
+    `carla/schema.json` used to declare this as a hand-maintained list. It was
+    exactly right — 53 keys, agreeing in both directions — which is the problem:
+    a second copy that happens to be correct today is a maintenance cost with no
+    guarantee attached, and adding a lifted key meant editing this file and then
+    remembering to edit that list. Deriving it means the list cannot drift,
+    because there is no list.
+    """
+    keys: set[str] = set(EGO_CHANNELS)
+    for names in GEOMETRY_VECTORS.values():
+        keys |= set(names)
+    for table in (EGO_VECTOR_CHANNELS, EXTRA_VEHICLE_LIGHTS, IDENTITY_ATTRS,
+                  LANDMARK_EXTRA, VEHICLE_LIGHTS):
+        keys |= set(table)
+    builders = library_root / "TrafficSpec" / "Core" / "Builders.lean"
+    keys |= set(re.findall(r'\("(\w+)",', builders.read_text(encoding="utf-8")))
+    return keys
+
+
+def generator_key_to_lean(library_root: Path) -> dict[str, list[str]]:
+    """Generator attribute key -> the Lean key(s) it is lifted as.
+
+    The rename is real and easy to trip over: `vertex` reaches Lean as
+    `pos_x`/`pos_y`/`pos_z`, `carla_speed` as `speed`. Without this, a rule that
+    reaches for the generator's name is told the attribute does not exist —
+    which is the answer that pushes a formalizable law toward `unsupported`.
+    """
+    out: dict[str, list[str]] = {}
+    for raw, names in GEOMETRY_VECTORS.items():
+        out[raw] = list(names)
+    for table in (EGO_VECTOR_CHANNELS, EXTRA_VEHICLE_LIGHTS, IDENTITY_ATTRS,
+                  LANDMARK_EXTRA, VEHICLE_LIGHTS):
+        for lean, raw in table.items():
+            out.setdefault(raw, []).append(lean)
+    for lean, raw in (("speed", "carla_speed"), ("throttle", "carla_throttle"),
+                      ("brake", "carla_brake"), ("steer", "carla_steer"),
+                      ("yaw_rate", "carla_ang_vel_z"),
+                      ("hand_brake", "carla_hand_brake"),
+                      ("reverse", "carla_reverse"),
+                      ("at_traffic_light", "carla_affected_by_traffic_light")):
+        out.setdefault(raw, []).append(lean)
+    return out

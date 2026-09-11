@@ -18,11 +18,19 @@ IDENT_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
 @dataclass
 class ScenarioSpec:
-    """A declared acceptance test, written by the plan agent from the law text."""
+    """One declared scenario, written by the plan agent from the law text.
+
+    `role` says what job the scenario does, and the three are not
+    interchangeable — see `plan_validate.SCENARIO_ROLES`. It defaults to empty
+    here rather than being required, because this dataclass also reads
+    `node_spec.json` files written before the field existed; requiring it is
+    `plan_validate`'s business, and that runs on new plans only.
+    """
 
     name: str
     expected: bool
     description: str = ""
+    role: str = ""
 
     @staticmethod
     def from_dict(d: dict) -> "ScenarioSpec":
@@ -30,11 +38,13 @@ class ScenarioSpec:
             name=str(d["name"]),
             expected=bool(d["expected"]),
             description=str(d.get("description", "")),
+            role=str(d.get("role", "")),
         )
 
     def to_dict(self) -> dict:
         return {
             "name": self.name,
+            "role": self.role,
             "expected": self.expected,
             "description": self.description,
         }
@@ -65,6 +75,25 @@ class SpecNode:
     @property
     def namespace(self) -> str:
         return f"TrafficSpec.Rules.{self.theme}.{self.slug_namespace}"
+
+    @property
+    def witness_file(self) -> str:
+        """Where this node's acceptance witnesses go.
+
+        A separate file under a separate library root. The rule file is the
+        specification and is what an application loads; the witnesses are
+        evidence about it, produced once and read by the gate. Mirroring the
+        rule's path keeps the pairing derivable rather than registered.
+        """
+        return f"TrafficSpecWitness/{self.theme}/{self.slug}.lean"
+
+    @property
+    def witness_module(self) -> str:
+        return f"TrafficSpecWitness.{self.theme}.{self.slug}"
+
+    @property
+    def witness_namespace(self) -> str:
+        return f"TrafficSpecWitness.{self.theme}.{self.slug_namespace}"
 
     @property
     def slug_namespace(self) -> str:
@@ -112,6 +141,9 @@ class SpecNode:
             "target_file": self.target_file,
             "module": self.module,
             "namespace": self.namespace,
+            "witness_file": self.witness_file,
+            "witness_module": self.witness_module,
+            "witness_namespace": self.witness_namespace,
         }
 
 
@@ -145,6 +177,10 @@ class SpecNodeTask:
     @property
     def target_path(self) -> Path:
         return self.library_root / self.node.target_file
+
+    @property
+    def witness_path(self) -> Path:
+        return self.library_root / self.node.witness_file
 
     @property
     def node_spec_file(self) -> Path:
@@ -201,7 +237,6 @@ class SpecNodeResult:
     attempts: int = 0               # check_spec.py invocations
     scenarios_declared: int = 0
     scenarios_passed: int = 0
-    carla_groundings: int = 0
     blockers: list[str] = field(default_factory=list)
     suggest_decompose: list[str] = field(default_factory=list)
     missing_vocab: list[str] = field(default_factory=list)
@@ -231,7 +266,6 @@ class SpecNodeResult:
             "attempts": self.attempts,
             "scenarios_declared": self.scenarios_declared,
             "scenarios_passed": self.scenarios_passed,
-            "carla_groundings": self.carla_groundings,
             "blockers": self.blockers,
             "suggest_decompose": self.suggest_decompose,
             "missing_vocab": self.missing_vocab,

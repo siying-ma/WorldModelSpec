@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from .. import runner
+from .. import coverage, gaps, plan_validate, runner
 from ..state import clear_auto_notes, clear_temporary_hints
 from .base import Phase, PhaseResult
 
@@ -166,6 +166,82 @@ def _lean_ctors(scene_src: str, inductive: str) -> list[str]:
     return re.findall(r"^\s*\|\s*(\w+)", m.group(1), re.M) if m else []
 
 
+def unbindable_types(library_root: Path) -> list[str]:
+    """`EntityType` constructors no binder can ever produce.
+
+    A binder ranges over one of the `*Types` lists in `Core/Scene.lean`; a
+    constructor in none of them cannot be bound, so a schema naming it grounds
+    zero times. Derived rather than declared, because the declared version named
+    one type when two qualify.
+    """
+    scene = (library_root / "TrafficSpec" / "Core" / "Scene.lean").read_text(
+        encoding="utf-8")
+    covered: set[str] = set()
+    for _, body in re.findall(
+            r"def (\w+Types)\s*:\s*List EntityType\s*:=\s*\[(.*?)\]",
+            scene, re.S):
+        covered |= set(re.findall(r"\.(\w+)", body))
+    return sorted(set(_lean_ctors(scene, "EntityType")) - covered)
+
+
+def capture_census() -> dict:
+    """The binder-domain sizes the gate enforces, from the gate itself."""
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    from check_spec import CAPTURE_ENTITY_CENSUS      # noqa: E402
+    return dict(CAPTURE_ENTITY_CENSUS)
+
+
+def core_model(library_root: Path) -> dict:
+    """The data model, read from `Core/Scene.lean` — the only copy there is.
+
+    Everything here used to be duplicated in `carla/schema.json` and compared
+    back against Core by four `doctor` checks. The duplication was the reason
+    those checks existed: a second copy of an enumeration can name a constructor
+    that no longer exists, and the agent has no way to tell. Deleting the copy
+    deletes the failure mode and the checks together, which is cheaper than
+    policing it.
+
+    Fails loudly rather than falling back. A fallback would render a stale copy
+    at exactly the moment the real one became unreadable, which is the case the
+    fallback is supposed to protect against.
+    """
+    scene = library_root / "TrafficSpec" / "Core" / "Scene.lean"
+    text = scene.read_text(encoding="utf-8")
+    bands = [(lbl, int(m)) for lbl, m in
+             re.findall(r"\.(\w+),\s*(\d+)",
+                        (re.search(r"def distanceBands.*?\[(.*?)\]", text, re.S)
+                         or re.match("", "")).group(1) if
+                        re.search(r"def distanceBands.*?\[(.*?)\]", text, re.S) else "")]
+    hz = re.search(r"def captureHz : Nat := (\d+)", text)
+    prox = re.search(r"def proximityTypes.*?\[(.*?)\]", text, re.S)
+    model = {
+        "entities": _lean_ctors(text, "EntityType"),
+        "relations": _lean_ctors(text, "RelLabel"),
+        "bands": bands,
+        "capture_hz": int(hz.group(1)) if hz else 0,
+        "proximity_types": re.findall(r"\.(\w+)", prox.group(1)) if prox else [],
+    }
+    missing = [k for k, v in model.items() if not v]
+    if missing:
+        raise SystemExit(f"plan: {scene} did not yield {', '.join(missing)} — "
+                         f"the prompt cannot be built from a stale copy")
+    return model
+
+
+def band_prose(bands: list) -> str:
+    """The bands with their ranges, in words, generated from the pairs.
+
+    Written out by hand before, which made the prompt a THIRD copy of
+    `distanceBands` after Core and the schema.
+    """
+    parts, lo = [], 0
+    for lbl, hi in bands:
+        parts.append(f"`{lbl}` <{hi} m" if lo == 0 else f"`{lbl}` {lo}-{hi} m")
+        lo = hi
+    return ", ".join(parts)
+
+
 def summarize_formula(library_root: Path) -> str:
     """The formula language, generated from `Core/Formula.lean`.
 
@@ -201,11 +277,15 @@ def summarize_formula(library_root: Path) -> str:
         "- An atom past the last frame reads **false**. So `◯ p` is false at the end, "
         "but `¬ₛ ◯ p` is **true** there — a transition can never be observed from the "
         "final frame.",
-        "- `.bounded n φ` whose window runs off the end is **false**. So "
-        "`□ (¬ₛ .bounded n bad)` is satisfied on any trace shorter than `n`, "
-        "*whatever the trace contains*, and the last `n-1` frames of every trace are "
-        "a blind zone. Give every scenario trace at least `n` frames; the gate "
-        "rejects shorter ones as `TRACE_TOO_SHORT`.",
+        "- `.bounded n φ` whose window runs off the end is **false**. Two "
+        "consequences. `□ (¬ₛ .bounded n bad)` is satisfied on any trace shorter "
+        "than `n` *whatever the trace contains*, so give every scenario trace at "
+        "least `n` frames — the gate rejects shorter ones as `TRACE_TOO_SHORT`. "
+        "And the last `n-1` positions cannot START a window, so conduct that is "
+        "still in progress when the trace ends is never confirmed: a run of `n-1` "
+        "bad frames at the very end reads compliant, and one more recorded frame "
+        "would have made it a violation. Put the conduct a negative scenario is "
+        "testing well inside the trace, not against its end.",
         "- `□`, `𝒰` and `ℛ` are clamped to the end of the trace, so they degrade "
         "gracefully rather than inverting.",
     ]
@@ -229,9 +309,13 @@ def summarize_builders(library_root: Path) -> str:
     if not builders.exists():
         return "(Core/Builders.lean not found)\n"
     text = builders.read_text(encoding="utf-8")
-    out = ["**Trace constructors** — generated from `Core/Builders.lean` "
-           "(`def mk*`). Scenario traces are built only from these:"]
-    for m in re.finditer(r"^def (mk\w+|frame)\s*(.*?)\s*:\s*(Entity|Relation|Scene)\b",
+    out = ["**Trace constructors** — generated from `Core/Builders.lean`. "
+           "Scenario traces are built only from these:"]
+    # The return type must be followed by `:=`, so a parameter whose own type
+    # is one of these (`padTo (n : Nat) (τ : Trace)`) does not end the match
+    # early and truncate the signature the agent is shown.
+    for m in re.finditer(r"^def (mk\w+|frame|padTo)\s*(.*?)\s*"
+                         r":\s*(Entity|Relation|Scene|Trace)\s*:=",
                          text, re.M | re.S):
         args = " ".join(m.group(2).split())
         out.append(f"- `{m.group(1)} {args}` → `{m.group(3)}`")
@@ -239,6 +323,13 @@ def summarize_builders(library_root: Path) -> str:
     out.append("Argument order is load-bearing and unchecked: every dynamics "
                "channel of `mkEgo` is a `String`, so a permuted order compiles "
                "and quietly tests something else. Copy the order above.")
+    out.append("")
+    out.append("`padTo` exists because how long a trace must be is a property "
+               "of the FORMULA, not of the situation a scenario depicts: a "
+               "trace shorter than the formula's frame span makes every bounded "
+               "operator read a window that runs off the end, which the "
+               "semantics report as false. Write the situation at its natural "
+               "length and wrap it in `padTo`; do not hand-count frames.")
     return "\n".join(out) + "\n"
 
 
@@ -288,9 +379,19 @@ def summarize_binders(library_root: Path) -> str:
     out = ["**Binder helpers** — generated from `Core/Grounding.lean` "
            "(`def *Binder`). One per planned binder:"]
     names: list[str] = []
-    for m in re.finditer(r"^def (\w+Binder) \(label : String\) : Binder := \u27e8label, ([^\u27e9]+)\u27e9",
+    # `Binder` gained an optional field, so its constructions moved from the
+    # anonymous bracket form to named fields, which silently emptied this
+    # table until the pattern followed. Both forms are matched, and `doctor`
+    # now fails when the table lists fewer binders than the census knows, so
+    # a future change to the declaration cannot quietly take the binders away
+    # from the agent again.
+    _binder_re = (r"^def (\w+Binder) \(label : String\) : Binder :=\s*"
+                  r"(?:\u27e8label, ([^\u27e9]+)\u27e9"
+                  r"|\{ label, types := ([^,}]+)[,}])")
+    for m in re.finditer(_binder_re,
                          grounding.read_text(encoding="utf-8"), re.M):
-        name, types = m.group(1), m.group(2).strip()
+        name = m.group(1)
+        types = (m.group(2) or m.group(3) or "").strip()
         names.append(name)
         count = census.get(keys.get(name, ""))
         cost = f" — about {count} candidates per capture" if count else ""
@@ -299,6 +400,7 @@ def summarize_binders(library_root: Path) -> str:
     if not (gate and census and budget):
         return "\n".join(out) + "\n"
 
+    soft = getattr(gate, "GROUNDING_SOFT_CEILING", None)
     out += [
         "",
         "**Every binder multiplies.** `PropertySchema.bindings` is the cross "
@@ -307,6 +409,17 @@ def summarize_binders(library_root: Path) -> str:
         f"the counts above and rejects a schema over {budget:,} groundings with "
         "`GROUNDING_BUDGET`; two binders of the same type contribute "
         "n × (n−1), because `distinctIds` forbids them sharing an entity.",
+        "",
+        f"**{budget:,} is a failure detector, not a quota.** Nothing under it "
+        f"is thereby endorsed, and a plan that reports its nodes as \"all under "
+        f"{budget:,}\" has answered a question nobody asked. The number to aim "
+        + (f"at is ~{soft}, which is what a rule costs when it binds only the "
+           f"actors its clause is about; the gate warns above that and says "
+           f"which binder to argue with. " if soft else "")
+        + "Choose the binders the clause requires and no others: where two "
+        "readings are both faithful, take the cheaper, and where a binder "
+        "exists only to reach a relation, the predicate that would quantify it "
+        "internally is a gap worth filing.",
         "",
         "The counts and the budget come from `tools/check_spec.py` "
         "(`CAPTURE_ENTITY_CENSUS`, `GROUNDING_BUDGET`). They calibrate one "
@@ -336,6 +449,87 @@ def summarize_binders(library_root: Path) -> str:
     return "\n".join(out) + "\n"
 
 
+def summarize_portability(repo_root: Path) -> str:
+    """Render the CARLA-to-video portability ledger for the plan agent.
+
+    `carla/schema.json` says what the generator emits; this says which of it a
+    camera could recover. They are separate files because their provenance is
+    separate, and the distinction reaches the agent as a PREFERENCE rather than
+    a restriction: forbidding the simulator-only elements would make the CARLA
+    library worse in order to make a later transfer look better, which inverts
+    the experiment this pipeline exists to run.
+
+    Absent or unreadable, the block says so. A missing ledger must not read as
+    "everything transfers".
+    """
+    path = repo_root / "perception" / "portability.json"
+    if not path.exists():
+        return ("(no portability ledger at `perception/portability.json` — "
+                "nothing is known about which of this data survives the move "
+                "to real video, so do not assume any of it does)\n")
+    try:
+        led = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return f"(portability ledger is not valid JSON: {exc})\n"
+
+    ak = led.get("attribute_keys", {})
+    rl = led.get("relation_labels", {})
+    lines = [
+        "The pipeline's eventual target is real video. This says which of the "
+        "data you are about to read exists there, and it is a PREFERENCE, not "
+        "a restriction: where one clause admits two formalizations and one of "
+        "them avoids a simulator-only element, take that one — otherwise use "
+        "what you need and say in `notes` that the rule will not transfer.",
+        "",
+    ]
+    for cls, label in (
+            ("sim_only", "**Simulator-only** — no counterpart a camera can recover"),
+            ("both_with_error", "**Recoverable, but as an estimate** — the class "
+                                "most often mistaken for portable"),
+            ("portable", "**Portable** — recoverable with error small relative "
+                         "to any threshold a traffic code states")):
+        keys = (ak.get(cls) or {}).get("keys") or []
+        labels = (rl.get(cls) or {}).get("labels") or []
+        if not (keys or labels):
+            continue
+        lines.append(f"{label}:")
+        if keys:
+            lines.append("  attributes — " + ", ".join(f"`{k}`" for k in sorted(keys)))
+        if labels:
+            lines.append("  relations — " + ", ".join(f"`{k}`" for k in sorted(labels)))
+        lines.append("")
+
+    err = (ak.get("both_with_error") or {}).get("error_regimes") or {}
+    if err:
+        lines += ["Why an estimate is not the same as a value — the regime "
+                  "decides whether a THRESHOLD is portable, not the key:"]
+        lines += [f"- {k}: {v}" for k, v in sorted(err.items())]
+        lines.append("")
+
+    struct = led.get("structural") or {}
+    if struct:
+        lines += ["Differences attached to no single key, and the ones most "
+                  "often missed:"]
+        for name, entry in sorted(struct.items()):
+            if not isinstance(entry, dict):
+                continue
+            lines.append(f"- **{name}** ({entry.get('class', '?')}) — "
+                         f"{entry.get('statement', '')} "
+                         f"{entry.get('consequence', '')}")
+        lines.append("")
+
+    vo = led.get("video_only") or {}
+    named = {k: v for k, v in vo.items() if not k.startswith("$")}
+    if named:
+        lines += ["Present in real footage and ABSENT from this abstraction. A "
+                  "clause needing one of these is untestable here for a reason "
+                  "that is not a defect of your formalization — say so rather "
+                  "than approximating it:"]
+        lines += [f"- {k}: {v}" for k, v in sorted(named.items())]
+        lines.append("")
+    return "\n".join(lines)
+
+
 def summarize_schema(schema: dict,
                      library_root: Optional[Path] = None) -> str:
     """Render the CARLA contract for the plan agent.
@@ -345,41 +539,23 @@ def summarize_schema(schema: dict,
     predicate that does not exist yet is *not* the same as a law blocked on data
     CARLA does not carry, and only the second is `unsupported`.
     """
-    ek = schema["entity_types"]
-    rl = schema["relation_labels"]
     ak = schema["attribute_keys"]
-    tb = schema.get("time_base", {})
-    # Generated from Core/Scene.lean, not read from the schema. A hand-maintained
-    # copy of an enumeration can list a constructor that no longer exists, and the
-    # agent has no way to tell. `run_spec doctor` checks the two still agree, so a
-    # drift is a failed check rather than a rule that will not compile.
-    entity_src = "carla/schema.json → entity_types.tier_a"
-    relation_src = "carla/schema.json → relation_labels.tier_a"
-    entities, relations = list(ek["tier_a"]), list(rl["tier_a"])
-    if library_root is not None:
-        scene = library_root / "TrafficSpec" / "Core" / "Scene.lean"
-        if scene.exists():
-            text = scene.read_text(encoding="utf-8")
-            gen_e = _lean_ctors(text, "EntityType")
-            gen_r = _lean_ctors(text, "RelLabel")
-            if gen_e:
-                entities, entity_src = gen_e, "Core/Scene.lean → inductive EntityType"
-            if gen_r:
-                relations, relation_src = gen_r, "Core/Scene.lean → inductive RelLabel"
+    model = core_model(library_root)
+    entities, relations = model["entities"], model["relations"]
 
     lines = [
         "These are the Lean constructor names verbatim — write `.car`, not `.vehicle_car`.",
         "",
-        f"**Entity types** (`EntityType`, from {entity_src}): "
+        "**Entity types** (`EntityType`, from Core/Scene.lean): "
         + ", ".join(f"`.{t}`" for t in entities),
         "",
-        f"**Relation labels** (`RelLabel`, from {relation_src}): "
+        "**Relation labels** (`RelLabel`, from Core/Scene.lean): "
         + ", ".join(f"`.{t}`" for t in relations),
         "",
-        "**Proximity bands, closest first** — `safetyHazard` <2 m, `nearCollision` 2–4 m, "
-        "`superNear` 4–7 m, `veryNear` 7–10 m, `near` 10–16 m, `visible` 16–25 m. "
-        "`near` is the second *farthest* band; use `Pred.withinMetres` instead of "
-        "guessing from the name.",
+        "**Proximity bands, closest first** (`distanceBands`, from "
+        "Core/Scene.lean) — " + band_prose(model["bands"]) + ". "
+        f"`{model['bands'][-2][0]}` is the second *farthest* band; use "
+        "`Pred.withinMetres` instead of guessing from the name.",
     ]
 
     cov = schema.get("relation_coverage", {}).get("proximity_and_angular_pairs", {})
@@ -392,28 +568,30 @@ def summarize_schema(schema: dict,
         lines += [
             "",
             "**Which pairs carry a distance** — " + cov.get("ego_is_always_one_end", ""),
-            "Covered base classes: "
-            + ", ".join(f"`{c}`" for c in cov.get("covered_base_classes", []))
+            "Covered base classes (`proximityTypes`, from Core/Scene.lean): "
+            + ", ".join(f"`{c}`" for c in model["proximity_types"])
             + ". " + cov.get("consequence", ""),
         ]
 
-    if tb:
+    # Unconditional: every fact in this block comes from Core/Scene.lean,
+    # not from the schema. It used to be guarded on a schema section, so
+    # removing that section silently dropped the capture rate from the
+    # prompt — the agent was left with no way to reason about how long a
+    # trace has to be.
+    if True:
         lines += [
             "",
-            f"**Time base** — frames carry no timestamp; the reference capture runs at "
-            f"{tb.get('capture_hz')} Hz ({tb.get('frame_interval_seconds')} s per frame), "
+            f"**Time base** — frames carry no timestamp; traces are assumed to be "
+            f"sampled at {model['capture_hz']} Hz (`captureHz`, from Core/Scene.lean), "
             f"so a duration becomes a frame count via `TrafficSpec.secondsToFrames`. "
             f"This is a modelling assumption to record, not a missing field.",
             "",
-            "**A duration also sets a minimum trace length.** "
-            "`Core/Semantics.lean` reads a `.bounded n` window that runs off the "
-            "end of the trace as false, so `□ (¬ₛ .bounded n bad)` — the usual "
-            "safety shape — reports *compliant* on any trace shorter than `n`, "
-            "whatever it contains. Every scenario trace you plan must therefore "
-            "be at least as long as the longest duration the rule uses, and the "
-            "gate rejects shorter ones as `TRACE_TOO_SHORT`. Prefer the shortest "
-            "persistence window the clause actually justifies: a 4-second window "
-            "needs 80-frame traces and cannot be checked on a shorter capture.",
+            "How long a trace must then be is a property of the FORMULA, not of "
+            "the data — see *The temporal language* above, which is generated "
+            "from `Core/Formula.lean` and states it once. Choosing the shortest "
+            "persistence window the clause actually justifies is your call: a "
+            "longer window needs longer traces and cannot be checked on a "
+            "shorter capture.",
         ]
 
     # Measured facts about the generator that used to sit in `notes` and reach
@@ -422,15 +600,22 @@ def summarize_schema(schema: dict,
     # full proximity edges, and that a light's `controls` edge only reaches
     # junction-internal lanes — were among them. `run_spec doctor` now fails if
     # any entry is undelivered, so this block is not optional decoration.
-    never = (schema.get("entity_types") or {}).get("never_bind") or []
+    # Derived, both of them. The schema used to declare these and both copies
+    # were wrong or redundant: `never_bind` listed one type when two are
+    # unbindable, and `multiplicity` restated check_spec.CAPTURE_ENTITY_CENSUS,
+    # which is the copy the gate actually enforces.
+    never = unbindable_types(library_root)
     if never:
-        lines += ["", "**Never bind these entity types**: "
+        lines += ["", "**Never bind these entity types** — no binder in "
+                  "`Core/Grounding.lean` ranges over them, so a schema naming "
+                  "one grounds zero times: "
                   + ", ".join(f"`.{t}`" for t in never)]
-    mult = (schema.get("entity_types") or {}).get("multiplicity") or {}
-    if mult:
+    census = capture_census()
+    if census:
         lines += ["", "**How many entities of a type one situation contributes** "
-                  "(this is what a binder multiplies over):"]
-        lines += [f"- `.{k}` — {v}" for k, v in mult.items()]
+                  "(this is what a binder multiplies over, from "
+                  "`check_spec.CAPTURE_ENTITY_CENSUS`):"]
+        lines += [f"- `{k}` — about {v}" for k, v in sorted(census.items())]
 
     for key, label in (("governance_edges", "Governance edges (`controls`)"),
                        ("isIn_edges", "`isIn` edges")):
@@ -497,8 +682,15 @@ def summarize_schema(schema: dict,
         "",
         "**Attribute keys** (readable from a rule today, via `Pred.attr*`):",
     ]
+    # The KEY LIST comes from carla/adapter.py and Core/Builders.lean — the two
+    # things that put an attribute on an entity — not from the schema, which
+    # carries only what each key means. Sorted so the block is stable between
+    # runs; the schema's `kinds` supplies the description for each.
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "carla"))
+    from adapter import lifted_attribute_keys          # noqa: E402
     kinds = ak.get("kinds", {})
-    for key in ak["tier_a"]:
+    for key in sorted(lifted_attribute_keys(library_root)):
         kind = kinds.get(key, {})
         scope = kind.get("on", "")
         unit = f", {kind['unit']}" if kind.get("unit") else ""
@@ -536,22 +728,6 @@ def summarize_schema(schema: dict,
             # produces a rule that passes every scenario and fails on real data.
             if entry.get("do_not_use"):
                 lines.append(f"  - **DO NOT USE** for `{key}`: {entry['do_not_use']}")
-
-    # How absence is DERIVED. The schema is frozen before the pipeline sees any
-    # law, so it cannot pre-enumerate which absences a corpus will ask about.
-    # Rendered before the two key lists because it is what tells the agent how to
-    # use them: a list of absences could be read off, a derivation must be
-    # applied.
-    steps = schema.get("deciding_unsupported", {})
-    if steps:
-        lines += ["", "**Deciding whether a law is unsupported** — work down "
-                      "these in order. There is no list of absent things: the "
-                      "two key lists below enumerate everything that exists, so "
-                      "absence is what you derive when both come up empty:"]
-        for key, text in steps.items():
-            if key.startswith("$"):
-                continue
-            lines.append(f"- **{key}** — {text}")
 
     # The unlifted side of the key partition. Rendered with the actual key
     # names, because this is the section that decides whether a law is
@@ -611,6 +787,7 @@ class PlanPhase(Phase):
             vocab_summary=summarize_vocab(ctx.library_root),
             formula_summary=summarize_formula(ctx.library_root),
             schema_summary=summarize_schema(schema, ctx.library_root),
+            portability_summary=summarize_portability(ctx.repo_root),
             objectives_file=str(ctx.objectives_file),
             plan_file=str(ctx.plan_file),
             progress_file=str(ctx.progress_file),
@@ -620,6 +797,12 @@ class PlanPhase(Phase):
             auto_notes=auto_notes.strip() or "(none — this is the first iteration)",
             user_hints=hints.strip() or "(none)",
             iter_num=ctx.iter_num,
+            gaps_file=str(ctx.gaps_file),
+            gap_ledger=gaps.render_for_agent(gaps.load(ctx.repo_root)[0]),
+            coverage_state=coverage.render_for_agent(coverage.assess(
+                ctx.progress_file, ctx.repo_root,
+                plan_validate.load_law_ids(ctx.laws_file),
+                hints_file=ctx.hints_file)),
         )
         (ctx.iter_dir / "plan_prompt.txt").write_text(prompt, encoding="utf-8")
 

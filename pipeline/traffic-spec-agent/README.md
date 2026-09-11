@@ -31,7 +31,7 @@ Validate against a real capture, rather than against the agent's own scenarios:
 ```bash
 python -m scripts.run_spec monitor \
     --rsv-dir <capture>/rsv --ego-log <capture>/ego_logs.json \
-    --labels  labels/sceneflow_sample.json
+    --labels  <capture>/labels.json
 ```
 
 `verify` asks whether a spec passes the tests the plan agent wrote for it.

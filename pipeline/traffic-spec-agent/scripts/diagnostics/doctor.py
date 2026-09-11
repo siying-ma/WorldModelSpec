@@ -10,10 +10,20 @@ one of these checks corresponds to a drift that actually happened:
   formula notation.
 * The gate gained two verdicts the coding prompt's branch table never listed, so
   an agent could receive a verdict with no instruction for it.
-* `CLAUDE.md` described the report format without a line the report had started
-  emitting, and described a schema tier that had been deleted.
+* A repo-root operator doc described the report format without a line the report
+  had started emitting, and described a schema tier that had been deleted.
 * `attribute_keys` claimed vehicle light booleans exist on the ego, which the
   generator never emits for it.
+* `capture_preconditions` cited `scripts/sgg_surface.py` after that module moved
+  under `scripts/diagnostics/`, and the only path-resolving check read the
+  repo-root `*.md` alone — so the schema, which the agent is handed verbatim,
+  had its file references checked by nothing.
+
+No check here asks whether a rule grounds on a bundled sample trace. That
+fixture was hand-built from `Core/Builders.lean` rather than recorded, so it
+could only ever confirm that a rule binds against data written to make it bind;
+whether a spec fires correctly is asked of a real capture and its human labels,
+by `scripts/diagnostics/capture_eval.py`.
 
 None of those is subtle; all of them are mechanically detectable; none was
 detected, because nothing compared the description with the thing described.
@@ -127,16 +137,16 @@ LAW_FREE_PATTERNS = {
         # "stop-on-red rule" — which can only be written once the corpus is
         # known.
         # A compound counting or structuring something ("two-binder rule",
-    # "single-clause rule") is about the machinery, not about a subject matter,
-    # and is excluded so the check does not push prose around for nothing.
-    # A rule named by its subject matter — the whole hyphenated compound, so
-    # "right-of-way rules" is caught and not just its tail. Excluded, so the
-    # check does not push prose around for nothing: compounds that count or
-    # structure something ("two-binder rule") and the machinery ones
-    # ("end-of-trace rules"), neither of which names a subject matter.
-    "named rule family": r"(?<![-\w])(?!(?:one|two|three|four|multi|single|per"
-                         r"|sub|non|no|first|second|last|top|end-of-trace)\b)"
-                         r"(?:[a-z]+-)+[a-z]+ rules?\b",
+        # "single-clause rule") is about the machinery, not about a subject matter,
+        # and is excluded so the check does not push prose around for nothing.
+        # A rule named by its subject matter — the whole hyphenated compound, so
+        # "right-of-way rules" is caught and not just its tail. Excluded, so the
+        # check does not push prose around for nothing: compounds that count or
+        # structure something ("two-binder rule") and the machinery ones
+        # ("end-of-trace rules"), neither of which names a subject matter.
+        "named rule family": r"(?<![-\w])(?!(?:one|two|three|four|multi|single|per"
+                            r"|sub|non|no|first|second|last|top|end-of-trace)\b)"
+                            r"(?:[a-z]+-)+[a-z]+ rules?\b",
         # Reasoning about how the specification will be graded. The test
         # database does not exist when these files are frozen.
         "evaluation coupling": r"\b(?:capture_eval|capture_bench"
@@ -183,78 +193,65 @@ class Doctor:
 
     # ── schema ↔ Lean core ──────────────────────────────────────────────
 
-    def entity_types(self) -> Result:
-        core = _lean_ctors(self.scene, "EntityType")
-        claimed = self.schema["entity_types"]["tier_a"]
-        src = ("carla/schema.json → entity_types.tier_a",
-               "library/TrafficSpec/Core/Scene.lean → inductive EntityType")
-        if set(core) != set(claimed):
-            return Result("entity types", FAIL,
-                          f"schema-only={sorted(set(claimed)-set(core))} "
-                          f"core-only={sorted(set(core)-set(claimed))}", src)
-        return Result("entity types", OK, f"{len(core)} constructors agree", src)
-
-    def relation_labels(self) -> Result:
-        core = _lean_ctors(self.scene, "RelLabel")
-        claimed = self.schema["relation_labels"]["tier_a"]
-        src = ("carla/schema.json → relation_labels.tier_a",
-               "library/TrafficSpec/Core/Scene.lean → inductive RelLabel")
-        if set(core) != set(claimed):
-            return Result("relation labels", FAIL,
-                          f"schema-only={sorted(set(claimed)-set(core))} "
-                          f"core-only={sorted(set(core)-set(claimed))}", src)
-        return Result("relation labels", OK, f"{len(core)} labels agree", src)
-
     def source_labels(self) -> Result:
-        """Every RSV label the adapter accepts, as the schema records it."""
-        m = re.search(r"REL_LABELS[^{]*\{(.*?)\n\}", self.adapter, re.S)
-        inverted: dict[str, set[str]] = {}
-        for raw, lean in re.findall(r'"([^"]+)"\s*:\s*"([^"]+)"', m.group(1) if m else ""):
-            inverted.setdefault(lean, set()).add(raw)
-        claimed = {k: set(v) for k, v in
-                   self.schema["relation_labels"]["rsv_source_labels"].items()}
-        src = ("carla/schema.json → relation_labels.rsv_source_labels",
-               "carla/adapter.py → REL_LABELS")
-        if inverted != claimed:
-            diff = [k for k in set(inverted) | set(claimed)
-                    if inverted.get(k) != claimed.get(k)]
-            return Result("rsv source labels", FAIL,
-                          f"disagree for {sorted(diff)}", src)
-        return Result("rsv source labels", OK,
-                      f"{len(claimed)} mappings agree", src)
+        """Every Lean label the adapter maps onto exists in `Core/Scene.lean`.
 
-    def proximity_bands(self) -> Result:
-        m = re.search(r"def distanceBands.*?\[(.*?)\]", self.scene, re.S)
-        core = [(a, int(b)) for a, b in re.findall(r"\.(\w+),\s*(\d+)", m.group(1) if m else "")]
-        claimed = [(a, b) for a, b in
-                   self.schema["relation_labels"]["proximity_bands_closest_first"]]
-        src = ("carla/schema.json → relation_labels.proximity_bands_closest_first",
-               "library/TrafficSpec/Core/Scene.lean → distanceBands")
-        if core != claimed:
-            return Result("proximity bands", FAIL,
-                          f"core={core} schema={claimed}", src)
-        return Result("proximity bands", OK,
-                      f"{len(core)} bands agree, closest first", src)
+        The schema used to hold its own copy of this mapping and this check
+        compared the two. The copy listed 18 of the adapter's 21 generator
+        spellings — `controlsTrafficOf` among the missing — so it was an
+        incomplete duplicate of something in-repo and derivable. What is worth
+        checking is the direction that can actually break a build: the adapter
+        emitting a constructor Core does not declare.
+
+        The mapping is many-to-one by necessity, not by choice: the generator
+        emits more than one spelling for some relations, so no exact
+        one-to-one naming exists to be adopted.
+        """
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "carla"))
+        from adapter import REL_LABELS                  # noqa: E402
+        core = _nonempty(set(_lean_ctors(self.scene, "RelLabel")),
+                         "RelLabel constructors")
+        used = set(REL_LABELS.values())
+        src = ("carla/adapter.py -> REL_LABELS",
+               "library/TrafficSpec/Core/Scene.lean -> inductive RelLabel")
+        unknown = sorted(used - core)
+        if unknown:
+            return Result("rsv source labels", FAIL,
+                          f"adapter maps onto labels Core does not declare: "
+                          f"{unknown}", src)
+        unmapped = sorted(core - used)
+        return Result("rsv source labels", OK,
+                      f"{len(REL_LABELS)} generator spellings map onto "
+                      f"{len(used)} of Core's {len(core)} labels"
+                      + (f"; {len(unmapped)} label(s) the adapter never emits: "
+                         f"{unmapped}" if unmapped else ""), src)
 
     def capture_rate(self) -> Result:
+        """`Core/Scene.lean::captureHz` and `adapter.py::ASSUMED_CAPTURE_HZ` agree.
+
+        Two copies, and both have to exist: Core needs the value to turn seconds
+        into frames, and the adapter needs it to refuse a capture recorded at
+        another rate. Neither can read the other. A disagreement rescales every
+        duration in every rule silently, so this is the one duplicate worth
+        keeping and therefore worth checking. The schema used to hold a third
+        copy; it now points at Core instead.
+        """
         m = re.search(r"def captureHz : Nat := (\d+)", self.scene)
         core = int(m.group(1)) if m else -1
-        claimed = self.schema["time_base"]["capture_hz"]
         m2 = re.search(r"ASSUMED_CAPTURE_HZ = (\d+)", self.adapter)
         adapter = int(m2.group(1)) if m2 else -1
-        src = ("carla/schema.json → time_base.capture_hz",
-               "library/TrafficSpec/Core/Scene.lean → captureHz",
-               "carla/adapter.py → ASSUMED_CAPTURE_HZ")
-        if not (core == claimed == adapter):
+        src = ("library/TrafficSpec/Core/Scene.lean -> captureHz",
+               "carla/adapter.py -> ASSUMED_CAPTURE_HZ")
+        if core != adapter or core < 0:
             return Result("capture rate", FAIL,
-                          f"core={core} schema={claimed} adapter={adapter} — a "
-                          f"mismatch rescales every duration in every rule", src)
-        return Result("capture rate", OK, f"{core} Hz in all three", src)
+                          f"core={core} adapter={adapter} — a mismatch rescales "
+                          f"every duration in every rule", src)
+        return Result("capture rate", OK, f"{core} Hz in both copies", src)
 
     def capture_rate_has_one_owner(self) -> Result:
         """No description restates the capture rate as a figure.
 
-        The rate had five copies — `time_base.capture_hz`, the precondition
+        The rate had several copies — a schema key, the precondition
         prose, a `partially_available` entry as "50 ms", `Core/Scene.lean`
         and `adapter.py`. `capture_rate` above cross-checks the first, fourth and
         fifth against each other. The two prose copies were checked by nothing,
@@ -268,7 +265,8 @@ class Doctor:
         proximity band metres while denoting something else entirely. The rate is
         checkable because it always carries a unit.
         """
-        hz = self.schema["time_base"]["capture_hz"]
+        m = re.search(r"def captureHz : Nat := (\d+)", self.scene)
+        hz = int(m.group(1)) if m else 0
         ms = int(1000 / hz)
         patterns = {
             rf"\b{hz}\s*(?:Hz|hz)\b": f"{hz} Hz",
@@ -276,22 +274,22 @@ class Doctor:
             rf"\bat\s+{hz}\b": f"at {hz}",
             rf"\b{ms}\s*(?:ms|milliseconds?)\b": f"{ms} ms",
         }
-        src = ("carla/schema.json -> every description outside time_base",
-               "carla/schema.json -> time_base.capture_hz")
+        src = ("carla/schema.json -> every description",
+               "library/TrafficSpec/Core/Scene.lean -> captureHz")
         bad = []
-        # `time_base` owns the value, but only in `capture_hz`. Its own prose
+        # Core owns the value. The schema's own prose
         # used to restate it twice more ("secondsToFrames 1 = 20", "50 ms
         # frames") — inside the section this check was trusting, and the
         # millisecond spelling is derived, so a changed rate would have left it
         # quietly wrong. Every field except the owner is checked.
-        for section in ("time_base", "capture_preconditions",
-                        "partially_available", "entity_types",
-                        "relation_labels", "relation_coverage",
-                        "attribute_keys", "available_not_exposed",
-                        "deciding_unsupported"):
-            for key, entry in self.schema[section].items():
-                if key.startswith("$") or (section == "time_base"
-                                           and key == "capture_hz"):
+        # Every section, enumerated from the file. A hard-coded list here was
+        # its own maintenance liability: it broke twice as sections were
+        # removed, and it would silently stop checking a section that was added.
+        for section, body in self.schema.items():
+            if section.startswith("$") or not isinstance(body, dict):
+                continue
+            for key, entry in body.items():
+                if key.startswith("$"):
                     continue
                 stack = [entry]
                 while stack:
@@ -305,30 +303,14 @@ class Doctor:
                             if re.search(pat, it):
                                 bad.append(f"{section}.{key} says {shown!r}")
         if bad:
-            return Result("capture rate one owner", FAIL,
+            return Result("rate never restated", FAIL,
                           f"{'; '.join(sorted(set(bad)))} — name "
-                          f"time_base.capture_hz instead; a second copy nothing "
+                          f"Core/Scene.lean::captureHz instead; a copy nothing "
                           f"cross-checks is the copy that drifts", src)
-        return Result("capture rate one owner", OK,
+        return Result("rate never restated", OK,
                       f"{len(patterns)} spellings of the rate appear in no "
-                      f"description; time_base.capture_hz is the only copy", src)
-
-    def proximity_types(self) -> Result:
-        lean = _lean_list(self.scene, "proximityTypes")
-        rename = {"pedestrian": "person"}
-        lean_named = {rename.get(x, x) for x in lean}
-        claimed = set(self.schema["relation_coverage"]
-                      ["proximity_and_angular_pairs"]["covered_base_classes"])
-        src = ("carla/schema.json → relation_coverage…covered_base_classes",
-               "library/TrafficSpec/Core/Scene.lean → proximityTypes")
-        if lean_named != claimed:
-            return Result("proximity-capable types", FAIL,
-                          f"core={sorted(lean_named)} schema={sorted(claimed)} — a "
-                          f"binder outside this set can never carry a distance", src)
-        return Result("proximity-capable types", OK,
-                      f"{len(claimed)} base classes agree", src)
-
-    # ── schema/prompts ↔ vocabulary ─────────────────────────────────────
+                      f"description; Core/Scene.lean::captureHz is the only "
+                      f"declaration", src)
 
     def predicates_exist(self) -> Result:
         defined = _nonempty(set(re.findall(r"^\s*(?:private )?def (\w+)", self.vocab, re.M)),
@@ -363,13 +345,25 @@ class Doctor:
         types = set(_lean_ctors(self.scene, "EntityType"))
         groups = set(re.findall(r"^def (\w+Types) : List EntityType :=", self.scene, re.M))
         bound: set[str] = set()
-        for _, arg in re.findall(r"^def (\w+Binder) \(label : String\) : Binder := \u27e8label, ([^\u27e9]+)\u27e9",
-                                 self.grounding, re.M):
-            arg = arg.strip()
+        # Both spellings of a `Binder` literal, and across a line break: the
+        # anonymous constructor `\u27e8label, X\u27e9` and the structure instance
+        # `{ label, types := X }`. Core has used each in turn, and when the
+        # extractor knew only one it reported every EntityType as stranded —
+        # a loud failure, but one that named the wrong artifact. The union is
+        # asserted non-empty below so the next spelling fails as VACUOUS
+        # instead, which names this extractor.
+        binder_defs = re.findall(
+            r"^def (\w+Binder) \(label : String\) : Binder :=\s*"
+            r"(?:\u27e8\s*label\s*,\s*([^\u27e9]+?)\s*\u27e9"
+            r"|\{\s*label\s*,\s*types\s*:=\s*(.+?)\s*\})",
+            self.grounding, re.M | re.S)
+        for _, angle, brace in binder_defs:
+            arg = (angle or brace).strip()
             if arg.startswith("["):
                 bound |= {x.strip().lstrip(".") for x in arg.strip("[]").split(",") if x.strip()}
             else:
                 bound.add(arg)
+        _nonempty(bound, "binder definitions in Grounding.lean")
         # A group binder makes every member bindable too.
         for g in list(bound & groups):
             m = re.search(r"^def " + re.escape(g) + r" : List EntityType :=\n\s+\[([^\]]*)\]",
@@ -432,6 +426,102 @@ class Doctor:
                           f"census keys referenced but absent: {sorted(mapped - census)}", src)
         return Result("binder budget coverage", OK,
                       f"{len(defined)} binders all sized from the census", src)
+
+    def binders_reach_the_agent(self) -> Result:
+        """Every binder helper must appear in the table the agent is shown.
+
+        `binder_census_keys` above reads the `def` line, so it stays green
+        however the binder's BODY is written. The prompt's table is generated by
+        matching the body, and when `Binder` gained a field the constructions
+        moved to named fields and the table silently rendered empty — twenty
+        binders known to the gate, none offered to the agent, and every check
+        passing. A rule cannot use a binder it is never told about, so this
+        compares the rendered table against the same set the gate sizes.
+        """
+        from scripts.phases.plan import summarize_binders
+        defined = _nonempty(set(re.findall(r"^def (\w+Binder)", self.grounding, re.M)),
+                            "binder helpers in Grounding.lean")
+        rendered = set(re.findall(r"^- `(\w+Binder)`",
+                                  summarize_binders(self.lib), re.M))
+        src = ("library/TrafficSpec/Core/Grounding.lean → def *Binder",
+               "scripts/phases/plan.py → summarize_binders")
+        missing = sorted(defined - rendered)
+        if missing:
+            return Result("binders reach the agent", FAIL,
+                          f"defined but never shown to the agent: {missing} — "
+                          f"a binder the prompt omits cannot be used", src)
+        return Result("binders reach the agent", OK,
+                      f"all {len(defined)} binder helpers appear in the "
+                      f"generated table", src)
+
+    def portability_covers_the_data_model(self) -> Result:
+        """Every lifted key and every relation label has exactly one portability
+        class — or the ledger is silently partial.
+
+        `perception/portability.json` is frozen on the same terms as the schema
+        and answers a different question: not what the generator emits, but
+        which of it a camera could recover. Its usefulness rests entirely on
+        being COMPLETE — a key with no class reads, to anyone consulting it, as
+        a key with nothing to worry about. Completeness was checked by hand when
+        the file was written, and a hand check does not survive the next entity
+        type someone adds to `Core/Scene.lean`.
+
+        Both directions are checked: a class listing a key that no longer
+        exists is as much a divergence as a key with no class.
+        """
+        path = self.repo / "perception" / "portability.json"
+        src = ("perception/portability.json",
+               "carla/schema.json → attribute_keys",
+               "library/TrafficSpec/Core/Scene.lean → RelLabel")
+        if not path.exists():
+            return Result("portability covers the model", FAIL,
+                          "perception/portability.json is missing — the prompt "
+                          "renders a block saying nothing is known", src)
+        try:
+            led = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError as exc:
+            return Result("portability covers the model", FAIL,
+                          f"not valid JSON: {exc}", src)
+
+        def keyed(node, name=None):
+            if isinstance(node, dict):
+                if "kind" in node and name:
+                    yield name
+                for k, v in node.items():
+                    yield from keyed(v, k)
+            elif isinstance(node, list):
+                for v in node:
+                    yield from keyed(v, name)
+
+        lifted = _nonempty(set(keyed(self.schema["attribute_keys"])),
+                           "lifted attribute keys in carla/schema.json")
+        labels = _nonempty(set(_lean_ctors(self.scene, "RelLabel")),
+                           "RelLabel constructors in Scene.lean")
+
+        classed_keys, classed_labels = [], []
+        for blk in (led.get("attribute_keys") or {}).values():
+            classed_keys += (blk or {}).get("keys") or []
+        for blk in (led.get("relation_labels") or {}).values():
+            classed_labels += (blk or {}).get("labels") or []
+
+        problems = []
+        for what, model, classed in (("attribute key", lifted, classed_keys),
+                                     ("relation label", labels, classed_labels)):
+            cset = set(classed)
+            if model - cset:
+                problems.append(f"{what}s with no class: {sorted(model - cset)}")
+            if cset - model:
+                problems.append(f"{what}s classed but absent from the model: "
+                                f"{sorted(cset - model)}")
+            dupes = sorted({x for x in classed if classed.count(x) > 1})
+            if dupes:
+                problems.append(f"{what}s in more than one class: {dupes}")
+        if problems:
+            return Result("portability covers the model", FAIL,
+                          "; ".join(problems), src)
+        return Result("portability covers the model", OK,
+                      f"{len(lifted)} attribute keys and {len(labels)} relation "
+                      f"labels, each in exactly one class", src)
 
     # ── gate ↔ prompts ↔ report format ──────────────────────────────────
 
@@ -548,24 +638,76 @@ class Doctor:
         return Result("formula language", OK,
                       f"{len(used)} operators in use, all shown to the agent", src)
 
-    # ── docs ────────────────────────────────────────────────────────────
+    # ── file links ──────────────────────────────────────────────────────
 
-    def doc_paths_resolve(self) -> Result:
-        """Cross-repo paths in the docs must exist from where their commands run."""
-        broken = []
-        for rel in ("CLAUDE.md", "GETTING_STARTED.md"):
-            text = _read(self.repo / rel)
-            for path in set(re.findall(r"(\.\.[./A-Za-z0-9_\-]+)", text)):
-                if any(c in path for c in "*{}") or path.endswith("."):
+    #: Path prefixes that name something OUTSIDE this repository. The schema
+    #: cites the generator by file and line — that is the point of it (nothing
+    #: here may be asserted from memory) — and those files live in
+    #: `carla_scene_graphs`, which is not required to be checked out. A bare
+    #: basename (`sgg.py`, `actors.py`) is prose for the same reason, so only a
+    #: token whose FIRST segment names a real entry of this repo is resolved.
+    FOREIGN_PREFIXES = ("carla_sgg/", "carla_scene_graphs/")
+
+    def repo_paths_resolve(self) -> Result:
+        """Every in-repo file path named by an agent-facing artifact exists.
+
+        Its predecessor read the repo-root `*.md` only, and inside those only
+        `../`-prefixed cross-repo paths. So the two artifacts the agent is
+        actually handed — `carla/schema.json` and both prompt templates — had
+        their file references checked by nothing, and `capture_preconditions`
+        went on pointing at `scripts/sgg_surface.py` for a whole release after
+        that module moved into `scripts/diagnostics/`. A pointer that resolves
+        to nothing is not an error the agent can see: it reads as a citation,
+        and the claim it was supposed to support becomes unverifiable.
+
+        Deliberately NOT a source here: `carla/adapter.py` and
+        `tools/check_spec.py`, whose paths are CLI examples naming files the run
+        PRODUCES (`library/TrafficSpecEval/Captured.lean` is generated and
+        git-ignored), so their absence on a clean tree is correct rather than
+        drift.
+        """
+        sources = sorted(self.repo.glob("*.md")) + \
+            sorted((self.repo / "prompts").glob("*.txt")) + \
+            [self.repo / "carla" / "schema.json"]
+        # A repo-root entry, so `scripts/...` is resolved and `carla_sgg/...`
+        # is not. Recomputed from disk: a directory that is added or removed
+        # changes what this resolves without an edit here.
+        roots = {p.name for p in self.repo.iterdir() if not p.name.startswith(".")}
+        token = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_./\-]*\.[A-Za-z]{2,6}\b")
+        seen, broken = 0, []
+        for doc in sources:
+            if not doc.exists():
+                broken.append(f"{doc.name}: the source itself is missing")
+                continue
+            text = doc.read_text(encoding="utf-8", errors="replace")
+            for raw in sorted({m.group(0) for m in token.finditer(text)}):
+                path = raw.rstrip(".")
+                if any(c in path for c in "*{}") or "/" not in path:
                     continue
-                if not (self.repo / path).exists():
-                    broken.append(f"{rel}: {path}")
-        src = ("CLAUDE.md, GETTING_STARTED.md → ../ references",
-               "resolved relative to the repo root")
+                if path.startswith(self.FOREIGN_PREFIXES):
+                    continue
+                if path.startswith("../"):
+                    seen += 1
+                    if not (self.repo / path).exists():
+                        broken.append(f"{doc.name}: {path}")
+                    continue
+                head = path.split("/", 1)[0]
+                if head not in roots and head != "TrafficSpec":
+                    continue
+                seen += 1
+                if not ((self.repo / path).exists()
+                        or (self.repo / "library" / path).exists()):
+                    broken.append(f"{doc.name}: {path}")
+        _nonempty(seen, "file paths in the docs, prompts and schema")
+        src = (f"{', '.join(d.name for d in sources)} \u2192 file paths",
+               "resolved against the repo root and library/")
         if broken:
-            return Result("documented paths", FAIL,
-                          f"{len(broken)} do not resolve: {broken[:4]}", src)
-        return Result("documented paths", OK, "all resolve", src)
+            return Result("file links", FAIL,
+                          f"{len(broken)} name nothing on disk: "
+                          f"{sorted(set(broken))[:4]}", src)
+        return Result("file links", OK,
+                      f"{len(sources)} artifact(s), all {seen} in-repo file "
+                      f"path(s) resolve", src)
 
     # ── schema content actually reaches the agent ───────────────────────
 
@@ -577,7 +719,12 @@ class Doctor:
     #: proximity edges — a finding that cost a day to establish and reached no
     #: agent.
     AUDIT_ONLY = (
-        "provenance.",                      # which generator, which abstraction
+        # `matches` is how doctor assigns a derived key to a reason group. The
+        # agent is handed the reason, never the regex.
+        ".matches",
+        # "declared in Core" pointers: provenance for a reader of this file,
+        # not something the agent needs — it is handed the value itself.
+        "relation_coverage.proximity_and_angular_pairs.covered_base_classes_declared_in_core",
         "time_base.evidence",               # the file:line behind the rate
         "capture_preconditions.how_to_fix", # an operator action, not the agent's
         "attribute_keys.no_float_ever",     # restated by decimal_note
@@ -607,6 +754,7 @@ class Doctor:
             p for p, text in entries
             if text[:40] not in rendered
             and not p.startswith(self.AUDIT_ONLY)
+            and not p.endswith(".matches")
             and not p.endswith((".source", ".meaning"))
         })
         if undelivered:
@@ -619,68 +767,58 @@ class Doctor:
     # ── generator, when available ───────────────────────────────────────
 
     def generator_agreement(self) -> Result:
-        src = ("carla/schema.json → proximity bands + covered classes",
-               "carla_sgg/sgg_abstractor.py → DEFAULT_PROXIMITY_* (sibling repo)")
-        try:
-            from carla_sgg import sgg_abstractor as ab
-            from carla_sgg.actors import base_type_map, get_base_type
-        except Exception as exc:            # noqa: BLE001
-            return Result("generator agreement", SKIP,
-                          f"carla_sgg not importable ({type(exc).__name__}); "
-                          f"run with PYTHONPATH=../sg/carla_scene_graphs", src)
-        bands = [[a, int(b)] for a, b in ab.DEFAULT_PROXIMITY_THRESHOLDS]
-        claimed = [[a, b] for a, b in
-                   self.schema["relation_labels"]["proximity_bands_closest_first"]]
-        rename = {"safety_hazard": "safetyHazard", "near_coll": "nearCollision",
-                  "super_near": "superNear", "very_near": "veryNear"}
-        bands = [[rename.get(a, a), b] for a, b in bands]
-        if bands != claimed:
-            return Result("generator agreement", FAIL,
-                          f"generator={bands} schema={claimed}", src)
-        reachable = set(base_type_map.values()) | {"person", "speed_limit"}
-        table = {pair[1] for pair in ab.DEFAULT_PROXIMITY_RELATIONS}
-        covered = sorted(reachable & table)
-        claimed_cov = sorted(self.schema["relation_coverage"]
-                             ["proximity_and_angular_pairs"]["covered_base_classes"])
-        if covered != claimed_cov:
-            return Result("generator agreement", FAIL,
-                          f"generator={covered} schema={claimed_cov}", src)
-        return Result("generator agreement", OK,
-                      f"bands and {len(covered)} covered classes match the generator", src)
+        """`Core/Scene.lean` agrees with the generator's own default tables.
 
-    def unlifted_keys_are_unlifted(self) -> Result:
-        """A key declared unlifted must really not be read by the adapter.
+        THE check that matters once the schema stops duplicating Core: Core is
+        now the single declaration of the bands and the proximity-capable types,
+        and this is what keeps that declaration true to the thing it describes.
 
-        `surface partitioned` proves the two sides are disjoint and complete
-        against the generator. This proves the unlifted side is TRUE against the
-        adapter — the two could agree with each other and both be wrong about
-        what carla/adapter.py actually does.
-
-        Every group must also give a reason, and the reason has to generalise:
-        volume, redundancy with a lifted key, a value that is not a measurement,
-        or a version-conditional branch. "No statute refers to it" was the old
-        style of reason and describes one corpus, not the link.
+        Reads the tables as source literals instead of importing `carla_sgg`.
+        The import drags in `carla`, which lives only in the simulator's own
+        environment on an interpreter too old for `ast.unparse` — so the
+        diagnostics used to need a second interpreter, and under it the derived
+        surface came back quietly smaller. One interpreter, no simulator.
         """
-        ane = self.schema["available_not_exposed"]
-        groups = {g: b for g, b in ane.items()
-                  if not g.startswith("$") and isinstance(b, dict)}
-        claimed = [k for b in groups.values() for k in (b.get("keys") or [])]
-        src = ("carla/schema.json -> available_not_exposed.*.keys",
-               "carla/adapter.py -> the keys it reads")
-        quoted = set(re.findall(r"[\"'](\w+)[\"']", self.adapter))
-        read = sorted(_nonempty(set(claimed), "declared unlifted keys") & quoted)
-        dupes = sorted({k for k in claimed if claimed.count(k) > 1})
-        unreasoned = sorted(g for g, b in groups.items()
-                            if not any(isinstance(v, str) and len(v) > 40
-                                       for k, v in b.items() if k != "keys"))
-        problems = ([f"adapter DOES read: {read}"] if read else []) + \
-                   ([f"declared twice: {dupes}"] if dupes else []) + \
-                   ([f"no reason given: {unreasoned}"] if unreasoned else [])
-        if problems:
-            return Result("unlifted keys", FAIL, "; ".join(problems), src)
-        return Result("unlifted keys", OK,
-                      f"{len(claimed)} keys in {len(groups)} groups, none read "
-                      f"by the adapter, every group reasoned", src)
+        from .sgg_surface import proximity_bands, proximity_base_classes
+        from .sgg_surface import _src as sgg_src
+        src = ("library/TrafficSpec/Core/Scene.lean -> distanceBands, "
+               "proximityTypes",
+               "carla_sgg/sgg_abstractor.py -> DEFAULT_PROXIMITY_* literals")
+        try:
+            gen_bands = proximity_bands()
+            table = set(proximity_base_classes())
+            actors = sgg_src("actors.py")
+        except (OSError, RuntimeError) as exc:
+            return Result("generator agreement", SKIP,
+                          f"generator not readable ({type(exc).__name__})", src)
+
+        # The generator's band names are snake_case; Core's are the Lean
+        # constructors. Compare the METRES, which is what a rule depends on,
+        # and the count, which is what a missing band would change.
+        m = re.search(r"def distanceBands.*?\[(.*?)\]", self.scene, re.S)
+        core_bands = [(n, int(v)) for n, v in
+                      re.findall(r"\.(\w+),\s*(\d+)", m.group(1) if m else "")]
+        if [v for _, v in core_bands] != [v for _, v in gen_bands]:
+            return Result("generator agreement", FAIL,
+                          f"band metres differ: core={[v for _, v in core_bands]} "
+                          f"generator={[v for _, v in gen_bands]}", src)
+
+        # Which of the generator's table entries a CARLA blueprint can actually
+        # reach: `base_type_map`'s values plus the branches of `get_base_type`.
+        reachable = set(re.findall(r":\s*'([a-z_ ]+)'", actors)) | {
+            "person", "speed_limit"}
+        covered = sorted(reachable & table)
+        core_prox = re.search(r"def proximityTypes.*?\[(.*?)\]", self.scene, re.S)
+        core_types = sorted(
+            {"person" if t == "pedestrian" else t
+             for t in re.findall(r"\.(\w+)", core_prox.group(1) if core_prox else "")})
+        if core_types != covered:
+            return Result("generator agreement", FAIL,
+                          f"proximity-capable types differ: core={core_types} "
+                          f"generator={covered}", src)
+        return Result("generator agreement", OK,
+                      f"{len(core_bands)} band metres and {len(covered)} "
+                      f"proximity-capable types match the generator", src)
 
     def reading_notes_cover_the_data_model(self) -> Result:
         """Every entity type and relation label is explained or declared plain.
@@ -723,64 +861,66 @@ class Doctor:
                       f"{len(declared)} declared plain", src)
 
     def generator_surface_is_partitioned(self) -> Result:
-        """Every key carla_sgg emits is on exactly ONE of two sides.
+        """Every key carla_sgg emits is lifted, or matched by a documented reason.
 
-        `attribute_keys` is the lifted side, `available_not_exposed` the present-
-        but-unlifted side. Disjoint and complete over the surface
-        scripts/diagnostics/sgg_surface.py derives from `carla_sgg/*.py` — never from a
-        capture. There is no third side: a tier of ABSENCES can only be written
-        by imagining which laws would want them, so it cannot be frozen before
-        the corpus, and absence is derivable anyway — these two sides enumerate
-        everything that exists.
+        Neither side is a list any more. The lifted side is
+        `carla/adapter.py::CONSUMED_ATTRS`, the generator-side keys the adapter
+        actually reads; the unlifted side is the remainder, and each group in
+        `available_not_exposed` claims a family of it with a REGEX rather than an
+        enumeration. So a key the generator gains falls into a group by itself,
+        and only a key matching nothing — or matching two groups, which would
+        make the reason ambiguous — fails here.
 
-        Both sides must DECLARE their keys, in `tier_a`/`from_generator_key` and
-        in a `keys` list. An earlier version of this check accepted a key
-        mentioned anywhere in the section's prose, and that was too weak to be
-        worth running: it passed while five keys sat on both sides at once and
-        two (`light_All`, `light_NONE`) sat on neither.
+        Both sides used to be hand-written lists in the schema. They were exactly
+        right, which was the problem: correct today, with nothing keeping them
+        correct tomorrow, and an omission that no check could see because the
+        check compared the list against itself.
         """
-        from scripts.diagnostics.sgg_surface import surface, base_graph_only_keys
-        src = ("scripts/diagnostics/sgg_surface.py -> derived from carla_sgg/*.py",
-               "carla/schema.json -> attribute_keys, available_not_exposed")
+        from .sgg_surface import surface, base_graph_only_keys
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "carla"))
+        from adapter import CONSUMED_ATTRS             # noqa: E402
+        src = ("scripts/diagnostics/sgg_surface.py -> derived from carla_sgg",
+               "carla/adapter.py -> CONSUMED_ATTRS; carla/schema.json -> "
+               "available_not_exposed.*.matches")
         try:
             emitted = _nonempty(set(surface()), "carla_sgg attribute surface")
         except OSError as exc:
-            return Result("surface partitioned", FAIL,
-                          f"cannot read the generator: {exc}", src)
-
-        kinds = self.schema["attribute_keys"]["kinds"]
-        lifted = (set(self.schema["attribute_keys"]["tier_a"])
-                  | {v["from_generator_key"] for v in kinds.values()
-                     if isinstance(v, dict) and "from_generator_key" in v})
-        unlifted: set[str] = set()
-        for group, body in self.schema["available_not_exposed"].items():
-            if group.startswith("$") or not isinstance(body, dict):
-                continue
-            unlifted |= set(body.get("keys") or [])
-
-        both = sorted((emitted & lifted) & unlifted)
-        neither = sorted(emitted - lifted - unlifted)
-        # a declared key that the generator does not emit is a stale entry
-        ghost = sorted(unlifted - emitted)
-        problems = ([f"on BOTH sides: {both}"] if both else []) + \
-                   ([f"on NEITHER side: {neither}"] if neither else []) + \
-                   ([f"declared unlifted but not emitted: {ghost}"]
-                    if ghost else [])
-        if problems:
-            return Result("surface partitioned", FAIL, "; ".join(problems), src)
+            # The generator is a sibling repository and may not be checked out.
+            # That is a legitimate configuration — the loop needs nothing from
+            # it — so this is a skip, not a failure.
+            return Result("surface partitioned", SKIP,
+                          f"generator not present ({type(exc).__name__}); the "
+                          f"schema's reason patterns are what the gate falls "
+                          f"back to", src)
+        lifted = emitted & set(CONSUMED_ATTRS)
+        unlifted = sorted(emitted - set(CONSUMED_ATTRS))
+        groups = {g: b.get("matches") or []
+                  for g, b in self.schema["available_not_exposed"].items()
+                  if not g.startswith("$") and isinstance(b, dict)}
+        unmatched, ambiguous = [], []
+        for key in unlifted:
+            hits = [g for g, pats in groups.items()
+                    if any(re.search(p, key) for p in pats)]
+            if not hits:
+                unmatched.append(key)
+            elif len(hits) > 1:
+                ambiguous.append(f"{key}->{hits}")
+        stale = sorted(set(CONSUMED_ATTRS) - emitted)
+        problems = ([f"no reason group matches: {unmatched}"] if unmatched else []) \
+            + ([f"matched by two groups: {ambiguous}"] if ambiguous else []) \
+            + ([f"adapter consumes keys the generator never emits: {stale}"]
+               if stale else [])
         collapsed = base_graph_only_keys()
-        note = json.dumps(self.schema["deciding_unsupported"])
+        note = json.dumps(self.schema["partially_available"])
         missed = sorted(k for k in collapsed if k not in note)
         if missed:
-            return Result("surface partitioned", FAIL,
-                          f"base-graph-only keys not accounted for: {missed}",
-                          src)
+            problems.append(f"base-graph-only keys not accounted for: {missed}")
+        if problems:
+            return Result("surface partitioned", FAIL, "; ".join(problems), src)
         return Result("surface partitioned", OK,
-                      f"{len(emitted)} keys emitted: "
-                      f"{len(emitted & lifted)} lifted + "
-                      f"{len(emitted & unlifted)} unlifted, disjoint and "
-                      f"complete; {len(collapsed)} base-graph-only keys noted",
-                      src)
+                      f"{len(emitted)} keys emitted: {len(lifted)} lifted + "
+                      f"{len(unlifted)} unlifted, every unlifted key matched by "
+                      f"exactly one of {len(groups)} reason groups", src)
 
     def preconditions_cover_the_parameters(self) -> Result:
         """Every caller-supplied generator parameter is accounted for.
@@ -803,8 +943,8 @@ class Doctor:
         try:
             params = _nonempty(set(parameters()), "carla_sgg parameters")
         except OSError as exc:
-            return Result("preconditions cover parameters", FAIL,
-                          f"cannot read the generator: {exc}", src)
+            return Result("preconditions cover parameters", SKIP,
+                          f"generator not present ({type(exc).__name__})", src)
         declared = {p for v in self.schema["capture_preconditions"].values()
                     if isinstance(v, dict)
                     for p in (v.get("parameters") or [])}
@@ -956,97 +1096,238 @@ class Doctor:
                       f"{len(targets)} templates clear on all "
                       f"{len(patterns)} categories", src)
 
-    def fixture_matches_its_generator(self) -> Result:
-        """The checked-in fixture is what `sample_sync` emits today.
+    def captures_stay_out_of_the_rule_tree(self) -> Result:
+        """No converted capture sits under `library/TrafficSpec/`.
 
-        `Carla/Sample.lean` is generated from `Core/Scene.lean`. Generated and
-        checked in is a combination that drifts silently: the file keeps
-        compiling and keeps passing the coverage check while describing an older
-        data model, and the gate goes on measuring reachability against it. This
-        compares the bytes rather than trusting that someone re-ran the sync.
+        The evaluation set is Lean traces and belongs in the library; where it
+        sits is the whole of this check. `library/TrafficSpec/` is the tree both
+        formalization prompts send an agent into — Core, the vocabulary, the
+        builders — and an agent with a shell reads the rest of that directory.
+        A capture it can read becomes an argument: "this attribute occurs in the
+        trace, so the predicate is not dead" is a claim about one recording
+        wearing the clothes of a claim about the data model, and it inverts the
+        pipeline, since a capture is what a rule is TESTED against.
+
+        `run_spec loop` refuses to start on the same condition. This exists
+        because the loop's refusal only fires when someone runs the loop, and
+        the invariant is easiest to break between runs — by a `monitor`
+        invocation with a hand-written `--output`, or by moving a file.
+
+        Also checks that the adapter and the harness agree on the root's name,
+        which is the way this arrangement would break silently: an adapter
+        writing to a root the harness does not import, or the reverse.
         """
-        from scripts import sample_sync
-        path = self.lib / "TrafficSpec" / "Carla" / "Sample.lean"
-        src = ("library/TrafficSpec/Carla/Sample.lean",
-               "scripts/sample_sync.py \u2190 library/TrafficSpec/Core/Scene.lean")
-        if not path.exists():
-            return Result("fixture is current", FAIL,
-                          "Sample.lean missing \u2014 run `run_spec sample`", src)
-        current = path.read_text(encoding="utf-8")
-        if sample_sync.HEADER_MARK not in current:
-            return Result("fixture is current", FAIL,
-                          "Sample.lean is hand-authored \u2014 run `run_spec sample` to "
-                          "replace it with the derived one", src)
-        if current != sample_sync.render(self.lib):
-            return Result("fixture is current", FAIL,
-                          "Sample.lean differs from what sample_sync emits \u2014 the data "
-                          "model moved and the fixture did not; run `run_spec sample`", src)
-        return Result("fixture is current", OK, "matches sample_sync output", src)
+        from ..lean_check import ADAPTER_BANNER, EVAL_LIB_ROOT, captures_under
+        src = ("library/TrafficSpec/**.lean, carla/adapter.py",
+               f"captures belong to {EVAL_LIB_ROOT}/, its own library root")
+        stray = captures_under(self.lib / "TrafficSpec")
+        if stray:
+            names = ", ".join(str(p.relative_to(self.lib)) for p in stray[:5])
+            return Result("captures out of the rule tree", FAIL,
+                          f"agent-readable capture(s): {names}", src)
+        adapter = self.adapter
+        if f'EVAL_NAMESPACE = "{EVAL_LIB_ROOT}"' not in adapter:
+            return Result("captures out of the rule tree", FAIL,
+                          "carla/adapter.py does not declare EVAL_NAMESPACE = "
+                          f"\"{EVAL_LIB_ROOT}\", so the module it writes is not "
+                          "the one the harness imports", src)
+        if ADAPTER_BANNER not in adapter:
+            return Result("captures out of the rule tree", FAIL,
+                          "carla/adapter.py no longer writes the banner this "
+                          "check recognises a capture by; a capture in the rule "
+                          "tree would now go unnoticed", src)
+        lakefile = _read(self.lib / "lakefile.lean")
+        if f"lean_lib «{EVAL_LIB_ROOT}»" not in lakefile:
+            return Result("captures out of the rule tree", FAIL,
+                          f"library/lakefile.lean declares no {EVAL_LIB_ROOT} "
+                          "library root, so a capture written there cannot be "
+                          "built by name", src)
+        n = len(captures_under(self.lib / EVAL_LIB_ROOT))
+        return Result("captures out of the rule tree", OK,
+                      f"{n} converted capture(s), all under {EVAL_LIB_ROOT}/; "
+                      f"adapter, lakefile and harness agree on the root", src)
 
-    def fixture_covers_every_type_and_label(self) -> Result:
-        """The coverage fixture contains every EntityType and every RelLabel.
+    def coverage_vocabulary(self) -> Result:
+        """The statuses the harness reads are the statuses the prompt teaches.
 
-        `Carla/Sample.lean` is what the gate measures reachability against: a
-        zero grounding count there is reported as "this rule cannot fire on real
-        scene graphs". That verdict is only true if the fixture can express every
-        binder, so a gap in it becomes a false accusation against a correct rule.
+        Three artifacts have to agree on this word list: `scripts/coverage.py`
+        decides convergence from it, `PROGRESS.md`'s template documents it, and
+        the plan prompt tells a session which words to write. When they drifted
+        the cost was not cosmetic — the prompt blessed an outcome (`partial`)
+        that the completion condition could not accept, so the usual correct
+        result was also a state no run could converge from, and one run ended
+        with 19 of 21 clauses in it.
 
-        The previous fixture was a hand-written narrative and carried three of
-        the actor types the generator emits, which made every rule over a
-        pedestrian, cyclist, bus, truck, motorcycle or van look unable to ground.
-        Nothing detected that, because the fixture was judged by whether it
-        looked realistic rather than by whether it covered the model.
+        Also asserts the retired word is gone. `partial` living on in a prompt
+        while the harness no longer accepts it would be read, written, and then
+        reported as a defect on every row.
         """
-        fixture = self.lib / "TrafficSpec" / "Carla" / "Sample.lean"
-        src = ("library/TrafficSpec/Carla/Sample.lean",
-               "library/TrafficSpec/Core/Scene.lean -> EntityType, RelLabel")
-        if not fixture.exists():
-            return Result("fixture coverage", FAIL, "Sample.lean missing", src)
-        text = fixture.read_text(encoding="utf-8")
-        entity = _nonempty(set(_lean_ctors(self.scene, "EntityType")),
-                           "EntityType constructors")
-        rel = _nonempty(set(_lean_ctors(self.scene, "RelLabel")),
-                        "RelLabel constructors")
-        # a type is covered by `.ctor` in a builder call or a dedicated mk*
-        builder_for = {"lane": "mkLane", "road": "mkRoad",
-                       "junction": "mkJunction", "offRoad": "mkOffRoad",
-                       "trafficLight": "mkTrafficLight", "stopSign": "mkStopSign",
-                       "speedLimitSign": "mkSpeedLimitSign",
-                       "landmark": "mkSpeedLimitLandmark"}
-        missing_e = sorted(t for t in entity
-                           if f".{t}" not in text
-                           and builder_for.get(t, "\0") not in text)
-        missing_r = sorted(l for l in rel if f".{l}" not in text)
-        problems = ([f"entity types absent: {missing_e}"] if missing_e else []) \
-            + ([f"relation labels absent: {missing_r}"] if missing_r else [])
+        from ..coverage import STATUSES
+        from ..state import PROGRESS_TEMPLATE
+        src = ("scripts/coverage.py::STATUSES",
+               "prompts/prompt_plan.txt, scripts/state.py::PROGRESS_TEMPLATE")
+        missing = []
+        for status in STATUSES:
+            if status not in self.prompt_plan:
+                missing.append(f"prompt_plan.txt does not mention `{status}`")
+            if status not in PROGRESS_TEMPLATE:
+                missing.append(f"the PROGRESS template does not mention `{status}`")
+        for stale in ("`partial`", "| partial |"):
+            if stale in self.prompt_plan:
+                missing.append(f"prompt_plan.txt still offers {stale}, which the "
+                               f"harness no longer accepts")
+            if stale in PROGRESS_TEMPLATE:
+                missing.append(f"the PROGRESS template still offers {stale}")
+        if missing:
+            return Result("coverage vocabulary", FAIL, "; ".join(missing[:5]), src)
+        return Result("coverage vocabulary", OK,
+                      f"all {len(STATUSES)} statuses taught in both artifacts, "
+                      f"and `partial` is gone from both", src)
+
+    def gap_ledger_is_sound(self) -> Result:
+        """The gap ledger parses, and its owners and states mean what they say.
+
+        `scripts/gaps.py` holds the invariants; this runs them outside a run, so
+        a hand-edited ledger is caught before the loop reads it. The one worth
+        naming: a gap whose owner is `generator` must be `permanently_blocked`,
+        because `carla_sgg/` is frozen byte-wise and a gap scheduled against it
+        would sit open forever while the clauses it blocks looked merely
+        pending.
+        """
+        from ..gaps import CLOSED_STATES, OWNERS, load
+        src = ("gaps/ledger.jsonl", "scripts/gaps.py::OWNERS, STATES")
+        ledger, problems = load(self.repo)
         if problems:
-            return Result("fixture coverage", FAIL, "; ".join(problems), src)
-        return Result("fixture coverage", OK,
-                      f"all {len(entity)} entity types and {len(rel)} relation "
-                      f"labels appear in the fixture", src)
+            return Result("gap ledger", FAIL, "; ".join(problems[:4]), src)
+        if not ledger:
+            return Result("gap ledger", SKIP,
+                          "no gap has been recorded yet", src)
+        retired = sum(1 for g in ledger.values() if g.state == "retired")
+        closed = sum(1 for g in ledger.values() if g.state in CLOSED_STATES)
+        owners = sorted({g.owner for g in ledger.values()})
+        return Result("gap ledger", OK,
+                      f"{len(ledger)} gap(s) across owners {', '.join(owners)}; "
+                      f"{retired} retired, {closed} closed, all invariants hold",
+                      src)
 
-    # ── run ─────────────────────────────────────────────────────────────
+    def witnesses_are_outside_the_specification(self) -> Result:
+        """Every rule has a witness file, and none of them is inside `Rules/`.
+
+        Two claims, because both halves can rot independently. A rule with no
+        witness file has no evidence that its formula says anything: it is the
+        `□ ⊤` case, which grounds, engages and holds on every capture ever
+        recorded and is therefore invisible to capture-based evaluation. And a
+        `def scenarios` back inside a rule file means the specification has
+        started carrying its own evidence again, which is what put trace
+        literals into the artifact an application loads.
+
+        Also checks the shipped index does not reach the witnesses: the
+        dependency runs `TrafficSpecWitness -> TrafficSpec`, never the reverse.
+        """
+        rules_dir = self.lib / "TrafficSpec" / "Rules"
+        wit_dir = self.lib / "TrafficSpecWitness"
+        src = ("library/TrafficSpec/Rules/**.lean",
+               "library/TrafficSpecWitness/**.lean, Index.lean")
+        rules = sorted(rules_dir.rglob("*.lean")) if rules_dir.exists() else []
+        if not rules:
+            return Result("witnesses outside the spec", SKIP,
+                          "library carries no rules yet", src)
+        bad = []
+        for rule in rules:
+            text = _read(rule)
+            if re.search(r"^\s*def scenarios\b", text, re.M):
+                bad.append(f"{rule.name} declares `def scenarios`")
+            wit = wit_dir / rule.relative_to(rules_dir)
+            if not wit.exists():
+                bad.append(f"{rule.name} has no witness file")
+            elif "def scenarios" not in _read(wit):
+                bad.append(f"{wit.name} declares no `def scenarios`")
+        # And the other direction. A witness file with no rule is a trace
+        # nothing evaluates — the residue of a rule that was renamed, which
+        # keeps building and keeps looking like evidence for something.
+        expected = {(wit_dir / r.relative_to(rules_dir)).resolve() for r in rules}
+        for stray in sorted(wit_dir.rglob("*.lean")) if wit_dir.exists() else []:
+            if stray.resolve() not in expected:
+                bad.append(f"{stray.relative_to(self.lib)} witnesses no rule")
+        # A DEPENDENCY, not a mention: the index says in prose where the
+        # witnesses went, and should. What must not appear is an import or a
+        # use of one of their declarations.
+        index = _read(self.lib / "TrafficSpec" / "Index.lean")
+        if re.search(r"^\s*import\s+TrafficSpecWitness", index, re.M) or \
+                re.search(r"\bTrafficSpecWitness\.\w", index):
+            bad.append("Index.lean depends on TrafficSpecWitness — the shipped "
+                       "library would carry its own evidence")
+        if bad:
+            return Result("witnesses outside the spec", FAIL,
+                          "; ".join(bad[:5]), src)
+        return Result("witnesses outside the spec", OK,
+                      f"{len(rules)} rule(s), each with a witness file, none "
+                      f"inside the specification", src)
+
+    def witness_roles_agree(self) -> Result:
+        """The roles the validator accepts are the roles both prompts teach.
+
+        The third role this pipeline used to require — a trace showing the rule
+        imposes nothing when the situation is absent — was removed after it was
+        measured: for a formula shaped `□ (A ⟹ B)` it is a theorem of the
+        semantics, and it held for every such trace in the library while
+        costing more than half of all trace-writing work. A prompt still asking
+        for it would be asking for work the validator then rejects.
+        """
+        from ..plan_validate import MAX_SCENARIOS, SCENARIO_ROLES
+        src = ("scripts/plan_validate.py::SCENARIO_ROLES",
+               "prompts/prompt_plan.txt, prompts/prompt_code.txt")
+        bad = []
+        for role in SCENARIO_ROLES:
+            if f"`{role}`" not in self.prompt_plan:
+                bad.append(f"prompt_plan.txt does not name the `{role}` role")
+            if f"`{role}`" not in self.prompt_code:
+                bad.append(f"prompt_code.txt does not name the `{role}` role")
+        for text, name in ((self.prompt_plan, "prompt_plan.txt"),
+                           (self.prompt_code, "prompt_code.txt")):
+            for m in re.finditer(r"`antecedent_off`", text):
+                line = text[:m.start()].count("\n") + 1
+                # One historical mention is allowed, and wanted: a session that
+                # has seen the old shape needs to be told it is gone. More than
+                # one reads as a live requirement.
+                pass
+            if len(re.findall(r"`antecedent_off`", text)) > 1:
+                bad.append(f"{name} mentions `antecedent_off` more than once; "
+                           f"it reads as a live requirement rather than a "
+                           f"retired one")
+        if len(SCENARIO_ROLES) != MAX_SCENARIOS:
+            bad.append(f"{len(SCENARIO_ROLES)} roles but MAX_SCENARIOS is "
+                       f"{MAX_SCENARIOS} — one witness per role is the shape "
+                       f"both prompts describe")
+        if bad:
+            return Result("witness roles agree", FAIL, "; ".join(bad[:5]), src)
+        return Result("witness roles agree", OK,
+                      f"{len(SCENARIO_ROLES)} roles ({', '.join(SCENARIO_ROLES)}) "
+                      f"taught in both prompts, and the retired one is not", src)
 
     def checks(self) -> list[Callable[[], Result]]:
-        return [self.entity_types, self.relation_labels, self.source_labels,
-                self.proximity_bands, self.capture_rate,
-                self.capture_rate_has_one_owner, self.proximity_types,
+        return [ self.source_labels, self.capture_rate,
+                self.capture_rate_has_one_owner,
                 self.predicates_exist, self.binder_census_keys,
+                self.binders_reach_the_agent,
+                self.portability_covers_the_data_model,
                 self.binders_cover_the_data_model,
                 self.verdicts_documented, self.report_tags_parsed,
                 self.placeholders_supplied, self.example_rule_exists,
-                self.formula_operators, self.doc_paths_resolve,
+                self.formula_operators, self.repo_paths_resolve,
                 self.schema_is_delivered,
                 self.generator_agreement,
-                self.unlifted_keys_are_unlifted,
                 self.reading_notes_cover_the_data_model,
                 self.generator_surface_is_partitioned,
                 self.preconditions_cover_the_parameters,
                 self.frozen_artifacts_are_law_free,
                 self.prompts_are_law_free,
-                self.schema_cross_references_resolve,
-                self.fixture_covers_every_type_and_label,
-                self.fixture_matches_its_generator]
+                self.captures_stay_out_of_the_rule_tree,
+                self.witnesses_are_outside_the_specification,
+                self.witness_roles_agree,
+                self.coverage_vocabulary,
+                self.gap_ledger_is_sound,
+                self.schema_cross_references_resolve]
 
     def run(self, verbose: bool = False) -> int:
         results: list[Result] = []

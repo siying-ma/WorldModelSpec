@@ -80,7 +80,12 @@ ADHOC_PATTERNS = [
     (re.compile(r"\.atom\b"),        "`.atom` — use `Pred.*`"),
 ]
 
-REQUIRED_DECLS = ["schema", "entry", "scenarios"]
+# The rule file. `scenarios` is deliberately NOT here: the witnesses live in
+# their own file under `TrafficSpecWitness/`, because a witness is evidence
+# about a rule rather than part of it, and nothing that runs the library in an
+# application reads one.
+REQUIRED_DECLS = ["schema", "entry"]
+WITNESS_DECLS = ["scenarios"]
 
 # Binder helper name -> the census key in carla/schema.json whose count it ranges
 # over. `Core/Grounding.lean` is the authority for what each helper admits.
@@ -89,6 +94,16 @@ BINDER_CENSUS_KEY = {
     "proximityVehicleBinder": "proximityVehicle",
     "proximityRoadUserBinder": "roadUser",
     "roadUserBinder": "roadUser",
+    # The `proximate*` binders drop, per trace, every candidate that never
+    # shares a distance edge with the ego, so their true count is a subset of
+    # the unrestricted binder's. They are sized here from the SAME census key
+    # on purpose: the estimate exists to REFUSE an expensive schema, and a
+    # restriction whose effect depends on the capture cannot be relied on to
+    # bring one under budget. Over-counting costs a false refusal the author
+    # can argue with; under-counting admits a schema that then cannot be
+    # evaluated at all.
+    "proximateRoadUserBinder": "roadUser",
+    "proximateVehicleBinder": "proximityVehicle",
     "pedestrianBinder": "pedestrian",
     "laneBinder": "lane",
     "roadBinder": "road",
@@ -110,7 +125,7 @@ BINDER_USE_RE = re.compile(r"\b(\w+Binder)\s+\"")
 #
 # `PropertySchema.bindings` is the cross product of every binder's candidates, so
 # each binder MULTIPLIES the cost, and every grounding is a full `satisfies` over
-# the whole trace — measured at ~20 ms for a 240-frame capture. 500 therefore
+# the whole trace, and the cost grows with frames^2. 500 therefore
 # caps one rule at ~10 s per capture, which keeps a 20-rule library inside a
 # few minutes.
 #
@@ -123,8 +138,11 @@ BINDER_USE_RE = re.compile(r"\b(\w+Binder)\s+\"")
 #
 # This is a MEASUREMENT OF ONE CAPTURE, not a fact about the scene-graph format,
 # which is why it does not live in `carla/schema.json`. It was taken on a
-# 240-frame Town03 capture, and Town03 is one CARLA map among many: a busier map
-# or a longer capture changes every number here. The schema must stay true for
+# capture that is no longer in the tree, on one CARLA map among many: a busier
+# map or a longer capture changes every number here, and the original is not
+# reproducible. They are kept as a deliberately conservative order of
+# magnitude; re-derive them before tightening the budget rather than trusting
+# the digits. The schema must stay true for
 # any capture; this only has to be a defensible order of magnitude for sizing a
 # budget, and it is deliberately rounded UP from the measurement so the check
 # does not pass a rule that would then blow up on real traffic.
@@ -149,10 +167,36 @@ CAPTURE_ENTITY_CENSUS = {
     "sign": 22, "structure": 63,
 }
 
-# Cost of one grounding: a full `satisfies` over the whole trace. Measured at
-# ~20 ms for a 240-frame capture (16,637 groundings in 327 s of `lake env lean`),
-# and growing with frames^2 because `Trace` is a `List Scene`.
+# Cost of one grounding: a full `satisfies` over the whole trace, growing with
+# frames^2 because `Trace` is a `List Scene`. The ceiling is an order of
+# magnitude, not a tuned figure.
 GROUNDING_BUDGET = 500
+
+# Where a schema stops being cheap and starts needing a reason.
+#
+# The hard budget is a FAILURE DETECTOR: at 500 the rule is about to become
+# unevaluable, and nothing under it is thereby endorsed. Read as a quota it
+# invites the opposite of what it is for — one run planned a rule at 480 of 500
+# and recorded "all under 500" as if that were the goal, when the 480 came from
+# binding a landmark that a predicate could have quantified internally.
+#
+# This second number is what a rule that binds only the actors its clause is
+# about actually costs. Two actors is 64 on the census below; the measured
+# runtime model (`lean_seconds ~ 7.86e-5 * frames * groundings`) puts a whole
+# library of two dozen rules on a 3,000-frame capture inside ten minutes only if
+# the AVERAGE rule is near 100. So: over this, the gate does not refuse, it asks
+# for the reason in writing.
+GROUNDING_SOFT_CEILING = 100
+
+# Census keys that count ACTORS — the entities a clause is actually about. A
+# binder over one of these is the clause's own cost and cannot be argued away;
+# everything else (a sign, a landmark, a lane, a road, a junction) is usually a
+# relation reached by binding, which a predicate could quantify internally.
+# Used only to decide which binder the soft-ceiling warning points at.
+ACTOR_CENSUS_KEYS = frozenset({
+    "vehicle", "proximityVehicle", "roadUser", "pedestrian",
+    "truck", "bus", "bicycle",
+})
 
 # Attribute keys are the one place a syntactically valid spec can still demand
 # data CARLA does not carry, so string literals passed to attribute predicates
@@ -380,8 +424,6 @@ class NodeReport:
         self.scenarios: list[dict] = []
         self.frames: dict[str, list[tuple[str, str]]] = {}
         self.groundings: dict[str, list[tuple[str, str]]] = {}
-        self.carla_groundings = 0
-        self.carla_verdict = "none"
         self.result = "FAIL"
         self.binders = 0
         # Frames the formula must be able to look at before its bounded
@@ -402,9 +444,6 @@ class NodeReport:
                 self.frames.setdefault(parts[1], []).append((parts[2], parts[3]))
             elif tag == "GROUND" and len(parts) >= 4:
                 self.groundings.setdefault(parts[1], []).append((parts[2], parts[3]))
-            elif tag == "CARLA" and len(parts) >= 3:
-                self.carla_groundings = int(parts[1]) if parts[1].isdigit() else 0
-                self.carla_verdict = parts[2]
             elif tag == "BINDERS" and len(parts) >= 2:
                 self.binders = int(parts[1]) if parts[1].isdigit() else 0
             elif tag == "SPAN" and len(parts) >= 2:
@@ -498,9 +537,12 @@ def main() -> int:
     if baseline_file.exists():
         baseline = json.loads(baseline_file.read_text(encoding="utf-8"))
         touched = scope_diff(baseline, library_manifest(library_root), target_rel)
+        # The witness file belongs to this node too — two files, one node.
+        touched = [x for x in touched if x != spec.get("witness_file")]
         if touched:
             emit("SCOPE_VIOLATION",
-                 f"Only `{target_rel}` may be modified by this task. Also changed:",
+                 f"Only `{target_rel}` and its witness file may be modified by "
+             f"this task. Also changed:",
                  *[f"  {t}" for t in touched],
                  "",
                  "Revert *your own* edits to those files. If the rule genuinely "
@@ -525,14 +567,29 @@ def main() -> int:
     for decl in REQUIRED_DECLS:
         if decl not in defined:
             problems.append(f"missing `def {decl}`")
+
+    witness_rel = spec.get("witness_file")
+    witness_ns = spec.get("witness_namespace")
+    witness = (library_root / witness_rel) if witness_rel else None
+    if witness is not None:
+        if not witness.exists():
+            problems.append(f"missing witness file `{witness_rel}`")
+        else:
+            wtext = strip_lean_comments(witness.read_text(encoding="utf-8"))
+            if f"namespace {witness_ns}" not in wtext:
+                problems.append(f"witness file: missing `namespace {witness_ns}`")
+            for decl in WITNESS_DECLS:
+                if decl not in set(DEF_RE.findall(wtext)):
+                    problems.append(f"witness file: missing `def {decl}`")
     if problems:
         emit("STRUCTURE_FAIL",
              "The rule file does not match the required shape:",
              *[f"  - {p}" for p in problems],
              "",
-             "Every rule file declares exactly: `def schema : PropertySchema`, "
-             "`def entry : RuleEntry`, `def scenarios : List Scenario`, inside "
-             f"`namespace {namespace}`.")
+             f"The rule file declares `def schema : PropertySchema` and "
+             f"`def entry : RuleEntry` inside `namespace {namespace}`. The "
+             f"witness file declares `def scenarios : List Scenario` inside "
+             f"`namespace {witness_ns}`.")
         return finish("STRUCTURE_FAIL", "; ".join(problems))
 
     # ── 4. vocabulary ───────────────────────────────────────────────────
@@ -567,7 +624,13 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
-    allowed_attrs = set(schema["attribute_keys"]["tier_a"])
+    # Derived from carla/adapter.py's mapping tables and Core/Builders.lean,
+    # the two things that actually put an attribute on an entity. The schema
+    # used to declare the same 53 keys as a list; a second copy that is correct
+    # today still has to be kept correct tomorrow.
+    sys.path.insert(0, str(REPO_ROOT / "carla"))
+    from adapter import lifted_attribute_keys          # noqa: E402
+    allowed_attrs = lifted_attribute_keys(library_root)
 
     # Present-but-unlifted keys, declared per group in the schema. The verdict
     # message must separate these from genuinely unknown attributes: an unlifted
@@ -577,22 +640,65 @@ def main() -> int:
     # direction. The schema used to carry a flat list of absent CONCEPTS for this
     # message; that list could only be written by guessing which laws would want
     # them, so it is gone and the distinction below is derived instead.
+    # Everything carla_sgg emits, minus what the adapter lifts. Derived for the
+    # same reason: the schema used to list these keys per group, so a generator
+    # change had to be mirrored by hand into a file that could not detect the
+    # omission. The GROUPS stay in the schema, because the reason a key is not
+    # lifted is prose that nothing can derive.
+    # NOTE the two sides are named in different vocabularies: `allowed_attrs`
+    # holds LEAN names, `surface()` holds GENERATOR names, and subtracting one
+    # from the other silently reports every renamed key as unlifted.
+    # `CONSUMED_ATTRS` is the adapter's own generator-side set, so it is the one
+    # that subtracts correctly.
+    from adapter import CONSUMED_ATTRS, generator_key_to_lean   # noqa: E402
+    # The generator is a SIBLING repository and is not guaranteed to be checked
+    # out beside this one — the gate runs on every edit of every coding session
+    # and must not need it. So the unlifted side falls back to the schema's
+    # reason-group patterns, which are in-repo, and only sharpens itself to the
+    # exact key set when the generator happens to be readable. `run_spec doctor`
+    # is where the two are held to each other; it may require the generator, the
+    # gate may not.
     unlifted: dict[str, str] = {}
-    for group, body in (schema.get("available_not_exposed") or {}).items():
-        if group.startswith("$") or not isinstance(body, dict):
-            continue
-        for key in (body.get("keys") or []):
-            unlifted[key] = group
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "scripts"))
+        from diagnostics.sgg_surface import surface    # noqa: E402
+        unlifted = {k: "available_not_exposed"
+                    for k in set(surface()) - set(CONSUMED_ATTRS)}
+    except Exception:                                  # noqa: BLE001
+        for group, body in (schema.get("available_not_exposed") or {}).items():
+            if group.startswith("$") or not isinstance(body, dict):
+                continue
+            for pattern in (body.get("matches") or []):
+                unlifted[pattern] = group
+    # A generator key that IS consumed reaches Lean under another name. Saying
+    # "does not exist" to a rule that reached for the generator's spelling is
+    # the answer that pushes a formalizable law toward `unsupported`.
+    renamed = generator_key_to_lean(library_root)
 
     bad_attrs = sorted({k for k in ATTR_CALL_RE.findall(code) if k not in allowed_attrs})
     if bad_attrs:
         hints, blocked, absent = [], [], []
-        for key in bad_attrs:
+        def _unlifted_group(key: str) -> str | None:
+            """The reason group for a key, whether `unlifted` holds exact keys
+            (generator readable) or regex patterns (the fallback)."""
             if key in unlifted:
+                return unlifted[key]
+            for pattern, group in unlifted.items():
+                if pattern.startswith("^") and re.search(pattern, key):
+                    return group
+            return None
+
+        for key in bad_attrs:
+            group = _unlifted_group(key)
+            if key in renamed:
+                hints.append(f"  - attribute `{key}` is the GENERATOR's name; in "
+                             f"Lean it is "
+                             f"{', '.join('`' + n + '`' for n in renamed[key])}")
+            elif group is not None:
                 blocked.append(key)
                 hints.append(f"  - attribute `{key}` IS in the scene graph but "
                              f"carla/adapter.py does not lift it "
-                             f"(available_not_exposed.{unlifted[key]})")
+                             f"(available_not_exposed.{group})")
             else:
                 absent.append(key)
                 hints.append(f"  - attribute `{key}` is not in the generator's "
@@ -609,8 +715,8 @@ def main() -> int:
         if absent:
             guidance += [
                 "",
-                f"{', '.join(absent)}: check the schema's `deciding_unsupported` "
-                f"steps before concluding it is absent — the concept may be "
+                f"{', '.join(absent)}: work down the *Deciding whether a law is "
+                f"unsupported* steps in your prompt before concluding it is absent — the concept may be "
                 f"computable from keys that ARE lifted. If it truly is not, "
                 f"report it as a blocker naming what you looked for. Do not "
                 f"approximate it with a different attribute.",
@@ -625,12 +731,14 @@ def main() -> int:
         return finish("CARLA_INCOMPATIBLE", "attrs: " + ", ".join(bad_attrs))
 
     # No "attribute absent from the sample trace" warning here any more. It read
-    # `attribute_keys.tier_b`, a hand-maintained list of what
-    # `Carla/Sample.lean` contains — and that file is hand-authored, so the list
-    # described our own fixture rather than anything CARLA produces, and had
-    # already drifted (it claimed `light_brake`, which Sample.lean never sets).
-    # The same question is answered further down, computed rather than declared,
-    # by the CARLA grounding count against that trace.
+    # `attribute_keys.tier_b`, a hand-maintained list of what the bundled
+    # fixture contained, so it described our own fixture rather than anything
+    # CARLA produces, and had already drifted (it claimed `light_brake`, which
+    # the fixture never set). The fixture itself is gone: it was built from
+    # `Core/Builders.lean`, so a rule grounding on it showed only that its
+    # binders bind against data written to make them bind. Whether a spec fires
+    # correctly is asked of a recorded capture and its human labels, by
+    # `scripts/diagnostics/capture_eval.py`, and not by this gate.
     warnings: list[str] = []
 
     # ── 6. hygiene ──────────────────────────────────────────────────────
@@ -659,7 +767,7 @@ def main() -> int:
                  *[f"  - {d}" for d in detail],
                  "",
                  "Every binder MULTIPLIES the grounding count, and each grounding "
-                 "is a full evaluation over the whole trace (~20 ms for 240 "
+                 "is a full evaluation over the whole trace (cost grows with "
                  "frames). A binder over a structural type — `lane`, `road` — "
                  "multiplies by tens, and almost all of the resulting pairs are "
                  "unrelated: lanes on different roads with no edge between them. "
@@ -676,6 +784,29 @@ def main() -> int:
                  "work around it.")
             return finish("GROUNDING_BUDGET",
                           f"~{estimate} groundings > {GROUNDING_BUDGET}")
+        if estimate > GROUNDING_SOFT_CEILING:
+            # Name the binder worth ARGUING about, not merely the biggest
+            # factor. A binder over an actor is what the clause is about and
+            # cannot be removed; one over a sign, landmark or road-structure
+            # type is usually standing in for a predicate that would quantify
+            # it internally, which is the change that actually retires the
+            # cost. Rank the structural ones first, then by size.
+            def _rank(d: str) -> tuple:
+                key = d.split("->", 1)[-1].split("=", 1)[0].strip()
+                count = int(d.rsplit("=", 1)[-1].split()[0].rstrip(")"))
+                return (key not in ACTOR_CENSUS_KEYS, count)
+            worst = max(detail, key=_rank) if detail else ""
+            warnings.append(
+                f"this schema would instantiate about {estimate:,} times on a "
+                f"real capture. That is under the {GROUNDING_BUDGET:,} the gate "
+                f"refuses, but well over the ~{GROUNDING_SOFT_CEILING} a rule "
+                f"costs when it binds only the actors its clause is about"
+                + (f" — the largest contributor is {worst}" if worst else "")
+                + ". Being under the budget is not a reason to stop: say in "
+                f"your report why no cheaper binding expresses this clause. If "
+                f"the expensive binder exists only to reach a relation, the "
+                f"predicate that would quantify it internally is a "
+                f"`missing_vocab` worth naming.")
 
     # ── 7. compile ──────────────────────────────────────────────────────
     try:
@@ -689,7 +820,8 @@ def main() -> int:
 
         # ── 8. scenarios ────────────────────────────────────────────────
         harness = task_dir / "harness.lean"
-        write_node_harness(harness, module, namespace)
+        write_node_harness(harness, module, namespace,
+                           spec["witness_module"], spec["witness_namespace"])
         ok, output = eval_harness(library_root, harness)
     except LeanUnavailable as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -710,8 +842,8 @@ def main() -> int:
              "The plan declares scenarios that `def scenarios` does not contain:",
              *[f"  - {m}" for m in missing],
              "",
-             "Every scenario named in node_spec.json must appear, with the "
-             "planned `expected` value.")
+             "Both witnesses named in node_spec.json must appear in the "
+             "witness file, with the planned `expected` value.")
         return finish("STRUCTURE_FAIL", "missing scenarios: " + ", ".join(missing))
 
     short = [s for s in report.scenarios if s["status"] == "SHORT"]
@@ -728,9 +860,12 @@ def main() -> int:
              "matter what it contains — a positive scenario then passes for the "
              "wrong reason, and a negative one cannot fail at all.",
              "",
-             f"Lengthen every scenario trace to at least {report.span} frames. "
-             "Padding with repeats of a representative frame is fine; the point "
-             "is that the window has room to complete.")
+             f"Wrap every short trace in `padTo {report.span}` "
+             "(`Core/Builders.lean`), which repeats its last frame up to that "
+             "length. How long a trace must be is a property of the formula, "
+             "not of the situation the scenario depicts, so this is arithmetic "
+             "rather than a change to what the scenario tests — do not alter "
+             "the situation to reach the length.")
         return finish("TRACE_TOO_SHORT",
                       f"traces shorter than the {report.span}-frame span: "
                       + ", ".join(s["name"] for s in short))
@@ -773,17 +908,15 @@ def main() -> int:
                       "failed: " + ", ".join(s["name"] for s in failed))
 
     # ── 9. accepted ─────────────────────────────────────────────────────
-    if report.carla_groundings == 0:
-        warnings.append(
-            "the rule does not ground on the bundled CARLA sample trace "
-            "(0 bindings), so it has no smoke coverage against realistic data — "
-            "expected if the rule concerns entity types the sample lacks "
-            "(pedestrians, stop signs), suspicious otherwise")
+    # No "does it ground on a bundled fixture" warning any more. The fixture
+    # carried one entity of every type, so every well-formed rule's binders
+    # could always bind and the count never reached zero — measured across the
+    # library, 0 of 19 rules. The question it was meant to ask is asked properly
+    # by SCENARIO_VACUOUS, against the rule's own scenarios.
 
     passed = sum(1 for s in report.scenarios if s["status"] == "PASS")
     emit("OK",
-         f"{passed}/{len(report.scenarios)} scenarios pass. "
-         f"CARLA sample groundings: {report.carla_groundings}.")
+         f"{passed}/{len(report.scenarios)} scenarios pass.")
     for w in warnings:
         print(f"WARNING: {w}")
     print("")
@@ -792,7 +925,6 @@ def main() -> int:
     return finish("OK", f"{passed}/{len(report.scenarios)} scenarios", {
         "scenarios_declared": len(report.scenarios),
         "scenarios_passed": passed,
-        "carla_groundings": report.carla_groundings,
         "warnings": warnings,
     })
 

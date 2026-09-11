@@ -11,7 +11,7 @@ outcomes — `BLIND`, `TRIGGER-HAPPY` — instead of two unrelated rows in two
 separate reports.
 
 Captures are produced by the sibling CARLA pipeline
-(`../sg/carla_scene_graphs/src/run_capture.py`), one directory each, carrying
+(`../carla_scene_graphs/src/run_capture.py`), one directory each, carrying
 `rsv/`, `ego_logs.json` and a `labels.json` derived from CARLA-server ground
 truth. Pairing is by directory name: `<scenario>_compliant` / `<scenario>_violation`.
 """
@@ -27,6 +27,7 @@ from typing import Optional
 from scripts.diagnostics import capture_eval
 from scripts.lean_check import (
     CAPTURE_EVAL_TIMEOUT,
+    EVAL_LIB_ROOT,
     LeanUnavailable,
     eval_harness,
     first_errors,
@@ -104,7 +105,7 @@ def convert(capture: Path, repo_root: Path, library: Path,
     reports compliant. `carla/adapter.py` now emits the trace in chunks, which
     removes the limit and the trade-off with it.
     """
-    out_lean = library / "TrafficSpec" / "Carla" / f"{MODULE_NAME}.lean"
+    out_lean = library / EVAL_LIB_ROOT / f"{MODULE_NAME}.lean"
     cmd = [adapter_python, str(repo_root / "carla" / "adapter.py"),
            "--rsv-dir", str(capture / "rsv"),
            "--output", str(out_lean),
@@ -129,7 +130,7 @@ def evaluate(capture: Path, repo_root: Path, library: Path,
     try:
         convert(capture, repo_root, library, adapter_python)
 
-        module = f"TrafficSpec.Carla.{MODULE_NAME}"
+        module = f"{EVAL_LIB_ROOT}.{MODULE_NAME}"
         ok, output = lake_build(library, target=module)
         if not ok:
             hint = ""

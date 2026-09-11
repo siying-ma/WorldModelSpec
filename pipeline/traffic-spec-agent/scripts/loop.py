@@ -9,12 +9,13 @@ unattended.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from . import index_sync, plan_validate
+from . import coverage, gaps, index_sync, plan_validate
 from .phases import CodePhase, IntegratePhase, PlanPhase
 from .state import (
     LoopContext,
@@ -90,6 +91,35 @@ class Loop:
                 print("[info] PROGRESS.md reports COMPLETE — stopping.")
                 break
 
+            # Convergence is computed from the coverage table and the gap
+            # ledger, not taken from the stage line. The stage is a claim the
+            # planning session makes about its own work, and a session that is
+            # asked to declare there is nothing left to do has every reason to
+            # find something: one run was told to set the stage, declined, and
+            # spent three iterations reversing its own earlier verdicts with
+            # weaker readings — cost up, quality down.
+            #
+            # A clause blocked on an OPEN gap is terminal here. That is the
+            # whole point: the loop stops, the ledger says what would give it
+            # work back, and retiring a gap is what reopens exactly the clauses
+            # that capability affects.
+            assessment = self._assess()
+            if assessment.reopened:
+                coverage.reopen_rows(ctx.progress_file, assessment.reopened,
+                                     ctx.repo_root)
+                for law in assessment.reopened:
+                    append_log(ctx.progress_file,
+                               f"iter {ctx.iter_num:03d}: {law} reopened — a gap "
+                               f"it was blocked on has retired")
+                print(f"[info] reopened by a retired gap: "
+                      f"{', '.join(assessment.reopened)}")
+                assessment = self._assess()
+            if assessment.converged and assessment.rows:
+                print("[info] converged: nothing is plannable without a "
+                      "capability change.")
+                print(coverage.render_report(assessment))
+                break
+
             summary = self._iterate()
             self.summaries.append(summary)
             self._write_summary()
@@ -119,11 +149,27 @@ class Loop:
         if plan_result.completed:
             return summary
 
+        # ── 1b. fold this session's gap proposals into the ledger ──────
+        # Before validation, because a refused proposal is feedback the next
+        # iteration needs whether or not this plan survives.
+        recorded, refused, ledger_problems = gaps.merge_proposals(
+            ctx.repo_root, ctx.gaps_file, f"{ctx.results_dir.name}/iter_"
+                                          f"{ctx.iter_num:03d}")
+        if recorded:
+            print(f"[info] gap ledger: recorded "
+                  f"{', '.join(g.id + ' (' + g.owner + ')' for g in recorded)}")
+        for line in refused:
+            print(f"[info] gap proposal refused: {line}")
+        for line in ledger_problems:
+            print(f"[warn] gap ledger: {line}")
+        self._gap_feedback = list(refused)
+
         # ── 2. validate (deterministic) ─────────────────────────────────
         print(f"\n[phase 2] Plan validation  (iter {ctx.iter_num:03d})")
         nodes, errors = plan_validate.validate(
             ctx.objectives_file, ctx.laws_file, ctx.library_root,
             max_nodes=ctx.options.max_nodes_per_iter,
+            assessment=self._assess(),
         )
         summary.planned = len(nodes)
         if errors:
@@ -131,9 +177,14 @@ class Loop:
             print(f"[error] plan rejected with {len(errors)} objection(s):")
             for e in errors:
                 print(f"  - {e}")
+            # The gap refusals ride along: a rejected plan is exactly when a
+            # session most needs to know that the question it filed is closed,
+            # and dropping them here would lose that feedback for good.
             plan_validate.write_auto_notes(
                 ctx.auto_notes_file,
-                [("Plan rejected — fix these before proposing work again", errors)],
+                [("Plan rejected — fix these before proposing work again", errors),
+                 ("Gap proposals the ledger refused — settled questions",
+                  list(getattr(self, "_gap_feedback", []) or []))],
             )
             return summary
         print(f"[info] plan accepted: {len(nodes)} node(s)")
@@ -161,6 +212,10 @@ class Loop:
         sections: list[tuple[str, list[str]]] = []
         if notes:
             sections.append(("Outcomes from the previous iteration", notes))
+        if getattr(self, "_gap_feedback", None):
+            sections.append(
+                ("Gap proposals the ledger refused — settled questions",
+                 self._gap_feedback))
         remaining = self._uncovered_laws()
         if remaining:
             sections.append(
@@ -171,8 +226,30 @@ class Loop:
         plan_validate.write_auto_notes(ctx.auto_notes_file, sections)
         return summary
 
+    def _assess(self) -> coverage.Assessment:
+        """The coverage table and the ledger, read together.
+
+        Recomputed rather than cached: the planning session rewrites the table
+        mid-iteration, and a stale assessment would let the validator judge a
+        plan against the state that plan was written to change.
+        """
+        return coverage.assess(
+            self.ctx.progress_file, self.ctx.repo_root,
+            plan_validate.load_law_ids(self.ctx.laws_file),
+            hints_file=self.ctx.hints_file,
+        )
+
     def _uncovered_laws(self) -> list[str]:
-        """Law ids not referenced by any rule file in the library."""
+        """Law ids no rule file DECLARES in its `lawRefs`.
+
+        Matched against the declaration, not against the file text. A substring
+        search over the whole file counts a law as covered when a rule merely
+        mentions it — and rules do mention neighbours, including to disclaim
+        them ("that is EX-LANE-002's business and is left to a later node"),
+        which is the opposite of coverage. The figure this feeds is what the loop
+        prints as `Laws covered` and what the next plan phase treats as done, so
+        overstating it silently drops a law from the corpus.
+        """
         law_ids = plan_validate.load_law_ids(self.ctx.laws_file)
         if not law_ids:
             return []
@@ -181,9 +258,10 @@ class Loop:
         if rules_dir.exists():
             for path in rules_dir.rglob("*.lean"):
                 text = path.read_text(encoding="utf-8", errors="replace")
-                for lid in law_ids:
-                    if lid in text:
-                        covered.add(lid)
+                declared = set()
+                for m in re.finditer(r"lawRefs\s*:=\s*\[(.*?)\]", text, re.S):
+                    declared |= set(re.findall(r'"([^"]+)"', m.group(1)))
+                covered |= (law_ids & declared)
         return sorted(law_ids - covered)
 
     # ── reporting ───────────────────────────────────────────────────────
@@ -208,6 +286,18 @@ class Loop:
                 "laws_uncovered": len(self._uncovered_laws()),
             },
         }
+        # Why the run ended, in a form something other than a person can read.
+        # Without it "5 iterations, 24 rules" is the whole record, and that
+        # number says nothing about whether the run finished or merely ran out
+        # of iterations.
+        assessment = self._assess()
+        payload["convergence"] = {
+            "converged": assessment.converged,
+            "counts": assessment.counts(),
+            "actionable": assessment.actionable,
+            "reopened": assessment.reopened,
+            "defects": assessment.defects,
+        }
         (ctx.results_dir / "summary.json").write_text(
             json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
         )
@@ -227,6 +317,10 @@ class Loop:
         print("-" * W)
         total_cost = sum(s.cost_usd for s in self.summaries)
         rules = index_sync.registered_count(self.ctx.library_root)
+        assessment = self._assess()
+        if assessment.rows:
+            print(coverage.render_report(assessment))
+            print("-" * W)
         uncovered = self._uncovered_laws()
         laws_total = len(plan_validate.load_law_ids(self.ctx.laws_file))
         print(f"Rules in library: {rules}    "

@@ -41,8 +41,14 @@ def format_scenarios(node: SpecNode) -> str:
     rows = []
     for s in node.scenarios:
         kind = "must be SATISFIED" if s.expected else "must be VIOLATED"
+        # The role says which job the witness does, and that changes how a
+        # disagreement should be read: a `permit` the formula violates is a
+        # rule convicting compliant conduct, while a `forbid` it satisfies is a
+        # rule that says nothing. Opposite defects, opposite repairs.
+        role = f", role `{s.role}`" if s.role else ""
         desc = f" — {s.description}" if s.description else ""
-        rows.append(f"- `{s.name}` (`expected := {str(s.expected).lower()}`, {kind}){desc}")
+        rows.append(f"- `{s.name}` (`expected := {str(s.expected).lower()}`"
+                    f"{role}, {kind}){desc}")
     return "\n".join(rows)
 
 
@@ -78,7 +84,11 @@ def build_prompt(task: SpecNodeTask, repo_root: Path, schema_summary: str,
         # quoting wrong in `entry.lawRefs`.
         law_refs_lean=", ".join(f'"{r}"' for r in node.law_refs),
         target_file=node.target_file,
+        witness_file=node.witness_file,
+        witness_module=node.witness_module,
+        witness_namespace=node.witness_namespace,
         target_path=str(task.target_path),
+        witness_path=str(task.witness_path),
         module=node.module,
         namespace=node.namespace,
         binders=", ".join(f"`{b}`" for b in node.binders),
@@ -251,7 +261,6 @@ class CodePhase(Phase):
             attempts=int(verdict_data.get("attempts", 0)),
             scenarios_declared=int(verdict_data.get("scenarios_declared", 0)),
             scenarios_passed=int(verdict_data.get("scenarios_passed", 0)),
-            carla_groundings=int(verdict_data.get("carla_groundings", 0)),
             blockers=[str(x) for x in report.get("blockers", [])],
             suggest_decompose=[str(x) for x in report.get("suggest_decompose", [])],
             missing_vocab=[str(x) for x in report.get("missing_vocab", [])],
@@ -330,10 +339,6 @@ class CodePhase(Phase):
     def _notes_for(self, r: SpecNodeResult) -> list[str]:
         """Turn one node's outcome into planner-facing feedback."""
         if r.accepted:
-            if r.carla_groundings == 0:
-                return [f"`{r.node_id}` was accepted but does not ground on the CARLA "
-                        f"sample trace — confirm the entity types it quantifies over "
-                        f"actually occur in captured data."]
             return []
         notes = [f"`{r.node_id}` was not accepted (verdict `{r.verdict}`, "
                  f"{r.attempts} gate call(s))."]
@@ -356,8 +361,8 @@ class CodePhase(Phase):
         for s in r.suggest_decompose:
             notes.append(f"`{r.node_id}` suggests decomposition: {s}")
         if r.verdict == "SCENARIO_FAIL" and not r.blockers:
-            notes.append(f"`{r.node_id}` could not satisfy its own acceptance tests — "
-                         f"either the scenarios encode a reading the formula cannot "
+            notes.append(f"`{r.node_id}` could not satisfy its own witnesses — "
+                         f"either they encode a reading the formula cannot "
                          f"express, or the clause needs splitting into cases.")
         if r.verdict == "CARLA_INCOMPATIBLE":
             notes.append(f"`{r.node_id}` requires scene-graph data CARLA does not "
