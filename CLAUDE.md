@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+> **Layout changed on 2026-09-15.** `main` now carries only `pipeline/traffic-spec-agent/`,
+> which is being re-founded on a law-facing ontology — see `pipeline/CORE_V2_PLAN.md` and
+> `pipeline/ALIGNMENT_AUDIT_2026-09-14.md`. The CARLA scene-graph generator
+> (`pipeline/carla_scene_graphs/`), the reference Lean prototype (`pipeline/lean_repo/`), the
+> label pipeline (`pipeline/evalkit/`) and the Lean repository collector (`lean_repo_collection/`)
+> live on the branch `archive/carla-first-2026-09-15` of this repository, with the matching
+> library state on the same-named branch of `traffic_agent_library`. Everything below this
+> banner describes the archived, CARLA-first design and is to be rewritten with the redraft;
+> until then, read paths that point outside `traffic-spec-agent/` as references into the archive.
+
 Guidance for Claude Code when working in this repository.
 
 ## Working agreement
