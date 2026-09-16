@@ -1,18 +1,41 @@
 {
   "$comment": [
-    "WHAT SURVIVES THE MOVE FROM SIMULATION TO REAL VIDEO.",
+    "WHAT SURVIVES THE MOVE FROM SIMULATION TO REAL VIDEO — and, since it was",
+    "found to be a different question, WHERE A DATUM STOPS BEING AVAILABLE.",
     "",
-    "carla/schema.json says what the CARLA scene-graph generator emits. This",
-    "file says which of it a camera could ever recover. They are separate",
-    "artifacts because they have separate provenance: the schema is derived from",
-    "carla_sgg/*.py, the Lean Core and the CARLA API; this file is derived from",
-    "the CARLA API and from what is observable in a monocular video stream. A",
-    "claim from the second source has no business in the first.",
+    "carla/schema.json says what the CARLA scene-graph generator emits. This file",
+    "says two things about each element: whether a camera could ever recover it",
+    "(`class`), and, for anything the scene graph does not carry, which layer it",
+    "stops at (`origin`). They are separate artifacts because they have separate",
+    "provenance: the schema is derived from carla_sgg/*.py, the Lean Core and the",
+    "CARLA API; this file is derived from the CARLA API and from what is",
+    "observable in a monocular video stream.",
     "",
-    "FROZEN on the same terms as the schema: before the pipeline sees any law",
-    "and before any capture exists. It therefore carries no worked example, no",
-    "rule named by its subject, and no figure obtained by running a simulator or",
-    "a perception model. Every entry states a property of the DATA SOURCE, not a",
+    "WHY TWO AXES. With one axis this file said `video_only` — 'present in real",
+    "footage, absent from this abstraction' — about several things CARLA has and",
+    "our pipeline simply does not take. Weather is the plain case: the simulator",
+    "sets it through carla.WeatherParameters and the capture script already writes",
+    "it beside every capture, so calling it video_only told a planning session",
+    "that a clause conditioned on conditions had no counterpart, when in fact it",
+    "had one nobody had wired up. A class that conflates 'the simulator does not",
+    "have it' with 'we did not take it' points at the wrong repair every time.",
+    "",
+    "`origin` therefore names the layer, and it is the same vocabulary the gap",
+    "ledger uses for `owner`, so what is missing and who can supply it are",
+    "answered in one language:",
+    "  lifted            the adapter writes it into the Lean trace today",
+    "  in_rsv_not_lifted on the RSV node, not lifted by carla/adapter.py",
+    "  in_base_not_rsv   on the base scene graph, dropped by the abstraction",
+    "  in_api_not_graph  the CARLA API has it, the generator never records it",
+    "  absent_from_carla the simulator does not have it in any form",
+    "",
+    "Only `absent_from_carla` justifies telling a planning session that a clause",
+    "has no counterpart. Everything else is a gap with an owner.",
+    "",
+    "FROZEN on the same terms as the schema: before the pipeline sees any law and",
+    "before any capture exists. It therefore carries no worked example, no rule",
+    "named by its subject, and no figure obtained by running a simulator or a",
+    "perception model. Every entry states a property of the DATA SOURCE, not a",
     "measurement of one recording.",
     "",
     "IT DOES NOT FORBID ANYTHING. A rule that reads a sim_only element is not",
@@ -21,113 +44,247 @@
     "experiment. The classes are a PREFERENCE and a LEDGER: where two",
     "formalizations of one clause are available, prefer the portable one; where",
     "only a sim_only element will do, use it and let the ledger record that the",
-    "rule will not transfer. Portability then becomes a measurable property of",
-    "the library rather than a discovery made at transfer time."
+    "rule will not transfer."
   ],
-
-  "version": "1.0.0",
-
+  "version": "2.0.0",
   "classes": {
     "sim_only": "Present in the CARLA scene graph, with no counterpart a camera can recover. A rule reading one of these cannot run on video at all.",
     "both_with_error": "Recoverable from video, but as an ESTIMATE. The class carries an error regime, because a threshold tighter than the error is not portable even though the quantity is. This is the class most often mistaken for portable.",
     "video_only": "Observable in real footage and absent from this scene-graph abstraction. Records what the CARLA baseline structurally cannot test, so a clause needing one is untestable here for a reason that is not a defect of the formalization.",
     "portable": "Recoverable from video with error small relative to any threshold a traffic code states."
   },
-
   "attribute_keys": {
     "sim_only": {
-      "keys": ["throttle", "brake", "steer", "gear", "manual_gear_shift",
-               "hand_brake", "reverse", "at_traffic_light",
-               "special_class", "carla_id",
-               "road_id", "lane_id", "junction_id",
-               "landmark_type", "landmark_value", "landmark_unit",
-               "landmark_sub_type", "landmark_country", "landmark_text",
-               "landmark_lane_validities"],
+      "keys": [
+        "throttle",
+        "brake",
+        "steer",
+        "gear",
+        "manual_gear_shift",
+        "hand_brake",
+        "reverse",
+        "at_traffic_light",
+        "special_class",
+        "carla_id",
+        "road_id",
+        "lane_id",
+        "junction_id",
+        "landmark_type",
+        "landmark_value",
+        "landmark_unit",
+        "landmark_sub_type",
+        "landmark_country",
+        "landmark_text",
+        "landmark_lane_validities",
+        "landmark_orientation",
+        "landmark_is_dynamic",
+        "landmark_id",
+        "map_scenery"
+      ],
       "why": {
         "control_channels": "throttle, brake, steer, gear, manual_gear_shift, hand_brake and reverse are the driver's INPUTS, read from carla.VehicleControl. No camera observes an input; video sees only its effect, and even that only for the ego if the vehicle is instrumented. Note the asymmetry with light_brake, which IS observable — the lamp is the effect, the pedal is not.",
         "at_traffic_light": "A simulator affordance (`Vehicle.is_at_traffic_light`), not a perceptual fact. Video can see a signal and can estimate which lane it governs; it cannot read a flag that says the ego is subject to one.",
         "special_class": "Blueprint metadata (ego / emergency / taxi / electric). Video would have to infer `emergency` from a light bar or livery — a different quantity with a different error profile, not the same field.",
         "carla_id": "Identity is assigned by the simulator and is stable by construction. See identity_across_frames below: this is the single most consequential sim_only element, because the whole binder architecture rests on it.",
         "opendrive_identifiers": "road_id, lane_id and junction_id are map-authoring identities. Video has no access to them without an HD map registered to the footage; lane detection recovers geometry, not identity.",
-        "landmark_fields": "OpenDRIVE landmarks are map records, not observations. A camera sees a sign; it does not see a catalogue code, a validity range, or the map author's unit tag. Recovering `landmark_value` from video means reading the sign face — a different quantity, and one whose unit is then genuinely unknown rather than mis-tagged."
-      }
+        "landmark_fields": "OpenDRIVE landmarks are map records, not observations. A camera sees a sign; it does not see a catalogue code, a validity range, or the map author's unit tag. Recovering `landmark_value` from video means reading the sign face — a different quantity, and one whose unit is then genuinely unknown rather than mis-tagged. The same holds for `landmark_orientation` (which direction of travel the map says the sign faces), `landmark_is_dynamic` (whether the map records it as a changeable signal) and `landmark_id` (the map's identity for it): all three are OpenDRIVE records read from the map file, not observations of the sign.",
+        "map_scenery": "Whether a vehicle is a parked prop baked into the level or a spawned actor is a fact about how the simulator was set up. A camera sees a parked car either way; the flag has no visual counterpart, and a video pipeline would have to infer 'parked' from motion over time instead."
+      },
+      "origin": "lifted"
     },
-
     "both_with_error": {
-      "keys": ["pos_x", "pos_y", "pos_z", "fwd_x", "fwd_y", "fwd_z",
-               "vel_x", "vel_y", "vel_z", "acc_x", "acc_y", "acc_z",
-               "speed", "accel", "yaw_rate", "roll_rate", "pitch_rate",
-               "posted_limit_kph", "base_class", "sem_class"],
+      "keys": [
+        "pos_x",
+        "pos_y",
+        "pos_z",
+        "fwd_x",
+        "fwd_y",
+        "fwd_z",
+        "vel_x",
+        "vel_y",
+        "vel_z",
+        "acc_x",
+        "acc_y",
+        "acc_z",
+        "speed",
+        "accel",
+        "yaw_rate",
+        "roll_rate",
+        "pitch_rate",
+        "posted_limit_kph",
+        "base_class",
+        "sem_class",
+        "half_length",
+        "half_width",
+        "half_height"
+      ],
       "error_regimes": {
         "metric_position": "pos_* and the separations computed from them are exact in simulation and estimated in video. Monocular depth error grows with range; stereo and lidar reduce but do not remove it. A clause stating a clearance of about a metre is therefore near the noise floor of the estimate, while a clause stating tens of metres is comfortably above it. A rule is portable only if its threshold is large relative to the regime, and that is a property of the THRESHOLD, not of the key.",
         "ego_dynamics": "speed, accel and the rate channels are exact from the simulator and, in video, come either from vehicle instrumentation (accurate, but only for the ego) or from image-space estimation (biased, and coupled to the depth error above).",
         "heading": "fwd_* is exact in simulation; in video it is an orientation estimate, and the angular relations built on it inherit that error. A sector boundary at 45 degrees is not robust to a 10-degree orientation error.",
         "classification": "base_class and sem_class are ground truth in simulation and a detector output in video, with a confusion matrix and a miss rate. A rule that quantifies over cyclists inherits the cyclist recall.",
-        "posted_limit_kph": "Read from the blueprint id in simulation. In video it requires sign detection and reading, which fails silently when the sign is occluded, absent from the field of view, or applies to a lane the camera cannot associate."
-      }
+        "posted_limit_kph": "Read from the blueprint id in simulation. In video it requires sign detection and reading, which fails silently when the sign is occluded, absent from the field of view, or applies to a lane the camera cannot associate.",
+        "body_extents": "half_length, half_width and half_height are exact in simulation, read off the actor's bounding box. In video they are a 3-D box estimate whose error is a large fraction of the extent itself for a distant or partly occluded body, and the surface-gap bounds built from them inherit that error twice, once per body. A clearance clause is therefore portable only when its threshold is large relative to the box error, not merely relative to the position error."
+      },
+      "origin": "lifted"
     },
-
     "portable": {
-      "keys": ["name", "light_state", "light_brake", "light_left_blinker",
-               "light_right_blinker", "light_high_beam", "light_low_beam",
-               "light_position", "light_fog", "light_reverse",
-               "light_interior", "light_special_1", "light_special_2"],
-      "why": "Lamp states are the one dynamic channel that is genuinely observable on ANOTHER vehicle: a brake light, an indicator and an emergency beacon are all designed to be seen. They are the closest thing this data model has to a signal that transfers unchanged, and a formalization that reads intent from a lamp rather than from a control input is portable where one reading from `steer` is not. Detection is still imperfect — the failure is a miss, not a wrong value."
+      "keys": [
+        "name",
+        "light_state",
+        "light_brake",
+        "light_left_blinker",
+        "light_right_blinker",
+        "light_high_beam",
+        "light_low_beam",
+        "light_position",
+        "light_fog",
+        "light_reverse",
+        "light_interior",
+        "light_special_1",
+        "light_special_2"
+      ],
+      "why": "Lamp states are the one dynamic channel that is genuinely observable on ANOTHER vehicle: a brake light, an indicator and an emergency beacon are all designed to be seen. They are the closest thing this data model has to a signal that transfers unchanged, and a formalization that reads intent from a lamp rather than from a control input is portable where one reading from `steer` is not. Detection is still imperfect — the failure is a miss, not a wrong value.",
+      "origin": "lifted"
     }
   },
-
   "relation_labels": {
     "sim_only": {
-      "labels": ["isIn", "opposes", "travelsTo", "laneChange"],
-      "why": "The road-structure relations are read from the OpenDRIVE map, not from the scene. `travelsTo` and `laneChange` are lane-graph connectivity: a claim about where a lane LEADS, which no single frame of video contains. `isIn` and `opposes` need lane identity and lane direction, which video recovers only as geometry, and only within the visible road surface."
+      "labels": [
+        "isIn",
+        "opposes",
+        "travelsTo",
+        "laneChange"
+      ],
+      "why": "The road-structure relations are read from the OpenDRIVE map, not from the scene. `travelsTo` and `laneChange` are lane-graph connectivity: a claim about where a lane LEADS, which no single frame of video contains. `isIn` and `opposes` need lane identity and lane direction, which video recovers only as geometry, and only within the visible road surface.",
+      "origin": "lifted"
     },
     "both_with_error": {
-      "labels": ["safetyHazard", "nearCollision", "superNear", "veryNear",
-                 "near", "visible", "toLeftOf", "toRightOf", "inDFrontOf",
-                 "inSFrontOf", "atDRearOf", "atSRearOf"],
-      "why": "Distance bands and angular sectors are computed from exact positions and headings in simulation, and from estimates in video. The band boundaries — 2, 4, 7, 10, 16, 25 metres — are close together relative to monocular depth error at the far end, so the outer bands are the least reliable. The angular sectors inherit the orientation error."
+      "labels": [
+        "safetyHazard",
+        "nearCollision",
+        "superNear",
+        "veryNear",
+        "near",
+        "visible",
+        "toLeftOf",
+        "toRightOf",
+        "inDFrontOf",
+        "inSFrontOf",
+        "atDRearOf",
+        "atSRearOf"
+      ],
+      "why": "Distance bands and angular sectors are computed from exact positions and headings in simulation, and from estimates in video. The band boundaries — 2, 4, 7, 10, 16, 25 metres — are close together relative to monocular depth error at the far end, so the outer bands are the least reliable. The angular sectors inherit the orientation error.",
+      "origin": "lifted"
     },
     "governance_needs_a_map": {
-      "labels": ["controls", "mayAffect"],
-      "why": "Both are drawn from a geometric test against map waypoints, so both are sim_only as EDGES. But the underlying association — this signal governs this lane — is exactly what a video pipeline must estimate, and estimating it is a well-posed perception problem. Classed separately because the transfer story is 'replace with an estimator', not 'unavailable'."
+      "labels": [
+        "controls",
+        "mayAffect"
+      ],
+      "why": "Both are drawn from a geometric test against map waypoints, so both are sim_only as EDGES. But the underlying association — this signal governs this lane — is exactly what a video pipeline must estimate, and estimating it is a well-posed perception problem. Classed separately because the transfer story is 'replace with an estimator', not 'unavailable'.",
+      "origin": "lifted"
     }
   },
-
   "structural": {
     "$comment": "Differences that are not attached to any single key, and are the ones most likely to be missed.",
-
     "identity_across_frames": {
       "class": "both_with_error",
-      "statement": "In simulation an entity id is assigned once and is stable for the entity's life. In video, identity is a tracker output: it drops under occlusion and re-acquires with a new id, and it swaps between nearby objects.",
-      "consequence": "Core/Grounding.lean binds ONE entity id for the whole trace and evaluates a temporal formula against that binding. An identity switch silently splits one vehicle into two bindings, each seeing half the episode, and a violation that spans the switch is in neither. This is not a property of any rule; it is a property of the grounding architecture, and it is the largest single transfer risk in this pipeline."
+      "statement": "In simulation an entity id is assigned once and is stable for the entity's life, and carla/adapter.py now keys a Lean EntityId on it (the CARLA actor id, a landmark's map id, or a static node's fixed position) rather than on the RSV node name, which is a per-frame counter and used to splice different vehicles into one binding. In video, identity is a tracker output: it drops under occlusion and re-acquires with a new id, and it swaps between nearby objects.",
+      "consequence": "Core/Grounding.lean binds ONE entity id for the whole trace and evaluates a temporal formula against that binding. An identity switch silently splits one vehicle into two bindings, each seeing half the episode, and a violation that spans the switch is in neither. This is not a property of any rule; it is a property of the grounding architecture, and it is the largest single transfer risk in this pipeline.",
+      "origin": "lifted"
     },
-
     "occlusion": {
-      "class": "sim_only_by_default",
+      "class": "both_with_error",
       "statement": "The generator's `check_occlusion` defaults to false, so the scene graph contains actors that no camera at the ego's position could see. Video contains only what is visible.",
-      "consequence": "This is an INVERSION, not a gap: a rule validated on CARLA may be firing on a vehicle behind a building, and the same rule on video would not fire at all — while both look correct. Recording the setting per capture (carla/simulation.template.json) is what makes the difference detectable."
+      "consequence": "This is an INVERSION, not a gap: a rule validated on CARLA may be firing on a vehicle behind a building, and the same rule on video would not fire at all — while both look correct. Recording the setting per capture (carla/simulation.template.json) is what makes the difference detectable.",
+      "origin": "in_api_not_graph"
     },
-
     "time_base": {
       "class": "both_with_error",
       "statement": "Simulation frames are produced at a fixed rate the caller chose. Video frames carry presentation timestamps, which may be variable, non-integer (29.97), or wrong after transcoding.",
-      "consequence": "A duration expressed as a frame count means a different span on every source. Prefer per-frame timestamps over a declared rate; a source with neither cannot support a durational obligation at all, and that should be stated rather than assumed."
+      "consequence": "A duration expressed as a frame count means a different span on every source. Prefer per-frame timestamps over a declared rate; a source with neither cannot support a durational obligation at all, and that should be stated rather than assumed.",
+      "origin": "lifted"
     },
-
     "field_of_view": {
       "class": "sim_only",
       "statement": "The generator's `render_dist` includes actors in every direction around the ego. A camera has a frustum.",
-      "consequence": "Relations behind the ego — `atDRearOf`, `atSRearOf` — exist in simulation and are absent from a forward-facing camera. A rule about a following vehicle is portable only with rear coverage."
+      "consequence": "Relations behind the ego — `atDRearOf`, `atSRearOf` — exist in simulation and are absent from a forward-facing camera. A rule about a following vehicle is portable only with rear coverage.",
+      "origin": "in_api_not_graph"
     }
   },
-
   "video_only": {
-    "$comment": "Present in real footage, absent from this abstraction. Recorded so that a clause needing one is understood as untestable on the CARLA baseline for a reason that is not a defect of the formalization — and so that the gap is visible before a corpus is chosen rather than after.",
-    "lane_markings": "Marking type — solid, broken, double, colour — and lane width. sgg_abstractor's process_to_junction_rsv folds every waypoint of a lane into one attribute-free node, so these are unreachable by ANY adapter change, not merely unlifted. A substantial part of a traffic code rests on them: crossing a solid line, entering a bicycle lane only where the line is broken, passing restrictions.",
-    "human_signals": "Traffic-officer hand signals, pedestrian gaze and gesture, driver hand signals.",
-    "temporary_road_furniture": "Cones, hazard triangles, temporary signage, roadworks layouts as identifiable objects.",
-    "vehicle_classes_carla_lacks": "School buses with alternating red lamps, yield-to-bus signage, and other jurisdiction-specific vehicle types with legal significance.",
-    "sign_face": "The legend a sign actually carries, beyond a catalogue code.",
-    "surface_and_weather_state": "Observed wetness, ice, standing water. Clauses conditioned on 'bad weather conditions' or 'slippery roads' have no counterpart in the graph."
+    "$comment": [
+      "Present in real footage. The `origin` of each says where it stops on the",
+      "simulation side, and only `absent_from_carla` means the CARLA baseline",
+      "structurally cannot test the clause. The rest are gaps, and the entry says",
+      "which layer owns each one.",
+      "Every claim below cites the generator source or the CARLA API reference;",
+      "none of them is derived from a recording."
+    ],
+    "lane_markings": {
+      "what": "Marking type, colour, width and whether a lane change is permitted across it; lane width.",
+      "class": "both_with_error",
+      "origin": "in_base_not_rsv",
+      "evidence": "carla_sgg/sgg.py:201-218 writes left_/right_lane_marking_{color,type,width,lane_change} and waypoint_lane_change on every driving waypoint of the base graph. carla_sgg/sgg_abstractor.py::process_to_junction_rsv folds every waypoint of a lane into one attribute-free node, so none of it reaches the RSV. CARLA also exposes the painted lines as CityObjectLabel.RoadLines bounding boxes.",
+      "why_it_matters": "A substantial part of a traffic code rests on them: crossing a solid line, entering a bicycle lane only where the line is broken, passing restrictions."
+    },
+    "road_curvature": {
+      "what": "How sharply the road bends at a point.",
+      "class": "both_with_error",
+      "origin": "in_base_not_rsv",
+      "evidence": "carla_sgg/sgg.py:314-339 computes an `angle` per base-graph waypoint from the vectors to its neighbours. The abstraction discards it with the rest of the waypoint attributes."
+    },
+    "off_roadway_surface_type": {
+      "what": "Which non-driving surface an actor stands on — footway, parking, shoulder.",
+      "class": "both_with_error",
+      "origin": "in_base_not_rsv",
+      "evidence": "carla_sgg/sgg_abstractor.py:133-134 filters out Sidewalk nodes and keeps only Driving ones; everything else collapses into the single Off Road node. The base graph carries the waypoint's lane_type as `sem_class`."
+    },
+    "surface_and_weather_state": {
+      "what": "Precipitation, standing water, road wetness, fog, sun altitude.",
+      "class": "both_with_error",
+      "origin": "in_api_not_graph",
+      "evidence": "carla.WeatherParameters exposes cloudiness, precipitation, precipitation_deposits, wetness, fog_density, fog_distance, fog_falloff, sun_altitude_angle and more (PythonAPI reference). The generator records none of them; carla_scene_graphs/capture_sensor_data.py:288-293 already writes the block into each capture's simulation.json, so for captures recorded that way it is a manifest away rather than a re-record.",
+      "note": "It is a DECLARED SETTING, not a measurement: one value for the whole capture, and CARLA permits weather to change during a run. In video the same quantities are estimated per frame, which is why the class is both_with_error rather than sim_only — the transfer story here runs the opposite way to most of this file."
+    },
+    "temporary_road_furniture": {
+      "what": "Cones, hazard triangles, temporary signage, roadworks layouts as identifiable objects.",
+      "class": "both_with_error",
+      "origin": "in_api_not_graph",
+      "evidence": "CARLA exposes them as CityObjectLabel.Static / Dynamic / Poles / TrafficSigns through world.get_level_bbs and world.get_environment_objects. carla_sgg/sgg.py:472-497 contains the ingestion loop for exactly this, with EVERY entry of its bb_types list commented out — the capability exists in the generator and ships disabled."
+    },
+    "sign_face": {
+      "what": "The legend a sign actually carries, beyond a catalogue code.",
+      "class": "both_with_error",
+      "origin": "lifted",
+      "evidence": "carla.Landmark.text is 'additional text in the signal' and carla_sgg/sgg.py:711 writes it as landmark_text, which carla/adapter.py lifts. Whether a given map's authors filled it in is a property of that map, not of the data model.",
+      "note": "Kept in this section because the gap is real in practice — an empty field reads exactly like an absent one — but the repair is a map question, not a pipeline change."
+    },
+    "human_signals": {
+      "what": "Traffic-officer hand signals, pedestrian gaze and gesture, driver hand signals.",
+      "class": "video_only",
+      "origin": "absent_from_carla",
+      "evidence": "Walkers have bone control and animations but no semantic signal state; no CARLA API reports a gesture, a gaze direction or an officer's direction."
+    },
+    "vehicle_classes_carla_lacks": {
+      "what": "School buses with alternating red lamps, yield-to-bus signage, and other jurisdiction-specific vehicle types with legal significance.",
+      "class": "video_only",
+      "origin": "absent_from_carla",
+      "evidence": "No blueprint in the shipped library carries the class or the lamp behaviour; carla.VehicleLightState has no alternating-beacon state beyond Special1/Special2."
+    },
+    "audible_signals": {
+      "what": "Sirens, horns, and anything else a clause conditions on sound.",
+      "class": "video_only",
+      "origin": "absent_from_carla",
+      "evidence": "There is no audio channel in the CARLA sensor set that the generator or the scene graph records; an emergency vehicle is distinguishable only by its beacon lamps."
+    }
+  },
+  "origins": {
+    "lifted": "carla/adapter.py writes it into the Lean trace. A rule can read it today.",
+    "in_rsv_not_lifted": "It is on the RSV node the adapter reads, and the adapter does not lift it. One adapter change plus a schema entry; nothing needs re-recording.",
+    "in_base_not_rsv": "The generator's BASE scene graph carries it and process_to_junction_rsv discards it. Unreachable by any adapter change, because the adapter reads the RSV. Needs a different abstraction, or a collector of our own reading the base graph before it is folded.",
+    "in_api_not_graph": "The CARLA API exposes it and the generator never records it. carla_sgg is frozen byte-wise here, so the route is a collector of our own at capture time — which means it cannot be recovered from captures already on disk.",
+    "absent_from_carla": "The simulator does not have it in any form. This is the only origin that makes a clause `unsupported`."
   }
 }

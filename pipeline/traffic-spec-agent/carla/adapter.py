@@ -45,6 +45,21 @@ must stay in sync with `carla/schema.json`. Notes on upstream:
   end of a run under "attributes present but not lifted" — a silent drop here is
   what makes a plan agent believe CARLA cannot express a law.
 
+**Entity identity.** A Lean `EntityId` is assigned per PHYSICAL entity, not per
+RSV node name. `process_to_junction_rsv` names every actor `{base_class}_{n}`
+with `n` a per-frame counter over whichever actors are in the frame
+(`sgg_abstractor.py:234-235`), so `car_0` in one frame and `car_0` in the next
+are the same vehicle only while no car ahead of it in iteration order enters or
+leaves the render box. Keying by name therefore spliced different vehicles into
+one binding, and a temporal formula evaluated over that binding compared one
+car's frame with another's. `entity_key` below resolves the identity from what
+the generator does write: `carla_id` (every non-ego actor and every
+traffic-light node, `sgg.py:607/623/681`), `entity_id` (the ego's own actor id
+via `__add_actor_to_graph`, `sgg.py:837`; negative for map scenery, `:462`),
+`landmark_id` (`:717`), and for anything static that carries none of these, its
+world position — which for a static node is a stable identity. Structure nodes
+are keyed by name, which IS their identity (`Lane 9_-1`, `Road 9`).
+
 Booleans are emitted only when true: an absent boolean attribute reads as false
 in `Pred.attrTrue`, which is the right default for a light that is off, and
 emitting eight false lights per vehicle per frame would dwarf the trace.
@@ -233,22 +248,68 @@ EXTRA_VEHICLE_LIGHTS: dict[str, str] = {
     "light_special_2": "light_Special2",
 }
 
-# Stable cross-frame identity. The adapter keys entities by NAME, which merges
-# two nodes that share one; `carla_id` is the repair.
+# The CARLA actor id, lifted as an attribute so a rule can read it, and used by
+# `entity_key` as the cross-frame identity a Lean `EntityId` is assigned to.
 IDENTITY_ATTRS: dict[str, str] = {"carla_id": "carla_id"}
 
 # Which lanes a landmark is valid for — the governance the `mayAffect` edge
-# only approximates.
+# only approximates — plus the three landmark fields that are governance or
+# identity rather than sign shape. `landmark_orientation` is decoded from the
+# `carla.LandmarkOrientation` enum by `landmark_orientation_name` below; the
+# other two are lifted as written.
 LANDMARK_EXTRA: dict[str, str] = {
-    "landmark_lane_validities": "landmark_lane_validities"}
+    "landmark_lane_validities": "landmark_lane_validities",
+    "landmark_id": "landmark_id",
+    "landmark_is_dynamic": "landmark_is_dynamic",
+}
+
+#: `landmark.orientation` (sgg.py:710) is written as the raw
+#: `carla.LandmarkOrientation` enum, which the unpickler rebinds to
+#: `OpaqueValue` carrying the enum's integer in `args[0]`. The names, in the
+#: order `carla.LandmarkOrientation.names` lists them: Positive = the sign
+#: faces vehicles travelling WITH the road's reference direction, i.e. the
+#: lanes with NEGATIVE OpenDRIVE ids; Negative = faces the POSITIVE lanes;
+#: Both = both directions (CARLA PythonAPI reference, carla.LandmarkOrientation).
+#: This is the field that says which direction of travel a sign governs, and
+#: with `lane_id` — lifted on every lane node — it narrows `mayAffect` to the
+#: carriageway the sign actually faces.
+LANDMARK_ORIENTATION_KEY = "landmark_orientation"
+LANDMARK_ORIENTATION_NAMES = ("Positive", "Negative", "Both")
+
+#: Map scenery: the parked vehicles baked into the level, which sgg.py Step 4
+#: (:412-466) ingests through `world.get_environment_objects(CityObjectLabel.*)`
+#: and names by the enum string (`sem_class = f'{bb_type}'`, :456). They reach
+#: `__add_to_graph` with `entity_id=-static_id` (:462) and never pass through
+#: the actor loop, so they carry no `carla_id`. In Lean they are otherwise
+#: indistinguishable from moving traffic — same `EntityType`, same proximity
+#: edges — so the two marks the generator does leave are lifted as one boolean.
+#: The enum strings are the members of `carla.CityObjectLabel` the generator
+#: lists at :415-426, including the single `Vehicles` label older CARLA used.
+SCENERY_ATTR = "map_scenery"
+SCENERY_SEM_CLASSES = frozenset(
+    {"Car", "Bus", "Truck", "Bicycle", "Motorcycle", "Vehicles"})
+
+#: Body half-extents, derived in the adapter from `threedbbox` — the eight
+#: world-frame corners `parse3dbb` writes (sgg.py:837, :798) — projected onto
+#: the node's own `forward` / `right` / `up` axes. Three numbers replace
+#: twenty-four, and they are what a clearance needs: every separation the
+#: library computes from `pos_*` is centre-to-centre, and the distance between
+#: two bodies' SURFACES differs from it by about the sum of their half-extents
+#: along the line between them. Metres, like `pos_*`.
+EXTENT_ATTRS = ("half_length", "half_width", "half_height")
+EXTENT_SOURCE_KEYS = ("threedbbox", "vertex", "forward", "right", "up")
 
 # Base-graph attribute keys this adapter consumes. Everything else on an actor
 # node is reported as unlifted, so the gap is visible instead of silent.
+# `entity_id`, `threedbbox`, `right` and `up` are consumed without being
+# emitted under their own names: the first becomes `map_scenery` and the
+# identity key, the other three become the half-extents.
 CONSUMED_ATTRS = frozenset(
     {"sem_class", "special_class", "light_state",
      "carla_speed", "carla_throttle", "carla_brake", "carla_steer",
      "carla_ang_vel_z", "carla_hand_brake", "carla_reverse",
-     "carla_affected_by_traffic_light"}
+     "carla_affected_by_traffic_light", "entity_id",
+     LANDMARK_ORIENTATION_KEY}
     | set(VEHICLE_LIGHTS.values())
     | set(LANDMARK_FIELDS)
     | set(GEOMETRY_VECTORS)
@@ -256,6 +317,7 @@ CONSUMED_ATTRS = frozenset(
     | set(EXTRA_VEHICLE_LIGHTS.values())
     | set(IDENTITY_ATTRS.values())
     | set(LANDMARK_EXTRA)
+    | set(EXTENT_SOURCE_KEYS)
 )
 
 
@@ -935,36 +997,203 @@ def fmt_bool(value: Any) -> str:
 
 
 # Deliberately NOT lifted, each for a reason that holds for any law corpus:
-#   threedbbox    734,510 bytes — 54% of everything unlifted, and it is eight
-#                 corners of a box whose centre `vertex` already gives.
-#   vertex_point  127,870 — the same x,y as `vertex`, as a shapely POINT.
-#   right, up     238,970 — an orthonormal frame with `forward`; for a vehicle
-#                 on a road surface, `forward` alone fixes the heading.
+#   vertex_point  the same x,y as `vertex`, as a shapely POINT.
 #   light_All,    enum masks (all-on / no-lights), not lamps.
 #   light_NONE
-#   carla_type_id 52,380 — the blueprint id, already lifted as `sem_class`.
-#   entity_id     45,580 — an SGG-internal index, and None on traffic lights.
+#   carla_type_id the blueprint id, already lifted as `sem_class`.
 #   vehicle_light_state  the packed integer whose bits are lifted individually.
-#   landmark physical geometry (pitch, roll, height, width, offsets,
-#                 orientation, id, name, is_dynamic) — 168,000 bytes of sign
-#                 shape, and no predicate can use it while lane nodes carry no
-#                 coordinates to relate it to.
+#   landmark physical geometry (pitch, roll, height, width, offsets, name) —
+#                 sign shape and an authoring label; nothing relates the pose
+#                 to lanes that carry no coordinates, and the legend a sign
+#                 shows is `landmark_text`, which is lifted.
+#   ego_control_* the control the CALLER passed to generate_graph_for_frame
+#                 (sgg.py:565-570), written beside the applied control
+#                 `copy_carla_control` reads back from the server (:562), which
+#                 is lifted. The commanded and the applied control differ by at
+#                 most one tick's latency.
+# Consumed but emitted under another name: `threedbbox`, `right`, `up` (the
+# half-extents) and `entity_id` (`map_scenery`, and the identity key).
+
+
+def _vec3(raw: Any) -> Optional[tuple[float, float, float]]:
+    """Three floats out of a numpy array or sequence, or None."""
+    try:
+        comps = [float(v) for v in list(raw)][:3]
+    except (TypeError, ValueError):
+        return None
+    if len(comps) != 3 or any(c != c for c in comps):
+        return None
+    return (comps[0], comps[1], comps[2])
+
+
+def _norm(v: tuple[float, float, float]) -> float:
+    return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) ** 0.5
+
+
+def heading_vector(attr: dict) -> Optional[tuple[float, float, float]]:
+    """The node's `forward`, as the unit direction it is meant to be.
+
+    `sgg.py` writes `forward` as a unit vector on every path but one. In the
+    traffic-light branch that iterates `get_light_boxes()` it computes
+    `forward = bbox.location + <unit forward>` (:595-600) — a POINT one metre
+    ahead of the light head, not a direction — and passes that to
+    `__add_to_graph`, where it lands on the node as `forward`. Read raw, that
+    makes every heading predicate over a traffic light compare a map
+    coordinate with a unit vector. The point is recoverable exactly: subtracting
+    `vertex` (the same `bbox.location`) returns the unit vector the generator
+    added. The repair fires only when the raw value cannot be a direction
+    (its norm is far from one) and the difference can (its norm is about one),
+    so a genuine unit vector is never touched.
+    """
+    fwd = _vec3(attr.get("forward"))
+    if fwd is None:
+        return None
+    n = _norm(fwd)
+    if 0.5 <= n <= 1.5:
+        return fwd
+    pos = _vec3(attr.get("vertex"))
+    if pos is None:
+        return fwd
+    diff = (fwd[0] - pos[0], fwd[1] - pos[1], fwd[2] - pos[2])
+    if 0.5 <= _norm(diff) <= 1.5:
+        return diff
+    return fwd
 
 
 def vector_attrs(attr: dict) -> list:
     """Position and heading, one decimal string per component."""
     out = []
-    for key, names in GEOMETRY_VECTORS.items():
-        raw = attr.get(key)
-        if raw is None:
-            continue
-        try:
-            comps = list(raw)
-        except TypeError:
-            continue
-        for lean_name, value in zip(names, comps):
-            out.append((lean_name, fmt_num(value)))
+    pos = _vec3(attr.get("vertex"))
+    if pos is not None:
+        out += list(zip(GEOMETRY_VECTORS["vertex"], (fmt_num(c) for c in pos)))
+    fwd = heading_vector(attr)
+    if fwd is not None:
+        out += list(zip(GEOMETRY_VECTORS["forward"], (fmt_num(c) for c in fwd)))
     return out
+
+
+def extent_attrs(attr: dict) -> list:
+    """Half-extents of the body along its own axes, from `threedbbox`.
+
+    Each of the eight corners is taken relative to `vertex` and projected onto
+    the unit `forward`, `right` and `up` the same node carries; the half-extent
+    on an axis is the largest absolute projection. Nothing is emitted when the
+    box is absent (captures made with a generator predating the field) or when
+    any axis is unreadable, so a rule reading the extents sees absence rather
+    than a guessed size.
+    """
+    box = attr.get("threedbbox")
+    if box is None:
+        return []
+    try:
+        corners = [_vec3(c) for c in list(box)]
+    except TypeError:
+        return []
+    if len(corners) != 8 or any(c is None for c in corners):
+        return []
+    pos = _vec3(attr.get("vertex"))
+    axes = (heading_vector(attr), _vec3(attr.get("right")), _vec3(attr.get("up")))
+    if pos is None or any(a is None for a in axes):
+        return []
+    out = []
+    for name, axis in zip(EXTENT_ATTRS, axes):
+        n = _norm(axis)
+        if not (0.5 <= n <= 1.5):
+            return []
+        unit = (axis[0] / n, axis[1] / n, axis[2] / n)
+        half = max(abs((c[0] - pos[0]) * unit[0] + (c[1] - pos[1]) * unit[1]
+                       + (c[2] - pos[2]) * unit[2]) for c in corners)
+        out.append((name, fmt_num(half)))
+    return out
+
+
+def landmark_orientation_name(raw: Any) -> Optional[str]:
+    """`carla.LandmarkOrientation` as its member name, however it was pickled.
+
+    A Boost.Python enum pickles as its class plus the integer value, so the
+    unpickler's `OpaqueValue` stand-in receives the integer in `args`. A
+    generator that `str()`s the field first would deliver the name itself, and
+    a plain integer is accepted too. Anything else yields None and the key is
+    not emitted.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        for name in LANDMARK_ORIENTATION_NAMES:
+            if name.lower() in raw.lower():
+                return name
+        return None
+    if isinstance(raw, bool):
+        return None
+    value: Any = raw
+    if not isinstance(raw, int):
+        args = getattr(raw, "args", None)
+        value = args[0] if args else None
+    if isinstance(value, int) and not isinstance(value, bool) \
+            and 0 <= value < len(LANDMARK_ORIENTATION_NAMES):
+        return LANDMARK_ORIENTATION_NAMES[value]
+    return None
+
+
+def scenery_attrs(attr: dict) -> list:
+    """`map_scenery = "true"` for a node the level geometry produced.
+
+    Two marks, either sufficient, both from sgg.py Step 4: a negative
+    `entity_id` (:462), or a `sem_class` that is a `CityObjectLabel` member
+    name rather than a blueprint id (:456). Older generator versions passed no
+    `entity_id` at all, which is why the second test exists. Emitted only when
+    true, like the light booleans.
+    """
+    eid = attr.get("entity_id")
+    if isinstance(eid, int) and not isinstance(eid, bool) and eid < 0:
+        return [(SCENERY_ATTR, "true")]
+    if str(attr.get("sem_class")) in SCENERY_SEM_CLASSES:
+        return [(SCENERY_ATTR, "true")]
+    return []
+
+
+def _pos_key(attr: dict) -> str:
+    """A position rounded to the centimetre, as an identity for a static node."""
+    pos = _vec3(attr.get("vertex"))
+    if pos is None:
+        return ""
+    return "@" + ",".join(f"{c:.2f}" for c in pos)
+
+
+def entity_key(name: str, lean_type: str, attr: dict) -> str:
+    """The identity a Lean `EntityId` is assigned to — see the module docstring.
+
+    Structure nodes: the name, which is the OpenDRIVE identity. Ego: `ego`.
+    Traffic lights: `carla_id` plus position, because the light-box branch makes
+    one node per lamp head of the same actor (sgg.py:585-612). Other actors:
+    `carla_id`, or the ego-style `entity_id` when positive. Landmarks:
+    `landmark_id`. Map scenery: the negative `entity_id`, or failing that the
+    position — a static object does not move. Anything else static and
+    unidentified: type plus position; and only when even that is missing, the
+    counter name, which is then reported.
+    """
+    if lean_type in ("lane", "road", "junction", "offRoad"):
+        return f"struct:{name}"
+    if is_ego(name, attr):
+        return "ego"
+    cid = attr.get("carla_id")
+    if isinstance(cid, int) and not isinstance(cid, bool):
+        if lean_type == "trafficLight":
+            return f"actor:{cid}{_pos_key(attr)}"
+        return f"actor:{cid}"
+    if lean_type == "landmark":
+        lid = attr.get("landmark_id")
+        if lid is not None:
+            return f"landmark:{lid}"
+    eid = attr.get("entity_id")
+    if isinstance(eid, int) and not isinstance(eid, bool):
+        if eid < 0:
+            return f"static:{eid}"
+        return f"actor:{eid}"
+    pos = _pos_key(attr)
+    if pos:
+        return f"{lean_type}{pos}"
+    return f"name:{name}"
 
 
 def scalar_attrs(attr: dict, mapping: dict) -> list:
@@ -977,7 +1206,12 @@ def scalar_attrs(attr: dict, mapping: dict) -> list:
         value = attr[raw_key]
         if isinstance(value, bool):
             out.append((lean_name, "true" if value else "false"))
-        elif isinstance(value, (int, float)):
+        elif isinstance(value, int):
+            # An integer stays an integer: `Core/Decimal.lean` reads "672" and
+            # "672.000000" alike, but an IDENTITY (`carla_id`, `landmark_id`)
+            # is also compared by `attrEq`, and a scenario writes it plain.
+            out.append((lean_name, str(value)))
+        elif isinstance(value, float):
             out.append((lean_name, fmt_num(value)))
         else:
             out.append((lean_name, str(value)))
@@ -1139,15 +1373,24 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
     if ego_log and ego_log.exists():
         ego_records = json.loads(ego_log.read_text(encoding="utf-8")).get("records", [])
 
+    # Identity key -> Lean entity id, for the whole trace. Keyed by
+    # `entity_key`, NOT by the RSV node name: the name is a per-frame counter
+    # and splices different physical entities into one binding.
     ids: dict[str, int] = {}
     next_id = 1
     frames: list[str] = []
     stats = {
         "recording": policy.as_dict(),
-        "frames": 0, "entities": 0,
+        "frames": 0, "entities": 0, "names": 0,
         "unmapped_labels": {}, "types": {}, "labels": {},
         "unlifted_attrs": {}, "contradictions": [],
+        # Identity bookkeeping: how many nodes fell back to the counter name,
+        # how many frames had two nodes resolve to one key, and how many
+        # traffic-light headings were repaired.
+        "identity_by_name": 0, "identity_collisions": 0,
+        "headings_repaired": 0,
     }
+    names_seen: set[str] = set()
     xcheck = CrossCheck(settings.get("capture_hz"))
 
     for index, pkl in enumerate(files):
@@ -1155,12 +1398,28 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
             graph = SGUnpickler(fh).load()
 
         nodes = {}
+        frame_ids: dict[str, int] = {}
+        used_keys: set[str] = set()
         for node in graph.nodes:
             name = str(getattr(node, "name", node))
             nodes[name] = node
-            if name not in ids:
-                ids[name] = next_id
+            names_seen.add(name)
+            attr = getattr(node, "attr", {}) or {}
+            key = entity_key(name, classify(name, getattr(node, "base_class", None),
+                                            attr.get("sem_class")), attr)
+            if key.startswith("name:"):
+                stats["identity_by_name"] += 1
+            if key in used_keys:
+                # Two nodes of one frame resolving to one identity would give
+                # the frame two entities with one id, and `Scene.getEntity`
+                # would read the first. Keep them apart and say so.
+                stats["identity_collisions"] += 1
+                key = f"{key}#{name}"
+            used_keys.add(key)
+            if key not in ids:
+                ids[key] = next_id
                 next_id += 1
+            frame_ids[name] = ids[key]
 
         def emit(built: str, extra: list) -> None:
             """One place where an entity's lifted attributes are attached, so a
@@ -1177,7 +1436,7 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
             sem = attr.get("sem_class")
             lean_type = classify(name, getattr(node, "base_class", None), sem)
             stats["types"][lean_type] = stats["types"].get(lean_type, 0) + 1
-            eid = ids[name]
+            eid = frame_ids[name]
 
             if lean_type not in ("lane", "road", "junction", "offRoad"):
                 for key in attr:
@@ -1187,11 +1446,21 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
 
             # Everything the generator put on this node that a builder does
             # not already take, appended uniformly. Structure nodes (lane, road,
-            # junction, offRoad) carry no attributes at all — measured: 19 of 23
-            # nodes on a real frame have `attr == {}` — so they get nothing.
+            # junction, offRoad) carry no attributes at all — the abstraction
+            # builds them as `Node(name=...)` — so they get nothing.
+            raw_fwd = _vec3(attr.get("forward"))
+            if raw_fwd is not None and heading_vector(attr) != raw_fwd:
+                stats["headings_repaired"] += 1
             extra = (vector_attrs(attr)
+                     + extent_attrs(attr)
                      + scalar_attrs(attr, IDENTITY_ATTRS)
-                     + scalar_attrs(attr, LANDMARK_EXTRA))
+                     + scenery_attrs(attr))
+            if lean_type == "landmark":
+                extra += scalar_attrs(attr, LANDMARK_EXTRA)
+                orientation = landmark_orientation_name(
+                    attr.get(LANDMARK_ORIENTATION_KEY))
+                if orientation is not None:
+                    extra.append((LANDMARK_ORIENTATION_KEY, orientation))
             if is_ego(name, attr):
                 lifted = scalar_attrs(attr, EGO_VECTOR_CHANNELS)
                 if not policy.dynamics_valid:
@@ -1265,8 +1534,8 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
                     stats["unmapped_labels"].get(raw or "<empty>", 0) + 1
                 continue
             stats["labels"][mapped] = stats["labels"].get(mapped, 0) + 1
-            src = ids[str(getattr(u, "name", u))]
-            tgt = ids[str(getattr(v, "name", v))]
+            src = frame_ids[str(getattr(u, "name", u))]
+            tgt = frame_ids[str(getattr(v, "name", v))]
             rel_src.append(f"mkRel {src} .{mapped} {tgt}")
 
         frames.append(
@@ -1277,6 +1546,7 @@ def build_module(rsv_dir: Path, ego_log: Optional[Path], module_name: str,
         stats["frames"] += 1
 
     stats["entities"] = len(ids)
+    stats["names"] = len(names_seen)
 
     # Emit the trace in chunks, not as one list literal.
     #
@@ -1410,6 +1680,10 @@ def main() -> int:
     print(f"Wrote {args.output}: {stats['frames']} frames, {stats['entities']} entities")
     print(f"  entity types : {stats['types']}")
     print(f"  relations    : {stats['labels']}")
+    print(f"  identity     : {stats['entities']} physical entities behind "
+          f"{stats['names']} RSV node names; {stats['identity_by_name']} node(s) "
+          f"identified by name only, {stats['identity_collisions']} same-frame "
+          f"collision(s), {stats['headings_repaired']} heading(s) repaired")
     if stats.get("contradictions"):
         print("  CONTRADICTIONS — two descriptions of one fact disagree in this "
               "capture. Each makes some rule read the wrong thing, and every "
@@ -1455,6 +1729,7 @@ def lifted_attribute_keys(library_root: Path) -> set[str]:
     for table in (EGO_VECTOR_CHANNELS, EXTRA_VEHICLE_LIGHTS, IDENTITY_ATTRS,
                   LANDMARK_EXTRA, VEHICLE_LIGHTS):
         keys |= set(table)
+    keys |= set(EXTENT_ATTRS) | {SCENERY_ATTR, LANDMARK_ORIENTATION_KEY}
     builders = library_root / "TrafficSpec" / "Core" / "Builders.lean"
     keys |= set(re.findall(r'\("(\w+)",', builders.read_text(encoding="utf-8")))
     return keys
@@ -1475,6 +1750,9 @@ def generator_key_to_lean(library_root: Path) -> dict[str, list[str]]:
                   LANDMARK_EXTRA, VEHICLE_LIGHTS):
         for lean, raw in table.items():
             out.setdefault(raw, []).append(lean)
+    out[LANDMARK_ORIENTATION_KEY] = [LANDMARK_ORIENTATION_KEY]
+    out["threedbbox"] = list(EXTENT_ATTRS)
+    out["entity_id"] = [SCENERY_ATTR]
     for lean, raw in (("speed", "carla_speed"), ("throttle", "carla_throttle"),
                       ("brake", "carla_brake"), ("steer", "carla_steer"),
                       ("yaw_rate", "carla_ang_vel_z"),

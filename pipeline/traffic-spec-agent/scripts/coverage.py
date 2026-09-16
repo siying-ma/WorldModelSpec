@@ -42,14 +42,18 @@ STATUSES: dict[str, str] = {
     "pending": "no rule yet, and nothing blocking one. This iteration should "
                "plan it.",
     "formalized": "every obligation the clause states is expressed. No residue.",
-    "formalized_with_residue": "a rule exists and expresses less than the clause "
-                               "says. TERMINAL: the note must name the residue "
-                               "and which way it errs — toward reporting "
-                               "violations the law permits, or toward missing "
-                               "violations it forbids.",
-    "blocked_on_gap": "a named gap must retire before the clause can be "
-                      "formalized (further). The `gap` column must carry the "
-                      "id. Not plannable while that gap is open.",
+    "formalized_with_residue": "a rule EXISTS and expresses less than the clause "
+                               "says. The note must name the residue and which "
+                               "way it errs — toward reporting violations the "
+                               "law permits, or toward missing violations it "
+                               "forbids. If a named gap would improve it, put "
+                               "that id in the `gap` column: the row is still "
+                               "terminal for now, and retiring the gap reopens "
+                               "it.",
+    "blocked_on_gap": "NO rule could be written at all — not a weaker one, not "
+                      "a partial one — until a named gap retires. The `gap` "
+                      "column must carry the id, and the `node(s)` column must "
+                      "be empty, because a clause with a rule is not blocked.",
     "unsupported": "the simulator does not have what the clause needs, in any "
                    "form. The note must cite the gap whose owner is `absent`.",
 }
@@ -188,7 +192,29 @@ def assess(progress_file: Path, repo_root: Path, law_ids: set[str],
         if row.status == "pending":
             out.actionable.append(row.law)
             continue
+        if row.status == "formalized_with_residue" and row.gap:
+            # A residue with a named owner. Terminal now, plannable again when
+            # the capability lands — the same trigger `blocked_on_gap` gets,
+            # because the two differ in whether a rule exists today, not in
+            # whether a gap would improve the clause.
+            gap = ledger.get(row.gap)
+            if gap is None:
+                out.defects.append(
+                    f"{row.law}: cites unknown gap `{row.gap}`")
+            elif gap.gives_work_back:
+                stamp = (gap.id, str(gap.retired_at))
+                if stamp not in row.reopened_for:
+                    out.actionable.append(row.law)
+                    out.reopened.append(row.law)
+            continue
         if row.status == "blocked_on_gap":
+            if row.nodes.strip():
+                out.defects.append(
+                    f"{row.law}: `blocked_on_gap` but names node(s) "
+                    f"`{row.nodes.strip()}`. A clause with a rule is not "
+                    f"blocked — it is `formalized_with_residue`, with the gap "
+                    f"id kept in the `gap` column so retiring it still reopens "
+                    f"the row.")
             gap = ledger.get(row.gap) if row.gap else None
             if gap is None:
                 out.defects.append(
@@ -267,11 +293,20 @@ def render_for_agent(assessment: Assessment) -> str:
         lines.append("**Clauses with no row at all** — add one for each, and "
                      "plan the ones you can: "
                      + ", ".join(f"`{x}`" for x in assessment.missing[:40]))
-    if assessment.actionable:
+    # `missing` is plannable and always was — the validator admits a clause with
+    # no row, because a corpus the table has not caught up with must not stall a
+    # run. Leaving it out of this list while listing it above produced a prompt
+    # that said "plan the ones you can" and "nothing is plannable" in the same
+    # breath, on every first iteration; one planning session reported the
+    # contradiction and guessed which half to believe.
+    plannable = list(assessment.actionable) + [
+        m for m in assessment.missing if m not in assessment.actionable]
+    if plannable:
         lines += ["", "**Plannable this iteration** — and nothing else is:"]
-        for law in assessment.actionable:
-            why = " (reopened: a gap it was blocked on has retired)" \
-                if law in assessment.reopened else ""
+        for law in plannable:
+            why = (" (reopened: a gap it was blocked on has retired)"
+                   if law in assessment.reopened else
+                   " (no row yet)" if law in assessment.missing else "")
             lines.append(f"- `{law}`{why}")
     else:
         lines += ["", "**Nothing is plannable.** Every clause is either "

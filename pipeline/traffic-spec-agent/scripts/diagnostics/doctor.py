@@ -1,7 +1,7 @@
 """Cross-check every agent-facing claim against the artifact it describes.
 
 The pipeline's output quality depends on two prose artifacts — `carla/schema.json`
-and `prompts/*.txt` — that describe things they do not own: the Lean core, the
+and `prompts/*.md` — that describe things they do not own: the Lean core, the
 adapter, the scene-graph generator, the gate's verdict set. Prose drifts. Every
 one of these checks corresponds to a drift that actually happened:
 
@@ -161,6 +161,19 @@ CAPTURE_FIGURE_PATTERNS = {
     "capture length": r"\b\d+[- ]frames?\b(?![^.]*\bat least\b)",
     "entity census": r"\b\d+\s+(?:vehicles|lanes|roads|junctions|traffic lights"
                      r"|pedestrians)\b",
+    # A figure obtained by measuring THIS PROJECT'S OWN artifacts — a library, a
+    # run, a set of witnesses. Subtler than a capture figure and caught by none
+    # of the patterns above, because it names nothing from the scene graph: a
+    # prompt read "it held for 55 of 55 such traces while accounting for more
+    # than half of all trace-writing work", which was true of one library on one
+    # day and is unfalsifiable in the template afterwards. The reason a rule
+    # holds belongs in a frozen prompt; the count that showed it does not.
+    "own measurement": r"\b\d+\s+of\s+\d+\b"
+                       r"|\bmore than half\b"
+                       r"|\b(?:most|almost all|nearly all|hardly any)\s+"
+                       r"(?:rules|captures|traces|nodes|runs|sessions)\b"
+                       r"|\bever recorded\b"
+                       r"|\b(?:one|another|a previous|an earlier)\s+run\b",
 }
 
 # Only the frozen artifacts. The prompts legitimately name pipeline roles and
@@ -188,8 +201,8 @@ class Doctor:
         self.gate = _read(repo_root / "tools" / "check_spec.py")
         self.schema_text = _read(repo_root / "carla" / "schema.json")
         self.schema = json.loads(self.schema_text)
-        self.prompt_code = _read(repo_root / "prompts" / "prompt_code.txt")
-        self.prompt_plan = _read(repo_root / "prompts" / "prompt_plan.txt")
+        self.prompt_code = _read(repo_root / "prompts" / "prompt_code.md")
+        self.prompt_plan = _read(repo_root / "prompts" / "prompt_plan.md")
 
     # ── schema ↔ Lean core ──────────────────────────────────────────────
 
@@ -319,7 +332,7 @@ class Doctor:
                               self.schema_text + self.prompt_code + self.prompt_plan)),
                           "Pred.* references in schema/prompts")
         ghosts = sorted(n for n in named - defined if n not in ("attr", "attrMilli"))
-        src = ("carla/schema.json + prompts/*.txt → Pred.* references",
+        src = ("carla/schema.json + prompts/*.md → Pred.* references",
                "library/TrafficSpec/Core/Vocab.lean → def")
         if ghosts:
             return Result("predicate references", FAIL,
@@ -532,9 +545,9 @@ class Doctor:
                    if v != "OK"}
         emitted = _nonempty(emitted, "verdict tokens in check_spec.py")
         table = _nonempty(set(re.findall(r"\|\s*`([A-Z_]+)`\s*\|", self.prompt_code)),
-                          "the verdict table in prompt_code.txt")
+                          "the verdict table in prompt_code.md")
         src = ("tools/check_spec.py → emit()/finish()",
-               "prompts/prompt_code.txt → the verdict branch table")
+               "prompts/prompt_code.md → the verdict branch table")
         if emitted - table:
             return Result("verdict coverage", FAIL,
                           f"emitted but undocumented: {sorted(emitted - table)} — "
@@ -570,8 +583,8 @@ class Doctor:
     # ── prompts ↔ what fills them ───────────────────────────────────────
 
     def placeholders_supplied(self) -> Result:
-        pairs = (("prompts/prompt_code.txt", "scripts/phases/code.py"),
-                 ("prompts/prompt_plan.txt", "scripts/phases/plan.py"))
+        pairs = (("prompts/prompt_code.md", "scripts/phases/code.py"),
+                 ("prompts/prompt_plan.md", "scripts/phases/plan.py"))
         bad = []
         for tmpl, filler in pairs:
             ph = _nonempty(set(re.findall(r"\{([a-z_]+)\}", _read(self.repo / tmpl))),
@@ -580,7 +593,7 @@ class Doctor:
                              f"format kwargs in {filler}")
             if ph - keys:
                 bad.append(f"{tmpl}: {sorted(ph - keys)} not supplied by {filler}")
-        src = ("prompts/*.txt → {placeholders}",
+        src = ("prompts/*.md → {placeholders}",
                "scripts/phases/{plan,code}.py → template.format(...)")
         if bad:
             return Result("prompt placeholders", FAIL,
@@ -667,7 +680,7 @@ class Doctor:
         drift.
         """
         sources = sorted(self.repo.glob("*.md")) + \
-            sorted((self.repo / "prompts").glob("*.txt")) + \
+            sorted((self.repo / "prompts").glob("*.md")) + \
             [self.repo / "carla" / "schema.json"]
         # A repo-root entry, so `scripts/...` is resolved and `carla_sgg/...`
         # is not. Recomputed from disk: a directory that is added or removed
@@ -988,7 +1001,7 @@ class Doctor:
                 for k, v in value.items():
                     heads.setdefault(k, v)
         sources = sorted((self.lib / "TrafficSpec" / "Core").glob("*.lean")) + \
-            sorted((REPO_ROOT / "prompts").glob("*.txt"))
+            sorted((REPO_ROOT / "prompts").glob("*.md"))
         # Anything written AS a schema path: `schema.json` -> `a.b.c`, or a
         # dotted path whose head is a section name.
         cited = re.compile(r"schema\.json`?\s*(?:\u2192|->)\s*`?([A-Za-z_]\w*(?:\.\w+)*)")
@@ -1012,7 +1025,7 @@ class Doctor:
                     if node is None:
                         bad.append(f"{path.name} {dotted_path}")
                         break
-        src = ("library/TrafficSpec/Core/*.lean, prompts/*.txt \u2192 schema paths",
+        src = ("library/TrafficSpec/Core/*.lean, prompts/*.md \u2192 schema paths",
                "carla/schema.json")
         if bad:
             return Result("schema cross-references", FAIL,
@@ -1079,9 +1092,9 @@ class Doctor:
         measured.
         """
         import itertools
-        targets = sorted((REPO_ROOT / "prompts").glob("*.txt"))
+        targets = sorted((REPO_ROOT / "prompts").glob("*.md"))
         patterns = dict(LAW_FREE_PATTERNS, **CAPTURE_FIGURE_PATTERNS)
-        src = ("prompts/*.txt",
+        src = ("prompts/*.md",
                "frozen before any law or capture exists")
         bad = []
         for path in targets:
@@ -1165,16 +1178,16 @@ class Doctor:
         from ..coverage import STATUSES
         from ..state import PROGRESS_TEMPLATE
         src = ("scripts/coverage.py::STATUSES",
-               "prompts/prompt_plan.txt, scripts/state.py::PROGRESS_TEMPLATE")
+               "prompts/prompt_plan.md, scripts/state.py::PROGRESS_TEMPLATE")
         missing = []
         for status in STATUSES:
             if status not in self.prompt_plan:
-                missing.append(f"prompt_plan.txt does not mention `{status}`")
+                missing.append(f"prompt_plan.md does not mention `{status}`")
             if status not in PROGRESS_TEMPLATE:
                 missing.append(f"the PROGRESS template does not mention `{status}`")
         for stale in ("`partial`", "| partial |"):
             if stale in self.prompt_plan:
-                missing.append(f"prompt_plan.txt still offers {stale}, which the "
+                missing.append(f"prompt_plan.md still offers {stale}, which the "
                                f"harness no longer accepts")
             if stale in PROGRESS_TEMPLATE:
                 missing.append(f"the PROGRESS template still offers {stale}")
@@ -1276,15 +1289,15 @@ class Doctor:
         """
         from ..plan_validate import MAX_SCENARIOS, SCENARIO_ROLES
         src = ("scripts/plan_validate.py::SCENARIO_ROLES",
-               "prompts/prompt_plan.txt, prompts/prompt_code.txt")
+               "prompts/prompt_plan.md, prompts/prompt_code.md")
         bad = []
         for role in SCENARIO_ROLES:
             if f"`{role}`" not in self.prompt_plan:
-                bad.append(f"prompt_plan.txt does not name the `{role}` role")
+                bad.append(f"prompt_plan.md does not name the `{role}` role")
             if f"`{role}`" not in self.prompt_code:
-                bad.append(f"prompt_code.txt does not name the `{role}` role")
-        for text, name in ((self.prompt_plan, "prompt_plan.txt"),
-                           (self.prompt_code, "prompt_code.txt")):
+                bad.append(f"prompt_code.md does not name the `{role}` role")
+        for text, name in ((self.prompt_plan, "prompt_plan.md"),
+                           (self.prompt_code, "prompt_code.md")):
             for m in re.finditer(r"`antecedent_off`", text):
                 line = text[:m.start()].count("\n") + 1
                 # One historical mention is allowed, and wanted: a session that
@@ -1305,12 +1318,77 @@ class Doctor:
                       f"{len(SCENARIO_ROLES)} roles ({', '.join(SCENARIO_ROLES)}) "
                       f"taught in both prompts, and the retired one is not", src)
 
+    def portability_origins_are_sound(self) -> Result:
+        """Every element the ledger says video has, and the graph does not,
+        declares WHERE it stops — and only one origin means "unsupported".
+
+        The failure this prevents was real and silent. With a single axis the
+        ledger said `video_only` about elements CARLA exposes and this pipeline
+        simply does not take, and a planning session reading that records the
+        clause `unsupported` — the one verdict that is inherited and never
+        re-examined — when the honest verdict is a capability gap with an owner.
+        Weather is the clean case: the simulator sets it through
+        `carla.WeatherParameters` and the capture script writes it beside every
+        capture.
+
+        So: each entry needs an `origin` from the declared set, and an
+        `evidence` string, because an origin nobody can check is a claim about
+        the simulator made from memory. The origin vocabulary must also match
+        the gap ledger's owners, which is what lets "what is missing" and "who
+        supplies it" be one question.
+        """
+        path = self.repo / "perception" / "portability.json"
+        src = ("perception/portability.json",
+               "scripts/gaps.py::OWNERS, carla_sgg source, CARLA API reference")
+        if not path.exists():
+            return Result("portability origins", FAIL,
+                          "perception/portability.json is missing", src)
+        led = json.loads(path.read_text(encoding="utf-8"))
+        origins = led.get("origins") or {}
+        if not origins:
+            return Result("portability origins", FAIL,
+                          "the ledger declares no `origins` vocabulary, so "
+                          "nothing says where an element stops being available",
+                          src)
+        bad = []
+        entries = {k: v for k, v in (led.get("video_only") or {}).items()
+                   if not k.startswith("$")}
+        if not entries:
+            return Result("portability origins", SKIP,
+                          "the ledger names nothing video has and the graph "
+                          "does not", src)
+        for name, entry in entries.items():
+            if not isinstance(entry, dict):
+                bad.append(f"{name}: not an object, so it can carry no origin")
+                continue
+            origin = entry.get("origin")
+            if origin not in origins:
+                bad.append(f"{name}: origin {origin!r} is not one of "
+                           f"{', '.join(origins)}")
+            if not entry.get("evidence"):
+                bad.append(f"{name}: no `evidence` — an origin nobody can check "
+                           f"is a claim about the simulator made from memory")
+            if entry.get("class") == "video_only" \
+                    and origin != "absent_from_carla":
+                bad.append(f"{name}: class `video_only` with origin "
+                           f"`{origin}` — the simulator has it, so a clause "
+                           f"needing it is blocked on a gap, not unsupported")
+        if bad:
+            return Result("portability origins", FAIL, "; ".join(bad[:5]), src)
+        absent = sum(1 for e in entries.values()
+                     if e.get("origin") == "absent_from_carla")
+        return Result("portability origins", OK,
+                      f"{len(entries)} element(s) the graph lacks: {absent} "
+                      f"absent from the simulator, {len(entries) - absent} "
+                      f"a capability gap with a named owner", src)
+
     def checks(self) -> list[Callable[[], Result]]:
         return [ self.source_labels, self.capture_rate,
                 self.capture_rate_has_one_owner,
                 self.predicates_exist, self.binder_census_keys,
                 self.binders_reach_the_agent,
                 self.portability_covers_the_data_model,
+                self.portability_origins_are_sound,
                 self.binders_cover_the_data_model,
                 self.verdicts_documented, self.report_tags_parsed,
                 self.placeholders_supplied, self.example_rule_exists,

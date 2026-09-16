@@ -174,7 +174,7 @@ class Cli:
         """Cross-check every agent-facing claim against the artifact it describes.
 
         The two artifacts that decide spec quality — `carla/schema.json` and
-        `prompts/*.txt` — describe things they do not own: the Lean core, the
+        `prompts/*.md` — describe things they do not own: the Lean core, the
         adapter, the generator, the gate's verdict set. This compares each
         description with the thing described and names both sources on failure.
 

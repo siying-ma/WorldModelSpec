@@ -204,6 +204,18 @@ class SpecNodeTask:
         return self.task_dir / "target_snapshot.lean"
 
     @property
+    def witness_snapshot_file(self) -> Path:
+        """Pre-session content of the witness file, on the same terms.
+
+        A node is two files, so a rollback that restores only one leaves the
+        library in a state no session produced: the rule gone and its witness
+        still there, orphaned. That orphan is not inert — it enters the scope
+        baseline of every node that runs after it, which is how a run once
+        recovered from a scope defect by accident instead of failing cleanly.
+        """
+        return self.task_dir / "witness_snapshot.lean"
+
+    @property
     def verdict_file(self) -> Path:
         return self.task_dir / "verdict.json"
 

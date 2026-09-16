@@ -97,7 +97,17 @@ def run_claude(
         cmd += ["--effort", effort]
     if max_budget_usd is not None:
         cmd += ["--max-budget-usd", f"{max_budget_usd:.2f}"]
-    cmd.append(prompt)
+
+    # The prompt goes on STDIN, never in argv.
+    #
+    # `execve` caps a single argument at MAX_ARG_STRLEN (32 * PAGE_SIZE, 128 KiB
+    # on Linux) and caps argv+envp together as well, so a prompt passed as the
+    # last argument has a hard ceiling that nothing in this repo controls: the
+    # rendered plan prompt grows with the corpus, the vocabulary, the schema and
+    # the gap ledger. It crossed the line at 128,388 bytes and the run died with
+    # `OSError: [Errno 7] Argument list too long` before its first session
+    # started — no partial output, no retry, and nothing in the loop that could
+    # have anticipated it. Stdin has no such limit.
 
     env = os.environ.copy()
     if env_overrides:
@@ -111,10 +121,28 @@ def run_claude(
     timed_out = False
     with open(stream_path, "w", encoding="utf-8") as out:
         proc = subprocess.Popen(
-            cmd, stdout=out, stderr=subprocess.STDOUT, text=True,
-            env=env, cwd=str(cwd),
+            cmd, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT,
+            text=True, env=env, cwd=str(cwd),
         )
         _register(proc)
+
+        # Written from a thread: a pipe holds 64 KiB, and a prompt larger than
+        # that blocks the writer until the child drains it. Writing inline would
+        # deadlock any child that does something else first, and this one is not
+        # ours to make assumptions about.
+        def _feed() -> None:
+            try:
+                proc.stdin.write(prompt)
+            except (BrokenPipeError, OSError):
+                pass
+            finally:
+                try:
+                    proc.stdin.close()
+                except (BrokenPipeError, OSError):
+                    pass
+
+        feeder = threading.Thread(target=_feed, daemon=True)
+        feeder.start()
         try:
             proc.wait(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
@@ -123,6 +151,7 @@ def run_claude(
             proc.kill()
             proc.wait()
         finally:
+            feeder.join(timeout=5)
             _unregister(proc)
 
     print(f"[info] Claude pid={proc.pid} exited with code {proc.returncode}"

@@ -180,6 +180,7 @@ class Loop:
             # The gap refusals ride along: a rejected plan is exactly when a
             # session most needs to know that the question it filed is closed,
             # and dropping them here would lose that feedback for good.
+            summary.cost_usd = self._plan_cost()
             plan_validate.write_auto_notes(
                 ctx.auto_notes_file,
                 [("Plan rejected — fix these before proposing work again", errors),
@@ -197,7 +198,11 @@ class Loop:
         code_result = code_phase.run()
         summary.accepted = sum(1 for r in code_phase.results if r.accepted)
         summary.verdicts = {r.node_id: r.verdict for r in code_phase.results}
-        summary.cost_usd = sum(r.cost_usd for r in code_phase.results)
+        # Plan + code. Counting only the coding sessions understated one run
+        # by a quarter of its true spend, which is exactly the figure a decision
+        # about whether the loop is worth running is made from.
+        summary.cost_usd = (sum(r.cost_usd for r in code_phase.results)
+                            + self._plan_cost())
 
         # ── 4. integrate ────────────────────────────────────────────────
         integrate_phase = IntegratePhase(ctx, code_phase.tasks, code_phase.results)
@@ -226,6 +231,14 @@ class Loop:
         plan_validate.write_auto_notes(ctx.auto_notes_file, sections)
         return summary
 
+    def _plan_cost(self) -> float:
+        """What this iteration's planning session cost, from its own meta file."""
+        try:
+            data = json.loads(self.ctx.meta_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return 0.0
+        return float(data.get("plan.costUsd") or 0.0)
+
     def _assess(self) -> coverage.Assessment:
         """The coverage table and the ledger, read together.
 
@@ -242,27 +255,15 @@ class Loop:
     def _uncovered_laws(self) -> list[str]:
         """Law ids no rule file DECLARES in its `lawRefs`.
 
-        Matched against the declaration, not against the file text. A substring
-        search over the whole file counts a law as covered when a rule merely
-        mentions it — and rules do mention neighbours, including to disclaim
-        them ("that is EX-LANE-002's business and is left to a later node"),
-        which is the opposite of coverage. The figure this feeds is what the loop
-        prints as `Laws covered` and what the next plan phase treats as done, so
-        overstating it silently drops a law from the corpus.
+        Shares `plan_validate.covered_law_ids` with the validator's
+        actionability rule, so "this clause already has a rule" means the same
+        thing to the thing that reports coverage and the thing that refuses a
+        second node for it.
         """
         law_ids = plan_validate.load_law_ids(self.ctx.laws_file)
         if not law_ids:
             return []
-        covered: set[str] = set()
-        rules_dir = self.ctx.library_root / "TrafficSpec" / "Rules"
-        if rules_dir.exists():
-            for path in rules_dir.rglob("*.lean"):
-                text = path.read_text(encoding="utf-8", errors="replace")
-                declared = set()
-                for m in re.finditer(r"lawRefs\s*:=\s*\[(.*?)\]", text, re.S):
-                    declared |= set(re.findall(r'"([^"]+)"', m.group(1)))
-                covered |= (law_ids & declared)
-        return sorted(law_ids - covered)
+        return sorted(law_ids - plan_validate.covered_law_ids(self.ctx.library_root))
 
     # ── reporting ───────────────────────────────────────────────────────
 

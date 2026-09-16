@@ -35,6 +35,14 @@ directory; it cannot grant itself work, choose an owner, or retire anything. The
 harness allocates ids and merges proposals. Accepting, retiring and rejecting
 are operator actions, made by editing this ledger — a gap is retired by the
 change that retires it, and the ledger records that the change landed.
+
+AND ONLY A PLANNING SESSION MAY FILE ONE. An operator who writes an entry by
+hand has made the ledger into a maintained list rather than a record of what the
+pipeline found, and the two drift the moment the library is re-formalized: the
+hand-written version goes on asserting a gap no session would file again. Every
+entry therefore carries `proposed_in`, the iteration that filed it, and
+:func:`load` reports an entry without one. The operator's half is deciding
+`state`, `owner` and `resolution` — never authoring the entry those apply to.
 """
 
 from __future__ import annotations
@@ -92,8 +100,20 @@ STATES: dict[str, str] = {
 #: session that re-proposes one of these is shown the resolution instead.
 CLOSED_STATES = ("rejected", "permanently_blocked")
 
-REQUIRED_FIELDS = ("id", "title", "owner", "state")
+REQUIRED_FIELDS = ("id", "title", "owner", "state", "proposed_in")
 ID_RE = re.compile(r"^G(\d+)$")
+
+#: Where a ledger entry came from: `<run>/iter_NNN`, written by the harness when
+#: it merges a planning session's proposals.
+#:
+#: ONLY A PLANNING SESSION MAY FILE AN ENTRY. An operator deciding what to do
+#: about a gap is a different act from an operator inventing one, and the second
+#: quietly turns the ledger into a to-do list somebody maintains — which is how
+#: the same eleven gaps came to be transcribed by hand from a run's prose, at
+#: which point they no longer described what the pipeline had found. Requiring a
+#: filing origin in this shape makes the difference checkable: an entry nobody
+#: proposed has nowhere to point.
+PROPOSED_IN_RE = re.compile(r"^[A-Za-z0-9_.\-]+/iter_\d{3}$")
 
 LEDGER_PATH = ("gaps", "ledger.jsonl")
 
@@ -168,6 +188,12 @@ def load(repo_root: Path) -> tuple[dict[str, Gap], list[str]]:
         if gap.id in gaps:
             problems.append(f"ledger line {lineno}: duplicate id `{gap.id}`")
             continue
+        if not PROPOSED_IN_RE.match(gap.proposed_in or ""):
+            problems.append(
+                f"{gap.id}: `proposed_in` is {gap.proposed_in!r}, which is not "
+                f"a planning session's filing (`<run>/iter_NNN`). Only a "
+                f"planning session may file a gap; an operator decides `state`, "
+                f"`owner` and `resolution` on entries it filed.")
         if gap.owner not in OWNERS:
             problems.append(f"{gap.id}: owner `{gap.owner}` is not one of "
                             f"{', '.join(OWNERS)}")

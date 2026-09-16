@@ -12,7 +12,6 @@ token on the first line so the prompt can branch on it:
     VOCAB_VIOLATION      an ad-hoc predicate, or a Pred.* that does not exist
     CARLA_INCOMPATIBLE   references scene-graph data CARLA cannot produce
     HYGIENE_FAIL         sorry / axiom / native_decide / partial def
-    GROUNDING_BUDGET     the binder cross product is too large to evaluate
     COMPILE_FAIL         Lean errors
     TRACE_TOO_SHORT      a scenario trace is shorter than the formula's frame span
     SCENARIO_VACUOUS     a scenario has zero groundings, so it tests nothing
@@ -45,7 +44,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -167,36 +166,25 @@ CAPTURE_ENTITY_CENSUS = {
     "sign": 22, "structure": 63,
 }
 
-# Cost of one grounding: a full `satisfies` over the whole trace, growing with
-# frames^2 because `Trace` is a `List Scene`. The ceiling is an order of
-# magnitude, not a tuned figure.
-GROUNDING_BUDGET = 500
-
-# Where a schema stops being cheap and starts needing a reason.
+# A schema's cost is REPORTED, never enforced.
 #
-# The hard budget is a FAILURE DETECTOR: at 500 the rule is about to become
-# unevaluable, and nothing under it is thereby endorsed. Read as a quota it
-# invites the opposite of what it is for — one run planned a rule at 480 of 500
-# and recorded "all under 500" as if that were the goal, when the 480 came from
-# binding a landmark that a predicate could have quantified internally.
+# `PropertySchema.bindings` is the cross product of the binders' candidates and
+# each grounding is a full evaluation over the whole trace, so an extra binder
+# multiplies what a capture run costs. That was a rejection until it was weighed
+# against what it bought: a refused formalization is a clause the library does
+# not monitor at all, permanently, while an expensive one is a capture run that
+# takes longer. The first loss is in the product; the second is in the tooling,
+# it is measurable, and `RuleEntry.livenessCount` already skips the full check
+# for a binding whose antecedent never held.
 #
-# This second number is what a rule that binds only the actors its clause is
-# about actually costs. Two actors is 64 on the census below; the measured
-# runtime model (`lean_seconds ~ 7.86e-5 * frames * groundings`) puts a whole
-# library of two dozen rules on a 3,000-frame capture inside ten minutes only if
-# the AVERAGE rule is near 100. So: over this, the gate does not refuse, it asks
-# for the reason in writing.
-GROUNDING_SOFT_CEILING = 100
-
-# Census keys that count ACTORS — the entities a clause is actually about. A
-# binder over one of these is the clause's own cost and cannot be argued away;
-# everything else (a sign, a landmark, a lane, a road, a junction) is usually a
-# relation reached by binding, which a predicate could quantify internally.
-# Used only to decide which binder the soft-ceiling warning points at.
-ACTOR_CENSUS_KEYS = frozenset({
-    "vehicle", "proximityVehicle", "roadUser", "pedestrian",
-    "truck", "bus", "bicycle",
-})
+# Nothing in the LOOP pays this cost — witness traces hold a handful of frames —
+# so removing the ceiling cannot slow the gate, the build or `verify`. It is
+# `monitor`, against real captures, that pays, and `monitor` measures the real
+# figure rather than this estimate.
+#
+# The estimate is still computed and still reported, because a rule whose cost
+# is an order of magnitude above its siblings is worth knowing about before a
+# capture run rather than during one.
 
 # Attribute keys are the one place a syntactically valid spec can still demand
 # data CARLA does not carry, so string literals passed to attribute predicates
@@ -361,21 +349,31 @@ def library_manifest(library_root: Path) -> dict[str, str]:
 
 
 def scope_diff(baseline: dict[str, str], current: dict[str, str],
-               target_rel: str) -> list[str]:
-    """Out-of-scope changes between two manifests, ignoring the node's target.
+               owned: Iterable[str]) -> list[str]:
+    """Out-of-scope changes between two manifests, ignoring the node's own files.
+
+    `owned` is every path this node is allowed to write — since a node became
+    two files, that is the rule AND its witness module. It is a parameter rather
+    than a filter over the result because the result is annotated
+    (`"added: <path>"`), and filtering annotated strings by bare path silently
+    matches nothing: a whole run was spent rejecting every node for creating the
+    witness file it is required to create.
 
     Shared with the harness's post-session re-check (`scripts/phases/code.py`) so
-    the two can never disagree about what counts as a violation.
+    the two can never disagree about what counts as a violation. The signature
+    changed with the file count on purpose — a caller still passing one path
+    fails loudly instead of re-introducing the same gap.
     """
+    keep = {o for o in owned if o}
     touched = []
     for rel, digest in current.items():
-        if rel == target_rel:
+        if rel in keep:
             continue
         if baseline.get(rel) != digest:
             kind = "modified" if rel in baseline else "added"
             touched.append(f"{kind}: {rel}")
     for rel in baseline:
-        if rel not in current and rel != target_rel:
+        if rel not in current and rel not in keep:
             touched.append(f"deleted: {rel}")
     return sorted(touched)
 
@@ -536,9 +534,8 @@ def main() -> int:
     baseline_file = task_dir / "baseline.json"
     if baseline_file.exists():
         baseline = json.loads(baseline_file.read_text(encoding="utf-8"))
-        touched = scope_diff(baseline, library_manifest(library_root), target_rel)
-        # The witness file belongs to this node too — two files, one node.
-        touched = [x for x in touched if x != spec.get("witness_file")]
+        touched = scope_diff(baseline, library_manifest(library_root),
+                             (target_rel, spec.get("witness_file")))
         if touched:
             emit("SCOPE_VIOLATION",
                  f"Only `{target_rel}` and its witness file may be modified by "
@@ -749,73 +746,36 @@ def main() -> int:
              *[f"  - {m}" for m in found])
         return finish("HYGIENE_FAIL", "; ".join(found))
 
-    # ── 6b. grounding budget ────────────────────────────────────────────
-    # Before the build, because this is the cheapest check that can save the
-    # most work — and because the failure it prevents is invisible later: the
-    # scenario traces are small enough that an over-quantified rule passes the
-    # gate in milliseconds and then cannot be evaluated on a capture at all.
+    # ── 6b. cost, reported ──────────────────────────────────────────────
+    # Never a rejection. Binding one more entity is how some clauses are
+    # expressed at all, and refusing that trades a clause the library monitors
+    # for a capture run that finishes sooner.
     census = CAPTURE_ENTITY_CENSUS
     if census:
         estimate, detail = predicted_groundings(code, census)
-        if estimate > GROUNDING_BUDGET:
-            emit("GROUNDING_BUDGET",
-                 f"This schema would instantiate about {estimate:,} times on a "
-                 f"real capture, against a budget of {GROUNDING_BUDGET:,}.",
-                 "",
-                 "Binder cross product, using the measured entity census in "
-                 "carla/schema.json:",
-                 *[f"  - {d}" for d in detail],
-                 "",
-                 "Every binder MULTIPLIES the grounding count, and each grounding "
-                 "is a full evaluation over the whole trace (cost grows with "
-                 "frames). A binder over a structural type — `lane`, `road` — "
-                 "multiplies by tens, and almost all of the resulting pairs are "
-                 "unrelated: lanes on different roads with no edge between them. "
-                 "Those make the antecedent false, so they are vacuously "
-                 "satisfied and change no verdict — they only cost time.",
-                 "",
-                 "Express the relation with a predicate that quantifies "
-                 "internally instead of binding the entities: `inRightmostLane`, "
-                 "`hasLaneToTheRight`, `inLane` with `laneTravelsTo`, "
-                 "`opposingLanes`, `governs`. One scan per frame, no extra "
-                 "binder. If the relation you need has no such predicate, that is "
-                 "a vocabulary gap: stop, and report it as a blocker naming the "
-                 "predicate you want — do not bind two structural entities to "
-                 "work around it.")
-            return finish("GROUNDING_BUDGET",
-                          f"~{estimate} groundings > {GROUNDING_BUDGET}")
-        if estimate > GROUNDING_SOFT_CEILING:
-            # Name the binder worth ARGUING about, not merely the biggest
-            # factor. A binder over an actor is what the clause is about and
-            # cannot be removed; one over a sign, landmark or road-structure
-            # type is usually standing in for a predicate that would quantify
-            # it internally, which is the change that actually retires the
-            # cost. Rank the structural ones first, then by size.
-            def _rank(d: str) -> tuple:
-                key = d.split("->", 1)[-1].split("=", 1)[0].strip()
-                count = int(d.rsplit("=", 1)[-1].split()[0].rstrip(")"))
-                return (key not in ACTOR_CENSUS_KEYS, count)
-            worst = max(detail, key=_rank) if detail else ""
+        if estimate > 1 and detail:
             warnings.append(
                 f"this schema would instantiate about {estimate:,} times on a "
-                f"real capture. That is under the {GROUNDING_BUDGET:,} the gate "
-                f"refuses, but well over the ~{GROUNDING_SOFT_CEILING} a rule "
-                f"costs when it binds only the actors its clause is about"
-                + (f" — the largest contributor is {worst}" if worst else "")
-                + ". Being under the budget is not a reason to stop: say in "
-                f"your report why no cheaper binding expresses this clause. If "
-                f"the expensive binder exists only to reach a relation, the "
-                f"predicate that would quantify it internally is a "
-                f"`missing_vocab` worth naming.")
+                f"reference capture ("
+                + "; ".join(detail) +
+                "). Reported, not held against the rule: an extra binder is "
+                "sometimes what expressing the clause takes. It is worth "
+                "recording in your report so a capture run that turns out slow "
+                "has somewhere to start.")
 
     # ── 7. compile ──────────────────────────────────────────────────────
     try:
         if not args.skip_build:
-            ok, output = lake_build(library_root, module)
+            # Build the WITNESS module, not the rule: it imports the rule, so
+            # one target builds both, and the harness below imports the witness
+            # — a rule-only build leaves its olean missing and the gate reports
+            # a compile failure that has nothing to do with the rule.
+            target = spec.get("witness_module") or module
+            ok, output = lake_build(library_root, target)
             if not ok:
                 digest = first_errors(output)
                 emit("COMPILE_FAIL",
-                     f"`lake build {module}` failed:", "", digest)
+                     f"`lake build {target}` failed:", "", digest)
                 return finish("COMPILE_FAIL", digest)
 
         # ── 8. scenarios ────────────────────────────────────────────────

@@ -362,11 +362,12 @@ def summarize_binders(library_root: Path) -> str:
     Seven of them were shown nowhere agent-facing. Each binder MULTIPLIES the
     grounding count, so the choice is a cost decision as well as a modelling one
     — and the two numbers that decide it belong to the gate
-    (`CAPTURE_ENTITY_CENSUS`, `GROUNDING_BUDGET`). Rendering them from there
-    keeps the agent's arithmetic and the gate's identical by construction, and
-    the over-budget combinations below are computed with the gate's own
-    `predicted_groundings`, so they cannot drift from what it will actually
-    reject.
+    (`CAPTURE_ENTITY_CENSUS`). Rendering them from there keeps the agent's
+    arithmetic and the gate's identical by construction.
+
+    There is no budget any more. Refusing a schema for its cost traded a clause
+    the library never monitors for a capture run that finishes sooner, and only
+    `monitor` pays that cost — the loop's own traces are a handful of frames.
     """
     grounding = library_root / "TrafficSpec" / "Core" / "Grounding.lean"
     if not grounding.exists():
@@ -374,7 +375,6 @@ def summarize_binders(library_root: Path) -> str:
     gate = _gate_module()
     census = getattr(gate, "CAPTURE_ENTITY_CENSUS", {}) or {}
     keys = getattr(gate, "BINDER_CENSUS_KEY", {}) or {}
-    budget = getattr(gate, "GROUNDING_BUDGET", None)
 
     out = ["**Binder helpers** — generated from `Core/Grounding.lean` "
            "(`def *Binder`). One per planned binder:"]
@@ -397,8 +397,38 @@ def summarize_binders(library_root: Path) -> str:
         cost = f" — about {count} candidates per capture" if count else ""
         out.append(f"- `{name}` ranges over `{types}`{cost}")
 
-    if not (gate and census and budget):
+    if not (gate and census):
         return "\n".join(out) + "\n"
+
+    out += [
+        "",
+        "**Every binder multiplies, and none of it is held against you.** "
+        "`PropertySchema.bindings` is the cross product of the binders' "
+        "candidates, and each grounding is a full evaluation over the whole "
+        "trace; two binders of the same type contribute n × (n−1), because "
+        "`distinctIds` forbids them sharing an entity. The gate computes that "
+        "product from the counts above and REPORTS it. It rejects nothing for "
+        "it, and there is no budget to stay under.",
+        "",
+        "So: **bind whatever the clause needs.** If expressing an obligation "
+        "takes a third quantified entity, take it — a clause the library does "
+        "not monitor is a permanent loss, and an expensive rule is a capture "
+        "run that takes longer. Cost is never a reason to leave a clause "
+        "unformalized, and it is never a gap: a gap says something cannot be "
+        "expressed, not that expressing it is expensive.",
+        "",
+        "Fewer binders is still better where the clause allows it, for one "
+        "reason only — a binder over an entity the clause is not about "
+        "generates pairs whose antecedent is false, which inflates the count "
+        "that is supposed to say whether the clause was engaged at all. That is "
+        "a modelling argument, not a budget.",
+        "",
+        "The counts come from `tools/check_spec.py` (`CAPTURE_ENTITY_CENSUS`). "
+        "They calibrate one reference capture, not the scene-graph format: a "
+        "busier map or a longer capture changes every one of them, so treat "
+        "them as an order of magnitude rather than as facts about the data.",
+    ]
+    return "\n".join(out) + "\n"
 
     soft = getattr(gate, "GROUNDING_SOFT_CEILING", None)
     out += [
@@ -447,6 +477,58 @@ def summarize_binders(library_root: Path) -> str:
                 + (", …" if len(pairs) > len(shown) else "") + ".",
             ]
     return "\n".join(out) + "\n"
+
+
+def summarize_portability_brief(repo_root: Path) -> str:
+    """The transfer classes, for a session that is choosing between predicates.
+
+    The planning session gets the whole ledger because it decides whether a
+    clause is formalizable at all. A coding session decides something narrower
+    and more frequent — which of two predicates to read when both express the
+    clause — and for that the key lists are the whole of what it needs. The
+    long-form entries would be noise at that point, and the `video_only`
+    section is not addressed to it at all: by the time a node reaches a coding
+    session, the question of whether the data exists has been answered.
+    """
+    path = repo_root / "perception" / "portability.json"
+    if not path.exists():
+        return ("(no portability ledger at `perception/portability.json` — "
+                "nothing is known about which of this data survives the move "
+                "to real video, so do not assume any of it does)\n")
+    try:
+        led = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return f"(portability ledger is not valid JSON: {exc})\n"
+    ak, rl = led.get("attribute_keys", {}), led.get("relation_labels", {})
+    lines = [
+        "This pipeline's eventual target is real video. Where the clause admits "
+        "two formalizations and one avoids a simulator-only element, take that "
+        "one; where only a simulator-only element will do, use it and say so in "
+        "the comment block. This is a PREFERENCE — a rule is never rejected for "
+        "reading one, because weakening the CARLA library to flatter a later "
+        "transfer would invert the experiment.",
+        "",
+    ]
+    for cls, label in (
+            ("sim_only", "**Simulator-only** — no counterpart a camera can "
+                         "recover, so a rule reading one cannot run on video"),
+            ("both_with_error", "**Recoverable as an ESTIMATE** — portable only "
+                                "if your threshold is large relative to the "
+                                "error, which is a property of the threshold "
+                                "you choose, not of the key"),
+            ("portable", "**Portable** — error small relative to any threshold "
+                         "a traffic code states")):
+        keys = (ak.get(cls) or {}).get("keys") or []
+        labels = (rl.get(cls) or {}).get("labels") or []
+        if not (keys or labels):
+            continue
+        lines.append(f"{label}:")
+        if keys:
+            lines.append("  attributes — " + ", ".join(f"`{k}`" for k in sorted(keys)))
+        if labels:
+            lines.append("  relations — " + ", ".join(f"`{k}`" for k in sorted(labels)))
+        lines.append("")
+    return "\n".join(lines)
 
 
 def summarize_portability(repo_root: Path) -> str:
@@ -518,14 +600,45 @@ def summarize_portability(repo_root: Path) -> str:
                          f"{entry.get('consequence', '')}")
         lines.append("")
 
+    # Rendered BY ORIGIN, because the origin decides which of judgement 1's
+    # four outcomes a clause falls into, and the two are easy to confuse. An
+    # element the simulator has and this pipeline does not take is a capability
+    # gap with an owner; only an element the simulator does not have at all
+    # makes a clause unsupported. Rendering them in one list, as this block once
+    # did, told a planning session that a clause conditioned on conditions the
+    # simulator sets had no counterpart.
     vo = led.get("video_only") or {}
-    named = {k: v for k, v in vo.items() if not k.startswith("$")}
-    if named:
-        lines += ["Present in real footage and ABSENT from this abstraction. A "
-                  "clause needing one of these is untestable here for a reason "
-                  "that is not a defect of your formalization — say so rather "
-                  "than approximating it:"]
-        lines += [f"- {k}: {v}" for k, v in sorted(named.items())]
+    named = {k: v for k, v in vo.items()
+             if not k.startswith("$") and isinstance(v, dict)}
+    absent = {k: v for k, v in named.items()
+              if v.get("origin") == "absent_from_carla"}
+    elsewhere = {k: v for k, v in named.items() if k not in absent}
+    origins = led.get("origins") or {}
+    if absent:
+        lines += ["**Absent from the simulator in any form.** A clause needing "
+                  "one of these is untestable here for a reason that is not a "
+                  "defect of your formalization: record it `unsupported`, with "
+                  "a gap at owner `absent` so the verdict is citable.", ""]
+        for k, v in sorted(absent.items()):
+            lines.append(f"- **{k}** — {v.get('what', '')} "
+                         f"[{v.get('evidence', '')}]")
+        lines.append("")
+    if elsewhere:
+        lines += ["**The simulator has it; this pipeline does not take it.** "
+                  "NOT unsupported — each is a capability gap, and the `origin` "
+                  "says which layer would have to change. File the gap and "
+                  "record the clause `blocked_on_gap`; do not approximate the "
+                  "element with a different attribute.", ""]
+        for k, v in sorted(elsewhere.items()):
+            origin = v.get("origin", "?")
+            lines.append(f"- **{k}** ({origin}) — {v.get('what', '')} "
+                         f"[{v.get('evidence', '')}]")
+            if v.get("note"):
+                lines.append(f"    note: {v['note']}")
+        lines.append("")
+        used = {v.get("origin") for v in elsewhere.values()}
+        lines += ["Where each origin stops, and what retiring it takes:"]
+        lines += [f"- `{o}` — {origins[o]}" for o in sorted(used) if o in origins]
         lines.append("")
     return "\n".join(lines)
 
@@ -778,7 +891,7 @@ class PlanPhase(Phase):
         )
         laws = load_laws(ctx.laws_file)
 
-        template = (ctx.prompts_dir / "prompt_plan.txt").read_text(encoding="utf-8")
+        template = (ctx.prompts_dir / "prompt_plan.md").read_text(encoding="utf-8")
         prompt = template.format(
             laws_block=format_laws(laws),
             law_count=len(laws),

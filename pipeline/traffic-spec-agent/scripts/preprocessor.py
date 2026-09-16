@@ -81,14 +81,15 @@ def prepare_node_task(task: SpecNodeTask) -> None:
     # immediately before each session — see the comment there.
     capture_baseline(task)
 
-    # Snapshot for integrate-time rollback. Absence of the snapshot file means
-    # the target did not exist, so rollback deletes rather than restores.
-    if task.target_path.exists():
-        task.snapshot_file.write_text(
-            task.target_path.read_text(encoding="utf-8"), encoding="utf-8"
-        )
-    elif task.snapshot_file.exists():
-        task.snapshot_file.unlink()
+    # Snapshot for integrate-time rollback, one per file the node owns. Absence
+    # of a snapshot means that file did not exist, so rollback deletes rather
+    # than restores.
+    for live, snap in ((task.target_path, task.snapshot_file),
+                       (task.witness_path, task.witness_snapshot_file)):
+        if live.exists():
+            snap.write_text(live.read_text(encoding="utf-8"), encoding="utf-8")
+        elif snap.exists():
+            snap.unlink()
 
     if not task.progress_file.exists():
         seed = {
@@ -106,15 +107,23 @@ def prepare_node_task(task: SpecNodeTask) -> None:
 
 
 def rollback_node(task: SpecNodeTask) -> None:
-    """Undo a rejected node's edit to the library."""
-    if task.snapshot_file.exists():
-        task.target_path.write_text(
-            task.snapshot_file.read_text(encoding="utf-8"), encoding="utf-8"
-        )
-        print(f"[info] Restored {task.node.target_file} from snapshot")
-    elif task.target_path.exists():
-        task.target_path.unlink()
-        print(f"[info] Removed {task.node.target_file}")
+    """Undo a rejected node's edits to the library — both of its files.
+
+    Restoring only the rule left the witness behind, and a leftover witness is
+    not inert: it enters the scope baseline of every node that runs after it, so
+    the library silently accumulates evidence for rules that were never
+    accepted.
+    """
+    for live, snap, rel in (
+            (task.target_path, task.snapshot_file, task.node.target_file),
+            (task.witness_path, task.witness_snapshot_file, task.node.witness_file)):
+        if snap.exists():
+            live.parent.mkdir(parents=True, exist_ok=True)
+            live.write_text(snap.read_text(encoding="utf-8"), encoding="utf-8")
+            print(f"[info] Restored {rel} from snapshot")
+        elif live.exists():
+            live.unlink()
+            print(f"[info] Removed {rel}")
 
 
 def prepare_tasks_for_resume(

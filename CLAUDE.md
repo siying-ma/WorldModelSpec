@@ -142,7 +142,7 @@ themselves (`library/TrafficSpec/Rules/**` and
 *required* to record the reading and every choice the text did not dictate).
 
 Everywhere else — `README.md`, `INFORMATION_ORIGINS.md`, `library/README.md`,
-`gaps/README.md`, `laws/*/README.md` prose about the pipeline, `prompts/*.txt`,
+`gaps/README.md`, `laws/*/README.md` prose about the pipeline, `prompts/*.md`,
 `carla/schema.json`, `Core/*.lean` — the content must be **objective and
 clause-independent**:
 
@@ -224,7 +224,7 @@ pinned down somewhere that is checked.
 ### Execution flow
 
 1. **Plan** — `phases/plan.py` captures `AUTO_NOTES.md` and `USER_HINTS.md`,
-   interpolates `prompts/prompt_plan.txt` with the law corpus, a library summary,
+   interpolates `prompts/prompt_plan.md` with the law corpus, a library summary,
    the predicate vocabulary and the CARLA schema, runs one `claude -p` session,
    then clears the captured feedback (only on success, so a crash preserves it).
    The agent writes `objectives.jsonl`, `PLAN.md`, and updates `PROGRESS.md`.
@@ -422,7 +422,7 @@ format means changing `NodeReport` in `tools/check_spec.py` in the same commit.
   anything on neither does not exist. A key on the unlifted side is a
   **vocabulary gap** — extend the adapter and `Vocab.lean`; never mark the law
   unsupported.
-- **`prompts/*.txt` are frozen on the same terms as Core and the schema.** A
+- **`prompts/*.md` are frozen on the same terms as Core and the schema.** A
   template is fixed before the pipeline sees a law or records a capture, so it
   carries no statutory text, no rule named by its subject, no fabricated law id,
   and no figure obtained by running the simulator — an example written from one

@@ -27,11 +27,18 @@ Read `{progress_file}` and the harness feedback below before anything else. A no
 
 {coverage_state}
 
-### What `formalized_with_residue` is for, and why it is terminal
+### `formalized_with_residue` and `blocked_on_gap` — the line between them
 
-A rule that expresses less than its clause says, with the residue named, is the normal outcome for real law over an abstraction — not a failure. It is terminal because a further iteration cannot improve it: the same data yields the same reading, and only a capability that does not exist yet would change the answer. When you record it, the note must say **which way the residue errs** — toward reporting violations the law permits, or toward missing violations it forbids. A residue without a direction cannot be weighed against anything.
+The question is **not** whether you can name what is missing. Almost any limitation can be named, and naming it is what filing a gap is for. The question is:
 
-If what stands between the rule and the clause is a *named* capability, the row is `blocked_on_gap` instead. The difference matters: the harness reopens those rows automatically when the gap retires, and reopens nothing else.
+> **Could you write a rule at all?**
+
+- **You wrote one, and it says less than the clause does** → `formalized_with_residue`. Name the residue and say **which way it errs** — toward reporting violations the law permits, or toward missing violations it forbids. A residue without a direction cannot be weighed against anything. If a gap you filed would improve that rule, **put its id in the `gap` column anyway**: the row is terminal for now, and retiring the gap reopens it exactly as a blocked row.
+- **You could write nothing** — not a weaker rule, not a partial one, because the clause's whole antecedent or its whole obligation is unreadable → `blocked_on_gap`, with the gap id and **no node**.
+
+A clause with a rule is never `blocked_on_gap`. Recording it that way says the pipeline could do nothing for it, which is false as soon as a node landed, and it forbids every later iteration from touching the clause — including the iteration that would have formalized the part you could have written.
+
+Filing a gap and formalizing what you can are **not alternatives**. Do both when both are possible: the rule monitors something today, and the gap says what would make it monitor the clause.
 
 ### Convergence, and reversing a verdict
 
@@ -58,9 +65,11 @@ Decompose when a clause carries genuinely separate obligations: different antece
 
 ### B3. What does the rule quantify over?
 
-Bind the *actors* the clause is about, and as few as it needs. Every binder multiplies the grounding count, and the binder table below carries the candidate counts, the ceiling the gate enforces, and the much lower figure a rule costs when it binds only its actors.
+Bind the *actors* the clause is about, and however many of them the clause needs. Every binder multiplies the grounding count, and the binder table below carries the candidate counts — **the gate reports that product and rejects nothing for it.** There is no budget.
 
-**The ceiling is a failure detector, not a quota.** A node just under it is not thereby approved — it is a node about to become unevaluable. Aim at the low figure, not at the ceiling: where two faithful readings differ in cost take the cheaper, and where a binder exists only to reach a relation, name the predicate that would quantify it internally and file it as a gap rather than paying for the binder.
+**Cost is never a reason to leave a clause unformalized, and cost is never a gap.** If expressing an obligation takes a third quantified entity, plan it with three binders. A clause the library does not monitor is a permanent loss; an expensive rule is a capture run that takes longer, and only the capture run pays it.
+
+Fewer binders is still better *where the clause allows it*, for one reason that has nothing to do with speed: a binder over an entity the clause is not about generates pairs whose antecedent is false, and those inflate the grounding count that is supposed to say whether the clause was engaged at all. Where a predicate quantifies the structure internally and says the same thing, prefer it — because it measures better, not because it is cheaper.
 
 When the clause speaks about road structure, look in the road-structure and lane-topology sections of the predicate list for a predicate that takes the actors and quantifies the structure internally, and use that instead of binding a lane, road or junction. Binding structural entities to reach a relation is the classic way to blow the budget: almost every pair it generates is unrelated, so the antecedent is false and the grounding is vacuously satisfied — it changes no verdict, costs a full evaluation, and inflates the count that is supposed to say whether the clause was engaged at all. If the relation you need has no such predicate, that is a capability gap: file it, exactly as in B1 case 3.
 
@@ -71,13 +80,13 @@ Every node carries exactly two, and they are not interchangeable:
 | role | `expected` | what it is, and what it alone establishes |
 |---|---|---|
 | `permit` | `true` | the clause applies, and the conduct complies. The only evidence that the antecedent is satisfiable and the obligation reachable at the same time. |
-| `forbid` | `false` | the SAME situation, differing in exactly the fact the clause governs. The only evidence anywhere that the formula says something — a rule equivalent to `□ ⊤` grounds, engages and holds on every capture ever recorded, and no amount of real data separates it from a correct rule until a capture happens to violate it. |
+| `forbid` | `false` | the SAME situation, differing in exactly the fact the clause governs. The only evidence anywhere that the formula says something — a rule equivalent to `□ ⊤` grounds, engages and holds on any trace whatever, so no amount of real data separates it from a correct rule — only a trace that violates it does. |
 
 **Be clear about what they do NOT establish.** They are not evidence that the formalization means what the clause says. You write them from your reading, the coding session formalizes the same reading and builds their traces itself, so a misreading enters formula and trace alike and they agree. What the rule says is settled outside this pipeline, against a capture and the verdicts of a person who watched the footage.
 
 Derive both from the law text, put the situation in `description` — the coding session builds the trace from it — and hold everything fixed except the one fact the clause governs. Each must contain a distinct entity for **every** binder, or the rule grounds zero times and the witness reports a verdict about nothing.
 
-A third witness was required until it was measured: an `antecedent_off` trace, showing the rule imposes nothing when the situation is absent. For a formula shaped `□ (A ⟹ B)` that is a theorem of the semantics rather than a property that could fail, and it held for 55 of 55 such traces while accounting for more than half of all trace-writing work. The fact it was meant to establish is now reported by the antecedent-liveness column of a capture run, where it is a measurement instead of a restatement. Do not plan one.
+A third witness — an `antecedent_off` trace, showing the rule imposes nothing when the situation is absent — is **not** planned. For a formula shaped `□ (A ⟹ B)` it cannot fail: the implication is vacuously true wherever `A` is false, so such a trace restates the semantics rather than testing the rule. Whether a rule's antecedent ever engages is a question about data, and it is answered by the antecedent-liveness column of a capture run.
 
 ## Phase C — Write the plan
 
@@ -144,11 +153,14 @@ One JSON object per line in `{gaps_file}`. File one only when a named capability
 
 You **propose**; you do not decide. The harness allocates the id, records the entry as `proposed`, and refuses a proposal repeating a question the ledger has closed — feeding you that gap's resolution instead. Choose `owner` honestly: it says which layer must change, and one chosen to make a gap look cheap wastes the operator's next decision rather than yours.
 
+**A gap says something cannot be expressed — never that expressing it is expensive.** "A predicate that quantifies this internally would cost fewer binders" is not a gap: bind the entity and formalize the clause. File a gap when the data or the language genuinely will not carry the obligation, whatever you are willing to spend on binders.
+
 ## Phase D — Update the coverage table
 
 One row per law id, with the columns `law id | status | node(s) | gap | note`. Statuses and their meanings are in Phase A.
 
 - Fill the `gap` column for every `blocked_on_gap` row. A block with no gap id is a row nothing can ever retire, and the harness reports it as a defect.
+- A `blocked_on_gap` row leaves `node(s)` empty. If a node landed for the clause, the row is `formalized_with_residue` — keep the gap id in the `gap` column so the retirement still reopens it.
 - For `formalized_with_residue`, the note names the residue and its direction.
 - For `unsupported`, the note names what you looked for and where you looked.
 - Set `- stage: COMPLETE` when nothing is plannable. Otherwise leave it `formalize`.

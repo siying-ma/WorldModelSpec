@@ -86,7 +86,7 @@ agent is not surprised by a refusal.
 | fact | source |
 |---|---|
 | binder-domain sizes, and the grounding ceiling | `CAPTURE_ENTITY_CENSUS`, `GROUNDING_BUDGET` |
-| every verdict token and what it means | the verdict table in `prompt_code.txt` |
+| every verdict token and what it means | the verdict table in `prompt_code.md` |
 
 Checked by: `binder budget coverage`, `verdict coverage`, `report format`.
 

@@ -65,7 +65,17 @@ on.
 |---|---|
 | planning session | append **proposals** to its own `iter_NNN/gaps.jsonl`, and append to an existing gap's `disputes`. Nothing else — it cannot choose an owner it likes, accept its own proposal, or retire anything. |
 | harness | allocate ids, merge proposals as `proposed`, flip reopened coverage rows, refuse re-proposals of closed gaps |
-| operator | every state change, and every `owner` correction, by editing this file |
+| operator | change `state`, correct `owner`, write `resolution` — **on entries a planning session filed**. Never author an entry. |
+
+**Only a planning session files a gap.** Every entry carries `proposed_in`, the
+iteration that filed it, and `scripts/gaps.py::load` reports an entry whose
+`proposed_in` is not of the form `<run>/iter_NNN`. The reason is not ceremony: a
+hand-written entry turns this file from *a record of what the pipeline found*
+into *a list somebody maintains*, and the two diverge the moment the library is
+re-formalized — the hand-written version goes on asserting a gap no session
+would file again. Analysis that predates this rule lives in
+[`HISTORY.md`](HISTORY.md) as prose, blocks nothing, and must be re-filed by a
+session before it can block anything.
 
 A gap is retired by the change that retires it. Editing `state` to `retired`
 without that change having landed is the one way to make this ledger lie.

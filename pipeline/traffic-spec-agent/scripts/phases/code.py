@@ -28,7 +28,7 @@ from ..preprocessor import (
 from ..task import SpecNode, SpecNodeResult, SpecNodeTask
 from .base import Phase, PhaseResult
 from .plan import (summarize_binders, summarize_builders, summarize_example,
-                   summarize_formula)
+                   summarize_formula, summarize_portability_brief)
 
 
 def sha256_file(path: Path) -> str:
@@ -72,7 +72,7 @@ def format_law_text(laws_file: Path, refs: list[str]) -> str:
 
 def build_prompt(task: SpecNodeTask, repo_root: Path, schema_summary: str,
                  vocab_summary: str) -> str:
-    template = (task.prompts_dir / "prompt_code.txt").read_text(encoding="utf-8")
+    template = (task.prompts_dir / "prompt_code.md").read_text(encoding="utf-8")
     node = task.node
     return template.format(
         node_id=node.node_id,
@@ -115,6 +115,7 @@ def build_prompt(task: SpecNodeTask, repo_root: Path, schema_summary: str,
         binder_summary=summarize_binders(task.library_root),
         builder_summary=summarize_builders(task.library_root),
         schema_summary=schema_summary,
+        portability_summary=summarize_portability_brief(repo_root),
     )
 
 
@@ -306,7 +307,7 @@ class CodePhase(Phase):
             return verdict, False, ""
 
         touched = scope_diff(baseline, library_manifest(task.library_root),
-                             task.node.target_file)
+                             (task.node.target_file, task.node.witness_file))
         if touched:
             detail = "; ".join(touched)
             print(f"[warn] {task.node.node_id}: gate reported OK but the harness "

@@ -109,6 +109,19 @@ def _sync_witnesses(library_root: Path, files: list, dry_run: bool
         rel = wit.relative_to(library_root).with_suffix("")
         imports.append("import " + ".".join(rel.parts))
         pairs.append(f"({f.short_namespace}.entry, {ns}.scenarios)")
+    # And the other direction. A witness with no rule is the residue of a node
+    # that was rejected and rolled back incompletely: it keeps building, keeps
+    # looking like evidence, and sits in the scope baseline of every node that
+    # runs after it. Reported here because the integrate phase treats these as
+    # failures, so the loop stops on it instead of accumulating them.
+    expected = {witness_path(library_root, f).resolve() for f in files}
+    wit_dir = library_root / "TrafficSpecWitness"
+    if wit_dir.exists():
+        for stray in sorted(wit_dir.rglob("*.lean")):
+            if stray.resolve() not in expected:
+                problems.append(
+                    f"{stray.relative_to(library_root)}: witness file with no "
+                    f"rule — a rejected node left it behind")
     if problems:
         return False, problems
     original = root.read_text(encoding="utf-8")
@@ -154,8 +167,11 @@ def sync(library_root: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
     # problem reported here, not a silently missing acceptance test.
     changed_w, problems_w = _sync_witnesses(library_root, files, dry_run)
     changed = changed or changed_w
-    problems += problems_w
-    return changed, []
+    # Returned, not discarded. The rule-file problems above are returned early,
+    # so this tail used to end `return changed, []` — correct while there was
+    # nothing left to report, and silently swallowing every witness problem the
+    # moment there was.
+    return changed, problems + problems_w
 
 
 def registered_count(library_root: Path) -> int:

@@ -64,6 +64,24 @@ def load_law_ids(laws_file: Path) -> set[str]:
     return ids
 
 
+def covered_law_ids(library_root: Path) -> set[str]:
+    """Law ids some rule DECLARES in its `lawRefs`.
+
+    Matched against the declaration, not against the file text: rules mention
+    neighbouring clauses, including to disclaim them, and a substring search
+    counts that as coverage.
+    """
+    rules_dir = library_root / "TrafficSpec" / "Rules"
+    if not rules_dir.exists():
+        return set()
+    out: set[str] = set()
+    for path in rules_dir.rglob("*.lean"):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for m in re.finditer(r"lawRefs\s*:=\s*\[(.*?)\]", text, re.S):
+            out |= set(re.findall(r'"([^"]+)"', m.group(1)))
+    return out
+
+
 def existing_node_ids(library_root: Path) -> set[str]:
     """Node ids already in the library, derived from the rule files on disk."""
     rules_dir = library_root / "TrafficSpec" / "Rules"
@@ -118,6 +136,7 @@ def validate(
         ]
 
     law_ids = load_law_ids(laws_file)
+    covered = covered_law_ids(library_root)
     already = existing_node_ids(library_root)
     already_ns = existing_namespaces(library_root)
     seen: set[str] = set()
@@ -129,10 +148,19 @@ def validate(
 
     entries = [(n, ln) for n, ln in raw_lines if ln and not ln.startswith("//")]
     if not entries:
+        # Planning nothing is the RIGHT answer when nothing is plannable, and a
+        # session that says so — by setting the stage and leaving a comment —
+        # has done its job. Reporting that as a rejection put "[error] plan
+        # rejected" in the log of a run that ended correctly, and recorded a
+        # plan_error against an iteration that had none.
+        if assessment is not None and not assessment.actionable \
+                and not assessment.missing:
+            return [], []
         return [], [
-            f"`{objectives_file.name}` is empty. If there is genuinely nothing left "
-            f"to formalize, set `stage: COMPLETE` in PROGRESS.md instead of emitting "
-            f"an empty plan."
+            f"`{objectives_file.name}` carries no node. If there is genuinely "
+            f"nothing left to formalize, set `stage: COMPLETE` in PROGRESS.md "
+            f"as well — the stage is what ends the run; an empty file alone "
+            f"does not."
         ]
 
     for lineno, line in entries:
@@ -246,7 +274,7 @@ def validate(
             errors.append(f"{where}: parent `{node.parent}` is neither in this plan "
                           f"nor in the library")
 
-        errors.extend(_actionability_errors(node, where, assessment))
+        errors.extend(_actionability_errors(node, where, assessment, covered))
 
         nodes.append(node)
 
@@ -261,53 +289,49 @@ def validate(
 
 
 def _actionability_errors(node: SpecNode, where: str,
-                          assessment: Optional[Assessment]) -> list[str]:
-    """Refuse a node about a clause the state says is not plannable.
+                          assessment: Optional[Assessment],
+                          covered: Optional[set[str]] = None) -> list[str]:
+    """Refuse a SECOND rule for a clause this pipeline has already formalized.
 
     WHAT THIS PREVENTS, from a run that happened. By its second iteration every
-    clause in the corpus had a rule or a recorded verdict and the plan agent
-    wrote that there was nothing left to plan. Iterations three, four and five
-    then planned five, one and three more nodes — each one reversing an earlier
-    `unsupported` verdict, and each reversal a WEAKER reading than the clause
-    deserved: a curve-warning sign standing in for road curvature, a brake lamp
-    standing in for a vehicle at rest, a town-boundary sign standing in for a
-    built-up area. Cost rose by a third of the run's total while the library got
-    worse, and nothing in the pipeline could see it happening, because a node
-    for an already-decided clause was indistinguishable from a node for a new
-    one.
+    clause had a rule or a recorded verdict; iterations three to five then
+    planned nine more nodes, each reversing an earlier verdict with a WEAKER
+    reading — a sign standing in for a road property, a lamp standing in for
+    motion. Cost rose by a third of the run while the library got worse, and
+    nothing could see it happening, because a node for an already-decided clause
+    was indistinguishable from a node for a new one.
 
-    The rule is therefore: a clause is plannable when its row says `pending`,
-    when a gap it was blocked on has retired, or when the operator has written
-    `reopen: <law id>` in USER_HINTS.md. Anything else is refused HERE, before a
-    coding session is paid for. A planning session that disagrees with a
-    terminal verdict has two cheap moves — say so in the plan file, and file a
-    dispute on the gap — and no expensive one.
+    WHAT IT MUST NOT PREVENT, from the run after that. The rule was first
+    written as "refuse anything whose row is not plannable", and a planning
+    session that marked a clause `blocked_on_gap` in iteration one thereby
+    locked every later iteration out of it. Seven clauses ended the run with no
+    rule at all, six of which an earlier library had formalized. A status is a
+    claim about what was tried; it must not become a bar on trying.
 
-    A clause with no row at all is allowed: that is a corpus the table has not
-    caught up with, and refusing it would stall a run on a bookkeeping lapse.
+    So the test is the library, not the table: **is there already a rule for
+    this clause?** If not, plan it — whatever its row says, including
+    `blocked_on_gap`, because a session that now sees a way to express part of
+    the clause should take it. If there is, the clause is decided, and reversing
+    that needs a retired gap or an operator's `reopen:` line.
     """
     if assessment is None:
         return []
-    actionable = set(assessment.actionable) | set(assessment.missing)
+    reopened = set(assessment.actionable)
+    have_rule = covered or set()
     by_law = {r.law: r for r in assessment.rows}
     out: list[str] = []
     for ref in node.law_refs:
-        if ref in actionable or ref not in by_law:
+        if ref in reopened or ref not in have_rule:
             continue
-        row = by_law[ref]
-        if row.status == "blocked_on_gap":
-            out.append(
-                f"{where}: `{ref}` is `blocked_on_gap` on `{row.gap or '?'}`, "
-                f"which is still open. Formalizing it now means formalizing a "
-                f"weaker reading than the clause deserves. Leave the row alone; "
-                f"if you believe the gap is wrong, file a dispute on it.")
-        else:
-            out.append(
-                f"{where}: `{ref}` is `{row.status}`, a terminal status — this "
-                f"pipeline has already decided it. Reversing that decision "
-                f"needs either a retired gap or an operator `reopen: {ref}` "
-                f"line in USER_HINTS.md. Record the disagreement in the plan "
-                f"file instead of planning a node.")
+        row = by_law.get(ref)
+        status = row.status if row else "already formalized"
+        out.append(
+            f"{where}: `{ref}` already has a rule in the library and its row is "
+            f"`{status}`. A second rule for one clause cannot retract the first, "
+            f"so this can only add a reading — which is how a run gets more "
+            f"expensive and less correct at once. Reversing the decision needs a "
+            f"retired gap or an operator `reopen: {ref}` line in USER_HINTS.md; "
+            f"record the disagreement in the plan file instead.")
     return out
 
 
