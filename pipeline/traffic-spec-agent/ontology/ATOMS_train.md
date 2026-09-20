@@ -1,0 +1,345 @@
+<!-- TRAINING SPLIT. Generated from ATOMS.md by ontology_provenance/nrs_tools/atoms_train.py:
+     the atoms, values and derived concepts whose only textual support is a test line are
+     omitted. Do not edit; edit ATOMS.md or the split and regenerate. -->
+# Traffic-law ontology — atoms
+
+Status: **draft for review, 2026-09-20** (third draft: aligned with the pipeline corpus after its
+exclusions; the judgement-standard family is no longer a family of atoms, see §8). Frozen after
+review; changed afterwards only by an explicit ontology change, never by a rule and never by an
+agent.
+
+## What an atom is
+
+An **atom** is an element of the road world that traffic law refers to without defining it
+further and that a data source can observe: a class of road user, a quantity of motion, a piece
+of road structure, a control device and its state, a signal a road user emits, a condition of the
+environment, or a relation between two road users. Each atom has a **semantic contract** — what
+it denotes physically, its unit and its reference frame, and, where the meaning invites
+confusion, what it is **not a stand-in for**. The contract is independent of any data source and
+of any statute.
+
+A standard of judgement ("safe", "reasonable", "practicable") is **not** an atom: nothing in a
+scene is a reasonableness. §8 says how a rule gives such a standard a concrete meaning.
+
+## The termination rule
+
+This file is the whole termination rule. It has six clauses; the harness and the review phase
+enforce them, and nothing else adds to or bypasses them.
+
+1. **Closed set.** A rule reads the world only through the atoms of §1–§7 and the derived
+   concepts of §9. An element a clause needs that is not here is an ontology change request,
+   recorded as a residue on the rule; it is never approximated by another atom.
+2. **Contract-bound.** An atom expresses only what its contract says. The "not a stand-in for"
+   clauses are part of the contract; using an atom for what its contract excludes is a semantic
+   error, whatever the data source happens to make convenient.
+3. **Derived once.** Every derived concept (§9) is defined once in Core from atoms, with its
+   parameters exposed. A rule instantiates parameters; it never redefines the concept and never
+   rebuilds it from atoms inline.
+4. **A judgement standard is operationalized, never read.** A clause element that is a standard
+   of judgement is mapped, in the plan, to a derived concept of §9 with concrete parameter
+   values, and the mapping is recorded as an *operationalization claim* that names the standard,
+   the derived concept, the values and the convention they come from. A rule that leaves a
+   standard unoperationalized is not a rule; a rule whose only content is an operationalized
+   standard is a **surrogate** and is marked as one.
+5. **Legal region classes are assumptions.** Categories a jurisdiction defines administratively
+   (a district, an area class, a calendar or clock condition, a legal designation of a highway)
+   enter a formalization only as reading assumptions declared per map or per trace, never as
+   atoms a rule reads from a scene.
+6. **Unobserved is unknown.** Every atom is three-valued when observed — true, false, or *not
+   observed on this source* — as declared by that source's capability manifest. A rule built on
+   an unobserved atom reports `unknown`, never compliance and never violation.
+
+**How atoms are reached from a clause.** Mapping the elements of a clause onto atoms is the
+planning session's work — the linguistic half of autoformalization. Each planned node records
+its mappings as *grounding claims* (`elements`: clause element → atoms, with a justification that
+cites the contracts) and its *operationalization claims* (§8). The harness validates them before
+any rule is written: every atom named exists here; the same element maps to the same atoms in
+every node of the run, so a contradiction is rejected; and the run's mapping index, which the
+harness derives from the accepted nodes, is what the review phase and its calibration read. No
+agent writes a shared file, and nothing about a corpus is decided before the run that formalizes
+it.
+
+This file says nothing about which law refers to which atom and nothing about how any data
+source produces one. Which atoms a source can observe is declared at run time by that source's
+**capability manifest**.
+
+**Scope column.** `general` marks an element of the ordinary road vocabulary. `local` marks an
+element that exists because the target jurisdiction's own vehicle taxonomy or device catalogue
+names it; its contract still describes what is physically observed, and a source that has no such
+thing declares it `absent`. The flag is information for the manifest author and the reviewer, not
+a permission: local atoms are atoms.
+
+Identifier scheme: `family.name`. Families: `ru` road user, `kin` kinematics, `st` road
+structure, `dev` control device, `sig` emitted signal, `env` environment, `rel` relation between
+road users. Derived concepts use `drv`. Where an atom carries an attribute (a state, a kind, a
+colour), the attribute's values are listed in the contract; an attribute value not listed is an
+ontology change request.
+
+## 1. Road users (`ru`) — class atoms on an entity
+
+| id | contract | scope |
+|---|---|---|
+| `ru.motor_vehicle` | a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below **Not a stand-in for:** "vehicle" as a legal aggregate — which classes count as a vehicle is declared by the reading | general |
+| `ru.motorcycle` | motor vehicle on two or three wheels ridden astride, including three-wheeled variants | general |
+| `ru.moped` | a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it | general |
+| `ru.bus` | motor vehicle designed to carry many passengers | general |
+| `ru.transit_bus` | bus in public transit service, identifiable by its livery or route display | general |
+| `ru.taxicab` | passenger vehicle for hire, identifiable by its markings | general |
+| `ru.tour_bus_or_limousine` | a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery | local |
+| `ru.truck` | motor vehicle for carrying goods, with a body built for that purpose | general |
+| `ru.commercial_motor_vehicle` | vehicle over the jurisdiction's commercial mass class or marked as commercially licensed | general |
+| `ru.trailer_or_combination` | vehicle drawn by another, or the combination | general |
+| `ru.bicycle` | human-powered wheeled vehicle ridden by a person | general |
+| `ru.electric_bicycle` | a bicycle with an assisting electric motor; **class** attribute as the jurisdiction's taxonomy labels it | local |
+| `ru.electric_scooter` | a standing or seated electric scooter with handlebars | local |
+| `ru.pedestrian` | a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot **Not a stand-in for:** a person on a bicycle or scooter | general |
+| `ru.pedestrian_with_white_cane_or_guide_animal` | pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person | general |
+| `ru.child` | pedestrian who is visibly a child | general |
+| `ru.emergency_vehicle` | vehicle of a class the jurisdiction designates as emergency; **kind** ∈ {police, fire, ambulance, other} **Not a stand-in for:** a responding emergency vehicle — the class alone is not responding; use `drv.responding_emergency`, and an unobserved lamp or siren makes the rule unknown, not satisfied | general |
+| `ru.fire_apparatus` | a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own) | general |
+| `ru.official_vehicle` | a vehicle in official or contracted road service, identifiable by livery or equipment; **kind** ∈ {tow, utility, highway_maintenance, incident_management, regulatory_agency, coroner, armored_car, municipal, other} **Not a stand-in for:** an emergency vehicle | general (kinds `incident_management`, `regulatory_agency`, `armored_car`: local) |
+| `ru.procession_vehicle` | a vehicle displaying the pennants or insignia of an organised procession | general |
+| `ru.animal_or_animal_drawn` | ridden or herded animal, or an animal-drawn vehicle | general |
+| `ru.rail_vehicle` | a train, tram, streetcar or other on-track equipment | general |
+| `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user) | general |
+| `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars) **Not a stand-in for:** a manoeuvre | general |
+| `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
+
+"Vehicle", "traffic" and "driver" as legal aggregates are mapping elements, not atoms: which
+classes a jurisdiction counts under each is declared by the reading. A responding emergency
+vehicle is the derived concept `drv.responding_emergency`.
+
+## 2. Kinematics (`kin`) — measurements on any road user
+
+| id | contract | unit / frame | scope |
+|---|---|---|---|
+| `kin.time` | instant of observation of a scene | ms, monotone within a trace | general |
+| `kin.position` | position of the body's reference point | m, world frame (map or local) | general |
+| `kin.heading` | direction the body points | unit vector, world frame | general |
+| `kin.velocity` | velocity vector | m/s, world frame | general |
+| `kin.speed` | magnitude of velocity | m/s | general |
+| `kin.accel_longitudinal` | acceleration along heading, signed **Not a stand-in for:** speed | m/s² | general |
+| `kin.yaw_rate` | rate of change of heading **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres | deg/s | general |
+| `kin.extent` | body half-length, half-width, half-height about the reference point, along the body axes | m | general |
+| `kin.path_length` | distance travelled along the body's path since the start of the trace, monotone | m | general |
+
+## 3. Road structure (`st`) — map-level atoms and occupancy
+
+| id | contract | scope |
+|---|---|---|
+| `st.highway` | the entire public way between its boundary lines, including sidewalks and shoulders **Not a stand-in for:** the roadway | general |
+| `st.roadway` | the part of a highway improved for vehicular traffic, excluding shoulder; separate roadways of a divided highway are separate **Not a stand-in for:** the sidewalk — 'not on the roadway' includes shoulder, verge and parking bays | general |
+| `st.lane` | a longitudinal strip of roadway for one line of vehicles **Not a stand-in for:** a half of the roadway or a lateral position within a lane — lane membership is not an offset from the edge, and lane ordinal equals roadway half only on a two-lane road | general |
+| `st.lane_direction` | direction of travel a lane is designated for | general |
+| `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction **Not a stand-in for:** the marking between two lanes | general |
+| `st.lane_connectivity` | which lane a lane leads into | general |
+| `st.lane_marking` | per side of a lane: **type** ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, **colour** ∈ {white, yellow, other} | general |
+| `st.centre_line` | the marking, or the geometric centre, dividing the two directions of a two-way roadway | general |
+| `st.road_edge` | curb or edge of the roadway; **paved** attribute for the surface beyond it | general |
+| `st.shoulder` | the part of the highway beside the roadway not intended for vehicular traffic; **paved** attribute | general |
+| `st.sidewalk` | area for pedestrians between roadway and property line **Not a stand-in for:** a crosswalk | general |
+| `st.median_or_divider` | physical barrier or dividing section between roadways; **opening** attribute where a crossover exists | general |
+| `st.one_way_roadway` | roadway on which traffic is restricted to one direction | general |
+| `st.intersection` | the region where two roadways meet, bounded by the prolongation of their edges **Not a stand-in for:** a crosswalk or a stop line — a stop before the crossing is earlier than a stop before the intersection | general |
+| `st.crosswalk` | marked crossing, or the unmarked prolongation of sidewalks at an intersection; **marked** attribute | general |
+| `st.stop_line` | the transverse line marking where vehicles halt for a device | general |
+| `st.driveway_or_alley_entrance` | private road, alley or driveway meeting the highway | general |
+| `st.alley` | a narrow way within a block serving the rear of properties | general |
+| `st.curvature` | horizontal curvature of the roadway at a point | general |
+| `st.grade` | longitudinal slope of the roadway; a crest is its sign change | general |
+| `st.sight_distance` | distance along the road within which another vehicle would be visible from a point | general |
+| `st.railway_crossing` | level crossing of a railway with the roadway, and its nearest rail | general |
+| `st.controlled_access` | a highway with access only at designated points, and its entrance and exit lanes | general |
+| `st.elevated_structure` | bridge, viaduct or tunnel carrying the roadway | general |
+| `st.bicycle_lane_or_path` | lane or separate path reserved for bicycles and the devices a jurisdiction groups with them | general |
+| `st.reserved_lane` | lane reserved for a class of vehicles; **class** ∈ {high_occupancy, bus, heavy_vehicle, other} | general (class `high_occupancy` with occupancy and hours conditions: local) |
+| `st.centre_turn_lane` | a single centre lane used only for turning by traffic in both directions | local |
+| `st.turn_lane` | a lane designated only for turning; **side** ∈ {left, right} | general |
+| `st.parking_space` | marked bay for standing or parking; **angle** attribute; **designation** ∈ {general, disabled, disabled_side_lift, access_aisle, municipal, charging} | general |
+| `st.curb_zone` | a signed or marked length of curb; **kind** ∈ {passenger_loading, freight_loading, tour_bus_loading, restricted_parking, bus_stop, taxicab_stand, fire_lane, no_stopping, no_parking}; **colour** ∈ {red, yellow, white, blue, gray, none} where the curb itself is painted | general (curb colour code and kind `tour_bus_loading`: local) |
+| `st.transit_stop` | a bus stop, bench, shelter or platform for public transport passengers | general |
+| `st.safety_zone` | an area within the highway marked off for pedestrians only | general |
+| `st.pedestrian_grade_separation` | a pedestrian tunnel or overpass at a point on the highway | general |
+| `st.fire_hydrant` | a fire hydrant beside the roadway | general |
+| `st.fire_station_entrance` | the driveway entrance of a fire station | general |
+| `st.lane_width` | width of a lane at a point | general |
+| `st.obstruction` | a physical object on or beside the roadway that is not a road user; **kind** ∈ {debris, excavation, hose, barrier, stalled_vehicle_wreckage, sidewalk_fixture, mail_drop_box, other} | general |
+| `rel.occupies` | a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure) | general |
+
+## 4. Control devices (`dev`) — class, state, position, governance
+
+| id | contract | scope |
+|---|---|---|
+| `dev.traffic_signal` | a signal head; **state** ∈ {circular_green, circular_yellow, circular_red, green_arrow(dir), yellow_arrow(dir), red_arrow(dir), flashing_yellow_arrow(dir), flashing_red, flashing_yellow, dark, unknown} with dir ∈ {left, right, straight, u_turn}; several states may be displayed at once; **uncovered** attribute for an installed head whose faces are not covered | general (state `flashing_yellow_arrow`: local) |
+| `dev.pedestrian_signal` | a pedestrian head; **state** ∈ {walk, dont_walk_flashing, dont_walk_steady, dark}; **countdown** attribute when a timer is displayed | general (countdown semantics: local) |
+| `dev.lane_control_signal` | an overhead per-lane signal; **state** ∈ {green_down_arrow, red_x, yellow_x, yellow_arrow(dir), dark} | local |
+| `dev.speed_limit_beacon` | a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect; **flashing** attribute | local |
+| `dev.crossing_warning_signal` | a signal device at a pedestrian or school crossing that warns of persons crossing; **active** attribute | general |
+| `dev.stop_sign` | regulatory sign requiring a full halt | general |
+| `dev.yield_sign` | regulatory sign requiring yielding without a mandatory halt | general |
+| `dev.speed_limit_sign` | sign stating a maximum or minimum speed, with value and unit; **kind** ∈ {maximum, minimum, zone} | general |
+| `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign` where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
+| `dev.zone_sign` | a sign that begins or ends a signed zone along the road; **kind** ∈ {school, school_crossing, pedestrian_safety, temporary_traffic_control, no_passing, high_occupancy_lane, heavy_vehicle_lane, speed_zone, narrow_highway, hazardous_place, parking_restricted, trail}; **end** attribute; **conditions** attribute: a structured reading of the sign's legend — a list of time windows (a set of weekdays or a calendar class such as school days, a start and an end time of day), a minimum occupancy, a duration limit, a vehicle class, or a "when children present" flag **Not a stand-in for:** whether the condition holds now — that is `drv.condition_in_effect` | general (kinds `school_crossing`, `pedestrian_safety`, `high_occupancy_lane`: local) |
+| `dev.railway_signal_or_gate` | the devices at a level crossing; **lights** ∈ {flashing, dark}; **gate** ∈ {up, lowering, down, raising, none}; **bell** attribute | general |
+| `dev.temporary_traffic_control` | cones, barricades, temporary signs and flashers marking works, a closure or an obstruction | general |
+| `dev.human_direction` | a person directing traffic and the direction given; **role** ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger, procession_escort}; **indication** ∈ {stop, proceed, slow, turn(dir)} | general |
+| `dev.governs` | relation: the device applies to a lane, approach or region (which traffic it faces) **Not a stand-in for:** a position — the region a device acts on is not where a halt is required and not the intersection region | general |
+| `dev.position` | location of the device head / sign face **Not a stand-in for:** a stop line or a crossing — the distance to a signal head is a different quantity from the distance to the line or region | general |
+| `dev.inoperative` | a signal head installed and uncovered but showing no valid indication | general |
+
+## 5. Signals emitted by road users (`sig`)
+
+| id | contract | scope |
+|---|---|---|
+| `sig.turn_indicator` | left / right indicator lit **Not a stand-in for:** the turn or lane change itself — the indicator is the signal that precedes a manoeuvre, judged separately from it | general |
+| `sig.brake_lamp` | brake lamps lit **Not a stand-in for:** a halt or a deceleration — a lamp is an actuation; the motion state is `kin.velocity` / `kin.accel_longitudinal` | general |
+| `sig.hazard` | both indicators flashing together | general |
+| `sig.headlamp` | headlamp **state** ∈ {off, low_beam, high_beam} | general |
+| `sig.position_lamp` | position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps) | general |
+| `sig.warning_lamp` | a warning lamp lit; **colour** ∈ {red, blue, amber, white}, **mode** ∈ {flashing, rotating, steady}, **facing** ∈ {front, rear, side} **Not a stand-in for:** an audible warning | general (steady blue rear lamps and amber-lamp roles: local) |
+| `sig.siren` | a siren, whistle or bell sounding | general |
+| `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding **Not a stand-in for:** a siren | general |
+| `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {left, right, stop_or_slow, re_enter} | general |
+
+## 6. Environment (`env`)
+
+| id | contract | scope |
+|---|---|---|
+| `env.darkness` | insufficient natural light; the boundary relative to sunset and sunrise is a reading parameter | general |
+| `env.precipitation` | rain or snow falling | general |
+| `env.wet_road` | road surface wet, standing water | general |
+| `env.ice_or_snow` | road surface icy or snow-covered | general |
+| `env.visibility` | visibility distance (fog, dust, smoke) | general |
+| `env.civil_time` | the local calendar time of the observation: date, weekday, time of day (from the recording's metadata, not from the scene) **Not a stand-in for:** `kin.time`, which orders observations within a trace and carries no date | general |
+
+Weather and surface conditions are what a speed or care standard is judged against; every one of
+them is observable and is kept whether or not a single clause names it. Civil time is what a
+posted hours-of-effect condition is judged against; a source that records no calendar time
+declares it absent, and every specification that reads it then reports unknown.
+
+## 7. Relations between road users (`rel`)
+
+| id | contract | scope |
+|---|---|---|
+| `rel.centre_distance` | Euclidean ground-plane distance between reference points **Not a stand-in for:** a clearance between bodies or an order of arrival — centre-to-centre overstates a clearance by about the two half-extents, and proximity says nothing about who reached a boundary first | general |
+| `rel.surface_gap` | distance between the nearest points of two bodies; longitudinal and lateral components in the subject's frame | general |
+| `rel.ahead_behind_in_lane` | a is ahead of / behind b in the same lane, along the lane direction | general |
+| `rel.longitudinal_overlap` | the bodies overlap along the lane axis (side by side); signed overlap length | general |
+| `rel.oncoming` | headings opposed and closing | general |
+| `rel.same_direction` | headings aligned within a tolerance | general |
+| `rel.bearing` | direction of b from a in a's frame (for "on the right of", "immediately to the rear") | general |
+| `rel.contact` | the bodies of two road users, or a road user and a structure, touch or overlap (a collision) **Not a stand-in for:** a near miss — that is `drv.time_to_conflict` | general |
+
+Computed from kinematics; listed because traffic language names them directly and a source may
+supply them measured rather than derived.
+
+## 8. Judgement standards — not atoms; how a rule gives them a concrete meaning
+
+Traffic law states many duties as standards: a manoeuvre made "with safety", a speed that is
+"reasonable", a distance that is "practicable", a vehicle "so close as to be a hazard", a stop
+"when necessary". No scene contains a reasonableness. A specification that bottoms out in such a
+word detects nothing, so a standard is never an atom and never a leaf of a rule.
+
+**Operationalization.** The plan maps every standard in a clause to a derived concept of §9 with
+concrete parameter values, and records an *operationalization claim*: the standard's words, the
+derived concept, the values, and the engineering convention the values come from (a headway
+convention, a gap-acceptance convention, a stopping-distance model, a sight-distance model). The
+harness rejects a node that maps a standard to nothing; the review phase checks that the claim
+bounds the standard rather than replacing an observable the clause states outright. The same
+claim is what a label uses, so specification and label quantify the standard exactly once.
+
+**Two kinds of rule follow.** Where the standard qualifies an otherwise concrete duty (a yield
+that is owed when the other vehicle is "so close as to be a hazard"), the operationalization is a
+bound on one element and the rule is the law's own rule. Where the standard *is* the duty ("due
+care", "careless", "reasonable speed"), any operationalization is a policy choice, not a reading
+of the text: such a rule is marked **surrogate**, its verdicts are evidence and not a legal
+conclusion, and it is evaluated separately.
+
+Recurring standards and the derived concepts that operationalize them:
+
+| standard, as law phrases it | operationalized by | parameter the claim states |
+|---|---|---|
+| so close as to be a hazard; approaching so closely as to be in danger; hazardous proximity | `drv.time_to_conflict` below a bound at the conflict point | the time bound |
+| safe distance; safely clear; with safety (of a pass, a lane change, a turn) | `rel.surface_gap` (lateral clearance) and `drv.time_gap` after the manoeuvre above bounds; `drv.time_to_conflict` with every affected user above a bound | the clearance, the gap, the time bound |
+| reasonable and prudent following | `drv.time_gap` above a bound | the headway |
+| clearly visible for a sufficient distance; view obstructed | `drv.sight_distance_adequate` at the subject's speed | the stopping- or passing-distance model |
+| as near / as close as practicable | a lateral offset from the edge or line below a bound | the offset |
+| if possible; unless unsafe (a lane change away from a hazard) | `drv.lane_change_feasible` for the adjacent lane | the gap the adjacent lane offers |
+| appropriate signal | `sig.turn_indicator` or `sig.hand_signal` shown over `drv.distance_while` before the manoeuvre | the distance |
+| so slow as to impede | `drv.speed_below_traffic` | the speed margin, the duration |
+| when necessary to avoid conflict with other traffic (as an excuse for a halt) | `drv.forced_halt` | the gap ahead |
+| otherwise directed by an officer | `drv.officer_directed` | — |
+| expeditious loading or unloading; temporarily | `drv.standing_or_parked` with a passenger exchange, below a duration bound | the duration |
+| suddenly decrease speed | `drv.hard_deceleration` | the deceleration bound |
+| knows or ought to know (of a faster vehicle behind) | replaced by the observable the standard is about: `drv.slower_than_posted` with a following vehicle closing | the closing rate |
+| due care; proper caution; careless; reckless; full attention; intentionally | **surrogate only**: `drv.time_to_conflict` with any user below a bound, or `drv.hard_deceleration`, or contact | the bounds |
+
+## 9. Not atoms
+
+**Legal region classes** — categories a jurisdiction defines administratively and that are not
+visible on the road: a district defined by its buildings, an urban or rural area, a city or town
+limit, a mountain or canyon highway, premises to which the public has access, the designation of a
+highway as a priority road, whether school is in session and its hours, the hours a signed
+restriction is in effect when the sign only refers to them. These enter a formalization only as
+**reading assumptions** declared per map or per trace, never as atoms a rule reads from a scene.
+Where the same category is *also* marked on the road by a sign (`dev.zone_sign`), the sign is the
+atom and the category is not.
+
+**Purpose and interior state** — why a vehicle is stopped (loading, waiting for a pedestrian,
+receiving passengers), what gear it is in, whether its engine runs or its brake is set, what a
+driver perceived. These are not observable from outside; a rule that depends on one either states
+the observable evidence the statute itself offers or carries the residue.
+
+**Lawfulness of another road user's conduct** ("pedestrians lawfully within the crosswalk", "a
+person lawfully riding") — a reference to another rule's verdict, expressed by rule composition in
+Core, not by an atom.
+
+**Derived concepts** (`drv`) — defined once in Core from atoms, with parameters exposed; rules
+may use them, and a rule never redefines them:
+
+| id | definition sketch | parameters |
+|---|---|---|
+| `drv.stopped` | speed ≤ ε for a span ≥ d | ε, d |
+| `drv.standing_or_parked` | stopped, not in a queue of moving traffic, for ≥ d | d |
+| `drv.moving_off` | stopped then speed > ε | ε |
+| `drv.turning` | heading change ≥ θ within a window w, left or right | θ, w |
+| `drv.u_turn` | heading reversal within a window w while on the roadway | w, tolerance |
+| `drv.lane_change` | `rel.occupies` moves from one lane to an adjacent same-direction lane | — |
+| `drv.lane_change_feasible` | the adjacent lane on a given side has no user within gap g ahead and behind the subject's projected position | side, g |
+| `drv.overtaking` | same direction, a moves from behind b to ahead of b | — |
+| `drv.passing_side` | which side the overtaken vehicle was on | — |
+| `drv.entering_intersection` | the footprint crosses the boundary of a region (an intersection, a crosswalk, a zone) from outside to inside | — |
+| `drv.in_intersection` | the footprint overlaps the region | — |
+| `drv.approaching` | the body is within distance d, along its lane, of the region's boundary and moving toward it | d |
+| `drv.crossing_line` | footprint crosses a stop line / crosswalk boundary | — |
+| `drv.cleared_line` | the body's trailing end is at least d past a line or rail | d |
+| `drv.backing` | velocity opposed to heading | — |
+| `drv.following` | same lane, behind, within gap g | g |
+| `drv.time_gap` | `rel.surface_gap` (longitudinal) ÷ follower's speed | — |
+| `drv.time_to_conflict` | time until the subject's and another user's projected paths occupy the same point, at current velocities; infinite when they do not | projection horizon |
+| `drv.meeting` | oncoming vehicles whose paths overlap within t | t |
+| `drv.yields_to` | a slows or stops so that b passes first (a's arrival order after b) | — |
+| `drv.arrival_order` | which of two approaching users reaches the intersection boundary first, with a simultaneity tolerance τ | τ |
+| `drv.wrong_way` | heading opposed to `st.lane_direction` of the lane occupied | tolerance |
+| `drv.straddles_marking` | footprint on both sides of a marking | — |
+| `drv.responding_emergency` | `ru.emergency_vehicle` ∧ (`sig.warning_lamp` red or blue ∨ `sig.siren`) | — |
+| `drv.vulnerable_road_user` | `ru.pedestrian` ∨ person on `ru.bicycle` / `ru.electric_bicycle` / `ru.electric_scooter` ∨ classes a reading adds | — |
+| `drv.laned_roadway` | roadway with two or more marked lanes in one direction | — |
+| `drv.extreme_lane` | the leftmost / rightmost lane among those of the subject's direction | side |
+| `drv.priority_roadway` | roadway whose entrances carry `dev.stop_sign` or `dev.yield_sign` | — |
+| `drv.distance_while` | path length over which a condition has held continuously up to now | — |
+| `drv.within_signed_zone` | between a `dev.zone_sign` and its matching end sign governing the subject's lane, of a given kind | kind |
+| `drv.condition_in_effect` | a device's structured conditions hold at the observation: `env.civil_time` falls in one of its time windows on one of its days (a calendar class such as a school day or a public holiday is an assumption), and any occupancy or class condition is met by the subject | — |
+| `drv.civil_night` | `env.civil_time` is later than sunset plus an offset or earlier than sunrise minus an offset, for the date and the location the reading declares **Not a stand-in for:** `env.darkness`, which is the observed light level; a rule states which one it reads | offsets |
+| `drv.signal_cycles` | the number of complete state cycles a governing signal has shown since the subject stopped | — |
+| `drv.slower_than_posted` | speed below the governing `dev.speed_limit_sign` value by at least a margin | margin |
+| `drv.speed_below_traffic` | speed below the median speed of same-direction users within range r by at least a margin | r, margin |
+| `drv.sight_distance_adequate` | `st.sight_distance` at the subject's position ≥ the distance a stopping- or passing-distance model gives for the subject's speed | model, deceleration |
+| `drv.stopping_distance` | the distance a body at the subject's speed needs to halt under a deceleration a, plus a reaction distance | a, reaction time |
+| `drv.hard_deceleration` | `kin.accel_longitudinal` below a negative bound | bound |
+| `drv.forced_halt` | the subject halts while a user ahead in its lane within gap g is halted, or a device or officer governing its approach requires a halt | g |
+| `drv.officer_directed` | a `dev.human_direction` with role police governs the subject's approach and gives an indication | — |
+
+**Dataset fields** — any edge label, trigger region, render distance, band label or node name of
+a particular scene-graph format. These are how a source grounds an atom; they belong in the
+adapter and its manifest, never in a rule.

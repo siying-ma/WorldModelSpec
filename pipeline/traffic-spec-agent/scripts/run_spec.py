@@ -33,7 +33,6 @@ from typing import Optional
 import fire
 
 from . import index_sync
-from .diagnostics import capture_eval
 from .lean_check import (
     CAPTURE_EVAL_TIMEOUT,
     EVAL_LIB_ROOT,
@@ -173,16 +172,13 @@ class Cli:
     def doctor(self, library_root: str = "library", verbose: bool = False) -> int:
         """Cross-check every agent-facing claim against the artifact it describes.
 
-        The two artifacts that decide spec quality — `carla/schema.json` and
-        `prompts/*.md` — describe things they do not own: the Lean core, the
-        adapter, the generator, the gate's verdict set. This compares each
-        description with the thing described and names both sources on failure.
-
-        No model, no Lean, no CARLA server. Checks needing the sibling CARLA repo
-        are skipped rather than failed, so it runs anywhere:
+        The artifacts that decide spec quality — the prompt templates, the
+        frozen ontology, the Core docstrings — describe things they do not own:
+        the Lean core, the gate's verdict set, the witness roles. This compares
+        each description with the thing described and names both sources on
+        failure. No model, no Lean, no simulator:
 
             python -m scripts.run_spec doctor
-            PYTHONPATH=../carla_scene_graphs python -m scripts.run_spec doctor
 
         Returns 1 if any check fails, so it belongs in CI. Note `fire` prints the
         return value rather than exiting with it.
@@ -229,155 +225,21 @@ class Cli:
               f"across {index_sync.registered_count(library)} rule(s)")
         return 1 if failures else 0
 
-    def monitor(self, rsv_dir: Optional[str] = None, labels: Optional[str] = None,
-                ego_log: Optional[str] = None, library_root: str = "library",
-                module_name: str = "Captured", max_frames: Optional[int] = None,
-                adapter_python: Optional[str] = None,
-                skip_convert: bool = False,
-                manifest: Optional[str] = None,
-                declare_capture_hz: Optional[int] = None,
-                declare_generator_defaults: bool = False,
-                database: Optional[str] = None,
-                capture: Optional[str] = None,
-                eval_timeout: Optional[float] = None) -> int:
-        """Evaluate every registered rule against real CARLA captures and diff the
-        verdicts against ground-truth labels.
+    def monitor(self, *args, **kwargs) -> int:
+        """Evaluate the library against recorded driving and diff against derived labels.
 
-        `verify` checks a spec against scenarios the plan agent wrote for it;
-        this checks it against footage labelled independently of that agent, and
-        is the external check to run after the loop.
-
-        **A whole capture set at once** — one directory per capture, each with
-        `rsv/`, `ego_logs.json` and its own `labels.json`, as written by
-        `../carla_scene_graphs/src/run_capture.py`:
-
-            python -m scripts.run_spec monitor \\
-                --database ../carla_scene_graphs/database \\
-                --adapter-python $(which python)
-
-        Captures named `<scenario>_compliant` / `<scenario>_violation` are also
-        paired, which is the question a single capture cannot answer: does the
-        library separate lawful from unlawful? Add `--capture NAME` to restrict
-        the run to one directory.
-
-        **A single capture** with an external label file:
-
-            python -m scripts.run_spec monitor \\
-                --rsv-dir  <capture>/rsv \\
-                --ego-log  <capture>/ego_logs.json \\
-                --labels   <capture>/labels.json
-
-        Pass `--adapter-python` when the interpreter running this CLI lacks
-        `networkx`, which unpickling a capture needs. `--skip-convert` reuses an
-        already-converted trace module (single-capture mode only).
+        Rebuilt with adapter v2: the previous implementation converted CARLA
+        scene-graph captures through the archived `carla/adapter.py` and scored
+        them with `scripts/diagnostics/capture_eval.py`, both of which belong to
+        the CARLA-first design now on `archive/carla-first-2026-09-15`. The
+        replacement reads a source's capability manifest, evaluates every rule
+        with four-valued verdicts (violated / compliant / not_applicable /
+        unknown) and reports accuracy with `unknown` separated.
         """
-        library = _resolve(library_root)
-        if database is not None:
-            from scripts.diagnostics import capture_bench
-            root = Path(database).expanduser()
-            if not root.is_absolute():
-                root = (REPO_ROOT / root).resolve()
-            if not root.is_dir():
-                print(f"[error] no such directory: {root}", file=sys.stderr)
-                return 2
-            return capture_bench.run(
-                root, REPO_ROOT, library, adapter_python or sys.executable,
-                capture, eval_timeout or capture_bench.CAPTURE_EVAL_TIMEOUT)
-
-        if labels is None:
-            print("[error] --labels is required: the point of `monitor` is the "
-                  "comparison against human ground truth. Write a label file "
-                  "first (see scripts/diagnostics/capture_eval.py for the format).",
-                  file=sys.stderr)
-            return 2
-        labels_file = _resolve(labels)
-        if not labels_file.exists():
-            print(f"[error] label file not found: {labels_file}", file=sys.stderr)
-            return 2
-
-        module = f"{EVAL_LIB_ROOT}.{module_name}"
-        trace_name = f"{module}Trace"
-        out_lean = library / EVAL_LIB_ROOT / f"{module_name}.lean"
-
-        if not skip_convert:
-            if rsv_dir is None:
-                print("[error] --rsv-dir is required unless --skip-convert",
-                      file=sys.stderr)
-                return 2
-            cmd = [adapter_python or sys.executable,
-                   str(REPO_ROOT / "carla" / "adapter.py"),
-                   "--rsv-dir", str(_resolve(rsv_dir)),
-                   "--output", str(out_lean),
-                   "--module-name", module_name]
-            if ego_log:
-                cmd += ["--ego-log", str(_resolve(ego_log))]
-            # The capture's settings are never assumed: the adapter refuses a
-            # capture that supplies neither a manifest nor a declaration, so
-            # both routes have to reach it from here too.
-            if manifest:
-                cmd += ["--manifest", str(_resolve(manifest))]
-            if declare_capture_hz is not None:
-                cmd += ["--declare-capture-hz", str(declare_capture_hz)]
-            if declare_generator_defaults:
-                cmd += ["--declare-generator-defaults"]
-            if max_frames:
-                cmd += ["--max-frames", str(max_frames)]
-            print("[1/3] Converting the capture...")
-            proc = subprocess.run(cmd, cwd=REPO_ROOT, text=True,
-                                  capture_output=True)
-            print(proc.stdout.rstrip())
-            if proc.returncode != 0:
-                print(proc.stderr.rstrip(), file=sys.stderr)
-                if "No module named" in proc.stderr:
-                    print("[hint] re-run with --adapter-python pointing at an "
-                          "interpreter that has networkx installed.",
-                          file=sys.stderr)
-                return 1
-        elif not out_lean.exists():
-            print(f"[error] --skip-convert but {out_lean} does not exist",
-                  file=sys.stderr)
-            return 2
-
-        try:
-            print("[2/3] Building the library and the captured trace...")
-            ok, output = lake_build(library, target=module)
-            if not ok:
-                print("BUILD FAILED:")
-                print(first_errors(output))
-                return 1
-
-            harness = REPO_ROOT / "results" / "_capture_harness.lean"
-            write_capture_harness(harness, module, trace_name)
-            print("[3/3] Evaluating every rule against the capture...")
-            ok, output = eval_harness(
-                library, harness,
-                timeout=eval_timeout or CAPTURE_EVAL_TIMEOUT)
-        except LeanUnavailable as exc:
-            print(f"[error] {exc}", file=sys.stderr)
-            return 1
-
-        if not ok:
-            print("CAPTURE HARNESS FAILED:")
-            print(first_errors(output))
-            return 1
-
-        frames, rows = capture_eval.parse_capture_report(output)
-        if not rows:
-            print("[error] the harness reported no rules; is Index.lean empty?",
-                  file=sys.stderr)
-            return 1
-        try:
-            capture, annotator, label_map = capture_eval.load_labels(labels_file)
-        except ValueError as exc:
-            print(f"[error] {exc}", file=sys.stderr)
-            return 2
-
-        outcomes = capture_eval.evaluate(label_map, rows, frames)
-        missing = capture_eval.unlabelled_rules(label_map, rows)
-        print("")
-        print(capture_eval.format_report(capture, annotator, frames, outcomes,
-                                         missing))
-        return 1 if any(o.is_disagreement for o in outcomes) else 0
+        print("[error] `monitor` is being rebuilt on Core v2 and the source "
+              "adapters; the CARLA-first version is on the archive branch.",
+              file=sys.stderr)
+        return 2
 
     def index(self, library_root: str = "library", dry_run: bool = False) -> int:
         """Regenerate Index.lean from the rule files on disk."""

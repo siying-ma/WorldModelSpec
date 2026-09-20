@@ -51,6 +51,32 @@ class ScenarioSpec:
 
 
 @dataclass
+class ElementClaim:
+    """One grounding claim: a clause element mapped onto the atoms that express it.
+
+    Written by the planning session on the node it belongs to; validated by the
+    harness against `ontology/ATOMS.md` and against every other claim of the run.
+    `element` is the clause element in the session's own neutral words, `atoms`
+    the atom or derived-concept ids, `justification` why these and no others,
+    citing the atom contracts.
+    """
+
+    element: str
+    atoms: list[str]
+    justification: str = ""
+
+    @staticmethod
+    def from_dict(d: dict) -> "ElementClaim":
+        return ElementClaim(element=str(d["element"]),
+                            atoms=[str(a) for a in d.get("atoms", [])],
+                            justification=str(d.get("justification", "")))
+
+    def to_dict(self) -> dict:
+        return {"element": self.element, "atoms": self.atoms,
+                "justification": self.justification}
+
+
+@dataclass
 class SpecNode:
     """One planned rule, as emitted by the plan agent in objectives.jsonl."""
 
@@ -63,6 +89,7 @@ class SpecNode:
     scenarios: list[ScenarioSpec]
     notes: str = ""         # formalization guidance / decomposition rationale
     parent: Optional[str] = None   # node_id this was decomposed from
+    elements: list[ElementClaim] = field(default_factory=list)  # clause element -> atoms
 
     @property
     def target_file(self) -> str:
@@ -123,6 +150,7 @@ class SpecNode:
             scenarios=[ScenarioSpec.from_dict(s) for s in d.get("scenarios", [])],
             notes=str(d.get("notes", "")),
             parent=(str(d["parent"]) if d.get("parent") else None),
+            elements=[ElementClaim.from_dict(e) for e in d.get("elements", [])],
         )
 
     def to_dict(self) -> dict:
@@ -136,6 +164,7 @@ class SpecNode:
             "scenarios": [s.to_dict() for s in self.scenarios],
             "notes": self.notes,
             "parent": self.parent,
+            "elements": [e.to_dict() for e in self.elements],
             # Derived, included so the agent and the gate read identical values
             # rather than each re-deriving them.
             "target_file": self.target_file,

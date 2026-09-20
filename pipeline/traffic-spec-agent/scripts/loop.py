@@ -170,6 +170,7 @@ class Loop:
             ctx.objectives_file, ctx.laws_file, ctx.library_root,
             max_nodes=ctx.options.max_nodes_per_iter,
             assessment=self._assess(),
+            mapping_index=ctx.state_dir / "mapping_index.jsonl",
         )
         summary.planned = len(nodes)
         if errors:
@@ -189,6 +190,10 @@ class Loop:
             )
             return summary
         print(f"[info] plan accepted: {len(nodes)} node(s)")
+        # The run's element -> atoms index is derived here, by the harness, from
+        # the nodes the validator accepted; it is what later iterations are held
+        # consistent with and what the review phase reads.
+        plan_validate.write_mapping_index(ctx.state_dir / "mapping_index.jsonl", nodes)
         for node in nodes:
             print(f"  - {node.node_id}  ({len(node.scenarios)} scenarios, "
                   f"{len(node.binders)} binders)")

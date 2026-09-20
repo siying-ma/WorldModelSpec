@@ -49,6 +49,38 @@ def format_laws(laws: list[dict]) -> str:
     return "\n".join(blocks) if blocks else "(no laws supplied)\n"
 
 
+def format_definitions(laws_file: Path) -> str:
+    """Definitional text the corpus lines refer to by `[DEF-...]` id.
+
+    Read from `definitions.jsonl` beside the law corpus when it exists. A
+    definition is not an obligation: it is rendered after the laws under its
+    own heading so a session can resolve a bracketed reference, and it is never
+    a valid `law_refs` target (`plan_validate.load_law_ids` reads only the laws).
+    """
+    defs_file = laws_file.with_name("definitions.jsonl")
+    if not defs_file.exists():
+        return ""
+    defs = load_laws(defs_file)
+    if not defs:
+        return ""
+    blocks = ["\n## Definitions (not obligations; never a law ref)\n\n"
+              "Statutory and municipal definitions of the terms the laws above use, verbatim, "
+              "and the provisions they cite by `[DEF-...]`. A term defined by both sources is read "
+              "under the source of the line that uses it (`applies_to`).\n"]
+    for d in defs:
+        head = f"### `{d.get('id', '?')}`"
+        if d.get("applies_to"):
+            head += f" ({d['applies_to']})"
+        blocks.append(
+            head
+            + (f" — {d['title']}" if d.get("title") else "")
+            + "\n\n"
+            + d.get("text", "").strip()
+            + "\n"
+        )
+    return "\n".join(blocks)
+
+
 def summarize_library(library_root: Path) -> str:
     """What already exists, so the planner extends rather than duplicates."""
     rules_dir = library_root / "TrafficSpec" / "Rules"
@@ -893,7 +925,7 @@ class PlanPhase(Phase):
 
         template = (ctx.prompts_dir / "prompt_plan.md").read_text(encoding="utf-8")
         prompt = template.format(
-            laws_block=format_laws(laws),
+            laws_block=format_laws(laws) + format_definitions(ctx.laws_file),
             law_count=len(laws),
             library_summary=summarize_library(ctx.library_root),
             binder_summary=summarize_binders(ctx.library_root),

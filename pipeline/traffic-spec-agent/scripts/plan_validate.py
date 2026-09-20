@@ -16,6 +16,10 @@ from typing import Optional
 from .coverage import Assessment
 from .task import IDENT_RE, SpecNode
 
+#: The frozen ontology, the only source of atom ids a claim may name.
+ATOMS_FILE = Path(__file__).resolve().parent.parent / "ontology" / "ATOMS.md"
+ATOM_ID_RE = re.compile(r"`((?:ru|kin|st|dev|sig|env|rel|drv)\.[a-z_]+)`")
+
 REQUIRED_KEYS = {"node_id", "theme", "slug", "law_refs", "description", "binders", "scenarios"}
 
 #: The two acceptance witnesses, and what each one rules out. They are not
@@ -46,6 +50,79 @@ SCENARIO_ROLES = {
 #: third witness of either role adds nothing to what the first one established.
 MAX_SCENARIOS = 2
 SLUG_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
+
+
+def load_atom_ids(atoms_file: Path = ATOMS_FILE) -> set[str]:
+    """Every atom and derived-concept id the ontology declares."""
+    if not atoms_file.exists():
+        return set()
+    return set(ATOM_ID_RE.findall(atoms_file.read_text(encoding="utf-8")))
+
+
+def load_mapping_index(index_file: Optional[Path]) -> dict[str, tuple[list[str], str]]:
+    """element -> (atoms, node) as the harness recorded them for this run."""
+    out: dict[str, tuple[list[str], str]] = {}
+    if not index_file or not index_file.exists():
+        return out
+    for line in index_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+            out[_element_key(d["element"])] = ([str(a) for a in d["atoms"]], str(d.get("node", "")))
+        except (json.JSONDecodeError, KeyError, TypeError):
+            continue
+    return out
+
+
+def write_mapping_index(index_file: Path, nodes: list[SpecNode]) -> None:
+    """Append the accepted nodes' claims to the run's index. Harness-owned: no
+    session writes this file, and nothing is ever removed from it."""
+    index_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(index_file, "a", encoding="utf-8") as fh:
+        for node in nodes:
+            for c in node.elements:
+                fh.write(json.dumps({"element": c.element, "atoms": sorted(c.atoms),
+                                     "node": node.node_id,
+                                     "justification": c.justification},
+                                    ensure_ascii=False) + "\n")
+
+
+def _element_key(element: str) -> str:
+    """Case- and whitespace-insensitive identity of a clause element. Two
+    claims with the same key must name the same atoms; synonyms are the review
+    phase's business, not this validator's."""
+    return " ".join(str(element).lower().split())
+
+
+def _element_errors(node: SpecNode, where: str, atom_ids: set[str],
+                    seen: dict[str, tuple[list[str], str]]) -> list[str]:
+    """Every claimed atom exists; the same element never maps two ways."""
+    out: list[str] = []
+    if not atom_ids:
+        return out
+    for c in node.elements:
+        if not c.element.strip():
+            out.append(f"{where}: an element claim has an empty `element`")
+            continue
+        if not c.atoms:
+            out.append(f"{where}: element `{c.element}` claims no atom — an "
+                       f"element no atom expresses is an ontology change request, "
+                       f"not an empty claim")
+        for a in c.atoms:
+            if a not in atom_ids:
+                out.append(f"{where}: element `{c.element}` names `{a}`, which is "
+                           f"not an atom or derived concept in ontology/ATOMS.md")
+        key = _element_key(c.element)
+        atoms = sorted(c.atoms)
+        if key in seen and seen[key][0] != atoms:
+            out.append(f"{where}: element `{c.element}` maps to {atoms} here but to "
+                       f"{seen[key][0]} in {seen[key][1]}. One element, one mapping "
+                       f"per run; a contradiction is not resolved by the later "
+                       f"claim — change the claim or record the disagreement.")
+        seen.setdefault(key, (atoms, node.node_id))
+    return out
 
 
 def load_law_ids(laws_file: Path) -> set[str]:
@@ -118,8 +195,14 @@ def validate(
     library_root: Path,
     max_nodes: Optional[int] = None,
     assessment: Optional[Assessment] = None,
+    mapping_index: Optional[Path] = None,
 ) -> tuple[list[SpecNode], list[str]]:
     """Return ``(valid_nodes, errors)``. A non-empty error list blocks the phase.
+
+    `mapping_index` is the run's element → atoms index the harness derives from
+    accepted nodes (see :func:`write_mapping_index`); a node's claims must agree
+    with it and with each other, and every atom they name must exist in
+    `ontology/ATOMS.md`.
 
     `assessment` is the coverage table read together with the gap ledger. When
     it is supplied, a node is additionally required to be about a clause the
@@ -136,6 +219,8 @@ def validate(
         ]
 
     law_ids = load_law_ids(laws_file)
+    atom_ids = load_atom_ids()
+    claims_seen = load_mapping_index(mapping_index)
     covered = covered_law_ids(library_root)
     already = existing_node_ids(library_root)
     already_ns = existing_namespaces(library_root)
@@ -275,6 +360,7 @@ def validate(
                           f"nor in the library")
 
         errors.extend(_actionability_errors(node, where, assessment, covered))
+        errors.extend(_element_errors(node, where, atom_ids, claims_seen))
 
         nodes.append(node)
 

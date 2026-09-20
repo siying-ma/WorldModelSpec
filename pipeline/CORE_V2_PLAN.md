@@ -1,5 +1,14 @@
 # Core v2: a law-facing ontology, with CARLA as one adapter among several
 
+> **2026-09-18 update.** The target corpus is now the Nevada Revised Statutes (Las Vegas), not BC
+> MVA Part 3, and the atom set was re-derived from it (`traffic-spec-agent/ontology/ATOMS.md`, second
+> draft; provenance in `ontology_provenance/nrs_atoms_provenance.md`). §2.5 ("the atom set is
+> universal") is **superseded**: atoms are law-independent in *contract* but enumerated from the
+> target jurisdiction, with a `local` flag where an element exists only under its taxonomy or device
+> catalogue; no cross-jurisdiction (Vienna/UVC) comparison is required. The concrete Lean design and
+> the validate/diagnosis pipeline are in `CORE_V2_LEAN_DESIGN.md`, which uses only §2.8 and §3 of
+> this document.
+
 Date: 2026-09-15, revised the same day after review. Status: agreed direction; nothing here is implemented.
 Resolved in review: the atom set is universal across jurisdictions (§2.5); CARLA captures will be
 re-recorded once the collector exists; `unknown` is a required verdict; the RL reward is deferred and
@@ -81,8 +90,8 @@ Two further points of judgement:
    and may not redefine them. This is where every threshold the statute does not state lives, and
    it lives as a *parameter*, not a literal in a rule.
 4. **A rule may use only atoms and derived concepts.** The gate already rejects raw `Scene → Bool`;
-   it additionally rejects a rule whose declared statutory elements map to atoms outside the
-   *concept-to-atom whitelist* (§2.4).
+   it additionally rejects a rule whose atoms are used against their
+   atom contracts (§2.3), and the review phase (§2.6) judges the mapping.
 5. **Judgement standards are atoms of a special kind.** "Reasonable and prudent", "safe distance",
    "when practicable" are not observable. They are `Judgement` atoms that a *reading* must quantify
    (e.g. "safe distance" → a time gap of at least *g* seconds, *g* supplied by the reading). The
@@ -109,28 +118,31 @@ Deliberately not atoms: anything named after a dataset field (`controls` edge, `
 `laneChange` edge, `trigger volume`, `render distance`, band labels). Those are *how CARLA grounds* an
 atom, and belong in the adapter.
 
-### 2.3 The termination rule, stated for the agent and for the gate
+### 2.3 The termination rule, and how a clause reaches it
 
-> A clause is formalized only from atoms and Core-defined derived concepts. If a statutory element
-> has no atom, the plan records the element by name as **missing from the ontology** and the clause
-> is `blocked` (an ontology-change request, human-gated). If the element has an atom that the
-> evaluation source declares absent, the clause is `unsupported on this source` and still gets
-> formalized, because another source may supply it. In neither case may a different atom stand in.
+> A clause is formalized only from atoms and Core-defined derived concepts, and an atom may express
+> only what its contract says. If a statutory element has no atom, the plan records the element by
+> name and the clause is `blocked` (an ontology change request, the one human gate this pipeline
+> keeps). If the element has an atom that the evaluation source declares absent, the clause is
+> `unsupported on this source` and is still formalized. In neither case may a different atom stand
+> in.
 
-Mechanical enforcement, all in the gate and the doctor, none in prose:
+The termination rule is the closed atom set plus the "not a stand-in for" clauses of the atom
+contracts, frozen in `ontology/ATOMS.md`. It contains no statute, no clause and no source, so it
+holds for any jurisdiction. Mapping clause elements onto atoms is the **planning session's** work;
+whether that mapping is faithful is decided by a **review phase**, not by a whitelist and not by a
+human. Enforcement, all mechanical:
 
-- **Concept whitelist.** `ontology/concepts.jsonl`: statutory element (e.g. "on a curve", "marked
-  stop line", "signalled an intention") → the atoms allowed to express it. A rule file declares
-  which elements it formalizes; the gate checks every atom it uses is whitelisted for some declared
-  element. `steer` is not whitelisted for "on a curve"; the rule is rejected, not accepted with a
-  residue.
-- **Unknown-aware vacuity.** The gate's liveness count becomes three-valued: engaged-and-observed,
-  engaged-and-unknown, never engaged. A rule whose antecedent is `unknown` on every scenario fails
-  the gate as before, and a capture report counts `unknown` verdicts separately from compliant ones.
-- **No durations in rules.** A rule file may not contain a numeric time literal; durations come from
-  the reading parameters (§3).
-- **Ontology change is the only route to a new atom**, with the same freeze discipline Core has
-  today: reviewed, cited to a statute element and to at least one grounding, versioned.
+- **Deterministic (gate).** Every atom a rule uses exists; every predicate in Core corresponds to an
+  atom or a derived concept (a bijection the doctor checks); no numeric time literal in a rule; the
+  run's mapping claims are consistent — each planned node records its clause element → atoms claims
+  in its `elements` field, the same element maps to the same atoms in every node, a contradiction is
+  rejected, and the harness derives the run's mapping index from the accepted nodes. No agent writes
+  a shared file and no review state is stored.
+- **Semantic (review phase, §2.6).** An independent session judges each mapping claim and the
+  rule's logical shape against the atom contracts and the clause, and can only reject.
+- **Bounded (§2.6).** Rejection returns the node to planning at most K times; after that the node
+  is `disputed`, recorded with both positions and excluded from the library.
 
 ### 2.4 What "atom" does not mean
 
@@ -163,6 +175,101 @@ Two places where jurisdiction does reach the atom layer, and how each is kept ou
 - **Legal region classes are not observable.** "Municipality", "business district", "school day",
   "through highway" are categories the law defines, not features of the road. They enter only as
   reading assumptions (declared per trace or per map), never as atoms a rule reads from a scene.
+
+### 2.6 The review phase
+
+**Why an agent and not a table.** The failure the review phase guards against is semantic: a
+clause element expressed by an atom whose contract does not cover it (steering angle for a curve,
+a device's governance region for a stop line). A pre-enumerated element → atom whitelist would catch
+it, but it is corpus-derived, pre-decides the mapping the planner is supposed to make, and leaks
+the evaluation corpus into a frozen artifact. The review is therefore done by an independent
+session against the frozen contracts only.
+
+**Decorrelating reviewer and planner.** Both are probabilistic and, if drawn from one model family,
+share blind spots. The levers, in order of effect:
+
+1. *Blind review.* The reviewer sees the clause, the mapping claims and the atom contracts; it does
+   not see the planner's justification, nor the witness scenarios the same session wrote.
+2. *Back-translation.* Given only the atoms and the formula, the reviewer writes in plain language
+   the obligation they encode, without the clause; a separate call compares that text with the
+   clause. This removes anchoring on the clause's wording and is the strongest single lever.
+3. *Burden of proof.* The task is to find the weakest claim; the default under uncertainty is
+   reject-with-question; every acceptance must quote the contract text it rests on, and the harness
+   rejects a verdict that quotes nothing.
+4. *Decomposition.* Per claim, four machine-checkable questions: what in the world does the element
+   denote; which contract covers it, quoted; does any "not a stand-in for" clause name this use; is
+   there a closer atom. Per rule, the logical shape: which elements form the situation and which the
+   obligation; is the temporal shape (persistence, eventuality, precedence) the clause's; do the
+   binders play the roles the clause assigns.
+5. *A second model family*, only if the calibration below shows residual misses; disagreement
+   between the two is then itself a signal. The choice is made on measured recall, not assumed.
+
+**Calibration without ground truth (mutation testing).** The reviewer's recall is measured on
+mutants generated from the ontology's own structure, so no human key is needed:
+
+| operator | example | what it tests |
+|---|---|---|
+| same-family substitution | a road-geometry atom for another | discrimination within a family |
+| proxy substitution, derived from the "not a stand-in for" clauses (X is not a stand-in for Y ⇒ mutate Y → X) | steering angle for curvature; governance region for a stop line | the historical failure class |
+| atom deletion from a multi-atom mapping | a crossing expressed by occupancy alone | completeness |
+| relation swap | centre distance for surface gap; device position for governance | relations that share a family |
+| formula mutants | antecedent/consequent swap; consequent negated; □ ↔ ◇; a conjunct dropped; a relation reversed | logical fidelity |
+
+Originals and mutants are presented blind and interleaved. Reported per run: **recall** (mutants
+rejected / mutants), **stability** (originals re-accepted on repeated calls), both against thresholds
+in the run configuration; a run whose reviewer misses the thresholds fails at the review phase, and
+what is changed is the prompt or the model, never a rule. Two honest limits: recall is measured only
+on failure classes the operators enumerate, so it is an upper-bound estimate; and a substitution
+between two atoms whose contracts carry no clause against each other may be equivalent, so such
+mutants are not scored. Results land in `results/<run>/review_calibration.json` and in the summary.
+
+**Bounded retry and the terminal state.** A rejection returns the node to planning with the
+reviewer's reasons. A resubmission must, for each reason, either change the claim or state a
+rebuttal; a resubmission whose mapping is unchanged and carries no rebuttal does not consume a
+round and terminates at once. After **K** rounds (default two) the node becomes **`disputed`**: the
+planner's mapping and the reviewer's objections are both recorded, the node is excluded from the
+library, and the summary surfaces it to the operator. No automatic acceptance, no further retry.
+`disputed` is added to the coverage vocabulary, which the doctor already holds the prompts and the
+progress template to.
+
+**What the reviewer cannot do.** It cannot add an atom or amend a contract; an element with no atom
+is an ontology change request, the one place a human decides. It cannot accept; it can only fail to
+reject, and its failures to reject are what the calibration measures.
+
+### 2.7 What Core v2 has to express, atom by atom
+
+Counted on `ontology/ATOMS.md` as drafted (118 identifiers: 89 atoms, 8 judgement standards,
+21 derived concepts). "v1" is the archived CARLA-first Core.
+
+| class | count | in Core v2 as | v1 counterpart | handling |
+|---|---|---|---|---|
+| **scene atoms** — road users 16, kinematics 9, structure 27 + occupancy 1, devices 16, signals 10, environment 4, relations 6 | 89 | a predicate or measurement over `Scene`, three-valued; structure and device atoms as entity kinds with adapter-computed relations (occupies, distance-to, leads-to, adjacent-to, governs) and attributes (direction, width, marking per side, curvature, grade, state), never raw geometry, so every comparison stays integer and decidable | 43 (8 road-user classes, 8 kinematic channels but ego-only, 6 structure, 7 device, 7 signal, 7 relation); 46 are new, most of them structure and device kinds | all expressible; the 46 new ones are the Scene extension list for Phase 1 |
+| — of which **no source supplies today** | ≈15 (human direction, hand signals, audible warning, pedestrian and lane-control signals, arrow and flashing indications, railway crossing and its devices, rail vehicles, school-bus and transit devices, animal-drawn, mopeds, mobility devices, official vehicles) | the same — kept for type completeness, so a rule can be written once and evaluated wherever a source appears | 0 | every manifest declares them `absent`; a rule reading one reports `unknown` and is listed as unsupported on that source, never dropped and never approximated |
+| **judgement standards** | 8 | not predicates: parameters of a rule, supplied by the reading (a bound over kinematic or relational atoms); the same reading drives the label | 0 (v1 hard-coded them per rule) | Core gets a parameter record type; the gate rejects a numeric literal in a rule where a parameter is expected |
+| **derived concepts** | 21 | definitions in Core over atoms and timestamps, with exposed parameters (stopped, standing, moving off, turning, U-turn, lane change, overtaking, passing side, entering / in / approaching an intersection, crossing a line, backing, following, meeting, yielding, arrival order, wrong way, straddling a marking, responding emergency, vulnerable road user, laned roadway, priority roadway, time gap) | 0 as definitions (v1 rules re-derived them per rule) | all definable in metric LTLf; `arrival_order`, `yields_to` and `meeting` need the intersection-boundary crossing instant and a time-gap bound, both available from the atoms |
+
+Nothing in the ontology is inexpressible in Core; the two non-predicate classes are handled by
+type, not by omission: judgement standards become parameters, source-less atoms become `unknown`.
+The Phase 1 Scene extension is the 46 new scene atoms; the Phase 1 vocabulary is the bijection
+atoms ↔ predicates plus the 21 derived definitions, and the doctor holds both to `ATOMS.md`.
+
+### 2.8 The archived Core, file by file: what survives Core v2
+
+| file | what it is | verdict | why |
+|---|---|---|---|
+| `Decimal.lean` | parses decimal *strings* into milli-unit integers and compares them | **retire the parsing; keep the unit arithmetic** | it exists because v1 stored every attribute as a string. Core v2 types its attributes at the boundary — `Option Int` in milli-units, `Option Bool`, inductive enumerations — and the adapter does the parsing in Python. What survives is exact integer unit conversion (km/h, mph → m/s) and the milli-unit convention, moved into a small `Units.lean`; `parseMilli`, `leMilli` and the tuple-string scanner go |
+| `Formula.lean` | finite-trace LTL AST with a frame-count `bounded` operator | **keep the shape, change three things** | atoms become three-valued (`Scene → Option Bool`), so the AST needs no change but its evaluation does; the frame-counted `bounded n` is replaced by metric `holdsFor d` / `within d` over timestamps; `next` (◯) is frame-relative and ill-defined under irregular sampling — redefined as "at the next observation" or dropped. `frameSpan` becomes a time span |
+| `Semantics.lean` | two-valued evaluation with fuel loops | **keep the structure, re-found the value** | evaluation returns a three-valued verdict with Kleene propagation (an unobserved atom makes the formula `unknown` unless the connective decides without it); the metric operators read `kin.time` and report `unknown` where the sampling gap exceeds what the duration needs. The unfolding lemmas are re-proved on the new evaluator |
+| `Monitor.lean` | satisfied / violated | **extend** | four verdicts: violated, compliant, not_applicable, unknown |
+| `Grounding.lean` | binders as `EntityType` lists, the cross product with distinctness and co-presence, liveness, the tab-separated report | **keep the architecture; replace the binder vocabulary and the identity assumption** | what stays: a schema is a formula over binders, groundings are distinct co-present tuples, `check` is ∀ groundings, liveness separates engaged from vacuous. What goes: `vehicleTypes` / `proximityTypes` / `proximateVehicleBinder` and `sharesDistanceWithEgo`, all transcriptions of the CARLA proximity table — binders in v2 range over ontology classes (`ru.*`, structure and device kinds) with no source-shaped restriction; `unboundEntityTypes` (a CARLA flag and an adapter bucket). What changes: liveness and the report become four-valued (an `UNKNOWN` column); and identity — v1 binds one id for the whole trace, which is right for a simulator and wrong for a tracker, so grounding must bind *tracks* and tolerate a bounded re-identification gap. The quadratic cost of the cross product is unchanged and is the Phase 4 efficiency item |
+| `Scene.lean` | `EntityType` / `RelLabel` transcribed from the generator, string attributes, `captureHz`, `distanceBands` | **rewrite** | every enumeration is CARLA's. v2: entity kinds from the ontology (road-user classes, structure kinds, device kinds), relations from the ontology (occupies, governs, leads-to, adjacent-to, and the measured relations), typed attributes, a timestamp per scene, no rate and no bands |
+| `Builders.lean` | constructors mirroring the adapter's attribute sets | **rewrite on the new Scene** | the idea survives (a scenario must be indistinguishable from adapter output to a predicate); `padTo` becomes time-based |
+| `Vocab.lean` | 1,148 lines of predicates, most reading CARLA keys, band labels, landmark codes and the lane-id sign | **rewrite as the atom ↔ predicate bijection plus the 21 derived definitions** | reusable in substance: the exact-geometry family (squared separation, extents, heading dot products), the landmark-orientation logic, the unit-checked speed comparison. Everything keyed on a generator spelling or a band goes; the doctor holds the new file to `ATOMS.md` in both directions |
+| `Tests/CoreArith.lean` | kernel guards for the arithmetic | **rewrite** | same role, new definitions; adds guards for Kleene propagation and the metric operators at a sampling boundary |
+
+Cross-cutting: v1 reads every absent attribute as `false`. In v2 an absent attribute is `none`, which is
+the whole of the three-valued semantics; every predicate is rewritten under that rule, so none of
+the 1,148 lines is copied unchanged.
 
 ## 3. Time without a frame rate
 
@@ -264,10 +371,10 @@ on every road user, not only the ego, for that reason.
 
 | Phase | Deliverable | Effort | Gate |
 |---|---|---|---|
-| **0. Ontology** | `ontology/ATOMS.md` (atom, contract, unit, frame, statute sources, groundings) and `ontology/concepts.jsonl` (statutory element → allowed atoms), enumerated from Part 3 and checked against Vienna Art. 1 | 2 weeks, one author + one reviewer | human review; every atom has ≥ 1 grounding or is marked declared-absent |
+| **0. Ontology** | `ontology/ATOMS.md` (atom, contract, unit, frame, "not a stand-in for" clauses), enumerated from Part 3 and checked against Vienna Art. 1 and the UVC, with provenance kept outside the agent's reach | 2 weeks, one author + one reviewer | human review; agent-facing file law-free and source-free (doctor `ontology neutral`); every atom has ≥ 1 grounding in provenance or is declared absent |
 | **1. Core v2** | `Scene.lean` (timestamped scenes, sources-neutral entity/structure types, three-valued atoms), `Time.lean` (metric operators, sampling adequacy), `Atoms.lean` (the closed set), `Derived.lean` (manoeuvres with parameters), `Capability.lean`; `Formula/Semantics/Monitor/Grounding/Decimal` kept, semantics extended to `Option Bool`; kernel tests | 3 weeks | `lake build`; every atom reachable from a binder or declared not; doctor re-pointed at the ontology |
 | **2. CARLA collector + adapter v2** | `carlaspec` collector; adapter merges RSV + atoms; `capabilities.json` for CARLA; re-record the scenario set; L1 facts from atoms | 3 weeks | doctor: manifest complete; converted capture type-checks; audit tables §3a rows move from "gap" to supported |
-| **3. Pipeline** | plan prompt maps statutory elements → atoms via the whitelist; gate: whitelist check, unknown-aware vacuity, no time literals; gap ledger becomes ontology-change requests; readings carry parameters the rules consume | 2 weeks | `run_spec verify`; the U-turn/curvature substitution is rejected by the gate on a deliberate test |
+| **3. Pipeline** | planning session records element → atom claims on each node (`elements`), the harness validates and indexes them; review phase (§2.6) with blind review, back-translation, mutation calibration and K-bounded retry ending in `disputed`; gate: atom/predicate bijection, ledger consistency, unknown-aware vacuity, no time literals; gap ledger becomes ontology-change requests; readings carry parameters the rules consume | 3 weeks | `run_spec verify`; the U-turn/curvature substitution is rejected by the review phase on a deliberate mutant, with the run's recall and stability reported |
 | **4. Transfer** | video capability manifest; perception adapter over a public dataset; per-rule support report; the §4.4 metrics computed on both sources | 3 weeks | monitor runs on one video sequence; accuracy and completeness reported with `unknown` separated |
 
 Roughly one quarter for one strong engineer with a reviewer for Phase 0 and the Core freeze; the
@@ -280,7 +387,7 @@ the atom list is frozen.
   and the gate; getting the `unknown` propagation right without making everything unknown is the
   technical core of the work. Ontology minimality is a design judgement no tool settles.
 - **Medium:** timestamps and metric operators; the collector (CARLA API is rich and documented);
-  the concept whitelist.
+  the review phase's calibration operators.
 - **Costly but mechanical:** re-recording captures; regenerating the 15 rules and 30 witnesses
   against the new atoms; re-deriving labels.
 - **The thing most likely to be under-estimated:** identity on video. The grounding architecture

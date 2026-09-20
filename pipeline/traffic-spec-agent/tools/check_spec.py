@@ -656,17 +656,11 @@ def main() -> int:
     # is where the two are held to each other; it may require the generator, the
     # gate may not.
     unlifted: dict[str, str] = {}
-    try:
-        sys.path.insert(0, str(REPO_ROOT / "scripts"))
-        from diagnostics.sgg_surface import surface    # noqa: E402
-        unlifted = {k: "available_not_exposed"
-                    for k in set(surface()) - set(CONSUMED_ATTRS)}
-    except Exception:                                  # noqa: BLE001
-        for group, body in (schema.get("available_not_exposed") or {}).items():
-            if group.startswith("$") or not isinstance(body, dict):
-                continue
-            for pattern in (body.get("matches") or []):
-                unlifted[pattern] = group
+    for group, body in (schema.get("available_not_exposed") or {}).items():
+        if group.startswith("$") or not isinstance(body, dict):
+            continue
+        for pattern in (body.get("matches") or []):
+            unlifted[pattern] = group
     # A generator key that IS consumed reaches Lean under another name. Saying
     # "does not exist" to a rule that reached for the generator's spelling is
     # the answer that pushes a formalizable law toward `unsupported`.
@@ -735,7 +729,7 @@ def main() -> int:
     # `Core/Builders.lean`, so a rule grounding on it showed only that its
     # binders bind against data written to make them bind. Whether a spec fires
     # correctly is asked of a recorded capture and its human labels, by
-    # `scripts/diagnostics/capture_eval.py`, and not by this gate.
+    # `run_spec monitor` against recorded driving, and not by this gate.
     warnings: list[str] = []
 
     # ── 6. hygiene ──────────────────────────────────────────────────────
