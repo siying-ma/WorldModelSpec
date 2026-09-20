@@ -1,0 +1,81 @@
+import TrafficSpec.Core.Atoms
+namespace TrafficSpec.Tests
+open TrafficSpec Units
+
+-- Two cars on a straight road heading +x: a at the origin, b 20 m ahead, both 4.5 m × 1.8 m;
+-- a pedestrian at (10, 3) with no kinematics beyond position; occupancy observed.
+def car (id : Nat) (x : Int) (dir : Int) (v : Int) : RoadUser :=
+  { track := id
+    classes := some [.motorVehicle]
+    kin := { position := some (metres x, metres 0)
+             heading := some (Q.ofInt dir, Q.ofInt 0)
+             velocity := some (metresPerSecond (dir * v), metres 0)
+             speed := some (metresPerSecond v)
+             extent := some (Q.mk' 225 100, Q.mk' 9 10, Q.mk' 3 4) } }
+def ua : RoadUser := car 1 0 1 10
+def ub : RoadUser := { car 2 20 1 8 with classes := some [.motorVehicle, .taxicab], sig := { turnIndicator := some .left, brakeLamp := some true } }
+def uc : RoadUser := car 3 50 (-1) 12
+def ped : RoadUser := { track := 4
+                        classes := some [.pedestrian]
+                        kin := { position := some (metres 10, metres 3) } }
+def lane7 : Structure := { id := 7
+                           kind := .lane
+                           lane := some { countInDirection := some 2, ordinalFromLeft := some 1 } }
+def sig9 : Device := { id := 9, kind := .trafficSignal, indications := some [.circularRed], governs := [7] }
+def scene0 : Scene := { t := 0
+                        subject := some 1
+                        users := [ua, ub, uc, ped]
+                        structures := [lane7]
+                        devices := [sig9]
+                        occupancyObserved := true
+                        occupies := [(1, 7), (2, 7)]
+                        env := { darkness := some false }
+                        assumptions := [("asm.business_district", true)] }
+def sceneUnobserved : Scene := { t := 0, users := [ua, ub] }
+
+#guard ru_motor_vehicle scene0 1 = some true
+#guard ru_taxicab scene0 1 = some false
+#guard ru_taxicab scene0 2 = some true
+#guard ru_pedestrian scene0 4 = some true
+#guard ru_motor_vehicle scene0 99 = none                 -- unknown track
+#guard ru_subject scene0 1 = some true
+#guard ru_subject sceneUnobserved 1 = none              -- no subject declared
+#guard (kin_speed scene0 2).map (Q.eq · (metresPerSecond 8)) = some true
+#guard kin_speed scene0 4 = none                        -- the pedestrian's speed was not observed
+#guard (rel_centre_distance scene0 1 2).map (Q.eq · (metres 20)) = some true
+#guard (rel_centre_distance scene0 1 4).map (Q.lt · (metres 11)) = some true   -- √109 ≈ 10.44
+#guard (rel_centre_distance scene0 1 4).map (Q.gt · (metres 10)) = some true
+#guard (rel_surface_gap_longitudinal scene0 1 2).map (Q.eq · (Q.mk' 155 10)) = some true  -- 20 − 2·2.25
+#guard rel_ahead_in_lane scene0 2 1 = some true          -- b is ahead of a in the shared lane
+#guard rel_ahead_in_lane scene0 1 2 = some false
+#guard rel_bearing_ahead scene0 1 2 = some true
+#guard rel_bearing_left scene0 1 4 = some true           -- the pedestrian is to a's left
+#guard rel_oncoming scene0 1 3 (Q.mk' 9 10) = some true  -- c heads −x toward a and closes
+#guard rel_oncoming scene0 1 2 (Q.mk' 9 10) = some false
+#guard rel_same_direction scene0 1 2 (Q.mk' 9 10) = some true
+#guard rel_contact scene0 1 2 = some false
+#guard rel_surface_gap scene0 1 4 = none                 -- the pedestrian has no extent
+#guard rel_occupies scene0 1 7 = some true
+#guard rel_occupies scene0 4 7 = some false
+#guard rel_occupies sceneUnobserved 1 7 = none           -- occupancy not observed at all
+#guard st_lane scene0 7 = some true
+#guard st_lane_adjacency_count scene0 7 = some 2
+#guard st_intersection scene0 7 = some false
+#guard st_intersection scene0 8 = none                   -- unknown region
+#guard dev_traffic_signal_shows scene0 9 .circularRed = some true
+#guard dev_traffic_signal_shows scene0 9 .circularGreen = some false
+#guard dev_governs scene0 9 7 = some true
+#guard dev_inoperative scene0 9 = none
+#guard sig_turn_indicator scene0 2 = some .left
+#guard sig_brake_lamp scene0 1 = none
+#guard env_darkness scene0 = some false
+#guard env_precipitation scene0 = none
+#guard Scene.assumption scene0 "asm.business_district" = some true
+#guard Scene.assumption scene0 "asm.school_day" = none
+#guard AsmId.wellFormed "asm.school_day" = true
+#guard AsmId.wellFormed "school_day" = false
+#guard SignalIndication.ofString "green_arrow(left)" = some (.greenArrow .left)
+#guard SignalIndication.toString (.flashingYellowArrow .right) = "flashing_yellow_arrow(right)"
+#guard RoadUserClass.ofString "motor_vehicle" = some .motorVehicle
+#guard CurbColour.ofString "purple" = none
+end TrafficSpec.Tests
