@@ -348,7 +348,7 @@ reject.
 
 1. Tag every line with `tier: C | Q | S` in `laws.jsonl` (a corpus-curation field, like
    `subject`; the tagging above is the first draft and should be checked by a second reader).
-2. **Tier S lines leave the formalization corpus.** Move them to `laws/example/standards.jsonl`.
+2. **Tier S lines leave the formalization corpus.** Move them to `laws/full_list/standards.jsonl`.
    They are not in the coverage denominator and no rule is written for them in the first run.
    They stay in the repository because (a) several Tier Q rules point at them (267-2a and 607-1a
    cite 600(1)(a)'s criteria), and (b) a later phase can attach *surrogate* rules with named
@@ -398,7 +398,7 @@ target the corpus divides as follows (driver-subject lines: 227).
 | LVMC-11-40-150, LVMC-11-38-040 | attaching to or holding a moving vehicle | yes (relation to another vehicle) | keep: this one *is* a traffic interaction |
 | LVMC-11-40-185-B | stunts, wheelies, riding on handlebars | partly | keep as rider conduct, tier S/Q mixed |
 
-Recommendation: create `laws/example/excluded.jsonl` with the three apparel lines and the seven
+Recommendation: create `laws/full_list/excluded.jsonl` with the three apparel lines and the seven
 equipment-legality lines, each with a one-line reason, so the exclusion is recorded and
 reversible. That leaves 312 lines, of which 145 form the first-run driver set.
 

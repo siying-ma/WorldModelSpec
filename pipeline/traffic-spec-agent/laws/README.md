@@ -1,11 +1,26 @@
-# The example corpus — the traffic law in force in Las Vegas
+# The law corpus — the traffic law in force in Las Vegas
 
-`laws.jsonl` is the **pipeline corpus: 285 obligations** taken verbatim from the three bodies of
+## Layout
+
+| path | what it holds |
+|---|---|
+| `full_list/` | the whole corpus: `laws.jsonl` (285), `laws_full.jsonl` (296), `excluded.jsonl` (11), `unresolvable.jsonl` (31), `definitions.jsonl` (123) |
+| `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl`, each with the `definitions.jsonl` that goes with it |
+| `evaluation_scenario/` | one evaluation description per corpus line — required observations, activation conditions, exceptions, timing requirements (see its own README) |
+| `audit_and_scripts/` | the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
+
+The parsers, the selection list and the generators that produce all of it live outside the agent's
+reach in `pipeline/ontology_provenance/nrs_tools/`.
+
+## The corpus
+
+`full_list/laws.jsonl` is the **pipeline corpus: 285 obligations** taken verbatim from the three bodies of
 law that govern driving on Las Vegas streets. 387 lines were cut; 65 were dropped because another
 line states the same obligation more narrowly (*Overlapping obligations* below); 42 more are kept
-out of the pipeline corpus because they do not judge a driving situation (`excluded.jsonl`, 11) or
-carry a reference no source can resolve (`unresolvable.jsonl`, 31); 5 lines that had been dropped
-for a narrower text return because that text is unresolvable (`reinstated_for`). `laws_full.jsonl`
+out of the pipeline corpus because they do not judge a driving situation (`full_list/excluded.jsonl`,
+11) or carry a reference no source can resolve (`full_list/unresolvable.jsonl`, 31); 5 lines that had been dropped
+for a narrower text return because that text is unresolvable (`reinstated_for`).
+`full_list/laws_full.jsonl`
 (296) is the corpus plus the excluded lines, i.e. every resolvable line. Every line carries `tier`
 (C: no judgement element, 163; Q: a concrete rule with a judgement element, 87; S: the obligation
 is only a standard of care, 35) so that the planner and the evaluation can treat them differently
@@ -46,30 +61,32 @@ Code itself. The parsed section trees, the generator and the raw section files l
   `format_laws`); every other field is for people and for filtering.
 - `source` — the exact subsection path, and after `with`, any further paragraphs whose text was
   prepended or appended to this line.
-- `subject` — whose conduct the obligation judges: `driver` (227 lines), `rider` of a bicycle,
-  electric bicycle, electric scooter or wheeled toy (29), `pedestrian` (20), `motorcyclist` (10),
-  `delivery_device_operator` (7), `truck_driver` (5), `bus_operator` (4), and single-digit
+- `subject` — whose conduct the obligation judges: `driver` (204 lines), `rider` of a bicycle,
+  electric bicycle, electric scooter or wheeled toy (27), `pedestrian` (20), `motorcyclist` (8),
+  `delivery_device_operator` (6), `bus_operator` (4), `truck_driver` (3), and single-digit
   groups for occupants, school-bus, taxicab, tour-bus, commercial, hazardous-materials,
   low-speed-vehicle, golf-cart, emergency-vehicle, procession, moped and slow-vehicle operators.
   A run that judges an ego vehicle should filter to `driver` plus any class the ego belongs to.
-- `theme` — a coarse grouping used only for selecting sub-corpora.
-- `supersedes` — on 70 lines: the ids of lines that stated the same obligation more broadly
+- `theme` — a coarse grouping (26 of them) used only for selecting sub-corpora.
+- `supersedes` — on 64 lines: the ids of lines that stated the same obligation more broadly
   and were therefore dropped from the corpus. Informational; nothing in the pipeline reads it.
-- `refs` — on 75 lines: the corpus ids and `DEF-*` ids that the line's internal references
+- `refs` — on 53 corpus lines: the corpus ids and `DEF-*` ids that the line's internal references
   resolve to. The same ids appear **inside the text** in square brackets right after the
   referring words ("subsection 4 [NRS-484B-250-4]"), so the planner sees the resolution where
   the law makes the reference. The bracket is an annotation; the words of the law are unchanged.
   A reference to a statutory line that was dropped for a narrower municipal text resolves to the
   survivor (NRS 484B.290 → `LVMC-11-30-140-B`).
-- `unresolved` — on 35 lines: references that cannot be resolved inside the corpus, each as
+- `unresolved` — references that cannot be resolved inside the corpus, each as
   `{phrase, kind, note}` (kinds: `schedule`, `external_equipment`, `external_class`,
   `no_criterion`, `penalty`, `purpose`, `permit`, `federal_definition`, `regulation`,
-  `administrative`, `region_map`). A planner node for such a line must carry the phrase as a
-  residue. The audit (`CORPUS_AUDIT_2026-09-19.md` §1e) lists all 39.
+  `administrative`, `region_map`, `removed_target`). A line carrying any other kind is in
+  `full_list/unresolvable.jsonl`, so inside the corpus only `removed_target` remains: 3 lines,
+  6 marks. A planner node for such a line must carry the phrase as a residue. The audit
+  (`audit_and_scripts/CORPUS_AUDIT_2026-09-19.md` §1e) lists every mark made before the removal.
 
 ## Definitions
 
-`definitions.jsonl` (123 records) is built **from the definition chapters of the sources, not
+`full_list/definitions.jsonl` (123 records) is built **from the definition chapters of the sources, not
 from the corpus**: every "X defined" section of NRS 484A.015–.320 (chapter-wide definitions, 62),
 NRS 484B.003–.077 (rules-of-the-road definitions, 25) plus the low-speed-vehicle definition inside
 484B.637, NRS 486.011–.057 (motorcycles, 9) and LVMC 11.02 (19). Each record is `kind: term`,
@@ -77,7 +94,7 @@ carries the defined `terms`, the verbatim text, its `source` and `applies_to` (N
 both sources define a term (commercial vehicle, trailer, taxicab, electric bicycle, electric
 scooter, muffler) the municipal definition governs municipal lines and the statutory one
 statutory lines, as LVMC 11.02.020 itself provides. `term_in_corpus` is an informational flag
-(81 of 115 terms occur in some line); no term was selected or dropped by it. NRS 484B.800–.827
+(81 of 122 defined terms occur in some line); no term was selected or dropped by it. NRS 484B.800–.827
 define terms for the traffic-stop data chapter and no rule of the road, and are excluded.
 
 Eight further records are `kind: provision`: operative text that a line cites for its trigger
@@ -96,7 +113,8 @@ incident' means …") are appended to the line that needs them instead.
 ## The corpus and what is kept out of it
 
 Every line carries a `tier` (C / Q / S) and a `bucket`; `pipeline/ontology_provenance/nrs_tools/tiers.py`
-and `references.py` hold the classification and its reasons. The lines partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 296).
+and `references.py` hold the classification and its reasons. The four views live in `full_list/`
+and partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 296).
 
 | file | lines | what it holds |
 |---|---|---|
@@ -111,7 +129,7 @@ cascade): NRS 484B.300(1) → 484B.307(11); 484B.208(1) → 484B.323(1); 484B.26
 no longer in the corpus, because its lines cite the equipment permits behind amber and steady-blue
 lamps; the approach-of-an-emergency-vehicle duty (484B.267) remains.
 
-`CONCRETE_DEPENDENCIES.md` (generated) lists, for every tier-C line with references, the tier or
+`audit_and_scripts/CONCRETE_DEPENDENCIES.md` (generated) lists, for every tier-C line with references, the tier or
 file of each referenced id, so that a tier-C rule that composes a judgement rule or a removed line
 is visible before planning.
 
@@ -124,7 +142,7 @@ class) and whose obligation has fewer open judgement terms and states its except
 state statute expressly preempts municipal regulation (NRS 486.180(2), motorcycle operation) the
 statute was kept; where the words are identical the statute was kept; where neither text
 contains the other, both were kept. Every decision and its reason is in
-[OVERLAPS.md](OVERLAPS.md), generated from `overlaps.py` beside the corpus generator. Result:
+[audit_and_scripts/OVERLAPS.md](audit_and_scripts/OVERLAPS.md), generated from `overlaps.py` beside the corpus generator. Result:
 47 municipal and 18 statutory lines dropped, 5 pairs kept as partial overlaps. Examples of the
 statute losing: LVMC 11.52.130(A)(4) states both hydrant distances unconditionally where NRS
 484B.450(1)(d) defers the twenty-foot case to a local ordinance; LVMC 11.30.030 forbids passing a
@@ -230,7 +248,7 @@ expected to come back `unsupported`, or formalized with a stated residue:
 
 ## Sizing
 
-322 lines; 227 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 80
+285 lines; 204 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 71
 iterations. To measure on a shorter budget, filter by `subject`, `theme` or id prefix into
 `laws/<name>/laws.jsonl` and point `--laws` at it.
 
@@ -247,12 +265,21 @@ iterations. To measure on a shorter budget, filter by `subject`, `theme` or id p
 
 ## Training / test split (2026-09-20)
 
-`train/` and `test/` each hold a `laws.jsonl` and the `definitions.jsonl` that goes with it; run a
-split with `--laws laws/example/train/laws.jsonl`. `SPLIT.md` records the choice of test lines,
-the constraints checked (no training line references a test line; the test set introduces atoms
-no training line mentions; definitions follow their lines) and the atoms, values and derived
-concept that are test-only. `SPLIT_AUDIT.md` says what in the unsplit Core files exists only
-because of a test line. `split_atoms.json` is the machine-readable result the training-only
-ontology artifacts are derived from (`ontology/ATOMS_train.md`, `library/splits/train/`).
-Regenerate with `python -m nrs_tools.split && python -m nrs_tools.atoms_train` from
+`example/train/` and `example/test/` each hold a `laws.jsonl` and the `definitions.jsonl` that goes
+with it; run a split with `--laws laws/example/train/laws.jsonl`.
+[audit_and_scripts/SPLIT.md](audit_and_scripts/SPLIT.md) records the choice of test lines, the
+constraints checked (no training line references a test line; the test set introduces atoms no
+training line mentions; definitions follow their lines) and the atoms, values and derived concept
+that are test-only. [audit_and_scripts/SPLIT_AUDIT.md](audit_and_scripts/SPLIT_AUDIT.md) says what
+in the unsplit Core files exists only because of a test line. `audit_and_scripts/split_atoms.json`
+is the machine-readable result the training-only ontology artifacts are derived from
+(`ontology/ATOMS_train.md`, `library/splits/train/`). Regenerate with
+`python -m nrs_tools.split && python -m nrs_tools.atoms_train` from
 `pipeline/ontology_provenance/`.
+
+## Evaluation scenarios
+
+`evaluation_scenario/` carries, for every line of `full_list/laws.jsonl`, the structured reading an
+evaluator needs before it can judge a trace against that line: which observations the line requires,
+when it is active, what the text excepts, and what it demands of timing. See
+[evaluation_scenario/README.md](evaluation_scenario/README.md).
