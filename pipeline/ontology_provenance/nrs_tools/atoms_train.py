@@ -24,7 +24,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PIPE = HERE.parents[1]
 AGENT = PIPE / "traffic-spec-agent"
-SPLIT = AGENT / "laws" / "example" / "split_atoms.json"
+SPLIT = AGENT / "laws" / "audit_and_scripts" / "split_atoms.json"
 ATOMS_MD = AGENT / "ontology" / "ATOMS.md"
 ATOMS_TRAIN_MD = AGENT / "ontology" / "ATOMS_train.md"
 ATOMS_LEAN = AGENT / "library" / "TrafficSpec" / "Core" / "Atoms.lean"

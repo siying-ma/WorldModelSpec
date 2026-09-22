@@ -85,6 +85,5 @@ if [ "${VENV_CREATED}" -eq 1 ]; then
   echo "  source .venv/bin/activate"
 fi
 cat <<'EOF'
-  python -m scripts.run_spec init
-  python -m scripts.run_spec loop --run-id first --max-iterations 2
+  python -m harness init
 EOF

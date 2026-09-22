@@ -27,6 +27,11 @@ inductive Val
   | device (d : DeviceId)
   deriving Repr, DecidableEq, Inhabited
 
+def Val.kind : Val → EntityKind
+  | .track _ => .track
+  | .region _ => .region
+  | .device _ => .device
+
 /-- Variable bindings (the grounding's output; `Env` is the world's environment record). -/
 structure Binding where
   binds : List (String × Val) := []
@@ -95,7 +100,10 @@ mutual
     | untilWithin (m : Measure) (d : Term) (subject : String) (φ ψ : Formula)
     | count (edge : Formula) (sinceφ : Formula) (op : CmpOp) (n : Nat)   -- rising edges of `edge` since `sinceφ` became true (start of its latest run)
     | derived (concept : String) (args : List Arg) (params : List Term)   -- a Boolean derived concept
-    | rule (id : String) (map : List (String × String))       -- another rule's obligation verdict
+    | rule (id : String) (map : List (String × String))       -- another rule complied with (not engaged counts as complied)
+    | ruleApplies (id : String) (map : List (String × String)) -- another rule engaged (its binders' classes and applicability hold)
+    | existsUser (var : String) (φ : Formula)                 -- some road user present in the scene
+    | forallUser (var : String) (φ : Formula)
     | existsRegion (kind : StructureKind) (var : String) (φ : Formula)
     | forallRegion (kind : StructureKind) (var : String) (φ : Formula)
     | existsDevice (kind : DeviceKind) (var : String) (φ : Formula)
@@ -126,7 +134,8 @@ mutual
     | .untilWithin _ d _ φ ψ => termAtoms d ++ atoms φ ++ atoms ψ
     | .count e s _ _ => atoms e ++ atoms s
     | .derived c _ ps => c :: ps.flatMap termAtoms
-    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ => atoms φ
+    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsUser _ φ | .forallUser _ φ => atoms φ
     | _ => []
 end
 
@@ -148,20 +157,105 @@ mutual
     | .untilWithin _ d _ φ ψ => termParams d ++ params φ ++ params ψ
     | .count e s _ _ => params e ++ params s
     | .derived _ _ ps => ps.flatMap termParams
-    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ => params φ
+    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsUser _ φ | .forallUser _ φ => params φ
     | _ => []
 end
 
 /-- The rules a formula composes. -/
 partial def composed : Formula → List String
-  | .rule id _ => [id]
+  | .rule id _ | .ruleApplies id _ => [id]
   | .not φ | .always φ | .eventually φ => composed φ
   | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => composed φ ++ composed ψ
   | .holdsFor _ _ _ φ | .within _ _ _ φ => composed φ
   | .untilWithin _ _ _ φ ψ => composed φ ++ composed ψ
   | .count e s _ _ => composed e ++ composed s
-  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ => composed φ
+  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+  | .existsUser _ φ | .forallUser _ φ => composed φ
   | _ => []
+
+-- Numeric literals other than zero, with their units: what the gate holds against the node's
+-- declared parameters (a magnitude belongs in the reading, not in a rule).
+mutual
+  partial def termLiterals : Term → List (Q × PUnit')
+    | .lit q u => if Q.isZero q then [] else [(q, u)]
+    | .quantity _ _ ps => ps.flatMap termLiterals
+    | .distanceWhile _ φ => literals φ
+    | .add a b | .sub a b | .mul a b | .div a b => termLiterals a ++ termLiterals b
+    | .neg a | .abs a => termLiterals a
+    | _ => []
+  partial def literals : Formula → List (Q × PUnit')
+    | .atom _ _ ps => ps.flatMap termLiterals
+    | .cmp l _ r => termLiterals l ++ termLiterals r
+    | .not φ | .always φ | .eventually φ => literals φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => literals φ ++ literals ψ
+    | .holdsFor _ d _ φ | .within _ d _ φ => termLiterals d ++ literals φ
+    | .untilWithin _ d _ φ ψ => termLiterals d ++ literals φ ++ literals ψ
+    | .count e s _ _ => literals e ++ literals s
+    | .derived _ _ ps => ps.flatMap termLiterals
+    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsUser _ φ | .forallUser _ φ => literals φ
+    | _ => []
+end
+
+/-- A leaf is a subformula that reads the world or another rule: an atom, a comparison, an
+    assumption, a derived concept or a composition. Leaves are numbered in traversal order. -/
+def isLeaf : Formula → Bool
+  | .atom .. | .cmp .. | .asm _ | .derived .. | .rule .. | .ruleApplies .. => true
+  | _ => false
+
+/-- The leaves in traversal order, as a description each. -/
+partial def leaves : Formula → List String
+  | .atom n args _ => [s!"atom {n} {repr args}"]
+  | .cmp l _ r => [s!"cmp {repr l} {repr r}"]
+  | .asm id => [s!"asm {id}"]
+  | .derived n args _ => [s!"derived {n} {repr args}"]
+  | .rule id _ => [s!"rule {id}"]
+  | .ruleApplies id _ => [s!"ruleApplies {id}"]
+  | .not φ | .always φ | .eventually φ => leaves φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => leaves φ ++ leaves ψ
+  | .holdsFor _ _ _ φ | .within _ _ _ φ => leaves φ
+  | .untilWithin _ _ _ φ ψ => leaves φ ++ leaves ψ
+  | .count e s _ _ => leaves e ++ leaves s
+  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+  | .existsUser _ φ | .forallUser _ φ => leaves φ
+  | _ => []
+
+def leafCount (φ : Formula) : Nat := (leaves φ).length
+
+/-- The formula with its `k`-th leaf (traversal order) replaced by `r`, and the number of leaves
+    in the formula. A subformula whose leaves all precede or follow the `k`-th is returned as it is. -/
+partial def replaceLeafAux (k : Nat) (r : Formula) : Formula → Formula × Nat
+  | φ@(.atom ..) | φ@(.cmp ..) | φ@(.asm _) | φ@(.derived ..) | φ@(.rule ..) | φ@(.ruleApplies ..) =>
+    (if k = 0 then r else φ, 1)
+  | .not φ => let (φ', n) := replaceLeafAux k r φ; (.not φ', n)
+  | .always φ => let (φ', n) := replaceLeafAux k r φ; (.always φ', n)
+  | .eventually φ => let (φ', n) := replaceLeafAux k r φ; (.eventually φ', n)
+  | .and φ ψ => let (φ', ψ', n) := two k r φ ψ; (.and φ' ψ', n)
+  | .or φ ψ => let (φ', ψ', n) := two k r φ ψ; (.or φ' ψ', n)
+  | .implies φ ψ => let (φ', ψ', n) := two k r φ ψ; (.implies φ' ψ', n)
+  | .until φ ψ => let (φ', ψ', n) := two k r φ ψ; (.until φ' ψ', n)
+  | .since φ ψ => let (φ', ψ', n) := two k r φ ψ; (.since φ' ψ', n)
+  | .holdsFor m d s φ => let (φ', n) := replaceLeafAux k r φ; (.holdsFor m d s φ', n)
+  | .within m d s φ => let (φ', n) := replaceLeafAux k r φ; (.within m d s φ', n)
+  | .untilWithin m d s φ ψ => let (φ', ψ', n) := two k r φ ψ; (.untilWithin m d s φ' ψ', n)
+  | .count e s op c => let (e', s', n) := two k r e s; (.count e' s' op c, n)
+  | .existsRegion kd v φ => let (φ', n) := replaceLeafAux k r φ; (.existsRegion kd v φ', n)
+  | .forallRegion kd v φ => let (φ', n) := replaceLeafAux k r φ; (.forallRegion kd v φ', n)
+  | .existsDevice kd v φ => let (φ', n) := replaceLeafAux k r φ; (.existsDevice kd v φ', n)
+  | .forallDevice kd v φ => let (φ', n) := replaceLeafAux k r φ; (.forallDevice kd v φ', n)
+  | .existsUser v φ => let (φ', n) := replaceLeafAux k r φ; (.existsUser v φ', n)
+  | .forallUser v φ => let (φ', n) := replaceLeafAux k r φ; (.forallUser v φ', n)
+  | φ => (φ, 0)
+where
+  /-- Two subformulas in sequence: the right one is touched only when the target leaf lies in it. -/
+  two (k : Nat) (r : Formula) (φ ψ : Formula) : Formula × Formula × Nat :=
+    let (φ', n) := replaceLeafAux k r φ
+    if k < n then (φ', ψ, n + leafCount ψ)
+    else let (ψ', m) := replaceLeafAux (k - n) r ψ; (φ', ψ', n + m)
+
+/-- The formula with its `k`-th leaf replaced by `r`. -/
+def replaceLeaf (k : Nat) (r : Formula) (φ : Formula) : Formula := (replaceLeafAux k r φ).1
 
 /-- The assumptions a formula reads. -/
 partial def assumptions : Formula → List AsmId
@@ -171,7 +265,8 @@ partial def assumptions : Formula → List AsmId
   | .holdsFor _ _ _ φ | .within _ _ _ φ => assumptions φ
   | .untilWithin _ _ _ φ ψ => assumptions φ ++ assumptions ψ
   | .count e s _ _ => assumptions e ++ assumptions s
-  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ => assumptions φ
+  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+  | .existsUser _ φ | .forallUser _ φ => assumptions φ
   | _ => []
 end Formula
 

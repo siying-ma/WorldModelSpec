@@ -27,7 +27,7 @@ def scene0 : Scene := { t := 0
                         users := [ua, ub, uc, ped]
                         structures := [lane7]
                         devices := [sig9]
-                        occupancyObserved := true
+                        occupancyObserved := [1, 2, 3, 4]
                         occupies := [(1, 7), (2, 7)]
                         env := { darkness := some false }
                         assumptions := [("asm.business_district", true)] }
@@ -58,6 +58,19 @@ def sceneUnobserved : Scene := { t := 0, users := [ua, ub] }
 #guard rel_occupies scene0 1 7 = some true
 #guard rel_occupies scene0 4 7 = some false
 #guard rel_occupies sceneUnobserved 1 7 = none           -- occupancy not observed at all
+#guard rel_occupies { scene0 with occupancyObserved := [1] } 2 7 = none   -- observed for track 1 only
+#guard rel_occupies { scene0 with occupancyObserved := [1] } 1 7 = some true
+-- region geometry: distance to a boundary is zero inside, the nearest edge outside
+def box : Structure := { id := 8, kind := .crosswalk, boundary := some [(metres 5, metres 1), (metres 6, metres 1), (metres 6, metres 3), (metres 5, metres 3)] }
+def sceneBox : Scene := { scene0 with structures := [lane7, box] }
+#guard (st_region_geometry_distance sceneBox 1 8).map (fun d => Q.gt d (Q.mk' 275 100) && Q.lt d (Q.mk' 276 100)) = some true   -- from the front-left corner (2.25, 0.9) of a's body to (5, 1)
+#guard (footprint scene0 1).map (·.length) = some 4
+#guard footprint scene0 4 = none                                                              -- no extent, no heading
+#guard (st_region_geometry_distance sceneBox 4 8).map (Q.eq · Q.zero) = some false          -- the pedestrian at (10,3) is outside
+#guard (st_region_geometry_distance sceneBox 4 8).map (Q.eq · (metres 4)) = some true       -- 4 m east of the (6,3) corner along the edge
+#guard st_region_geometry_distance sceneBox 1 99 = none
+#guard (Geom.segmentDistance (metres 3, metres 4) (metres 0, metres 0) (metres 6, metres 0)) = metres 4
+#guard (Geom.polygonDistance (Q.mk' 11 2, metres 2) [(metres 5, metres 1), (metres 6, metres 1), (metres 6, metres 3), (metres 5, metres 3)]) = some Q.zero
 #guard st_lane scene0 7 = some true
 #guard st_lane_adjacency_count scene0 7 = some 2
 #guard st_intersection scene0 7 = some false

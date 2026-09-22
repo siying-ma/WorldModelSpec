@@ -12,8 +12,13 @@
   A surrogate rule (the whole duty is an operationalized standard) is monitored like any other,
   but its verdicts are evidence about the standard, never the law's own verdict; the flag is what
   the monitor and the export propagate so the two are never summed.
+
+  This file holds the declarations only and imports no evaluator: a rule file that imports it
+  can state a rule but cannot read a scene, evaluate a formula or build evidence. Evaluation and
+  the static check are in RuleEval.lean, which nothing under Rules/ may import.
 -/
-import TrafficSpec.Core.Semantics
+import TrafficSpec.Core.Formula
+import TrafficSpec.Core.Unknown
 
 namespace TrafficSpec
 
@@ -75,8 +80,6 @@ theorem verdictAt_compliant (app obl : R) (ha : app.v = .t) (ho : obl.v = .t) : 
   unfold verdictAt; rw [ha, ho]
 
 namespace Rule
-open Semantics
-
 /-- The formulas a rule consists of, class formulas first. -/
 def formulas (r : Rule) : List Formula := r.binders.map (·.cls) ++ [r.applicability, r.obligation]
 /-- Atom and derived-concept names the rule reads. -/
@@ -90,50 +93,16 @@ def usedAssumptions (r : Rule) : List AsmId := (r.formulas.flatMap Formula.assum
 def binderNames (r : Rule) : List String := r.binders.map (·.name)
 def subject (r : Rule) : Option String := r.binders.head?.map (·.name)
 
-/-- Every binder's class holds for its bound track and the applicability holds. -/
-def engaged (r : Rule) (c : SemCtx) (i : Nat) : R :=
-  R.and (R.all (r.binders.map fun b => eval c i b.cls)) (eval c i r.applicability)
-
-def verdict (r : Rule) (c : SemCtx) (i : Nat) : Verdict :=
-  verdictAt (r.engaged c i) (eval c i r.obligation)
-
-/-- The rule as a three-valued statement: complied with (true), violated (false), or unknown.
-    Not engaged counts as complied with — a rule that does not apply is not broken. -/
-def asR (r : Rule) (c : SemCtx) (i : Nat) : R :=
-  match r.verdict c i with
-  | .compliant | .notApplicable => R.t
-  | .violated => R.f
-  | .unknown w => ⟨.u, w⟩
-
-/-- Structural well-formedness the gate checks before any trace: binders named, distinct, the
-    subject first; every variable the formulas use is a binder or bound by a quantifier is the
-    gate's job over the AST; every parameter and assumption used is declared where it must be. -/
-def wellFormed (r : Rule) : Bool :=
-  !r.binders.isEmpty &&
-  r.binderNames.eraseDups.length == r.binders.length &&
-  r.binders.all (fun b => !b.name.isEmpty) &&
-  !r.id.isEmpty &&
-  r.usedAssumptions.all (r.assumptions.contains ·) &&
-  r.operationalizations.all (fun o => Derived.derivedNames.contains (defName o.concept))
-
+/-- The rule and, transitively, the rules it composes (each once). -/
+def closure (rules : List Rule) (r : Rule) : List Rule :=
+  let rec go (fuel : Nat) (seen : List String) (todo : List Rule) : List Rule :=
+    match fuel, todo with
+    | 0, _ | _, [] => []
+    | fuel + 1, x :: rest =>
+      let next := x.composes.filterMap fun id =>
+        if seen.contains id then none else rules.find? (·.id == id)
+      x :: go fuel (seen ++ next.map (·.id)) (rest ++ next)
+  go (rules.length + 1) [r.id] [r]
 end Rule
-
-/-- Rule composition over a library, with fuel bounding the nesting depth. The composed rule's
-    binders are bound through `map` (inner binder ↦ caller variable); an unmapped binder is an
-    unbound variable, an unknown id is `compositionUnknown`. -/
-def composeWith (rules : List Rule) (τ : Trace) (ρ : Reading) :
-    Nat → String → List (String × String) → Binding → Nat → R
-  | 0, id, _, _, _ => R.u (.compositionUnknown id)
-  | fuel + 1, id, map, β, i =>
-    match rules.find? (·.id == id) with
-    | none => R.u (.compositionUnknown id)
-    | some r =>
-      let β' : Binding := ⟨map.filterMap fun (inner, outer) => (β.lookup outer).map fun v => (inner, v)⟩
-      r.asR { τ := τ, ρ := ρ, β := β', compose := composeWith rules τ ρ fuel } i
-
-/-- The evaluation context for a rule set over a trace: composition resolves against `rules`,
-    nested at most `rules.length` deep. -/
-def Rule.context (rules : List Rule) (τ : Trace) (ρ : Reading) (β : Binding) : Semantics.SemCtx :=
-  { τ := τ, ρ := ρ, β := β, compose := composeWith rules τ ρ rules.length }
 
 end TrafficSpec

@@ -163,6 +163,7 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `st.fire_hydrant` | a fire hydrant beside the roadway | general |
 | `st.fire_station_entrance` | the driveway entrance of a fire station | general |
 | `st.lane_width` | width of a lane at a point | general |
+| `st.region_geometry` | the reference point and the boundary polygon of a structure region in the world frame, and the ground distance from a road user's body outline to it (zero when they overlap); a source that maps regions without their outline declares it absent, and every such distance is then unknown **Not a stand-in for:** occupancy — a footprint inside a boundary is `rel.occupies`, which a source may observe without geometry | general |
 | `st.obstruction` | a physical object on or beside the roadway that is not a road user; **kind** ∈ {debris, excavation, hose, barrier, stalled_vehicle_wreckage, sidewalk_fixture, mail_drop_box, other} | general |
 | `rel.occupies` | a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure) | general |
 
@@ -304,10 +305,10 @@ may use them, and a rule never redefines them:
 | `drv.moving_off` | stopped then speed > ε | ε |
 | `drv.turning` | heading change ≥ θ within a window w, left or right | θ, w |
 | `drv.u_turn` | heading reversal within a window w while on the roadway | w, tolerance |
-| `drv.lane_change` | `rel.occupies` moves from one lane to an adjacent same-direction lane | — |
-| `drv.lane_change_feasible` | the adjacent lane on a given side has no user within gap g ahead and behind the subject's projected position | side, g |
-| `drv.overtaking` | same direction, a moves from behind b to ahead of b | — |
-| `drv.passing_side` | which side the overtaken vehicle was on | — |
+| `drv.lane_change` | the start of a lane change: a lane adjacent to those occupied at the previous observation is entered | — |
+| `drv.lane_change_feasible` | the adjacent lane on a given side has no user within gap g ahead and behind the subject's projected position; undefined while the body occupies several lanes | side, g |
+| `drv.overtaking` | same direction (heading cosine at least a tolerance), b was ahead of a and is behind it | cosine tolerance |
+| `drv.passing_side` | which side the overtaken vehicle was on while the bodies overlapped, same direction | side, cosine tolerance |
 | `drv.entering_intersection` | the footprint crosses the boundary of a region (an intersection, a crosswalk, a zone) from outside to inside | — |
 | `drv.in_intersection` | the footprint overlaps the region | — |
 | `drv.approaching` | the body is within distance d, along its lane, of the region's boundary and moving toward it | d |
@@ -326,18 +327,18 @@ may use them, and a rule never redefines them:
 | `drv.vulnerable_road_user` | `ru.pedestrian` ∨ person on `ru.bicycle` / `ru.electric_bicycle` / `ru.electric_scooter` ∨ classes a reading adds | — |
 | `drv.laned_roadway` | roadway with two or more marked lanes in one direction | — |
 | `drv.extreme_lane` | the leftmost / rightmost lane among those of the subject's direction | side |
-| `drv.priority_roadway` | roadway whose entrances carry `dev.stop_sign` or `dev.yield_sign` | — |
+| `drv.priority_roadway` | roadway whose entrances carry `dev.stop_sign` or `dev.yield_sign`; undefined while the body occupies several lanes | — |
 | `drv.distance_while` | path length over which a condition has held continuously up to now | — |
 | `drv.within_signed_zone` | between a `dev.zone_sign` and its matching end sign governing the subject's lane, of a given kind | kind |
 | `drv.condition_in_effect` | a device's structured conditions hold at the observation: `env.civil_time` falls in one of its time windows on one of its days (a calendar class such as a school day or a public holiday is an assumption), and any occupancy or class condition is met by the subject | — |
 | `drv.civil_night` | `env.civil_time` is later than sunset plus an offset or earlier than sunrise minus an offset, for the date and the location the reading declares **Not a stand-in for:** `env.darkness`, which is the observed light level; a rule states which one it reads | offsets |
-| `drv.signal_cycles` | the number of complete state cycles a governing signal has shown since the subject stopped | — |
+| `drv.signal_cycles` | the number of transitions of the governing signals into an indication permitting a movement (straight, left or right) since the subject stopped | movement, stop speed |
 | `drv.slower_than_posted` | speed below the governing `dev.speed_limit_sign` value by at least a margin | margin |
 | `drv.speed_below_traffic` | speed below the median speed of same-direction users within range r by at least a margin | r, margin |
 | `drv.sight_distance_adequate` | `st.sight_distance` at the subject's position ≥ the distance a stopping- or passing-distance model gives for the subject's speed | model, deceleration |
 | `drv.stopping_distance` | the distance a body at the subject's speed needs to halt under a deceleration a, plus a reaction distance | a, reaction time |
 | `drv.hard_deceleration` | `kin.accel_longitudinal` below a negative bound | bound |
-| `drv.forced_halt` | the subject halts while a user ahead in its lane within gap g is halted, or a device or officer governing its approach requires a halt | g |
+| `drv.forced_halt` | the subject halts while a user ahead in its lane within gap g is halted, a governing signal shows a halt, a governing stop sign's line or post is within g, or a governing officer signals a halt | g, stop speed |
 | `drv.officer_directed` | a `dev.human_direction` with role police governs the subject's approach and gives an indication | — |
 
 **Dataset fields** — any edge label, trigger region, render distance, band label or node name of

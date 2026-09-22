@@ -78,6 +78,7 @@ def atomIds : List String := [
   "st.fire_hydrant",
   "st.fire_station_entrance",
   "st.lane_width",
+  "st.region_geometry",
   "st.obstruction",
   "rel.occupies",
   "dev.traffic_signal",

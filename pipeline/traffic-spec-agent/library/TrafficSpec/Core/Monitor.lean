@@ -31,7 +31,7 @@ structure Row where
   support : Support
   grounding : Grounding
   episode : Verdict
-  timeline : List (Timestamp × Verdict)
+  timeline : Array (Timestamp × Verdict)
   unknowns : List (String × Nat)
   residues : List String
   deriving Repr, Inhabited
@@ -66,21 +66,22 @@ def isUnknown : Verdict → Bool | .unknown _ => true | _ => false
 /-- Evaluate a rule set over one trace as the source would have produced it. Unsupported rules
     are reported without groundings: nothing they say could be decided. -/
 def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) : Report :=
-  let τ' := maskTrace m τ
-  let S := Setup.mk' rules τ' ρ m.reidGap
+  let S := Setup.mk' rules (maskTrace m τ) ρ m.reidGap
   let per := rules.map fun r =>
-    let sup := support r m
+    let sup := support rules r m
     match sup with
     | .unsupported _ => ({ rule := r.id, surrogate := r.surrogate, support := sup, groundings := 0, live := false,
                            violated := 0, compliant := 0, notApplicable := 0, unknown := 0 : RuleLine }, ([] : List Row))
     | _ =>
-      let rows : List Row := (groundings S r).map fun g =>
-        let tl : List (Timestamp × Verdict) := timeline S r g
-        let vs : List Verdict := tl.map Prod.snd
-        { rule := r.id, surrogate := r.surrogate, support := sup, grounding := g, episode := episode vs,
-          timeline := tl, unknowns := histogram vs, residues := r.residues }
+      let evaluated : List (Grounding × Grounding.Timeline × Verdict) := Grounding.check S r
+      let rows : List Row := evaluated.map fun (e : Grounding × Grounding.Timeline × Verdict) =>
+        let g := e.1; let tl := e.2.1; let ep := e.2.2
+        let vs : List Verdict := tl.verdicts.toList.map Prod.snd
+        { rule := r.id, surrogate := r.surrogate, support := sup, grounding := g, episode := ep,
+          timeline := tl.verdicts, unknowns := histogram vs, residues := r.residues }
       let eps : List Verdict := rows.map Row.episode
-      ({ rule := r.id, surrogate := r.surrogate, support := sup, groundings := rows.length, live := live S r,
+      ({ rule := r.id, surrogate := r.surrogate, support := sup, groundings := rows.length,
+         live := evaluated.any (fun e => e.2.1.live),
          violated := countVerdict eps (· == Verdict.violated), compliant := countVerdict eps (· == Verdict.compliant),
          notApplicable := countVerdict eps (· == Verdict.notApplicable), unknown := countVerdict eps isUnknown : RuleLine }, rows)
   { source := m.source, instants := τ.length, gap := m.reidGap, rules := per.map (·.1), rows := per.flatMap (·.2) }
@@ -98,8 +99,8 @@ def tabs (xs : List String) : String := String.intercalate "\t" xs
 def kind (surrogate : Bool) : String := if surrogate then "surrogate" else "concrete"
 
 /-- Runs of equal verdicts: (from, to, verdict). -/
-def runs (tl : List (Timestamp × Verdict)) : List (Timestamp × Timestamp × Verdict) :=
-  tl.foldl (fun acc (t, v) =>
+def runs (tl : Array (Timestamp × Verdict)) : List (Timestamp × Timestamp × Verdict) :=
+  tl.toList.foldl (fun acc (t, v) =>
     match acc with
     | (a, _, v') :: rest => if v' == v then (a, t, v) :: rest else (t, t, v) :: acc
     | [] => [(t, t, v)]) [] |>.reverse

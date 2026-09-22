@@ -47,6 +47,15 @@ def inFrame (h v : Vec) : Option (Q × Q) :=
   let n := norm h
   if Q.isZero n then none
   else some (Q.div (dot h v) n, Q.div (cross h v) n)
+/-- Distance from a point to a segment. -/
+def segmentDistance (p a b : Vec) : Q :=
+  let ab := vsub b a
+  let ap := vsub p a
+  let l2 := normSq ab
+  if Q.isZero l2 then norm ap
+  else
+    let t := Q.max Q.zero (Q.min (Q.ofInt 1) (Q.div (dot ap ab) l2))
+    norm (vsub p (vadd a (Q.mul t ab.1, Q.mul t ab.2)))
 /-- Whether a point lies inside a polygon (ray casting), for footprint-in-region tests. -/
 def inPolygon (p : Vec) (poly : List Vec) : Bool :=
   let n := poly.length
@@ -61,6 +70,17 @@ def inPolygon (p : Vec) (poly : List Vec) : Bool :=
          !Q.isZero dy &&
          Q.lt p.1 (Q.add ax (Q.div (Q.mul (Q.sub p.2 ay) (Q.sub bx ax)) dy)))
     crossings.length % 2 == 1
+/-- Distance from a point to a polygon's boundary: zero inside, the nearest edge outside. -/
+def polygonDistance (p : Vec) (poly : List Vec) : Option Q :=
+  match poly with
+  | [] => none
+  | [a] => some (norm (vsub p a))
+  | _ =>
+    if inPolygon p poly then some Q.zero
+    else
+      let n := poly.length
+      let ds := (List.range n).map fun i => segmentDistance p poly[i]! poly[(i + 1) % n]!
+      ds.foldl (fun acc d => match acc with | none => some d | some a => some (Q.min a d)) none
 end Geom
 
 -- ---------------------------------------------------------------------------------------------
@@ -179,17 +199,51 @@ def st_fire_station_entrance (s : Scene) (r : RegionId) : Option Bool := isKind 
 def st_obstruction (s : Scene) (r : RegionId) : Option Bool := isKind s r .obstruction
 def st_obstruction_kind (s : Scene) (r : RegionId) : Option ObstructionKind := (s.structure? r).bind (·.obstructionKind)
 /-- Geometry accessors every structure atom shares: the reference point and the boundary polygon. -/
-def regionPosition (s : Scene) (r : RegionId) : Option Vec := (s.structure? r).bind (·.position)
-def regionBoundary (s : Scene) (r : RegionId) : Option (List Vec) := (s.structure? r).bind (·.boundary)
+def st_region_geometry (s : Scene) (r : RegionId) : Option (Option Vec × Option (List Vec)) :=
+  (s.structure? r).map fun st => (st.position, st.boundary)
+def st_region_geometry_position (s : Scene) (r : RegionId) : Option Vec := (s.structure? r).bind (·.position)
+def st_region_geometry_boundary (s : Scene) (r : RegionId) : Option (List Vec) := (s.structure? r).bind (·.boundary)
+/-- The rectangle a road user's body covers on the ground, from its position, heading and
+    half-extents; `none` when one of them is not observed. -/
+def footprint (s : Scene) (x : TrackId) : Option (List Vec) := do
+  let p ← kin_position s x
+  let h ← kin_heading s x
+  let (hl, hw, _) ← kin_extent s x
+  let n := Geom.norm h
+  if Q.isZero n then none
+  else
+    let u := (Q.div h.1 n, Q.div h.2 n)
+    let v := (Q.neg u.2, u.1)
+    let corner (a b : Q) : Vec := Geom.vadd p (Q.add (Q.mul a u.1) (Q.mul b v.1), Q.add (Q.mul a u.2) (Q.mul b v.2))
+    pure [corner hl hw, corner hl (Q.neg hw), corner (Q.neg hl) (Q.neg hw), corner (Q.neg hl) hw]
+
+/-- Ground distance from a road user's body to a region: zero when the footprint overlaps the
+    boundary, otherwise the nearest approach between the two outlines. Without a footprint (no
+    extent or heading observed) the reference point is used; a point-like structure is measured
+    to its reference point. -/
+def st_region_geometry_distance (s : Scene) (x : TrackId) (r : RegionId) : Option Q := do
+  let p ← kin_position s x
+  match st_region_geometry_boundary s r, footprint s x with
+  | some poly, some fp =>
+    if fp.any (Geom.inPolygon · poly) || poly.any (Geom.inPolygon · fp) then some Q.zero
+    else
+      let ds := fp.filterMap (Geom.polygonDistance · poly) ++ poly.filterMap (Geom.polygonDistance · fp)
+      ds.foldl (fun acc d => match acc with | none => some d | some a => some (Q.min a d)) none
+  | some poly, none => Geom.polygonDistance p poly
+  | none, fp =>
+    let c ← st_region_geometry_position s r
+    match fp with
+    | some poly => Geom.polygonDistance c poly
+    | none => some (Geom.norm (Geom.vsub c p))
 /-- The regions of a kind present in the scene. -/
 def regionsOfKind (s : Scene) (k : StructureKind) : List RegionId :=
   (s.structures.filter (·.kind == k)).map (·.id)
 
 def rel_occupies (s : Scene) (x : TrackId) (r : RegionId) : Option Bool :=
-  if s.occupancyObserved then some (s.occupies.contains (x, r)) else none
-/-- Every region the road user occupies, when occupancy was observed. -/
+  if s.occupancyObserved.contains x then some (s.occupies.contains (x, r)) else none
+/-- Every region the road user occupies, when its occupancy was observed. -/
 def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
-  if s.occupancyObserved then some ((s.occupies.filter (·.1 == x)).map (·.2)) else none
+  if s.occupancyObserved.contains x then some ((s.occupies.filter (·.1 == x)).map (·.2)) else none
 
 -- ---------------------------------------------------------------------------------------------
 -- §4 Control devices

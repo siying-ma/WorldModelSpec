@@ -1,11 +1,18 @@
 """Generate laws.jsonl (verbatim statutory obligations) from parsed NRS and LVMC section trees.
 
-Cutting rules (see traffic-spec-agent/laws/example/README.md): one paragraph per line; lead-in
+Cutting rules (see traffic-spec-agent/laws/README.md): one paragraph per line; lead-in
 stems that end in ':' are prepended; qualifying paragraphs are appended verbatim; enumeration
 conjunctions ('; and', '; or', trailing ';') become full stops; nothing else is changed.
 """
 import json, re
+from pathlib import Path
+
 import nrs_tree, lvmc_tree
+
+# Output directories (the corpus layout under traffic-spec-agent/laws/)
+LAWS_ROOT = Path(__file__).resolve().parents[2] / "traffic-spec-agent" / "laws"
+CORPUS_DIR = LAWS_ROOT / "full_list"          # the four JSONL views and definitions.jsonl
+AUDIT_DIR = LAWS_ROOT / "audit_and_scripts"   # OVERLAPS.md, CONCRETE_DEPENDENCIES.md
 
 NRS = {c: nrs_tree.load(c) for c in ('484A', '484B', '484D', '486')}
 LVMC = lvmc_tree.load()
@@ -450,7 +457,7 @@ if __name__ == '__main__':
                 title, tree, get = section('LVMC', None, sec)
                 recs.append((f"DEF-LVMC-{sec.replace('.', '-')}", 'LVMC', [title.split('\u2014')[0].strip()], f"LVMC {sec}", clean(flatten(tree))))
         return recs
-    with open('definitions.jsonl', 'w', encoding='utf-8') as f:
+    with open(CORPUS_DIR / 'definitions.jsonl', 'w', encoding='utf-8') as f:
         for did, applies, terms, label, text in term_definitions():
             hit = [t for t in terms if re.search(r'\b' + re.escape(t.lower()) + r'(?:s|es)?\b', corpus_text)]
             f.write(json.dumps({'id': did, 'kind': 'term', 'applies_to': applies, 'terms': terms,
@@ -491,7 +498,7 @@ if __name__ == '__main__':
               f"- dropped municipal lines: {sum(1 for d in DROP if d.startswith('LVMC'))}",
               f"- dropped statutory lines: {sum(1 for d in DROP if d.startswith('NRS'))}",
               f"- lines in the corpus after resolution: {len(out)}", ""]
-    open('OVERLAPS.md', 'w', encoding='utf-8').write('\n'.join(lines))
+    open(AUDIT_DIR / 'OVERLAPS.md', 'w', encoding='utf-8').write('\n'.join(lines))
     # ---- classification into the four views (tiers.py) ----
     from tiers import tier, bucket, EXCLUDED, BLOCKING
     for k in list(EXCLUDED) + list(BLOCKING):
@@ -534,7 +541,7 @@ if __name__ == '__main__':
     views = {'excluded': [], 'unresolvable': [], 'judgement': [], 'concrete': []}
     for o in out: views[o['bucket']].append(o)
     for name in ('excluded', 'unresolvable'):
-        with open(f'{name}.jsonl', 'w', encoding='utf-8') as f:
+        with open(CORPUS_DIR / f'{name}.jsonl', 'w', encoding='utf-8') as f:
             for o in views[name]: f.write(json.dumps(o, ensure_ascii=False) + '\n')
     # the pipeline corpus = concrete + judgement; a reference into a removed line becomes an
     # unresolved mark of kind 'removed_target' (the bracketed id stays in the text as the record)
@@ -548,10 +555,10 @@ if __name__ == '__main__':
                 o['unresolved'].append({'phrase': f'[{r}]' if f'[{r}]' in o['text'] else r, 'kind': 'removed_target',
                                         'note': f'{r} is in {removed[r]}.jsonl and not in the pipeline corpus; the reference is a residue'})
             o['refs'] = [r for r in o['refs'] if r not in removed]
-    with open('laws_full.jsonl', 'w', encoding='utf-8') as f:
+    with open(CORPUS_DIR / 'laws_full.jsonl', 'w', encoding='utf-8') as f:
         for o in out:
             if o['bucket'] != 'unresolvable': f.write(json.dumps(o, ensure_ascii=False) + '\n')
-    with open('laws_all.jsonl', 'w', encoding='utf-8') as f:
+    with open(CORPUS_DIR / 'laws.jsonl', 'w', encoding='utf-8') as f:
         for o in corpus: f.write(json.dumps(o, ensure_ascii=False) + '\n')
     # ---- dependency audit of the concrete view (§4 of the split request) ----
     where = {o['id']: o['bucket'] for o in out}
@@ -580,8 +587,13 @@ if __name__ == '__main__':
     dep_lines += ["", "## Tally of reference targets from concrete lines", ""] + [f"- {k}: {v}" for k, v in sorted(tally.items())]
     dep_lines += ["", "## Concrete lines that depend on a line outside the concrete view", "", "| concrete line | target | target's view |", "|---|---|---|"]
     dep_lines += [f"| `{a}` | `{b}` | {c} |" for a, b, c in cross]
-    open('CONCRETE_DEPENDENCIES.md', 'w', encoding='utf-8').write('\n'.join(dep_lines) + '\n')
+    open(AUDIT_DIR / 'CONCRETE_DEPENDENCIES.md', 'w', encoding='utf-8').write('\n'.join(dep_lines) + '\n')
     from collections import Counter
     print(len(out), 'lines in laws_full;', len(corpus), 'in the pipeline corpus;', Counter(o['id'].split('-')[0] + ('-' + o['id'].split('-')[1] if o['id'].startswith('NRS') else '') for o in out))
     print(Counter(o['subject'] for o in out))
     print(sum(len(o['text']) for o in out), 'chars')
+
+    # The files written above carry the analysis fields (subject, theme, tier, refs, …). The agent
+    # reads posted law only; publish.py moves the analysis into laws/audit_and_scripts/ sidecars.
+    import importlib
+    importlib.import_module("publish" if __package__ in (None, "") else f"{__package__}.publish").main()

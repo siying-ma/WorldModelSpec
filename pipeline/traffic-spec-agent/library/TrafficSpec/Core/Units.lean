@@ -14,7 +14,8 @@
 -/
 namespace TrafficSpec
 
-/-- An exact rational `num / den` with `den > 0`. Not normalised; equality is by value. -/
+/-- An exact rational `num / den` with `den > 0`, kept in lowest terms by `mk'`; `Q.eq` is
+    equality by value for the rare unreduced literal. -/
 structure Q where
   num : Int
   den : Nat
@@ -38,9 +39,14 @@ def ofInt (n : Int) : Q := ⟨n, 1, by decide⟩
 def zero : Q := ofInt 0
 instance : Inhabited Q := ⟨zero⟩
 
-/-- `a / b` for a positive natural `b`; a zero `b` is treated as one so the value stays total. -/
+/-- `a / b` in lowest terms for a positive natural `b`; a zero `b` is treated as one so the value
+    stays total. Reducing here keeps chained products and sums from growing without bound. -/
 def mk' (a : Int) (b : Nat) : Q :=
-  if h : b > 0 then ⟨a, b, h⟩ else ⟨a, 1, by decide⟩
+  if h : b > 0 then
+    let g := Nat.gcd a.natAbs b
+    have hg : 0 < g := Nat.gcd_pos_of_pos_right _ h
+    ⟨a / (g : Int), b / g, Nat.div_pos (Nat.le_of_dvd h (Nat.gcd_dvd_right _ _)) hg⟩
+  else ⟨a, 1, by decide⟩
 
 def le (a b : Q) : Bool := a.num * (b.den : Int) ≤ b.num * (a.den : Int)
 def lt (a b : Q) : Bool := a.num * (b.den : Int) < b.num * (a.den : Int)

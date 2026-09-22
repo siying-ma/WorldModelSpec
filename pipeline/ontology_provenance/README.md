@@ -15,15 +15,15 @@ Current (2026-09-18, Nevada Revised Statutes target):
 - `nrs_tools/nrs_tree.py` — parses the NRS chapter pages (section → subsection tree);
   `nrs_tools/lvmc_tree.py` — the same for Las Vegas Municipal Code sections from Municode.
 - `nrs_tools/make_laws.py` — the selection list and generator that produced
-  `traffic-spec-agent/laws/example/laws.jsonl` (322 obligations, verbatim: NRS 484A/484B/484D,
+  `traffic-spec-agent/laws/full_list/laws.jsonl` (285 obligations as of 2026-09-20, verbatim: NRS 484A/484B/484D,
   NRS 486, LVMC Title 11, after `overlaps.py` drops the broader text of each overlapping pair). The `SPEC` list in this script is the record of which subsections were
   included, which paragraphs were appended to which, which subject/theme each line was given, and
   which lines were flagged as overlapping before resolution.
 - `nrs_tools/overlaps.py` — every overlap decision (kept id, dropped id, reason) and the
-  criterion; `laws/example/OVERLAPS.md` is generated from it.
+  criterion; `laws/audit_and_scripts/OVERLAPS.md` is generated from it.
 - `nrs_tools/references.py` — reference resolution: the id annotations inserted into line text
   (`REFS`), the extra appended subsections (`APP_MORE`, `XAPP`), the definitions rendered to the
-  planner (`DEFS` → `laws/example/definitions.jsonl`) and the `unresolved` marks.
+  planner (`DEFS` → `laws/full_list/definitions.jsonl`) and the `unresolved` marks.
 - `nrs_tools/tiers.py` — the classification of every line into the four views (excluded / unresolvable /
   judgement S-Q / concrete C) with the reason for each exclusion and each blocking mark.
 - `nrs_tools/sources/` — the parsed section files the generator reads (`484A.json`, `484B.json`,

@@ -46,7 +46,7 @@ def sceneAt (k : Nat) : Scene :=
     users := [mover (speeds[k]?.getD 0) (paths[k]?.getD 0), blocker]
     structures := [lane7]
     devices := [sig9 (signals[k]?.getD .dark)]
-    occupancyObserved := true
+    occupancyObserved := [1, 2]
     occupies := [(1, 7), (2, 7)]
     env := { darkness := some false }
     assumptions := [("asm.business_district", true)] }
@@ -55,7 +55,7 @@ def τ : Trace := (List.range 9).map sceneAt
 
 def β : Binding := ({} : Binding).bind "x" (.track 1) |>.bind "y" (.track 2)
 def ρ : Reading := { params := [{ name := "p.stop_speed", value := Q.mk' 1 10, unit := .metrePerSecond }] }
-def c : SemCtx := { τ := τ, ρ := ρ, β := β }
+def c : SemCtx := SemCtx.mk' τ ρ β
 def v (i : Nat) (φ : Formula) : Tri := evalTri c i φ
 def why (i : Nat) (φ : Formula) : List UnknownReason := (eval c i φ).why
 
@@ -153,15 +153,32 @@ def fast : Formula := .cmp (.measure "kin_speed" [X]) .ge (mps 9)
 #guard v 6 (.until slow fast) = .u
 #guard v 0 (.until slow fast) = .t                                                   -- ψ at once
 #guard v 8 (.since slow (.cmp (.measure "kin_speed" [X]) .eq (mps 2))) = .t          -- slow ever since speed 2
+def never : Formula := .cmp (.measure "kin_speed" [X]) .eq (mps 99)
+#guard v 3 (.since .tt never) = .u                                                    -- never witnessed: the unobserved past decides
+#guard why 3 (.since .tt never) = [.windowTruncated "since"]
+#guard v 3 (.since slow never) = .f                                                   -- φ failed inside the trace
 #guard v 8 (.since (.cmp (.measure "kin_speed" [X]) .eq (mps 0)) (.cmp (.measure "kin_speed" [X]) .eq (mps 2))) = .t
 #guard v 8 (.since (.cmp (.measure "kin_speed" [X]) .eq (mps 2)) (.cmp (.measure "kin_speed" [X]) .eq (mps 4))) = .f
+
+-- decided-false sites: the lane change is seen while straddling; the night window wraps midnight
+def lane8 : Structure := { id := 8, kind := .lane, lane := some { leftNeighbour := some 7 } }
+def straddle : Scene := { sceneAt 8 with occupies := [(1, 7), (1, 8), (2, 7)], structures := [lane7, lane8] }
+def afterChange : Scene := { straddle with t := 4500, occupies := [(1, 8), (2, 7)] }
+def τlane : Trace := [sceneAt 7, straddle, afterChange]
+def clane : SemCtx := SemCtx.mk' τlane ρ β
+#guard (evalAll clane (.derived "drv_lane_change" [X] [])).toList.map (·.v) = [.u, .t, .f]   -- entry only: one manoeuvre, one edge
+def night : TimeWindow := { startMinute := 19 * 60, endMinute := 6 * 60 }
+#guard Derived.inWindow night (23 * 60) && Derived.inWindow night (5 * 60) && !Derived.inWindow night (12 * 60)
+#guard Derived.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (8 * 60)
+#guard !Derived.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (10 * 60)
 
 -- counting signal cycles since the halt began
 def green : Formula := .atom "dev_traffic_signal_shows" [.nat 9, .lit "circular_green"] []
 def halted : Formula := .cmp (.measure "kin_speed" [X]) .eq (mps 0)
 #guard v 8 (.count green halted .eq 1) = .t        -- the halt's run began at 5; one red→green edge (at 7) after it
 #guard v 6 (.count green halted .eq 0) = .t
-#guard v 8 (.count green (.cmp (.measure "kin_speed" [X]) .eq (mps 10)) .eq 2) = .t   -- since the start: edges at 3 and 7
+#guard why 8 (.count green (.cmp (.measure "kin_speed" [X]) .eq (mps 10)) .eq 2) = [.windowTruncated "count"]   -- the run holds at the first instant: it may have begun earlier
+#guard v 8 (.count green (.cmp (.measure "kin_speed" [X]) .eq (mps 8)) .eq 2) = .t     -- since speed 8 at instant 1: edges at 3 and 7
 #guard why 8 (.count green (.atom "sig_brake_lamp" [X] []) .eq 1) = [.absentAtom "sig_brake_lamp"]
 #guard why 4 (.count green halted .eq 0) = [.windowTruncated "count"]
 
@@ -176,9 +193,35 @@ def halted : Formula := .cmp (.measure "kin_speed" [X]) .eq (mps 0)
 -- rule composition goes through the callback; the default knows no rules
 #guard why 0 (.rule "some/rule" []) = [.compositionUnknown "some/rule"]
 
+-- runs that reach the trace start are unknown, not measured from the recording
+#guard why 2 (.cmp (.distanceWhile "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 6))) .ge (.lit (metres 1) .metre)) = [.windowTruncated "drv_distance_while"]
+#guard why 0 (.derived "drv_stopped" [Y] [.param "p.stop_speed", ms 500]) = [.windowTruncated "drv_stopped"]
+-- strong until with the witness at the first instant and φ false there
+#guard v 0 (.untilWithin .time (sec 1) "x" .ff fast) = .t
+#guard v 0 (.until .ff fast) = .t
+-- an arrival already in progress at the first observation is a bound, not an instant
+def junction : Structure := { id := 9, kind := .intersection }
+def arrScene (k : Nat) : Scene :=
+  { sceneAt k with
+    structures := [lane7, junction]
+    occupies := if k ≥ 4 then [(1, 7), (2, 7), (2, 9), (1, 9)] else [(1, 7), (2, 7), (2, 9)] }
+def τarr : Trace := (List.range 9).map arrScene
+def carr : SemCtx := SemCtx.mk' τarr ρ β
+#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "before"] [.lit (seconds 1) .second])).v = .t   -- y in from the start, x at 2 s: decided by the bound
+#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "same"] [.lit (seconds 1) .second])).v = .f
+#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "same"] [.lit (seconds 3) .second])).v = .u
+#guard (eval carr 8 (.derived "drv_arrival_order" [X, Y, .lit "intersection", .lit "before"] [.lit (seconds 1) .second])).v = .f
+
 -- distance while
 #guard v 8 (.cmp (.distanceWhile "x" halted) .eq (.lit (metres 0) .metre)) = .t
 #guard v 4 (.cmp (.distanceWhile "x" (.not fast)) .eq (.lit (metres 9) .metre)) = .t   -- 14 − 5 since speed 8 at path 5
+
+-- region geometry reaches a formula: distance from a road user to a region
+def cross : Structure := { id := 9, kind := .crosswalk, boundary := some [(metres 40, metres (-2)), (metres 42, metres (-2)), (metres 42, metres 2), (metres 40, metres 2)] }
+def cgeo : SemCtx := SemCtx.mk' ((List.range 9).map fun k => { sceneAt k with structures := [lane7, cross] }) ρ β
+#guard (eval cgeo 8 (.existsRegion .crosswalk "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .t   -- 15 → 40: 25 m
+#guard (eval cgeo 0 (.existsRegion .crosswalk "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .f   -- 0 → 40
+#guard (eval c 0 (.existsRegion .lane "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .u       -- lane 7 has no geometry
 
 -- static analysis
 #guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))) = ["drv_stopped", "kin_speed"]

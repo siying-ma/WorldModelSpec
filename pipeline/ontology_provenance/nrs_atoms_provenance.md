@@ -21,7 +21,7 @@ right answer for clause X" is a note for the human reviewer of the ontology, not
   484D — 124. Every section of 484A and 484B was read in full. Of 484D only the 32 sections
   regulating *use* of equipment or naming devices a rule of the road depends on were read
   (090, 100–130, 145, 160–220, 280, 285, 400–415, 435–440, 490, 515, 545, 850, 860).
-- The corpus (`traffic-spec-agent/laws/example/laws.jsonl`, 238 lines) was generated from the
+- The corpus (`traffic-spec-agent/laws/full_list/laws.jsonl`, 285 lines as of 2026-09-20) was generated from the
   same trees by `nrs_tools/make_laws.py`; the selection list inside that script is the record
   of what was included and what was not.
 - Extension, same day: NRS chapter 486 (motorcycles, mopeds, trimobiles; 50 sections, all read;
@@ -310,10 +310,13 @@ residue), "protective foot covering" (residue), "celebrity home tour", "nonprofi
 
 ## 15. Alignment with the pipeline corpus (2026-09-20)
 
-The pipeline corpus is `laws/example/laws.jsonl` = the concrete and judgement tiers (303 lines);
-`excluded.jsonl` (11) and `unresolvable.jsonl` (8) are outside it (`nrs_tools/tiers.py`). Every
-atom in `ATOMS.md` was checked against the sections that survive in the 303 lines
-(`nrs_tools/` alignment scan). Changes:
+The pipeline corpus is `laws/full_list/laws.jsonl` = the concrete and judgement tiers;
+`full_list/excluded.jsonl` and `full_list/unresolvable.jsonl` are outside it
+(`nrs_tools/tiers.py`). Every atom in `ATOMS.md` was checked against the sections that survive in
+the corpus as it stood when the scan was run — 303 lines, with 11 excluded and 8 unresolvable
+(`nrs_tools/` alignment scan). The later decision of 2026-09-20, that every line carrying an
+unresolved reference leaves the corpus, took it to 285 lines with 31 unresolvable; the atoms were
+not re-scanned against the smaller corpus. Changes:
 
 **Dropped — every provision that needed them is outside the corpus**
 

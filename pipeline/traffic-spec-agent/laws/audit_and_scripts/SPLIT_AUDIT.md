@@ -52,3 +52,12 @@ agreement, step 3). The alternative that keeps one Core for both splits: leave t
 `World` as "observable but unnamed by any training atom" — the training `Atoms.lean` has no
 accessor for them, so no training rule can read them, and the manifest marks them absent.
 Which of the two the evaluation wants is the operator's decision; nothing was changed.
+
+## Resolution (2026-09-22)
+
+The training variant now covers the flagged files too: `harness/split.py` derives training
+versions of `World`, `Decode`, `Manifest`, `Semantics`, `Derived` and `Grounding` by removing
+exactly the lines that read an omitted atom (the fields, decoder keys, mask arms, dispatch arms,
+and `drv_queue_behind`), alongside the `Atoms.lean` and `Ontology/*` from `atoms_train.py`.
+`python -m harness split --use train` swaps the variant in and archives the full files under
+`library/splits/full/`; the library and its tests build under either variant.

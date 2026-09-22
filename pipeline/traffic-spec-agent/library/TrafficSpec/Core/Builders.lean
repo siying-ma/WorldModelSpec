@@ -91,7 +91,7 @@ def scene (t : Timestamp) (subject : Option TrackId) (users : List RoadUser) (st
     users := users
     structures := structures
     devices := devices
-    occupancyObserved := true
+    occupancyObserved := users.map (·.track)
     occupies := occupies.getD (occupancyFromGeometry users structures)
     env := env
     assumptions := assumptions }
@@ -117,6 +117,11 @@ def pad (τ : Trace) (before after dt : Q) : Trace :=
   | _, _ => τ
 
 def masked (m : Manifest) (τ : Trace) : Trace := maskTrace m τ
+
+/-- A manifest that observes every atom except the listed ids (for a `blind` witness). -/
+def manifest (absent : List String := []) (gap : Q := Q.zero) : Manifest :=
+  let full := Manifest.full "witness" gap
+  { full with entries := full.entries.map fun (id, c) => if absent.contains id then (id, .absent) else (id, c) }
 
 end Build
 
@@ -144,7 +149,7 @@ def run (rules : List Rule) (sc : Scenario) : Except String Verdict := do
     | none => throw s!"{sc.name}: rule {sc.rule} is not registered"
   let S := Grounding.Setup.mk' rules (maskTrace sc.manifest sc.trace) sc.reading sc.manifest.reidGap
   let g : Grounding.Grounding := ⟨sc.grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
-  let tl := (Grounding.timeline S r g).filter fun (t, _) =>
+  let tl := (Grounding.timeline S r g).toList.filter fun (t, _) =>
     match sc.window with
     | some (a, b) => a ≤ t && t ≤ b
     | none => true

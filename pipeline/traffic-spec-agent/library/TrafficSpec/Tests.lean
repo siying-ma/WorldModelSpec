@@ -10,3 +10,4 @@ import TrafficSpec.Tests.Atoms
 import TrafficSpec.Tests.Semantics
 import TrafficSpec.Tests.Grounding
 import TrafficSpec.Tests.Decode
+import TrafficSpec.Tests.Adequacy

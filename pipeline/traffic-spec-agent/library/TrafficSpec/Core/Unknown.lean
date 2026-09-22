@@ -23,6 +23,7 @@ inductive UnknownReason
   | outOfRange                            -- an index outside the trace
   | divisionByZero (what : String)
   | malformed (what : String)             -- a literal that names no enumeration value, wrong arity
+  | undefined (concept : String)          -- the concept's precondition does not hold here (e.g. a multi-lane configuration)
   deriving Repr, DecidableEq, Inhabited
 
 namespace UnknownReason
@@ -39,6 +40,7 @@ def tag : UnknownReason → String
   | .outOfRange => "out_of_range"
   | .divisionByZero w => s!"division_by_zero:{w}"
   | .malformed w => s!"malformed:{w}"
+  | .undefined c => s!"undefined:{c}"
 instance : ToString UnknownReason := ⟨tag⟩
 end UnknownReason
 
@@ -78,5 +80,42 @@ end R
 
 /-- A quantity that may be unknown, with the reason. -/
 abbrev QR := Except UnknownReason Q
+
+/-- Kleene conjunction and disjunction over index ranges of a per-instant array in O(1) each,
+    from prefix counts and next-unknown pointers. Reasons come from the earliest unknown in range. -/
+structure RangeAgg where
+  vals : Array R
+  prefF : Array Nat      -- prefF[i] = number of false values before index i
+  prefT : Array Nat
+  prefU : Array Nat
+  nextU : Array Nat      -- nextU[i] = smallest k ≥ i with an unknown value (size when none)
+
+namespace RangeAgg
+def build (vals : Array R) : RangeAgg :=
+  let n := vals.size
+  let count (p : Tri → Bool) : Array Nat :=
+    (List.range n).foldl (fun (acc : Array Nat) i => acc.push (acc[i]! + (if p vals[i]!.v then 1 else 0))) #[0]
+  let nextU := (List.range n).reverse.foldl (fun (acc : Array Nat) i =>
+    acc.set! i (if vals[i]!.v = .u then i else acc[i + 1]!)) (Array.replicate (n + 1) n)
+  ⟨vals, count (· = .f), count (· = .t), count (· = .u), nextU⟩
+
+private def cnt (pref : Array Nat) (lo hi : Nat) : Nat := pref[hi + 1]! - pref[lo]!
+private def firstUnknown (a : RangeAgg) (lo hi : Nat) : List UnknownReason :=
+  let k := a.nextU[lo]!
+  if k ≤ hi then a.vals[k]!.why else []
+
+/-- ∧ over `lo … hi` inclusive; true on an empty range. -/
+def all (a : RangeAgg) (lo hi : Nat) : R :=
+  if hi < lo then R.t
+  else if cnt a.prefF lo hi > 0 then R.f
+  else if cnt a.prefU lo hi > 0 then ⟨.u, a.firstUnknown lo hi⟩
+  else R.t
+/-- ∨ over `lo … hi` inclusive; false on an empty range. -/
+def any (a : RangeAgg) (lo hi : Nat) : R :=
+  if hi < lo then R.f
+  else if cnt a.prefT lo hi > 0 then R.t
+  else if cnt a.prefU lo hi > 0 then ⟨.u, a.firstUnknown lo hi⟩
+  else R.f
+end RangeAgg
 
 end TrafficSpec

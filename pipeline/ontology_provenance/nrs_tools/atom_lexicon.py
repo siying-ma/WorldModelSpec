@@ -95,6 +95,7 @@ ATOMS: dict[str, str] = {
     "st.roundabout": W(r"roundabouts?", r"traffic circles?", r"rotar(?:y|ies)", r"circulatory roadway", r"circular intersection"),
     "st.obstruction": W(r"obstructions?", r"excavations?", r"debris", r"hoses?", r"stalled", r"wreckage", r"barricades?", r"drop box", r"mail ?box", r"elevator", r"chute"),
     "st.lane_width": W(r"too narrow", r"unobstructed width", r"less than \w+ feet of the width", r"narrow"),
+    "st.region_geometry": W(r"within \S+ feet of", r"\d+ feet (?:of|from) (?:a|an|the|any)", r"feet of (?:a|an|the|any) (?:crosswalk|intersection|hydrant|rail|track|driveway|signal|station|entrance|zone)"),
     "rel.occupies": W(r"upon", r"within", r"on the", r"into", r"in the"),
     # devices
     "dev.traffic_signal": W(r"traffic[- ]control signals?", r"official traffic[- ]control signals?", r"signal(?:s| indications?| lights?)?", r"red (?:signal|light)", r"green (?:signal|light|arrow)", r"yellow (?:signal|light|arrow)", r"amber (?:signal|light)", r"flashing red", r"flashing yellow", r"stop-and-go"),

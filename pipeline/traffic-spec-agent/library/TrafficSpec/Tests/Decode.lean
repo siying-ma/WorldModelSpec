@@ -44,9 +44,11 @@ def τ : Trace := decoded.toOption.getD []
 #guard (τ[0]!.assumption "asm.business_district") = some true
 
 -- the drv_condition_in_effect reads the decoded conditions: Monday 07:30 with one occupant
-def c : Derived.Ctx := ⟨τ, {}⟩
-#guard (Derived.drv_condition_in_effect c 0 9 1).v = .u                        -- occupants not observed
-#guard (Derived.drv_condition_in_effect c 0 9 2).v = .u
+def c : Derived.Ctx := Derived.Ctx.mk' τ {}
+#guard (Derived.drv_condition_in_effect c 9 1)[0]!.v = .u                      -- occupants not observed
+#guard (Derived.drv_condition_in_effect c 9 2)[0]!.v = .u
+#guard τ[0]!.occupancyObserved = [1, 2]                                        -- `true` means every user in the scene
+#guard (parse trace "{\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1}], \"occupancy_observed\": [1]}]}").toOption.map (·.head!.occupancyObserved) = some [1]
 
 -- malformed is an error, never false
 #guard (parse trace "{\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1, \"classes\": [\"unicorn\"]}]}]}").isOk = false
@@ -59,12 +61,15 @@ def c : Derived.Ctx := ⟨τ, {}⟩
   | .ok _ => false
 
 -- reading and manifest
-def readingText : String := "{\"params\": [{\"name\": \"p.stop_speed\", \"value\": 0.1, \"unit\": \"m/s\"}],
-  \"operationalizations\": [{\"standard\": \"words\", \"concept\": \"drv.stopped\", \"params\": [\"p.stop_speed\"], \"convention\": \"a source\"}],
+def readingText : String := "{\"params\": [{\"name\": \"p.stop_speed\", \"value\": 0.1, \"unit\": \"m/s\"}, {\"name\": \"p.setback\", \"value\": 15, \"unit\": \"ft\"}, {\"name\": \"p.limit\", \"value\": 25, \"unit\": \"mph\"}],
+  \"operationalizations\": [{\"standard\": \"words\", \"concepts\": [\"drv.stopped\", \"rel.surface_gap\"], \"params\": [\"p.stop_speed\"], \"convention\": \"a source\"}],
   \"aggregates\": [{\"word\": \"vehicle\", \"classes\": [\"ru.motor_vehicle\", \"ru.bicycle\"]}]}"
 def ρ : Reading := (parse reading readingText).toOption.getD {}
 #guard (ρ.param "p.stop_speed").map (Q.eq · (Q.mk' 1 10)) = some true
 #guard ρ.paramUnit "p.stop_speed" = some .metrePerSecond
+#guard (ρ.param "p.setback").map (Q.eq · (feet 15)) = some true          -- 15 ft, stored in metres
+#guard ρ.paramUnit "p.setback" = some .metre
+#guard (ρ.param "p.limit").map (Q.eq · (mph 25)) = some true
 #guard ρ.aggregate "vehicle" = some ["ru.motor_vehicle", "ru.bicycle"]
 def manifestText : String := "{\"source\": \"video\", \"reid_gap\": 1.5, \"atoms\": {\"kin.speed\": \"estimate:coarse\", \"ru.motor_vehicle\": \"exact\", \"env.darkness\": \"absent\"}}"
 def m : Manifest := (parse manifest manifestText).toOption.getD default

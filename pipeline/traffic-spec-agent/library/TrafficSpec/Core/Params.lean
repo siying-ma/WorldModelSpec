@@ -5,7 +5,7 @@
   A rule NAMES a parameter; it never owns the value. The value lives in the run's reading, which
   the rule and the label both cite, so a standard is quantified exactly once and can be swept for
   sensitivity. An `Operationalization` is the record that gives a judgement standard its concrete
-  meaning (ATOMS.md §8): the standard's words, the derived concept that bounds it, the parameter
+  meaning (ATOMS.md §8): the standard's words, the atoms or derived concepts that bound it, the parameter
   values, the convention they come from, and whether the rule is a surrogate (the standard is the
   whole duty) rather than the law's own rule.
 
@@ -29,7 +29,7 @@ structure ParamValue where
 
 structure Operationalization where
   standard : String            -- the clause's words for the standard
-  concept : String             -- the `drv.*` id that bounds it
+  concepts : List String       -- the `drv.*` and atom ids that bound it (ATOMS.md §8 pairs several)
   params : List ParamName      -- the parameters the bound uses
   convention : String          -- where the values come from
   surrogate : Bool := false    -- true when the standard is the whole duty

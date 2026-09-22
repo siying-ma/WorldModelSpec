@@ -54,7 +54,12 @@ class LibraryV2Checks:
         src = ("ontology/ATOMS.md → scripts/gen_ontology.py",
                "library/TrafficSpec/Core/Ontology/*.lean")
         from scripts import gen_ontology
-        files = gen_ontology.generate()
+        active = (self.lib / "splits" / "ACTIVE")
+        which = active.read_text().strip() if active.exists() else "full"
+        atoms_md = self.repo / "ontology" / ("ATOMS_train.md" if which == "train" else "ATOMS.md")
+        src = (f"ontology/{atoms_md.name} → scripts/gen_ontology.py (active split: {which})",
+               "library/TrafficSpec/Core/Ontology/*.lean")
+        files = gen_ontology.generate(atoms_md)
         out = self.core / "Ontology"
         drift = [n for n, t in files.items()
                  if not (out / n).exists() or (out / n).read_text(encoding="utf-8") != t]
@@ -66,13 +71,13 @@ class LibraryV2Checks:
     def training_split_in_sync(self) -> Result:
         """The training-only ontology (a split of the corpus) is what its sources generate.
 
-        `laws/example/split_atoms.json` names the atoms only the test lines support; `ATOMS_train.md`
+        `laws/audit_and_scripts/split_atoms.json` names the atoms only the test lines support; `ATOMS_train.md`
         must be ATOMS.md minus exactly those, `splits/train/…/Ontology` must be generated from it, and
         the training `Atoms.lean` must lack exactly their definitions.
         """
-        src = ("laws/example/split_atoms.json (nrs_tools/split.py)",
+        src = ("laws/audit_and_scripts/split_atoms.json (nrs_tools/split.py)",
                "ontology/ATOMS_train.md, library/splits/train/TrafficSpec/Core/{Atoms.lean,Ontology/*} (nrs_tools/atoms_train.py)")
-        split_file = self.repo / "laws" / "example" / "split_atoms.json"
+        split_file = self.repo / "laws" / "audit_and_scripts" / "split_atoms.json"
         train_md = self.repo / "ontology" / "ATOMS_train.md"
         train_root = self.lib / "splits" / "train" / "TrafficSpec" / "Core"
         if not (split_file.exists() and train_md.exists() and train_root.exists()):
@@ -84,13 +89,15 @@ class LibraryV2Checks:
         out = train_root / "Ontology"
         drift = [n for n, t in files.items()
                  if not (out / n).exists() or (out / n).read_text(encoding="utf-8") != t]
-        full_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (self.core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")))
+        full_core = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
+        full_core = full_core if (full_core / "Atoms.lean").exists() else self.core   # before any swap the Core holds the full files
+        full_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (full_core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")))
         train_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (out / "Ids.lean").read_text(encoding="utf-8")))
         expected_gone = set(split["test_only_atoms"]) | set(split["test_only_derived"])
         if (full_ids - train_ids) != expected_gone:
             return Result("training split", FAIL,
                           f"training Ids omit {sorted(full_ids - train_ids)}, split says {sorted(expected_gone)}", src)
-        full_defs = set(re.findall(r"^def ([a-z]+_\w+)", (self.core / "Atoms.lean").read_text(encoding="utf-8"), re.M))
+        full_defs = set(re.findall(r"^def ([a-z]+_\w+)", (full_core / "Atoms.lean").read_text(encoding="utf-8"), re.M))
         train_defs = set(re.findall(r"^def ([a-z]+_\w+)", (train_root / "Atoms.lean").read_text(encoding="utf-8"), re.M))
         gone = full_defs - train_defs
         wrong = sorted(d for d in gone if not any(d == r or d.startswith(r + "_") for r in removed))

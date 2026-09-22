@@ -1,0 +1,249 @@
+/-
+  TrafficSpec.Core.World
+  The scene, as data. This is the adapter's output type and the only place a data source's
+  honesty is recorded: every field a source might not observe is `Option`, and a source writes
+  `none` for what it did not observe, never `false`.
+
+  Rules never import this module. A rule reads the world only through `Atoms` (the bijection with
+  ATOMS.md), so a rule can neither bypass an atom's contract nor read a field the ontology does
+  not name. `Grounding`, `Builders` and `Decode` are the other readers.
+
+  Identity: a `TrackId` is a source's track, not a persistent object. A re-identification across a
+  track break is the adapter's claim, recorded in `Scene.links` (old track ↦ new track) and
+  followed by the grounding within a bounded gap.
+
+  Nothing in this file names a statute, a data source, a threshold or a rate.
+-/
+import TrafficSpec.Core.Time
+import TrafficSpec.Core.Ontology.RoadUser
+import TrafficSpec.Core.Ontology.Structure
+import TrafficSpec.Core.Ontology.Device
+import TrafficSpec.Core.Ontology.Signal
+
+namespace TrafficSpec
+
+abbrev TrackId := Nat
+abbrev RegionId := Nat
+abbrev DeviceId := Nat
+abbrev AsmId := String
+
+/-- The sort of an entity: what a variable ranges over. -/
+inductive EntityKind
+  | track | region | device
+  deriving Repr, DecidableEq, Inhabited
+
+/-- A point or vector in the world frame, metres. -/
+abbrev Vec := Q × Q
+
+/-- Measurements on a body. World frame; SI units as exact rationals (see Units). -/
+structure Kin where
+  position : Option Vec := none          -- m
+  heading : Option Vec := none           -- unit vector
+  velocity : Option Vec := none          -- m/s
+  speed : Option Q := none               -- m/s
+  accelLongitudinal : Option Q := none   -- m/s², signed along heading
+  yawRate : Option Q := none             -- deg/s
+  extent : Option (Q × Q × Q) := none    -- half-length, half-width, half-height, m
+  steerAngle : Option Q := none          -- deg
+  pathLength : Option Q := none          -- m since the start of the trace
+  deriving Repr, Inhabited
+
+/-- How a rider sits and holds the machine (ATOMS.md `ru.rider_posture`). -/
+structure Posture where
+  onSeat : Option Bool := none
+  handsOnControls : Option Nat := none
+  standingOnDeck : Option Bool := none
+  holdingAnotherVehicle : Option Bool := none
+  stunt : Option Bool := none
+  deriving Repr, Inhabited
+
+structure WarningLamp where
+  colour : LampColour
+  mode : LampMode
+  facing : Facing
+  deriving Repr, DecidableEq, Inhabited
+
+/-- Signals a road user emits (ATOMS.md §5). -/
+structure Signals where
+  turnIndicator : Option TurnSide := none
+  brakeLamp : Option Bool := none
+  hazard : Option Bool := none
+  headlamp : Option HeadlampState := none
+  positionLamp : Option Bool := none
+  reverseLamp : Option Bool := none
+  warningLamps : Option (List WarningLamp) := none
+  signalArm : Option Bool := none
+  siren : Option Bool := none
+  horn : Option Bool := none
+  handSignal : Option HandSignal := none
+  doorsOpen : Option (List DoorSide) := none
+  compressionBrake : Option Bool := none
+  deriving Repr, Inhabited
+
+structure RoadUser where
+  track : TrackId
+  classes : Option (List RoadUserClass) := none   -- a user may be several (a school bus is a bus)
+  /-- Classes the source cannot tell for this user: membership in them is unknown, not false. -/
+  unobservedClasses : List RoadUserClass := []
+  emergencyKind : Option EmergencyKind := none
+  officialKind : Option OfficialKind := none
+  eBikeClass : Option Nat := none
+  occupants : Option Nat := none
+  posture : Posture := {}
+  kin : Kin := {}
+  sig : Signals := {}
+  deriving Repr, Inhabited
+
+/-- Lane attributes (ATOMS.md `st.lane_*`). -/
+structure LaneInfo where
+  direction : Option Vec := none
+  leftNeighbour : Option RegionId := none
+  rightNeighbour : Option RegionId := none
+  ordinalFromLeft : Option Nat := none
+  countInDirection : Option Nat := none
+  leadsTo : Option (List RegionId) := none
+  markingLeft : Option (MarkingType × MarkingColour) := none
+  markingRight : Option (MarkingType × MarkingColour) := none
+  width : Option Q := none
+  deriving Repr, Inhabited
+
+/-- A piece of road structure. `kind` says which structure atom it is; the typed attributes
+    are those ATOMS.md lists for that kind, `none` when not observed. -/
+structure Structure where
+  id : RegionId
+  kind : StructureKind
+  position : Option Vec := none             -- reference point (point-like structures)
+  boundary : Option (List Vec) := none      -- polygon, for regions
+  lane : Option LaneInfo := none
+  paved : Option Bool := none
+  opening : Option Bool := none
+  marked : Option Bool := none
+  curvature : Option Q := none              -- 1/m
+  grade : Option Q := none                  -- ratio
+  sightDistance : Option Q := none          -- m
+  reservedClass : Option ReservedClass := none
+  turnSide : Option TurnSide := none
+  parkingAngle : Option Q := none           -- deg
+  designation : Option ParkingDesignation := none
+  curbKind : Option CurbZoneKind := none
+  curbColour : Option CurbColour := none
+  obstructionKind : Option ObstructionKind := none
+  deriving Repr, Inhabited
+
+/-- Local calendar time of an observation (ATOMS.md `env.civil_time`). -/
+structure CivilTime where
+  year : Nat
+  month : Nat
+  day : Nat
+  weekday : Nat        -- 0 = Monday … 6 = Sunday
+  minuteOfDay : Nat    -- 0 … 1439
+  deriving Repr, DecidableEq, Inhabited
+
+/-- One window of a sign's conditions: on the listed weekdays (or a calendar class the reading
+    supplies as an assumption), from `startMinute` to `endMinute` of the day. -/
+structure TimeWindow where
+  weekdays : List Nat := []
+  calendarClass : Option AsmId := none
+  startMinute : Nat := 0
+  endMinute : Nat := 1440
+  deriving Repr, Inhabited
+
+/-- A structured reading of a sign's legend (ATOMS.md `dev.zone_sign` **conditions**). -/
+structure Conditions where
+  windows : List TimeWindow := []
+  minOccupancy : Option Nat := none
+  durationLimit : Option Q := none          -- s
+  vehicleClass : Option RoadUserClass := none
+  whenChildrenPresent : Bool := false
+  deriving Repr, Inhabited
+
+structure Device where
+  id : DeviceId
+  kind : DeviceKind
+  position : Option Vec := none
+  governs : List RegionId := []
+  onTrack : Option TrackId := none                  -- a device carried by a road user (school bus)
+  indications : Option (List SignalIndication) := none
+  uncovered : Option Bool := none
+  inoperative : Option Bool := none
+  pedState : Option PedSignalState := none
+  countdown : Option Bool := none
+  laneControl : Option LaneControlState := none
+  flashing : Option Bool := none
+  active : Option Bool := none
+  speedValue : Option Q := none                     -- m/s
+  speedKind : Option SpeedSignKind := none
+  code : Option SignCode := none
+  zoneKind : Option ZoneKind := none
+  isEnd : Option Bool := none
+  conditions : Option Conditions := none
+  railLights : Option RailLights := none
+  gate : Option GateState := none
+  bell : Option Bool := none
+  humanRole : Option HumanRole := none
+  humanIndication : Option HumanIndication := none
+  redFlashing : Option Bool := none
+  amberFlashing : Option Bool := none
+  stopArm : Option Bool := none
+  deriving Repr, Inhabited
+
+structure Env where
+  darkness : Option Bool := none
+  precipitation : Option Bool := none
+  wetRoad : Option Bool := none
+  iceOrSnow : Option Bool := none
+  visibility : Option Q := none              -- m
+  civilTime : Option CivilTime := none
+  deriving Repr, Inhabited
+
+/-- A relation a source supplies measured rather than derived (ATOMS.md §7). -/
+structure MeasuredRelation where
+  a : TrackId
+  b : TrackId
+  centreDistance : Option Q := none
+  surfaceGap : Option (Q × Q) := none        -- longitudinal, lateral, in a's frame
+  aAheadOfB : Option Bool := none
+  longitudinalOverlap : Option Q := none
+  oncoming : Option Bool := none
+  sameDirection : Option Bool := none
+  bearing : Option Vec := none               -- b relative to a, in a's frame (long, lat)
+  contact : Option Bool := none
+  deriving Repr, Inhabited
+
+structure Scene where
+  t : Timestamp
+  subject : Option TrackId := none
+  users : List RoadUser := []
+  structures : List Structure := []
+  devices : List Device := []
+  /-- The tracks whose occupancy was observed: for them every region not listed in `occupies` is
+      not occupied; for any other track `rel.occupies` is unknown. -/
+  occupancyObserved : List TrackId := []
+  occupies : List (TrackId × RegionId) := []
+  relations : List MeasuredRelation := []
+  env : Env := {}
+  assumptions : List (AsmId × Bool) := []
+  links : List (TrackId × TrackId) := []
+  deriving Repr, Inhabited
+
+/-- A trace: scenes in strictly increasing time. -/
+abbrev Trace := List Scene
+
+namespace Scene
+def user (s : Scene) (x : TrackId) : Option RoadUser := s.users.find? (·.track == x)
+def structure? (s : Scene) (r : RegionId) : Option Structure := s.structures.find? (·.id == r)
+def device (s : Scene) (d : DeviceId) : Option Device := s.devices.find? (·.id == d)
+def relation (s : Scene) (a b : TrackId) : Option MeasuredRelation :=
+  s.relations.find? (fun m => m.a == a && m.b == b)
+def tracks (s : Scene) : List TrackId := s.users.map (·.track)
+end Scene
+
+namespace Trace
+def timestamps (τ : Trace) : List Timestamp := τ.map (·.t)
+def monotone (τ : Trace) : Bool :=
+  match τ with
+  | a :: b :: rest => a.t < b.t && monotone (b :: rest)
+  | _ => true
+end Trace
+
+end TrafficSpec
