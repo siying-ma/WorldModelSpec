@@ -4,7 +4,8 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 from pathlib import Path
-from . import blueprint, corpus, gate, paths
+import shutil
+from . import aggregates, blueprint, corpus, gate, ontology, paths, session
 from .blueprint import Node
 from .gaps import GapLedger
 from .ledger import Ledger
@@ -39,14 +40,21 @@ def topological(nodes: list[Node]) -> list[Node]:
 def run_loop(opts: Options) -> dict:
     run = Run(opts)
     run.dir.mkdir(parents=True, exist_ok=True)
-    (run.dir / "options.json").write_text(json.dumps({**asdict(opts), "laws": str(opts.laws), "ontology": str(opts.ontology), "reading": str(opts.reading)}, indent=1), encoding="utf-8")
+    if not run.reading_file.exists():
+        shutil.copy2(opts.reading, run.reading_file)      # the operator's base reading; the run adds derived aggregates
+    (run.dir / "options.json").write_text(json.dumps({**asdict(opts), "laws": str(opts.laws), "ontology": str(opts.ontology),
+                                                      "base_reading": str(opts.reading), "reading": str(run.reading_file)}, indent=1), encoding="utf-8")
     run.load_accepted()
     laws = corpus.load_laws(opts.laws)
     defs = corpus.load_definitions(opts.laws)
     by_id = {l.id: l for l in laws}
-    reading = Reading(opts.reading)
+    onto = ontology.load(opts.ontology)
+    reading = Reading(run.reading_file)
     ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts)
     gap_ledger = GapLedger(paths.GAP_LEDGER)
+    retired_now = gap_ledger.retire_values(Reading(opts.reading).has)
+    if retired_now:
+        gap_ledger.save(); print(f"[loop] value gaps retired by the reading: {', '.join(retired_now)}")
     reopened = ledger.reopen_for_gaps(gap_ledger.retired())
     for it in range(opts.max_iterations):
         plannable = ledger.plannable()
@@ -58,7 +66,23 @@ def run_loop(opts: Options) -> dict:
         if reopened:
             notes.append(f"reopened after gap retirement: {', '.join(reopened)}"); reopened = []
         # plan
-        plan_dir = plan_phase.run_plan(run, [by_id[e.law] for e in plannable], defs)
+        try:
+            plan_dir = plan_phase.run_plan(run, [by_id[e.law] for e in plannable], defs)
+        except session.SessionUnavailable as e:
+            print(f"[loop] the plan session never ran ({e}); iteration {run.iteration} abandoned, ledger unchanged")
+            feedback_phase.write_feedback(run, ledger, [f"iteration abandoned: the plan session never ran — {e}"],
+                                          ["sessions unavailable (account limit or API error); rerun the loop later"], [])
+            ledger.save(); break
+        # aggregates the planner derived from the definitions: validated, merged into the run's reading
+        agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(opts.reading))
+        if agg_ok:
+            derived = aggregates.merge(run.reading_file, agg_ok, opts.run_id, run.iteration)
+            reading = Reading(run.reading_file)
+            to_user.append("aggregates derived from the definitions this iteration, for review in results/"
+                           f"{opts.run_id}/reading.json: " + ", ".join(f"`{r['word']}` ← {r['definition']}" for r in agg_ok))
+            notes.append("aggregates accepted: " + ", ".join(f"`{r['word']}` ({len(r['classes'])} members)" for r in agg_ok))
+        for e in agg_errs:
+            notes.append(f"aggregate rejected — {e}")
         nodes = blueprint.load(plan_dir / "blueprint.jsonl")
         planned_laws = {}
         for n in nodes:
@@ -71,7 +95,7 @@ def run_loop(opts: Options) -> dict:
                 notes.append(f"`{e.law}` was plannable and the plan produced no node for it")
                 ledger.entries[e.law].state = "open"
         # validate
-        verdicts = validate_phase.run_validate(run, plan_dir, by_id)
+        verdicts = validate_phase.run_validate(run, plan_dir, by_id, reading)
         by_law_verdicts: dict[str, list] = {}
         for v in verdicts:
             by_law_verdicts.setdefault(v.node.law, []).append(v)
@@ -99,21 +123,44 @@ def run_loop(opts: Options) -> dict:
         accepted_now: list[Node] = []
         baselines: dict[str, dict] = {}
         failed_ids: set[str] = set()
+        sessions_down = False
+        # nodes deferred in an earlier iteration (their composed nodes were not accepted yet) are coded now, not re-planned
+        carried = [Node(d) for d in run.load_deferred() if d["node_id"] not in {x.id for x in to_code} and d["node_id"] not in run.accepted_nodes]
+        to_code = to_code + carried
+        deferred_now: list[dict] = []
+        law_of = {n.id: n.law for n in nodes}
+        law_of.update({nid: Node(raw).law for nid, raw in run.accepted_nodes.items()})
+        law_of.update({n.id: n.law for n in carried})
+        codable = {n.id for n in to_code}
         for n in topological(to_code):
+            if sessions_down:
+                ledger.defer(n.law, ["not coded: sessions unavailable this iteration"]); continue
+            # every composed node must be accepted already or coded (and passed) before this one
             deps = {c.get("rule") for c in n.compositions()}
-            blocked_on = sorted(deps & failed_ids)
-            if blocked_on:
-                notes.append(f"`{n.id}`: not coded, composes {blocked_on} which did not pass")
-                ledger.return_law(n.law, [f"composes {blocked_on}, not accepted this iteration"])
+            unmet = sorted(d for d in deps if d not in run.accepted_nodes and (d not in codable or d in failed_ids))
+            if unmet:
+                dead = sorted(d for d in unmet if ledger.entries.get(law_of.get(d, ""), None) and ledger.entries[law_of[d]].state == "failed")
+                if dead:
+                    notes.append(f"`{n.id}`: composes {dead}, whose law is closed as failed — this law cannot be formalized")
+                    ledger.fail(n.law, [f"composes {dead}, closed as failed"])
+                else:
+                    notes.append(f"`{n.id}`: not coded, composes {unmet} which is not accepted yet; kept for the next iteration, no attempt counted")
+                    deferred_now.append(n.raw)
+                    ledger.mark_planned(n.law, [x.id for x in to_code if x.law == n.law], run.iteration)
                 failed_ids.add(n.id); continue
             v = code_phase.run_code(run, n, reading)
             baselines[n.id] = json.loads((code_phase.node_dir(run, n.id) / "baseline.json").read_text())
             notes.append(f"`{n.id}`: gate {v.verdict}" + (f" — {'; '.join(v.details[:4])}" if v.details else ""))
             if v.verdict == "OK":
                 accepted_now.append(n)
+            elif v.verdict == code_phase.SESSION_FAILED:
+                sessions_down = True
+                to_user.append(f"the coding session for `{n.id}` never ran ({'; '.join(v.details[:1])}); the law keeps its attempt budget — rerun the loop later")
+                ledger.defer(n.law, [f"session never ran: {'; '.join(v.details[:1])}"])
             else:
                 failed_ids.add(n.id)
                 ledger.return_law(n.law, [f"gate {v.verdict}"] + v.details[:6])
+        run.save_deferred(deferred_now)
         # integrate
         kept, reverted = integrate_phase.run_integrate(run, accepted_now, reading, baselines)
         for r in reverted:
@@ -140,6 +187,8 @@ def run_loop(opts: Options) -> dict:
         feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed)
         ledger.save()
         print(f"[loop] iteration {run.iteration}: accepted {len(kept)} node(s); laws {ledger.counts()}")
+        if sessions_down:
+            print("[loop] sessions unavailable: stopping after this iteration"); break
         if not kept and not gaps_filed and all(e.state != "returned" for e in ledger.entries.values()):
             print("[loop] no progress and nothing returned: stopping"); break
     ledger.save()

@@ -146,6 +146,7 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "sig.siren" => { u with sig := { u.sig with siren := none } }
   | "sig.horn" => { u with sig := { u.sig with horn := none } }
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }
+  | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
   | _ =>
     -- a class atom: the source cannot tell this class, so no user is known to have or lack it
     match RoadUserClass.ofString ((id.drop 3).toString) with

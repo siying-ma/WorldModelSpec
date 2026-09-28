@@ -42,8 +42,10 @@ open Temporal
 structure SemCtx where
   d : Derived.Ctx
   β : Binding := {}
-  compose : String → List (String × String) → Binding → Array R :=
-    fun _ _ _ => #[]
+  /-- Another rule's verdict per instant under a variable map: complied-with when `engaged` is
+      false, engaged (classes and applicability) when true. -/
+  compose : String → List (String × String) → Binding → Bool → Array R :=
+    fun _ _ _ _ => #[]
 
 namespace SemCtx
 def n (c : SemCtx) : Nat := c.d.n
@@ -94,6 +96,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   match name, args with
   -- road users
   | "ru_subject", [x] => pure (b (ru_subject s (← ent x)) name)
+  | "ru_aggregate", [_, .s w] => .error (.parameterMissing s!"aggregate:{w}")   -- resolved with the reading in `evalAll`
   | "ru_rider_posture", [x, f] =>
     match f with
     | .s "on_seat" => pure (b (ru_rider_posture_on_seat s (← ent x)) name)
@@ -221,7 +224,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
 where
   /-- The attribute atoms of the table above (for the arity/unknown distinction and the doctor). -/
   boolAtomNames : List String := [
-    "ru_subject", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
+    "ru_subject", "ru_aggregate", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
     "ru_rider_posture_holding_another_vehicle", "ru_rider_posture_stunt", "ru_emergency_vehicle_kind",
     "ru_official_vehicle_kind", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
@@ -333,6 +336,7 @@ def atomArgSorts (name : String) : Option (List (Option EntityKind)) :=
   let t := some EntityKind.track; let r := some EntityKind.region; let d := some EntityKind.device
   match name with
   | "rel_occupies" => some [t, r]
+  | "ru_aggregate" => some [t, none]
   | "dev_governs" => some [d, r]
   | "st_region_geometry_distance" => some [t, r]
   | "st_lane_adjacency" => some [r, none, r]
@@ -388,6 +392,9 @@ def regionsOf (c : SemCtx) (k : StructureKind) : List RegionId :=
   (c.scenes.toList.flatMap fun s => regionsOfKind s k).eraseDups
 def devicesOf (c : SemCtx) (k : DeviceKind) : List DeviceId :=
   (c.scenes.toList.flatMap fun s => devicesOfKind s k).eraseDups
+/-- Every road user present in some scene of the trace. -/
+def usersOf (c : SemCtx) : List TrackId :=
+  (c.scenes.toList.flatMap (·.tracks)).eraseDups
 
 /-- Kleene aggregate at each instant over the evaluated members present in that scene. -/
 private def perScene (c : SemCtx) (evaluated : List (Nat × Array R))
@@ -437,7 +444,17 @@ mutual
       liftA c.n do
         let vs ← constParams c ps
         let ds ← resolveAll c.β args
-        pure (c.scenes.map fun s => match evalAtomE s name ds vs with | .ok r => r | .error w => R.u w)
+        if name == "ru_aggregate" then
+          -- membership is the reading's: the word's classes, or unknown when the reading lacks it
+          pure (match ds with
+            | [.v t, .s w] =>
+              (match c.d.ρ.aggregate w with
+                | none => const c.n (R.u (.parameterMissing s!"aggregate:{w}"))
+                | some ids =>
+                  let members := ids.filterMap fun id => RoadUserClass.ofString (id.drop 3).toString
+                  c.scenes.map fun s => R.ofOption (ru_aggregate s t members) (.absentAtom name))
+            | _ => const c.n (R.u (.malformed "aggregate arguments")))
+        else pure (c.scenes.map fun s => match evalAtomE s name ds vs with | .ok r => r | .error w => R.u w)
     | .cmp l op r => Array.zipWith (fun x y => match x, y with
         | .ok a, .ok b => R.ofBool (op.apply a b)
         | .error w, _ | _, .error w => R.u w) (evalTAll c l) (evalTAll c r)
@@ -474,8 +491,17 @@ mutual
         let vs ← constParams c ps
         Derived.evalB concept c.d (← resolveAll c.β args) vs
     | .rule id map =>
-      let arr := c.compose id map c.β
+      let arr := c.compose id map c.β false
       if arr.size = c.n then arr else constU c.n (.compositionUnknown id)
+    | .ruleApplies id map =>
+      let arr := c.compose id map c.β true
+      if arr.size = c.n then arr else constU c.n (.compositionUnknown id)
+    | .existsUser v φ =>
+      perScene c ((usersOf c).map fun t => (t, evalAll (c.bindVar v (.track t)) φ))
+        (fun s t => s.tracks.contains t) R.any
+    | .forallUser v φ =>
+      perScene c ((usersOf c).map fun t => (t, evalAll (c.bindVar v (.track t)) φ))
+        (fun s t => s.tracks.contains t) R.all
     | .existsRegion k v φ =>
       perScene c ((regionsOf c k).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
         (fun s r => (s.structure? r).isSome) R.any
@@ -511,8 +537,10 @@ theorem evalAll_always : evalAll c (.always φ) = alwaysAll (evalAll c φ) := by
 theorem evalAll_eventually : evalAll c (.eventually φ) = eventuallyAll (evalAll c φ) := by rw [evalAll]
 theorem evalAll_until : evalAll c (.until φ ψ) = untilAll (evalAll c φ) (evalAll c ψ) := by rw [evalAll]
 theorem evalAll_since : evalAll c (.since φ ψ) = sinceAll (evalAll c φ) (evalAll c ψ) := by rw [evalAll]
-theorem evalAll_rule (id : String) (map : List (String × String)) (h : (c.compose id map c.β).size = c.n) :
-    evalAll c (.rule id map) = c.compose id map c.β := by rw [evalAll]; simp [h]
+theorem evalAll_rule (id : String) (map : List (String × String)) (h : (c.compose id map c.β false).size = c.n) :
+    evalAll c (.rule id map) = c.compose id map c.β false := by rw [evalAll]; simp [h]
+theorem evalAll_ruleApplies (id : String) (map : List (String × String)) (h : (c.compose id map c.β true).size = c.n) :
+    evalAll c (.ruleApplies id map) = c.compose id map c.β true := by rw [evalAll]; simp [h]
 
 /-- Unknown is absorbing for `not`, pointwise. -/
 theorem eval_not_u (i : Nat) (h : (eval c i φ).v = .u) (hi : i < (evalAll c φ).size) : (eval c i (.not φ)).v = .u := by

@@ -145,6 +145,7 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "sig.siren" => { u with sig := { u.sig with siren := none } }
   | "sig.horn" => { u with sig := { u.sig with horn := none } }
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }
+  | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
   | "sig.door_open" => { u with sig := { u.sig with doorsOpen := none } }
   | "sig.compression_brake" => { u with sig := { u.sig with compressionBrake := none } }
   | _ =>

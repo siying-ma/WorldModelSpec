@@ -184,67 +184,8 @@
   }
  ],
  "operationalizations": [],
- "aggregates": [
-  {
-   "word": "vehicle",
-   "classes": [
-    "ru.motor_vehicle",
-    "ru.motorcycle",
-    "ru.moped",
-    "ru.bus",
-    "ru.transit_bus",
-    "ru.taxicab",
-    "ru.tour_bus_or_limousine",
-    "ru.truck",
-    "ru.commercial_motor_vehicle",
-    "ru.trailer_or_combination",
-    "ru.bicycle",
-    "ru.animal_or_animal_drawn",
-    "ru.emergency_vehicle",
-    "ru.official_vehicle",
-    "ru.procession_vehicle"
-   ]
-  },
-  {
-   "word": "motor vehicle",
-   "classes": [
-    "ru.motor_vehicle",
-    "ru.motorcycle",
-    "ru.moped",
-    "ru.bus",
-    "ru.transit_bus",
-    "ru.taxicab",
-    "ru.tour_bus_or_limousine",
-    "ru.truck",
-    "ru.commercial_motor_vehicle",
-    "ru.emergency_vehicle",
-    "ru.official_vehicle"
-   ]
-  },
-  {
-   "word": "traffic",
-   "classes": [
-    "ru.motor_vehicle",
-    "ru.motorcycle",
-    "ru.moped",
-    "ru.bus",
-    "ru.truck",
-    "ru.bicycle",
-    "ru.electric_bicycle",
-    "ru.electric_scooter",
-    "ru.pedestrian",
-    "ru.animal_or_animal_drawn",
-    "ru.rail_vehicle"
-   ]
-  },
-  {
-   "word": "vulnerable",
-   "classes": [
-    "ru.pedestrian",
-    "ru.bicycle",
-    "ru.electric_bicycle",
-    "ru.electric_scooter"
-   ]
-  }
- ]
+ "aggregates": [],
+ "_fields": {
+  "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+ }
 }

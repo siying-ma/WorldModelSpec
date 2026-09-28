@@ -21,6 +21,12 @@ class Options:
     session_timeout: float = 3600.0
     judge: bool = True
     dry_run: bool = False          # render prompts and run the deterministic phases, launch no session
+    plan_effort: Optional[str] = "high"      # `claude --effort` for the plan session (low|medium|high|xhigh|max)
+    code_effort: Optional[str] = "high"      # for each coding session
+    judge_effort: Optional[str] = "medium"   # for the blind reader and the alignment judge
+    session_budget_usd: Optional[float] = None   # `--max-budget-usd` per session; None = uncapped
+    session_retries: int = 2       # relaunches of a session that never ran (account limit, API error)
+    retry_wait: float = 900.0      # seconds between those relaunches
 
 
 @dataclass
@@ -36,6 +42,24 @@ class Run:
     @property
     def iter(self) -> Path:
         return paths.iter_dir(self.opts.run_id, self.iteration)
+
+    @property
+    def reading_file(self) -> Path:
+        """The run's reading: the operator's base reading plus the aggregates the run derived."""
+        return self.dir / "reading.json"
+
+    @property
+    def deferred_file(self) -> Path:
+        """Validated nodes waiting for a composed node to be accepted; coded in a later iteration without re-planning."""
+        return self.dir / "deferred_nodes.jsonl"
+
+    def load_deferred(self) -> list[dict]:
+        if not self.deferred_file.exists():
+            return []
+        return [json.loads(l) for l in self.deferred_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+    def save_deferred(self, nodes: list[dict]) -> None:
+        self.deferred_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in nodes), encoding="utf-8")
 
     @property
     def ledger_file(self) -> Path:

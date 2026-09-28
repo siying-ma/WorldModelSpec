@@ -107,9 +107,11 @@ ontology change request.
 | `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user) | general |
 | `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars) **Not a stand-in for:** a manoeuvre | general |
 | `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
+| `ru.aggregate` | membership of a legal aggregate the reading declares — the word the text uses ("vehicle", "motor vehicle", "traffic") is the atom's literal argument, and the reading lists the classes the jurisdiction counts under it, by their `ru.*` ids or by another aggregate word; true when the user carries a member class, unknown when no member holds and a member class is unobserved, false otherwise **Not a stand-in for:** a class the text names on its own (a bus, a taxicab) — a named class is its own atom; nor for a role the text describes (responding, overtaking) — a role is a derived concept | general |
 
-"Vehicle", "traffic" and "driver" as legal aggregates are mapping elements, not atoms: which
-classes a jurisdiction counts under each is declared by the reading. A responding emergency
+"Vehicle", "traffic" and "driver" as legal aggregates are carried by `ru.aggregate` with the word
+as its argument: which classes a jurisdiction counts under each is declared by the reading, never
+expanded into a class list by a rule. A responding emergency
 vehicle is the derived concept `drv.responding_emergency`.
 
 ## 2. Kinematics (`kin`) — measurements on any road user

@@ -17,8 +17,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   `text`, `source`, and for a returned line the reason it came back. The text is the law's own
   words; bracketed ids inside it resolve its references to other lines or to definitions. Laws
   that are accepted, blocked on a gap or closed as failed are not in the list and are not yours.
-- **Definitions** — the definitional records the lines cite by `[DEF-…]`. Definitions are not
-  obligations and are never a node.
+- **Definitions** — the corpus's definitional records (the terms the laws use, cited inline by
+  `[DEF-…]` where a line names one). Definitions are not obligations and are never a node; the
+  ones that define a class of road users are the source of the **aggregates** (rule 0).
 - **Ontology** — every atom (id, contract, scope), every attribute value, every derived concept
   with its parameters, and the operationalization table. This is the **closed set**.
 - **Library summary** — accepted nodes: id, law refs, binders, atoms claimed.
@@ -42,6 +43,16 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 
 ## Hard rules
 
+0. **Derive the aggregates from the definitions, first.** For every defined term that denotes a
+   set of road users the laws in your list use as a word ("vehicle", "motor vehicle", "traffic",
+   "pedestrian" where it is defined, …), write one record in `aggregates.jsonl`:
+   `{word, definition: "DEF-…", classes: [...], justification, unresolved: [{text, why}]}`. A
+   member is an `ru.*` class the definition's words admit, or another defined word (a vehicle
+   includes every motor vehicle); the justification quotes the admitting and the excluding
+   clauses; a kind the definition names and the ontology cannot carry goes under `unresolved`,
+   never approximated. A word the reading already declares (listed under Parameters) is not
+   re-derived. Nodes then claim the word (`ru.aggregate=<word>`); a word no record and no
+   declaration covers is rejected on every node that claims it.
 1. **Segment first.** Cut the verbatim text into spans. Each span is a contiguous verbatim
    substring; the spans are disjoint and together cover the text (whitespace and punctuation
    excepted). Give each a role: `trigger`, `subject`, `obligation`, `exception`, `standard`,
@@ -58,7 +69,16 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 3. **Map by contract, and quote it.** An element's justification quotes the clause of the atom's
    contract that denotes the span and says why each "not a stand-in for" exclusion does not
    apply. If no contract denotes the span, the span is a **gap** with a proposal and the nearest
-   atoms named — never an approximation by a neighbouring atom.
+   atoms named — never an approximation by a neighbouring atom. Two consequences:
+   - **An aggregate word is one atom.** "Vehicle", "motor vehicle", "traffic" and the other words
+     the reading declares as aggregates are claimed as `ru.aggregate=<word>` — in `class_elements`
+     and in the span's element alike. Never expand a word into the classes it covers; a class the
+     text names on its own (a bus, a bicycle) is its own `ru.*` atom.
+   - **A feature the subject is on is anchored.** A span that places the subject on a lane, a
+     roadway, a crossing or under a device (`st.*`, `dev.*`) also claims `rel.occupies` (or
+     `st.region_geometry` where the span is about distance to it), so that the rule reads the
+     subject's own feature and not any feature of the scene. The validator returns a node that
+     claims a feature and no anchor.
 4. **Every standard is operationalized**, by one operationalization per `standard` span, whose
    `concepts` list the atoms and derived concepts that bound it exactly as the operationalization
    table pairs them (a safe-distance standard is bounded by a clearance atom *and* a time-gap
@@ -82,8 +102,14 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    mapping, or record a dispute under `## Disputes` in `PLAN.md` with the reason. Never diverge
    silently.
 8. **Parameters come from the catalogue.** Name parameters from the catalogue; never state a
-   value. A concept whose parameter the catalogue lacks is reported in `PLAN.md` under `## For the
-   operator`, and the node is still written. A figure the law itself states ("a stated distance,
+   value. Every operationalization names at least one parameter: a standard is a bound the
+   reading sets, and a standard rendered as a structural fact with no magnitude behind it ("has a
+   neighbouring lane" for "of sufficient width") is an approximation by a neighbouring atom, which
+   the validator returns and the judge marks `approximated`. A parameter the catalogue lacks is
+   still named (`p.<name>`, its convention in the operationalization): the harness files a
+   **value gap** and blocks the node until the operator sets the value in the reading; the node
+   is written in full, and nothing is lost by naming it. Report it in `PLAN.md` under `## For the
+   operator` as well. A figure the law itself states ("a stated distance,
    speed or time") is not a parameter: declare it in `literals` on its span, with the number and
    its unit as the text gives it — `ft`, `in`, `mi`, `mph`, `s`, `min`, `h`, `deg`, or `count`
    for a number of things — and the rule carries it as a literal.
@@ -92,7 +118,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    atom whose absence makes the rule unknown — one the node claims, or one its claimed concepts
    read).
 10. **No Lean, no code, no library edits.** You write `blueprint.jsonl`, `PLAN.md` and
-    `proposed_gaps.jsonl` only.
+    `proposed_gaps.jsonl` only — by hand, as the files themselves. You do not write programs that
+    generate them, and you do not write your own checker: the harness's validator is given to you
+    below, and it is the only program you run.
 11. **A returned law is fixed, not re-read.** Address the returned reason; a second record that
     maps the same words differently without a dispute is rejected. An obligation span that only a
     residue can carry means the duty is not expressible: say so in `PLAN.md` and do not weaken it.
@@ -135,12 +163,23 @@ literals[{span, text, value, unit}], gaps[{span, kind, proposal, nearest}]
 
 `proposed_gaps.jsonl` — the gap records, one per line, with `law_refs` and `node_id`.
 
+`aggregates.jsonl` — one record per aggregate word derived from a definition (rule 0):
+
+```
+word, definition, classes[ "<ru.* id>" | "<other defined word>" ], justification, unresolved[{text, why}]
+```
+
 ## Self-check before you stop
 
+Run the validator on the finished file and fix what it names; then confirm by reading:
+
+- every aggregate word a node claims has a record in `aggregates.jsonl` or a declaration in the
+  reading, and every member of a record is an `ru.*` id of the ontology or another record's word;
 - every span text is a verbatim substring of its law, spans disjoint, union complete;
 - every non-boilerplate span appears in exactly one of elements / operationalizations /
   assumptions / compositions / residues / gaps;
-- every atom, value and concept id you wrote exists in the ontology, or is in a gap;
+- every atom, value and concept id you wrote exists in the ontology, or is in a gap; every
+  aggregate word is one the reading declares; every node that reads a feature claims an anchor;
 - every `standard` span has an operationalization;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the
   obligations the law's nodes carry, in text order;
@@ -150,5 +189,5 @@ literals[{span, text, value, unit}], gaps[{span, kind, proposal, nearest}]
 
 ## Stop
 
-Stop when `blueprint.jsonl`, `PLAN.md` and `proposed_gaps.jsonl` are written and the self-check
+Stop when `aggregates.jsonl`, `blueprint.jsonl`, `PLAN.md` and `proposed_gaps.jsonl` are written and the self-check
 passes. Do not write a "next steps" section that waits on anyone.

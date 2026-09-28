@@ -1,242 +1,160 @@
 /-
-  NRS 484B.213(1) — a vehicle must not be driven to the left side of the centre of a two-lane,
-  two-directional highway when overtaking and passing another vehicle proceeding in the same
-  direction, unless the left side is clearly visible and free of oncoming traffic for a
-  sufficient distance ahead to permit the pass to be completed without interfering with the safe
-  operation of any vehicle approaching from the opposite direction or any vehicle overtaken.
+  NRS_484B_213_1 — NRS-484B-213-1
 
-  THE READING (the blueprint's, not this file's):
-  - s1 subject    — the binder `a`: the subject track, of one of the classes the node lists for
-                    the corpus's word "vehicle". `b` is the vehicle overtaken, `c` the vehicle
-                    approaching from the opposite direction; both are vehicles, neither is the
-                    subject.
-  - s3 condition  — the applicability: the carriageway is a two-lane, two-directional roadway.
-  - s4 trigger    — the applicability: a is overtaking and passing b, which proceeds the same way.
-  - s2 obligation — the antecedent: a is driven to the left of the centre.
-  - s5, s7, s8    — the consequent: the three operationalized standards, exactly as the node
-                    declares them.
-  - s6 condition  — the consequent: the left side is free of oncoming traffic.
+  THE READING (the blueprint's; the coding session records here, per span, how each element,
+  operationalization and composition below is written, and every choice the text did not dictate).
 
-  CHOICES THE TEXT DID NOT DICTATE (each one is a reading of a span, not an invention):
+  Spans:
+    a1 (subject): A vehicle
+    a2 (obligation): must not be driven to the left side of the center of a two-lane, two-directional highway
+    a3 (boilerplate): and
+    a4 (trigger): overtaking and passing another vehicle proceeding in the same direction,
+    a5 (boilerplate): unless
+    a6 (standard): such left side is clearly visible and is free of oncoming traffic for a sufficient distance ahead to permit such overtaking and passing to be completely made
+    a7 (standard): without interfering with the safe operation of any vehicle approaching from the opposite direction or any vehicle overtaken.
 
-  1. "a two-lane, two-directional highway" (s3) is read on the lanes, not on a count: there are
-     two lanes `l` and `n`, each the other's LEFT neighbour (`st.lane_adjacency`), whose
-     directions oppose (`st.lane_direction`, a negative dot product — the only comparison this
-     needs is against zero). Mutual left-adjacency IS "two-lane, two-directional": on any wider
-     carriageway the lane left of `n` is a third lane, not `l` again. The count fields of
-     `st.lane_adjacency` are not used, because comparing a count to one or to two would put a
-     bare magnitude in the rule and the node declares no literal; and "`l` has no neighbour to
-     its right" is not stated, because an unset neighbour in the ontology is an UNOBSERVED
-     neighbour, not the absence of one — that reading made the applicability unknown wherever a
-     source did not publish the field.
-  2. "highway" is further required to be undivided: no region of kind `st.median_or_divider` is
-     present. A divided carriageway has no "centre" of the kind s2 speaks about.
-  3. "driven to the left side of the center" (s2) has two limbs, and their disjunction is the
-     antecedent:
-       (a) a's body lies across the dividing line — `drv.straddles_marking`, a occupying two
-           lanes at once. Under the applicability the only line to straddle is the centre line,
-           and the scene must carry a `st.centre_line` region for the limb to speak at all.
-       (b) a's body has passed wholly beyond it: a is clear of b to the LEFT by more than their
-           two half-widths — twice the signed lateral offset of a from b is at least the sum of
-           the two full widths (`kin.position`, `kin.extent`). On a road that is two lanes wide
-           the only place left of the overtaken vehicle's lane is left of the centre.
-     "Left" is the left of the centre line's own recorded direction (`st.lane_direction` on the
-     `st.centre_line` region), because the node's elements claim no atom that reports the
-     subject's own direction of travel. CONSEQUENCE, stated plainly: for a subject travelling
-     against the line's recorded direction the rule's "left" is that subject's right. The
-     alternative — the footprint against the line itself — needs the line's POSITION, and neither
-     `rel.occupies` nor `st.region_geometry` is claimed on s2; see task_result.md.
-  4. s5 and s7 are one and the same test in the node: both name `drv.sight_distance_adequate`
-     with `p.stopping_decel` and `p.reaction_time`, and nothing else. That test is written once.
-     What distinguishes s7 — the node's "the distance required is the distance a needs to
-     complete the pass and return" — is carried by the second conjunct, which is the node's other
-     s7 concept, `st.sight_distance`, held against the length of the pass: the longitudinal
-     clearance to b plus b's length plus a's length. No parameter and no magnitude enters there;
-     the length of the pass is measured, not chosen.
-  5. s6 is written as two conjuncts because the node claims two concepts on the span: c is not
-     oncoming (`rel.oncoming`), and a is not meeting c (`drv.meeting`). The second is entailed by
-     the first under the ontology's semantics (meeting is oncoming and a conflict within the
-     horizon); it is written because the node claims it, and it narrows nothing.
-  6. s8's three bounds are read exactly as the node's convention states them, over the two
-     affected users the node names — the overtaken b and the oncoming c: the lateral component of
-     `rel.surface_gap` to b is at least `p.lateral_clearance`; `drv.time_gap` to b reaches
-     `p.headway` AFTER the manoeuvre, which is `eventually`, since during the pass the two bodies
-     overlap longitudinally and no headway exists; and `drv.time_to_conflict` with b and with c
-     is at least `p.ttc_bound`. The projection horizon of `drv.time_to_conflict` is `p.ttc_bound`
-     itself — the node declares no horizon parameter — so the concept returns the horizon when no
-     conflict is predicted inside it, and the comparison is `≥`: "no conflict predicted within
-     `p.ttc_bound`". With `>` the no-conflict case would read as a violation. `drv.meeting` takes
-     the same horizon for the same reason.
-  7. "any vehicle approaching from the opposite direction or any vehicle overtaken" is read over
-     the node's binders c and b, not over a quantifier: the node gives a binder for each, so the
-     rule is evaluated once per candidate pair and the episode aggregates.
+  Elements (span → atoms, derived):
+    a1: atoms ['ru.subject', 'ru.aggregate=vehicle'], derived []
+    a2: atoms ['st.centre_line', 'st.roadway', 'st.lane', 'st.lane_adjacency', 'st.lane_direction', 'rel.occupies'], derived []
+    a4: atoms ['rel.same_direction', 'ru.aggregate=vehicle'], derived ['drv.overtaking']
 
-  No number below is a value this file chose: every magnitude is a parameter of the run's reading
-  or a measured quantity, and the only literals are zero.
+  How each span is written:
+    a1 — `v` carries `ru.subject` and the aggregate word `vehicle`; `overtaken` carries the word
+      alone.
+    a4 — the applicability: `rel.same_direction` of the pair and `drv.overtaking` of `v` over
+      `overtaken`, both at `p.same_direction_cos`. The concept is engaged only once the overtaken
+      vehicle is behind, so the rule speaks from the instant the pass is made.
+    a2 — the obligation's antecedent: the subject occupies a roadway (`st.roadway`) and the
+      centre line (`st.centre_line`) over it, the overtaken vehicle occupies a lane (`st.lane`),
+      and the subject occupies that lane's left neighbour (`st.lane_adjacency` on the side
+      `left`) whose `st.lane_direction` opposes it — the two-directional highway. Every region is
+      tied to a binder by `rel.occupies`.
+    a6 — `drv.sight_distance_adequate` at `p.stopping_decel` and `p.reaction_time`, a visible
+      `st.sight_distance` recorded for the lane crossed into, and no user that is `rel.oncoming`
+      at `p.oncoming_cos` satisfying `drv.meeting` within `p.ttc_horizon`.
+    a7 — `drv.time_to_conflict` with the overtaken vehicle above `p.ttc_bound` and the lateral
+      `rel.surface_gap` to it at or above `p.lateral_clearance`.
+
+  CONSEQUENCES of choices the text did not dictate (each is a `residues` entry below):
+    1. "two-lane" is not read as a lane count.
+    2. "to the left side of the center" is read as the footprint over the centre line while in
+       the opposed neighbouring lane.
+    3. the sufficient distance is measured at the subject's own speed, not at a meeting pair's
+       closing speed.
+    4. "clearly visible" is read as a sight distance being recorded at all for that lane.
+    5. a7's two bounds are imposed on the overtaken vehicle; the oncoming side of a7 is carried
+       by a6's meeting clause.
+
+  No magnitude below is this file's own: parameters name the reading, literals are the text's.
 -/
 import TrafficSpec.Core.Rule
 
 namespace TrafficSpec.Rules.NRS_484B_213_1
 
-/-- The binders, as arguments. -/
-private def subj : Arg := .var "a"
-private def over : Arg := .var "b"
-private def onc : Arg := .var "c"
+/-- The binders, as arguments (order and names are the node's). -/
+private def vV : Arg := .var "v"
+private def vOvertaken : Arg := .var "overtaken"
+
+/-- The quantified variables: a road user, and the regions the antecedent speaks about. -/
+private def vOther : Arg := .var "o"
+private def vRoadway : Arg := .var "rw"
+private def vCentre : Arg := .var "cl"
+private def vOwnLane : Arg := .var "lOwn"
+private def vOppLane : Arg := .var "lOpp"
 
 /-- The reading's parameters; no value of any of them lives in this file. -/
-private def pReaction : Term := .param "p.reaction_time"
-private def pDecel : Term := .param "p.stopping_decel"
-private def pLateral : Term := .param "p.lateral_clearance"
-private def pHeadway : Term := .param "p.headway"
-private def pTtc : Term := .param "p.ttc_bound"
+private def pLateralClearance : Term := .param "p.lateral_clearance"
 private def pOncomingCos : Term := .param "p.oncoming_cos"
-private def pSameDirCos : Term := .param "p.same_direction_cos"
+private def pReactionTime : Term := .param "p.reaction_time"
+private def pSameDirectionCos : Term := .param "p.same_direction_cos"
+private def pStoppingDecel : Term := .param "p.stopping_decel"
+private def pTtcBound : Term := .param "p.ttc_bound"
+private def pTtcHorizon : Term := .param "p.ttc_horizon"
 
 private def zeroMetres : Term := .lit Q.zero .metre
 private def zeroRatio : Term := .lit Q.zero .ratio
 
-/-- The classes the node's s1 element lists for the corpus's word "vehicle". -/
-private def vehicleClasses : List String :=
-  ["ru_motor_vehicle", "ru_motorcycle", "ru_moped", "ru_bus", "ru_transit_bus", "ru_taxicab",
-   "ru_tour_bus_or_limousine", "ru_truck", "ru_commercial_motor_vehicle",
-   "ru_trailer_or_combination", "ru_bicycle", "ru_animal_or_animal_drawn",
-   "ru_emergency_vehicle", "ru_official_vehicle", "ru_procession_vehicle"]
+/-- A component of a lane's direction. -/
+private def laneDirection (l : Arg) (component : String) : Term :=
+  .measure "st_lane_direction" [l, .lit component]
 
-/-- One of the classes the word "vehicle" covers. -/
-private def isVehicle (x : Arg) : Formula :=
-  vehicleClasses.foldr (fun n acc => .or (.atom n [x] []) acc) .ff
+/-- The two lanes carry traffic the opposite way: their directions point against each other. -/
+private def opposedDirections (a b : Arg) : Formula :=
+  .cmp (.add (.mul (laneDirection a "x") (laneDirection b "x"))
+             (.mul (laneDirection a "y") (laneDirection b "y")))
+       .lt zeroRatio
 
--- ---------------------------------------------------------------------------------------------
--- s3, s4: when the duty is engaged
--- ---------------------------------------------------------------------------------------------
+/-- Class of `v`: ru.subject, ru.aggregate=vehicle -/
+private def clsV : Formula :=
+  .and (.atom "ru_subject" [vV] []) (.atom "ru_aggregate" [vV, .lit "vehicle"] [])
+/-- Class of `overtaken`: ru.aggregate=vehicle -/
+private def clsOvertaken : Formula := .atom "ru_aggregate" [vOvertaken, .lit "vehicle"] []
 
-/-- The dot product of two lane directions. -/
-private def directionsDot (l n : String) : Term :=
-  .add (.mul (.measure "st_lane_direction" [.var l, .lit "x"])
-             (.measure "st_lane_direction" [.var n, .lit "x"]))
-       (.mul (.measure "st_lane_direction" [.var l, .lit "y"])
-             (.measure "st_lane_direction" [.var n, .lit "y"]))
+/-- Applicability: a4 (trigger): overtaking and passing another vehicle proceeding in the same direction, -/
+private def applicability : Formula :=
+  .and (.atom "rel_same_direction" [vV, vOvertaken] [pSameDirectionCos])
+       (.derived "drv_overtaking" [vV, vOvertaken] [pSameDirectionCos])
 
-/-- s3: two lanes, each the other's LEFT neighbour, running opposite ways. Mutual left-adjacency
-    is exactly the two-lane two-directional topology: on any wider carriageway the lane to the
-    left of `n` is a third lane, not `l` again. -/
-private def twoLaneTwoDirectional : Formula :=
-  .existsRegion .lane "l"
-    (.and (.atom "st_lane" [.var "l"] [])
-      (.existsRegion .lane "n"
-        (.and (.atom "st_lane_adjacency" [.var "l", .lit "left", .var "n"] [])
-          (.and (.atom "st_lane_adjacency" [.var "n", .lit "left", .var "l"] [])
-                (.cmp (directionsDot "l" "n") .lt zeroRatio)))))
+/-- a6, first limb: the left side is clearly visible for the distance the pass needs. -/
+private def visibleFarEnough : Formula :=
+  .and (.derived "drv_sight_distance_adequate" [vV] [pStoppingDecel, pReactionTime])
+       (.cmp (.measure "st_sight_distance" [vOppLane]) .gt zeroMetres)
 
-/-- s3: the place the duty speaks about is a roadway, and it is not divided. -/
-private def undividedRoadway : Formula :=
-  .and (.existsRegion .roadway "rw" (.atom "st_roadway" [.var "rw"] []))
-       (.not (.existsRegion .medianOrDivider "md" (.atom "st_median_or_divider" [.var "md"] [])))
-
-/-- s4: a is overtaking and passing b, which proceeds in the same direction. -/
-private def overtakingSameDirection : Formula :=
-  .and (.atom "rel_same_direction" [subj, over] [pSameDirCos])
-       (.derived "drv_overtaking" [subj, over] [pSameDirCos])
-
--- ---------------------------------------------------------------------------------------------
--- s2: driven to the left side of the centre
--- ---------------------------------------------------------------------------------------------
-
-/-- The signed lateral offset of a from b about the centre line `cl`'s own direction, positive to
-    the left of that direction: the 2-D cross product of the direction with `p_a − p_b`. -/
-private def leftOffsetFromOvertaken : Term :=
-  .sub (.mul (.measure "st_lane_direction" [.var "cl", .lit "x"])
-             (.sub (.measure "kin_position" [subj, .lit "y"])
-                   (.measure "kin_position" [over, .lit "y"])))
-       (.mul (.measure "st_lane_direction" [.var "cl", .lit "y"])
-             (.sub (.measure "kin_position" [subj, .lit "x"])
-                   (.measure "kin_position" [over, .lit "x"])))
-
-/-- s2: across the dividing line, or wholly clear of the overtaken vehicle to its left. -/
-private def leftOfTheCentre : Formula :=
-  .existsRegion .centreLine "cl"
-    (.and (.atom "st_centre_line" [.var "cl"] [])
-      (.or (.derived "drv_straddles_marking" [subj] [])
-           (.cmp (.add leftOffsetFromOvertaken leftOffsetFromOvertaken) .ge
-                 (.add (.measure "kin_extent" [subj, .lit "width"])
-                       (.measure "kin_extent" [over, .lit "width"])))))
-
--- ---------------------------------------------------------------------------------------------
--- s5, s6, s7, s8: what makes the left side lawful
--- ---------------------------------------------------------------------------------------------
-
-/-- s5, first half of s7: the sight distance where a is covers a's stopping distance under the
-    design deceleration and perception-reaction time of the node's convention. -/
-private def clearlyVisible : Formula :=
-  .derived "drv_sight_distance_adequate" [subj] [pDecel, pReaction]
-
-/-- s7: the distance the pass needs — the longitudinal clearance to b, plus b's length, plus a's
-    own length: the road a must cover to draw level, clear b and return. -/
-private def passingLength : Term :=
-  .add (.add (.measure "rel_surface_gap" [subj, over, .lit "longitudinal"])
-             (.measure "kin_extent" [over, .lit "length"]))
-       (.measure "kin_extent" [subj, .lit "length"])
-
-/-- s7: the sight distance ahead covers the length of the pass. -/
-private def visibleForThePass : Formula :=
-  .forallRegion .roadway "rw" (.cmp (.measure "st_sight_distance" [.var "rw"]) .ge passingLength)
-
-/-- s6: the left side is free of oncoming traffic — c does not approach from the opposite
-    direction, and a is not meeting it. -/
+/-- a6, second limb: no oncoming user is met within the horizon. -/
 private def freeOfOncoming : Formula :=
-  .and (.not (.atom "rel_oncoming" [subj, onc] [pOncomingCos]))
-       (.not (.derived "drv_meeting" [subj, onc] [pTtc, pOncomingCos]))
+  .forallUser "o"
+    (.implies (.atom "rel_oncoming" [vV, vOther] [pOncomingCos])
+              (.not (.derived "drv_meeting" [vV, vOther] [pTtcHorizon, pOncomingCos])))
 
-/-- s8: the lateral clearance to the vehicle overtaken. -/
-private def lateralClearanceKept : Formula :=
-  .cmp (.measure "rel_surface_gap" [subj, over, .lit "lateral"]) .ge pLateral
+/-- a7: the overtaken vehicle's safe operation is not interfered with. -/
+private def noInterference : Formula :=
+  .and (.cmp (.quantity "drv_time_to_conflict" [vV, vOvertaken] [pTtcHorizon]) .gt pTtcBound)
+       (.cmp (.measure "rel_surface_gap" [vV, vOvertaken, .lit "lateral"]) .ge pLateralClearance)
 
-/-- s8: the headway to the vehicle overtaken is restored once the manoeuvre is over. -/
-private def headwayRestored : Formula :=
-  .eventually (.cmp (.quantity "drv_time_gap" [subj, over] []) .ge pHeadway)
-
-/-- s8: no conflict with the party within the horizon the node's bound sets. -/
-private def noConflictWith (x : Arg) : Formula :=
-  .cmp (.quantity "drv_time_to_conflict" [subj, x] [pTtc]) .ge pTtc
-
-/-- s5, s6, s7, s8 together: what the statute's "unless" requires of the left side. -/
-private def leftSideLawful : Formula :=
-  .and clearlyVisible
-  (.and visibleForThePass
-  (.and freeOfOncoming
-  (.and lateralClearanceKept
-  (.and headwayRestored
-  (.and (noConflictWith over) (noConflictWith onc))))))
-
--- ---------------------------------------------------------------------------------------------
+/-- Obligation: a2 (obligation): must not be driven to the left side of the center of a two-lane, two-directional highway; a6 (standard): such left side is clearly visible and is free of oncoming traffic for a sufficient distance ahead to permit such overtaking and passing to be completely made; a7 (standard): without interfering with the safe operation of any vehicle approaching from the opposite direction or any vehicle overtaken. -/
+private def obligation : Formula :=
+  .forallRegion .roadway "rw"
+    (.implies (.and (.atom "st_roadway" [vRoadway] []) (.atom "rel_occupies" [vV, vRoadway] []))
+      (.forallRegion .centreLine "cl"
+        (.implies (.and (.atom "st_centre_line" [vCentre] [])
+                        (.atom "rel_occupies" [vV, vCentre] []))
+          (.forallRegion .lane "lOwn"
+            (.implies (.and (.atom "st_lane" [vOwnLane] [])
+                            (.atom "rel_occupies" [vOvertaken, vOwnLane] []))
+              (.forallRegion .lane "lOpp"
+                (.implies
+                  (.and (.atom "st_lane_adjacency" [vOwnLane, .lit "left", vOppLane] [])
+                    (.and (.atom "rel_occupies" [vV, vOppLane] [])
+                          (opposedDirections vOwnLane vOppLane)))
+                  (.and (.and visibleFarEnough freeOfOncoming) noInterference))))))))
 
 def rule : Rule :=
   { id := "NRS_484B_213_1"
     laws := ["NRS-484B-213-1"]
     binders :=
-      [ { name := "a", cls := .and (.atom "ru_subject" [subj] []) (isVehicle subj) }
-      , { name := "b", cls := isVehicle over }
-      , { name := "c", cls := isVehicle onc } ]
-    applicability := .and undividedRoadway (.and twoLaneTwoDirectional overtakingSameDirection)
-    obligation := .implies leftOfTheCentre leftSideLawful
+      [ { name := "v", cls := clsV }
+      , { name := "overtaken", cls := clsOvertaken } ]
+    applicability := applicability
+    obligation := obligation
     assumptions := []
     operationalizations :=
-      [ { standard := "such left side is clearly visible"
-          concepts := ["drv.sight_distance_adequate", "st.sight_distance"]
-          params := ["p.reaction_time", "p.stopping_decel"]
-          convention := "Stopping-/passing-sight-distance model of the ontology's ‘clearly visible for a sufficient distance; view obstructed’ row: `st.sight_distance` at the subject's position is compared, by `drv.sight_distance_adequate`, with the distance the model gives for the subject's speed under design deceleration `p.stopping_decel` and design perception-reaction time `p.reaction_time`."
-          surrogate := false }
-      , { standard := "for a sufficient distance ahead to permit such overtaking and passing to be completely made"
-          concepts := ["drv.sight_distance_adequate", "st.sight_distance"]
-          params := ["p.reaction_time", "p.stopping_decel"]
-          convention := "Stopping-/passing-sight-distance model of the ontology's ‘clearly visible for a sufficient distance; view obstructed’ row: `st.sight_distance` at the subject's position is compared, by `drv.sight_distance_adequate`, with the distance the model gives for the subject's speed under design deceleration `p.stopping_decel` and design perception-reaction time `p.reaction_time`. The model is run in its passing form: the distance required is the distance a needs to complete the pass and return, so the sight distance must cover it at a's speed."
+      [ { standard := "clearly visible and free of oncoming traffic for a sufficient distance ahead to permit the pass to be completely made"
+          concepts := ["drv.meeting", "drv.sight_distance_adequate", "rel.oncoming", "st.sight_distance"]
+          params := ["p.stopping_decel", "p.reaction_time", "p.oncoming_cos", "p.ttc_horizon"]
+          convention := "The table's pairing for 'clearly visible for a sufficient distance; view obstructed': `drv.sight_distance_adequate` at the subject's speed, its model being the passing-sight-distance reading of the stopping-distance model (`p.stopping_decel`, `p.reaction_time`) applied to the closing speed of a meeting pair, so the visible `st.sight_distance` covers the whole manoeuvre; 'free of oncoming traffic' is that no user with `rel.oncoming` (heading cosine of opposition at least `p.oncoming_cos`) satisfies `drv.meeting` within the horizon `p.ttc_horizon`."
           surrogate := false }
       , { standard := "without interfering with the safe operation of any vehicle approaching from the opposite direction or any vehicle overtaken"
-          concepts := ["rel.surface_gap", "drv.time_gap", "drv.time_to_conflict"]
-          params := ["p.lateral_clearance", "p.headway", "p.ttc_bound"]
-          convention := "Gap-acceptance convention paired with the ontology's safe-distance row: the lateral component of `rel.surface_gap` to the other user stays at or above `p.lateral_clearance`, `drv.time_gap` after the manoeuvre stays at or above `p.headway`, and `drv.time_to_conflict` with every affected user stays above `p.ttc_bound`. The affected users are every oncoming vehicle c and the overtaken vehicle b."
+          concepts := ["drv.time_to_conflict", "rel.surface_gap"]
+          params := ["p.ttc_bound", "p.lateral_clearance"]
+          convention := "The table's pairing for 'with safety (of a pass)': `drv.time_to_conflict` with every affected user — each oncoming vehicle and the overtaken vehicle — stays above `p.ttc_bound` (conflict-analysis convention) and the lateral `rel.surface_gap` to each stays at or above `p.lateral_clearance`."
           surrogate := false } ]
-    residues := []
+    residues :=
+      [ "The text's 'two-lane' is not read as a lane count: the rule asks only that the lane the overtaken vehicle occupies have a left neighbour running the opposite way, so a two-directional highway of more than one lane each way is not excluded."
+      , "'Driven to the left side of the center' is read as the subject's footprint occupying the centre-line region while it occupies that opposed left neighbour lane; a subject wholly inside the opposing lane, its body no longer over the line, falls outside the obligation's antecedent."
+      , "The sufficient distance is measured at the subject's own speed: `drv.sight_distance_adequate` takes one track, so the closing speed of a meeting pair the convention names is not what the bound uses, and the bound is weaker than the passing-sight-distance model."
+      , "'Clearly visible' is read as a sight distance being recorded at all for the lane crossed into; how clear the view along it is beyond that is not captured."
+      , "a7's two bounds are imposed on the overtaken vehicle. For a vehicle approaching from the opposite direction the interference bound is carried by a6: `p.ttc_bound` lies below `p.ttc_horizon`, so an oncoming user whose time to conflict is under the bound is necessarily one `drv.meeting` reports. `p.lateral_clearance` is not asked of an oncoming vehicle, which met head-on in the borrowed lane can never give it."
+      ]
     surrogate := false }
 
 end TrafficSpec.Rules.NRS_484B_213_1

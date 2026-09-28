@@ -35,10 +35,13 @@ def active() -> str:
 
 
 def archive_full() -> None:
+    """Archive the Core directory as the full variant whenever it holds one: the Core directory is
+    authoritative while `full` is active, so every switch to `train` re-archives it and the training
+    variant is regenerated from the edited files, never from a stale copy."""
     dst = SPLITS / "full" / "TrafficSpec" / "Core"
-    if (dst / "Atoms.lean").exists():
-        return
     if active() != "full":
+        if (dst / "Atoms.lean").exists():
+            return
         raise RuntimeError("cannot archive: the Core directory does not hold the full variant")
     dst.mkdir(parents=True, exist_ok=True)
     for name in ["Atoms.lean"] + DEPENDENT:

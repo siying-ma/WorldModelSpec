@@ -48,7 +48,8 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str) -> dict | None:
     if run.opts.dry_run:
         return None
     code, result, _ = runner.run_claude(prompt, cwd=out_dir, stream_path=out_dir / f"{label}_session.jsonl",
-                                        max_turns=6, model=run.opts.model, timeout_seconds=900)
+                                        max_turns=6, model=run.opts.model, effort=run.opts.judge_effort,
+                                        max_budget_usd=run.opts.session_budget_usd, timeout_seconds=900)
     text = (result or {}).get("result", "") or ""
     (out_dir / f"{label}_result.txt").write_text(text, encoding="utf-8")
     return render.extract_json(text)
@@ -80,7 +81,7 @@ def judge_node(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, out_
     for r in rows:
         if r.get("id") not in spans:
             reasons.append(f"judge names unknown span {r.get('id')}")
-        if r.get("verdict") in ("contradicted", "missing"):
+        if r.get("verdict") in ("approximated", "contradicted", "missing"):
             reasons.append(f"span {r.get('id')} {r.get('verdict')}: {r.get('quote', '')}")
         if r.get("quote") and _norm(r["quote"]) not in reading_text:
             notes.append(f"judge quote for span {r.get('id')} is not verbatim from the blind reading")
@@ -92,7 +93,7 @@ def judge_node(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, out_
             notes.append(f"extra (rests on a claimed id, ignored): {x.get('assertion')}")
         else:
             reasons.append(f"extra assertion: {x.get('assertion')} (relies on {rel})")
-    aligned = not reasons and not any(r.get("verdict") in ("contradicted", "missing") for r in rows)
+    aligned = not reasons and not any(r.get("verdict") in ("approximated", "contradicted", "missing") for r in rows)
     (out_dir / "judge_notes.txt").write_text("\n".join(notes), encoding="utf-8")
     return aligned, reasons, verdict
 
@@ -125,12 +126,11 @@ def claimed_closure(n: Node, onto: ontology.Ontology) -> set[str]:
     return out
 
 
-def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law]) -> list[NodeVerdict]:
+def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading: Reading) -> list[NodeVerdict]:
     out_dir = run.iter / "validate"
     out_dir.mkdir(parents=True, exist_ok=True)
     nodes = blueprint.load(plan_dir / "blueprint.jsonl")
     onto = ontology.load(run.opts.ontology)
-    reading = Reading(run.opts.reading)
     index = MappingIndex(run.mapping_file)
     accepted = {k: Node(v) for k, v in run.accepted_nodes.items()}
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, disputes_of(plan_dir))

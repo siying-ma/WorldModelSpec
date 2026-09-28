@@ -1,136 +1,174 @@
-# `TrafficSpec/Rules/*` — the autoformalized library
+# `library/` — the TrafficSpec Lean library
 
-Every file under this directory was written by a **coding agent**, one file per
-session, from a node a **plan agent** had already decided on. Nothing here is
-hand-authored, and nothing here was accepted on an agent's own word: acceptance
-is `tools/check_spec.py` printing `OK`, re-checked afterwards by
-`CodePhase._authorize`.
+Three parts, with different owners:
 
+| part | path | written by | changes when |
+|---|---|---|---|
+| **Core** | `TrafficSpec/Core/**` | hand, before any law is seen (the ontology files are generated from `ontology/ATOMS*.md`) | only by an explicit ontology or Core change, never during a run |
+| **Nodes** | `TrafficSpec/Rules/<Body>/<NodeId>.lean`, `TrafficSpecWitness/<Body>/<NodeId>.lean` | one coding session per node, accepted only by the harness's own gate call | a node is accepted, or reverted by integrate |
+| **Registries** | `TrafficSpec/Index.lean`, `TrafficSpecWitness.lean` | `harness/index_sync.py` | every gate and integrate run; never by hand |
 
-Current contents: **21 rules, 8 laws, 96 scenarios**, landed over 10 iterations of run `EightRulesAfterSchema` (`state/EightRulesAfterSchema/`).
+`TrafficSpec/Tests/**` pins Core's arithmetic and semantics at build time; `Main.lean` is the
+`monitor` executable; `splits/` holds the full and training variants of the split Core files.
 
 ---
 
-## 1. Plan agent 
-The plan agent writes no Lean. It emits `objectives.jsonl`, one JSON object per
-rule to write, and `plan_validate.py` rejects the whole plan before any coding starts if any of it is malformed. 
+## 1. Core, bottom-up
 
-### How many rules a law gets
+Every file imports only files above it in this table.
 
-This is the plan agent's central judgement, and the prompt states the default:
-*prefer one clause → one rule; decompose only when you can name what each part
-obliges.* In practice the eight-clause corpus produced a **1-to-N fan-out per
-law, not per sentence**:
-
-| law | rules | why it fanned out |
+| layer | file | what it is |
 |---|---|---|
-| `EX-FOLLOW-001` | 5 | Sentence 2 is a bright line (R0003). Sentence 1, "reasonable and prudent", is an open standard with no threshold, so it became **sufficient conditions on different evidence channels**: R0014 reads the lead's `light_brake`, R0015 reads ego `speed`. R0021 and R0024 then restate R0003's and R0014's thresholds through the *angular* edges, because all three earlier rules route through `Pred.followingWithin`, whose `sameLane` conjunct is a shared single point of failure across a lane-node boundary. |
-| `EX-LANE-001` | 6 | Sentence 1 (keep right) is R0008 and R0025. Sentence 2 (do not occupy an opposing lane while a vehicle approaches) is R0016, R0017, R0022, R0023 — four rules whose blind spots are deliberate complements: who must be moving (ego vs. witness), and whether the witness carries angular edges at all (a van does not). |
-| `EX-SIGNAL-001` | 3 | R0010 covers entry-and-remain. R0018 and R0026 both carry "stop before the line" — R0026 exists because R0018 turned out to be **inert on a real capture**. |
-| `EX-STOP-001` | 2 | R0007 and R0019 are the *same duty by two grounding routes*: the stop-sign actor's `controls` edge vs. the map's OpenDRIVE type-`206` landmark via `mayAffect`. Which route survives the abstraction is an empirical question no scenario can answer. |
-| `EX-EMERGENCY-001` | 2 | R0012 triggers on a proximity band; CARLA emits no proximity edge for a `van`, so an ambulance is invisible to it. R0020 uses lane membership and restricts itself to `base_class == "van"` so it complements rather than loosens R0012. |
-| `EX-SPEED-001` / `EX-SPEED-002` / `EX-JUNCTION-001` | 1 each | Single conditionals. No decomposition. |
+| logic | `Tri.lean` | Strong-Kleene truth `t / f / u`; `and f u = f`, `and t u = u`, proved. |
+| | `Unknown.lean` | `UnknownReason` (why a value is `u`), `R` = value + reasons, `QR` = quantity or reason, `RangeAgg`. |
+| numbers | `Units.lean` | Exact rationals `Q` over SI units and the only way to write a number: `Units.feet`, `Units.mph`, `Units.seconds`, … No `Float`. |
+| time | `Time.lean` | `Measure` (`time` or `path`), `Duration`, the adequacy rule (observations in a window of length d at most d/2 apart), per-instant window sweeps. |
+| | `Temporal.lean` | Whole-trace operators (always, eventually, until, since, holdsFor, within, untilWithin, edge counts, distance-while), one pass each. |
+| vocabulary | `Ontology/Ids.lean` | `atomIds`, `derivedIds`. **Generated.** |
+| | `Ontology/{RoadUser,Structure,Device,Signal}.lean` | Enumerations the ontology lists (`RoadUserClass`, `StructureKind`, `DeviceKind`, `SignalIndication`, …) with their string codecs. **Generated.** |
+| | `World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
+| | `Assumptions.lean` | `asm.*` ids: legal region and calendar classes a scene supplies true, false or not at all. |
+| | `Atoms.lean` | One accessor per atom id (§2). |
+| | `Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |
+| | `Derived.lean` | One definition per derived concept (§2). |
+| language | `Formula.lean` | The specification language as data: `Term`, `Formula`, `Arg`, `CmpOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |
+| | `Semantics.lean` | `evalAll`: a formula's value at every instant; dispatches atom and derived names; the finite-trace policy. |
+| | `Rule.lean` | `Binder`, `Rule`, `Verdict`, `verdictAt`. **The only Core module a rule file imports.** |
+| | `RuleEval.lean` | `Rule.verdicts`, `wellFormed`, and the static checks `check` and `checkReading`. |
+| running | `Grounding.lean` | Binder assignments over a trace, track re-identification, per-grounding timelines, episode verdicts. |
+| | `Manifest.lean` | A source's capability per atom id, `support` from syntax alone, and `mask` (a trace as a weaker source would give it). |
+| | `Monitor.lean` | The report, as tab-separated text (the gate's contract) and JSON lines. |
+| | `Decode.lean` | JSON → `Trace`, `Reading`, `Manifest`. The only place an outside string becomes a typed value. |
+| evidence | `Builders.lean` | `Build.*` scene and trace constructors and `Scenario`. Witnesses and tests only. |
+| | `Adequacy.lean` | Mutation adequacy of a node's witnesses. Gate only. |
 
+`Core.lean` imports all of them.
 
-### Scenarios
+## 2. The vocabulary: five kinds of name, each with one home
 
-The plan agent writes the acceptance scenarios **before any Lean exists**, from
-the law text, and the coding agent must implement every one with exactly the
-declared `expected` value and character-identical names. Mechanically required:
-at least one `expected: true` and one `expected: false`, since without a negative
-a vacuously-true rule passes.
+A rule reads the world through names, never through fields or closures. Every name has exactly
+one kind, and the kind decides where it is defined, who supplies its value and which check
+holds it.
 
-The realised counts are 4–6 per rule (96 across 21 rules). The pattern the files
-converged on is one scenario per **load-bearing conjunct**: a scenario that fails
-if that conjunct is dropped or inverted. 
+| kind | id / Lean name | defined in | its value comes from | a rule uses it as |
+|---|---|---|---|---|
+| **atom** | `family.name` / `family_name` (families `ru kin st dev sig env rel`) | `Atoms.lean`, one `def` per id; attribute accessors carry a suffix (`dev_traffic_signal_shows`) | the scene, through `World` | `Formula.atom`, `Term.measure` |
+| **derived concept** | `drv.name` / `drv_name` | `Derived.lean`, one `def` per id, computed from atoms over the whole trace | atoms, plus parameters passed as arguments | `Formula.derived`, `Term.quantity` |
+| **parameter** | a free name | nowhere in Core | the run's reading (`readings/*.json`, decoded to `Params.Reading`) | `Term.param` |
+| **assumption** | `asm.name` | nowhere in Core; declared per node | the scene's `assumptions` list | `Formula.asm` |
+| **another rule** | its node id | the other node's file | its verdict | `Formula.rule`, `Formula.ruleApplies` |
 
-**What scenarios cannot do** is the reason `run_spec monitor` exists (the simulation we got from Carla Server): the same
-plan agent wrote the scenarios and chose the reading, so a misread clause
-produces scenarios that agree with the misreading and the gate still prints `OK`.
+**Atoms** read one `World` field each. They compare nothing against a constant and look at no
+other instant. The `rel_*` atoms may compute geometry from kinematics when the source does not
+supply the relation measured.
 
+**Derived concepts** are the vocabulary of manoeuvres and operationalized standards. Each returns
+one three-valued result per instant. Every parameter is an argument with no default, and
+`Derived.reads` lists the atoms each concept reads.
 
-### Whether the law is formalizable at all
+A number the statute states is written through a `Units` constructor and declared in the node's
+blueprint; any other number is a parameter. Core carries no threshold.
 
-Four answers, not two — readable today / reachable with a stated residue **Plan agent will try to fill that gap, need to be precisely designed later** /
-present in the data but not lifted into Lean (a *vocabulary* gap) / genuinely
-absent. Only the fourth justifies `unsupported`, and it must name a key from the
-schema's *NOT available* list.
+These are the six clauses of the termination rule in `ontology/ATOMS.md`. They are held by:
 
-**No law in this corpus is `unsupported`.** Every clause is `formalized`,but for now nothing downstream
-re-examines an `unsupported` verdict, so the cost of getting it wrong is a permanently unmeasured obligation, and the residues that survive as approximations are written into the file headers.
+- **doctor** (`scripts/diagnostics/library_v2.py`): the `Ontology/*` files match the generator;
+  `atomIds` ↔ `Atoms.lean` ↔ the dispatch in `Semantics.lean`; `derivedIds` ↔ `Derived.lean` ↔
+  `derivedNames` ↔ `reads`.
+- **`RuleEval.check`**: every name resolves, with the right arity, literals and argument sorts.
+- **the gate**: `UNCLAIMED_ATOM`, `UNUSED_CLAIM`, `BARE_LITERAL`, `DECLARATION_MISMATCH`.
 
----
+## 3. A node
 
-## 2. Code agent
-
-### The header comment
-
-The prompt requires a comment block recording the law text and **every
-formalization choice the text did not dictate**, so "a reviewer must be able to challenge your reading without rerunning you." 
-
-
-### The mandatory shape for the code
-
-A node is **two files**. `STRUCTURE_FAIL` unless the rule file contains
-`import TrafficSpec.Core`, its exact namespace, and **`def schema`, `def entry`**
-under those names — and unless the witness file contains its own namespace and
-**`def scenarios`**. A second `STRUCTURE_FAIL` fires if `def scenarios` omits a
-witness the plan declared.
+A node is two files, with paths and namespaces derived from the node id (`harness/nodeid.py`).
+The harness writes both as skeletons from the blueprint before the coding session starts. Every
+declaration the gate compares is already filled in; the session writes the formulas and the
+scenes.
 
 ```lean
--- TrafficSpec/Rules/<Theme>/<slug>.lean — the specification
-import TrafficSpec.Core                    -- Core only. A rule may import nothing else.
+-- TrafficSpec/Rules/<Body>/<NodeId>.lean
+import TrafficSpec.Core.Rule                 -- the only import allowed
 
-namespace TrafficSpec.Rules.<Theme>.<slug-prefix>
-
-open TrafficSpec TrafficSpec.SFProp TrafficSpec.Pred
-
-def schema : PropertySchema where          -- name, binders, formula
-def entry  : RuleEntry     where           -- nodeId, lawRefs, schema
-
-end TrafficSpec.Rules.<Theme>.<slug-prefix>
+namespace TrafficSpec.Rules.<NodeId>
+def rule : Rule :=
+  { id := "<NodeId>", laws := [...], binders := [...]      -- subject first
+    applicability := ..., obligation := ...
+    assumptions := [...], operationalizations := [...]
+    residues := [...], surrogate := false }
+end TrafficSpec.Rules.<NodeId>
 ```
 
 ```lean
--- TrafficSpecWitness/<Theme>/<slug>.lean — the evidence
-import TrafficSpec.Rules.<Theme>.<slug>    -- so a witness can reuse the rule's constants
+-- TrafficSpecWitness/<Body>/<NodeId>.lean
+import TrafficSpec.Rules.<Body>.<NodeId>
+import TrafficSpec.Core.Builders
 
-namespace TrafficSpecWitness.<Theme>.<slug-prefix>
-
-open TrafficSpec TrafficSpec.Pred
-open TrafficSpec.Rules.<Theme>.<slug-prefix>
-
--- entity ids, frame helpers, one `def traceX : Trace` per witness
-def scenarios : List Scenario              -- exactly two: one `permit`, one `forbid`
-
-end TrafficSpecWitness.<Theme>.<slug-prefix>
+namespace TrafficSpecWitness.<NodeId>
+def scenarios : List Scenario := [ ... ]     -- forbid, permit, idle, blind
+end TrafficSpecWitness.<NodeId>
 ```
 
-**Why two files.** A witness is evidence ABOUT a rule, not part of it: nothing
-that runs the library in an application reads one. `TrafficSpec.Index` exposes
-`allRules` and `checkLibrary`; the witnesses are registered separately in
-`TrafficSpecWitness.lean`, which imports the rules and is never imported by them.
+| role | expected episode verdict | shows |
+|---|---|---|
+| `forbid` | `violated` | the formula says something (it is not `□ ⊤`) |
+| `permit` | `compliant` | trigger and obligation are satisfiable together |
+| `idle` | `not_applicable` | the applicability can be false |
+| `blind` | `unknown` | masking the atoms the blueprint names under the manifest yields unknown, not a verdict |
 
-**Why two witnesses and not three.** `forbid` is the only evidence anywhere that
-a formula says something — a rule equivalent to `□ ⊤` grounds, engages and holds
-on every capture ever recorded. `permit` is the only evidence that the antecedent
-is satisfiable and the obligation reachable together. A third role,
-`antecedent_off`, was required until it was measured: for a formula shaped
-`□ (A ⟹ B)` it is a theorem of the semantics rather than a property that could
-fail, and it held for 55 of 55 such traces while accounting for more than half of
-all trace-writing work.
+**Rule and witness are separate files** because a witness is evidence *about* a rule. Nothing that
+runs the library imports `TrafficSpecWitness`, and a rule cannot import `Builders`. A rule that
+could build its own evidence would prove nothing.
 
-Everything inside the witness file is unconstrained by the gate. The
-shared entity and relation lists, a parameterised frame helper, then one
-documented `def traceX : Trace` per scenario, so `scenarios` is a flat table of name → trace and each trace carries a doc comment saying what it depicts and what breaks if the formula is wrong.
+**Verdicts.** Applicability and obligation are separate formulas: a rule whose situation never
+arises is `not_applicable`, not compliant. Per instant, `verdictAt` combines the binder classes,
+the applicability and the obligation. Over a trace, `Grounding.episode` gives the episode verdict:
 
+- any `violated` → violated;
+- else any `unknown` → unknown;
+- else any `compliant` → compliant;
+- else not applicable.
 
+A `surrogate` rule (the whole duty is an operationalized standard) is reported apart from the
+concrete rules and never summed with them.
 
-A coding agent may write only its own target file. `Core/` is frozen, `Index.lean`
-is generated by the harness, and another rule is another node's. The gate hashes
-every `.lean`/`.toml` under `library/` before the session (`library_manifest`) and
-reports any other change as `SCOPE_VIOLATION`; the harness then re-checks scope
-against the manifest **it** captured, and rejects an `OK` as `GATE_BYPASS` if the
-gate measured a different `--library-root`, a replaced `baseline.json`, or ran
-`--skip-build`.
+## 4. Who reads what
 
+| step | reads | through |
+|---|---|---|
+| plan | no Lean; the ontology text the Core vocabulary is generated from, and the reading's catalogue | `harness/phases/plan.py` |
+| validate A | `Derived.reads` and the atom ids | `harness/surface.py`, `harness/validate_a.py` |
+| validate B | the ontology rows of the claimed atoms | `harness/phases/validate.py` |
+| code | a surface cut from `Formula`, `Time`, `Rule`, `Params`, `Builders`, `World`, `Ontology/*`, `Atoms`, `Semantics`, `Derived`, `Units`, cited to each file | `harness/surface.py` |
+| gate | a generated Lean harness that imports `TrafficSpec`, `Adequacy`, `Decode` and the node; runs `Rule.check`, `checkReading`, `Scenario.run`, `Adequacy.unexercised` | `harness/gate.py` |
+| integrate | the whole library build, including `Tests`, and `TrafficSpecWitness.failures` | `harness/phases/integrate.py` |
+| monitor | `Main` → `Decode` → `Manifest` → `Grounding` → `Monitor` over `allRules` | `lake exe monitor` |
+
+Gate verdicts, in order: `SCOPE_VIOLATION`, `BUILD_FAIL`, `UNSOUND`, `CHECK_FAIL`,
+`UNANCHORED_VARIABLE`, `DECLARATION_MISMATCH`, `UNCLAIMED_ATOM`, `UNUSED_CLAIM`, `BARE_LITERAL`,
+`WITNESS_FAIL`, `VACUOUS`, `OK`.
+
+**Scope.** Before a session, the gate hashes every `.lean` file except the two registries. Any
+change outside the node's two files is reported as `SCOPE_VIOLATION`.
+
+## 5. Training split
+
+The Core directory holds either the full or the training variant of the files that depend on
+held-out atoms: `Atoms`, `Ontology/*`, `World`, `Decode`, `Manifest`, `Semantics`, `Derived` and
+`Grounding`. `splits/ACTIVE` records which one. `splits/full/` archives the full files and
+`splits/train/` holds the generated training variants.
+
+Swap with `python -m harness split --use train|full`, never by hand. Edit Core only while `full`
+is active. A training run must also pass `--ontology_file ontology/ATOMS_train.md`, so that the
+plan sees the same atom set Core defines.
+
+## 6. Build and run
+
+Run from `library/`:
+
+```
+lake build                                   # Core, Tests, registered rules and witnesses
+lake exe monitor --manifest <m.json> [--reading <r.json>] [--rules id,id] [--json] <trace.json>...
+```
+
+The monitor exits with status 2 on a decode error and 0 otherwise; verdicts are in the report.
+
+The JSON formats of traces, readings and manifests are documented at the top of `Decode.lean`.

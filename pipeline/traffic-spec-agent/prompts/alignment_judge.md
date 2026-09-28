@@ -22,11 +22,16 @@ do not rewrite either side.
 
 1. Judge spans, not impressions. Every span with role `trigger`, `subject`, `obligation`,
    `exception`, `standard` or `condition` receives exactly one verdict.
-2. `covered`: the reading states the span's content (a standard counts as covered when the
-   reading names its operationalization as a bound). `contradicted`: the reading states something
-   incompatible with the span. `missing`: the reading is silent on it and the node does not carry
-   it as a residue, assumption or composition. `carried`: the node carries it as a residue,
-   assumption or composition and the reading says so.
+2. `covered`: the reading states the span's content (a standard counts as covered only when the
+   reading names its operationalization **as a bound the reading sets** — a parameter).
+   `approximated`: the span states a judgement or a magnitude ("sufficient", "safe",
+   "reasonable", "practicable", "clearly", "so close as to") and the reading renders it as a
+   structural fact with no bound behind it — a neighbouring lane for a sufficient width, a
+   presence for an adequacy — or renders a span with a nearby fact that the span's words do not
+   say. `contradicted`: the reading states something incompatible with the span. `missing`: the
+   reading is silent on it and the node does not carry it as a residue, assumption or
+   composition. `carried`: the node carries it as a residue, assumption or composition and the
+   reading says so.
 3. `extra`: anything the reading asserts that no span says **and** that rests on an atom or
    concept the node's claims map to no span. An assertion that rests on a claimed id is a
    judgement about that id's span (covered, contradicted or missing), not an extra; a class list
@@ -39,12 +44,12 @@ do not rewrite either side.
 JSON, this schema:
 
 ```
-{"spans": [{"id": "<span id>", "verdict": "covered | contradicted | missing | carried", "quote": "<from the reading>"}],
+{"spans": [{"id": "<span id>", "verdict": "covered | approximated | contradicted | missing | carried", "quote": "<from the reading>"}],
  "extra": [{"assertion": "<from the reading>", "relies_on": "<atom or concept id>"}],
  "verdict": "aligned | misaligned"}
 ```
 
-`aligned` only if no span is `contradicted` or `missing` and `extra` is empty.
+`aligned` only if no span is `approximated`, `contradicted` or `missing` and `extra` is empty.
 
 ## Stop
 

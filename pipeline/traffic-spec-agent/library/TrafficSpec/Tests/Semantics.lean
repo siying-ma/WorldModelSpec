@@ -1,5 +1,6 @@
 import TrafficSpec.Core.Semantics
 import TrafficSpec.Core.Ontology.Ids
+import TrafficSpec.Core.RuleEval
 namespace TrafficSpec.Tests.Semantics
 open TrafficSpec Units TrafficSpec.Semantics
 
@@ -56,6 +57,24 @@ def τ : Trace := (List.range 9).map sceneAt
 def β : Binding := ({} : Binding).bind "x" (.track 1) |>.bind "y" (.track 2)
 def ρ : Reading := { params := [{ name := "p.stop_speed", value := Q.mk' 1 10, unit := .metrePerSecond }] }
 def c : SemCtx := SemCtx.mk' τ ρ β
+
+-- aggregates resolve through the reading, nested words included; an undeclared word is unknown
+def ρa : Reading := { ρ with aggregates := [{ word := "vehicle", classes := ["motor vehicle", "ru.trailer_or_combination"] },
+                                            { word := "motor vehicle", classes := ["ru.motor_vehicle", "ru.bus"] },
+                                            { word := "heavy", classes := ["ru.bus"] }] }
+def ca : SemCtx := SemCtx.mk' τ ρa β
+#guard (evalAll ca (.atom "ru_aggregate" [.var "x", .lit "vehicle"] [])).all (·.v == .t)
+#guard (evalAll ca (.atom "ru_aggregate" [.var "y", .lit "heavy"] [])).all (·.v == .f)
+#guard (evalAll ca (.atom "ru_aggregate" [.var "x", .lit "pedestrian"] [])).all (·.v == .u)
+#guard (evalAll c (.atom "ru_aggregate" [.var "x", .lit "vehicle"] [])).all (·.v == .u)
+-- the static check admits an aggregate atom; the reading check holds its word
+def aggRule : Rule :=
+  { id := "t_agg", laws := [], binders := [{ name := "x", cls := .atom "ru_aggregate" [.var "x", .lit "vehicle"] [] }]
+    applicability := .tt, obligation := .atom "ru_aggregate" [.var "x", .lit "heavy"] [] }
+#guard Rule.check [aggRule] aggRule = []
+#guard Rule.checkReading [aggRule] aggRule ρa = []
+#guard (Rule.checkReading [aggRule] aggRule ρ).length = 2
+#guard Formula.aggregateWords (.and (.atom "ru_aggregate" [.var "x", .lit "vehicle"] []) (.existsUser "u" (.atom "ru_aggregate" [.var "u", .lit "traffic"] []))) = ["vehicle", "traffic"]
 def v (i : Nat) (φ : Formula) : Tri := evalTri c i φ
 def why (i : Nat) (φ : Formula) : List UnknownReason := (eval c i φ).why
 

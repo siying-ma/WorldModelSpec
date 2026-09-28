@@ -4,6 +4,11 @@
   support is a test line are omitted. Do not edit; regenerate.
 -/
 /-
+  TRAINING SPLIT of TrafficSpec.Core.Atoms. Generated from Core/Atoms.lean by
+  ontology_provenance/nrs_tools/atoms_train.py: the definitions of the atoms whose only textual
+  support is a test line are omitted. Do not edit; regenerate.
+-/
+/-
   TrafficSpec.Core.Atoms
   The bijection with ATOMS.md §1–§7: exactly one definition per atom id, named `family_name`,
   each reading one field of `World` and nothing else. Attribute accessors of an atom carry the
@@ -113,6 +118,16 @@ def ru_animal_or_animal_drawn (s : Scene) (x : TrackId) : Option Bool := hasClas
 def ru_rail_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .railVehicle
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
+/-- Membership of a legal aggregate ("vehicle", "traffic"): the member classes come from the
+    reading. True when the user carries a member class; unknown when none holds and a member class
+    is unobserved (or the classes were not observed at all); false otherwise. -/
+def ru_aggregate (s : Scene) (x : TrackId) (members : List RoadUserClass) : Option Bool :=
+  (s.user x).bind fun u =>
+    let has : List (Option Bool) := members.map fun c =>
+      if u.unobservedClasses.contains c then none else u.classes.map (·.contains c)
+    if has.any (· == some true) then some true
+    else if has.any (·.isNone) then none
+    else some false
 def ru_occupant_count (s : Scene) (x : TrackId) : Option Nat := (s.user x).bind (·.occupants)
 def ru_rider_posture (s : Scene) (x : TrackId) : Option Posture := (s.user x).map (·.posture)
 def ru_rider_posture_on_seat (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.posture.onSeat)

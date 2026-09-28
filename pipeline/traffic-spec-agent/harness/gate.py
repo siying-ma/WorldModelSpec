@@ -5,16 +5,17 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from . import paths, nodeid, lean
+from . import paths, nodeid, lean, index_sync
 from .blueprint import Node, SCENARIOS
 from .reading import Reading
 
-VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "DECLARATION_MISMATCH",
+VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
             "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
 FORBIDDEN_TOKENS = ["sorry", "admit", "axiom", "unsafe", "partial", "opaque", "implemented_by", "extern", "native_decide", "panic!"]
 STANDARD_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
 ALLOWED_RULE_IMPORTS = {"TrafficSpec.Core.Rule"}
 ALLOWED_WITNESS_IMPORTS_EXTRA = {"TrafficSpec.Core.Builders"}
+GENERATED = {"TrafficSpec/Index.lean", "TrafficSpecWitness.lean"}   # written by index_sync, never by a session
 
 
 @dataclass
@@ -22,17 +23,19 @@ class Verdict:
     verdict: str
     details: list[str] = field(default_factory=list)
     report: str = ""
+    extras: dict = field(default_factory=dict)    # what an OK carries back: residues the coder added
 
     def to_dict(self) -> dict:
-        return {"verdict": self.verdict, "details": self.details}
+        return {"verdict": self.verdict, "details": self.details, **({"extras": self.extras} if self.extras else {})}
 
 
 def library_digest(root: Path) -> dict[str, str]:
     out = {}
     for p in root.rglob("*.lean"):
-        if ".lake" in p.parts:
+        rel = str(p.relative_to(root))
+        if ".lake" in p.parts or rel in GENERATED:
             continue
-        out[str(p.relative_to(root))] = hashlib.sha256(p.read_bytes()).hexdigest()
+        out[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
     return out
 
 
@@ -46,6 +49,32 @@ import {nodeid.witness_module(node_id)}
 open TrafficSpec Lean
 #print axioms {rns}.rule
 #print axioms {wns}.scenarios
+-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
+-- relates (a comparison does not); `?v` marks a quantifier variable, `$` a composition (its mapped
+-- variables are anchored by the composed rule).
+def argVars (as : List TrafficSpec.Arg) : List String := as.filterMap fun a => match a with | .var v => some v | _ => none
+mutual
+partial def occT : TrafficSpec.Term → List (List String)
+  | .measure _ as => [argVars as]
+  | .quantity _ as ps => argVars as :: ps.flatMap occT
+  | .distanceWhile s φ => [s] :: occF φ
+  | .add a b | .sub a b | .mul a b | .div a b => occT a ++ occT b
+  | .neg a | .abs a => occT a
+  | _ => []
+partial def occF : TrafficSpec.Formula → List (List String)
+  | .atom _ as ps => argVars as :: ps.flatMap occT
+  | .cmp l _ r => occT l ++ occT r      -- a comparison relates magnitudes, not entities: no tie
+  | .derived _ as ps => argVars as :: ps.flatMap occT
+  | .rule _ m | .ruleApplies _ m => [("$" :: m.map (·.2))]
+  | .not φ | .always φ | .eventually φ => occF φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => occF φ ++ occF ψ
+  | .holdsFor _ d s φ | .within _ d s φ => [s] :: (occT d ++ occF φ)
+  | .untilWithin _ d s φ ψ => [s] :: (occT d ++ occF φ ++ occF ψ)
+  | .count e s _ _ => occF e ++ occF s
+  | .existsRegion _ v φ | .forallRegion _ v φ | .existsDevice _ v φ | .forallDevice _ v φ
+  | .existsUser v φ | .forallUser v φ => ["?" ++ v] :: occF φ
+  | _ => []
+end
 def main : IO Unit := do
   let r := {rns}.rule
   let scs := {wns}.scenarios
@@ -63,6 +92,8 @@ def main : IO Unit := do
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
+  for g in (r.binders.flatMap fun b => occF b.cls) ++ occF r.applicability ++ occF r.obligation do
+    IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in r.formulas.flatMap Formula.literals do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   for e in Rule.check rules r do IO.println s!"CHECK\\t{{e}}"
   for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
@@ -92,9 +123,10 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if budget_used >= budget:
         return Verdict("BUDGET_EXHAUSTED", [f"{budget} gate runs used"])
 
-    # 1. scope
+    # 1. scope (the registries are regenerated first so the build below sees every node on disk)
+    index_sync.write_index()
     now = library_digest(lib)
-    changed = {p for p in set(now) | set(baseline) if now.get(p) != baseline.get(p)}
+    changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
     stray = sorted(changed - {rule_rel, wit_rel})
     if stray:
         return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:5]}"])
@@ -144,6 +176,12 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if checks:
         return Verdict("CHECK_FAIL", checks)
 
+    # 4b. anchoring: every quantifier variable reaches a binder through shared arguments
+    binders = [b["name"] for b in node.get("binders", [])]
+    unanchored = unanchored_variables([row[0].split(",") if row and row[0] else [] for row in col("OCC")], binders)
+    if unanchored:
+        return Verdict("UNANCHORED_VARIABLE", [f"`{v}` is related to no binder: the region, device or user it ranges over is any in the scene, not the subject's — tie it through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a relation to a binder" for v in unanchored])
+
     # 5. declarations
     decl = json.loads(col("DECL")[0][0])
     exp_binders = [b["name"] for b in node.get("binders", [])]
@@ -156,7 +194,10 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if decl["binders"] != exp_binders: mism.append(f"binders {decl['binders']} ≠ {exp_binders}")
     if sorted(decl["assumptions"]) != sorted(a.get("id") for a in node.get("assumptions", [])): mism.append("assumptions differ")
     if got_ops != exp_ops: mism.append(f"operationalizations {got_ops} ≠ {exp_ops}")
-    if sorted(decl["residues"]) != sorted(r.get("why", "") for r in node.get("residues", [])): mism.append("residues differ")
+    node_residues = [r.get("why", "") for r in node.get("residues", [])]
+    missing_res = [w for w in node_residues if w not in decl["residues"]]
+    if missing_res: mism.append(f"residues of the node missing from the rule: {missing_res[:3]}")
+    added_residues = [w for w in decl["residues"] if w not in node_residues]
     exp_surrogate = any(o.get("surrogate") for o in node.get("operationalizations", []))
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
@@ -211,4 +252,32 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     adeq = [r[0] for r in col("ADEQ")]
     if adeq:
         return Verdict("VACUOUS", adeq)
-    return Verdict("OK", [f"{len(scen)} witnesses, {len(used)} names, composes {col('COMPOSES')[0][0] or 'nothing'}"])
+    return Verdict("OK", [f"{len(scen)} witnesses, {len(used)} names, composes {col('COMPOSES')[0][0] or 'nothing'}"]
+                   + ([f"residues added by the coder: {len(added_residues)}"] if added_residues else []),
+                   extras={"residues_added": added_residues} if added_residues else {})
+
+
+def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[str]:
+    """Quantifier variables (`?v` groups) not connected to a binder or a composition (`$`) through
+    the occurrence groups, by union-find over shared variables."""
+    parent: dict[str, str] = {}
+    def find(x: str) -> str:
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    def union(a: str, b: str) -> None:
+        parent[find(a)] = find(b)
+    quantified: list[str] = []
+    for g in groups:
+        vs = [v for v in g if v]
+        if len(vs) == 1 and vs[0].startswith("?"):
+            quantified.append(vs[0][1:]); continue
+        for v in vs[1:]:
+            union(vs[0], v)
+    anchored = {find(b) for b in binders} | {find("$")}
+    seen: list[str] = []
+    for v in quantified:
+        if v not in seen and find(v) not in anchored:
+            seen.append(v)
+    return seen

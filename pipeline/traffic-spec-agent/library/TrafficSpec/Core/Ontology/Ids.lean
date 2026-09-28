@@ -33,6 +33,7 @@ def atomIds : List String := [
   "ru.occupant_count",
   "ru.rider_posture",
   "ru.subject",
+  "ru.aggregate",
   "kin.time",
   "kin.position",
   "kin.heading",

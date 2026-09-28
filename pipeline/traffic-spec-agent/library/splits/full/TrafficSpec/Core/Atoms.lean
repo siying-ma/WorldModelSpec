@@ -114,6 +114,16 @@ def ru_personal_delivery_device (s : Scene) (x : TrackId) : Option Bool := hasCl
 def ru_mobile_carrying_device (s : Scene) (x : TrackId) : Option Bool := hasClass s x .mobileCarryingDevice
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
+/-- Membership of a legal aggregate ("vehicle", "traffic"): the member classes come from the
+    reading. True when the user carries a member class; unknown when none holds and a member class
+    is unobserved (or the classes were not observed at all); false otherwise. -/
+def ru_aggregate (s : Scene) (x : TrackId) (members : List RoadUserClass) : Option Bool :=
+  (s.user x).bind fun u =>
+    let has : List (Option Bool) := members.map fun c =>
+      if u.unobservedClasses.contains c then none else u.classes.map (·.contains c)
+    if has.any (· == some true) then some true
+    else if has.any (·.isNone) then none
+    else some false
 def ru_occupant_count (s : Scene) (x : TrackId) : Option Nat := (s.user x).bind (·.occupants)
 def ru_rider_posture (s : Scene) (x : TrackId) : Option Posture := (s.user x).map (·.posture)
 def ru_rider_posture_on_seat (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.posture.onSeat)

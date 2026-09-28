@@ -300,7 +300,7 @@ def paramValue (path : String) (j : Json) : D ParamValue := do
   pure { name := ← req j path "name" str, value := Q.mul (← req j path "value" num) k, unit := u }
 def operationalization (path : String) (j : Json) : D Operationalization := do
   pure { standard := ← req j path "standard" str
-         concept := ← req j path "concept" str
+         concepts := ← list j path "concepts" str
          params := ← list j path "params" str
          convention := ← req j path "convention" str
          surrogate := (← opt j path "surrogate" bool).getD false }

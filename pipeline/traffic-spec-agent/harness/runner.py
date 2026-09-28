@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -181,6 +182,34 @@ def parse_result_line(stream_path: Path) -> Optional[dict]:
 
     print(f"[warn] No type='result' line found in {stream_path}", file=sys.stderr)
     return None
+
+
+LIMIT_PATTERNS = (r"hit your (session|usage|weekly|daily) limit", r"rate limit", r"overloaded", r"usage limit",
+                  r"credit balance", r"api error", r"invalid api key", r"authentication")
+
+
+def session_failure(code: int, result: Optional[dict], timed_out: bool) -> Optional[str]:
+    """Why the session did not run at all — an account limit, an API error, a crash — or None when
+    it ran (however it went). A session that did not run must not count as an attempt."""
+    if timed_out:
+        return None                      # it ran and was cut off; its files are on disk
+    if result is None:
+        return f"no result line (exit code {code})"
+    text = str(result.get("result", "") or "")
+    turns = int(result.get("num_turns", 0) or 0)
+    usage = result.get("usage") or {}
+    if result.get("is_error") and any(re.search(p, text, re.I) for p in LIMIT_PATTERNS):
+        return f"session refused: {text[:200]}"
+    if result.get("is_error") and turns <= 1:
+        return f"session errored before working: {text[:200]}"
+    if turns <= 1 and not int(usage.get("output_tokens", 0) or 0):
+        return f"session produced nothing: {text[:200] or result.get('subtype')}"
+    return None
+
+
+def reset_hint(reason: str) -> str:
+    m = re.search(r"resets? ([^\n]+)", reason)
+    return m.group(1).strip() if m else ""
 
 
 def extract_cost(result: Optional[dict]) -> float:

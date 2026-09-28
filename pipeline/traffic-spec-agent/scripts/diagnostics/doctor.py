@@ -280,8 +280,36 @@ class Doctor:
             return Result("file links", FAIL, "; ".join(bad[:6]), src)
         return Result("file links", OK, f"{n} in-repo path(s) resolve", src)
 
+    def core_matches_active_split(self) -> Result:
+        """The Core directory holds exactly the variant `splits/ACTIVE` names: the archived full files
+        when `full` is active, the training files regenerated from that archive when `train` is —
+        so an edit made to Core under one variant cannot be lost by the next swap."""
+        sys.path.insert(0, str(self.repo))
+        from harness import split as split_mod
+        src = ("library/splits/ACTIVE, library/splits/full/** (archive)", "library/TrafficSpec/Core/** (harness/split.py)")
+        full = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
+        core = self.lib / "TrafficSpec" / "Core"
+        if not (full / "Atoms.lean").exists():
+            return Result("core matches split", SKIP, "no archive yet: the Core directory is the full variant", src)
+        which = split_mod.active()
+        files = ["Atoms.lean"] + split_mod.DEPENDENT
+        if which == "full":
+            drift = [f for f in files if (core / f).read_text(encoding="utf-8") != (full / f).read_text(encoding="utf-8")]
+        else:
+            import tempfile
+            with tempfile.TemporaryDirectory() as td:
+                out = Path(td)
+                split_mod.generate_train(full, out)
+                drift = [f for f in split_mod.DEPENDENT if (core / f).read_text(encoding="utf-8") != (out / f).read_text(encoding="utf-8")]
+            train_atoms = self.lib / "splits" / "train" / "TrafficSpec" / "Core" / "Atoms.lean"
+            if train_atoms.exists() and (core / "Atoms.lean").read_text(encoding="utf-8") != train_atoms.read_text(encoding="utf-8"):
+                drift.append("Atoms.lean")
+        if drift:
+            return Result("core matches split", FAIL, f"`{which}` is active but Core differs from its source in {drift}: edit Core with `full` active, then `python -m harness split --use train`", src)
+        return Result("core matches split", OK, f"`{which}` active, {len(files)} split files match their source", src)
+
     def checks(self) -> list[Callable[[], Result]]:
-        return self.v2.checks() + [self.placeholders_supplied, self.prompts_are_law_free,
+        return self.v2.checks() + [self.core_matches_active_split, self.placeholders_supplied, self.prompts_are_law_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids,
                                    self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve]

@@ -8,7 +8,6 @@ road user's rules without an explicit id; they are listed separately.
 
 | concrete line | refs → view | lawfully-phrases |
 |---|---|---|
-| `NRS-484B-207-2` | `NRS-484B-210-1` → judgement | — |
 | `NRS-484B-250-1` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-2` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-3` | `NRS-484B-250-4` → concrete | — |
@@ -45,25 +44,22 @@ road user's rules without an explicit id; they are listed separately.
 | `NRS-484B-785-1a` | `DEF-LVMC-11-40-185-A` → definition | — |
 | `NRS-484D-215-1` | `NRS-484D-100-1` → concrete<br>`DEF-NRS-484D-210-1-2` → definition | — |
 | `NRS-484D-215-2` | `NRS-484D-100-1` → concrete<br>`DEF-NRS-484D-210-1-2` → definition | — |
-| `LVMC-11-16-060` | `NRS-484B-600-1c` → concrete | — |
 | `LVMC-11-18-030-B` | — | lawful turning, lawfully passing |
 | `LVMC-11-22-150-B` | `DEF-LVMC-6-47-100-C` → definition | — |
-| `LVMC-11-52-040-A` | `LVMC-11-52-070` → concrete | — |
 | `LVMC-11-52-180-C` | — | lawfully parked |
 | `LVMC-11-60-030-A1` | `DEF-LVMC-11-60-010` → definition | — |
 | `LVMC-11-60-030-A5` | `DEF-LVMC-11-60-010` → definition | — |
 
 ## Tally of reference targets from concrete lines
 
-- concrete: 52
+- concrete: 50
 - definition: 11
-- judgement: 17
+- judgement: 16
 
 ## Concrete lines that depend on a line outside the concrete view
 
 | concrete line | target | target's view |
 |---|---|---|
-| `NRS-484B-207-2` | `NRS-484B-210-1` | judgement |
 | `NRS-484B-267-2f` | `NRS-484B-267-1b` | judgement |
 | `NRS-484B-270-3` | `NRS-484B-297-6` | judgement |
 | `NRS-484B-283-1d1` | `LVMC-11-30-140-B` | judgement |

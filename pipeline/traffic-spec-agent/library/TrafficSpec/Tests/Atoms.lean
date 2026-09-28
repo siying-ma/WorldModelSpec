@@ -1,4 +1,5 @@
 import TrafficSpec.Core.Atoms
+import TrafficSpec.Core.Params
 namespace TrafficSpec.Tests
 open TrafficSpec Units
 
@@ -90,5 +91,15 @@ def sceneBox : Scene := { scene0 with structures := [lane7, box] }
 #guard SignalIndication.ofString "green_arrow(left)" = some (.greenArrow .left)
 #guard SignalIndication.toString (.flashingYellowArrow .right) = "flashing_yellow_arrow(right)"
 #guard RoadUserClass.ofString "motor_vehicle" = some .motorVehicle
+-- aggregates: a member class held, none held with all observed, none held with one unobserved
+#guard ru_aggregate scene0 2 [.bus, .taxicab] = some true
+#guard ru_aggregate scene0 1 [.bus, .taxicab] = some false
+#guard ru_aggregate scene0 4 [.bus] = some false
+#guard ru_aggregate { scene0 with users := scene0.users.map fun u => if u.track == 1 then { u with unobservedClasses := [.bus] } else u } 1 [.bus, .taxicab] = none
+#guard ru_aggregate scene0 99 [.bus] = none
+-- the reading expands a word through other words, and keeps what it cannot resolve
+#guard (({ aggregates := [{ word := "vehicle", classes := ["motor vehicle", "ru.trailer_or_combination"] }, { word := "motor vehicle", classes := ["ru.bus", "ru.truck"] }] } : Reading).aggregate "vehicle") = some ["ru.bus", "ru.truck", "ru.trailer_or_combination"]
+#guard (({ aggregates := [{ word := "vehicle", classes := ["nothing"] }] } : Reading).aggregate "vehicle") = some ["nothing"]
+#guard (({ aggregates := [] } : Reading).aggregate "vehicle") = none
 #guard CurbColour.ofString "purple" = none
 end TrafficSpec.Tests

@@ -96,6 +96,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   match name, args with
   -- road users
   | "ru_subject", [x] => pure (b (ru_subject s (← ent x)) name)
+  | "ru_aggregate", [_, .s w] => .error (.parameterMissing s!"aggregate:{w}")   -- resolved with the reading in `evalAll`
   | "ru_rider_posture", [x, f] =>
     match f with
     | .s "on_seat" => pure (b (ru_rider_posture_on_seat s (← ent x)) name)
@@ -223,7 +224,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
 where
   /-- The attribute atoms of the table above (for the arity/unknown distinction and the doctor). -/
   boolAtomNames : List String := [
-    "ru_subject", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
+    "ru_subject", "ru_aggregate", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
     "ru_rider_posture_holding_another_vehicle", "ru_rider_posture_stunt", "ru_emergency_vehicle_kind",
     "ru_official_vehicle_kind", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
@@ -335,6 +336,7 @@ def atomArgSorts (name : String) : Option (List (Option EntityKind)) :=
   let t := some EntityKind.track; let r := some EntityKind.region; let d := some EntityKind.device
   match name with
   | "rel_occupies" => some [t, r]
+  | "ru_aggregate" => some [t, none]
   | "dev_governs" => some [d, r]
   | "st_region_geometry_distance" => some [t, r]
   | "st_lane_adjacency" => some [r, none, r]
@@ -442,7 +444,17 @@ mutual
       liftA c.n do
         let vs ← constParams c ps
         let ds ← resolveAll c.β args
-        pure (c.scenes.map fun s => match evalAtomE s name ds vs with | .ok r => r | .error w => R.u w)
+        if name == "ru_aggregate" then
+          -- membership is the reading's: the word's classes, or unknown when the reading lacks it
+          pure (match ds with
+            | [.v t, .s w] =>
+              (match c.d.ρ.aggregate w with
+                | none => const c.n (R.u (.parameterMissing s!"aggregate:{w}"))
+                | some ids =>
+                  let members := ids.filterMap fun id => RoadUserClass.ofString (id.drop 3).toString
+                  c.scenes.map fun s => R.ofOption (ru_aggregate s t members) (.absentAtom name))
+            | _ => const c.n (R.u (.malformed "aggregate arguments")))
+        else pure (c.scenes.map fun s => match evalAtomE s name ds vs with | .ok r => r | .error w => R.u w)
     | .cmp l op r => Array.zipWith (fun x y => match x, y with
         | .ok a, .ok b => R.ofBool (op.apply a b)
         | .error w, _ | _, .error w => R.u w) (evalTAll c l) (evalTAll c r)

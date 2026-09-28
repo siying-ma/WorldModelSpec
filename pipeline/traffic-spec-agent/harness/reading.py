@@ -3,7 +3,9 @@
 Format (JSON; `Decode.reading` in Core decodes the same fields):
 {"run": "<name>",
  "params": [{"name": "p.<name>", "value": 1.5, "unit": "s", "convention": "<where the value comes from>"}],
- "operationalizations": [], "aggregates": [{"word": "vehicle", "classes": ["ru.motor_vehicle", ...]}]}
+ "operationalizations": [], "aggregates": []}
+Aggregates ("vehicle" → classes) are derived per run from the corpus definitions by the plan phase
+(`harness/aggregates.py`) into results/<run>/reading.json; an operator may declare one here to override.
 Units: m, s, m/s, m/s2, deg, deg/s, ratio, count.
 """
 from __future__ import annotations
@@ -33,6 +35,32 @@ class Reading:
 
     def names(self) -> set[str]:
         return set(self.params)
+
+    def has_aggregate(self, word: str) -> bool:
+        return any(a.get("word") == word and not a.get("derived") for a in self.data.get("aggregates", []))
+
+    def with_aggregates(self, records: list[dict]) -> "Reading":
+        """A copy with derived records added in memory (the draft check a planner runs)."""
+        r = Reading.__new__(Reading); r.path = self.path
+        r.data = json.loads(json.dumps(self.data))
+        r.data["aggregates"] = list(r.data.get("aggregates", [])) + [
+            {"word": x.get("word"), "classes": x.get("classes", []), "source": x.get("definition"), "derived": "draft"} for x in records]
+        r.params = dict(self.params)
+        return r
+
+    def aggregate_words(self) -> set[str]:
+        return {a.get("word") for a in self.data.get("aggregates", []) if a.get("word")}
+
+    def expand(self, word: str, fuel: int | None = None) -> list[str]:
+        """The `ru.*` ids a word covers, through other declared words (as `Reading.aggregate` in Core)."""
+        aggs = {a["word"]: a.get("classes", []) for a in self.data.get("aggregates", []) if a.get("word")}
+        fuel = len(aggs) + 1 if fuel is None else fuel
+        if fuel == 0 or word not in aggs:
+            return []
+        out = []
+        for m in aggs[word]:
+            out += [m] if m.startswith("ru.") else (self.expand(m, fuel - 1) or [m])
+        return out
 
     def lean_json(self) -> str:
         """The reading as the Lean decoder expects it (no private fields)."""

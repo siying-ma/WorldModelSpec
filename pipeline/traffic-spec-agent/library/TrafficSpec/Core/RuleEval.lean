@@ -111,7 +111,9 @@ mutual
       let inner := ps.flatMap (checkTerm scope where_) ++ constParamErrors where_ name ps
       match dummyArgs scope (atomArgSorts name) args with
       | .error e => [s!"{where_}: {e}"] ++ inner
-      | .ok ds => match evalAtomE emptyScene name ds (ps.map fun _ => Q.zero) with
+      | .ok ds =>
+        if name == "ru_aggregate" then inner     -- membership is the reading's; `checkReading` holds the word
+        else match evalAtomE emptyScene name ds (ps.map fun _ => Q.zero) with
         | .error w => (match isMalformed w with | some m => [s!"{where_}: atom `{name}`: {m}"] | none => []) ++ inner
         | .ok _ => inner
     | .cmp l _ r => checkTerm scope where_ l ++ checkTerm scope where_ r
@@ -169,7 +171,12 @@ where
 /-- Parameters that the rule, or a rule it composes, names and the reading lacks. -/
 def checkReading (rules : List Rule) (r : Rule) (ρ : Reading) : List String :=
   (Rule.closure rules r).flatMap fun x =>
-    x.params.filter (!ρ.has ·) |>.map fun p => s!"{x.id}: parameter `{p}` is not in the reading"
+    (x.params.filter (!ρ.has ·) |>.map fun p => s!"{x.id}: parameter `{p}` is not in the reading")
+    ++ (x.formulas.flatMap Formula.aggregateWords).eraseDups.flatMap fun w =>
+      match ρ.aggregate w with
+      | none => [s!"{x.id}: aggregate `{w}` is not declared by the reading"]
+      | some ids => ids.filter (fun id => (RoadUserClass.ofString (id.drop 3).toString).isNone)
+          |>.map fun id => s!"{x.id}: aggregate `{w}` names `{id}`, which is neither a class nor a declared word"
 
 end Rule
 

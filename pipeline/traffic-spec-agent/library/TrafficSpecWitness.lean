@@ -4,17 +4,19 @@
 -/
 import TrafficSpec
 import TrafficSpec.Core.Builders
+import TrafficSpecWitness.NRS_484B.NRS_484B_207_1_o1
+import TrafficSpecWitness.NRS_484B.NRS_484B_207_1_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_213_1
 import TrafficSpecWitness.NRS_484B.NRS_484B_213_2a
-import TrafficSpecWitness.NRS_484B.NRS_484B_223_2_o1
-import TrafficSpecWitness.NRS_484B.NRS_484B_223_2_o2
+import TrafficSpecWitness.NRS_484B.NRS_484B_213_2b
 namespace TrafficSpecWitness
 open TrafficSpec
 /-- Every registered scenario, in file order. -/
-def allScenarios : List Scenario := TrafficSpecWitness.NRS_484B_213_1.scenarios ++
+def allScenarios : List Scenario := TrafficSpecWitness.NRS_484B_207_1_o1.scenarios ++
+  TrafficSpecWitness.NRS_484B_207_1_o2.scenarios ++
+  TrafficSpecWitness.NRS_484B_213_1.scenarios ++
   TrafficSpecWitness.NRS_484B_213_2a.scenarios ++
-  TrafficSpecWitness.NRS_484B_223_2_o1.scenarios ++
-  TrafficSpecWitness.NRS_484B_223_2_o2.scenarios
+  TrafficSpecWitness.NRS_484B_213_2b.scenarios
 /-- Run every witness against the registered rules with a reading; the failures, by name. -/
 def failures (ρ : Reading) : List String :=
   allScenarios.filterMap fun sc =>

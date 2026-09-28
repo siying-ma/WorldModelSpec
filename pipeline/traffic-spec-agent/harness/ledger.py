@@ -53,6 +53,11 @@ class Ledger:
         if e.state == FAILED:
             e.reasons = [f"attempt budget ({self.plan_attempts}) spent"] + reasons
 
+    def defer(self, law: str, reasons: list[str]) -> None:
+        """The law goes back to `open` without an attempt counted: nothing judged its plan or its code."""
+        e = self.entries[law]
+        e.state, e.reasons = OPEN, reasons
+
     def judge_failed(self, law: str, reasons: list[str]) -> None:
         e = self.entries[law]
         e.judge_failures += 1

@@ -4,6 +4,7 @@
   loop          run plan → validate → code → integrate → feedback
   validate      validate A over a blueprint file, no sessions
   gate          the gate for one node (what a coding session calls)
+  surface       print the generated Core surface a coding session is shown
   index         regenerate Index.lean and TrafficSpecWitness.lean
   verify        rebuild the library and run every witness
   status        the run's ledger counts
@@ -39,21 +40,34 @@ class Cli:
 
     def loop(self, run_id: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
              reading: str = "readings/default.json", model: str | None = None, max_iterations: int = 3,
-             plan_attempts: int = 2, gate_budget: int = 6, judge: bool = True, dry_run: bool = False) -> int:
+             plan_attempts: int = 2, gate_budget: int = 6, judge: bool = True, dry_run: bool = False,
+             max_turns: int = 80, plan_effort: str = "high", code_effort: str = "high", judge_effort: str = "medium",
+             session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0) -> int:
         from .loop import run_loop
         opts = Options(run_id=run_id, laws=_p(laws), ontology=_p(ontology_file), reading=_p(reading), model=model,
                        max_iterations=max_iterations, plan_attempts=plan_attempts, gate_budget=gate_budget,
-                       judge=judge, dry_run=dry_run)
+                       judge=judge, dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
+                       code_effort=code_effort or None, judge_effort=judge_effort or None,
+                       session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait)
         print(json.dumps(run_loop(opts), indent=1))
         return 0
 
     def validate(self, blueprint_file: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
                  reading: str = "readings/default.json") -> int:
+        from . import aggregates
         nodes = blueprint.load(_p(blueprint_file))
         by_id = {l.id: l for l in corpus.load_laws(_p(laws))}
-        outcomes = validate_a.validate(nodes, by_id, ontology.load(_p(ontology_file)), Reading(_p(reading)),
-                                       MappingIndex(_p(blueprint_file).with_name("mapping.json")), {}, set())
+        onto = ontology.load(_p(ontology_file))
+        base = Reading(_p(reading))
+        agg_ok, agg_errs = aggregates.validate(aggregates.load(_p(blueprint_file).with_name("aggregates.jsonl")),
+                                               corpus.load_definitions(_p(laws)), onto, base)
         bad = 0
+        for e in agg_errs:
+            print(f"reject  aggregate: {e}"); bad += 1
+        for r in agg_ok:
+            print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
+        outcomes = validate_a.validate(nodes, by_id, onto, base.with_aggregates(agg_ok),
+                                       MappingIndex(_p(blueprint_file).with_name("mapping.json")), {}, set())
         for o in outcomes:
             print(f"{o.kind:7s} {o.node.id}")
             for r in o.reasons: print("        ", r)
@@ -67,6 +81,11 @@ class Cli:
         print(v.verdict)
         for d in v.details: print("  ", d)
         return 0 if v.verdict == "OK" else 1
+
+    def surface(self) -> int:
+        """Print the Core surface a coding session is shown (generated from the library)."""
+        from . import surface as surface_mod
+        print(surface_mod.core_surface()); return 0
 
     def index(self) -> int:
         index_sync.write_index(); print(f"{len(index_sync.node_ids())} rule(s) registered"); return 0

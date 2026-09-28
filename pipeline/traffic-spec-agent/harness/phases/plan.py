@@ -1,8 +1,7 @@
 """Plan: one session writes blueprint.jsonl, PLAN.md and gaps/proposed.jsonl for the plannable laws."""
 from __future__ import annotations
-import json
 from pathlib import Path
-from .. import corpus, ontology, render, runner, paths
+from .. import aggregates, corpus, ontology, render, paths, session
 from ..gaps import GapLedger
 from ..mapping import MappingIndex
 from ..reading import Reading
@@ -15,10 +14,9 @@ def parameter_catalogue(reading: Reading) -> str:
     out = ["| parameter | unit | convention |", "|---|---|---|"]
     for name, p in sorted(reading.params.items()):
         out.append(f"| `{name}` | {p.get('unit', '')} | {p.get('convention', '')} |")
-    aggs = reading.data.get("aggregates", [])
-    if aggs:
-        out += ["", "Legal aggregates the reading declares (which classes a word covers):", ""]
-        out += [f"- `{a['word']}`: {', '.join(a.get('classes', []))}" for a in aggs]
+    out += ["", "Legal aggregates the run's reading declares so far — a span using one of these words claims the atom "
+            "`ru.aggregate=<word>` and nothing else; a word not listed is derived by you from its definition "
+            "(`aggregates.jsonl`) before any node claims it:", "", aggregates.render(reading)]
     return "\n".join(out) + "\n"
 
 PLACEHOLDERS = ("laws", "definitions", "ontology", "library_summary", "mapping_index", "parameters", "gaps", "feedback", "user_hints")
@@ -44,19 +42,23 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict]) -> Path:
         "ontology": onto.text,
         "library_summary": library_summary(run),
         "mapping_index": MappingIndex(run.mapping_file).render(),
-        "parameters": parameter_catalogue(Reading(run.opts.reading)),
+        "parameters": parameter_catalogue(Reading(run.reading_file)),
         "gaps": GapLedger(paths.GAP_LEDGER).render(),
         "feedback": run.read_notes(),
         "user_hints": run.read_hints(),
     }
     prompt = render.render("plan.md", values)
-    prompt += ("\n\n## Where to write\n\nWorking directory: this directory. Write `blueprint.jsonl`, `PLAN.md` and "
-               "`gaps/proposed.jsonl` here. Do not read or write anything outside it.\n")
+    validate_cmd = (f"cd {paths.REPO} && python -m harness validate --blueprint_file {plan_dir / 'blueprint.jsonl'} "
+                    f"--laws {run.opts.laws} --ontology_file {run.opts.ontology} --reading {run.opts.reading}")
+    prompt += ("\n\n## Where to write\n\nWorking directory: this directory. Write `aggregates.jsonl`, `blueprint.jsonl`, `PLAN.md` and "
+               "`proposed_gaps.jsonl` here, as files, by hand. Read and write nothing else.\n\n"
+               "## Checking a draft\n\nThe deterministic validator the harness will run is available to you on a draft:\n\n"
+               f"```\n{validate_cmd}\n```\n\nIt prints one line per node (`accept`, `return`, `block`, `judge`) with the reasons. "
+               "Run it once the file is complete, fix what it names, and stop when every node is `accept` or `block`. "
+               "It is the only program you run; the self-check is yours, the schema check is its.\n")
     (plan_dir / "prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return plan_dir
-    code, result, timed_out = runner.run_claude(prompt, cwd=plan_dir, stream_path=plan_dir / "session.jsonl",
-                                                max_turns=run.opts.max_turns, model=run.opts.model,
-                                                timeout_seconds=run.opts.session_timeout)
-    (plan_dir / "session_result.json").write_text(json.dumps({"code": code, "timed_out": timed_out, "result": result}, ensure_ascii=False, indent=1), encoding="utf-8")
+    session.run(prompt, cwd=plan_dir, out_dir=plan_dir, opts=run.opts, max_turns=run.opts.max_turns,
+                effort=run.opts.plan_effort, label="session")      # raises SessionUnavailable when it never ran
     return plan_dir

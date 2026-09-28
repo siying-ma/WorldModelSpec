@@ -84,6 +84,10 @@ def check_closed_set(node: Node, onto: Ontology) -> tuple[list[str], list[dict]]
     proposed = {g.get("span") for g in node.gaps()}
     for e in node.get("elements", []):
         for ident in list(e.get("atoms", [])) + list(e.get("derived", [])):
+            if ident.startswith("ru.aggregate"):
+                if "=" not in ident:
+                    errs.append(f"{node.id}: `ru.aggregate` names no word on span {e.get('span')} (write `ru.aggregate=<word>`)")
+                continue          # the word itself is checked against the reading
             if not onto.knows(ident):
                 if e.get("span") in proposed:
                     continue
@@ -105,24 +109,52 @@ def check_closed_set(node: Node, onto: Ontology) -> tuple[list[str], list[dict]]
     return errs, gaps
 
 
-def check_standards(node: Node, reading: Reading) -> list[str]:
-    errs = []
+def check_standards(node: Node, reading: Reading) -> tuple[list[str], list[dict]]:
+    """Errors, and the value gaps: a parameter the reading lacks blocks the node until the operator
+    sets it; it never returns the node, so a planner has no reason to bound a standard without one."""
+    errs, gaps = [], []
     spans = node.spans()
     op_spans = {o.get("span") for o in node.get("operationalizations", [])}
     for sid, s in spans.items():
         if s.get("role") == "standard" and sid not in op_spans:
             errs.append(f"{node.id}: standard span {sid} has no operationalization")
+    for o in node.get("operationalizations", []):
+        if not o.get("params"):
+            errs.append(f"{node.id}: operationalization on span {o.get('span')} names no parameter — a standard is a bound the reading sets; "
+                        "a structural test with no magnitude approximates it (name the parameter even if the reading lacks it, or file a gap)")
     for p in node.params():
         if not reading.has(p):
-            errs.append(f"{node.id}: parameter `{p}` is not in the reading")
-    return errs
+            ops = [o for o in node.get("operationalizations", []) if p in o.get("params", [])]
+            o = ops[0] if ops else {}
+            gaps.append({"span": o.get("span", ""), "kind": "value", "parameter": p,
+                         "proposal": f"reading parameter `{p}`: {o.get('convention', 'convention as the node states it')}",
+                         "nearest": list(concepts_of(o)) if o else []})
+    for ident in sorted(node.claimed_atoms()):
+        if ident.startswith("ru.aggregate="):
+            w = ident.split("=", 1)[1]
+            if w not in reading.aggregate_words():
+                errs.append(f"{node.id}: aggregate word `{w}` is not declared by the reading (its `aggregates`)")
+    return errs, gaps
+
+
+ANCHORS = {"rel.occupies", "st.region_geometry"}
+
+
+def check_anchoring(node: Node) -> list[str]:
+    """A node that reads a road feature or a device must be able to tie it to a binder: it claims an
+    anchoring atom. Without one, every region the rule quantifies over is any region of the scene."""
+    claimed = {c.split("=")[0] for c in node.claimed_atoms()}
+    features = sorted(c for c in claimed if c.startswith("st.") or c.startswith("dev."))
+    if features and not (claimed & ANCHORS):
+        return [f"{node.id}: claims {features[:4]} but no anchoring atom ({sorted(ANCHORS)}): a feature the rule reads must be the subject's, not any in the scene — claim `rel.occupies` (or `st.region_geometry`) on the span that places the subject on it"]
+    return []
 
 
 def readable_atoms(node: Node, onto: Ontology) -> set[str]:
     """Atoms the node reads: those it claims, plus those its claimed derived concepts read."""
     from . import surface
     reads = surface.derived_reads()
-    out = {c for c in node.claimed_atoms() if c in onto.atom_ids}
+    out = {c.split("=")[0] for c in node.claimed_atoms() if c.split("=")[0] in onto.atom_ids}
     for c in node.claimed_atoms():
         for lean_name in reads.get(c.replace(".", "_"), []):
             aid = surface.atom_id_of(lean_name, onto.atom_ids)
@@ -320,7 +352,9 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_accounting(n)
         closed_errs, gaps = check_closed_set(n, onto)
         errs += closed_errs
-        errs += check_standards(n, reading)
+        std_errs, std_gaps = check_standards(n, reading)
+        errs += std_errs; gaps += std_gaps
+        errs += check_anchoring(n)
         errs += check_scenarios(n, onto)
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)

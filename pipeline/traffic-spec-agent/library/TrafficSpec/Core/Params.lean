@@ -53,8 +53,15 @@ def param (ρ : Reading) (n : ParamName) : Option Q :=
 def paramUnit (ρ : Reading) (n : ParamName) : Option PUnit' :=
   (ρ.params.find? (·.name == n)).map (·.unit)
 def has (ρ : Reading) (n : ParamName) : Bool := (ρ.param n).isSome
+/-- The `ru.*` ids an aggregate word covers; a member that is another declared word is expanded
+    (fuel bounds the nesting), a member that is neither is kept as written so the check can name it. -/
 def aggregate (ρ : Reading) (w : String) : Option (List String) :=
-  (ρ.aggregates.find? (·.word == w)).map (·.classes)
+  let rec go (fuel : Nat) (w : String) : Option (List String) :=
+    match fuel, ρ.aggregates.find? (·.word == w) with
+    | 0, _ | _, none => none
+    | fuel + 1, some a => some (a.classes.flatMap fun m =>
+        if m.startsWith "ru." then [m] else (go fuel m).getD [m])
+  go (ρ.aggregates.length + 1) w
 end Reading
 
 end TrafficSpec

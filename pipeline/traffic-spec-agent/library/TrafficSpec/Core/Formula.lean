@@ -268,6 +268,18 @@ partial def assumptions : Formula → List AsmId
   | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
   | .existsUser _ φ | .forallUser _ φ => assumptions φ
   | _ => []
+
+/-- The aggregate words a formula names (`ru_aggregate x "vehicle"`), for the reading check. -/
+partial def aggregateWords : Formula → List String
+  | .atom "ru_aggregate" [_, .lit w] _ => [w]
+  | .not φ | .always φ | .eventually φ => aggregateWords φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => aggregateWords φ ++ aggregateWords ψ
+  | .holdsFor _ _ _ φ | .within _ _ _ φ => aggregateWords φ
+  | .untilWithin _ _ _ φ ψ => aggregateWords φ ++ aggregateWords ψ
+  | .count e s _ _ => aggregateWords e ++ aggregateWords s
+  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+  | .existsUser _ φ | .forallUser _ φ => aggregateWords φ
+  | _ => []
 end Formula
 
 end TrafficSpec
