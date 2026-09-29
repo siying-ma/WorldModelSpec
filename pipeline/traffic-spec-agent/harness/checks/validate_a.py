@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from ..model import nodeid
 from ..model.blueprint import (Node, ConceptRecord, REQUIRED, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of,
                         normalize_verdict, CONCEPT_REQUIRED, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
-from ..model.units import FACTORS
+from ..model.units import FACTORS, stated_figures, to_core
 from ..model.corpus import Law
 from ..model.mapping import MappingIndex, normalize
 from ..model.ontology import Ontology
@@ -128,6 +128,28 @@ def check_standards(node: Node, reading: Reading) -> tuple[list[str], list[dict]
         if not o.get("params"):
             errs.append(f"{node.id}: operationalization on span {o.get('span')} names no parameter — a standard is a bound the reading sets; "
                         "a structural test with no magnitude approximates it (name the parameter even if the reading lacks it, or file a gap)")
+    for o in node.get("operationalizations", []):
+        sid = o.get("span")
+        stated = stated_figures(spans.get(sid, {}).get("text", ""))
+        declared = set()
+        for lit in node.literals():
+            if lit.get("span") == sid:
+                try:
+                    declared.add(to_core(lit.get("value"), lit.get("unit", "")))
+                except (KeyError, ValueError, TypeError):
+                    pass
+        for p in o.get("params", []):
+            rp = reading.params.get(p)
+            try:
+                value = to_core(rp["value"], rp["unit"]) if rp else None
+            except (KeyError, ValueError, TypeError):
+                value = None
+            words = next((w for core, x, w in stated if (core, x) == value), None)
+            if words:
+                also = " as well as the declared literal" if value in declared else ""
+                errs.append(f"{node.id}: span {sid} states `{words}`, and the operationalization bounds it with `{p}`{also}, "
+                            f"whose reading value is the same figure; a figure the law states is a literal on its span, never a "
+                            f"reading parameter (declare it in `literals` and drop `{p}`, or name a parameter for what the text does not state)")
     for p in node.params():
         if not reading.has(p):
             ops = [o for o in node.get("operationalizations", []) if p in o.get("params", [])]

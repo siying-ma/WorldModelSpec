@@ -3,6 +3,8 @@
 Format (JSON; `Decode.reading` in Core decodes the same fields):
 {"run": "<name>",
  "params": [{"name": "p.<name>", "value": 1.5, "unit": "s", "convention": "<where the value comes from>"}],
+   (a param whose value equals a figure a law of the corpus states also carries "figure_review": "<why it is a
+    convention, not that figure>"; the doctor lists every such param until it does)
  "operationalizations": [], "aggregates": []}
 Aggregates ("vehicle" → classes) are derived per run from the corpus definitions by the plan phase
 (`harness/checks/aggregates.py`) into results/<run>/reading.json; an operator may declare one here to override.
@@ -18,7 +20,8 @@ TEMPLATE = {
     "operationalizations": [],
     "aggregates": [],
     "_fields": {
-        "params": "name (p.<name>), value (number), unit (m|s|m/s|m/s2|deg|deg/s|ratio|count), convention (text)",
+        "params": "name (p.<name>), value (number), unit (m|s|m/s|m/s2|deg|deg/s|ratio|count), convention (text), "
+                  "figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
         "aggregates": "word (a legal aggregate such as 'vehicle'), classes (ru.* ids it covers)",
     },
 }

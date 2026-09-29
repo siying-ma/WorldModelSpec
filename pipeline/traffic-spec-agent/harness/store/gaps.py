@@ -47,10 +47,21 @@ class GapLedger:
     def retired(self) -> set[str]:
         return {r["id"] for r in self.rows if r.get("state") == "retired"}
 
-    def render(self) -> str:
+    def visible(self, law_ids: set[str], base_run: str | None = None) -> list[dict]:
+        """The rows a run may be shown: gaps on a law of its corpus, and gaps its base run proposed.
+        A gap on a law outside the corpus (another split's) never reaches its plan."""
+        base = f"{base_run}/" if base_run else None
+        return [r for r in self.rows if set(r.get("law_refs", [])) & law_ids
+                or (base and str(r.get("proposed_in", "")).startswith(base))]
+
+    def render(self, law_ids: set[str] | None = None, base_run: str | None = None) -> str:
+        """The ledger as a table; with `law_ids`, only the rows `visible` to that corpus."""
         if not self.rows:
             return "(no gaps recorded)\n"
+        rows = self.rows if law_ids is None else self.visible(law_ids, base_run)
+        if not rows:
+            return "(no gaps recorded on the laws of this corpus)\n"
         out = ["| id | state | kind | span | proposal | decision |", "|---|---|---|---|---|---|"]
-        for r in self.rows:
+        for r in rows:
             out.append(f"| {r['id']} | {r['state']} | {r.get('kind')} | {r.get('span', '')[:80]} | {str(r.get('proposal', ''))[:120]} | {r.get('decision', '')} |")
         return "\n".join(out) + "\n"

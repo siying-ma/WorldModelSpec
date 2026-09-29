@@ -15,11 +15,11 @@ part of this pipeline: what a data source can observe is a run-time manifest for
 | `library/TrafficSpec/Core/**` | the Core library in five layers (see *Core structure*): three-valued semantics, units and time, the vocabulary and primitives, the language and its static check, grounding and the monitor, witness builders and adequacy. `library/splits/{full,train}/` hold the two variants of the files the split touches; `library/splits/ACTIVE` says which one the Core directory holds (`python -m harness split`) | yes |
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` is a reference-closed subset of the training set for a first run; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
-| `readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `readings/lasvegas.json` is the provisional catalogue for this corpus | operator-written input |
+| `readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `readings/lasvegas.json` is the provisional catalogue for this corpus. A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
 | `prompts/*.md` | the plan, code, blind-read and alignment-judge templates | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `scripts/gen_ontology.py`, `scripts/diagnostics/` | the ontology generator and the doctor | code |
-| `gaps/ledger.jsonl` | what the ontology cannot carry, proposed by plan sessions, decided by the operator | operator-decided |
+| `gaps/ledger.jsonl` | what the ontology cannot carry, proposed by plan sessions, decided by the operator; one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's) | operator-decided |
 | `results/<run>/` | per-run artifacts: `ledger.jsonl` (per-law states), `mapping.json`, `accepted_nodes.jsonl`, `AUTO_NOTES.md`, `iter-NNN/{plan,validate,code,integrate}` | run output |
 
 ## Harness structure
@@ -70,28 +70,40 @@ bash setup.sh                         # elan + toolchain + Python deps
 source .venv/bin/activate
 
 python -m harness init                # readings/default.json template, registries, library build
+python -m harness init --fresh --snapshot <run>   # first move the library's nodes and concepts to results/<run>/library_snapshot/
 python -m harness doctor              # hold every generated artifact to its source
 python -m harness split --use train   # swap the training-only Core files in (archives the full ones under library/splits/full/)
 python -m harness split --use full    # and back; `python -m harness split` reports which is active
 
-# a first run on the reference-closed demo subset, then the training corpus
+# a first run on the reference-closed demo subset; archive its library, then the training corpus
 python -m harness loop --run_id demo1 --laws laws/example/demo/laws.jsonl \
     --ontology_file ontology/ATOMS_train.md --reading readings/lasvegas.json --model opus --max_iterations 3
+python -m harness init --fresh --snapshot demo1
 python -m harness loop --run_id train1 --laws laws/example/train/laws.jsonl \
     --ontology_file ontology/ATOMS_train.md --reading readings/lasvegas.json --model opus --max_iterations 4
 
-# a test run against the frozen training library and ontology
-python -m harness loop --run_id test1 --laws laws/example/test/laws.jsonl \
+# a test run on top of the training library: add-only, train1's nodes and concepts read-only
+python -m harness loop --run_id test1 --laws laws/example/test/laws.jsonl --mode test --base_run train1 \
     --ontology_file ontology/ATOMS_train.md --reading readings/lasvegas.json --model opus --max_iterations 2
 python -m harness score_split --run_id test1     # gap recall / precision / approximation rate
 
 python -m harness validate --blueprint_file <blueprint.jsonl> --laws <laws.jsonl> --reading <reading.json>   # validator A offline (the plan session runs it on its draft)
-python -m harness gate --run_id <run> --node_id <node>   # the gate for one node (what a coding session runs)
+python -m harness gate --run_id <run> --node_id <node>   # the gate for one node or concept id (what a coding session runs)
 python -m harness surface                                  # the generated Core surface a coding session is shown
 python -m harness verify                                   # rebuild and run every registered witness
 python -m harness index                                    # regenerate the registries
 python -m harness status --run_id <run>
 ```
+
+**One library per run.** `library/` holds the rules and concepts of exactly one run (and its base
+run), because `index_sync` registers every file on disk. `loop` refuses to start
+(`loop.check_library_isolation`) when the library holds a node or concept that neither the run
+nor its `--base_run` accepted, or lacks one that they did, and names the fix.
+`python -m harness init --fresh --snapshot <run>` moves every rule, concept and witness file,
+tree layout kept, into `results/<run>/library_snapshot/` (a timestamped name when `--snapshot`
+is omitted) and rebuilds the empty library. Resuming a run with the same `--run_id` needs no
+snapshot: its accepted records match what is on disk. `--mode test` requires `--base_run`; such a
+run adds concepts and supersedes none (the gate returns `TEST_ADD_ONLY`).
 
 **Editing Core under a split.** The Core directory holds the variant `library/splits/ACTIVE` names.
 Edit Core only with `full` active (`python -m harness split --use full`), then switch back with
@@ -173,6 +185,7 @@ shown only `open` and `returned` laws.
 - A rule imports `TrafficSpec.Core.Language.Rule` only; a witness imports its rule and `TrafficSpec.Core.Evidence.Builders`.
 - Quantities enter a rule as `.param "<name>"`; values live in the reading. The only literals are
   zero, enumeration spellings, and figures the law itself states, declared on their span in the
-  blueprint (`literals`) and written through a `Units` constructor.
+  blueprint (`literals`) and written through a `Units` constructor. Validator A returns a node whose
+  operationalization bounds a span with a parameter whose reading value is a figure that span states.
 - `Index.lean` and `TrafficSpecWitness.lean` are generated (`python -m harness index`).
 - Always pass `ensure_ascii=False` to `json.dumps`; law text and Lean sources contain Unicode.

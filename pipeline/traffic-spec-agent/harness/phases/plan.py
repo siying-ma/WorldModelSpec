@@ -56,7 +56,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict]) -> Path:
         "concepts": concept_catalogue(run),
         "mapping_index": MappingIndex(run.mapping_file).render(),
         "parameters": parameter_catalogue(Reading(run.reading_file)),
-        "gaps": GapLedger(paths.GAP_LEDGER).render(),
+        "gaps": GapLedger(paths.GAP_LEDGER).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
         "user_hints": run.read_hints(),
     }

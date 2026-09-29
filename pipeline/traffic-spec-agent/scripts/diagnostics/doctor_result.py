@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 OK, FAIL, SKIP = "ok", "FAIL", "skip"
+#: A finding for the operator to decide: printed with its sources, never a failure of the doctor.
+REVIEW = "review"
 
 
 @dataclass

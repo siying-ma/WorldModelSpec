@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional
 
-from .doctor_result import Result, OK, FAIL, SKIP, VacuousCheck, _nonempty  # noqa: F401
+from .doctor_result import Result, OK, FAIL, SKIP, REVIEW, VacuousCheck, _nonempty  # noqa: F401
 from .library_v2 import LibraryV2Checks
 
 
@@ -311,11 +311,50 @@ class Doctor:
             return Result("core matches split", FAIL, f"`{which}` is active but Core differs from its source in {drift}: edit Core with `full` active, then `python -m harness split --use train`", src)
         return Result("core matches split", OK, f"`{which}` active, {len(files)} split files match their source", src)
 
+    def reading_figures_reviewed(self) -> Result:
+        """A reading holds the numbers no statute states. A parameter whose value is a figure some law of
+        the corpus states may be that statute's figure entering every rule through the reading; each such
+        parameter is listed for the operator until its entry carries a `figure_review` note saying why
+        the value is a convention and not the statute's figure."""
+        sys.path.insert(0, str(self.repo))
+        from harness.model.units import stated_figures, to_core
+        corpus = self.repo / "laws" / "full_list" / "laws.jsonl"
+        src = [f"{corpus.relative_to(self.repo)} → stated figures", "readings/*.json → params (value, unit, figure_review)"]
+        stated: dict[tuple, list[tuple[str, str]]] = {}
+        for line in _read(corpus).splitlines():
+            if line.strip():
+                law = json.loads(line)
+                for core, value, words in stated_figures(law["text"]):
+                    stated.setdefault((core, value), []).append((law["id"], words))
+        _nonempty(stated, "figures stated by the corpus")
+        readings = sorted((self.repo / "readings").glob("*.json"))
+        flagged, reviewed, n = [], 0, 0
+        for rf in readings:
+            for p in json.loads(_read(rf)).get("params", []):
+                n += 1
+                try:
+                    key = to_core(p["value"], p["unit"])
+                except (KeyError, ValueError, TypeError):
+                    continue
+                if key not in stated:
+                    continue
+                if str(p.get("figure_review", "")).strip():
+                    reviewed += 1; continue
+                laws = sorted({i for i, _ in stated[key]})
+                flagged.append(f"{rf.name}: `{p['name']}` = {p['value']} {p['unit']}, stated as `{stated[key][0][1]}` by "
+                               f"{len(laws)} law(s): {', '.join(laws[:4])}{' …' if len(laws) > 4 else ''}")
+        if flagged:
+            return Result("reading figures", REVIEW, f"{len(flagged)} of {n} parameter(s) equal a figure the corpus states "
+                          f"and carry no `figure_review` note", tuple(flagged) + tuple(src))
+        return Result("reading figures", OK, f"{n} parameter(s) across {len(readings)} reading(s); "
+                      f"{reviewed} equal a stated figure and carry a review note", tuple(src))
+
     def checks(self) -> list[Callable[[], Result]]:
         return self.v2.checks() + [self.core_matches_active_split, self.placeholders_supplied, self.prompts_are_law_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids,
-                                   self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve]
+                                   self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve,
+                                   self.reading_figures_reviewed]
 
     def run(self, verbose: bool = False) -> int:
         results: list[Result] = []
@@ -327,16 +366,18 @@ class Doctor:
             except Exception as exc:                        # noqa: BLE001
                 results.append(Result(check.__name__, FAIL, f"the check itself raised: {type(exc).__name__}: {exc}"))
         width = max(len(r.name) for r in results)
-        colour = {OK: "\033[32m", FAIL: "\033[91m", SKIP: "\033[33m"}
+        colour = {OK: "\033[32m", FAIL: "\033[91m", SKIP: "\033[33m", REVIEW: "\033[35m"}
         for r in results:
-            print(f"  {colour[r.status]}{r.status:<4}\033[0m {r.name:<{width}}  {r.detail}")
-            if verbose or r.status == FAIL:
+            print(f"  {colour[r.status]}{r.status:<6}\033[0m {r.name:<{width}}  {r.detail}")
+            if verbose or r.status in (FAIL, REVIEW):
                 for s_ in r.sources:
                     print(f"       · {s_}")
         failed = [r for r in results if r.status == FAIL]
         skipped = [r for r in results if r.status == SKIP]
-        print(f"\n{len(results) - len(failed) - len(skipped)}/{len(results)} checks pass"
-              f"{f', {len(skipped)} skipped' if skipped else ''}{f', {len(failed)} FAILED' if failed else ''}.")
+        review = [r for r in results if r.status == REVIEW]
+        print(f"\n{len(results) - len(failed) - len(skipped) - len(review)}/{len(results)} checks pass"
+              f"{f', {len(skipped)} skipped' if skipped else ''}{f', {len(review)} for review' if review else ''}"
+              f"{f', {len(failed)} FAILED' if failed else ''}.")
         return 1 if failed else 0
 
 
