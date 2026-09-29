@@ -29,6 +29,10 @@ DEFS = [
 
 def _sec(prefix): return prefix  # marker: expand to every id starting with prefix
 
+# A phrase that names no provision is NOT annotated: the ids would be the editor's reading of
+# which rules 'the laws governing such movements' or 'as required by law' covers, not a
+# resolution of a citation the statute makes. Seven such sites were removed on 2026-09-24;
+# see laws/audit_and_scripts/ for the record. Only a phrase that names a provision is resolved.
 REFS = {
  # ---- cross-line: subsection / paragraph of the same section ----
  'NRS-484B-250-1': [('subsection 4', ['NRS-484B-250-4'])],
@@ -50,9 +54,6 @@ REFS = {
  'NRS-484B-560-5': [('required to stop pursuant to subsection 1', ['NRS-484B-560-1'])],
  'NRS-484B-400-1': [('subsection 4 of NRS 484B.223', ['NRS-484B-223-4a', 'NRS-484B-223-4b'])],
  # ---- cross-section references to rules in the corpus ----
- 'NRS-484B-200-1': [('under the laws governing such movements', ['NRS-484B-207-1', 'NRS-484B-210-1', 'NRS-484B-213-1', 'NRS-484B-213-2a', 'NRS-484B-213-2b', 'NRS-484B-213-2c']),
-                    ('under the laws applicable thereon', ['NRS-484B-223-2'])],
- 'NRS-484B-207-2': [('Except when overtaking and passing on the right is permitted', ['NRS-484B-210-1'])],
  'NRS-484B-217-2': [('in compliance with NRS 484B.413', ['NRS-484B-413-2'])],
  'NRS-484B-267-2a': [('subsection 1 of NRS 484B.600', ['NRS-484B-600-1a']), ('subsection 3 of NRS 484A.480', [D_480_3])],
  'NRS-484B-607-1a': [('subsection 1 of NRS 484B.600', ['NRS-484B-600-1a']), ('subsection 3 of NRS 484A.480', [D_480_3])],
@@ -75,7 +76,6 @@ REFS = {
  'NRS-484B-208-1': [('pursuant to NRS 484A.460, if the driver complies with the requirements to travel in such a lane', [D_460_2, 'NRS-484B-323-1'])],
  'NRS-484B-323-1': [('subsection 2 of NRS 484A.460', [D_460_2])],
  'NRS-484B-769': [('in the manner required by NRS 484B.420', [D_420])],
- 'NRS-484B-700-1': [('as required by law', [D_480_3])],
  'NRS-484B-785-1a': [('an ordinance enacted pursuant to NRS 484A.469', [D_185A])],
  'NRS-484D-215-1': [('during the times specified in NRS 484D.100', ['NRS-484D-100-1']), ('subsection 2 of NRS 484D.210', [D_210])],
  'NRS-484D-215-2': [('during the times specified in NRS 484D.100', ['NRS-484D-100-1']), ('subsection 1 of NRS 484D.210', [D_210])],
@@ -86,12 +86,9 @@ REFS = {
  'LVMC-11-60-030-A1': [('designated in accordance with Section 11.60.010', [D_60010])],
  'LVMC-11-60-030-A2': [('designated in accordance with Section 11.60.010', [D_60010])],
  'LVMC-11-60-030-A5': [('in accordance with Section 11.60.010', [D_60010])],
- 'LVMC-11-60-040': [('so designated as provided herein', [D_60010])],
  'LVMC-11-52-250': [('Except as provided in LVMC 11.52.030', ['LVMC-11-52-030-A', 'LVMC-11-52-030-B', 'LVMC-11-52-030-E'])],
  'LVMC-11-52-260': [('Except as provided in LVMC 11.52.030', ['LVMC-11-52-030-A', 'LVMC-11-52-030-B', 'LVMC-11-52-030-E'])],
  'LVMC-11-52-030-E': [('pursuant to LVMC 11.52.135', [D_135A])],
- 'LVMC-11-52-040-A': [('Except as otherwise provided in this Chapter', ['LVMC-11-52-070'])],
- 'LVMC-11-16-060': [('unless a different speed limit is posted as set forth in this Title', ['NRS-484B-600-1c'])],
  # ---- references whose statutory target was dropped for a narrower municipal text ----
  'NRS-484B-283-1a': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],
  'NRS-484B-283-1b': [('NRS 484B.287', ['NRS-484B-287-1c', 'NRS-484B-287-1d', 'NRS-484B-287-1e', 'LVMC-11-30-060-A', 'LVMC-11-30-060-B']), ('484B.290', ['LVMC-11-30-140-B']), ('484B.350', ['LVMC-11-46-030'])],

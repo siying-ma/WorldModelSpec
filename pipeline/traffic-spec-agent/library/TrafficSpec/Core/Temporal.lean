@@ -159,15 +159,15 @@ def runStartAll (op : String) (vals : Array R) : Array (Except UnknownReason (Op
     not hold, unknown where it is unknown, where the path length is missing, or where the run
     reaches the trace start. -/
 def distanceWhileAll (pathPos : Array (Option Q)) (holds : Array R) : Array QR :=
-  let starts := runStartAll "drv_distance_while" holds
+  let starts := runStartAll "distance_while" holds
   (Array.range holds.size).map fun i =>
     match holds[i]!.v with
     | .f => .ok Q.zero
-    | .u => .error (holds[i]!.why.head?.getD (.malformed "drv_distance_while"))
+    | .u => .error (holds[i]!.why.head?.getD (.malformed "distance_while"))
     | .t =>
       match starts[i]! with
       | .error e => .error e
-      | .ok none => .error (.windowTruncated "drv_distance_while")
+      | .ok none => .error (.windowTruncated "distance_while")
       | .ok (some j) =>
         match pathPos[i]!, pathPos[j]! with
         | some pi, some pj => .ok (Q.sub pi pj)
@@ -200,6 +200,27 @@ def countEdgesAll (op : String) (edge sinceφ : Array R) : Array (Except Unknown
       if prefU[i + 1]! - prefU[j + 1]! > 0 then
         match edgeVal[nextU[j + 1]!]! with | .error e => .error e | _ => .error (.malformed op)
       else .ok (prefT[i + 1]! - prefT[j + 1]!)
+
+/-- φ true here and false at the previous observation: unknown at the first observation (the
+    previous one is unobserved) and where either value is unknown. -/
+def risesAll (φ : Array R) : Array R :=
+  (Array.range φ.size).map fun i =>
+    if i = 0 then truncated "rises"
+    else match φ[i]!.v, φ[i - 1]!.v with
+      | .u, _ => φ[i]!
+      | _, .u => φ[i - 1]!
+      | .t, .f => R.t
+      | _, _ => R.f
+
+/-- Seconds since φ last became true: from the start of the latest run of true values; unknown
+    where that run reaches the trace start or none is observed. -/
+def sinceRiseAll (times : Array Q) (φ : Array R) : Array QR :=
+  let starts := runStartAll "since_rise" φ
+  (Array.range φ.size).map fun i =>
+    match starts[i]! with
+    | .error e => .error e
+    | .ok none => .error (.windowTruncated "since_rise")
+    | .ok (some j) => .ok (Q.sub times[i]! times[j]!)
 
 /-- First instant ≤ i at which `vals` is true; an error if an unknown precedes it. A first true at
     index 0 is an upper bound on the true onset, which the caller must treat as such. -/

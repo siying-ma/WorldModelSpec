@@ -1,11 +1,11 @@
 """CLI: python -m harness <command>.
 
-  init          write the readings template, regenerate the registries, build the library
+  init          write the readings template, regenerate the registries, build the library (--fresh: archive the nodes and concepts first)
   loop          run plan → validate → code → integrate → feedback
   validate      validate A over a blueprint file, no sessions
   gate          the gate for one node (what a coding session calls)
   surface       print the generated Core surface a coding session is shown
-  index         regenerate Index.lean and TrafficSpecWitness.lean
+  index         regenerate Index.lean and TrafficSpecWitness.lean (rules, concepts, witnesses)
   verify        rebuild the library and run every witness
   status        the run's ledger counts
   doctor        the artifact cross-checks
@@ -30,9 +30,39 @@ def _p(s: str) -> Path:
     return p if p.is_absolute() else (paths.REPO / p)
 
 
+def moved_name(snapshot: str) -> str:
+    import datetime
+    return snapshot or ("library_snapshot_" + datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"))
+
+
+def snapshot_library(snapshot: str) -> list[Path]:
+    """Move every rule, concept and witness file out of the library, keeping the tree layout."""
+    import shutil
+    dest = paths.RESULTS / moved_name(snapshot) / "library_snapshot"
+    moved: list[Path] = []
+    for root in (paths.RULES_DIR, paths.CONCEPTS_DIR, paths.WITNESS_DIR):
+        if not root.exists():
+            continue
+        for f in sorted(root.rglob("*.lean")):
+            rel = f.relative_to(paths.LIBRARY)
+            target = dest / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(f), str(target)); moved.append(rel)
+        for d in sorted((d for d in root.rglob("*") if d.is_dir()), key=lambda d: len(d.parts), reverse=True):
+            if not any(d.iterdir()):
+                d.rmdir()
+    return moved
+
+
 class Cli:
-    def init(self, reading: str = "readings/default.json") -> int:
+    def init(self, reading: str = "readings/default.json", fresh: bool = False, snapshot: str = "") -> int:
+        """Write the readings template, regenerate the registries, build. `--fresh` first moves every
+        node and concept out of the library into `results/<snapshot>/library_snapshot/` (the run they
+        belong to; a timestamped name when not given), so a new run starts from an empty library."""
         write_template(_p(reading))
+        if fresh:
+            moved = snapshot_library(snapshot)
+            print(f"moved {len(moved)} file(s) to results/{snapshot or moved_name(snapshot)}/library_snapshot/" if moved else "library already empty")
         index_sync.write_index()
         ok, out = lean.lake_build(paths.LIBRARY)
         print("library builds" if ok else out[-2000:])
@@ -42,13 +72,21 @@ class Cli:
              reading: str = "readings/default.json", model: str | None = None, max_iterations: int = 3,
              plan_attempts: int = 2, gate_budget: int = 6, judge: bool = True, dry_run: bool = False,
              max_turns: int = 80, plan_effort: str = "high", code_effort: str = "high", judge_effort: str = "medium",
-             session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0) -> int:
+             session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0,
+             mode: str = "train", base_run: str | None = None) -> int:
+        """`mode` is `train` (concepts may supersede) or `test` (add-only over `base_run`, whose accepted
+        nodes and concepts are loaded read-only)."""
         from .loop import run_loop
+        if mode not in ("train", "test"):
+            raise SystemExit("mode must be `train` or `test`")
+        if mode == "test" and not base_run:
+            raise SystemExit("a test run names the training run it starts from: --base_run <run id>")
         opts = Options(run_id=run_id, laws=_p(laws), ontology=_p(ontology_file), reading=_p(reading), model=model,
                        max_iterations=max_iterations, plan_attempts=plan_attempts, gate_budget=gate_budget,
                        judge=judge, dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
                        code_effort=code_effort or None, judge_effort=judge_effort or None,
-                       session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait)
+                       session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait,
+                       mode=mode, base_run=base_run)
         print(json.dumps(run_loop(opts), indent=1))
         return 0
 
@@ -66,8 +104,15 @@ class Cli:
             print(f"reject  aggregate: {e}"); bad += 1
         for r in agg_ok:
             print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
+        concepts = blueprint.load_concepts(_p(blueprint_file))
+        c_outcomes = validate_a.validate_concepts(concepts, corpus.load_definitions(_p(laws)), onto, {}, nodes)
+        for o in c_outcomes:
+            print(f"{o.kind:7s} concept {o.concept.id}")
+            for r in o.reasons: print("        ", r)
+            bad += o.kind != validate_a.ACCEPT
         outcomes = validate_a.validate(nodes, by_id, onto, base.with_aggregates(agg_ok),
-                                       MappingIndex(_p(blueprint_file).with_name("mapping.json")), {}, set())
+                                       MappingIndex(_p(blueprint_file).with_name("mapping.json")), {}, set(),
+                                       {}, [o.concept for o in c_outcomes if o.kind == validate_a.ACCEPT])
         for o in outcomes:
             print(f"{o.kind:7s} {o.node.id}")
             for r in o.reasons: print("        ", r)
@@ -76,6 +121,7 @@ class Cli:
         return 1 if bad else 0
 
     def gate(self, run_id: str, node_id: str) -> int:
+        """The gate for one node or one concept (`node_id` is either id)."""
         from .phases.code import gate_from_cli
         v = gate_from_cli(run_id, node_id)
         print(v.verdict)

@@ -50,7 +50,7 @@ def main (args : List String) : IO UInt32 := do
       | none => allRules
     for path in opts.traces do
       let τ ← readJson Decode.trace path
-      let rep := Monitor.check rules τ ρ m
+      let rep := Monitor.check rules τ ρ m allConcepts
       IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)
     return (0 : UInt32)
   catch e =>

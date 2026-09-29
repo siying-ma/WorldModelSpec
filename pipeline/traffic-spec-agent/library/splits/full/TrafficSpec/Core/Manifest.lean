@@ -60,13 +60,13 @@ def atomIdOf (name : String) : Option String :=
     | none => some id
     | some a => if id.length > a.length then some id else some a) none
 
-/-- The atom ids a formula list reads, through atoms and derived concepts. -/
+/-- The atom ids a formula list reads, through atoms and primitives (a concept call is expanded first). -/
 def formulaAtomIds (fs : List Formula) : List String :=
   ((fs.flatMap Formula.atoms).flatMap fun n =>
-    if n.startsWith "drv_" then (Derived.reads n).filterMap atomIdOf
+    if n.startsWith "prim_" then (Primitives.reads n).filterMap atomIdOf
     else (atomIdOf n).toList).eraseDups
 
-/-- The atom ids a rule reads, through its atoms, its derived concepts and, transitively, the
+/-- The atom ids a rule reads, through its atoms, its primitives and, transitively, the
     rules it composes. -/
 def Rule.atomIds (rules : List Rule) (r : Rule) : List String :=
   let rec go (fuel : Nat) (seen : List String) (r : Rule) : List String :=

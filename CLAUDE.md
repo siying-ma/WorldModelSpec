@@ -32,9 +32,20 @@ Before changing anything, in this order:
   declared on its span in the blueprint and written through a `Units` constructor.
 - The Core directory holds either the full or the training variant of the split files
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.
+  Edit Core only while `full` is active, then switch back: the switch re-archives and
+  regenerates, and the doctor's `core matches split` check catches an edit made under `train`.
+- Legal aggregate words ("vehicle", "traffic") are the atom `ru.aggregate` with the word as its
+  argument; the reading declares membership. A rule never expands a word into classes.
 - A node is two files, `Rules/<Body>/<NodeId>.lean` and `TrafficSpecWitness/<Body>/<NodeId>.lean`,
   with the node id derived from the law id. Acceptance is the harness's own gate call, never an
   agent's claim.
+
+## Editing Lean files
+
+- Change the code, and a doc comment only when the contract it states changes. Never write a
+  history of past defects, a rationale block or a "previously …" note into a `.lean` file: that
+  belongs in the commit message or `pipeline/DesignFile/CORE_V2_FILES.md`. `Core/**` is read by
+  the plan and code agents; keep every file short, organized and tidy.
 
 ## Never
 

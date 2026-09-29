@@ -4,11 +4,6 @@
   support is a test line are omitted. Do not edit; regenerate.
 -/
 /-
-  TRAINING SPLIT of TrafficSpec.Core.Atoms. Generated from Core/Atoms.lean by
-  ontology_provenance/nrs_tools/atoms_train.py: the definitions of the atoms whose only textual
-  support is a test line are omitted. Do not edit; regenerate.
--/
-/-
   TrafficSpec.Core.Atoms
   The bijection with ATOMS.md §1–§7: exactly one definition per atom id, named `family_name`,
   each reading one field of `World` and nothing else. Attribute accessors of an atom carry the

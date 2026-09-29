@@ -5,13 +5,13 @@ namespace TrafficSpec.Tests.Semantics
 open TrafficSpec Units TrafficSpec.Semantics
 
 -- ---------------------------------------------------------------------------------------------
--- Bijections the doctor also checks: every ATOMS.md id dispatches, every drv id is defined.
+-- Bijections the doctor also checks: every ATOMS.md id dispatches, every prim id is defined.
 -- ---------------------------------------------------------------------------------------------
 #guard atomIds.all fun id => knowsAtom (defName id)
 #guard !knowsAtom "ru_unicorn"
-#guard derivedIds.all fun id => Derived.derivedNames.contains (defName id)
-#guard Derived.derivedNames.all fun n => derivedIds.contains (n.replace "drv_" "drv.")
-#guard derivedIds.length = Derived.derivedNames.length
+#guard primitiveIds.all fun id => Primitives.primitiveNames.contains (defName id)
+#guard Primitives.primitiveNames.all fun n => primitiveIds.contains (n.replace "prim_" "prim.")
+#guard primitiveIds.length = Primitives.primitiveNames.length
 
 -- ---------------------------------------------------------------------------------------------
 -- A trace: track 1 brakes to a halt behind track 2 (stationary, 20 m ahead), sampled at 500 ms.
@@ -116,8 +116,9 @@ def mps (n : Int) : Term := .lit (metresPerSecond n) .metrePerSecond
 #guard v 0 (.cmp (.sub (.measure "kin_speed" [X]) (mps 2)) .eq (mps 8)) = .t
 #guard why 0 (.cmp (.div (mps 1) (mps 0)) .eq (mps 0)) = [.divisionByZero "div"]
 #guard v 0 (.cmp (.measure "rel_surface_gap" [X, Y, .lit "longitudinal"]) .eq (.lit (Q.mk' 255 10) .metre)) = .t
-#guard v 0 (.cmp (.quantity "drv_time_gap" [X, Y] []) .eq (.lit (Q.mk' 255 100) .second)) = .t    -- 25.5 m / 10 m/s
-#guard why 5 (.cmp (.quantity "drv_time_gap" [X, Y] []) .eq (sec 0)) = [.divisionByZero "drv_time_gap"]
+def timeGap : Term := .div (.measure "rel_surface_gap" [X, Y, .lit "longitudinal"]) (.measure "kin_speed" [X])
+#guard v 0 (.cmp timeGap .eq (.lit (Q.mk' 255 100) .second)) = .t    -- 25.5 m / 10 m/s
+#guard why 5 (.cmp timeGap .eq (sec 0)) = [.divisionByZero "div"]
 
 -- connectives keep strong Kleene
 #guard v 0 (.and (.atom "ru_motor_vehicle" [X] []) (.atom "sig_brake_lamp" [X] [])) = .u
@@ -126,22 +127,20 @@ def mps (n : Int) : Term := .lit (metresPerSecond n) .metrePerSecond
 #guard v 0 (.implies (.atom "sig_brake_lamp" [X] []) .ff) = .u
 #guard v 0 (.not (.atom "sig_brake_lamp" [X] [])) = .u
 
--- derived: stopped ≤ 0.1 m/s for 1.5 s
-def stopped : Formula := .derived "drv_stopped" [X] [.param "p.stop_speed", ms 1500]
+-- a window over an atom: stopped ≤ 0.1 m/s for 1.5 s; primitives and unexpanded concept calls
+def stopped : Formula := .holdsFor .time (ms 1500) "x" (.cmp (.measure "kin_speed" [X]) .le (.param "p.stop_speed"))
 #guard v 8 stopped = .t
 #guard v 6 stopped = .f                       -- 2500 ms back reaches speed 4
 #guard v 1 stopped = .u                       -- the window reaches before the trace
-#guard why 1 stopped = [.windowTruncated "drv_stopped"]
-#guard why 0 (.derived "drv_stopped" [X] []) = [.malformed "arity drv_stopped"]
-#guard why 0 (.derived "drv_nothing" [X] []) = [.malformed "derived concept drv_nothing"]
-#guard v 8 (.derived "drv_following" [X, Y] [.lit (metres 30) .metre]) = .t
-#guard v 8 (.derived "drv_following" [X, Y] [.lit (metres 5) .metre]) = .f
-#guard v 8 (.derived "drv_forced_halt" [X] [.lit (metres 30) .metre, .param "p.stop_speed"]) = .t
-#guard v 5 (.derived "drv_moving_off" [X] [.param "p.stop_speed"]) = .f
-#guard v 1 (.derived "drv_hard_deceleration" [X] [.lit (metresPerSecondSq 3) .metrePerSecondSq]) = .u  -- no accel observed
-#guard v 8 (.derived "drv_laned_roadway" [X] []) = .t
-#guard v 8 (.derived "drv_extreme_lane" [X, .lit "right"] []) = .t
-#guard v 8 (.derived "drv_extreme_lane" [X, .lit "left"] []) = .f
+#guard why 1 stopped = [.windowTruncated "holdsFor"]
+#guard why 0 (.derived "prim_conditions_hold" [X] []) = [.malformed "arity prim_conditions_hold"]
+#guard why 0 (.derived "drv_nothing" [X] []) = [.malformed "concept drv_nothing"]
+def following (g : Term) : Formula :=
+  .and (.atom "rel_ahead_in_lane" [Y, X] []) (.cmp (.measure "rel_surface_gap" [X, Y, .lit "longitudinal"]) .le g)
+#guard v 8 (following (.lit (metres 30) .metre)) = .t
+#guard v 8 (following (.lit (metres 5) .metre)) = .f
+#guard v 1 (.cmp (.measure "kin_accel_longitudinal" [X]) .le (.lit (metresPerSecondSq (-3)) .metrePerSecondSq)) = .u  -- no accel observed
+#guard v 8 (.existsRegion (.lit "lane") "r" (.and (.atom "rel_occupies" [X, .var "r"] []) (.cmp (.measure "st_lane_adjacency" [.var "r", .lit "count"]) .ge (.lit (Q.ofInt 2) .count)))) = .t
 
 -- metric windows: adequacy and truncation
 def slow : Formula := .cmp (.measure "kin_speed" [X]) .le (mps 2)
@@ -185,11 +184,10 @@ def straddle : Scene := { sceneAt 8 with occupies := [(1, 7), (1, 8), (2, 7)], s
 def afterChange : Scene := { straddle with t := 4500, occupies := [(1, 8), (2, 7)] }
 def τlane : Trace := [sceneAt 7, straddle, afterChange]
 def clane : SemCtx := SemCtx.mk' τlane ρ β
-#guard (evalAll clane (.derived "drv_lane_change" [X] [])).toList.map (·.v) = [.u, .t, .f]   -- entry only: one manoeuvre, one edge
 def night : TimeWindow := { startMinute := 19 * 60, endMinute := 6 * 60 }
-#guard Derived.inWindow night (23 * 60) && Derived.inWindow night (5 * 60) && !Derived.inWindow night (12 * 60)
-#guard Derived.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (8 * 60)
-#guard !Derived.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (10 * 60)
+#guard Primitives.inWindow night (23 * 60) && Primitives.inWindow night (5 * 60) && !Primitives.inWindow night (12 * 60)
+#guard Primitives.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (8 * 60)
+#guard !Primitives.inWindow { startMinute := 7 * 60, endMinute := 10 * 60 } (10 * 60)
 
 -- counting signal cycles since the halt began
 def green : Formula := .atom "dev_traffic_signal_shows" [.nat 9, .lit "circular_green"] []
@@ -202,19 +200,19 @@ def halted : Formula := .cmp (.measure "kin_speed" [X]) .eq (mps 0)
 #guard why 4 (.count green halted .eq 0) = [.windowTruncated "count"]
 
 -- bounded quantifiers bind regions and devices
-#guard v 0 (.existsDevice .trafficSignal "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "circular_red"] [])) = .t
-#guard v 3 (.existsDevice .trafficSignal "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "circular_red"] [])) = .f
-#guard v 0 (.existsDevice .stopSign "d" .tt) = .f
-#guard v 0 (.forallDevice .stopSign "d" .ff) = .t
-#guard v 0 (.forallRegion .lane "r" (.atom "rel_occupies" [X, .var "r"] [])) = .t
-#guard v 0 (.existsRegion .lane "r" (.and (.atom "rel_occupies" [X, .var "r"] []) (.atom "dev_governs" [.nat 9, .var "r"] []))) = .t
+#guard v 0 (.existsDevice (.lit "traffic_signal") "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "circular_red"] [])) = .t
+#guard v 3 (.existsDevice (.lit "traffic_signal") "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "circular_red"] [])) = .f
+#guard v 0 (.existsDevice (.lit "stop_sign") "d" .tt) = .f
+#guard v 0 (.forallDevice (.lit "stop_sign") "d" .ff) = .t
+#guard v 0 (.forallRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] [])) = .t
+#guard v 0 (.existsRegion (.lit "lane") "r" (.and (.atom "rel_occupies" [X, .var "r"] []) (.atom "dev_governs" [.nat 9, .var "r"] []))) = .t
 
 -- rule composition goes through the callback; the default knows no rules
 #guard why 0 (.rule "some/rule" []) = [.compositionUnknown "some/rule"]
 
 -- runs that reach the trace start are unknown, not measured from the recording
-#guard why 2 (.cmp (.distanceWhile "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 6))) .ge (.lit (metres 1) .metre)) = [.windowTruncated "drv_distance_while"]
-#guard why 0 (.derived "drv_stopped" [Y] [.param "p.stop_speed", ms 500]) = [.windowTruncated "drv_stopped"]
+#guard why 2 (.cmp (.distanceWhile "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 6))) .ge (.lit (metres 1) .metre)) = [.windowTruncated "distance_while"]
+#guard why 0 (.holdsFor .time (ms 500) "y" (.cmp (.measure "kin_speed" [Y]) .le (.param "p.stop_speed"))) = [.windowTruncated "holdsFor"]
 -- strong until with the witness at the first instant and φ false there
 #guard v 0 (.untilWithin .time (sec 1) "x" .ff fast) = .t
 #guard v 0 (.until .ff fast) = .t
@@ -226,10 +224,6 @@ def arrScene (k : Nat) : Scene :=
     occupies := if k ≥ 4 then [(1, 7), (2, 7), (2, 9), (1, 9)] else [(1, 7), (2, 7), (2, 9)] }
 def τarr : Trace := (List.range 9).map arrScene
 def carr : SemCtx := SemCtx.mk' τarr ρ β
-#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "before"] [.lit (seconds 1) .second])).v = .t   -- y in from the start, x at 2 s: decided by the bound
-#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "same"] [.lit (seconds 1) .second])).v = .f
-#guard (eval carr 8 (.derived "drv_arrival_order" [Y, X, .lit "intersection", .lit "same"] [.lit (seconds 3) .second])).v = .u
-#guard (eval carr 8 (.derived "drv_arrival_order" [X, Y, .lit "intersection", .lit "before"] [.lit (seconds 1) .second])).v = .f
 
 -- distance while
 #guard v 8 (.cmp (.distanceWhile "x" halted) .eq (.lit (metres 0) .metre)) = .t
@@ -238,12 +232,12 @@ def carr : SemCtx := SemCtx.mk' τarr ρ β
 -- region geometry reaches a formula: distance from a road user to a region
 def cross : Structure := { id := 9, kind := .crosswalk, boundary := some [(metres 40, metres (-2)), (metres 42, metres (-2)), (metres 42, metres 2), (metres 40, metres 2)] }
 def cgeo : SemCtx := SemCtx.mk' ((List.range 9).map fun k => { sceneAt k with structures := [lane7, cross] }) ρ β
-#guard (eval cgeo 8 (.existsRegion .crosswalk "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .t   -- 15 → 40: 25 m
-#guard (eval cgeo 0 (.existsRegion .crosswalk "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .f   -- 0 → 40
-#guard (eval c 0 (.existsRegion .lane "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .u       -- lane 7 has no geometry
+#guard (eval cgeo 8 (.existsRegion (.lit "crosswalk") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .t   -- 15 → 40: 25 m
+#guard (eval cgeo 0 (.existsRegion (.lit "crosswalk") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .f   -- 0 → 40
+#guard (eval c 0 (.existsRegion (.lit "lane") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .u       -- lane 7 has no geometry
 
 -- static analysis
-#guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))) = ["drv_stopped", "kin_speed"]
+#guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))).eraseDups = ["kin_speed"]
 #guard (Formula.params stopped) = ["p.stop_speed"]
 #guard (Formula.composed (.and (.rule "a" []) (.rule "b" []))) = ["a", "b"]
 

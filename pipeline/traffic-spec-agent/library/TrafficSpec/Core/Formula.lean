@@ -7,9 +7,16 @@
   program synthesis, and the review phase mutates it. Variables are strings bound by the grounding
   to tracks, and by the bounded quantifiers below to regions and devices of a kind.
 
-  Atoms and derived concepts are referenced BY NAME (the Lean definition names of Atoms.lean and
-  Derived.lean, `family_name`), with arguments that are variables, enumeration values spelled as in
+  Atoms, primitives and concepts are referenced BY NAME (the Lean definition names of Atoms.lean
+  and Primitives.lean, `family_name`; a concept's `drv_<family>_<name>`), with arguments that are variables, enumeration values spelled as in
   ATOMS.md, or naturals. Semantics.lean dispatches the names; the doctor checks every name resolves.
+
+  A quantifier over road users ranges over every road user of the scene, the bound ones included;
+  `same a b` is how a body excludes the subject from "another road user".
+
+  The bounded quantifiers take their kind as an `Arg`: a rule spells it (`.lit "intersection"`),
+  a concept fills it from a literal formal on expansion. `rises` is an edge against the previous
+  observation, not a frame: it says nothing about what happened between two observations.
 
   Deliberately absent: `next` (frame-relative and meaningless under irregular sampling), any
   numeric literal without a unit, any way to call an arbitrary Lean function.
@@ -59,6 +66,15 @@ inductive CmpOp
   | lt | le | eq | ge | gt
   deriving Repr, DecidableEq, Inhabited
 
+/-- What an aggregate over road users computes. -/
+inductive AggOp
+  | min | max | median | count
+  deriving Repr, DecidableEq, Inhabited
+
+def AggOp.toString : AggOp → String
+  | .min => "min" | .max => "max" | .median => "median" | .count => "count"
+instance : ToString AggOp := ⟨AggOp.toString⟩
+
 def CmpOp.apply : CmpOp → Q → Q → Bool
   | .lt, a, b => Q.lt a b
   | .le, a, b => Q.le a b
@@ -73,7 +89,9 @@ mutual
     | param (name : ParamName)                               -- a reading parameter
     | measure (atom : String) (args : List Arg)              -- a measured atom (Option Q or Option Nat)
     | quantity (concept : String) (args : List Arg) (params : List Term)   -- a Q-valued derived concept
-    | distanceWhile (subject : String) (φ : Formula)         -- drv.distance_while: path length over which φ has held
+    | distanceWhile (subject : String) (φ : Formula)         -- path length over which φ has held continuously
+    | sinceRise (φ : Formula)                                -- time elapsed since φ last became true
+    | aggregate (op : AggOp) (var : String) (φ : Formula) (t : Term)   -- op of t over the road users var of the scene satisfying φ
     | add (a b : Term)
     | sub (a b : Term)
     | mul (a b : Term)
@@ -87,6 +105,7 @@ mutual
     | atom (name : String) (args : List Arg) (params : List Term)   -- a Boolean atom; params for tolerances
     | cmp (lhs : Term) (op : CmpOp) (rhs : Term)
     | asm (id : AsmId)
+    | same (a b : Arg)                                        -- the two variables denote the same entity
     | not (φ : Formula)
     | and (φ ψ : Formula)
     | or (φ ψ : Formula)
@@ -99,15 +118,17 @@ mutual
     | within (m : Measure) (d : Term) (subject : String) (φ : Formula)     -- φ at some observation in the window ahead
     | untilWithin (m : Measure) (d : Term) (subject : String) (φ ψ : Formula)
     | count (edge : Formula) (sinceφ : Formula) (op : CmpOp) (n : Nat)   -- rising edges of `edge` since `sinceφ` became true (start of its latest run)
+    | rises (φ : Formula)                                     -- φ here and not at the previous observation
+    | definedWhen (pre φ : Formula)                           -- φ where `pre` holds; unknown (undefined) where it does not
     | derived (concept : String) (args : List Arg) (params : List Term)   -- a Boolean derived concept
     | rule (id : String) (map : List (String × String))       -- another rule complied with (not engaged counts as complied)
     | ruleApplies (id : String) (map : List (String × String)) -- another rule engaged (its binders' classes and applicability hold)
     | existsUser (var : String) (φ : Formula)                 -- some road user present in the scene
     | forallUser (var : String) (φ : Formula)
-    | existsRegion (kind : StructureKind) (var : String) (φ : Formula)
-    | forallRegion (kind : StructureKind) (var : String) (φ : Formula)
-    | existsDevice (kind : DeviceKind) (var : String) (φ : Formula)
-    | forallDevice (kind : DeviceKind) (var : String) (φ : Formula)
+    | existsRegion (kind : Arg) (var : String) (φ : Formula)
+    | forallRegion (kind : Arg) (var : String) (φ : Formula)
+    | existsDevice (kind : Arg) (var : String) (φ : Formula)
+    | forallDevice (kind : Arg) (var : String) (φ : Formula)
 end
 
 deriving instance Repr for Term
@@ -121,15 +142,17 @@ mutual
   partial def termAtoms : Term → List String
     | .measure a _ => [a]
     | .quantity c _ ps => c :: (ps.flatMap termAtoms)
-    | .distanceWhile _ φ => "drv_distance_while" :: atoms φ
+    | .distanceWhile _ φ => atoms φ
+    | .sinceRise φ => atoms φ
+    | .aggregate _ _ φ t => atoms φ ++ termAtoms t
     | .add a b | .sub a b | .mul a b | .div a b => termAtoms a ++ termAtoms b
     | .neg a | .abs a => termAtoms a
     | _ => []
   partial def atoms : Formula → List String
     | .atom n _ ps => n :: ps.flatMap termAtoms
     | .cmp l _ r => termAtoms l ++ termAtoms r
-    | .not φ | .always φ | .eventually φ => atoms φ
-    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => atoms φ ++ atoms ψ
+    | .not φ | .always φ | .eventually φ | .rises φ => atoms φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => atoms φ ++ atoms ψ
     | .holdsFor _ d _ φ | .within _ d _ φ => termAtoms d ++ atoms φ
     | .untilWithin _ d _ φ ψ => termAtoms d ++ atoms φ ++ atoms ψ
     | .count e s _ _ => atoms e ++ atoms s
@@ -145,14 +168,16 @@ mutual
     | .param n => [n]
     | .quantity _ _ ps => ps.flatMap termParams
     | .distanceWhile _ φ => params φ
+    | .sinceRise φ => params φ
+    | .aggregate _ _ φ t => params φ ++ termParams t
     | .add a b | .sub a b | .mul a b | .div a b => termParams a ++ termParams b
     | .neg a | .abs a => termParams a
     | _ => []
   partial def params : Formula → List ParamName
     | .atom _ _ ps => ps.flatMap termParams
     | .cmp l _ r => termParams l ++ termParams r
-    | .not φ | .always φ | .eventually φ => params φ
-    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => params φ ++ params ψ
+    | .not φ | .always φ | .eventually φ | .rises φ => params φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => params φ ++ params ψ
     | .holdsFor _ d _ φ | .within _ d _ φ => termParams d ++ params φ
     | .untilWithin _ d _ φ ψ => termParams d ++ params φ ++ params ψ
     | .count e s _ _ => params e ++ params s
@@ -165,8 +190,8 @@ end
 /-- The rules a formula composes. -/
 partial def composed : Formula → List String
   | .rule id _ | .ruleApplies id _ => [id]
-  | .not φ | .always φ | .eventually φ => composed φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => composed φ ++ composed ψ
+  | .not φ | .always φ | .eventually φ | .rises φ => composed φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => composed φ ++ composed ψ
   | .holdsFor _ _ _ φ | .within _ _ _ φ => composed φ
   | .untilWithin _ _ _ φ ψ => composed φ ++ composed ψ
   | .count e s _ _ => composed e ++ composed s
@@ -181,14 +206,16 @@ mutual
     | .lit q u => if Q.isZero q then [] else [(q, u)]
     | .quantity _ _ ps => ps.flatMap termLiterals
     | .distanceWhile _ φ => literals φ
+    | .sinceRise φ => literals φ
+    | .aggregate _ _ φ t => literals φ ++ termLiterals t
     | .add a b | .sub a b | .mul a b | .div a b => termLiterals a ++ termLiterals b
     | .neg a | .abs a => termLiterals a
     | _ => []
   partial def literals : Formula → List (Q × PUnit')
     | .atom _ _ ps => ps.flatMap termLiterals
     | .cmp l _ r => termLiterals l ++ termLiterals r
-    | .not φ | .always φ | .eventually φ => literals φ
-    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => literals φ ++ literals ψ
+    | .not φ | .always φ | .eventually φ | .rises φ => literals φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => literals φ ++ literals ψ
     | .holdsFor _ d _ φ | .within _ d _ φ => termLiterals d ++ literals φ
     | .untilWithin _ d _ φ ψ => termLiterals d ++ literals φ ++ literals ψ
     | .count e s _ _ => literals e ++ literals s
@@ -212,8 +239,8 @@ partial def leaves : Formula → List String
   | .derived n args _ => [s!"derived {n} {repr args}"]
   | .rule id _ => [s!"rule {id}"]
   | .ruleApplies id _ => [s!"ruleApplies {id}"]
-  | .not φ | .always φ | .eventually φ => leaves φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => leaves φ ++ leaves ψ
+  | .not φ | .always φ | .eventually φ | .rises φ => leaves φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => leaves φ ++ leaves ψ
   | .holdsFor _ _ _ φ | .within _ _ _ φ => leaves φ
   | .untilWithin _ _ _ φ ψ => leaves φ ++ leaves ψ
   | .count e s _ _ => leaves e ++ leaves s
@@ -240,6 +267,8 @@ partial def replaceLeafAux (k : Nat) (r : Formula) : Formula → Formula × Nat
   | .within m d s φ => let (φ', n) := replaceLeafAux k r φ; (.within m d s φ', n)
   | .untilWithin m d s φ ψ => let (φ', ψ', n) := two k r φ ψ; (.untilWithin m d s φ' ψ', n)
   | .count e s op c => let (e', s', n) := two k r e s; (.count e' s' op c, n)
+  | .rises φ => let (φ', n) := replaceLeafAux k r φ; (.rises φ', n)
+  | .definedWhen p φ => let (p', φ', n) := two k r p φ; (.definedWhen p' φ', n)
   | .existsRegion kd v φ => let (φ', n) := replaceLeafAux k r φ; (.existsRegion kd v φ', n)
   | .forallRegion kd v φ => let (φ', n) := replaceLeafAux k r φ; (.forallRegion kd v φ', n)
   | .existsDevice kd v φ => let (φ', n) := replaceLeafAux k r φ; (.existsDevice kd v φ', n)
@@ -260,8 +289,8 @@ def replaceLeaf (k : Nat) (r : Formula) (φ : Formula) : Formula := (replaceLeaf
 /-- The assumptions a formula reads. -/
 partial def assumptions : Formula → List AsmId
   | .asm id => [id]
-  | .not φ | .always φ | .eventually φ => assumptions φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => assumptions φ ++ assumptions ψ
+  | .not φ | .always φ | .eventually φ | .rises φ => assumptions φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => assumptions φ ++ assumptions ψ
   | .holdsFor _ _ _ φ | .within _ _ _ φ => assumptions φ
   | .untilWithin _ _ _ φ ψ => assumptions φ ++ assumptions ψ
   | .count e s _ _ => assumptions e ++ assumptions s
@@ -272,8 +301,8 @@ partial def assumptions : Formula → List AsmId
 /-- The aggregate words a formula names (`ru_aggregate x "vehicle"`), for the reading check. -/
 partial def aggregateWords : Formula → List String
   | .atom "ru_aggregate" [_, .lit w] _ => [w]
-  | .not φ | .always φ | .eventually φ => aggregateWords φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => aggregateWords φ ++ aggregateWords ψ
+  | .not φ | .always φ | .eventually φ | .rises φ => aggregateWords φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => aggregateWords φ ++ aggregateWords ψ
   | .holdsFor _ _ _ φ | .within _ _ _ φ => aggregateWords φ
   | .untilWithin _ _ _ φ ψ => aggregateWords φ ++ aggregateWords ψ
   | .count e s _ _ => aggregateWords e ++ aggregateWords s

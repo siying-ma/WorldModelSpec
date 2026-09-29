@@ -6,7 +6,7 @@ from .. import index_sync, lean, paths, validate_a
 from ..blueprint import Node
 from ..reading import Reading
 from ..state import Run
-from .code import rollback
+from .code import rollback, rollback_concept
 
 
 def _witness_harness(reading_json: Path) -> str:
@@ -41,8 +41,12 @@ def verify_library(work: Path, reading: Reading) -> tuple[bool, list[str]]:
     return not fails, fails
 
 
-def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baselines: dict[str, dict]) -> tuple[list[str], list[str]]:
-    """Returns (kept node ids, reverted node ids with reasons)."""
+def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baselines: dict[str, dict],
+                  concepts_now: list[str] | None = None, concept_baselines: dict[str, dict] | None = None) -> tuple[list[str], list[str]]:
+    """Returns (kept node ids, reverted ids with reasons). Nodes are reverted newest first; when none is
+    left and the library still does not verify, the concepts accepted this iteration follow, newest first."""
+    concepts_now = list(concepts_now or [])
+    concept_baselines = concept_baselines or {}
     work = run.iter / "integrate"; work.mkdir(parents=True, exist_ok=True)
     kept = [n.id for n in accepted_now]
     reverted: list[str] = []
@@ -55,10 +59,15 @@ def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baseline
                 rollback(n.id, baselines.get(n.id, {})); kept.remove(n.id); reverted.append(f"{n.id}: {cycles[0]}")
     while True:
         ok, problems = verify_library(work, reading)
-        if ok or not kept:
+        if ok or not (kept or concepts_now):
             break
-        victim = kept.pop()   # newest first
-        rollback(victim, baselines.get(victim, {}))
+        if kept:
+            victim = kept.pop()   # newest first
+            rollback(victim, baselines.get(victim, {}))
+        else:
+            victim = concepts_now.pop()
+            rollback_concept(victim, concept_baselines.get(victim, {}))
+            run.accepted_concepts.pop(victim, None)
         reverted.append(f"{victim}: library did not verify ({problems[0] if problems else 'unknown'})")
     (work / "result.json").write_text(json.dumps({"kept": kept, "reverted": reverted}, ensure_ascii=False, indent=1), encoding="utf-8")
     return kept, reverted

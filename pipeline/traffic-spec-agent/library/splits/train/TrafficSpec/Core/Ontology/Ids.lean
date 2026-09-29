@@ -123,48 +123,13 @@ def atomIds : List String := [
   "rel.contact"
 ]
 
-/-- Every derived-concept id of ATOMS.md §9, in file order. -/
-def derivedIds : List String := [
-  "drv.stopped",
-  "drv.standing_or_parked",
-  "drv.moving_off",
-  "drv.turning",
-  "drv.u_turn",
-  "drv.lane_change",
-  "drv.lane_change_feasible",
-  "drv.overtaking",
-  "drv.passing_side",
-  "drv.entering_intersection",
-  "drv.in_intersection",
-  "drv.approaching",
-  "drv.crossing_line",
-  "drv.cleared_line",
-  "drv.backing",
-  "drv.following",
-  "drv.time_gap",
-  "drv.time_to_conflict",
-  "drv.meeting",
-  "drv.yields_to",
-  "drv.arrival_order",
-  "drv.wrong_way",
-  "drv.straddles_marking",
-  "drv.responding_emergency",
-  "drv.vulnerable_road_user",
-  "drv.laned_roadway",
-  "drv.extreme_lane",
-  "drv.priority_roadway",
-  "drv.distance_while",
-  "drv.within_signed_zone",
-  "drv.condition_in_effect",
-  "drv.civil_night",
-  "drv.signal_cycles",
-  "drv.slower_than_posted",
-  "drv.speed_below_traffic",
-  "drv.sight_distance_adequate",
-  "drv.stopping_distance",
-  "drv.hard_deceleration",
-  "drv.forced_halt",
-  "drv.officer_directed"
+/-- Every primitive id of ATOMS.md §10, in file order. -/
+def primitiveIds : List String := [
+  "prim.heading_change",
+  "prim.closest_approach_within",
+  "prim.closest_approach_time",
+  "prim.closest_approach_distance",
+  "prim.conditions_hold"
 ]
 
 end TrafficSpec

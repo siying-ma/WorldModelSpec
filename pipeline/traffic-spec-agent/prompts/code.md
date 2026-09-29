@@ -19,10 +19,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   parameter as a `Term`, and the four scenarios with their verdicts and masked atoms are filled
   in. Your work is the formulas and the scenes.
 - **Core surface** — generated from the library and cited to its files: the formula language,
-  the `Rule`/`Scenario` records, every atom's Lean accessor with the scene field it reads, the
-  derived concepts with their contracts and parameter order, the enumeration spellings and Lean
-  constructors, the world records a witness builds, the `Units` constructors and the `Build.*`
-  builders. It is complete for this task.
+  the `Rule`/`Scenario` records, the catalogue of accepted concepts a rule may call, every atom's
+  Lean accessor with the scene field it reads, the primitives with their contracts and parameter
+  order, the enumeration spellings and Lean constructors, the world records a witness builds,
+  the `Units` constructors and the `Build.*` builders. It is complete for this task.
 - **Reading** — the run's values for the node's parameters. A witness is evaluated against
   these values (its own `reading` field is ignored), so its geometry is built to break or keep
   each bound by a clear margin. No value goes into the rule.
@@ -42,7 +42,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 
 - You **edit** `{rule_path}` and `{witness_path}`, and write `task_result.md`. Nothing else.
 - You **may read** `library/TrafficSpec/Core/*.lean` when a question is not answered by the
-  surface above (a derived concept's exact reading of a field, a tolerance's sense). Read the one
+  surface above (a primitive's exact reading of a field, a tolerance's sense). Read the one
   file that answers it; do not page through Core to re-derive what the surface already states.
   Core is frozen: you never edit it, and you never work around it.
 - You **do not read** `harness/`, `results/`, other nodes' files beyond the example above, the
@@ -84,7 +84,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    obligation). The header comment explains each; the `residues` list is its machine-readable
    twin, and the harness carries what you append back to the planner and the operator. A
    consequence written only in prose is lost.
-3. **Formulas use only claimed names.** Every atom and derived concept in `applicability`, the
+3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
    binder classes and `obligation` is claimed by an element or operationalization of the node,
    and every claimed name is used. Arguments are the node's binders, quantifier variables, or
    enumeration spellings from the Core surface. A claim `ru.aggregate=<word>` is written
@@ -92,7 +92,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 3b. **Every quantified variable is anchored.** A region, device or user the rule quantifies over
    must be related to a binder through the formula — `rel_occupies [a, l]`,
    `st_region_geometry_distance [a, r]`, `dev_governs [d, l]` with `l` anchored, a relation to a
-   binder, or a comparison that reads both. `existsRegion .lane "l" (st_lane [l] ∧ …)` with no
+   binder, or a comparison that reads both. `existsRegion (.lit "lane") "l" (st_lane [l] ∧ …)` with no
    such tie asks whether any lane of the scene qualifies, and the gate returns
    `UNANCHORED_VARIABLE`. If the node claims no anchoring atom, the node is wrong: report it.
 4. **Parameters, not values.** A quantity enters as `.param "<name>"` from the node's `params`.
@@ -122,8 +122,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 
 Decide from the surface, then write; the surface is the API, the example is the style.
 
-1. Read the node. List the atoms and concepts it claims and the parameters it names; pair each
-   with the accessor or concept line of the surface that carries it.
+1. Read the node. List the atoms, primitives and concepts it claims and the parameters it names;
+   pair each with the accessor, primitive or catalogue line of the surface that carries it.
 2. Write the rule in one pass: binders → class formulas from `class_elements`; applicability from
    the trigger/condition elements; obligation from the obligation elements and
    operationalizations; compositions as `.rule`/`.ruleApplies`. Replace every `TODO` and `.tt`.

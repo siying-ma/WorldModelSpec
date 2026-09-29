@@ -19,14 +19,22 @@ def parameter_catalogue(reading: Reading) -> str:
             "(`aggregates.jsonl`) before any node claims it:", "", aggregates.render(reading)]
     return "\n".join(out) + "\n"
 
-PLACEHOLDERS = ("laws", "definitions", "ontology", "library_summary", "mapping_index", "parameters", "gaps", "feedback", "user_hints")
+PLACEHOLDERS = ("laws", "definitions", "ontology", "library_summary", "concepts", "mapping_index", "parameters", "gaps", "feedback", "user_hints")
+
+
+def concept_catalogue(run: Run) -> str:
+    from .. import surface, nodeid
+    text = surface.concepts_table(run.all_concepts())
+    if run.opts.mode == "test":
+        text += "\nThis run adds concepts and supersedes none: a catalogued concept whose body contradicts its contract is reported under `## Concept defects` in `PLAN.md`, not replaced.\n"
+    return text + f"\nConcept families (the fixed grammar `drv.<family>.<name>`): {', '.join(nodeid.CONCEPT_FAMILIES)}.\n"
 
 
 def library_summary(run: Run) -> str:
-    if not run.accepted_nodes:
+    if not run.all_nodes():
         return "(the library carries no accepted node yet)\n"
     out = ["| node | law | binders | atoms claimed |", "|---|---|---|---|"]
-    for n in run.accepted_nodes.values():
+    for n in run.all_nodes().values():
         atoms = sorted({a for e in n.get("elements", []) for a in e.get("atoms", []) + e.get("derived", [])})
         out.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} |")
     return "\n".join(out) + "\n"
@@ -41,6 +49,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict]) -> Path:
         "definitions": corpus.render_definitions(defs),
         "ontology": onto.text,
         "library_summary": library_summary(run),
+        "concepts": concept_catalogue(run),
         "mapping_index": MappingIndex(run.mapping_file).render(),
         "parameters": parameter_catalogue(Reading(run.reading_file)),
         "gaps": GapLedger(paths.GAP_LEDGER).render(),

@@ -12,7 +12,7 @@ traffic rule usually says.
 - **The node's formal content** — binders with their class formulas, the applicability, the
   obligation, the operationalizations (standard words, concept, parameters), the compositions,
   the assumptions and the residues, exactly as the rule declares them.
-- **Ontology** — the contracts of every atom and derived concept named.
+- **Ontology** — the contracts of every atom, primitive and concept named.
 
 {formal_content}
 {ontology_subset}

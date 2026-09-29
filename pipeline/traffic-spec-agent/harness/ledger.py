@@ -101,3 +101,52 @@ class Ledger:
         for e in self.entries.values():
             c[e.state] = c.get(e.state, 0) + 1
         return c
+
+
+# ---------------------------------------------------------------------------------------------
+# Concepts: one entry per proposed concept id, states as for laws. Written by the harness only.
+# ---------------------------------------------------------------------------------------------
+@dataclass
+class ConceptEntry:
+    concept: str
+    state: str = OPEN            # open | planned | returned | accepted | failed
+    attempts: int = 0
+    reasons: list[str] = field(default_factory=list)
+    used_by: list[str] = field(default_factory=list)
+    iteration: int = 0
+
+
+class ConceptLedger:
+    def __init__(self, path: Path, attempts: int):
+        self.path = path
+        self.attempts = attempts
+        self.entries: dict[str, ConceptEntry] = {}
+        if path.exists():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    d = json.loads(line)
+                    self.entries[d["concept"]] = ConceptEntry(**d)
+
+    def save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text("".join(json.dumps(asdict(e), ensure_ascii=False) + "\n" for e in self.entries.values()), encoding="utf-8")
+
+    def planned(self, cid: str, used_by: list[str], iteration: int) -> None:
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.state, e.used_by, e.iteration = PLANNED, used_by, iteration
+
+    def returned(self, cid: str, reasons: list[str]) -> None:
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.attempts += 1
+        e.reasons = reasons
+        e.state = FAILED if e.attempts >= self.attempts else RETURNED
+
+    def accepted(self, cid: str) -> None:
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.state, e.reasons = ACCEPTED, []
+
+    def counts(self) -> dict[str, int]:
+        c: dict[str, int] = {}
+        for e in self.entries.values():
+            c[e.state] = c.get(e.state, 0) + 1
+        return c

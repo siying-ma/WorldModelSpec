@@ -3,7 +3,7 @@
 
 `library/splits/full/` archives the full files the first time a swap happens; `library/splits/train/`
 holds the training variants: `Atoms.lean` and `Ontology/*` from `nrs_tools/atoms_train.py`, and the
-files that read the omitted atoms (`World`, `Decode`, `Manifest`, `Semantics`, `Derived`, `Grounding`)
+files that read the omitted atoms (`World`, `Decode`, `Manifest`, `Semantics`, `Primitives`, `Grounding`)
 derived here by removing exactly the lines that read them. `library/splits/ACTIVE` records which
 variant the Core directory currently holds; the doctor reads it.
 """
@@ -17,7 +17,7 @@ from . import paths
 SPLITS = paths.LIBRARY / "splits"
 ACTIVE = SPLITS / "ACTIVE"
 SPLIT_ATOMS = paths.REPO / "laws" / "audit_and_scripts" / "split_atoms.json"
-DEPENDENT = ["World.lean", "Decode.lean", "Manifest.lean", "Semantics.lean", "Derived.lean", "Grounding.lean"]
+DEPENDENT = ["World.lean", "Decode.lean", "Manifest.lean", "Semantics.lean", "Primitives.lean", "Grounding.lean"]
 
 #: World fields (and their JSON keys) that exist only for an atom; removed with the atom.
 FIELDS_OF_ATOM: dict[str, list[tuple[str, str]]] = {
@@ -62,7 +62,7 @@ def _drop_def_block(text: str, name: str) -> str:
 def generate_train(full_dir: Path, out: Path) -> None:
     split = json.loads(SPLIT_ATOMS.read_text(encoding="utf-8"))
     atoms = set(split["test_only_atoms"])
-    derived = [d.replace(".", "_") for d in split["test_only_derived"]]
+    derived = [d.replace(".", "_") for d in split.get("test_only_primitives", [])]
     defs = {a.replace(".", "_") for a in atoms}
     fields = [f for a in atoms for f in FIELDS_OF_ATOM.get(a, [])]
     out.mkdir(parents=True, exist_ok=True)
@@ -106,15 +106,15 @@ def generate_train(full_dir: Path, out: Path) -> None:
         s = re.sub(rf'"{n}(_\w+)?",\s*', "", s)
         s = re.sub(rf',\s*"{n}(_\w+)?"', "", s)
     (out / "Semantics.lean").write_text(banner + s, encoding="utf-8")
-    # Derived: the concepts
-    dv = (full_dir / "Derived.lean").read_text(encoding="utf-8")
+    # Primitives: the test-only ones, when any
+    dv = (full_dir / "Primitives.lean").read_text(encoding="utf-8")
     for n in derived:
         dv = _drop_def_block(dv, n)
         dv = _drop_lines(dv, lambda l, n=n: re.match(rf'\s*\| "{n}"', l) is not None)
         dv = re.sub(rf'"{n}",\s*', "", dv)
         dv = re.sub(rf'\s*\| "{n}"(?=\s*\|)', "", dv)
         dv = re.sub(rf'\s*\| "{n}"(?=\s*=>)', "", dv)
-    (out / "Derived.lean").write_text(banner + dv, encoding="utf-8")
+    (out / "Primitives.lean").write_text(banner + dv, encoding="utf-8")
 
 
 def activate(which: str) -> list[str]:

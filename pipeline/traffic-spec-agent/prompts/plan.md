@@ -3,7 +3,7 @@
 ## Role
 
 You turn statutory obligations into **blueprint nodes**: a segmentation of each law's verbatim
-text, a mapping of every substantive span onto the ontology's atoms and derived concepts, the
+text, a mapping of every substantive span onto the ontology's atoms and primitives and the catalogue's concepts, the
 operationalization of every standard of judgement, and four witness scenarios. You write no Lean.
 The coding agent implements your nodes exactly; the harness validates them before it may start.
 Intent is your domain; syntax is not.
@@ -20,9 +20,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 - **Definitions** — the corpus's definitional records (the terms the laws use, cited inline by
   `[DEF-…]` where a line names one). Definitions are not obligations and are never a node; the
   ones that define a class of road users are the source of the **aggregates** (rule 0).
-- **Ontology** — every atom (id, contract, scope), every attribute value, every derived concept
-  with its parameters, and the operationalization table. This is the **closed set**.
+- **Ontology** — every atom (id, contract, scope), every attribute value, and every primitive
+  with its parameters. With the concept catalogue, this is the **closed set**.
 - **Library summary** — accepted nodes: id, law refs, binders, atoms claimed.
+- **Concept catalogue** — accepted concepts: id, contract, formals, parameters, the atoms each
+  reads, how many nodes use it. A node calls a catalogued concept by its id; a notion no entry
+  denotes is proposed as a **concept record** (rule 0b).
 - **Mapping index** — span text → atoms, from every accepted node of this run.
 - **Gaps** — open gaps (a law citing one is not in your list) and closed gaps with the reason
   they were rejected.
@@ -35,6 +38,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 {definitions}
 {ontology}
 {library_summary}
+{concepts}
 {mapping_index}
 {parameters}
 {gaps}
@@ -53,6 +57,34 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    never approximated. A word the reading already declares (listed under Parameters) is not
    re-derived. Nodes then claim the word (`ru.aggregate=<word>`); a word no record and no
    declaration covers is rejected on every node that claims it.
+0b. **Concepts are catalogued or proposed, never assumed.** A span that names a manoeuvre, a
+   state of motion, a road configuration or a relation between road users over time (a stop, a
+   turn, a pass, a following gap, a laned roadway) maps to a concept: an entry of the catalogue
+   when one denotes it, else a **concept record** you write in `blueprint.jsonl` beside the nodes.
+   A record has an id in the fixed grammar `drv.<family>.<name>` (the families are listed with
+   the catalogue; a snake_case name for the observable notion, never a statute's word, a place or
+   a figure), a `contract` in neutral words stating unit, frame and what is *not* denoted, typed
+   `args` (`track`, `literal` with its admissible `values`, or `nat`), `params` (formal names with
+   units and meanings — every magnitude the contract leaves open, never a value), `elements`
+   mapping the contract's words to atoms and catalogued or co-proposed concepts with a quoted
+   justification, `residues`, three `scenarios` (`holds` → `compliant`, `fails` → `violated`,
+   `blind` → `unknown` with `masked`), and `used_by`, the node ids of this plan that claim it.
+   Two sources decide the contract:
+   - a corpus **definition** that defines a manoeuvre, a state or a configuration (rather than a
+     class of road users, which is an aggregate; an administrative region, which is an
+     assumption; or a relation between parties' rights, which is a composition) gives a record
+     with `definition: "DEF-…"` and the definition's text as its `contract`, verbatim; words of
+     it that no atom can carry become the record's `residues`. Two definitions of one word are
+     two records, told apart by a qualifier naming the physical difference;
+   - a span with no definition gives a record whose contract you write, general enough for any
+     law that needs the notion: the reviewer returns a contract tuned to one span.
+   A standard of judgement is never a concept; it is operationalized (rule 4) by concepts and
+   parameters. A concept the catalogue already carries is reused, never re-proposed; a body that
+   an accepted concept already computes is rejected by the gate. An accepted concept is never
+   edited: a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
+   the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
+   gives the wrong verdict; a different contract is a new concept under a new name. In a `test`
+   run nothing is superseded: report the defect under `## Concept defects` in `PLAN.md`.
 1. **Segment first.** Cut the verbatim text into spans. Each span is a contiguous verbatim
    substring; the spans are disjoint and together cover the text (whitespace and punctuation
    excepted). Give each a role: `trigger`, `subject`, `obligation`, `exception`, `standard`,
@@ -61,7 +93,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    only it needs; the other node segments the same words under a role of its own), `definitional`,
    `boilerplate` (connectives, lead-ins and list punctuation such as "and", "to pass:", "this
    paragraph authorizes the driver" — never `sibling`).
-2. **Account for every substantive span** exactly once: an element (atoms or derived concepts),
+2. **Account for every substantive span** exactly once: an element (atoms, or concepts under `derived`),
    an operationalization (a standard), an assumption (a legal region class the ontology names as
    an assumption), a composition (another rule, see rule 5), a residue (words the vocabulary
    cannot carry), or a gap. Two exceptions to "exactly once": a `reference` span naming several
@@ -80,10 +112,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
      subject's own feature and not any feature of the scene. The validator returns a node that
      claims a feature and no anchor.
 4. **Every standard is operationalized**, by one operationalization per `standard` span, whose
-   `concepts` list the atoms and derived concepts that bound it exactly as the operationalization
-   table pairs them (a safe-distance standard is bounded by a clearance atom *and* a time-gap
-   concept in one entry), with named parameters and the convention the values come from. If the
-   standard is the whole obligation, mark the node `surrogate`.
+   `concepts` list the atoms, primitives and concepts that bound it (a safe-distance standard is
+   bounded by a clearance atom *and* a time-gap concept in one entry), with named parameters and
+   the engineering convention the values come from. If the standard is the whole obligation, or
+   it is a standard about the driver's state of mind, mark the node `surrogate`.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
@@ -132,7 +164,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 For each law in the list:
 
 1. Read the text and the definitions it cites. Segment (rule 1).
-2. For each substantive span, find the atom or concept whose contract denotes it; write the
+2. For each substantive span, find the atom, primitive or concept whose contract denotes it; write the
    justification (rule 3). Where a span's words are in the mapping index, reuse (rule 6).
 3. Operationalize the `standard` spans (rule 4). Decide `surrogate`.
 4. Decide the nodes (rules 5 and 6): binders (the subject first, its class from the subject/trigger
@@ -161,6 +193,18 @@ scenarios[{name: "forbid" | "permit" | "idle" | "blind", expected: "violated" | 
 literals[{span, text, value, unit}], gaps[{span, kind, proposal, nearest}]
 ```
 
+Concept records, in the same file, one JSON object per concept, this schema and nothing more:
+
+```
+concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
+args[{name, sort: "track" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+elements[{span (words of the contract), atoms, concepts, justification}], residues[{span, why}],
+literals[{value, unit, why}] (a geometric constant or a figure the definition states),
+scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only, a list)}],
+used_by[<node ids>], supersedes (an accepted id or null), counterexample{narrative, expected} (supersession only),
+differs_from{concept, why} (when the sorts and atoms match an accepted concept's)
+```
+
 `proposed_gaps.jsonl` — the gap records, one per line, with `law_refs` and `node_id`.
 
 `aggregates.jsonl` — one record per aggregate word derived from a definition (rule 0):
@@ -178,8 +222,12 @@ Run the validator on the finished file and fix what it names; then confirm by re
 - every span text is a verbatim substring of its law, spans disjoint, union complete;
 - every non-boilerplate span appears in exactly one of elements / operationalizations /
   assumptions / compositions / residues / gaps;
-- every atom, value and concept id you wrote exists in the ontology, or is in a gap; every
-  aggregate word is one the reading declares; every node that reads a feature claims an anchor;
+- every atom, value and concept id you wrote exists in the ontology or the catalogue, is a
+  concept record of this plan, or is in a gap; every aggregate word is one the reading declares;
+  every node that reads a feature claims an anchor;
+- every concept record has a well-formed id, a contract, typed formals, parameters with units,
+  elements over the contract's words, the three scenarios, and `used_by` naming nodes that claim
+  it; a definition-born contract is the definition's text verbatim;
 - every `standard` span has an operationalization;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the
   obligations the law's nodes carry, in text order;

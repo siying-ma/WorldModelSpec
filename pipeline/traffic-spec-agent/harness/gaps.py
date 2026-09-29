@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-KINDS = {"atom", "value", "derived", "operator", "definition", "unresolvable"}
+KINDS = {"atom", "value", "primitive", "operator", "definition", "unresolvable"}
 STATES = {"proposed", "accepted", "rejected", "retired"}
 
 

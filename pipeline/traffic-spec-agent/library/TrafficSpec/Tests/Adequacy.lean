@@ -18,12 +18,14 @@ def same (a b : Formula) : Bool := reprStr a == reprStr b
 -- the truck-stop witnesses: one scenario cannot exercise the single leaf both ways
 def stopped : Scenario := Tests.Decode.sc
 #guard (TrafficSpec.Adequacy.unexercised rules truckRule [stopped]).length = 0     -- tt keeps compliant, ff makes it violated
--- the gap rule with only an idle witness (y is not ahead of x): the applicability leaf is exercised
--- (replacing it by tt engages the rule), the obligation leaf is not — no witness ever reaches it
+-- the gap rule with only an idle witness (y is not ahead of x): the ahead-in-lane leaf is exercised
+-- (replacing it by tt engages the rule), the gap comparison and the obligation leaf are not — no
+-- witness ever reaches them
 def idleOnly : Scenario := { stopped with rule := "test/gap", grounding := [("x", 2), ("y", 1)], expected := .notApplicable }
 def unex := TrafficSpec.Adequacy.unexercised rules rule [idleOnly]
-#guard unex.length = 1
-#guard (unex.head!).startsWith "obligation leaf 0"
+#guard unex.length = 2
+#guard unex.any (·.startsWith "applicability leaf 1")
+#guard unex.any (·.startsWith "obligation leaf 0")
 -- with the following witness added, every leaf moves some verdict
 def following : Scenario := { stopped with rule := "test/gap", grounding := [("x", 1), ("y", 2)], expected := .unknown [] }
 #guard TrafficSpec.Adequacy.unexercised rules rule [idleOnly, following] = []

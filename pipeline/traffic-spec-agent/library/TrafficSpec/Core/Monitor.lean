@@ -63,9 +63,11 @@ def histogram (tl : List Verdict) : List (String × Nat) :=
 def countVerdict (vs : List Verdict) (p : Verdict → Bool) : Nat := (vs.filter p).length
 def isUnknown : Verdict → Bool | .unknown _ => true | _ => false
 
-/-- Evaluate a rule set over one trace as the source would have produced it. Unsupported rules
-    are reported without groundings: nothing they say could be decided. -/
-def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) : Report :=
+/-- Evaluate a rule set over one trace as the source would have produced it, the rules' concept
+    calls expanded over `cs`. Unsupported rules are reported without groundings: nothing they
+    say could be decided. -/
+def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) (cs : List Concept := []) : Report :=
+  let rules := rules.map (Concept.expandRule cs)
   let S := Setup.mk' rules (maskTrace m τ) ρ m.reidGap
   let per := rules.map fun r =>
     let sup := support rules r m

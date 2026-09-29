@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|drv)\.[a-z_]+)` \| (.*)$")
+ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)` \| (.*)$")
 ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
 DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
@@ -18,23 +18,23 @@ class Ontology:
     text: str
     atoms: dict[str, str] = field(default_factory=dict)          # id → contract
     values: set[str] = field(default_factory=set)                # "atom=value"
-    derived: dict[str, tuple[str, str]] = field(default_factory=dict)   # id → (sketch, params)
+    primitives: dict[str, tuple[str, str]] = field(default_factory=dict)   # id → (contract, params)
 
     @property
     def atom_ids(self) -> set[str]:
         return set(self.atoms)
 
     @property
-    def derived_ids(self) -> set[str]:
-        return set(self.derived)
+    def primitive_ids(self) -> set[str]:
+        return set(self.primitives)
 
     def knows(self, ident: str) -> bool:
         if "=" in ident:
             return ident in self.values
-        return ident in self.atoms or ident in self.derived
+        return ident in self.atoms or ident in self.primitives
 
     def contract(self, ident: str) -> str:
-        return self.atoms.get(ident) or (self.derived.get(ident, ("", ""))[0])
+        return self.atoms.get(ident) or (self.primitives.get(ident, ("", ""))[0])
 
     def subset_text(self, ids: set[str]) -> str:
         """The contracts of the named ids only, for the blind reader."""
@@ -60,7 +60,7 @@ def load(path: Path) -> Ontology:
         aid, rest = r.group(1), r.group(2)
         cells = [c.strip() for c in rest.split(" | ")]
         fam = aid.split(".")[0]
-        if section in range(1, 8) and fam != "drv":
+        if section in range(1, 8) and fam != "prim":
             o.atoms[aid] = cells[0]
             for e in ENUM.finditer(rest):
                 for v in e.group(2).split(","):
@@ -72,6 +72,6 @@ def load(path: Path) -> Ontology:
                 for v in (c.group(1) or c.group(2)).split(","):
                     if v.strip():
                         o.values.add(f"{aid}={v.strip()}")
-        elif section == 9 and fam == "drv":
-            o.derived[aid] = (cells[0], cells[1] if len(cells) > 1 else "")
+        elif section == 10 and fam == "prim":
+            o.primitives[aid] = (cells[0], cells[1] if len(cells) > 1 else "")
     return o

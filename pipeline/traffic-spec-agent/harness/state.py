@@ -27,6 +27,8 @@ class Options:
     session_budget_usd: Optional[float] = None   # `--max-budget-usd` per session; None = uncapped
     session_retries: int = 2       # relaunches of a session that never ran (account limit, API error)
     retry_wait: float = 900.0      # seconds between those relaunches
+    mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
+    base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
 
 
 @dataclass
@@ -34,6 +36,9 @@ class Run:
     opts: Options
     iteration: int = 0
     accepted_nodes: dict[str, dict] = field(default_factory=dict)
+    accepted_concepts: dict[str, dict] = field(default_factory=dict)
+    base_nodes: dict[str, dict] = field(default_factory=dict)      # from `base_run`, read-only
+    base_concepts: dict[str, dict] = field(default_factory=dict)
 
     @property
     def dir(self) -> Path:
@@ -77,15 +82,42 @@ class Run:
     def accepted_file(self) -> Path:
         return self.dir / "accepted_nodes.jsonl"
 
-    def load_accepted(self) -> None:
-        self.accepted_nodes = {}
-        if self.accepted_file.exists():
-            for l in self.accepted_file.read_text(encoding="utf-8").splitlines():
+    @property
+    def accepted_concepts_file(self) -> Path:
+        return self.dir / "accepted_concepts.jsonl"
+
+    @property
+    def concept_ledger_file(self) -> Path:
+        return self.dir / "concept_ledger.jsonl"
+
+    @staticmethod
+    def _load_jsonl(path: Path, key: str) -> dict[str, dict]:
+        out: dict[str, dict] = {}
+        if path.exists():
+            for l in path.read_text(encoding="utf-8").splitlines():
                 if l.strip():
-                    d = json.loads(l); self.accepted_nodes[d["node_id"]] = d
+                    d = json.loads(l); out[d[key]] = d
+        return out
+
+    def load_accepted(self) -> None:
+        self.accepted_nodes = self._load_jsonl(self.accepted_file, "node_id")
+        self.accepted_concepts = self._load_jsonl(self.accepted_concepts_file, "concept_id")
+        if self.opts.base_run:
+            base = paths.run_dir(self.opts.base_run)
+            self.base_nodes = self._load_jsonl(base / "accepted_nodes.jsonl", "node_id")
+            self.base_concepts = self._load_jsonl(base / "accepted_concepts.jsonl", "concept_id")
+
+    def all_nodes(self) -> dict[str, dict]:
+        """Accepted nodes the plan may compose: the base run's, then this run's."""
+        return {**self.base_nodes, **self.accepted_nodes}
+
+    def all_concepts(self) -> dict[str, dict]:
+        """Accepted concepts the plan may use: the base run's, then this run's."""
+        return {**self.base_concepts, **self.accepted_concepts}
 
     def save_accepted(self) -> None:
         self.accepted_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_nodes.values()), encoding="utf-8")
+        self.accepted_concepts_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_concepts.values()), encoding="utf-8")
 
     def next_iteration(self) -> int:
         existing = [int(p.name.split("-")[1]) for p in self.dir.glob("iter-*") if p.is_dir()]

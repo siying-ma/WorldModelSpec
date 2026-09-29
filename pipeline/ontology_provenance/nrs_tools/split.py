@@ -222,7 +222,7 @@ def main() -> int:
         "test_ids": sorted(test_ids),
         "test_only_atoms": test_only_atoms,
         "test_only_values": test_only_values,
-        "test_only_derived": test_only_drv,
+        "test_only_primitives": [],   # concepts are pipeline nodes since 2026-09-28; no primitive is test-only
         "zero_support_atoms_kept_in_train": zero,
         "train_atoms": sorted(a for a in ATOMS if a not in test_only_atoms),
     }, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")

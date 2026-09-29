@@ -2,7 +2,7 @@
 
 Nothing here is typed by hand: the formula language comes from Formula.lean, the atom accessors
 from Atoms.lean, the argument kinds from Semantics.lean, the world records from World.lean, the
-derived concepts from Derived.lean, the enumeration spellings and Lean constructors from the
+primitives from Primitives.lean, the enumeration spellings and Lean constructors from the
 generated codecs, the unit constructors from Units.lean, the builders and the scenario from
 Builders.lean, the rule and its declarations from Rule.lean and Params.lean.
 
@@ -81,8 +81,12 @@ def formula_language() -> str:
             "Notes. `Arg.var` names a binder or a quantifier variable; `Arg.lit` an enumeration spelling or an\n"
             "attribute selector (`\"x\"`, `\"y\"`, `\"width\"`, `\"length\"`, `\"lateral\"`, `\"longitudinal\"`, a side);\n"
             "`Arg.nat` a count. Quantifiers `existsRegion k v φ`/`forallRegion` range over the scene's structures of\n"
-            "kind `k`, `existsDevice`/`forallDevice` over its devices of a kind, `existsUser`/`forallUser` over its\n"
-            "road users; the variable is an `Arg.var` inside `φ`. `holdsFor m d s φ`: φ held at every observation in\n"
+            "kind `k` (an `Arg.lit` spelling, or a concept's literal formal), `existsDevice`/`forallDevice` over its\n"
+            "devices of a kind, `existsUser`/`forallUser` over its road users, the bound ones included (`same a b`\n"
+            "excludes the subject); the variable is an `Arg.var` inside `φ`. `rises φ` is φ here and not at the\n"
+            "previous observation; `definedWhen pre φ` is undefined (unknown) where `pre` fails; `Term.sinceRise φ`\n"
+            "the seconds since φ last became true; `Term.aggregate op v φ t` the min/max/median/count of `t` over the\n"
+            "road users `v` satisfying φ. `holdsFor m d s φ`: φ held at every observation in\n"
             "the window of length `d` (a `Term`, usually `.param`) behind, measured in time or path of subject `s`;\n"
             "`within` looks ahead. A window that reaches past the start of the trace is unknown (`windowTruncated`),\n"
             "so a witness of a rule that looks back names `window`. `rule id map` / `ruleApplies id map`: `map` pairs\n"
@@ -128,7 +132,7 @@ def atom_accessors() -> str:
 
 
 def atoms_table() -> str:
-    ids = re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', _read("Ontology/Ids.lean").split("derivedIds")[0], re.M)
+    ids = re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', _read("Ontology/Ids.lean").split("primitiveIds")[0], re.M)
     sem = _read("Semantics.lean")
     sorts = _block(sem, "def atomArgSorts", r"^/--|^def knowsAtom")
     bools = re.search(r"boolAtomNames : List String := \[(.*?)\]", sem, re.S).group(1)
@@ -140,23 +144,23 @@ def atoms_table() -> str:
             "Argument kinds per position (`Semantics.atomArgSorts`; `none` marks a literal position such as a side or a selector):\n```lean\n" + sorts + "```\n")
 
 
-def derived_table() -> str:
-    d = _read("Derived.lean")
-    arms = {n: (a, p) for n, a, p in re.findall(r'^\s*\| "(drv_\w+)", (\[[^\]]*\]), (\[[^\]]*\]) =>', d, re.M)}
+def primitives_table() -> str:
+    d = _read("Primitives.lean")
+    arms = {n: (a, p) for n, a, p in re.findall(r'^\s*\| "(prim_\w+)", (\[[^\]]*\]), (\[[^\]]*\]) =>', d, re.M)}
     entries = []
-    for doc, sig in _def_lines(d, r"drv_\w+"):
+    for doc, sig in _def_lines(d, r"prim_\w+"):
         name = sig.split()[1]
         arity = arms.get(name)
         doc1 = " ".join(doc.replace("/--", "").replace("-/", "").split())
         entries.append(f"{sig}\n    -- {doc1}" + (f"\n    -- formula form: args {arity[0]} params {arity[1]}" if arity else ""))
-    sorts = _block(d, "def argSorts", r"^private def side")
-    return ("### Derived concepts (`Derived.lean`): Lean signature (the parameters after the tracks are the formula's `params`, in order), contract, formula arity\n"
-            "```lean\n" + "\n".join(entries) + "\n```\nArgument kinds (`Derived.argSorts`):\n```lean\n" + sorts + "```\n"
-            "A Boolean concept is `.derived \"drv_x\" args params`; a `QR`-valued one is `Term.quantity \"drv_x\" args params`.\n")
+    sorts = _block(d, "def argSorts", r"^private def tid")
+    return ("### Primitives (`Primitives.lean`): Lean signature (the parameters after the tracks are the formula's `params`, in order), contract, formula arity\n"
+            "```lean\n" + "\n".join(entries) + "\n```\nArgument kinds (`Primitives.argSorts`):\n```lean\n" + sorts + "```\n"
+            "A Boolean primitive is `.derived \"prim_x\" args params`; a `QR`-valued one is `Term.quantity \"prim_x\" args params`.\n")
 
 
 def enumerations() -> str:
-    out = ["### Enumeration spellings (`Ontology/*.lean`): `Arg.lit` spelling → Lean constructor (for `existsRegion .kind`, `Build.*`, class lists)"]
+    out = ["### Enumeration spellings (`Ontology/*.lean`): `Arg.lit` spelling → Lean constructor (the spelling for `existsRegion (.lit \"kind\")` and literal arguments, the constructor for `Build.*` and class lists)"]
     for f in sorted((paths.CORE / "Ontology").glob("*.lean")):
         if f.name == "Ids.lean":
             continue
@@ -191,18 +195,47 @@ def builders() -> str:
             "`Build.manifest [\"<atom id>\", …]` observes every atom except the listed ids: the `blind` witness.\n")
 
 
-def core_surface() -> str:
-    return "\n".join([formula_language(), rule_and_scenario(), atoms_table(), atom_accessors(), derived_table(),
-                      enumerations(), world_records(), units_table(), builders()])
+def concept_language() -> str:
+    c = _read("Concept.lean")
+    return ("### Concepts (`Concept.lean`): the `Concept` a concept file declares, the `Instance` its witnesses build\n```lean\n"
+            + _inductive(c, "ArgSort") + "\n" + _structure(c, "ConceptParam") + "\n" + _inductive(c, "ConceptBody") + "\n"
+            + _structure(c, "Concept where") + "\n" + _structure(c, "Instance") + "```\n"
+            "A rule calls a concept by its Lean name (the id with `.` → `_`): `.derived \"drv_<family>_<name>\" args params`\n"
+            "for a formula concept, `Term.quantity \"drv_<family>_<name>\" args params` for a quantity; `args` fill the\n"
+            "formals in order (a track formal takes a variable, a literal formal a spelling among its values, a nat a\n"
+            "count), `params` fill the formal parameters in order with constant terms (`.param \"p.…\"` of the reading,\n"
+            "or a declared literal). Inside a concept's body every `.var` is a formal or bound in the body and every\n"
+            "`.param` is a formal parameter: a body never names a reading parameter. The call is expanded before\n"
+            "evaluation, so its atoms count as the caller's.\n")
 
 
-def derived_reads() -> dict[str, list[str]]:
-    """Which atoms (Lean names) each derived concept reads (`Derived.reads`)."""
-    d = _read("Derived.lean")
+def concepts_table(accepted: dict[str, dict]) -> str:
+    """The catalogue of accepted concepts: what a plan may reuse and a rule may call."""
+    if not accepted:
+        return "### Concept catalogue\n(no concept accepted yet: a manoeuvre, state or configuration a span needs is proposed as a concept record)\n"
+    out = ["### Concept catalogue (accepted concepts; call by Lean name = id with `.` → `_`)",
+           "| id | kind | contract | definition | args | params | reads | used by |", "|---|---|---|---|---|---|---|---|"]
+    for cid, rec in sorted(accepted.items()):
+        args = ", ".join(f"{a.get('name')}:{a.get('sort')}" + (f"{a.get('values')}" if a.get("sort") == "literal" else "") for a in rec.get("args", []))
+        params = ", ".join(f"{p.get('name')} ({p.get('unit')})" for p in rec.get("params", []))
+        out.append(f"| `{cid}` | {rec.get('kind')} | {' '.join(str(rec.get('contract', '')).split())} | {rec.get('definition') or ''} | {args} | {params} | "
+                   f"{', '.join(rec.get('reads', []))} | {len(rec.get('used_by', []))} |")
+    return "\n".join(out) + "\n"
+
+
+def core_surface(accepted_concepts: dict[str, dict] | None = None) -> str:
+    return "\n".join([formula_language(), rule_and_scenario(), concept_language(), concepts_table(accepted_concepts or {}),
+                       atoms_table(), atom_accessors(), primitives_table(), enumerations(), world_records(), units_table(), builders()])
+
+
+def primitive_reads() -> dict[str, list[str]]:
+    """Which atoms (Lean names) each primitive reads (`Primitives.reads`); an arm may list several names."""
+    d = _read("Primitives.lean")
     block = _block(d, "def reads", r"^\s*\| _ => \[\]")
     out = {}
-    for name, items in re.findall(r'\| "(drv_\w+)" => \[([^\]]*)\]', block):
-        out[name] = re.findall(r'"([a-z]+_\w+)"', items)
+    for names, items in re.findall(r'\| ((?:"prim_\w+"(?: \| )?)+) => \[([^\]]*)\]', block):
+        for name in re.findall(r'"(prim_\w+)"', names):
+            out[name] = re.findall(r'"([a-z]+_\w+)"', items)
     return out
 
 
@@ -216,3 +249,8 @@ def atom_id_of(lean_name: str, atom_ids: set[str]) -> str | None:
             if best is None or len(a) > len(best):
                 best = a
     return best
+
+
+def core_atom_ids() -> list[str]:
+    """The atom ids of the active Core (`Ontology/Ids.lean`)."""
+    return re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', _read("Ontology/Ids.lean").split("primitiveIds")[0], re.M)

@@ -43,10 +43,10 @@ def τ : Trace := decoded.toOption.getD []
 #guard τ[1]!.links = [(3, 1)]
 #guard (τ[0]!.assumption "asm.business_district") = some true
 
--- the drv_condition_in_effect reads the decoded conditions: Monday 07:30 with one occupant
-def c : Derived.Ctx := Derived.Ctx.mk' τ {}
-#guard (Derived.drv_condition_in_effect c 9 1)[0]!.v = .u                      -- occupants not observed
-#guard (Derived.drv_condition_in_effect c 9 2)[0]!.v = .u
+-- the conditions primitive reads the decoded conditions: Monday 07:30 with one occupant
+def c : Primitives.Ctx := Primitives.Ctx.mk' τ {}
+#guard (Primitives.prim_conditions_hold c 9 1)[0]!.v = .u                      -- occupants not observed
+#guard (Primitives.prim_conditions_hold c 9 2)[0]!.v = .u
 #guard τ[0]!.occupancyObserved = [1, 2]                                        -- `true` means every user in the scene
 #guard (parse trace "{\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1}], \"occupancy_observed\": [1]}]}").toOption.map (·.head!.occupancyObserved) = some [1]
 
@@ -104,7 +104,7 @@ def sc : Scenario :=
     manifest := Manifest.full "test", grounding := [("x", 2)], expected := .compliant, window := some (1000, 5000) }
 #guard (sc.run Tests.Grounding.rules).isOk
 #guard match ({ sc with window := none } : Scenario).run Tests.Grounding.rules with
-  | .error e => e.startsWith "truck stands: expected compliant, got unknown [window_truncated:drv_stopped]"
+  | .error e => e.startsWith "truck stands: expected compliant, got unknown [window_truncated:holdsFor]"
   | .ok _ => false
 #guard match ({ sc with expected := .violated } : Scenario).run Tests.Grounding.rules with
   | .error e => e.startsWith "truck stands: expected violated, got compliant"

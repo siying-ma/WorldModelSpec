@@ -82,7 +82,7 @@ theorem verdictAt_compliant (app obl : R) (ha : app.v = .t) (ho : obl.v = .t) : 
 namespace Rule
 /-- The formulas a rule consists of, class formulas first. -/
 def formulas (r : Rule) : List Formula := r.binders.map (·.cls) ++ [r.applicability, r.obligation]
-/-- Atom and derived-concept names the rule reads. -/
+/-- Atom, primitive and concept names the rule reads. -/
 def atoms (r : Rule) : List String := (r.formulas.flatMap Formula.atoms).eraseDups
 /-- Reading parameters the rule names. -/
 def params (r : Rule) : List ParamName := (r.formulas.flatMap Formula.params).eraseDups

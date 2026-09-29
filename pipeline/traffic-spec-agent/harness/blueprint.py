@@ -1,4 +1,5 @@
-"""The blueprint record a plan session writes per node (design §2)."""
+"""The blueprint records a plan session writes: one per node (design §2) and one per concept
+(DERIVED_CONCEPTS_PLAN §5.1), in the same file, told apart by `node_id` / `concept_id`."""
 from __future__ import annotations
 import json
 from dataclasses import dataclass, field
@@ -17,7 +18,12 @@ VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates"
 #: How a composed rule enters this node: its applicability negated (exception), its applicability
 #: (condition), or its compliance (compliance: "lawfully", "in the manner prescribed").
 AS_KINDS = {"exception", "condition", "compliance"}
-GAP_KINDS = {"atom", "value", "derived", "operator", "definition", "unresolvable"}
+GAP_KINDS = {"atom", "value", "primitive", "operator", "definition", "unresolvable"}
+#: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
+CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
+CONCEPT_KINDS = {"formula", "quantity"}
+ARG_SORTS = {"track", "literal", "nat"}
+CONCEPT_REQUIRED = ("concept_id", "kind", "contract", "args", "params", "elements", "scenarios")
 
 
 def concepts_of(op: dict) -> list[str]:
@@ -83,18 +89,69 @@ class Node:
         return self.raw.get("literals", [])
 
 
-def load(path: Path) -> list[Node]:
+@dataclass
+class ConceptRecord:
+    raw: dict[str, Any]
+
+    def get(self, k: str, default: Any = None) -> Any:
+        return self.raw.get(k, default)
+
+    @property
+    def id(self) -> str:
+        return self.raw["concept_id"]
+
+    def lean_name(self) -> str:
+        return self.id.replace(".", "_")
+
+    def args(self) -> list[dict]:
+        return list(self.raw.get("args", []))
+
+    def params(self) -> list[dict]:
+        return list(self.raw.get("params", []))
+
+    def elements(self) -> list[dict]:
+        return list(self.raw.get("elements", []))
+
+    def claimed_atoms(self) -> set[str]:
+        """Atom ids the contract's elements map to (attribute values kept as `atom=value`)."""
+        return {a for e in self.elements() for a in e.get("atoms", [])}
+
+    def claimed_names(self) -> set[str]:
+        return {c.split("=")[0].replace(".", "_") for c in self.claimed_atoms()}
+
+    def refs(self) -> set[str]:
+        """Concept ids the elements map to."""
+        return {c for e in self.elements() for c in e.get("concepts", [])}
+
+    def literals(self) -> list[dict]:
+        return list(self.raw.get("literals", []))
+
+    def used_by(self) -> list[str]:
+        return list(self.raw.get("used_by", []))
+
+
+def _records(path: Path) -> list[dict]:
     if not path.exists():
         return []
-    nodes = []
+    out = []
     for i, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
         if not line.strip():
             continue
         try:
-            nodes.append(Node(json.loads(line)))
+            out.append(json.loads(line))
         except json.JSONDecodeError as e:
             raise ValueError(f"{path}:{i + 1}: not JSON: {e}")
-    return nodes
+    return out
+
+
+def load(path: Path) -> list[Node]:
+    """The node records of a blueprint file."""
+    return [Node(r) for r in _records(path) if "node_id" in r]
+
+
+def load_concepts(path: Path) -> list[ConceptRecord]:
+    """The concept records of a blueprint file."""
+    return [ConceptRecord(r) for r in _records(path) if "concept_id" in r and "node_id" not in r]
 
 
 def dump(path: Path, nodes: list[Node]) -> None:

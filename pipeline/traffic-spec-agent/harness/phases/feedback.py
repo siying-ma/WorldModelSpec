@@ -8,7 +8,8 @@ from ..ledger import Ledger
 from ..state import Run
 
 
-def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict]) -> None:
+def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict],
+                   concept_ledger=None) -> None:
     lines = [f"# Feedback from iteration {run.iteration}", ""]
     lines += notes or ["(nothing to report)"]
     lines += ["", "## Laws by state", ""]
@@ -24,6 +25,15 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         lines += ["", "## Laws closed as failed this iteration (reopen with `python -m harness reopen`)", ""]
         for e in failed:
             lines.append(f"- `{e.law}`: " + "; ".join(e.reasons[:6]))
+    if concept_ledger is not None and concept_ledger.entries:
+        lines += ["", "## Concepts by state", ""]
+        for state, count in sorted(concept_ledger.counts().items()):
+            lines.append(f"- {state}: {count}")
+        returned_c = [e for e in concept_ledger.entries.values() if e.state in ("returned", "failed")]
+        if returned_c:
+            lines += ["", "## Returned concepts and why", ""]
+            for e in returned_c:
+                lines.append(f"- `{e.concept}` ({e.state}, attempt {e.attempts}; used by {', '.join(e.used_by) or 'no node'}): " + "; ".join(e.reasons[:6]))
     if gaps_filed:
         lines += ["", "## Gaps filed this iteration", ""]
         for g in gaps_filed:
@@ -32,5 +42,7 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
     to_user_lines = [l for l in to_user if l]
     paths.TO_USER.write_text(("\n".join(f"- {l}" for l in to_user_lines) + "\n") if to_user_lines else "", encoding="utf-8")
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "laws": ledger.counts(),
-               "accepted_nodes": len(run.accepted_nodes), "gaps_total": len(GapLedger(paths.GAP_LEDGER).rows)}
+               "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
+               "concepts": concept_ledger.counts() if concept_ledger is not None else {},
+               "gaps_total": len(GapLedger(paths.GAP_LEDGER).rows)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")

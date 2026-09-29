@@ -3,7 +3,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from . import nodeid
-from .blueprint import Node, REQUIRED, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of, normalize_verdict
+from .blueprint import (Node, ConceptRecord, REQUIRED, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of,
+                        normalize_verdict, CONCEPT_REQUIRED, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
 from .units import FACTORS
 from .corpus import Law
 from .mapping import MappingIndex, normalize
@@ -78,9 +79,11 @@ def check_accounting(node: Node) -> list[str]:
     return errs
 
 
-def check_closed_set(node: Node, onto: Ontology) -> tuple[list[str], list[dict]]:
-    """Unknown ids: a gap when the node proposes one for that span, a rejection otherwise."""
+def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = None) -> tuple[list[str], list[dict]]:
+    """Unknown ids: a gap when the node proposes one for that span, a rejection otherwise. A concept
+    id is known when it is accepted (this run's or the base run's) or proposed in this plan."""
     errs, gaps = [], []
+    concept_ids = concept_ids or set()
     proposed = {g.get("span") for g in node.gaps()}
     for e in node.get("elements", []):
         for ident in list(e.get("atoms", [])) + list(e.get("derived", [])):
@@ -88,17 +91,20 @@ def check_closed_set(node: Node, onto: Ontology) -> tuple[list[str], list[dict]]
                 if "=" not in ident:
                     errs.append(f"{node.id}: `ru.aggregate` names no word on span {e.get('span')} (write `ru.aggregate=<word>`)")
                 continue          # the word itself is checked against the reading
-            if not onto.knows(ident):
+            if not onto.knows(ident) and ident not in concept_ids:
                 if e.get("span") in proposed:
                     continue
-                errs.append(f"{node.id}: `{ident}` is not in the ontology and no gap is proposed for span {e.get('span')}")
+                if nodeid.is_concept_id(ident):
+                    errs.append(f"{node.id}: concept `{ident}` is neither accepted nor proposed in this plan (a concept record for span {e.get('span')})")
+                else:
+                    errs.append(f"{node.id}: `{ident}` is not in the ontology and no gap is proposed for span {e.get('span')}")
     for o in node.get("operationalizations", []):
         cs = concepts_of(o)
         if not cs:
             errs.append(f"{node.id}: operationalization on span {o.get('span')} names no concept")
         for c in cs:
-            if c not in onto.derived_ids and c not in onto.atom_ids:
-                errs.append(f"{node.id}: operationalization concept `{c}` is neither a derived concept nor an atom")
+            if c not in onto.primitive_ids and c not in onto.atom_ids and c not in concept_ids:
+                errs.append(f"{node.id}: operationalization concept `{c}` is neither a concept, a primitive nor an atom")
     for g in node.gaps():
         if g.get("kind") not in GAP_KINDS:
             errs.append(f"{node.id}: gap kind {g.get('kind')!r} not in {sorted(GAP_KINDS)}")
@@ -150,16 +156,39 @@ def check_anchoring(node: Node) -> list[str]:
     return []
 
 
-def readable_atoms(node: Node, onto: Ontology) -> set[str]:
-    """Atoms the node reads: those it claims, plus those its claimed derived concepts read."""
+def readable_atoms(node: Node, onto: Ontology, concept_atoms: dict[str, set[str]] | None = None) -> set[str]:
+    """Atoms the node reads: those it claims, those its claimed primitives read, and those its
+    claimed concepts read (`concept_atoms`, id → atom ids)."""
     from . import surface
-    reads = surface.derived_reads()
+    reads = surface.primitive_reads()
     out = {c.split("=")[0] for c in node.claimed_atoms() if c.split("=")[0] in onto.atom_ids}
     for c in node.claimed_atoms():
         for lean_name in reads.get(c.replace(".", "_"), []):
             aid = surface.atom_id_of(lean_name, onto.atom_ids)
             if aid:
                 out.add(aid)
+        out |= (concept_atoms or {}).get(c, set())
+    return out
+
+
+def concept_atom_map(onto: Ontology, accepted: dict[str, dict], plan: list[ConceptRecord]) -> dict[str, set[str]]:
+    """Atom ids each concept reads: an accepted concept's recorded `reads`; a planned concept's
+    elements' atoms plus, transitively, those of the concepts it references."""
+    out: dict[str, set[str]] = {cid: set(rec.get("reads", [])) for cid, rec in accepted.items()}
+    planned = {c.id: c for c in plan}
+    def go(cid: str, seen: tuple[str, ...]) -> set[str]:
+        if cid in out:
+            return out[cid]
+        c = planned.get(cid)
+        if c is None or cid in seen:
+            return set()
+        acc = {a.split("=")[0] for a in c.claimed_atoms() if a.split("=")[0] in onto.atom_ids}
+        for r in c.refs():
+            acc |= go(r, seen + (cid,))
+        out[cid] = acc
+        return acc
+    for cid in planned:
+        go(cid, ())
     return out
 
 
@@ -179,7 +208,7 @@ def check_literals(node: Node) -> list[str]:
     return errs
 
 
-def check_scenarios(node: Node, onto: Ontology) -> list[str]:
+def check_scenarios(node: Node, onto: Ontology, concept_atoms: dict[str, set[str]] | None = None) -> list[str]:
     errs = []
     scs = {s.get("name"): s for s in node.get("scenarios", [])}
     for name, exp in SCENARIOS.items():
@@ -194,8 +223,8 @@ def check_scenarios(node: Node, onto: Ontology) -> list[str]:
         masked = blind.get("masked")
         if not isinstance(masked, list) or not masked or not all(isinstance(m, str) for m in masked):
             errs.append(f"{node.id}: the blind scenario's `masked` must be a list of atom ids, got {masked!r}")
-        elif not (set(masked) & readable_atoms(node, onto)):
-            errs.append(f"{node.id}: the blind scenario masks {masked}, none of which the node reads (claimed, or read by a claimed derived concept)")
+        elif not (set(masked) & readable_atoms(node, onto, concept_atoms)):
+            errs.append(f"{node.id}: the blind scenario masks {masked}, none of which the node reads (claimed, or read by a claimed concept)")
     return errs
 
 
@@ -326,8 +355,13 @@ def acyclic(nodes: dict[str, Node]) -> list[str]:
 
 
 def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: Reading,
-             index: MappingIndex, accepted: dict[str, Node], disputes: set[str]) -> list[Outcome]:
+             index: MappingIndex, accepted: dict[str, Node], disputes: set[str],
+             accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None) -> list[Outcome]:
     outcomes: list[Outcome] = []
+    accepted_concepts = accepted_concepts or {}
+    plan_concepts = plan_concepts or []
+    concept_ids = set(accepted_concepts) | {c.id for c in plan_concepts}
+    concept_atoms = concept_atom_map(onto, accepted_concepts, plan_concepts)
     known = dict(accepted); known.update({n.id: n for n in nodes})
     for n in nodes:
         resolve_rule_ids(n, known)
@@ -350,12 +384,12 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
             errs.append(f"{n.id}: the subject binder `{(n.get('subject') or {}).get('binder')}` must come first in `binders`")
         errs += check_segmentation(n, law)
         errs += check_accounting(n)
-        closed_errs, gaps = check_closed_set(n, onto)
+        closed_errs, gaps = check_closed_set(n, onto, concept_ids)
         errs += closed_errs
         std_errs, std_gaps = check_standards(n, reading)
         errs += std_errs; gaps += std_gaps
         errs += check_anchoring(n)
-        errs += check_scenarios(n, onto)
+        errs += check_scenarios(n, onto, concept_atoms)
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)
         errs += check_decomposition(by_law[law.id], law)
@@ -372,3 +406,179 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         else:
             outcomes.append(Outcome(n, ACCEPT))
     return outcomes
+
+
+# ---------------------------------------------------------------------------------------------
+# Concepts (DERIVED_CONCEPTS_PLAN §5.1, §6, §7.4, §8)
+# ---------------------------------------------------------------------------------------------
+_IDENT = re.compile(r"^[a-z][a-z0-9_]*$")
+
+
+@dataclass
+class ConceptOutcome:
+    concept: ConceptRecord
+    kind: str                     # accept | return
+    reasons: list[str] = field(default_factory=list)
+
+
+def _ws(text: str) -> str:
+    return " ".join(str(text or "").split())
+
+
+def concept_refs_acyclic(plan: list[ConceptRecord], accepted: dict[str, dict]) -> list[str]:
+    graph = {c.id: sorted(c.refs()) for c in plan}
+    graph.update({cid: sorted(rec.get("refs", [])) for cid, rec in accepted.items() if cid not in graph})
+    state: dict[str, int] = {}
+    cycles: list[str] = []
+
+    def visit(u: str, stack: list[str]) -> None:
+        state[u] = 1
+        for v in graph.get(u, []):
+            if v not in graph:
+                continue
+            if state.get(v) == 1:
+                cycles.append(" → ".join(stack + [u, v]))
+            elif state.get(v) is None:
+                visit(v, stack + [u])
+        state[u] = 2
+
+    for u in graph:
+        if state.get(u) is None:
+            visit(u, [])
+    return cycles
+
+
+def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accepted: dict[str, dict],
+                  plan_ids: set[str], nodes: dict[str, Node], concept_atoms: dict[str, set[str]], mode: str) -> list[str]:
+    errs = [f"{c.id}: missing field `{k}`" for k in CONCEPT_REQUIRED if k not in c.raw]
+    if errs:
+        return errs
+    cid = c.id
+    if not nodeid.is_concept_id(cid):
+        errs.append(f"{cid}: not of the form drv.<family>.<name> with family in {list(nodeid.CONCEPT_FAMILIES)} and a snake_case name (digits only in a final `_v<n>`)")
+    if cid in accepted:
+        errs.append(f"{cid}: already accepted; reuse it, or supersede it as `{cid.split('_v')[0]}_v<n+1>` with `supersedes` and a counterexample")
+    if c.get("kind") not in CONCEPT_KINDS:
+        errs.append(f"{cid}: kind {c.get('kind')!r} not in {sorted(CONCEPT_KINDS)}")
+    contract = _ws(c.get("contract"))
+    if not contract:
+        errs.append(f"{cid}: empty contract")
+    d = c.get("definition")
+    if d:
+        if d not in defs:
+            errs.append(f"{cid}: definition `{d}` is not among the definitions given")
+        elif contract != _ws(defs[d].get("text", "")):
+            errs.append(f"{cid}: a definition-born contract is the definition's text verbatim (`{d}`)")
+    # formals
+    names = [a.get("name") for a in c.args()]
+    if len(set(names)) != len(names):
+        errs.append(f"{cid}: duplicate formal argument")
+    for a in c.args():
+        n, s = a.get("name"), a.get("sort")
+        if not n or not _IDENT.match(str(n)):
+            errs.append(f"{cid}: formal `{n}` is not a snake_case identifier")
+        if s not in ARG_SORTS:
+            errs.append(f"{cid}: formal `{n}` has sort {s!r}, not one of {sorted(ARG_SORTS)}")
+        if s == "literal" and not (isinstance(a.get("values"), list) and a["values"] and all(isinstance(v, str) for v in a["values"])):
+            errs.append(f"{cid}: literal formal `{n}` needs `values`, the admissible spellings")
+    pnames = [p.get("name") for p in c.params()]
+    if len(set(pnames)) != len(pnames):
+        errs.append(f"{cid}: duplicate formal parameter")
+    for p in c.params():
+        n = p.get("name")
+        if not n or not _IDENT.match(str(n)):
+            errs.append(f"{cid}: parameter `{n}` is not a snake_case identifier (a formal, never a reading's `p.…`)")
+        if p.get("unit") not in FACTORS:
+            errs.append(f"{cid}: parameter `{n}` has unit {p.get('unit')!r}; use one of {sorted(FACTORS)}")
+        if not _ws(p.get("meaning")):
+            errs.append(f"{cid}: parameter `{n}` states no meaning")
+    # elements: contract words → atoms and concepts
+    if not c.elements():
+        errs.append(f"{cid}: no elements: the contract's words map to nothing")
+    for e in c.elements():
+        span = _ws(e.get("span"))
+        if not span or span not in contract:
+            errs.append(f"{cid}: element span {e.get('span')!r} is not a verbatim part of the contract")
+        for ident in e.get("atoms", []):
+            if ident.startswith("ru.aggregate"):
+                continue
+            if not onto.knows(ident):
+                errs.append(f"{cid}: `{ident}` is not in the ontology")
+        for r in e.get("concepts", []):
+            if r == cid:
+                errs.append(f"{cid}: references itself")
+            elif r not in accepted and r not in plan_ids:
+                errs.append(f"{cid}: references `{r}`, neither accepted nor in this plan")
+        if not _ws(e.get("justification")):
+            errs.append(f"{cid}: element on {e.get('span')!r} has no justification")
+    for r in c.get("residues", []):
+        if not _ws(r.get("why")):
+            errs.append(f"{cid}: a residue states no `why`")
+    # literals
+    for lit in c.literals():
+        if not isinstance(lit.get("value"), (int, float)) or lit.get("unit") not in FACTORS or not _ws(lit.get("why")):
+            errs.append(f"{cid}: a literal needs a numeric value, a unit in {sorted(FACTORS)} and a `why` (a geometric constant, or a figure the definition states)")
+    # scenarios
+    scs = {s.get("name"): s for s in c.get("scenarios", [])}
+    for name, exp in CONCEPT_SCENARIOS.items():
+        if name not in scs:
+            errs.append(f"{cid}: scenario `{name}` missing")
+        elif normalize_verdict(scs[name].get("expected")) != exp:
+            errs.append(f"{cid}: scenario `{name}` expects {scs[name].get('expected')!r}, must be {exp!r}")
+        else:
+            scs[name]["expected"] = exp
+    blind = scs.get("blind", {})
+    if blind:
+        masked = blind.get("masked")
+        if not isinstance(masked, list) or not masked:
+            errs.append(f"{cid}: the blind scenario's `masked` must be a non-empty list of atom ids")
+        elif not (set(masked) & concept_atoms.get(cid, set())):
+            errs.append(f"{cid}: the blind scenario masks {masked}, none of which the concept reads")
+    # users
+    for nid in c.used_by():
+        n = nodes.get(nid)
+        if n is None:
+            errs.append(f"{cid}: `used_by` names `{nid}`, not a node of this plan")
+        elif cid not in {d for e in n.get("elements", []) for d in e.get("derived", [])} | {x for o in n.get("operationalizations", []) for x in concepts_of(o)}:
+            errs.append(f"{cid}: node `{nid}` does not claim it")
+    # supersession
+    old = c.get("supersedes")
+    if old:
+        if mode == "test":
+            errs.append(f"{cid}: a test run adds concepts and supersedes none; record the defect of `{old}` instead")
+        if old not in accepted:
+            errs.append(f"{cid}: supersedes `{old}`, which is not an accepted concept")
+        elif _ws(accepted[old].get("contract")) != contract:
+            errs.append(f"{cid}: a supersession keeps the contract; a different contract is a new concept under a new name")
+        ce = c.get("counterexample")
+        if not isinstance(ce, dict) or normalize_verdict(ce.get("expected", "")) not in ("compliant", "violated") or not _ws(ce.get("narrative")):
+            errs.append(f"{cid}: a supersession carries a `counterexample` scenario (narrative, expected compliant|violated) on which the old body contradicts the contract")
+    # near-duplicates of the catalogue: same sorts and reads, no stated difference
+    sorts = sorted((a.get("sort") or "") for a in c.args())
+    reads = concept_atoms.get(cid, set())
+    for oid, rec in accepted.items():
+        if oid == old:
+            continue
+        if sorted(a.get("sort", "") for a in rec.get("args", [])) == sorts and set(rec.get("reads", [])) == reads and reads:
+            if not _ws((c.get("differs_from") or {}).get("why")) or (c.get("differs_from") or {}).get("concept") != oid:
+                errs.append(f"{cid}: same argument sorts and the same atoms as accepted `{oid}`; reuse it, or state `differs_from: {{concept, why}}`")
+    return errs
+
+
+def validate_concepts(plan: list[ConceptRecord], defs: list[dict], onto: Ontology, accepted: dict[str, dict],
+                      nodes: list[Node], mode: str = "train") -> list[ConceptOutcome]:
+    by_def = {d.get("id"): d for d in defs}
+    nodes_by_id = {n.id: n for n in nodes}
+    plan_ids = {c.id for c in plan}
+    ids = [c.id for c in plan]
+    dup = {i for i in ids if ids.count(i) > 1}
+    concept_atoms = concept_atom_map(onto, accepted, plan)
+    cycles = concept_refs_acyclic(plan, accepted)
+    out = []
+    for c in plan:
+        errs = check_concept(c, by_def, onto, accepted, plan_ids, nodes_by_id, concept_atoms, mode)
+        if c.id in dup:
+            errs.append(f"{c.id}: proposed twice in this plan")
+        errs += [f"concept cycle: {x}" for x in cycles if c.id in x]
+        out.append(ConceptOutcome(c, RETURN if errs else ACCEPT, errs))
+    return out

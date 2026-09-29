@@ -160,8 +160,11 @@ class Doctor:
         sys.path.insert(0, str(self.repo))
         owners = {"plan.md": ("harness.phases.plan", "PLACEHOLDERS"),
                   "code.md": ("harness.phases.code", "PLACEHOLDERS"),
+                  "code_concept.md": ("harness.phases.code", "PLACEHOLDERS_CONCEPT"),
                   "blind_read.md": ("harness.phases.validate", "PLACEHOLDERS_BLIND"),
-                  "alignment_judge.md": ("harness.phases.validate", "PLACEHOLDERS_JUDGE")}
+                  "alignment_judge.md": ("harness.phases.validate", "PLACEHOLDERS_JUDGE"),
+                  "concept_blind.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_BLIND"),
+                  "concept_judge.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_JUDGE")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():

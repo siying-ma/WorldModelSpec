@@ -78,14 +78,14 @@ def canonicalScene (cm : List (TrackId × TrackId)) (s : Scene) : Scene :=
 -- ---------------------------------------------------------------------------------------------
 structure Setup where
   rules : List Rule
-  d : Derived.Ctx
+  d : Primitives.Ctx
   gap : Q
   cm : List (TrackId × TrackId) := []
 
 def Setup.mk' (rules : List Rule) (τ : Trace) (ρ : Reading) (gap : Q) : Setup :=
   let arr := τ.toArray
   let cm := canonMap arr gap
-  { rules := rules, d := Derived.Ctx.mk' (τ.map (canonicalScene cm)) ρ, gap := gap, cm := cm }
+  { rules := rules, d := Primitives.Ctx.mk' (τ.map (canonicalScene cm)) ρ, gap := gap, cm := cm }
 
 def Setup.n (S : Setup) : Nat := S.d.n
 def Setup.scenes (S : Setup) : Array Scene := S.d.scenes

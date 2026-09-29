@@ -8,19 +8,20 @@ open TrafficSpec Units TrafficSpec.Semantics TrafficSpec.Grounding TrafficSpec.T
 def X : Arg := .var "x"
 def Y : Arg := .var "y"
 def mv (v : String) : Formula := .atom "ru_motor_vehicle" [.var v] []
+def timeGap : Term := .div (.measure "rel_surface_gap" [X, Y, .lit "longitudinal"]) (.measure "kin_speed" [X])
 def rule : Rule :=
   { id := "test/gap"
     laws := []
     binders := [⟨"x", mv "x"⟩, ⟨"y", mv "y"⟩]
-    applicability := .derived "drv_following" [X, Y] [.lit (metres 30) .metre]
-    obligation := .cmp (.quantity "drv_time_gap" [X, Y] []) .ge (.lit (Q.mk' 15 10) .second)
+    applicability := .and (.atom "rel_ahead_in_lane" [Y, X] []) (.cmp (.measure "rel_surface_gap" [X, Y, .lit "longitudinal"]) .le (.lit (metres 30) .metre))
+    obligation := .cmp timeGap .ge (.lit (Q.mk' 15 10) .second)
     residues := ["the text's standard is quantified by the reading"] }
 def truckRule : Rule :=
   { id := "test/truck_stop"
     laws := []
     binders := [⟨"x", .atom "ru_truck" [X] []⟩]
     applicability := .tt
-    obligation := .derived "drv_stopped" [X] [.param "p.stop_speed", .lit (seconds 1) .second] }
+    obligation := .holdsFor .time (.lit (seconds 1) .second) "x" (.cmp (.measure "kin_speed" [X]) .le (.param "p.stop_speed")) }
 def composed : Rule :=
   { id := "test/both"
     laws := []
@@ -30,7 +31,7 @@ def composed : Rule :=
 def rules : List Rule := [rule, truckRule, composed]
 
 #guard rule.wellFormed
-#guard rule.atoms = ["ru_motor_vehicle", "drv_following", "drv_time_gap"]
+#guard rule.atoms = ["ru_motor_vehicle", "rel_ahead_in_lane", "rel_surface_gap", "kin_speed"]
 #guard Rule.atomIds rules rule = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed"]
 #guard Rule.atomIds rules composed = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed", "ru.truck"]
 #guard atomIdOf "st_region_geometry_distance" = some "st.region_geometry"
@@ -41,19 +42,19 @@ def rules : List Rule := [rule, truckRule, composed]
 #guard (Rule.check rules { rule with applicability := .atom "ru_motor_vehicle" [X, Y] [] }).length = 1
 #guard (Rule.check rules { rule with applicability := .atom "ru_motor_vehicle" [.var "z"] [] }).length = 1
 #guard (Rule.check rules { rule with obligation := .atom "dev_traffic_signal_shows" [.nat 9, .lit "purple"] [] }).length = 1
-#guard (Rule.check rules { rule with obligation := .derived "drv_stopped" [X] [.measure "kin_speed" [X], .lit (seconds 1) .second] }).length = 1
+#guard (Rule.check rules { rule with obligation := .cmp (.quantity "prim_heading_change" [X] [.measure "kin_speed" [X]]) .ge (.lit (degrees 1) .degree) }).length = 1
 #guard (Rule.check rules { rule with obligation := .rule "nowhere/rule" [("x", "x")] }).length = 1
-#guard (Rule.check rules { rule with obligation := .existsRegion .lane "r" (.atom "rel_occupies" [X, .var "r"] []) }) = []
+#guard (Rule.check rules { rule with obligation := .existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] []) }) = []
 #guard Rule.checkReading rules rule ρ = []
 #guard Rule.checkReading rules truckRule {} = ["test/truck_stop: parameter `p.stop_speed` is not in the reading"]
 #guard Rule.checkReading rules composed {} = ["test/truck_stop: parameter `p.stop_speed` is not in the reading"]   -- through the composition
 -- sorts: a region variable where a track is wanted, a track where a region is wanted, a literal where an entity is wanted
-#guard (Rule.check rules { rule with obligation := .existsRegion .lane "r" (.atom "ru_pedestrian" [.var "r"] []) }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsRegion (.lit "lane") "r" (.atom "ru_pedestrian" [.var "r"] []) }).length = 1
 #guard (Rule.check rules { rule with obligation := .atom "rel_occupies" [X, Y] [] }).length = 1
 #guard (Rule.check rules { rule with obligation := .atom "rel_occupies" [.lit "lane", X] [] }).length = 1
-#guard (Rule.check rules { rule with obligation := .existsDevice .trafficSignal "d" (.derived "drv_condition_in_effect" [.var "d", X] []) }) = []
-#guard (Rule.check rules { rule with obligation := .derived "drv_overtaking" [X, Y] [] }).length = 1          -- the cosine tolerance is a parameter
-#guard (Rule.check rules { rule with obligation := .derived "drv_overtaking" [X, Y] [.lit (Q.mk' 9 10) .ratio] }) = []
+#guard (Rule.check rules { rule with obligation := .existsDevice (.lit "traffic_signal") "d" (.derived "prim_conditions_hold" [.var "d", X] []) }) = []
+#guard (Rule.check rules { rule with obligation := .derived "prim_closest_approach_within" [X, Y] [] }).length = 1          -- the horizon is a parameter
+#guard (Rule.check rules { rule with obligation := .derived "prim_closest_approach_within" [X, Y] [.lit (seconds 5) .second] }) = []
 -- compositions must map the composed rule's binders, and all of them
 #guard (Rule.check rules { composed with obligation := .rule "test/gap" [("x", "x"), ("z", "y")] }).length = 2
 #guard (Rule.check rules { composed with obligation := .rule "test/gap" [("x", "x")] }).length = 1
@@ -69,7 +70,7 @@ def full : Manifest := Manifest.full "test" (seconds 2)
 #guard support rules rule full = .supported
 def noSpeed : Manifest := { full with entries := full.entries.map fun (id, c) => if id == "kin.speed" then (id, .absent) else (id, c) }
 #guard support rules rule noSpeed = .partially ["kin.speed"]        -- the obligation also reads the surface gap
-#guard support rules truckRule noSpeed = .unsupported ["kin.speed"] -- drv_stopped reads nothing else
+#guard support rules truckRule noSpeed = .unsupported ["kin.speed"] -- the window reads nothing else
 #guard support rules composed noSpeed = .unsupported ["kin.speed"]  -- composes an unsupported rule
 def noGap : Manifest := { full with entries := full.entries.map fun (id, c) => if id == "rel.surface_gap" then (id, .absent) else (id, c) }
 #guard support rules rule noGap = .partially ["rel.surface_gap"]
@@ -95,8 +96,8 @@ def g12 : Grounding := ⟨[("x", 1), ("y", 2)]⟩
 def g21 : Grounding := ⟨[("x", 2), ("y", 1)]⟩
 -- gaps 25.5/10, 20.5/8, 16.5/6, 13.5/4, 11.5/2 s all exceed 1.5 s; then x stands and the gap is undefined
 #guard (timeline S rule g12).toList.map (·.2) =
-  List.replicate 5 Verdict.compliant ++ List.replicate 4 (Verdict.unknown [.divisionByZero "drv_time_gap"])
-def strict : Rule := { rule with obligation := .cmp (.quantity "drv_time_gap" [X, Y] []) .ge (.lit (seconds 3) .second) }
+  List.replicate 5 Verdict.compliant ++ List.replicate 4 (Verdict.unknown [.divisionByZero "div"])
+def strict : Rule := { rule with obligation := .cmp timeGap .ge (.lit (seconds 3) .second) }
 #guard ((timeline S strict g12).toList.map (·.2)).take 3 = [Verdict.violated, Verdict.violated, Verdict.violated]
 #guard (timeline S rule g21).toList.map (·.2) = List.replicate 9 Verdict.notApplicable   -- y=1 is not ahead of x=2
 #guard episode ((timeline S rule g21).toList.map (·.2)) = .notApplicable
@@ -110,10 +111,10 @@ def strict : Rule := { rule with obligation := .cmp (.quantity "drv_time_gap" [X
 
 -- composition: both rules through the callback, binders remapped
 #guard (((timeline S composed g12).toList.map (·.2)).drop 2).take 3 = List.replicate 3 Verdict.compliant
-#guard Grounding.verdictAt S composed g12 0 = Verdict.unknown [.windowTruncated "drv_stopped"]
-#guard Grounding.verdictAt S composed g12 8 = Verdict.unknown [.divisionByZero "drv_time_gap"]
+#guard Grounding.verdictAt S composed g12 0 = Verdict.unknown [.windowTruncated "holdsFor"]
+#guard Grounding.verdictAt S composed g12 8 = Verdict.unknown [.divisionByZero "div"]
 #guard Grounding.verdictAt S truckRule ⟨[("x", 2)]⟩ 8 = Verdict.compliant
-#guard Grounding.verdictAt S truckRule ⟨[("x", 2)]⟩ 0 = Verdict.unknown [.windowTruncated "drv_stopped"]
+#guard Grounding.verdictAt S truckRule ⟨[("x", 2)]⟩ 0 = Verdict.unknown [.windowTruncated "holdsFor"]
 
 -- a composed rule's applicability (for exceptions and conditions), and a user quantifier
 def applies : Rule := { composed with id := "test/applies", obligation := .ruleApplies "test/gap" [("x", "x"), ("y", "y")] }
@@ -146,7 +147,7 @@ def Sb : Setup := Setup.mk' rules τb ρ (Q.mk' 15 10)     -- the break spans 10
 #guard Sb.span 1 = some (0, 8)
 #guard (groundings Sb rule).length = 2
 #guard (((timeline Sb rule g12).toList.map (·.2)).drop 2).take 4 =
-  [Verdict.compliant, Verdict.unknown [.identityGap 1], Verdict.unknown [.identityGap 1], Verdict.unknown [.divisionByZero "drv_time_gap"]]
+  [Verdict.compliant, Verdict.unknown [.identityGap 1], Verdict.unknown [.identityGap 1], Verdict.unknown [.divisionByZero "div"]]
 -- with a gap the source does not bridge, 5 is a new party and 1 leaves the scene; 1 and 5 are
 -- never co-present, so no grounding pairs them
 def Sc : Setup := Setup.mk' rules τb ρ (seconds 1)
@@ -163,7 +164,7 @@ def text : String := Monitor.renderText rep
 #guard (text.splitOn "\n").any (·.startsWith "SOURCE\ttest\tinstants=9\tgap=2")
 #guard (text.splitOn "\n").any (· == "GROUND\ttest/gap\tx=2,y=1\tnot_applicable")
 #guard (text.splitOn "\n").any (· == "TL\ttest/gap\tx=1,y=2\t2500\t4000\tunknown")
-#guard (text.splitOn "\n").any (· == "UNK\ttest/gap\tx=1,y=2\tdivision_by_zero:drv_time_gap\t4")
+#guard (text.splitOn "\n").any (· == "UNK\ttest/gap\tx=1,y=2\tdivision_by_zero:div\t4")
 #guard (text.splitOn "\n").any (·.startsWith "SUMMARY\tconcrete\trules=3\tsupported=3\tpartial=0\tunsupported=0\tlive=3")
 #guard (text.splitOn "\n").any (·.startsWith "SUMMARY\tsurrogate\trules=0")
 def repNoSpeed : Monitor.Report := Monitor.check rules τ ρ noSpeed

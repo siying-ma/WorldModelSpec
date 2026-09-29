@@ -6,8 +6,8 @@ it, and names both on failure:
 - the `Ontology/*.lean` files on disk are exactly what `gen_ontology` produces from `ATOMS.md`;
 - every atom id of `ATOMS.md` has one `def <family>_<name>` in `Atoms.lean`, every `def` there is
   an atom or an attribute accessor of one, and every name is dispatched by `Semantics.lean`;
-- every `drv.*` id has one `def drv_*` in `Derived.lean`, and `Derived.derivedNames` and
-  `Derived.reads` list exactly those;
+- every `prim.*` id has one `def prim_*` in `Primitives.lean`, and `Primitives.primitiveNames` and
+  `Primitives.reads` list exactly those;
 - rule files import only the whitelisted Core modules;
 - every registered manifest is complete over the atom ids.
 
@@ -31,6 +31,8 @@ RULE_IMPORT_WHITELIST = {
     "TrafficSpec.Core.Ontology.Device", "TrafficSpec.Core.Ontology.Signal",
     "TrafficSpec.Core.Ontology.Ids",
 }
+#: Modules a concept file may import: the concept record and the language it is written in.
+CONCEPT_IMPORT_WHITELIST = {"TrafficSpec.Core.Concept"}
 
 
 def _def_name(atom_id: str) -> str:
@@ -45,10 +47,10 @@ class LibraryV2Checks:
 
     def _ids(self) -> tuple[list[str], list[str]]:
         text = (self.core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")
-        atoms_part, _, derived_part = text.partition("def derivedIds")
+        atoms_part, _, prim_part = text.partition("def primitiveIds")
         atoms = _nonempty(re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', atoms_part, re.M), "atomIds")
-        derived = _nonempty(re.findall(r'^\s*"(drv\.[a-z_]+)"', derived_part, re.M), "derivedIds")
-        return atoms, derived
+        prims = _nonempty(re.findall(r'^\s*"(prim\.[a-z_]+)"', prim_part, re.M), "primitiveIds")
+        return atoms, prims
 
     def ontology_generated_in_sync(self) -> Result:
         src = ("ontology/ATOMS.md → scripts/gen_ontology.py",
@@ -93,7 +95,7 @@ class LibraryV2Checks:
         full_core = full_core if (full_core / "Atoms.lean").exists() else self.core   # before any swap the Core holds the full files
         full_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (full_core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")))
         train_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (out / "Ids.lean").read_text(encoding="utf-8")))
-        expected_gone = set(split["test_only_atoms"]) | set(split["test_only_derived"])
+        expected_gone = set(split["test_only_atoms"]) | set(split.get("test_only_primitives", []))
         if (full_ids - train_ids) != expected_gone:
             return Result("training split", FAIL,
                           f"training Ids omit {sorted(full_ids - train_ids)}, split says {sorted(expected_gone)}", src)
@@ -137,44 +139,45 @@ class LibraryV2Checks:
         return Result("atoms bijection", OK,
                       f"{len(atoms)} atom ids ↔ defs; {len(defs) - len(wanted)} accessors", src)
 
-    def derived_bijection(self) -> Result:
-        src = ("library/TrafficSpec/Core/Ontology/Ids.lean → derivedIds",
-               "library/TrafficSpec/Core/Derived.lean → def drv_*, derivedNames, reads")
-        _, derived = self._ids()
-        text = (self.core / "Derived.lean").read_text(encoding="utf-8")
-        defs = set(_nonempty(re.findall(r"^def (drv_\w+)", text, re.M), "Derived.lean defs"))
-        wanted = {_def_name(d) for d in derived}
-        names_block = text.split("def derivedNames")[1].split("]")[0]
-        names = set(_nonempty(re.findall(r'"(drv_\w+)"', names_block), "derivedNames"))
+    def primitive_bijection(self) -> Result:
+        src = ("library/TrafficSpec/Core/Ontology/Ids.lean → primitiveIds",
+               "library/TrafficSpec/Core/Primitives.lean → def prim_*, primitiveNames, reads")
+        _, prims = self._ids()
+        text = (self.core / "Primitives.lean").read_text(encoding="utf-8")
+        defs = set(_nonempty(re.findall(r"^def (prim_\w+)", text, re.M), "Primitives.lean defs"))
+        wanted = {_def_name(d) for d in prims}
+        names_block = text.split("def primitiveNames")[1].split("]")[0]
+        names = set(_nonempty(re.findall(r'"(prim_\w+)"', names_block), "primitiveNames"))
         reads_block = text.split("def reads")[1].split("| _ => []")[0]
-        reads = set(_nonempty(re.findall(r'^\s*\| "(drv_\w+)"', reads_block, re.M), "reads"))
+        reads = set(_nonempty(re.findall(r'"(prim_\w+)"', reads_block), "reads"))
         problems = []
         if wanted - defs:
             problems.append(f"ids without a def: {sorted(wanted - defs)}")
         if defs - wanted:
             problems.append(f"defs without an id: {sorted(defs - wanted)}")
         if names != wanted:
-            problems.append(f"derivedNames ≠ ids: {sorted(names ^ wanted)}")
+            problems.append(f"primitiveNames ≠ ids: {sorted(names ^ wanted)}")
         if reads != wanted:
             problems.append(f"reads table ≠ ids: {sorted(reads ^ wanted)}")
         if problems:
-            return Result("derived bijection", FAIL, "; ".join(problems), src)
-        return Result("derived bijection", OK, f"{len(derived)} derived ids ↔ defs, names, reads", src)
+            return Result("primitive bijection", FAIL, "; ".join(problems), src)
+        return Result("primitive bijection", OK, f"{len(prims)} primitive ids ↔ defs, names, reads", src)
 
     def rule_imports_whitelisted(self) -> Result:
-        src = ("library/TrafficSpec/Rules/**/*.lean → import",
-               "scripts/diagnostics/library_v2.py → RULE_IMPORT_WHITELIST")
+        src = ("library/TrafficSpec/{Rules,Concepts}/**/*.lean → import",
+               "scripts/diagnostics/library_v2.py → RULE_IMPORT_WHITELIST, CONCEPT_IMPORT_WHITELIST")
         rules = sorted((self.lib / "TrafficSpec" / "Rules").rglob("*.lean"))
-        if not rules:
-            return Result("rule imports", SKIP, "no rule files yet", src)
+        concepts = sorted((self.lib / "TrafficSpec" / "Concepts").rglob("*.lean"))
+        if not rules and not concepts:
+            return Result("rule imports", SKIP, "no rule or concept files yet", src)
         bad = []
-        for p in rules:
+        for p, allowed in [(p, RULE_IMPORT_WHITELIST) for p in rules] + [(p, CONCEPT_IMPORT_WHITELIST) for p in concepts]:
             for m in re.finditer(r"^import (\S+)", p.read_text(encoding="utf-8"), re.M):
-                if m.group(1) not in RULE_IMPORT_WHITELIST:
+                if m.group(1) not in allowed:
                     bad.append(f"{p.relative_to(self.lib)} imports {m.group(1)}")
         if bad:
             return Result("rule imports", FAIL, "; ".join(bad[:5]), src)
-        return Result("rule imports", OK, f"{len(rules)} rule files import only the whitelist", src)
+        return Result("rule imports", OK, f"{len(rules)} rule and {len(concepts)} concept files import only their whitelist", src)
 
     def manifests_complete(self) -> Result:
         src = ("library/manifests/*.json → atoms", "library/TrafficSpec/Core/Ontology/Ids.lean → atomIds")
@@ -196,5 +199,5 @@ class LibraryV2Checks:
         return Result("manifests complete", OK, f"{len(files)} manifests cover all {len(atoms)} atom ids", src)
 
     def checks(self):
-        return [self.ontology_generated_in_sync, self.training_split_in_sync, self.atoms_bijection, self.derived_bijection,
+        return [self.ontology_generated_in_sync, self.training_split_in_sync, self.atoms_bijection, self.primitive_bijection,
                 self.rule_imports_whitelisted, self.manifests_complete]

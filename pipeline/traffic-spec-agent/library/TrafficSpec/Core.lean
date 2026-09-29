@@ -1,7 +1,8 @@
 /-
   TrafficSpec.Core — the frozen core.
-  Batches so far: logic, units, time; the ontology enumerations; the world, the atoms,
-  assumptions and parameters.
+  Logic, units, time; the ontology enumerations; the world, the atoms, assumptions and
+  parameters; the language, concepts, rules and their evaluation; grounding, manifests, the
+  monitor, decoding, export; builders and adequacy for the witnesses.
 -/
 import TrafficSpec.Core.Tri
 import TrafficSpec.Core.Units
@@ -18,13 +19,15 @@ import TrafficSpec.Core.Atoms
 import TrafficSpec.Core.Unknown
 import TrafficSpec.Core.Formula
 import TrafficSpec.Core.Temporal
-import TrafficSpec.Core.Derived
+import TrafficSpec.Core.Primitives
 import TrafficSpec.Core.Semantics
 import TrafficSpec.Core.Rule
+import TrafficSpec.Core.Concept
 import TrafficSpec.Core.RuleEval
 import TrafficSpec.Core.Grounding
 import TrafficSpec.Core.Manifest
 import TrafficSpec.Core.Monitor
 import TrafficSpec.Core.Builders
 import TrafficSpec.Core.Decode
+import TrafficSpec.Core.Export
 import TrafficSpec.Core.Adequacy

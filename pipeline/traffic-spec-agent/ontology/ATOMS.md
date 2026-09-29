@@ -23,19 +23,22 @@ scene is a reasonableness. §8 says how a rule gives such a standard a concrete 
 This file is the whole termination rule. It has six clauses; the harness and the review phase
 enforce them, and nothing else adds to or bypasses them.
 
-1. **Closed set.** A rule reads the world only through the atoms of §1–§7 and the derived
-   concepts of §9. An element a clause needs that is not here is an ontology change request,
-   recorded as a residue on the rule; it is never approximated by another atom.
+1. **Closed set.** A rule reads the world only through the atoms of §1–§7, the primitives of
+   §10, and the concepts the pipeline has accepted (§9). An element a clause needs that none of
+   these carries is an ontology change request, recorded as a residue on the rule; it is never
+   approximated by another atom.
 2. **Contract-bound.** An atom expresses only what its contract says. The "not a stand-in for"
    clauses are part of the contract; using an atom for what its contract excludes is a semantic
    error, whatever the data source happens to make convenient.
-3. **Derived once.** Every derived concept (§9) is defined once in Core from atoms, with its
-   parameters exposed. A rule instantiates parameters; it never redefines the concept and never
-   rebuilds it from atoms inline.
+3. **Defined once.** A concept — a manoeuvre, a state of motion, a road configuration — is a
+   node of the pipeline: a contract and a body over atoms, primitives and other concepts, accepted
+   like a rule, called by id and never rebuilt inline. A primitive (§10) is a computation the
+   formula language cannot express, defined once in Core with its parameters exposed. A rule
+   instantiates parameters; it never redefines either.
 4. **A judgement standard is operationalized, never read.** A clause element that is a standard
-   of judgement is mapped, in the plan, to a derived concept of §9 with concrete parameter
-   values, and the mapping is recorded as an *operationalization claim* that names the standard,
-   the derived concept, the values and the convention they come from. A rule that leaves a
+   of judgement is bounded, in the plan, by concepts and primitives with parameters the reading
+   sets, and the bound is recorded as an *operationalization claim* that names the standard,
+   the concepts, the parameters and the convention their values come from. A rule that leaves a
    standard unoperationalized is not a rule; a rule whose only content is an operationalized
    standard is a **surrogate** and is marked as one.
 5. **Legal region classes are assumptions.** Categories a jurisdiction defines administratively
@@ -254,10 +257,11 @@ Traffic law states many duties as standards: a manoeuvre made "with safety", a s
 "when necessary". No scene contains a reasonableness. A specification that bottoms out in such a
 word detects nothing, so a standard is never an atom and never a leaf of a rule.
 
-**Operationalization.** The plan maps every standard in a clause to a derived concept of §9 with
-concrete parameter values, and records an *operationalization claim*: the standard's words, the
-derived concept, the values, and the engineering convention the values come from (a headway
-convention, a gap-acceptance convention, a stopping-distance model, a sight-distance model). The
+**Operationalization.** The plan bounds every standard in a clause by concepts and primitives
+with parameters the reading sets, and records an *operationalization claim*: the standard's
+words, the concepts, the parameters, and the engineering convention their values come from (a
+headway convention, a gap-acceptance convention, a stopping-distance model, a sight-distance
+model). The
 harness rejects a node that maps a standard to nothing; the review phase checks that the claim
 bounds the standard rather than replacing an observable the clause states outright. The same
 claim is what a label uses, so specification and label quantify the standard exactly once.
@@ -269,24 +273,9 @@ care", "careless", "reasonable speed"), any operationalization is a policy choic
 of the text: such a rule is marked **surrogate**, its verdicts are evidence and not a legal
 conclusion, and it is evaluated separately.
 
-Recurring standards and the derived concepts that operationalize them:
-
-| standard, as law phrases it | operationalized by | parameter the claim states |
-|---|---|---|
-| so close as to be a hazard; approaching so closely as to be in danger; hazardous proximity | `drv.time_to_conflict` below a bound at the conflict point | the time bound |
-| safe distance; safely clear; with safety (of a pass, a lane change, a turn) | `rel.surface_gap` (lateral clearance) and `drv.time_gap` after the manoeuvre above bounds; `drv.time_to_conflict` with every affected user above a bound | the clearance, the gap, the time bound |
-| reasonable and prudent following | `drv.time_gap` above a bound | the headway |
-| clearly visible for a sufficient distance; view obstructed | `drv.sight_distance_adequate` at the subject's speed | the stopping- or passing-distance model |
-| as near / as close as practicable | a lateral offset from the edge or line below a bound | the offset |
-| if possible; unless unsafe (a lane change away from a hazard) | `drv.lane_change_feasible` for the adjacent lane | the gap the adjacent lane offers |
-| appropriate signal | `sig.turn_indicator` or `sig.hand_signal` shown over `drv.distance_while` before the manoeuvre | the distance |
-| so slow as to impede | `drv.speed_below_traffic` with `drv.queue_behind` | the speed margin, the queue size, the duration |
-| when necessary to avoid conflict with other traffic (as an excuse for a halt) | `drv.forced_halt` | the gap ahead |
-| otherwise directed by an officer | `drv.officer_directed` | — |
-| expeditious loading or unloading; temporarily | `drv.standing_or_parked` with `sig.door_open` or a passenger exchange, below a duration bound | the duration |
-| suddenly decrease speed | `drv.hard_deceleration` | the deceleration bound |
-| knows or ought to know (of a faster vehicle behind) | replaced by the observable the standard is about: `drv.slower_than_posted` with a following vehicle closing | the closing rate |
-| due care; proper caution; careless; reckless; full attention; intentionally | **surrogate only**: `drv.time_to_conflict` with any user below a bound, or `drv.hard_deceleration`, or contact | the bounds |
+**One kind of standard has only a surrogate.** A standard about the driver's state of mind —
+care, attention, intent, knowledge — is not observable (§9): any operationalization of it is a
+surrogate, whatever concepts bound it.
 
 ## 9. Not atoms
 
@@ -308,53 +297,26 @@ the observable evidence the statute itself offers or carries the residue.
 person lawfully riding") — a reference to another rule's verdict, expressed by rule composition in
 Core, not by an atom.
 
-**Derived concepts** (`drv`) — defined once in Core from atoms, with parameters exposed; rules
-may use them, and a rule never redefines them:
-
-| id | definition sketch | parameters |
-|---|---|---|
-| `drv.stopped` | speed ≤ ε for a span ≥ d | ε, d |
-| `drv.standing_or_parked` | stopped, not in a queue of moving traffic, for ≥ d | d |
-| `drv.moving_off` | stopped then speed > ε | ε |
-| `drv.turning` | heading change ≥ θ within a window w, left or right | θ, w |
-| `drv.u_turn` | heading reversal within a window w while on the roadway | w, tolerance |
-| `drv.lane_change` | the start of a lane change: a lane adjacent to those occupied at the previous observation is entered | — |
-| `drv.lane_change_feasible` | the adjacent lane on a given side has no user within gap g ahead and behind the subject's projected position; undefined while the body occupies several lanes | side, g |
-| `drv.overtaking` | same direction (heading cosine at least a tolerance), b was ahead of a and is behind it | cosine tolerance |
-| `drv.passing_side` | which side the overtaken vehicle was on while the bodies overlapped, same direction | side, cosine tolerance |
-| `drv.entering_intersection` | the footprint crosses the boundary of a region (an intersection, a crosswalk, a zone) from outside to inside | — |
-| `drv.in_intersection` | the footprint overlaps the region | — |
-| `drv.approaching` | the body is within distance d, along its lane, of the region's boundary and moving toward it | d |
-| `drv.crossing_line` | footprint crosses a stop line / crosswalk boundary | — |
-| `drv.cleared_line` | the body's trailing end is at least d past a line or rail | d |
-| `drv.backing` | velocity opposed to heading | — |
-| `drv.following` | same lane, behind, within gap g | g |
-| `drv.time_gap` | `rel.surface_gap` (longitudinal) ÷ follower's speed | — |
-| `drv.time_to_conflict` | time until the subject's and another user's projected paths occupy the same point, at current velocities; infinite when they do not | projection horizon |
-| `drv.meeting` | oncoming vehicles whose paths overlap within t | t |
-| `drv.yields_to` | a slows or stops so that b passes first (a's arrival order after b) | — |
-| `drv.arrival_order` | which of two approaching users reaches the intersection boundary first, with a simultaneity tolerance τ | τ |
-| `drv.wrong_way` | heading opposed to `st.lane_direction` of the lane occupied | tolerance |
-| `drv.straddles_marking` | footprint on both sides of a marking | — |
-| `drv.responding_emergency` | `ru.emergency_vehicle` ∧ (`sig.warning_lamp` red or blue ∨ `sig.siren`) | — |
-| `drv.vulnerable_road_user` | `ru.pedestrian` ∨ person on `ru.bicycle` / `ru.electric_bicycle` / `ru.electric_scooter` ∨ classes a reading adds | — |
-| `drv.laned_roadway` | roadway with two or more marked lanes in one direction | — |
-| `drv.extreme_lane` | the leftmost / rightmost lane among those of the subject's direction | side |
-| `drv.priority_roadway` | roadway whose entrances carry `dev.stop_sign` or `dev.yield_sign`; undefined while the body occupies several lanes | — |
-| `drv.distance_while` | path length over which a condition has held continuously up to now | — |
-| `drv.within_signed_zone` | between a `dev.zone_sign` and its matching end sign governing the subject's lane, of a given kind | kind |
-| `drv.condition_in_effect` | a device's structured conditions hold at the observation: `env.civil_time` falls in one of its time windows on one of its days (a calendar class such as a school day or a public holiday is an assumption), and any occupancy or class condition is met by the subject | — |
-| `drv.civil_night` | `env.civil_time` is later than sunset plus an offset or earlier than sunrise minus an offset, for the date and the location the reading declares **Not a stand-in for:** `env.darkness`, which is the observed light level; a rule states which one it reads | offsets |
-| `drv.queue_behind` | at least n vehicles in line behind the subject, each following the one ahead within gap g | n, g |
-| `drv.signal_cycles` | the number of transitions of the governing signals into an indication permitting a movement (straight, left or right) since the subject stopped | movement, stop speed |
-| `drv.slower_than_posted` | speed below the governing `dev.speed_limit_sign` value by at least a margin | margin |
-| `drv.speed_below_traffic` | speed below the median speed of same-direction users within range r by at least a margin | r, margin |
-| `drv.sight_distance_adequate` | `st.sight_distance` at the subject's position ≥ the distance a stopping- or passing-distance model gives for the subject's speed | model, deceleration |
-| `drv.stopping_distance` | the distance a body at the subject's speed needs to halt under a deceleration a, plus a reaction distance | a, reaction time |
-| `drv.hard_deceleration` | `kin.accel_longitudinal` below a negative bound | bound |
-| `drv.forced_halt` | the subject halts while a user ahead in its lane within gap g is halted, a governing signal shows a halt, a governing stop sign's line or post is within g, or a governing officer signals a halt | g, stop speed |
-| `drv.officer_directed` | a `dev.human_direction` with role police governs the subject's approach and gives an indication | — |
+**Concepts** (`drv`) — manoeuvres, states of motion, road configurations and relations between
+road users over time (a stop, a turn, a pass, a following gap, a laned roadway) are not atoms.
+They are concept nodes the pipeline defines over atoms, primitives and other concepts, each with a
+contract of its own, accepted like a rule and called by id (`drv.<family>.<name>`); a rule never
+rebuilds one inline.
 
 **Dataset fields** — any edge label, trigger region, render distance, band label or node name of
 a particular scene-graph format. These are how a source grounds an atom; they belong in the
 adapter and its manifest, never in a rule.
+
+## 10. Primitives (`prim`) — computations the formula language cannot express
+
+A primitive is a geometric computation over atoms with no legal word in it, defined once in Core
+with its parameters exposed. A concept or a rule calls it by id; the set is closed, and a need
+for another is a gap for the operator, never a definition written during a run.
+
+| id | contract | parameters |
+|---|---|---|
+| `prim.heading_change` | the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from `kin.yaw_rate`; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing | the window length (time) |
+| `prim.closest_approach_within` | under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon | the horizon (time) |
+| `prim.closest_approach_time` | the time from the observation at which the two centres are closest, under constant velocities; undefined when they do not approach within the horizon | the horizon (time) |
+| `prim.closest_approach_distance` | the centre distance at that closest approach; undefined when they do not approach within the horizon | the horizon (time) |
+| `prim.conditions_hold` | the structured conditions of a device (`dev.zone_sign`, `dev.regulatory_sign`) hold at the observation for a road user: `env.civil_time` falls in one of its time windows on one of its days (a calendar class is an assumption), and any occupancy or class condition is met | — |

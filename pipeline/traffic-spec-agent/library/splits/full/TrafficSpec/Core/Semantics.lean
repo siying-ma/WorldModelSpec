@@ -8,7 +8,7 @@
   per region or device present anywhere in the trace. `eval c i φ` is the value at instant i.
 
   Atoms and derived concepts are dispatched by name to the definitions of Atoms.lean and
-  Derived.lean; a name the tables do not know, a wrong arity, a literal that spells no
+  Primitives.lean; a name the tables do not know, a wrong arity, a literal that spells no
   enumeration value or a variable of the wrong sort is `unknown (malformed …)`. The static check
   (RuleEval.check) finds every such defect from the syntax before any trace is read, so a checked
   rule reports at evaluation time only source absence, truncation, sampling gaps, undefined
@@ -25,18 +25,18 @@
   Rule composition is a callback, because the library of rules is defined above this file.
 -/
 import TrafficSpec.Core.Formula
-import TrafficSpec.Core.Derived
+import TrafficSpec.Core.Primitives
 
 namespace TrafficSpec
 namespace Semantics
 
-open Derived (DArg)
+open Primitives (DArg)
 open Temporal
 
 /-- Everything an evaluation needs: the indexed trace with its reading, the bindings, and how to
     evaluate another rule's obligation (`rule id map`) under a variable map, per instant. -/
 structure SemCtx where
-  d : Derived.Ctx
+  d : Primitives.Ctx
   β : Binding := {}
   /-- Another rule's verdict per instant under a variable map: complied-with when `engaged` is
       false, engaged (classes and applicability) when true. -/
@@ -47,7 +47,7 @@ namespace SemCtx
 def n (c : SemCtx) : Nat := c.d.n
 def scenes (c : SemCtx) : Array Scene := c.d.scenes
 def bindVar (c : SemCtx) (v : String) (x : Val) : SemCtx := { c with β := c.β.bind v x }
-def mk' (τ : Trace) (ρ : Reading) (β : Binding := {}) : SemCtx := { d := Derived.Ctx.mk' τ ρ, β := β }
+def mk' (τ : Trace) (ρ : Reading) (β : Binding := {}) : SemCtx := { d := Primitives.Ctx.mk' τ ρ, β := β }
 end SemCtx
 
 -- ---------------------------------------------------------------------------------------------
@@ -404,6 +404,46 @@ def devicesOf (c : SemCtx) (k : DeviceKind) : List DeviceId :=
 def usersOf (c : SemCtx) : List TrackId :=
   (c.scenes.toList.flatMap (·.tracks)).eraseDups
 
+/-- The kind a quantifier ranges over: a spelling of the ontology. A variable here is a concept's
+    literal formal that no expansion filled. -/
+private def regionKindOf (a : Arg) : Except UnknownReason StructureKind :=
+  match a with
+  | .lit s => match StructureKind.ofString s with | some k => .ok k | none => .error (.malformed s!"region kind {s}")
+  | .var v => .error (.malformed s!"region kind `{v}` is a variable")
+  | .nat _ => .error (.malformed "region kind")
+private def deviceKindOf (a : Arg) : Except UnknownReason DeviceKind :=
+  match a with
+  | .lit s => match DeviceKind.ofString s with | some k => .ok k | none => .error (.malformed s!"device kind {s}")
+  | .var v => .error (.malformed s!"device kind `{v}` is a variable")
+  | .nat _ => .error (.malformed "device kind")
+
+/-- φ where the precondition holds; undefined where it is false; the precondition's reasons where
+    it is unknown. -/
+private def definedWhenR (pre x : R) : R :=
+  match pre.v with
+  | .t => x
+  | .f => R.u (.undefined "defined_when")
+  | .u => ⟨.u, pre.why⟩
+
+/-- An aggregate over the members present at one instant: unknown when a member's membership is
+    unknown or a member's value is; `count` on an empty set is zero, the others are undefined. -/
+private def aggregateAt (op : AggOp) (xs : List (R × QR)) : QR :=
+  match xs.find? (fun (f, _) => f.v == .u) with
+  | some (f, _) => .error (f.why.head?.getD (.malformed "aggregate"))
+  | none =>
+    let vals := xs.filterMap fun (f, q) => if f.v == .t then some q else none
+    match op with
+    | .count => .ok (Q.ofInt (Int.ofNat vals.length))
+    | _ => do
+      let qs ← vals.mapM fun q => q
+      if qs.isEmpty then .error (.undefined "aggregate")
+      else
+        let sorted := qs.toArray.qsort (fun a b => Q.lt a b)
+        match op with
+        | .min => .ok sorted[0]!
+        | .max => .ok sorted[sorted.size - 1]!
+        | _ => .ok sorted[sorted.size / 2]!
+
 /-- Kleene aggregate at each instant over the evaluated members present in that scene. -/
 private def perScene (c : SemCtx) (evaluated : List (Nat × Array R))
     (presentIn : Scene → Nat → Bool) (agg : List R → R) : Array R :=
@@ -422,11 +462,19 @@ mutual
     | .quantity concept args ps =>
       liftQ c.n do
         let vs ← constParams c ps
-        Derived.evalQ concept c.d (← resolveAll c.β args) vs
+        Primitives.evalQ concept c.d (← resolveAll c.β args) vs
     | .distanceWhile subj φ =>
       match c.β.track subj with
       | none => constE c.n (.unboundVariable subj)
-      | some x => Derived.drv_distance_while c.d x (evalAll c φ)
+      | some x => Primitives.distanceWhile c.d x (evalAll c φ)
+    | .sinceRise φ => sinceRiseAll c.d.times (evalAll c φ)
+    | .aggregate op v φ t =>
+      let members := (usersOf c).map fun u =>
+        let c' := c.bindVar v (.track u)
+        (u, evalAll c' φ, evalTAll c' t)
+      (Array.range c.n).map fun i =>
+        let s := c.scenes[i]!
+        aggregateAt op (members.filterMap fun (u, fa, ta) => if s.tracks.contains u then some (fa[i]!, ta[i]!) else none)
     | .add a b' => qzip Q.add (evalTAll c a) (evalTAll c b')
     | .sub a b' => qzip Q.sub (evalTAll c a) (evalTAll c b')
     | .mul a b' => qzip Q.mul (evalTAll c a) (evalTAll c b')
@@ -467,6 +515,11 @@ mutual
         | .ok a, .ok b => R.ofBool (op.apply a b)
         | .error w, _ | _, .error w => R.u w) (evalTAll c l) (evalTAll c r)
     | .asm id => c.scenes.map fun s => R.ofOption (s.assumption id) (.assumptionMissing id)
+    | .same a b =>
+      match resolve c.β a, resolve c.β b with
+      | .ok (.v i), .ok (.v j) => const c.n (R.ofBool (i == j))
+      | .error w, _ | _, .error w => constU c.n w
+      | _, _ => constU c.n (.malformed "same: entities expected")
     | .not φ => mapNot (evalAll c φ)
     | .and φ ψ => zipAnd (evalAll c φ) (evalAll c ψ)
     | .or φ ψ => zipOr (evalAll c φ) (evalAll c ψ)
@@ -479,25 +532,27 @@ mutual
       liftA c.n do
         let x ← subjectFor c.β m subj
         let dv ← constOf d (evalTAll c d)
-        pure (holdsForAll (Derived.positions c.d m x) dv "holdsFor" (Derived.missingPos m) (evalAll c φ))
+        pure (holdsForAll (Primitives.positions c.d m x) dv "holdsFor" (Primitives.missingPos m) (evalAll c φ))
     | .within m d subj φ =>
       liftA c.n do
         let x ← subjectFor c.β m subj
         let dv ← constOf d (evalTAll c d)
-        pure (withinAll (Derived.positions c.d m x) dv "within" (Derived.missingPos m) (evalAll c φ))
+        pure (withinAll (Primitives.positions c.d m x) dv "within" (Primitives.missingPos m) (evalAll c φ))
     | .untilWithin m d subj φ ψ =>
       liftA c.n do
         let x ← subjectFor c.β m subj
         let dv ← constOf d (evalTAll c d)
-        pure (untilWithinAll (Derived.positions c.d m x) dv "untilWithin" (Derived.missingPos m) (evalAll c φ) (evalAll c ψ))
+        pure (untilWithinAll (Primitives.positions c.d m x) dv "untilWithin" (Primitives.missingPos m) (evalAll c φ) (evalAll c ψ))
     | .count edge sinceφ op k =>
       (countEdgesAll "count" (evalAll c edge) (evalAll c sinceφ)).map fun e => match e with
         | .error w => R.u w
         | .ok m => R.ofBool (op.apply (Q.ofInt (Int.ofNat m)) (Q.ofInt (Int.ofNat k)))
+    | .rises φ => risesAll (evalAll c φ)
+    | .definedWhen pre φ => Array.zipWith definedWhenR (evalAll c pre) (evalAll c φ)
     | .derived concept args ps =>
       liftA c.n do
         let vs ← constParams c ps
-        Derived.evalB concept c.d (← resolveAll c.β args) vs
+        Primitives.evalB concept c.d (← resolveAll c.β args) vs
     | .rule id map =>
       let arr := c.compose id map c.β false
       if arr.size = c.n then arr else constU c.n (.compositionUnknown id)
@@ -511,17 +566,25 @@ mutual
       perScene c ((usersOf c).map fun t => (t, evalAll (c.bindVar v (.track t)) φ))
         (fun s t => s.tracks.contains t) R.all
     | .existsRegion k v φ =>
-      perScene c ((regionsOf c k).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
-        (fun s r => (s.structure? r).isSome) R.any
+      match regionKindOf k with
+      | .error w => constU c.n w
+      | .ok kd => perScene c ((regionsOf c kd).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
+          (fun s r => (s.structure? r).isSome) R.any
     | .forallRegion k v φ =>
-      perScene c ((regionsOf c k).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
-        (fun s r => (s.structure? r).isSome) R.all
+      match regionKindOf k with
+      | .error w => constU c.n w
+      | .ok kd => perScene c ((regionsOf c kd).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
+          (fun s r => (s.structure? r).isSome) R.all
     | .existsDevice k v φ =>
-      perScene c ((devicesOf c k).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
-        (fun s d => (s.device d).isSome) R.any
+      match deviceKindOf k with
+      | .error w => constU c.n w
+      | .ok kd => perScene c ((devicesOf c kd).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
+          (fun s d => (s.device d).isSome) R.any
     | .forallDevice k v φ =>
-      perScene c ((devicesOf c k).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
-        (fun s d => (s.device d).isSome) R.all
+      match deviceKindOf k with
+      | .error w => constU c.n w
+      | .ok kd => perScene c ((devicesOf c kd).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
+          (fun s d => (s.device d).isSome) R.all
   termination_by φ => sizeOf φ
 end
 

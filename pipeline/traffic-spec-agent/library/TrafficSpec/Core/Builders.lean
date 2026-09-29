@@ -142,8 +142,10 @@ structure Scenario where
 
 namespace Scenario
 /-- The witness holds when the rule's episode verdict on its grounding equals the expected one.
-    Unknown expected verdicts compare by tag only: a witness may promise unknown, not its reasons. -/
-def run (rules : List Rule) (sc : Scenario) : Except String Verdict := do
+    Unknown expected verdicts compare by tag only: a witness may promise unknown, not its reasons.
+    The rules are evaluated with their concept calls expanded over `concepts`. -/
+def run (rules : List Rule) (sc : Scenario) (concepts : List Concept := []) : Except String Verdict := do
+  let rules := rules.map (Concept.expandRule concepts)
   let r ← match rules.find? (·.id == sc.rule) with
     | some r => pure r
     | none => throw s!"{sc.name}: rule {sc.rule} is not registered"
