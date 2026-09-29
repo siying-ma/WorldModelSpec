@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Tri
+import TrafficSpec.Core.Foundations.Tri
 namespace TrafficSpec.Tests
 open TrafficSpec Tri
 

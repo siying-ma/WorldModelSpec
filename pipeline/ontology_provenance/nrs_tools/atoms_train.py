@@ -5,9 +5,9 @@
 Writes
   traffic-spec-agent/ontology/ATOMS_train.md                 ATOMS.md without the test-only atoms, values
                                                              and primitives
-  traffic-spec-agent/library/splits/train/TrafficSpec/Core/Atoms.lean
+  traffic-spec-agent/library/splits/train/TrafficSpec/Core/Vocab/Atoms.lean
                                                              Atoms.lean without their definitions
-  traffic-spec-agent/library/splits/train/TrafficSpec/Core/Ontology/*.lean
+  traffic-spec-agent/library/splits/train/TrafficSpec/Core/Vocab/Ontology/*.lean
                                                              generated from ATOMS_train.md by gen_ontology
 
 The training run swaps these three over the full ones (the tree under splits/train mirrors the
@@ -27,7 +27,7 @@ AGENT = PIPE / "traffic-spec-agent"
 SPLIT = AGENT / "laws" / "audit_and_scripts" / "split_atoms.json"
 ATOMS_MD = AGENT / "ontology" / "ATOMS.md"
 ATOMS_TRAIN_MD = AGENT / "ontology" / "ATOMS_train.md"
-ATOMS_LEAN = AGENT / "library" / "TrafficSpec" / "Core" / "Atoms.lean"
+ATOMS_LEAN = AGENT / "library" / "TrafficSpec" / "Core" / "Vocab" / "Atoms.lean"
 TRAIN_ROOT = AGENT / "library" / "splits" / "train" / "TrafficSpec" / "Core"
 
 
@@ -73,7 +73,7 @@ def filter_atoms_lean(text: str, atoms: list[str]) -> str:
             continue
         keep.append(line)
         i += 1
-    banner = ("/-\n  TRAINING SPLIT of TrafficSpec.Core.Atoms. Generated from Core/Atoms.lean by\n"
+    banner = ("/-\n  TRAINING SPLIT of TrafficSpec.Core.Vocab.Atoms. Generated from Core/Vocab/Atoms.lean by\n"
               "  ontology_provenance/nrs_tools/atoms_train.py: the definitions of the atoms whose only textual\n"
               "  support is a test line are omitted. Do not edit; regenerate.\n-/\n")
     return banner + "\n".join(keep) + "\n"
@@ -83,10 +83,10 @@ def main() -> int:
     split = json.loads(SPLIT.read_text(encoding="utf-8"))
     atoms, values, derived = split["test_only_atoms"], split["test_only_values"], split.get("test_only_primitives", [])
     ATOMS_TRAIN_MD.write_text(filter_atoms_md(ATOMS_MD.read_text(encoding="utf-8"), atoms, values, derived), encoding="utf-8")
-    TRAIN_ROOT.mkdir(parents=True, exist_ok=True)
-    (TRAIN_ROOT / "Atoms.lean").write_text(filter_atoms_lean(ATOMS_LEAN.read_text(encoding="utf-8"), atoms), encoding="utf-8")
+    (TRAIN_ROOT / "Vocab").mkdir(parents=True, exist_ok=True)
+    (TRAIN_ROOT / "Vocab" / "Atoms.lean").write_text(filter_atoms_lean(ATOMS_LEAN.read_text(encoding="utf-8"), atoms), encoding="utf-8")
     r = subprocess.run([sys.executable, "-m", "scripts.gen_ontology", "--atoms", str(ATOMS_TRAIN_MD),
-                        "--out", str(TRAIN_ROOT / "Ontology")], cwd=AGENT, capture_output=True, text=True)
+                        "--out", str(TRAIN_ROOT / "Vocab" / "Ontology")], cwd=AGENT, capture_output=True, text=True)
     print(r.stdout.strip(), r.stderr.strip())
     # what the training ontology still says about a test-only concept, for the reviewer
     words = re.compile(r"school bus|turnout|roundabout|rotary|delivery device|carrying device|skate|low-speed|"

@@ -1,11 +1,14 @@
 """Plan: one session writes blueprint.jsonl, PLAN.md and gaps/proposed.jsonl for the plannable laws."""
 from __future__ import annotations
 from pathlib import Path
-from .. import aggregates, corpus, ontology, render, paths, session
-from ..gaps import GapLedger
-from ..mapping import MappingIndex
-from ..reading import Reading
-from ..state import Run
+from ..checks import aggregates
+from ..model import corpus, ontology
+from ..agents import render, session
+from ..store import paths
+from ..store.gaps import GapLedger
+from ..model.mapping import MappingIndex
+from ..model.reading import Reading
+from ..store.state import Run
 
 
 def parameter_catalogue(reading: Reading) -> str:
@@ -23,7 +26,8 @@ PLACEHOLDERS = ("laws", "definitions", "ontology", "library_summary", "concepts"
 
 
 def concept_catalogue(run: Run) -> str:
-    from .. import surface, nodeid
+    from ..lean import surface
+    from ..model import nodeid
     text = surface.concepts_table(run.all_concepts())
     if run.opts.mode == "test":
         text += "\nThis run adds concepts and supersedes none: a catalogued concept whose body contradicts its contract is reported under `## Concept defects` in `PLAN.md`, not replaced.\n"

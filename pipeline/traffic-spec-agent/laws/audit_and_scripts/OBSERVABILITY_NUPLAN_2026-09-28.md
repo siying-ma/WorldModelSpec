@@ -196,7 +196,7 @@ other agent: another vehicle's velocity is a finite difference of a tracked box,
 second difference, its steering angle nothing at all.
 
 Core cannot state that difference. `Manifest.entries : List (String × Capability)` in
-`library/TrafficSpec/Core/Manifest.lean` is keyed by **atom id alone**, and `Mask.user` takes an
+`library/TrafficSpec/Core/Runtime/Manifest.lean` is keyed by **atom id alone**, and `Mask.user` takes an
 id and one `RoadUser` and is mapped over every user in the scene. So for `kin.steer_angle` there
 are two available declarations and both are wrong:
 

@@ -39,7 +39,7 @@ Run mode: `{mode}`.
 ## Access
 
 - You **edit** `{concept_path}` and `{witness_path}`, and write `task_result.md`. Nothing else.
-- You **may read** `library/TrafficSpec/Core/*.lean` when the surface does not answer a question.
+- You **may read** `library/TrafficSpec/Core/**/*.lean` when the surface does not answer a question.
   Core is frozen: you never edit it and never work around it.
 - You **do not read** `harness/`, `results/`, other concepts' or nodes' files beyond the example,
   the readings, the ontology or the law corpus. The gate is the interface to the harness; the
@@ -89,8 +89,8 @@ Run mode: `{mode}`.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict.
-7. **No history of your own**: no captures, no imports but `TrafficSpec.Core.Concept` in the
-   concept file and the concept plus `TrafficSpec.Core.Builders` in the witness file.
+7. **No history of your own**: no captures, no imports but `TrafficSpec.Core.Language.Concept` in the
+   concept file and the concept plus `TrafficSpec.Core.Evidence.Builders` in the witness file.
 8. **Closed, total values.** No `sorry`, `admit`, `axiom`, `unsafe`, `partial`, `opaque`,
    `implemented_by`, `extern`, `native_decide` or `panic!` anywhere in the two files.
 9. **The gate decides.** Run it after each edit. Its verdict is the only acceptance signal.

@@ -1,5 +1,5 @@
-import TrafficSpec.Core.Atoms
-import TrafficSpec.Core.Params
+import TrafficSpec.Core.Vocab.Atoms
+import TrafficSpec.Core.Vocab.Params
 namespace TrafficSpec.Tests
 open TrafficSpec Units
 

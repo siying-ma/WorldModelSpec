@@ -1,33 +1,38 @@
 /-
-  TrafficSpec.Core — the frozen core.
-  Logic, units, time; the ontology enumerations; the world, the atoms, assumptions and
-  parameters; the language, concepts, rules and their evaluation; grounding, manifests, the
-  monitor, decoding, export; builders and adequacy for the witnesses.
+  TrafficSpec.Core — the frozen core, in five layers; a file imports only from its own layer and
+  the layers above it in this list.
+  Foundations: three-valued logic with reasons, units, time, the temporal operators, the handles
+    that name tracks, regions, devices and assumptions.
+  Vocab: the ontology enumerations, the world, the atoms, assumptions, parameters, primitives.
+  Language: formulas and their semantics, rules, concepts, the static check, export.
+  Runtime: grounding, manifests, the monitor, decoding.
+  Evidence: builders and adequacy for the witnesses.
 -/
-import TrafficSpec.Core.Tri
-import TrafficSpec.Core.Units
-import TrafficSpec.Core.Time
-import TrafficSpec.Core.Ontology.Ids
-import TrafficSpec.Core.Ontology.RoadUser
-import TrafficSpec.Core.Ontology.Structure
-import TrafficSpec.Core.Ontology.Device
-import TrafficSpec.Core.Ontology.Signal
-import TrafficSpec.Core.World
-import TrafficSpec.Core.Assumptions
-import TrafficSpec.Core.Params
-import TrafficSpec.Core.Atoms
-import TrafficSpec.Core.Unknown
-import TrafficSpec.Core.Formula
-import TrafficSpec.Core.Temporal
-import TrafficSpec.Core.Primitives
-import TrafficSpec.Core.Semantics
-import TrafficSpec.Core.Rule
-import TrafficSpec.Core.Concept
-import TrafficSpec.Core.RuleEval
-import TrafficSpec.Core.Grounding
-import TrafficSpec.Core.Manifest
-import TrafficSpec.Core.Monitor
-import TrafficSpec.Core.Builders
-import TrafficSpec.Core.Decode
-import TrafficSpec.Core.Export
-import TrafficSpec.Core.Adequacy
+import TrafficSpec.Core.Foundations.Tri
+import TrafficSpec.Core.Foundations.Units
+import TrafficSpec.Core.Foundations.Time
+import TrafficSpec.Core.Foundations.Handles
+import TrafficSpec.Core.Foundations.Unknown
+import TrafficSpec.Core.Foundations.Temporal
+import TrafficSpec.Core.Vocab.Ontology.Ids
+import TrafficSpec.Core.Vocab.Ontology.RoadUser
+import TrafficSpec.Core.Vocab.Ontology.Structure
+import TrafficSpec.Core.Vocab.Ontology.Device
+import TrafficSpec.Core.Vocab.Ontology.Signal
+import TrafficSpec.Core.Vocab.World
+import TrafficSpec.Core.Vocab.Assumptions
+import TrafficSpec.Core.Vocab.Params
+import TrafficSpec.Core.Vocab.Atoms
+import TrafficSpec.Core.Vocab.Primitives
+import TrafficSpec.Core.Language.Formula
+import TrafficSpec.Core.Language.Semantics
+import TrafficSpec.Core.Language.Rule
+import TrafficSpec.Core.Language.Concept
+import TrafficSpec.Core.Language.RuleEval
+import TrafficSpec.Core.Language.Export
+import TrafficSpec.Core.Runtime.Grounding
+import TrafficSpec.Core.Runtime.Manifest
+import TrafficSpec.Core.Runtime.Monitor
+import TrafficSpec.Core.Runtime.Decode
+import TrafficSpec.Core.Evidence.Builders
+import TrafficSpec.Core.Evidence.Adequacy

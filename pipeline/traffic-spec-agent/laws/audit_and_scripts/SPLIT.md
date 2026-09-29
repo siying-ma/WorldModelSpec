@@ -22,7 +22,7 @@ The training set builds the autoformalization repository: its ontology, derived 
 
 ## Training-only ontology artifacts
 
-`ontology_provenance/nrs_tools/atoms_train.py` derives, from the lists below: `ontology/ATOMS_train.md`, `library/splits/train/TrafficSpec/Core/Atoms.lean` and `library/splits/train/TrafficSpec/Core/Ontology/*.lean` (generated from `ATOMS_train.md` by `gen_ontology.py --atoms … --out …`). A training run swaps these over the full files; the tree under `splits/train` mirrors the library. The other Core files are audited, not split: see `SPLIT_AUDIT.md`.
+`ontology_provenance/nrs_tools/atoms_train.py` derives, from the lists below: `ontology/ATOMS_train.md`, `library/splits/train/TrafficSpec/Core/Vocab/Atoms.lean` and `library/splits/train/TrafficSpec/Core/Vocab/Ontology/*.lean` (generated from `ATOMS_train.md` by `gen_ontology.py --atoms … --out …`). A training run swaps these over the full files; the tree under `splits/train` mirrors the library. The other Core files are audited, not split: see `SPLIT_AUDIT.md`.
 
 ## Test lines and why
 

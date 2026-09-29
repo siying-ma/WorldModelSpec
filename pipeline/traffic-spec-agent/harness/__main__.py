@@ -16,10 +16,13 @@ import json
 import sys
 from pathlib import Path
 import fire
-from . import paths, index_sync, lean, blueprint, corpus, ontology, validate_a
-from .reading import Reading, write_template
-from .state import Options
-from .mapping import MappingIndex
+from .store import paths
+from .lean import index_sync, lean
+from .model import blueprint, corpus, ontology
+from .checks import validate_a
+from .model.reading import Reading, write_template
+from .store.state import Options
+from .model.mapping import MappingIndex
 
 DEFAULT_LAWS = "laws/full_list/laws.jsonl"
 DEFAULT_ONTOLOGY = "ontology/ATOMS.md"
@@ -92,7 +95,7 @@ class Cli:
 
     def validate(self, blueprint_file: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
                  reading: str = "readings/default.json") -> int:
-        from . import aggregates
+        from .checks import aggregates
         nodes = blueprint.load(_p(blueprint_file))
         by_id = {l.id: l for l in corpus.load_laws(_p(laws))}
         onto = ontology.load(_p(ontology_file))
@@ -130,7 +133,7 @@ class Cli:
 
     def surface(self) -> int:
         """Print the Core surface a coding session is shown (generated from the library)."""
-        from . import surface as surface_mod
+        from .lean import surface as surface_mod
         print(surface_mod.core_surface()); return 0
 
     def index(self) -> int:
@@ -144,7 +147,7 @@ class Cli:
 
     def reopen(self, run_id: str, laws: str = "") -> int:
         """Operator action: put a run's failed laws back to `open` with a fresh attempt budget (all, or a comma list)."""
-        from .ledger import Ledger
+        from .store.ledger import Ledger
         ledger = Ledger(paths.run_dir(run_id) / "ledger.jsonl", [], 2)
         out = ledger.reopen([l.strip() for l in laws.split(",") if l.strip()] or None)
         ledger.save(); print(f"reopened {len(out)}: {', '.join(out)}"); return 0
@@ -160,7 +163,7 @@ class Cli:
 
     def split(self, use: str = "status") -> int:
         """Activate the `train` or `full` variant of the Core library, or report which is active."""
-        from . import split as split_mod
+        from .tools import split as split_mod
         if use == "status":
             print(split_mod.active()); return 0
         copied = split_mod.activate(use)
@@ -170,7 +173,7 @@ class Cli:
         return 0 if ok else 1
 
     def score_split(self, run_id: str, split_atoms: str = "laws/audit_and_scripts/split_atoms.json") -> int:
-        from .score_split import score
+        from .tools.score_split import score
         print(json.dumps(score(run_id, _p(split_atoms)), indent=1)); return 0
 
 

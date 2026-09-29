@@ -3,7 +3,7 @@
   that runs the library imports this.
 -/
 import TrafficSpec
-import TrafficSpec.Core.Builders
+import TrafficSpec.Core.Evidence.Builders
 namespace TrafficSpecWitness
 open TrafficSpec
 /-- Every registered node scenario, in file order. -/

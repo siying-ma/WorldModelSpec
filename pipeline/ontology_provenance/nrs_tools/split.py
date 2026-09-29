@@ -257,7 +257,7 @@ def main() -> int:
              "training text, is in `example/test/definitions.jsonl`.\n")
     L.append("## Training-only ontology artifacts\n")
     L.append("`ontology_provenance/nrs_tools/atoms_train.py` derives, from the lists below: `ontology/ATOMS_train.md`, "
-             "`library/splits/train/TrafficSpec/Core/Atoms.lean` and `library/splits/train/TrafficSpec/Core/Ontology/*.lean` "
+             "`library/splits/train/TrafficSpec/Core/Vocab/Atoms.lean` and `library/splits/train/TrafficSpec/Core/Vocab/Ontology/*.lean` "
              "(generated from `ATOMS_train.md` by `gen_ontology.py --atoms … --out …`). A training run swaps these over the "
              "full files; the tree under `splits/train` mirrors the library. The other Core files are audited, not split: "
              "see `SPLIT_AUDIT.md`.\n")

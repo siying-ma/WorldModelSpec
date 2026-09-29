@@ -7,7 +7,7 @@
   business, not the process's.
 -/
 import TrafficSpec
-import TrafficSpec.Core.Decode
+import TrafficSpec.Core.Runtime.Decode
 
 open TrafficSpec
 

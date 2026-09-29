@@ -1,5 +1,5 @@
-import TrafficSpec.Core.Export
-import TrafficSpec.Core.Adequacy
+import TrafficSpec.Core.Language.Export
+import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Tests.Decode
 namespace TrafficSpec.Tests.Concept
 open TrafficSpec Units

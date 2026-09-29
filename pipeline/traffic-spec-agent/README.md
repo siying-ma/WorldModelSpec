@@ -12,15 +12,54 @@ part of this pipeline: what a data source can observe is a run-time manifest for
 | path | what it is | frozen? |
 |---|---|---|
 | `ontology/ATOMS.md`, `ontology/ATOMS_train.md` | the closed set of atoms, values and derived concepts; the training variant omits what only test lines support | yes |
-| `library/TrafficSpec/Core/**` | the Core library (three-valued semantics, derived concepts, evaluator, grounding, monitor, static check, adequacy). `library/splits/{full,train}/` hold the two variants of the files the split touches; `library/splits/ACTIVE` says which one the Core directory holds (`python -m harness split`) | yes |
+| `library/TrafficSpec/Core/**` | the Core library in five layers (see *Core structure*): three-valued semantics, units and time, the vocabulary and primitives, the language and its static check, grounding and the monitor, witness builders and adequacy. `library/splits/{full,train}/` hold the two variants of the files the split touches; `library/splits/ACTIVE` says which one the Core directory holds (`python -m harness split`) | yes |
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` is a reference-closed subset of the training set for a first run; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
 | `readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `readings/lasvegas.json` is the provisional catalogue for this corpus | operator-written input |
 | `prompts/*.md` | the plan, code, blind-read and alignment-judge templates | yes, law-free |
-| `harness/` | the loop and its phases, the validator, the gate, the ledgers | code |
+| `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `scripts/gen_ontology.py`, `scripts/diagnostics/` | the ontology generator and the doctor | code |
 | `gaps/ledger.jsonl` | what the ontology cannot carry, proposed by plan sessions, decided by the operator | operator-decided |
 | `results/<run>/` | per-run artifacts: `ledger.jsonl` (per-law states), `mapping.json`, `accepted_nodes.jsonl`, `AUTO_NOTES.md`, `iter-NNN/{plan,validate,code,integrate}` | run output |
+
+## Harness structure
+
+`harness/` is grouped by role, not by stage: the stages live in `harness/phases/`, and the
+modules the stages share sit in one folder each.
+
+| folder | modules | what it holds |
+|---|---|---|
+| `harness/` | `__main__.py`, `loop.py` | the CLI (`python -m harness …`) and the iteration driver: ledger transitions, dependency order, deferral, stop conditions |
+| `harness/phases/` | `plan.py`, `validate.py`, `code.py`, `integrate.py`, `feedback.py` | one module per stage of the loop |
+| `harness/model/` | `blueprint.py`, `corpus.py`, `mapping.py`, `nodeid.py`, `ontology.py`, `reading.py`, `units.py` | the pipeline's data: blueprint records, the corpus, the mapping index, derived ids and paths, the closed set, the reading, unit factors |
+| `harness/store/` | `paths.py`, `state.py`, `ledger.py`, `gaps.py` | where things live and the run's state: options and run directories, the law and concept ledgers, the gap ledger |
+| `harness/lean/` | `lean.py`, `index_sync.py`, `skeleton.py`, `surface.py`, `render_formula.py` | everything that reads or writes `library/`: lake calls, the registries, the skeletons, the Core surface, the formula renderer |
+| `harness/agents/` | `runner.py`, `session.py`, `render.py` | Claude sessions (launch, relaunch on refusal) and prompt filling |
+| `harness/checks/` | `validate_a.py`, `gate.py`, `aggregates.py` | the deterministic acceptance checks: validator A, the gate, the aggregate validator |
+| `harness/tools/` | `split.py`, `score_split.py` | operator commands: the train/full Core swap and the test-run scorer |
+
+Imports point one way. `model/` and `store/` import nothing else in the harness; `lean/` and
+`agents/` build on them; `checks/` builds on `model/`, `store/` and `lean/`; `phases/` uses all
+of these, and `loop.py` and `__main__.py` sit on top. A new module goes in the folder whose role it
+has, and imports only from the folders below it.
+
+## Core structure
+
+`library/TrafficSpec/Core/` is grouped into five layers, one folder each; a module's name is its
+path (`TrafficSpec.Core.Language.Rule` is `Core/Language/Rule.lean`). `library/README.md` §1 lists
+every file.
+
+| folder | files | what it holds |
+|---|---|---|
+| `library/TrafficSpec/Core/Foundations/` | `Tri`, `Units`, `Time`, `Handles`, `Unknown`, `Temporal` | three-valued logic with reasons, exact units, time and windows, the temporal operators, the identifiers of tracks, regions, devices and assumptions |
+| `library/TrafficSpec/Core/Vocab/` | `Ontology/*`, `World`, `Assumptions`, `Atoms`, `Params`, `Primitives` | the closed vocabulary: the generated enumerations, the scene as data, one accessor per atom, the reading, the primitives |
+| `library/TrafficSpec/Core/Language/` | `Formula`, `Semantics`, `Rule`, `Concept`, `RuleEval`, `Export` | the specification language, its meaning, rules and concepts, the static check, JSON export |
+| `library/TrafficSpec/Core/Runtime/` | `Grounding`, `Manifest`, `Monitor`, `Decode` | running a rule over data: grounding, source manifests, the monitor, decoding |
+| `library/TrafficSpec/Core/Evidence/` | `Builders`, `Adequacy` | witness scenes and scenarios, mutation adequacy |
+
+A Core file imports only from its own layer and the layers above it in this table. A rule file
+imports `TrafficSpec.Core.Language.Rule` only, a concept file `TrafficSpec.Core.Language.Concept`
+only, and a witness file its rule or concept and `TrafficSpec.Core.Evidence.Builders`.
 
 ## Commands
 
@@ -81,9 +120,9 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    four witnesses); B, a blind reader writes what the node specifies without seeing the law, and
    a judge compares the reading with the law span by span.
 3. **Code** (one session per accepted node): starts from the two files the harness wrote from the
-   node (`harness/skeleton.py`: every declaration the gate compares, the parameters as terms, the
+   node (`harness/lean/skeleton.py`: every declaration the gate compares, the parameters as terms, the
    four scenarios with their verdicts and masked atoms — they build as written), with the generated
-   Core surface (`harness/surface.py`: accessors with the field each reads, derived contracts,
+   Core surface (`harness/lean/surface.py`: accessors with the field each reads, derived contracts,
    builders, world records, units), the reading's values for the node's parameters and the most
    recently accepted node as the worked example. Writes the formulas and the scenes, runs the gate,
    stops on `OK` or when the budget is spent. The harness re-runs the gate itself. Core is readable
@@ -91,7 +130,7 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 4. **Integrate**: registries, whole-library build, every witness, composition DAG; reverts newest-first.
 5. **Feedback**: `AUTO_NOTES.md` for the next plan, `TO_USER.md` for the operator, gaps merged into the ledger.
 
-**The gate** (`harness/gate.py`), in order: `SCOPE_VIOLATION`, `BUILD_FAIL`, `UNSOUND` (sorry,
+**The gate** (`harness/checks/gate.py`), in order: `SCOPE_VIOLATION`, `BUILD_FAIL`, `UNSOUND` (sorry,
 axioms, unsafe constructs), `CHECK_FAIL` (`Rule.check`, `Rule.checkReading`, which also holds
 every aggregate word a rule names to the reading), `UNANCHORED_VARIABLE` (a quantified region,
 device or user related to no binder through an atom, a derived concept or a composition — a
@@ -104,7 +143,7 @@ the accepted node and the feedback), `UNCLAIMED_ATOM` / `UNUSED_CLAIM` / `BARE_L
 as its literal argument. Which `ru.*` classes (or other words, expanded transitively) a word
 covers is **derived by the run** from the corpus definitions: the plan session writes
 `aggregates.jsonl` (word, definition id, classes, justification, unresolved kinds), the harness
-validates it (`harness/aggregates.py`: definition given, classes in the ontology, members
+validates it (`harness/checks/aggregates.py`: definition given, classes in the ontology, members
 resolvable) and merges the accepted records into the run's reading `results/<run>/reading.json`,
 which every later phase uses. `TO_USER.md` lists each derived aggregate for review; an operator
 entry in the base reading's `aggregates` overrides the derived one. The repository declares no
@@ -130,8 +169,8 @@ shown only `open` and `returned` laws.
 
 - Only `laws/**` and `library/TrafficSpec{,Witness}/**` may name a law. Core, the ontology, the
   prompts, the harness and this file are law-free; the doctor enforces it.
-- Every table an agent is shown is generated from the artifact it describes (`harness/surface.py`).
-- A rule imports `TrafficSpec.Core.Rule` only; a witness imports its rule and `TrafficSpec.Core.Builders`.
+- Every table an agent is shown is generated from the artifact it describes (`harness/lean/surface.py`).
+- A rule imports `TrafficSpec.Core.Language.Rule` only; a witness imports its rule and `TrafficSpec.Core.Evidence.Builders`.
 - Quantities enter a rule as `.param "<name>"`; values live in the reading. The only literals are
   zero, enumeration spellings, and figures the law itself states, declared on their span in the
   blueprint (`literals`) and written through a `Units` constructor.

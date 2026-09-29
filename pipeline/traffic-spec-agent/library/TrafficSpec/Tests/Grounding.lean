@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Monitor
+import TrafficSpec.Core.Runtime.Monitor
 import TrafficSpec.Tests.Semantics
 namespace TrafficSpec.Tests.Grounding
 open TrafficSpec Units TrafficSpec.Semantics TrafficSpec.Grounding TrafficSpec.Tests.Semantics

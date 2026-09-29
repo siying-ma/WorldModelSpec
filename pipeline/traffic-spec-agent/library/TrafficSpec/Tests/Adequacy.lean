@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Adequacy
+import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Tests.Decode
 namespace TrafficSpec.Tests.Adequacy
 open TrafficSpec Units TrafficSpec.Tests.Grounding

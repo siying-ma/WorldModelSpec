@@ -288,14 +288,14 @@ class Doctor:
         when `full` is active, the training files regenerated from that archive when `train` is —
         so an edit made to Core under one variant cannot be lost by the next swap."""
         sys.path.insert(0, str(self.repo))
-        from harness import split as split_mod
-        src = ("library/splits/ACTIVE, library/splits/full/** (archive)", "library/TrafficSpec/Core/** (harness/split.py)")
+        from harness.tools import split as split_mod
+        src = ("library/splits/ACTIVE, library/splits/full/** (archive)", "library/TrafficSpec/Core/** (harness/tools/split.py)")
         full = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
         core = self.lib / "TrafficSpec" / "Core"
-        if not (full / "Atoms.lean").exists():
+        if not (full / split_mod.ATOMS).exists():
             return Result("core matches split", SKIP, "no archive yet: the Core directory is the full variant", src)
         which = split_mod.active()
-        files = ["Atoms.lean"] + split_mod.DEPENDENT
+        files = [split_mod.ATOMS] + split_mod.DEPENDENT
         if which == "full":
             drift = [f for f in files if (core / f).read_text(encoding="utf-8") != (full / f).read_text(encoding="utf-8")]
         else:
@@ -304,9 +304,9 @@ class Doctor:
                 out = Path(td)
                 split_mod.generate_train(full, out)
                 drift = [f for f in split_mod.DEPENDENT if (core / f).read_text(encoding="utf-8") != (out / f).read_text(encoding="utf-8")]
-            train_atoms = self.lib / "splits" / "train" / "TrafficSpec" / "Core" / "Atoms.lean"
-            if train_atoms.exists() and (core / "Atoms.lean").read_text(encoding="utf-8") != train_atoms.read_text(encoding="utf-8"):
-                drift.append("Atoms.lean")
+            train_atoms = self.lib / "splits" / "train" / "TrafficSpec" / "Core" / split_mod.ATOMS
+            if train_atoms.exists() and (core / split_mod.ATOMS).read_text(encoding="utf-8") != train_atoms.read_text(encoding="utf-8"):
+                drift.append(split_mod.ATOMS)
         if drift:
             return Result("core matches split", FAIL, f"`{which}` is active but Core differs from its source in {drift}: edit Core with `full` active, then `python -m harness split --use train`", src)
         return Result("core matches split", OK, f"`{which}` active, {len(files)} split files match their source", src)

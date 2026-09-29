@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Export
+import TrafficSpec.Core.Language.Export
 import TrafficSpec.Tests.Decode
 /-!
 The concepts that needed a language extension or a primitive, written as concepts over the

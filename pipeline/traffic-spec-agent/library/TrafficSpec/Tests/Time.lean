@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Time
+import TrafficSpec.Core.Foundations.Time
 namespace TrafficSpec.Tests
 open TrafficSpec Time Units
 

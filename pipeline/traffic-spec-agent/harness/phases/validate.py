@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from .. import blueprint, corpus, ontology, render, runner, validate_a
-from ..blueprint import Node, ConceptRecord
-from ..mapping import MappingIndex
-from ..reading import Reading
-from ..state import Run
+from ..model import blueprint, corpus, ontology
+from ..agents import render, runner
+from ..checks import validate_a
+from ..model.blueprint import Node, ConceptRecord
+from ..model.mapping import MappingIndex
+from ..model.reading import Reading
+from ..store.state import Run
 
 PLACEHOLDERS_BLIND = ("formal_content", "ontology_subset")
 PLACEHOLDERS_JUDGE = ("law_and_segmentation", "blind_reading", "claims")
@@ -25,7 +27,7 @@ class NodeVerdict:
 
 
 def disputes_of(plan_dir: Path) -> set[str]:
-    from ..mapping import normalize
+    from ..model.mapping import normalize
     p = plan_dir / "PLAN.md"
     if not p.exists():
         return set()
@@ -117,7 +119,7 @@ def _flat(obj) -> str:
 def claimed_closure(n: Node, onto: ontology.Ontology) -> set[str]:
     """Ids the node claims, atoms its claimed concepts read, and the classes of the reading's
     aggregates whose words the elements use."""
-    from .. import surface
+    from ..lean import surface
     out = set(n.claimed_atoms())
     reads = surface.primitive_reads()
     for c in list(out):
@@ -176,7 +178,7 @@ def review_concept(run: Run, rec: ConceptRecord, extras: dict, out_dir: Path, no
     """The alignment check a concept gets once its body exists: the expanded body rendered as prose,
     read blind, judged against the contract (and, for a fresh concept, the spans that motivated it).
     A supersession's judge sees no law."""
-    from .. import render_formula, surface
+    from ..lean import render_formula, surface
     onto = ontology.load(run.opts.ontology)
     glosses = {aid: onto.contract(aid) for aid in extras.get("reads", [])}
     for cid, crec in run.all_concepts().items():

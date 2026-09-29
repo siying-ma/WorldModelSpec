@@ -1,5 +1,5 @@
-import TrafficSpec.Core.Decode
-import TrafficSpec.Core.Builders
+import TrafficSpec.Core.Runtime.Decode
+import TrafficSpec.Core.Evidence.Builders
 import TrafficSpec.Tests.Grounding
 namespace TrafficSpec.Tests.Decode
 open TrafficSpec Units TrafficSpec.Decode

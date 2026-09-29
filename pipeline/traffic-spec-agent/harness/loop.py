@@ -5,14 +5,18 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 import shutil
-from . import aggregates, blueprint, corpus, gate, index_sync, nodeid, ontology, paths, session
-from .blueprint import Node, ConceptRecord, concepts_of
-from .gaps import GapLedger
-from .ledger import Ledger, ConceptLedger
+from .checks import aggregates, gate
+from .model import blueprint, corpus, nodeid, ontology
+from .lean import index_sync
+from .store import paths
+from .agents import session
+from .model.blueprint import Node, ConceptRecord, concepts_of
+from .store.gaps import GapLedger
+from .store.ledger import Ledger, ConceptLedger
 from .phases import plan as plan_phase, validate as validate_phase, code as code_phase, integrate as integrate_phase, feedback as feedback_phase
-from .reading import Reading
-from .state import Options, Run
-from .mapping import MappingIndex
+from .model.reading import Reading
+from .store.state import Options, Run
+from .model.mapping import MappingIndex
 
 
 def topological(nodes: list[Node]) -> list[Node]:

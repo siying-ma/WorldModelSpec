@@ -66,5 +66,5 @@ corpus and its split from `pipeline/ontology_provenance/nrs_tools/` (`make_laws`
 
 `library/TrafficSpec/Core/**` is the frozen Core; tests in `library/TrafficSpec/Tests/*.lean` run
 at build time (`lake build`) and pin the arithmetic and semantics with `#guard`. Rules import
-`TrafficSpec.Core.Rule` only; evaluation, checking and grounding are in files no rule may import.
+`TrafficSpec.Core.Language.Rule` only; evaluation, checking and grounding are in files no rule may import.
 `Index.lean` and `TrafficSpecWitness.lean` are generated.

@@ -7,7 +7,7 @@ Three parts, with different owners:
 | **Core** | `TrafficSpec/Core/**` | hand, before any law is seen (the ontology files are generated from `ontology/ATOMS*.md`) | only by an explicit ontology or Core change, never during a run |
 | **Nodes** | `TrafficSpec/Rules/<Body>/<NodeId>.lean`, `TrafficSpecWitness/<Body>/<NodeId>.lean` | one coding session per node, accepted only by the harness's own gate call | a node is accepted, or reverted by integrate |
 | **Concepts** | `TrafficSpec/Concepts/<family>/<name>.lean`, `TrafficSpecWitness/Concepts/<family>/<name>.lean` | one coding session per concept record, gated and then reviewed | a concept is accepted; never edited afterwards (a fix is a superseding concept) |
-| **Registries** | `TrafficSpec/Index.lean`, `TrafficSpecWitness.lean` | `harness/index_sync.py` | every gate and integrate run; never by hand |
+| **Registries** | `TrafficSpec/Index.lean`, `TrafficSpecWitness.lean` | `harness/lean/index_sync.py` | every gate and integrate run; never by hand |
 
 `TrafficSpec/Tests/**` pins Core's arithmetic and semantics at build time; `Main.lean` is the
 `monitor` executable; `splits/` holds the full and training variants of the split Core files.
@@ -16,36 +16,38 @@ Three parts, with different owners:
 
 ## 1. Core, bottom-up
 
-Every file imports only files above it in this table.
+Core is five layers, one folder each under `TrafficSpec/Core/`. A file imports only files of its own
+layer or of the layers above it, and every file imports only files above it in this table.
 
 | layer | file | what it is |
 |---|---|---|
-| logic | `Tri.lean` | Strong-Kleene truth `t / f / u`; `and f u = f`, `and t u = u`, proved. |
-| | `Unknown.lean` | `UnknownReason` (why a value is `u`), `R` = value + reasons, `QR` = quantity or reason, `RangeAgg`. |
-| numbers | `Units.lean` | Exact rationals `Q` over SI units and the only way to write a number: `Units.feet`, `Units.mph`, `Units.seconds`, … No `Float`. |
-| time | `Time.lean` | `Measure` (`time` or `path`), `Duration`, the adequacy rule (observations in a window of length d at most d/2 apart), per-instant window sweeps. |
-| | `Temporal.lean` | Whole-trace operators (always, eventually, until, since, holdsFor, within, untilWithin, edge counts, distance-while), one pass each. |
-| vocabulary | `Ontology/Ids.lean` | `atomIds`, `primitiveIds`. **Generated.** |
-| | `Ontology/{RoadUser,Structure,Device,Signal}.lean` | Enumerations the ontology lists (`RoadUserClass`, `StructureKind`, `DeviceKind`, `SignalIndication`, …) with their string codecs. **Generated.** |
-| | `World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
-| | `Assumptions.lean` | `asm.*` ids: legal region and calendar classes a scene supplies true, false or not at all. |
-| | `Atoms.lean` | One accessor per atom id (§2). |
-| | `Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |
-| | `Primitives.lean` | The evaluation context and one definition per primitive (§2): computations the language cannot express. |
-| language | `Formula.lean` | The specification language as data: `Term` (with `sinceRise`, `aggregate`), `Formula` (with `rises`, `definedWhen`, `same`, quantifiers whose kind is an `Arg`), `Arg`, `CmpOp`, `AggOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |
-| | `Semantics.lean` | `evalAll`: a formula's value at every instant; dispatches atom and primitive names; the finite-trace policy. |
-| | `Rule.lean` | `Binder`, `Rule`, `Verdict`, `verdictAt`. **The only Core module a rule file imports.** |
-| | `Concept.lean` | `Concept` (contract, typed formals, formal parameters, a `Formula` or `Term` body), capture-avoiding `expand`, cycle detection, `Instance` and `asRule` for a concept's witnesses. **The only Core module a concept file imports.** |
-| | `RuleEval.lean` | `Rule.verdicts`, `wellFormed`, the static checks `check` and `checkReading`, and `Concept.check`. |
-| running | `Grounding.lean` | Binder assignments over a trace, track re-identification, per-grounding timelines, episode verdicts. |
-| | `Manifest.lean` | A source's capability per atom id, `support` from syntax alone, and `mask` (a trace as a weaker source would give it). |
-| | `Monitor.lean` | The report, as tab-separated text (the gate's contract) and JSON lines. |
-| | `Decode.lean` | JSON → `Trace`, `Reading`, `Manifest`. The only place an outside string becomes a typed value. |
-| | `Export.lean` | `Formula`, `Term`, `Concept`, `Rule` → JSON, for the renderer, the duplicate check and program synthesis. |
-| evidence | `Builders.lean` | `Build.*` scene and trace constructors and `Scenario`. Witnesses and tests only. |
-| | `Adequacy.lean` | Mutation adequacy of a node's witnesses. Gate only. |
+| `Foundations/` | `Foundations/Tri.lean` | Strong-Kleene truth `t / f / u`; `and f u = f`, `and t u = u`, proved. |
+|  | `Foundations/Units.lean` | Exact rationals `Q` over SI units and the only way to write a number: `Units.feet`, `Units.mph`, `Units.seconds`, … No `Float`. |
+|  | `Foundations/Time.lean` | `Measure` (`time` or `path`), `Duration`, the adequacy rule (observations in a window of length d at most d/2 apart), per-instant window sweeps. |
+| | `Foundations/Handles.lean` | `TrackId`, `RegionId`, `DeviceId`, `AsmId`: the identifiers by which a scene, a formula and a reason for unknown name a track, a region, a device and an assumption. |
+|  | `Foundations/Unknown.lean` | `UnknownReason` (why a value is `u`), `R` = value + reasons, `QR` = quantity or reason, `RangeAgg`. |
+|  | `Foundations/Temporal.lean` | Whole-trace operators (always, eventually, until, since, holdsFor, within, untilWithin, edge counts, distance-while), one pass each. |
+| `Vocab/` | `Vocab/Ontology/Ids.lean` | `atomIds`, `primitiveIds`. **Generated.** |
+|  | `Vocab/Ontology/{RoadUser,Structure,Device,Signal}.lean` | Enumerations the ontology lists (`RoadUserClass`, `StructureKind`, `DeviceKind`, `SignalIndication`, …) with their string codecs. **Generated.** |
+|  | `Vocab/World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
+|  | `Vocab/Assumptions.lean` | `asm.*` ids: legal region and calendar classes a scene supplies true, false or not at all. |
+|  | `Vocab/Atoms.lean` | One accessor per atom id (§2). |
+|  | `Vocab/Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |
+|  | `Vocab/Primitives.lean` | The evaluation context and one definition per primitive (§2): computations the language cannot express. |
+| `Language/` | `Language/Formula.lean` | The specification language as data: `Term` (with `sinceRise`, `aggregate`), `Formula` (with `rises`, `definedWhen`, `same`, quantifiers whose kind is an `Arg`), `Arg`, `CmpOp`, `AggOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |
+|  | `Language/Semantics.lean` | `evalAll`: a formula's value at every instant; dispatches atom and primitive names; the finite-trace policy. |
+|  | `Language/Rule.lean` | `Binder`, `Rule`, `Verdict`, `verdictAt`. **The only Core module a rule file imports.** |
+|  | `Language/Concept.lean` | `Concept` (contract, typed formals, formal parameters, a `Formula` or `Term` body), capture-avoiding `expand`, cycle detection, `Instance` and `asRule` for a concept's witnesses. **The only Core module a concept file imports.** |
+|  | `Language/RuleEval.lean` | `Rule.verdicts`, `wellFormed`, the static checks `check` and `checkReading`, and `Concept.check`. |
+|  | `Language/Export.lean` | `Formula`, `Term`, `Concept`, `Rule` → JSON, for the renderer, the duplicate check and program synthesis. |
+| `Runtime/` | `Runtime/Grounding.lean` | Binder assignments over a trace, track re-identification, per-grounding timelines, episode verdicts. |
+|  | `Runtime/Manifest.lean` | A source's capability per atom id, `support` from syntax alone, and `mask` (a trace as a weaker source would give it). |
+|  | `Runtime/Monitor.lean` | The report, as tab-separated text (the gate's contract) and JSON lines. |
+|  | `Runtime/Decode.lean` | JSON → `Trace`, `Reading`, `Manifest`. The only place an outside string becomes a typed value. |
+| `Evidence/` | `Evidence/Builders.lean` | `Build.*` scene and trace constructors and `Scenario`. Witnesses and tests only. |
+|  | `Evidence/Adequacy.lean` | Mutation adequacy of a node's witnesses. Gate only. |
 
-`Core.lean` imports all of them.
+`Core.lean` imports all of them, layer by layer.
 
 ## 2. The vocabulary: five kinds of name, each with one home
 
@@ -88,14 +90,14 @@ These are the six clauses of the termination rule in `ontology/ATOMS.md`. They a
 
 ## 3. A node
 
-A rule node is two files, with paths and namespaces derived from the node id (`harness/nodeid.py`).
+A rule node is two files, with paths and namespaces derived from the node id (`harness/model/nodeid.py`).
 The harness writes both as skeletons from the blueprint before the coding session starts. Every
 declaration the gate compares is already filled in; the session writes the formulas and the
 scenes.
 
 ```lean
 -- TrafficSpec/Rules/<Body>/<NodeId>.lean
-import TrafficSpec.Core.Rule                 -- the only import allowed
+import TrafficSpec.Core.Language.Rule                 -- the only import allowed
 
 namespace TrafficSpec.Rules.<NodeId>
 def rule : Rule :=
@@ -109,7 +111,7 @@ end TrafficSpec.Rules.<NodeId>
 ```lean
 -- TrafficSpecWitness/<Body>/<NodeId>.lean
 import TrafficSpec.Rules.<Body>.<NodeId>
-import TrafficSpec.Core.Builders
+import TrafficSpec.Core.Evidence.Builders
 
 namespace TrafficSpecWitness.<NodeId>
 def scenarios : List Scenario := [ ... ]     -- forbid, permit, idle, blind
@@ -127,7 +129,7 @@ end TrafficSpecWitness.<NodeId>
 runs the library imports `TrafficSpecWitness`, and a rule cannot import `Builders`. A rule that
 could build its own evidence would prove nothing.
 
-**A concept node** is also two files. The concept file imports `TrafficSpec.Core.Concept` only
+**A concept node** is also two files. The concept file imports `TrafficSpec.Core.Language.Concept` only
 and declares `def concept : Concept`; the witness file declares `def instances : List
 Concept.Instance` (the formals filled with the witness's own figures) and `def scenarios`, whose
 roles are `holds` (`compliant`), `fails` (`violated`) and `blind` (`unknown`), plus
@@ -151,10 +153,10 @@ concrete rules and never summed with them.
 | step | reads | through |
 |---|---|---|
 | plan | no Lean; the ontology text the Core vocabulary is generated from, and the reading's catalogue | `harness/phases/plan.py` |
-| validate A | `Primitives.reads`, the atom ids and the concept catalogue | `harness/surface.py`, `harness/validate_a.py` |
+| validate A | `Primitives.reads`, the atom ids and the concept catalogue | `harness/lean/surface.py`, `harness/checks/validate_a.py` |
 | validate B | the ontology rows of the claimed atoms | `harness/phases/validate.py` |
-| code | a surface cut from `Formula`, `Time`, `Rule`, `Concept`, `Params`, `Builders`, `World`, `Ontology/*`, `Atoms`, `Semantics`, `Primitives`, `Units`, cited to each file, plus the concept catalogue | `harness/surface.py` |
-| gate | a generated Lean harness that imports `TrafficSpec`, `Adequacy`, `Decode` and the node; runs `Rule.check` (on the expanded rule), `checkReading`, `Scenario.run`, `Adequacy.unexercised` over `allConcepts`; for a concept, `Concept.check`, the instances, the supersession diff and the export of the expanded body | `harness/gate.py` |
+| code | a surface cut from `Formula`, `Time`, `Rule`, `Concept`, `Params`, `Builders`, `World`, `Ontology/*`, `Atoms`, `Semantics`, `Primitives`, `Units`, cited to each file, plus the concept catalogue | `harness/lean/surface.py` |
+| gate | a generated Lean harness that imports `TrafficSpec`, `Adequacy`, `Decode` and the node; runs `Rule.check` (on the expanded rule), `checkReading`, `Scenario.run`, `Adequacy.unexercised` over `allConcepts`; for a concept, `Concept.check`, the instances, the supersession diff and the export of the expanded body | `harness/checks/gate.py` |
 | integrate | the whole library build, including `Tests`, and `TrafficSpecWitness.failures` | `harness/phases/integrate.py` |
 | monitor | `Main` → `Decode` → `Manifest` → `Grounding` → `Monitor` over `allRules` | `lake exe monitor` |
 

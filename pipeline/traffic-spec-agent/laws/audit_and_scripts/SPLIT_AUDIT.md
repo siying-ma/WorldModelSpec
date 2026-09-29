@@ -21,13 +21,13 @@ findings come from the search.
 
 | file | what only a test line brings | would have to go for a strictly training-only Core |
 |---|---|---|
-| `Core/World.lean` | `Kin.steerAngle` (`kin.steer_angle`, NRS 484B.533); `Signals.reverseLamp` (484D.205(4)); `Signals.signalArm` (ice-cream truck, LVMC 11.22.150); `Signals.doorsOpen : Option (List DoorSide)` (484B.153); `Signals.compressionBrake` (484D.285); `Device.onTrack`, `.redFlashing`, `.amberFlashing`, `.stopArm` (school bus signal, 484B.353) | the eight fields and the `DoorSide` use; the structures keep every other field |
-| `Core/Decode.lean` | the JSON keys of the same eight fields: `steer_angle`, `reverse_lamp`, `signal_arm`, `doors_open`, `compression_brake`, `on_track`, `red_flashing`, `amber_flashing`, `stop_arm` | the nine decoder lines |
-| `Core/Manifest.lean` (`Mask.user`) | the mask arms for `kin.steer_angle`, `sig.reverse_lamp`, `sig.signal_arm`, `sig.door_open`, `sig.compression_brake`; the kind-atom arms (`ru.*`, `st.*`, `dev.*`) are generic and need no change | the five arms |
-| `Core/Semantics.lean` | dispatch arms and table entries for `kin_steer_angle`, `sig_reverse_lamp`, `sig_signal_arm`, `sig_door_open` (both arities, `DoorSide.ofString`), `sig_compression_brake`, `dev_school_bus_signal_{on_track,red_flashing,amber_flashing,stop_arm}`; class atoms (`ru_school_bus`, `ru_low_speed_vehicle`, `st_roundabout`, `st_turnout`, `dev_school_bus_signal`, …) dispatch through the generated codecs and need no change | the arms and the entries in `boolAtomNames` / `measureNames` |
+| `Core/Vocab/World.lean` | `Kin.steerAngle` (`kin.steer_angle`, NRS 484B.533); `Signals.reverseLamp` (484D.205(4)); `Signals.signalArm` (ice-cream truck, LVMC 11.22.150); `Signals.doorsOpen : Option (List DoorSide)` (484B.153); `Signals.compressionBrake` (484D.285); `Device.onTrack`, `.redFlashing`, `.amberFlashing`, `.stopArm` (school bus signal, 484B.353) | the eight fields and the `DoorSide` use; the structures keep every other field |
+| `Core/Runtime/Decode.lean` | the JSON keys of the same eight fields: `steer_angle`, `reverse_lamp`, `signal_arm`, `doors_open`, `compression_brake`, `on_track`, `red_flashing`, `amber_flashing`, `stop_arm` | the nine decoder lines |
+| `Core/Runtime/Manifest.lean` (`Mask.user`) | the mask arms for `kin.steer_angle`, `sig.reverse_lamp`, `sig.signal_arm`, `sig.door_open`, `sig.compression_brake`; the kind-atom arms (`ru.*`, `st.*`, `dev.*`) are generic and need no change | the five arms |
+| `Core/Language/Semantics.lean` | dispatch arms and table entries for `kin_steer_angle`, `sig_reverse_lamp`, `sig_signal_arm`, `sig_door_open` (both arities, `DoorSide.ofString`), `sig_compression_brake`, `dev_school_bus_signal_{on_track,red_flashing,amber_flashing,stop_arm}`; class atoms (`ru_school_bus`, `ru_low_speed_vehicle`, `st_roundabout`, `st_turnout`, `dev_school_bus_signal`, …) dispatch through the generated codecs and need no change | the arms and the entries in `boolAtomNames` / `measureNames` |
 | `Core/Derived.lean` | `drv_queue_behind` (definition, `derivedNames` entry, `reads` entry, `evalB` arm): its only provenance is NRS 484B.630(1), the turnout line | the four places; `drv_forced_halt`, `drv_following` and `drv_standing_or_parked` also look at vehicles ahead but are supported by training lines |
-| `Core/Ontology/Ids.lean` (full) | `derivedIds` lists `drv.queue_behind`; the training `Ids.lean` already omits it, so the Lean test `derivedIds ↔ Derived.derivedNames` would fail against the unsplit `Derived.lean` | nothing in Ids; the mismatch is the previous row |
-| `Core/Atoms.lean`, `Core/Ontology/*` | split (see `SPLIT.md`) | — |
+| `Core/Vocab/Ontology/Ids.lean` (full) | `derivedIds` lists `drv.queue_behind`; the training `Ids.lean` already omits it, so the Lean test `derivedIds ↔ Derived.derivedNames` would fail against the unsplit `Derived.lean` | nothing in Ids; the mismatch is the previous row |
+| `Core/Vocab/Atoms.lean`, `Core/Vocab/Ontology/*` | split (see `SPLIT.md`) | — |
 | `Core/{Tri,Units,Time,Unknown,Formula,Assumptions,Params,Rule,Grounding,Monitor,Builders}.lean` | nothing: no reference to a test-only atom, value, field or concept | — |
 | `Tests/*.lean`, `Main.lean`, `TrafficSpecWitness.lean` | nothing | — |
 
@@ -55,7 +55,7 @@ Which of the two the evaluation wants is the operator's decision; nothing was ch
 
 ## Resolution (2026-09-22)
 
-The training variant now covers the flagged files too: `harness/split.py` derives training
+The training variant now covers the flagged files too: `harness/tools/split.py` derives training
 versions of `World`, `Decode`, `Manifest`, `Semantics`, `Derived` and `Grounding` by removing
 exactly the lines that read an omitted atom (the fields, decoder keys, mask arms, dispatch arms,
 and `drv_queue_behind`), alongside the `Atoms.lean` and `Ontology/*` from `atoms_train.py`.

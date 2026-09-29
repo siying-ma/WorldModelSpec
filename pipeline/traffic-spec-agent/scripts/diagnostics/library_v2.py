@@ -25,14 +25,14 @@ from .doctor_result import Result, OK, FAIL, SKIP, VacuousCheck, _nonempty
 #: Modules a rule file may import. A rule reads the world through the atoms and the derived
 #: concepts and declares itself through Rule; it never sees the trace, the census or the builders.
 RULE_IMPORT_WHITELIST = {
-    "TrafficSpec.Core.Rule", "TrafficSpec.Core.Formula", "TrafficSpec.Core.Params",
-    "TrafficSpec.Core.Units", "TrafficSpec.Core.Time", "TrafficSpec.Core.Tri",
-    "TrafficSpec.Core.Ontology.RoadUser", "TrafficSpec.Core.Ontology.Structure",
-    "TrafficSpec.Core.Ontology.Device", "TrafficSpec.Core.Ontology.Signal",
-    "TrafficSpec.Core.Ontology.Ids",
+    "TrafficSpec.Core.Language.Rule", "TrafficSpec.Core.Language.Formula", "TrafficSpec.Core.Vocab.Params",
+    "TrafficSpec.Core.Foundations.Units", "TrafficSpec.Core.Foundations.Time", "TrafficSpec.Core.Foundations.Tri",
+    "TrafficSpec.Core.Vocab.Ontology.RoadUser", "TrafficSpec.Core.Vocab.Ontology.Structure",
+    "TrafficSpec.Core.Vocab.Ontology.Device", "TrafficSpec.Core.Vocab.Ontology.Signal",
+    "TrafficSpec.Core.Vocab.Ontology.Ids",
 }
 #: Modules a concept file may import: the concept record and the language it is written in.
-CONCEPT_IMPORT_WHITELIST = {"TrafficSpec.Core.Concept"}
+CONCEPT_IMPORT_WHITELIST = {"TrafficSpec.Core.Language.Concept"}
 
 
 def _def_name(atom_id: str) -> str:
@@ -46,7 +46,7 @@ class LibraryV2Checks:
         self.core = library_root / "TrafficSpec" / "Core"
 
     def _ids(self) -> tuple[list[str], list[str]]:
-        text = (self.core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")
+        text = (self.core / "Vocab" / "Ontology" / "Ids.lean").read_text(encoding="utf-8")
         atoms_part, _, prim_part = text.partition("def primitiveIds")
         atoms = _nonempty(re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', atoms_part, re.M), "atomIds")
         prims = _nonempty(re.findall(r'^\s*"(prim\.[a-z_]+)"', prim_part, re.M), "primitiveIds")
@@ -54,15 +54,15 @@ class LibraryV2Checks:
 
     def ontology_generated_in_sync(self) -> Result:
         src = ("ontology/ATOMS.md → scripts/gen_ontology.py",
-               "library/TrafficSpec/Core/Ontology/*.lean")
+               "library/TrafficSpec/Core/Vocab/Ontology/*.lean")
         from scripts import gen_ontology
         active = (self.lib / "splits" / "ACTIVE")
         which = active.read_text().strip() if active.exists() else "full"
         atoms_md = self.repo / "ontology" / ("ATOMS_train.md" if which == "train" else "ATOMS.md")
         src = (f"ontology/{atoms_md.name} → scripts/gen_ontology.py (active split: {which})",
-               "library/TrafficSpec/Core/Ontology/*.lean")
+               "library/TrafficSpec/Core/Vocab/Ontology/*.lean")
         files = gen_ontology.generate(atoms_md)
-        out = self.core / "Ontology"
+        out = self.core / "Vocab" / "Ontology"
         drift = [n for n, t in files.items()
                  if not (out / n).exists() or (out / n).read_text(encoding="utf-8") != t]
         stale = [p.name for p in out.glob("*.lean") if p.name not in files]
@@ -78,7 +78,7 @@ class LibraryV2Checks:
         the training `Atoms.lean` must lack exactly their definitions.
         """
         src = ("laws/audit_and_scripts/split_atoms.json (nrs_tools/split.py)",
-               "ontology/ATOMS_train.md, library/splits/train/TrafficSpec/Core/{Atoms.lean,Ontology/*} (nrs_tools/atoms_train.py)")
+               "ontology/ATOMS_train.md, library/splits/train/TrafficSpec/Core/Vocab/{Atoms.lean,Ontology/*} (nrs_tools/atoms_train.py)")
         split_file = self.repo / "laws" / "audit_and_scripts" / "split_atoms.json"
         train_md = self.repo / "ontology" / "ATOMS_train.md"
         train_root = self.lib / "splits" / "train" / "TrafficSpec" / "Core"
@@ -88,19 +88,19 @@ class LibraryV2Checks:
         split = json.loads(split_file.read_text(encoding="utf-8"))
         removed = {a.replace(".", "_") for a in split["test_only_atoms"]}
         files = gen_ontology.generate(train_md)
-        out = train_root / "Ontology"
+        out = train_root / "Vocab" / "Ontology"
         drift = [n for n, t in files.items()
                  if not (out / n).exists() or (out / n).read_text(encoding="utf-8") != t]
         full_core = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
-        full_core = full_core if (full_core / "Atoms.lean").exists() else self.core   # before any swap the Core holds the full files
-        full_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (full_core / "Ontology" / "Ids.lean").read_text(encoding="utf-8")))
+        full_core = full_core if (full_core / "Vocab" / "Atoms.lean").exists() else self.core   # before any swap the Core holds the full files
+        full_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (full_core / "Vocab" / "Ontology" / "Ids.lean").read_text(encoding="utf-8")))
         train_ids = set(re.findall(r'"([a-z]+\.[a-z_]+)"', (out / "Ids.lean").read_text(encoding="utf-8")))
         expected_gone = set(split["test_only_atoms"]) | set(split.get("test_only_primitives", []))
         if (full_ids - train_ids) != expected_gone:
             return Result("training split", FAIL,
                           f"training Ids omit {sorted(full_ids - train_ids)}, split says {sorted(expected_gone)}", src)
-        full_defs = set(re.findall(r"^def ([a-z]+_\w+)", (full_core / "Atoms.lean").read_text(encoding="utf-8"), re.M))
-        train_defs = set(re.findall(r"^def ([a-z]+_\w+)", (train_root / "Atoms.lean").read_text(encoding="utf-8"), re.M))
+        full_defs = set(re.findall(r"^def ([a-z]+_\w+)", (full_core / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"), re.M))
+        train_defs = set(re.findall(r"^def ([a-z]+_\w+)", (train_root / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"), re.M))
         gone = full_defs - train_defs
         wrong = sorted(d for d in gone if not any(d == r or d.startswith(r + "_") for r in removed))
         kept = sorted(d for d in train_defs if any(d == r or d.startswith(r + "_") for r in removed))
@@ -112,10 +112,10 @@ class LibraryV2Checks:
                       f"{len(expected_gone)} ids and {len(gone)} defs omitted, ontology regenerates identically", src)
 
     def atoms_bijection(self) -> Result:
-        src = ("library/TrafficSpec/Core/Ontology/Ids.lean → atomIds",
-               "library/TrafficSpec/Core/Atoms.lean → def", "Semantics.lean → dispatch tables")
+        src = ("library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → atomIds",
+               "library/TrafficSpec/Core/Vocab/Atoms.lean → def", "Language/Semantics.lean → dispatch tables")
         atoms, _ = self._ids()
-        text = (self.core / "Atoms.lean").read_text(encoding="utf-8")
+        text = (self.core / "Vocab" / "Atoms.lean").read_text(encoding="utf-8")
         defs = _nonempty(re.findall(r"^def ([a-z]+_\w+)", text, re.M), "Atoms.lean defs")
         wanted = {_def_name(a) for a in atoms}
         missing = sorted(wanted - set(defs))
@@ -123,7 +123,7 @@ class LibraryV2Checks:
         orphans = sorted(d for d in defs
                          if d not in wanted and not any(d.startswith(w + "_") for w in wanted)
                          and not d.startswith("rel_ahead_in_lane") and not d.startswith("rel_behind_in_lane"))
-        sem = (self.core / "Semantics.lean").read_text(encoding="utf-8")
+        sem = (self.core / "Language" / "Semantics.lean").read_text(encoding="utf-8")
         undispatched = sorted(a for a in atoms
                               if f'"{_def_name(a)}"' not in sem
                               and not (a.startswith(("ru.", "st.", "dev.")) and a.count(".") == 1))
@@ -140,10 +140,10 @@ class LibraryV2Checks:
                       f"{len(atoms)} atom ids ↔ defs; {len(defs) - len(wanted)} accessors", src)
 
     def primitive_bijection(self) -> Result:
-        src = ("library/TrafficSpec/Core/Ontology/Ids.lean → primitiveIds",
-               "library/TrafficSpec/Core/Primitives.lean → def prim_*, primitiveNames, reads")
+        src = ("library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → primitiveIds",
+               "library/TrafficSpec/Core/Vocab/Primitives.lean → def prim_*, primitiveNames, reads")
         _, prims = self._ids()
-        text = (self.core / "Primitives.lean").read_text(encoding="utf-8")
+        text = (self.core / "Vocab" / "Primitives.lean").read_text(encoding="utf-8")
         defs = set(_nonempty(re.findall(r"^def (prim_\w+)", text, re.M), "Primitives.lean defs"))
         wanted = {_def_name(d) for d in prims}
         names_block = text.split("def primitiveNames")[1].split("]")[0]
@@ -180,7 +180,7 @@ class LibraryV2Checks:
         return Result("rule imports", OK, f"{len(rules)} rule and {len(concepts)} concept files import only their whitelist", src)
 
     def manifests_complete(self) -> Result:
-        src = ("library/manifests/*.json → atoms", "library/TrafficSpec/Core/Ontology/Ids.lean → atomIds")
+        src = ("library/manifests/*.json → atoms", "library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → atomIds")
         files = sorted((self.lib / "manifests").glob("*.json"))
         if not files:
             return Result("manifests complete", SKIP, "no manifests registered yet", src)

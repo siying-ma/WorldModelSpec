@@ -2,17 +2,19 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-from .. import index_sync, lean, paths, validate_a
-from ..blueprint import Node
-from ..reading import Reading
-from ..state import Run
+from ..lean import index_sync, lean
+from ..store import paths
+from ..checks import validate_a
+from ..model.blueprint import Node
+from ..model.reading import Reading
+from ..store.state import Run
 from .code import rollback, rollback_concept
 
 
 def _witness_harness(reading_json: Path) -> str:
     return f'''import TrafficSpec
 import TrafficSpecWitness
-import TrafficSpec.Core.Decode
+import TrafficSpec.Core.Runtime.Decode
 open TrafficSpec
 def main : IO Unit := do
   let text ← IO.FS.readFile {json.dumps(str(reading_json))}

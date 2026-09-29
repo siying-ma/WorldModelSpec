@@ -1,4 +1,4 @@
-import TrafficSpec.Core.Units
+import TrafficSpec.Core.Foundations.Units
 namespace TrafficSpec.Tests
 open TrafficSpec Units
 

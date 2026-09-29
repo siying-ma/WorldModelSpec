@@ -8,10 +8,14 @@ accepted node as a worked example. Core is readable, not writable; the harness i
 from __future__ import annotations
 import json
 from pathlib import Path
-from .. import gate, index_sync, lean, nodeid, paths, render, session, skeleton, surface
-from ..blueprint import Node, ConceptRecord
-from ..reading import Reading
-from ..state import Run
+from ..checks import gate
+from ..lean import index_sync, lean, skeleton, surface
+from ..model import nodeid
+from ..store import paths
+from ..agents import render, session
+from ..model.blueprint import Node, ConceptRecord
+from ..model.reading import Reading
+from ..store.state import Run
 
 PLACEHOLDERS = ("node", "files", "core_surface", "reading", "example", "skeletons", "gate", "rule_path", "witness_path", "node_id")
 PLACEHOLDERS_CONCEPT = ("concept", "files", "core_surface", "example", "skeletons", "gate", "concept_path", "witness_path", "concept_id", "mode")
@@ -93,7 +97,7 @@ def run_code(run: Run, node: Node, reading: Reading) -> gate.Verdict:
             print(f"[code] warning: the skeleton of {node.id} does not build; see prewarm.log")
     files = (f"- rule: `library/{rule_rel}` — `namespace {nodeid.rule_namespace(node.id)}`, `def rule : Rule`\n"
              f"- witness: `library/{wit_rel}` — `namespace {nodeid.witness_namespace(node.id)}`, `def scenarios : List Scenario`\n"
-             f"- imports: the rule file imports `TrafficSpec.Core.Rule` only; the witness file imports `{nodeid.rule_module(node.id)}` and `TrafficSpec.Core.Builders`\n"
+             f"- imports: the rule file imports `TrafficSpec.Core.Language.Rule` only; the witness file imports `{nodeid.rule_module(node.id)}` and `TrafficSpec.Core.Evidence.Builders`\n"
              f"- both files exist already, written by the harness from the node (below); they build, and every declaration the gate compares is filled in — your work is the formulas and the scenes\n")
     skeletons = (f"```lean\n-- library/{rule_rel} (as written by the harness)\n{rule_text}\n```\n\n"
                  f"```lean\n-- library/{wit_rel} (as written by the harness)\n{wit_text}\n```\n")
@@ -218,7 +222,7 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading) -> gate.Ver
             print(f"[code] warning: the skeleton of {rec.id} does not build; see prewarm.log")
     files = (f"- concept: `library/{c_rel}` — `namespace {nodeid.concept_namespace(rec.id)}`, `def concept : Concept`\n"
              f"- witness: `library/{w_rel}` — `namespace {nodeid.concept_witness_namespace(rec.id)}`, `def instances : List Concept.Instance`, `def scenarios : List Scenario`\n"
-             f"- imports: the concept file imports `TrafficSpec.Core.Concept` only; the witness file imports `{nodeid.concept_module(rec.id)}` and `TrafficSpec.Core.Builders`\n"
+             f"- imports: the concept file imports `TrafficSpec.Core.Language.Concept` only; the witness file imports `{nodeid.concept_module(rec.id)}` and `TrafficSpec.Core.Evidence.Builders`\n"
              f"- both files exist already, written by the harness from the record (below); they build, and every declaration the gate compares is filled in — your work is the body and the scenes\n")
     skeletons = (f"```lean\n-- library/{c_rel} (as written by the harness)\n{c_text}\n```\n\n"
                  f"```lean\n-- library/{w_rel} (as written by the harness)\n{w_text}\n```\n")

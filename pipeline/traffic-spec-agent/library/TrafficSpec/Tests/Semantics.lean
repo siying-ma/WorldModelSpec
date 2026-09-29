@@ -1,6 +1,6 @@
-import TrafficSpec.Core.Semantics
-import TrafficSpec.Core.Ontology.Ids
-import TrafficSpec.Core.RuleEval
+import TrafficSpec.Core.Language.Semantics
+import TrafficSpec.Core.Vocab.Ontology.Ids
+import TrafficSpec.Core.Language.RuleEval
 namespace TrafficSpec.Tests.Semantics
 open TrafficSpec Units TrafficSpec.Semantics
 

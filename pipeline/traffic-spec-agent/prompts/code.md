@@ -41,7 +41,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 ## Access
 
 - You **edit** `{rule_path}` and `{witness_path}`, and write `task_result.md`. Nothing else.
-- You **may read** `library/TrafficSpec/Core/*.lean` when a question is not answered by the
+- You **may read** `library/TrafficSpec/Core/**/*.lean` when a question is not answered by the
   surface above (a primitive's exact reading of a field, a tolerance's sense). Read the one
   file that answers it; do not page through Core to re-derive what the surface already states.
   Core is frozen: you never edit it, and you never work around it.
@@ -110,8 +110,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario
    names the instants it speaks about (`window`) when the rule looks back in time.
 8. **No history of your own.** The trace is a list of built scenes; you do not read captures,
-   and you do not import anything but `TrafficSpec.Core.Rule` in the rule file and the rule plus
-   `TrafficSpec.Core.Builders` in the witness file.
+   and you do not import anything but `TrafficSpec.Core.Language.Rule` in the rule file and the rule plus
+   `TrafficSpec.Core.Evidence.Builders` in the witness file.
 9. **Closed, total values.** No `sorry`, `admit`, `axiom`, `unsafe`, `partial`, `opaque`,
    `implemented_by`, `extern`, `native_decide` or `panic!` anywhere in the two files; the rule is
    data and the gate checks its axioms.
