@@ -153,7 +153,7 @@ def kin_path_length (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.
 -- §3 Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
 private def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
-  (s.structure? r).map (·.kind == k)
+  (s.structure? r).bind fun st => if st.unobservedKinds.contains k then none else some (st.kind == k)
 
 def st_highway (s : Scene) (r : RegionId) : Option Bool := isKind s r .highway
 def st_roadway (s : Scene) (r : RegionId) : Option Bool := isKind s r .roadway
@@ -263,7 +263,7 @@ def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
 -- §4 Control devices
 -- ---------------------------------------------------------------------------------------------
 private def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
-  (s.device d).map (·.kind == k)
+  (s.device d).bind fun dv => if dv.unobservedKinds.contains k then none else some (dv.kind == k)
 
 def dev_traffic_signal (s : Scene) (d : DeviceId) : Option Bool := devKind s d .trafficSignal
 def dev_traffic_signal_indications (s : Scene) (d : DeviceId) : Option (List SignalIndication) := (s.device d).bind (·.indications)

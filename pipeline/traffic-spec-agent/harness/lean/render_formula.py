@@ -93,8 +93,11 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
         return f"the assumption `{f['asm']}` is declared true"
     if "not" in f:
         return f"it is not the case that ({formula(f['not'], glosses, depth)})"
+    if "count" in f:
+        return (f"the number of times ({formula(f['count'], glosses, depth)}) became true since "
+                f"({formula(f['since'], glosses, depth)}) last became true {_CMP[f['op']]} {f['n']}")
     for op, word in (("and", "AND"), ("or", "OR"), ("implies", "IMPLIES"), ("until", "UNTIL"), ("since", "SINCE")):
-        if op in f:
+        if op in f and isinstance(f[op], list) and len(f[op]) == 2:
             a, b = f[op]
             return f"(\n{pad}  {formula(a, glosses, depth + 1)}\n{pad}  {word}\n{pad}  {formula(b, glosses, depth + 1)}\n{pad})"
     if "always" in f:
@@ -114,9 +117,6 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
         return f"({formula(f['rises'], glosses, depth)}) holds now and did not hold at the previous observation"
     if "defined_when" in f:
         return f"provided that ({formula(f['defined_when'], glosses, depth)}) — undefined otherwise: ({formula(f['body'], glosses, depth)})"
-    if "count" in f:
-        return (f"the number of times ({formula(f['count'], glosses, depth)}) became true since "
-                f"({formula(f['since'], glosses, depth)}) last became true {_CMP[f['op']]} {f['n']}")
     if "rule" in f:
         return f"the rule `{f['rule']}` is complied with (binders {f.get('map')})"
     if "rule_applies" in f:
@@ -145,6 +145,23 @@ def render_concept(export: dict, glosses: dict[str, str]) -> str:
     else:
         lines.append("It holds at an observation exactly when:\n" + formula(export["body"], glosses))
     return "\n".join(lines)
+
+
+def render_rule(export: dict, glosses: dict[str, str]) -> str:
+    """A rule's export (`Rule.toJson`) as prose for the blind reader: each binder with its class
+    formula, the applicability, the obligation, the assumptions. The operationalizations (whose
+    `standard` field is the law's own words), the residues and the law ids are not rendered."""
+    lines = ["Parties (each must satisfy its class at an observation for the rule to speak about it):"]
+    for b in export.get("binders", []):
+        lines.append(f"- `{b['name']}`: {formula(b.get('cls', 'tt'), glosses, 1)}")
+    lines.append("")
+    lines.append("The rule engages at an observation exactly when:\n" + formula(export.get("applicability", "tt"), glosses))
+    lines.append("")
+    lines.append("While engaged, it is complied with exactly when:\n" + formula(export.get("obligation", "tt"), glosses))
+    asms = export.get("assumptions", [])
+    lines.append("")
+    lines.append("Assumptions the trace must declare: " + (", ".join(f"`{a}`" for a in asms) if asms else "(none)") + ".")
+    return "\n".join(lines).replace("(a parameter the caller sets)", "(a bound the reading sets)")
 
 
 def canonical(body, arg_names: list[str], param_names: list[str]) -> str:

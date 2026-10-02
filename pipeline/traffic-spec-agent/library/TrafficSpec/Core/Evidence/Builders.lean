@@ -128,7 +128,9 @@ end Build
 /-- A witness: a rule, a trace, the reading and manifest it assumes, the grounding it speaks
     about (binder ↦ track) and the episode verdict the plan declared over `window` (a closed range
     of timestamps; the whole trace when absent). A lookback window is truncated at the start of
-    every finite trace, so a witness about a rule with one names the instants it speaks about. -/
+    every finite trace, so a witness about a rule with one names the instants it speaks about.
+    A witness is a test of the rule, not evidence about the law: it shows the formulas reach the
+    verdict it names, on a scene its author built. -/
 structure Scenario where
   name : String
   rule : String
@@ -141,8 +143,11 @@ structure Scenario where
   deriving Repr, Inhabited
 
 namespace Scenario
-/-- The witness holds when the rule's episode verdict on its grounding equals the expected one.
-    Unknown expected verdicts compare by tag only: a witness may promise unknown, not its reasons.
+/-- The witness holds when the rule's episode verdict on its grounding has the expected tag, and
+    the verdict is reached for the reason the witness is about: a `notApplicable` witness needs an
+    instant at which every bound track is present (a track that never appears leaves any rule not
+    engaged); an `unknown` witness must be unknown only for atoms its manifest masks (an unbound
+    variable, a truncated window or a missing parameter is a defect, not a masked observation).
     The rules are evaluated with their concept calls expanded over `concepts`. -/
 def run (rules : List Rule) (sc : Scenario) (concepts : List Concept := []) : Except String Verdict := do
   let rules := rules.map (Concept.expandRule concepts)
@@ -151,13 +156,26 @@ def run (rules : List Rule) (sc : Scenario) (concepts : List Concept := []) : Ex
     | none => throw s!"{sc.name}: rule {sc.rule} is not registered"
   let S := Grounding.Setup.mk' rules (maskTrace sc.manifest sc.trace) sc.reading sc.manifest.reidGap
   let g : Grounding.Grounding := ⟨sc.grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
-  let tl := (Grounding.timeline S r g).toList.filter fun (t, _) =>
+  let tl := Grounding.evaluate S r g
+  let rows := tl.verdicts.toList.filter fun (t, _) =>
     match sc.window with
     | some (a, b) => a ≤ t && t ≤ b
     | none => true
-  let got := Grounding.episode (tl.map (·.2))
-  if got.tag == sc.expected.tag then pure got
-  else throw s!"{sc.name}: expected {sc.expected.tag}, got {got.tag} {(got.reasons.map UnknownReason.tag)}"
+  let got := Grounding.episode (rows.map (·.2))
+  if got.tag != sc.expected.tag then
+    throw s!"{sc.name}: expected {sc.expected.tag}, got {got.tag} {(got.reasons.map UnknownReason.tag)}"
+  match sc.expected with
+  | .notApplicable =>
+    if tl.present then pure got
+    else throw s!"{sc.name}: not applicable, but no instant has every bound track present"
+  | .unknown _ =>
+    let absent := sc.manifest.absentIds
+    let stray := got.reasons.filter fun w => match w with
+      | .absentAtom n => !(atomIdOf n).any absent.contains
+      | _ => true
+    if stray.isEmpty then pure got
+    else throw s!"{sc.name}: unknown for {(stray.map UnknownReason.tag)}, not for an atom the manifest masks"
+  | _ => pure got
 end Scenario
 
 end TrafficSpec

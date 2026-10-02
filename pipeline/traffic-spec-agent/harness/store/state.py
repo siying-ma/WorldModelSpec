@@ -16,6 +16,8 @@ class Options:
     model: Optional[str] = None
     max_iterations: int = 3
     plan_attempts: int = 2
+    concept_attempts: int = 3      # coding attempts per concept, the first plus its repairs
+    node_attempts: int = 2         # coding attempts per node, the first plus one after a node repair session
     gate_budget: int = 6
     max_turns: int = 80
     session_timeout: float = 3600.0
@@ -27,6 +29,12 @@ class Options:
     session_budget_usd: Optional[float] = None   # `--max-budget-usd` per session; None = uncapped
     session_retries: int = 2       # relaunches of a session that never ran (account limit, API error)
     retry_wait: float = 900.0      # seconds between those relaunches
+    plan_batch: int = 8            # laws per plan session; a law is planned after the laws it names are accepted or in its batch
+    judge_samples: int = 1         # independent judge sessions per node review; every one must find the node aligned
+    workers: int = 1               # coding sessions run at once (concepts, then nodes, in dependency waves)
+    reader_model: Optional[str] = None   # the blind reader's model; None = the run's model
+    plan_turns: int = 40           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
+    restart: bool = False          # discard an interrupted iteration instead of resuming it
     mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
 
@@ -40,6 +48,22 @@ class Run:
     base_nodes: dict[str, dict] = field(default_factory=dict)      # from `base_run`, read-only
     base_concepts: dict[str, dict] = field(default_factory=dict)
 
+    @classmethod
+    def load(cls, run_id: str) -> "Run":
+        """A run as its `options.json` records it, with its accepted nodes and concepts loaded:
+        what a command run outside the loop (the draft validator, the gate) works against."""
+        f = paths.run_dir(run_id) / "options.json"
+        if not f.exists():
+            raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
+        d = json.loads(f.read_text(encoding="utf-8"))
+        fields = {k for k in Options.__dataclass_fields__}
+        kw = {k: v for k, v in d.items() if k in fields}
+        kw["laws"], kw["ontology"] = Path(d["laws"]), Path(d["ontology"])
+        kw["reading"] = Path(d.get("base_reading") or d["reading"])
+        run = cls(Options(**kw))
+        run.load_accepted()
+        return run
+
     @property
     def dir(self) -> Path:
         return paths.run_dir(self.opts.run_id)
@@ -52,6 +76,11 @@ class Run:
     def reading_file(self) -> Path:
         """The run's reading: the operator's base reading plus the aggregates the run derived."""
         return self.dir / "reading.json"
+
+    @property
+    def node_ledger_file(self) -> Path:
+        """Nodes the gate or the review returned, awaiting a repair session or spent."""
+        return self.dir / "node_ledger.jsonl"
 
     @property
     def deferred_file(self) -> Path:

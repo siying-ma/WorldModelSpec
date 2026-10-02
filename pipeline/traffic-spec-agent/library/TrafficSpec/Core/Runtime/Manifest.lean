@@ -102,8 +102,9 @@ def Support.absent : Support → List String
     the obligation reads is absent (the rule could never decide), or a binder's class can never be
     established, or a composed rule is itself unsupported. -/
 def support (rules : List Rule) (r : Rule) (m : Manifest) : Support :=
+  -- the clock is every source's: a window over time reads it, and no manifest declares it absent
   let absentOf (fs : List Formula) : List String × Nat :=
-    let ids := formulaAtomIds fs
+    let ids := (formulaAtomIds fs).filter (· != "kin.time")
     (ids.filter fun id => !m.observes id, ids.length)
   let (oblAbsent, oblTotal) := absentOf [r.obligation]
   let clsDead := r.binders.any fun b =>
@@ -147,6 +148,7 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "sig.horn" => { u with sig := { u.sig with horn := none } }
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }
   | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
+  | "sig.compression_brake" => { u with sig := { u.sig with compressionBrake := none } }
   | _ =>
     -- a class atom: the source cannot tell this class, so no user is known to have or lack it
     match RoadUserClass.ofString ((id.drop 3).toString) with
@@ -166,9 +168,9 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.sight_distance" => some { st with sightDistance := none }
   | "st.region_geometry" => some { st with position := none, boundary := none }
   | _ =>
-    -- a kind atom: the source never produces regions of this kind
+    -- a kind atom: the source cannot tell this kind, so no region is known to be or not be one
     match StructureKind.ofString ((id.drop 3).toString) with
-    | some k => if st.kind == k then none else some st
+    | some k => some { st with unobservedKinds := k :: st.unobservedKinds }
     | none => some st
 
 def device (id : String) (d : Device) : Option Device :=
@@ -177,8 +179,9 @@ def device (id : String) (d : Device) : Option Device :=
   | "dev.position" => some { d with position := none }
   | "dev.inoperative" => some { d with inoperative := none }
   | _ =>
+    -- a kind atom: the source cannot tell this kind, so no device is known to be or not be one
     match DeviceKind.ofString ((id.drop 4).toString) with
-    | some k => if d.kind == k then none else some d
+    | some k => some { d with unobservedKinds := k :: d.unobservedKinds }
     | none => some d
 
 def env (id : String) (e : Env) : Env :=

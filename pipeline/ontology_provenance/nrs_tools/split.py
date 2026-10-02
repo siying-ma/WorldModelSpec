@@ -44,7 +44,7 @@ PROVENANCE = HERE.parent / "nrs_atoms_provenance.md"
 ATOMS_MD = PIPE / "traffic-spec-agent" / "ontology" / "ATOMS.md"
 
 # --------------------------------------------------------------------------------------------
-# The test set: 29 of 285 lines (10.2%), in clusters that each bring something the training set
+# The test set: 28 of 281 lines (10.0%), in clusters that each bring something the training set
 # never mentions. "Ordinary" lines test plain generalization to a new rule over known atoms.
 # --------------------------------------------------------------------------------------------
 TEST: dict[str, str] = {
@@ -67,8 +67,9 @@ TEST: dict[str, str] = {
     # a vending vehicle with engaged safety equipment
     "LVMC-11-22-150-A": "ice cream truck: new class `ru.vending_vehicle` (tier S)",
     "LVMC-11-22-150-B": "ice cream truck: same class, 15 mph within 100 ft",
-    # an audible device
-    "NRS-484D-285-1": "engine compression brake: new signal `sig.compression_brake` (tier Q)",
+    # (an audible-device cluster stood here: NRS-484D-285-1, `sig.compression_brake`. It moved to
+    #  unobservable.jsonl on 2026-09-29 -- no planned source carries sound -- so the test set no
+    #  longer exercises extending the ontology with a new signal atom.)
     # a structure designated by sign
     "NRS-484B-630-1": "slow vehicle with five following: new structure `st.turnout`, queue concept (tier Q)",
     # doors

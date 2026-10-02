@@ -103,6 +103,7 @@ def atomIds : List String := [
   "sig.hazard",
   "sig.headlamp",
   "sig.position_lamp",
+  "sig.compression_brake",
   "sig.warning_lamp",
   "sig.siren",
   "sig.horn",

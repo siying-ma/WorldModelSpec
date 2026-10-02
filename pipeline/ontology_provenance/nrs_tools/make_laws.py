@@ -500,15 +500,16 @@ if __name__ == '__main__':
               f"- lines in the corpus after resolution: {len(out)}", ""]
     open(AUDIT_DIR / 'OVERLAPS.md', 'w', encoding='utf-8').write('\n'.join(lines))
     # ---- classification into the four views (tiers.py) ----
-    from tiers import tier, bucket, EXCLUDED, BLOCKING
-    for k in list(EXCLUDED) + list(BLOCKING):
+    from tiers import tier, bucket, EXCLUDED, BLOCKING, UNOBSERVABLE
+    for k in list(EXCLUDED) + list(BLOCKING) + list(UNOBSERVABLE):
         assert k in kept_ids, ('tiers.py names a line not in the corpus', k)
     for o in out:
         o['tier'] = tier(o); o['bucket'] = bucket(o)
         if o['id'] in EXCLUDED: o['excluded_reason'] = EXCLUDED[o['id']]
+        if o['id'] in UNOBSERVABLE: o['unobservable_reason'] = UNOBSERVABLE[o['id']]
         # 2026-09-20: every line that carries an unresolved reference is unresolvable (user decision);
         # `blocking` states the reason, from BLOCKING where the mark is the trigger itself, else the kinds
-        if o['bucket'] != 'excluded' and o.get('unresolved'):
+        if o['bucket'] not in ('excluded', 'unobservable') and o.get('unresolved'):
             o['bucket'] = 'unresolvable'
             o['blocking'] = BLOCKING.get(o['id']) or ('carries an unresolved reference: ' + ', '.join(sorted({e['kind'] for e in o['unresolved']})))
         elif o['id'] in BLOCKING:
@@ -538,14 +539,14 @@ if __name__ == '__main__':
                     out.append(r); by_id[d] = r; reinstated.append((d, o['id']))
     if reinstated:
         print('reinstated (survivor unresolvable):', reinstated)
-    views = {'excluded': [], 'unresolvable': [], 'judgement': [], 'concrete': []}
+    views = {'excluded': [], 'unobservable': [], 'unresolvable': [], 'judgement': [], 'concrete': []}
     for o in out: views[o['bucket']].append(o)
-    for name in ('excluded', 'unresolvable'):
+    for name in ('excluded', 'unobservable', 'unresolvable'):
         with open(CORPUS_DIR / f'{name}.jsonl', 'w', encoding='utf-8') as f:
             for o in views[name]: f.write(json.dumps(o, ensure_ascii=False) + '\n')
     # the pipeline corpus = concrete + judgement; a reference into a removed line becomes an
     # unresolved mark of kind 'removed_target' (the bracketed id stays in the text as the record)
-    removed = {o['id']: o['bucket'] for o in out if o['bucket'] in ('excluded', 'unresolvable')}
+    removed = {o['id']: o['bucket'] for o in out if o['bucket'] in ('excluded', 'unobservable', 'unresolvable')}
     corpus = [o for o in out if o['bucket'] in ('concrete', 'judgement')]
     for o in corpus:
         gone = [r for r in o.get('refs', []) if r in removed]
@@ -557,7 +558,7 @@ if __name__ == '__main__':
             o['refs'] = [r for r in o['refs'] if r not in removed]
     with open(CORPUS_DIR / 'laws_full.jsonl', 'w', encoding='utf-8') as f:
         for o in out:
-            if o['bucket'] != 'unresolvable': f.write(json.dumps(o, ensure_ascii=False) + '\n')
+            if o['bucket'] not in ('unresolvable', 'unobservable'): f.write(json.dumps(o, ensure_ascii=False) + '\n')
     with open(CORPUS_DIR / 'laws.jsonl', 'w', encoding='utf-8') as f:
         for o in corpus: f.write(json.dumps(o, ensure_ascii=False) + '\n')
     # ---- dependency audit of the concrete view (§4 of the split request) ----

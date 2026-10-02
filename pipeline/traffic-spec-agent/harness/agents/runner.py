@@ -66,6 +66,22 @@ def resolve_model(model: Optional[str]) -> Optional[str]:
     return MODEL_ALIASES.get(model, model)
 
 
+#: Every pipeline session runs with exactly the context its prompt gives it. Without these flags
+#: a session inherits the developer's environment: the repository's CLAUDE.md (a working
+#: agreement written for a human-driven session), the user's plugins and their MCP servers, and
+#: every installed skill. `--setting-sources ""` loads no settings file and no CLAUDE.md,
+#: `--strict-mcp-config` loads no MCP server, `--disable-slash-commands` loads no skill. The
+#: account login is unaffected.
+ISOLATION_FLAGS = ["--setting-sources", "", "--strict-mcp-config", "--disable-slash-commands"]
+#: Every session acts under an allow-list and nothing else: the default permission mode with
+#: nobody to answer a prompt, so any tool use the allow rules do not name is denied. A rule names
+#: a tool and, for a file tool, an absolute path (`Read(//abs/dir/**)`) or, for the shell, one
+#: exact command with no wildcard (a wildcard would also admit `command && anything`). Reading is
+#: allowed anywhere inside the working directory whatever the rules say, so a session's working
+#: directory holds only what it may read.
+PERMISSION_FLAGS = ["--permission-mode", "default", "--permission-prompts", "none"]
+
+
 def run_claude(
     prompt: str,
     cwd: Path,
@@ -76,21 +92,29 @@ def run_claude(
     max_budget_usd: Optional[float] = None,
     timeout_seconds: Optional[float] = None,
     env_overrides: Optional[dict[str, str]] = None,
+    allow: Optional[list[str]] = None,
+    deny: Optional[list[str]] = None,
+    disallowed_tools: Optional[list[str]] = None,
 ) -> tuple[int, Optional[dict], bool]:
     """Run one headless Claude session.
 
-    Returns ``(returncode, result_line, timed_out)`` where ``result_line`` is the
-    parsed final ``type: "result"`` object, or ``None`` if the session produced
-    none (crash, hard kill).
+    `allow` is the complete list of what the session may do (`Read(//abs/dir/**)`,
+    `Write(//abs/file)`, `Bash(<one exact command>)`); every other tool use is denied. `deny`
+    adds rules that hold even where a rule would allow; `disallowed_tools` removes tools outright.
+    Returns ``(returncode, result_line, timed_out)`` where ``result_line`` is the parsed final
+    ``type: "result"`` object, or ``None`` if the session produced none (crash, hard kill).
     """
     cmd = [
         "claude",
         "-p",
         "--verbose",
         "--output-format", "stream-json",
-        "--permission-mode", "bypassPermissions",
+        *PERMISSION_FLAGS,
         "--max-turns", str(max_turns),
+        *ISOLATION_FLAGS,
     ]
+    if allow:
+        cmd += ["--allowedTools", *allow]
     resolved = resolve_model(model)
     if resolved:
         cmd += ["--model", resolved]
@@ -98,6 +122,10 @@ def run_claude(
         cmd += ["--effort", effort]
     if max_budget_usd is not None:
         cmd += ["--max-budget-usd", f"{max_budget_usd:.2f}"]
+    if deny:
+        cmd += ["--settings", json.dumps({"permissions": {"deny": list(deny)}})]
+    if disallowed_tools:
+        cmd += ["--disallowedTools", *disallowed_tools]
 
     # The prompt goes on STDIN, never in argv.
     #

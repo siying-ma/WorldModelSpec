@@ -1,177 +1,96 @@
 {
  "run": "lasvegas",
- "_note": "Provisional engineering conventions for the parameters the derived concepts and the operationalization table expose (ATOMS.md §8–§9). Values are in the units the corpus itself uses (feet, miles per hour, seconds, minutes); the decoder scales them to Core units. Every value here is a reading choice to be reviewed, not a statement of the law; figures the law states are declared on the rule's span as literals, not here.",
+ "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
  "params": [
   {
-   "name": "p.stop_speed",
+   "name": "p.stop_speed_tolerance",
+   "value": 0.2,
+   "unit": "m/s",
+   "convention": "The sampled-speed threshold at or below which a road user counts as not moving, as stop-sign compliance observation uses it; it bounds the definition's absolute 'complete cessation from movement' against sensor noise and sampling, and is the smallest commitment the word requires.",
+   "source": "ITE and FHWA stop-sign compliance field studies; naturalistic-driving stop classification thresholds",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.stop_dwell_time",
    "value": 0.5,
-   "unit": "mph",
-   "convention": "speed below which a body counts as halted (sensor noise floor)"
-  },
-  {
-   "name": "p.stop_span",
-   "value": 2,
    "unit": "s",
-   "convention": "span of speed below p.stop_speed that counts as a stop (a 'complete cessation from movement' must be observable across samples)"
+   "convention": "The dwell for which the speed must stay at or below the tolerance before a halt counts as a cessation rather than a sampling artefact of a slow roll, as the same compliance observation practice uses it.",
+   "source": "ITE stop-compliance observation practice",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o1"
   },
   {
-   "name": "p.standing_span",
-   "value": 30,
+   "name": "p.slowing_decel",
+   "value": 1.0,
+   "unit": "m/s^2",
+   "convention": "The mean deceleration over the approach window that separates a yield-sign slowing from an unchanged approach speed, taken at the lower end of the comfortable-deceleration range so that only an unchanged approach fails it.",
+   "source": "AASHTO Green Book, comfortable deceleration for approach manoeuvres",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.slowing_window",
+   "value": 3.0,
    "unit": "s",
-   "convention": "span beyond which a halt is standing, not a momentary stop"
+   "convention": "The window behind the observation over which that mean deceleration is measured: the time a vehicle takes to cover the final length of a yield-controlled approach at approach speed.",
+   "source": "AASHTO Green Book, intersection approach practice",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o1"
   },
   {
-   "name": "p.queue_gap",
-   "value": 15,
-   "unit": "ft",
-   "convention": "longitudinal gap within which a halted vehicle ahead makes the halt a queue"
+   "name": "p.approach_sight_distance",
+   "value": 100.0,
+   "unit": "m",
+   "convention": "Intersection sight distance: the length of the priority leg that must be visible from the departure point for a stopped vehicle to clear the crossing, which is what a vehicle approaching at the priority road's design speed covers in that clearing time.",
+   "source": "AASHTO Green Book, intersection sight distance, Case B1 (stop control on the minor road)",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o1"
   },
   {
-   "name": "p.following_gap",
-   "value": 300,
-   "unit": "ft",
-   "convention": "range within which a same-lane vehicle ahead is followed"
-  },
-  {
-   "name": "p.headway",
-   "value": 2,
+   "name": "p.conflict_horizon",
+   "value": 5.0,
    "unit": "s",
-   "convention": "reasonable-and-prudent following: the two-second headway convention"
+   "convention": "The look-ahead of the constant-velocity conflict prediction the closest-approach primitives run, taken from the time-to-collision band within which surrogate-safety analysis counts an encounter as a conflict; beyond it a prediction from present velocities carries no information.",
+   "source": "FHWA Surrogate Safety Assessment Model (SSAM), time-to-collision threshold",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o2"
   },
   {
-   "name": "p.ttc_bound",
-   "value": 1.5,
+   "name": "p.conflict_clearance",
+   "value": 2.0,
+   "unit": "m",
+   "convention": "The separation at the predicted closest approach below which two bodies count as conflicting rather than passing: a passenger-car half-width plus a working margin, applied to centre-to-centre closest approach and read against the measured surface gap.",
+   "source": "FHWA SSAM conflict criteria with standard passenger-car dimensions",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o2"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "value": 6.5,
    "unit": "s",
-   "convention": "time to conflict below which proximity is a hazard (conflict-analysis convention)"
+   "convention": "Critical headway: the gap in the priority stream below which a crossing manoeuvre from a stop- or yield-controlled approach is not accepted. A vehicle whose predicted time to closest approach is under it is approaching so closely as to be an immediate hazard.",
+   "source": "Highway Capacity Manual, base critical headway for crossing movements at two-way stop-controlled intersections",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o2"
   },
   {
-   "name": "p.ttc_horizon",
-   "value": 6,
-   "unit": "s",
-   "convention": "projection horizon for time to conflict"
+   "name": "p.induced_decel",
+   "value": 2.0,
+   "unit": "m/s^2",
+   "convention": "The deceleration the priority vehicle must not be forced past for precedence to have been granted: the threshold above which braking stops being an ordinary speed adjustment and becomes a response to a vehicle taken in front of it.",
+   "source": "AASHTO Green Book comfortable deceleration, as surrogate-safety practice applies it to induced braking",
+   "proposed": "smoke4/iter-002 NRS_484B_257_1_o2"
   },
   {
-   "name": "p.passing_clearance",
-   "value": 3,
-   "unit": "ft",
-   "convention": "lateral gap between the bodies when a road user passes another and the text states no clearance; a provisional engineering choice to be reviewed. The value equals a clearance the corpus states for passing a bicycle, which is that rule's literal and not this parameter"
-  },
-  {
-   "name": "p.turn_angle",
-   "value": 60,
-   "unit": "deg",
-   "convention": "heading change that counts as a turn"
-  },
-  {
-   "name": "p.turn_window",
-   "value": 6,
-   "unit": "s",
-   "convention": "window over which a turn's heading change is measured"
-  },
-  {
-   "name": "p.u_turn_window",
-   "value": 15,
-   "unit": "s",
-   "convention": "window over which a heading reversal is measured"
-  },
-  {
-   "name": "p.u_turn_tolerance",
-   "value": 30,
-   "unit": "deg",
-   "convention": "tolerance about a half turn"
-  },
-  {
-   "name": "p.lane_change_gap",
-   "value": 50,
-   "unit": "ft",
-   "convention": "gap the adjacent lane must offer for a feasible lane change"
-  },
-  {
-   "name": "p.approach_distance",
-   "value": 100,
-   "unit": "ft",
-   "convention": "distance from a region's boundary within which a body approaches it"
-  },
-  {
-   "name": "p.cleared_distance",
-   "value": 15,
-   "unit": "ft",
-   "convention": "distance past a line or rail beyond which it is cleared"
-  },
-  {
-   "name": "p.same_direction_cos",
-   "value": 0.9,
-   "unit": "ratio",
-   "convention": "heading cosine above which two users travel the same way (about 25 degrees)"
-  },
-  {
-   "name": "p.oncoming_cos",
-   "value": 0.9,
-   "unit": "ratio",
-   "convention": "heading cosine of opposition for oncoming traffic"
-  },
-  {
-   "name": "p.wrong_way_cos",
+   "name": "p.stop_dwell",
    "value": 0.5,
-   "unit": "ratio",
-   "convention": "heading cosine of opposition to a lane's direction that counts as wrong way"
-  },
-  {
-   "name": "p.arrival_tolerance",
-   "value": 1,
    "unit": "s",
-   "convention": "simultaneity of arrival at an intersection"
+   "convention": "halt convention: the time a body must stay within the speed tolerance for the halt to be distinguished from a single slow sample at ordinary trace rates; it instantiates the concept's dwell.",
+   "source": "stopped-vehicle detection practice; sampling rates of trajectory datasets.",
+   "proposed": "smoke4/iter-002 NRS_484B_257_2_o1"
   },
   {
-   "name": "p.hard_decel",
-   "value": 3,
-   "unit": "m/s2",
-   "convention": "deceleration that counts as sudden"
-  },
-  {
-   "name": "p.stopping_decel",
-   "value": 3.4,
-   "unit": "m/s2",
-   "convention": "design deceleration of the stopping-sight-distance model"
-  },
-  {
-   "name": "p.reaction_time",
+   "name": "p.precedence_window",
    "value": 2.5,
    "unit": "s",
-   "convention": "design perception-reaction time of the stopping-sight-distance model"
-  },
-  {
-   "name": "p.speed_margin",
-   "value": 10,
-   "unit": "mph",
-   "convention": "margin below the posted or prevailing speed that counts as impeding"
-  },
-  {
-   "name": "p.traffic_range",
-   "value": 300,
-   "unit": "ft",
-   "convention": "range within which same-direction users define prevailing speed"
-  },
-  {
-   "name": "p.impede_span",
-   "value": 30,
-   "unit": "s",
-   "convention": "span of impeding that counts"
-  },
-  {
-   "name": "p.loading_span",
-   "value": 3,
-   "unit": "min",
-   "convention": "span of a halt that counts as expeditious loading or unloading"
-  },
-  {
-   "name": "p.forced_halt_gap",
-   "value": 15,
-   "unit": "ft",
-   "convention": "gap to a halted vehicle ahead, a stop line or a sign that forces a halt"
+   "convention": "The look-back over which one road user's conduct towards another is read as a granting of precedence: the brake-reaction interval of the receiving driver, the span within which a vehicle that must give way has either stayed clear of the other or forced it to brake. It instantiates the window parameter drv.interaction.precedence_granted leaves to its caller; a shorter span reads the granting off a single sample, a longer one makes the constant-velocity prediction of the whole approach part of the judgement.",
+   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets: the brake-reaction time used in the stopping-sight-distance model.",
+   "proposed": "smoke4/iter-003 NRS_484B_257_1_o1"
   }
  ],
- "operationalizations": [],
  "aggregates": [],
  "_fields": {
   "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."

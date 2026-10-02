@@ -174,6 +174,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "sig_siren", [x] => pure (b (sig_siren s (← ent x)) name)
   | "sig_horn", [x] => pure (b (sig_horn s (← ent x)) name)
   | "sig_hand_signal", [x, k] => pure (eqEnum (sig_hand_signal s (← ent x)) (← enumLit HandSignal.ofString k) name)
+  | "sig_compression_brake", [x] => pure (b (sig_compression_brake s (← ent x)) name)
   -- environment
   | "env_darkness", [] => pure (b (env_darkness s) name)
   | "env_precipitation", [] => pure (b (env_precipitation s) name)
@@ -238,7 +239,7 @@ where
     "dev_human_direction_indication", "dev_governs", "dev_inoperative",
     "sig_turn_indicator", "sig_brake_lamp", "sig_hazard", "sig_headlamp", "sig_position_lamp",
     "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
-    "env_darkness", "env_precipitation", "env_wet_road",
+    "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
     "env_ice_or_snow", "rel_ahead_behind_in_lane", "rel_ahead_in_lane", "rel_behind_in_lane", "rel_oncoming",
     "rel_same_direction", "rel_bearing", "rel_contact"]
 

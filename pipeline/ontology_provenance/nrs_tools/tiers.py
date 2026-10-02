@@ -1,7 +1,11 @@
 """Classification of every corpus line into one of four views (CORPUS_AUDIT_2026-09-19.md §3–§4).
 
-Precedence: EXCLUDED > unresolvable > tier S/Q > tier C.
-  excluded.jsonl     lines that do not judge a driving situation (apparel, equipment legality, a permission)
+Precedence: EXCLUDED > UNOBSERVABLE > unresolvable > tier S/Q > tier C.
+  excluded.jsonl     lines that do not judge a driving situation (apparel, equipment legality, a permission,
+                     a rider's own body configuration on their own machine)
+  unobservable.jsonl lines whose every duty is one no planned source can observe; kept apart from
+                     excluded.jsonl because the reason is the source, not the law, and it reverses
+                     the moment a source supplies the signal
   unresolvable.jsonl every line that carries an `unresolved` reference (references.UNRESOLVED), whether the
                      mark is the trigger itself (BLOCKING, reason stated) or a peripheral reference (kinds stated);
                      decided 2026-09-20. Also kept out of laws_full.jsonl.
@@ -29,6 +33,29 @@ EXCLUDED = {
  'NRS-484B-783-1': "bicycle lamps and reflectors at night: equipment fitted",
  # a permission, not an obligation
  'NRS-484B-700-1': "privileges of a responding emergency vehicle: a permission that switches other rules off; an applicability record, not a rule to monitor",
+ # how a rider sits on their own machine: the whole duty is the rider's body configuration, which is
+ # neither conduct a driving plan can perform nor a fact one turns on (decided 2026-09-29)
+ 'NRS-484B-770-1': "riding on or astride the seat of a bicycle: the rider's own posture, not conduct a driving plan performs or reacts to",
+ 'NRS-486-191-1': "riding on the permanent seat of a motorcycle or moped: the rider's own posture",
+ 'NRS-486-211': "at least one hand on the handlebar: the rider's own posture",
+ 'NRS-484B-780': "carrying a package that prevents a hand on the handlebars: the rider's own posture",
+ 'LVMC-11-38-040': "holding to a moving vehicle to be propelled: the rider's own posture",
+ 'LVMC-11-40-150': "attaching oneself or the machine to a vehicle: the rider's own posture",
+ 'LVMC-11-40-185-B': "stunts, wheelies and riding on handlebars: the rider's own posture",
+ 'NRS-484B-770-2': "carrying more persons than a cycle is designed for: how many ride the machine and where they sit, not conduct a driving plan performs or reacts to",
+ 'NRS-486-181-1': "carrying a passenger on a motorcycle not designed for one: as above",
+}
+
+# Lines whose EVERY duty rests on a signal no planned source observes, so no verdict about them can
+# be founded. Neither source carries sound: CARLA has no audio and no horn on carla.Vehicle (its
+# VehicleLightState.Special1/Special2 are light flags reserved for sirens), and the real-video logs
+# ship cameras and lidar and no microphone. A line that merely CONTAINS such a duty beside an
+# observable one stays in the corpus and carries a residue instead.
+UNOBSERVABLE = {
+ 'NRS-484B-270-5b': "the whole duty is an audible warning with the horn; no planned source carries sound",
+ 'NRS-484B-280-1b': "the whole duty is an audible warning with the horn; no planned source carries sound",
+ 'NRS-484D-400-2': "both limbs are the horn -- sounding it when necessary and not otherwise; no planned source carries sound",
+ 'NRS-484D-285-1': "the conduct judged is use of a compression brake, whose statutory test is that it is audible",
 }
 
 # unresolved marks that block the trigger or the obligation itself (not a peripheral exception or a penalty)
@@ -64,5 +91,6 @@ def tier(row):
 def bucket(row):
     i = row['id']
     if i in EXCLUDED: return 'excluded'
+    if i in UNOBSERVABLE: return 'unobservable'
     if i in BLOCKING: return 'unresolvable'
     return 'judgement' if tier(row) in ('S', 'Q') else 'concrete'

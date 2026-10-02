@@ -6,13 +6,13 @@ You implement **one concept**: a `Concept` value in Lean whose body says exactly
 contract says, over the record's formals and claimed names only, and a witness file whose
 instance and scenarios show the body holding, failing, and reporting unknown when a read atom is
 unobserved. You do not reinterpret the contract: the record is the reading. Where the record is
-wrong, you stop and say so in `task_result.md`; you do not repair it in Lean.
+wrong, you end the session and say so in `task_result.md`; you do not repair it in Lean.
 
 You are a one-shot session with a budget of gate runs. Nothing waits for a reply.
 
 ## Inputs (injected below)
 
-- **The concept** — its record: id, kind, contract (a definition's words verbatim when it has
+- **The concept** — its record: id, kind, contract (quoting a corpus definition when it has
   one), formals with their sorts and admissible values, formal parameters with units and
   meanings, elements (contract words → atoms and concepts), residues, declared literals, the
   three scenarios, and for a supersession the concept it replaces and the counterexample.
@@ -38,12 +38,15 @@ Run mode: `{mode}`.
 
 ## Access
 
-- You **edit** `{concept_path}` and `{witness_path}`, and write `task_result.md`. Nothing else.
-- You **may read** `library/TrafficSpec/Core/**/*.lean` when the surface does not answer a question.
-  Core is frozen: you never edit it and never work around it.
-- You **do not read** `harness/`, `results/`, other concepts' or nodes' files beyond the example,
-  the readings, the ontology or the law corpus. The gate is the interface to the harness; the
-  record is the interface to the contract.
+- You **edit** `{concept_path}` and `{witness_path}` with the Edit and Write tools, and write
+  `task_result.md` in your working directory. Nothing else is writable.
+- You **may read**, with the Read tool and by absolute path, the Core files under `{core_dir}`
+  when the surface does not answer a question. Core is frozen: you never edit it and never work
+  around it. Nothing else is readable: not the harness, not other concepts' or nodes' files beyond
+  the example, not the readings, the ontology or the law corpus. The gate is the interface to the
+  harness; the record is the interface to the contract.
+- The **shell runs exactly one command**, the gate command below, as written. Any other command
+  is denied and wastes a turn.
 
 ## What a concept is
 
@@ -74,14 +77,15 @@ Run mode: `{mode}`.
 1. **Two files.** Edit `{concept_path}` and `{witness_path}` only; the paths and the namespaces
    `TrafficSpec.Concepts.…` / `TrafficSpecWitness.Concepts.…` derive from the concept id `{concept_id}`.
 2. **The concept declares what the record declares.** `id`, `contract`, `definition`, `args`,
-   `params`, `supersedes` are the skeleton's; leave them. `residues` starts as the record's,
-   verbatim, and you **append** one entry for every consequence of a choice the contract did not
-   dictate; the header comment explains each.
+   `params`, `residues`, `supersedes` are the skeleton's; leave them. Where you choose a reading
+   the contract leaves open, you declare a **narrowing** `⟨"<a run of the contract's words>",
+   "<why>"⟩` in `narrowings`, and the header comment explains it; the review judges the body with
+   your narrowings in view.
 3. **The body uses only claimed names**: every atom and concept in it is an element of the record,
    and every claimed name is used. Arguments are the formals, variables bound in the body, or
    enumeration spellings from the surface.
-4. **Every bound variable is anchored** to a track formal through the formula (`rel_occupies`,
-   `st_region_geometry_distance`, `dev_governs`, a relation), or the gate returns
+4. **Every bound variable is anchored** to a track formal through the formula (an anchoring
+   relation — {anchors} — or another relation that reads the formal), or the gate returns
    `UNANCHORED_VARIABLE`.
 5. **Parameters, not values.** A magnitude enters the body as `.param "<formal>"`. The only
    literals are zero, enumeration spellings, and the record's declared `literals`, each written
@@ -104,21 +108,21 @@ Run mode: `{mode}`.
 4. Run the gate. On `BUILD_FAIL`, `UNSOUND`, `CONCEPT_CYCLE` or `CHECK_FAIL`, fix the Lean. On
    `UNANCHORED_VARIABLE`, tie the variable to a track formal. On `DECLARATION_MISMATCH`,
    `UNCLAIMED_ATOM`, `UNUSED_CLAIM` or `BARE_LITERAL`, fix the body against the record once; if
-   the verdict persists, the record is wrong — stop and report it. On `WITNESS_FAIL`, decide
+   the verdict persists, the record is wrong — end the session and report it. On `WITNESS_FAIL`, decide
    whether the scene or the body is wrong against the narrative, then fix that one. On
    `SUPERSESSION_NO_DIFF`, the counterexample does not separate the bodies: build one that does,
    or report that the old body is not wrong. On `DUPLICATE_CONCEPT`, the body is an accepted
    concept's: report it; the record should call that concept. On `VACUOUS`, a leaf does no work
    in any witness: a witness must exercise it, or the record claims a name it should not.
-5. Stop on `OK`, or when the budget is spent, or when the record itself is wrong.
+5. Finish on `OK`, or when the budget is spent, or when the record itself is wrong.
 
 ## Output
 
 The two files, and `task_result.md` with: the final verdict; each gate run's verdict and what
-changed after it; every choice the record left open and what you chose; **Why I stopped**. If the
+changed after it; every choice the record left open and what you chose; **Why I finished**. If the
 record is wrong, say which element, why, and what the plan agent must change.
 
-## Stop
+## Finish
 
-Stop on `OK` with `task_result.md` written, or when the budget is spent, or when the record is
+Finish on `OK` with `task_result.md` written, or when the budget is spent, or when the record is
 wrong. Never edit the blueprint, the ontology, Core, or another concept's or node's files.

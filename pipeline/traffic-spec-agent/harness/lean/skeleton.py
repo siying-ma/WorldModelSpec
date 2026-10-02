@@ -131,7 +131,8 @@ def rule_skeleton(node: Node) -> str:
     else:
         out.append("    operationalizations := []")
     out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in residues])}"
-               "  -- the node's, verbatim; append one entry per CONSEQUENCE in the header")
+               "  -- the node's, verbatim; not yours to change")
+    out.append("    narrowings := []  -- one ⟨\"<span id>\", \"<why>\"⟩ per reading you chose on a carried span, explained in the header")
     out.append(f"    surrogate := {'true' if surrogate else 'false'} }}")
     out.append("")
     out.append(f"end {ns}")
@@ -257,7 +258,8 @@ def concept_skeleton(c: ConceptRecord) -> str:
     out.append("    params := " + _lean_list([f"⟨{_s(pr['name'])}, {_punit(pr['unit'])}⟩" for pr in c.params()]))
     out.append(f"    body := {body_ctor}")
     out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in c.get('residues', [])])}"
-               "  -- the record's, verbatim; append one entry per CONSEQUENCE in the header")
+               "  -- the record's, verbatim; not yours to change")
+    out.append("    narrowings := []  -- one ⟨\"<words of the contract>\", \"<why>\"⟩ per reading you chose that the contract leaves open, explained in the header")
     out.append(f"    supersedes := {('some ' + _s(c.get('supersedes'))) if c.get('supersedes') else 'none'} }}")
     out.append("")
     out.append(f"end {ns}")

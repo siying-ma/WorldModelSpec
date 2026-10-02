@@ -11,7 +11,7 @@ beside the audit under laws/audit_and_scripts/:
 
   laws_meta.jsonl         id + subject, theme, tier, supersedes, refs, unresolved, reinstated_for
   definitions_meta.jsonl  id + kind, applies_to, terms, term_in_corpus, note, used_by
-  excluded.jsonl, unresolvable.jsonl, laws_full.jsonl   the lines kept out, and the corpus with
+  excluded.jsonl, unobservable.jsonl, unresolvable.jsonl, laws_full.jsonl   the lines kept out, and
                           the excluded lines, with their analysis fields
 
 Nothing in the pipeline reads the sidecars: the plan phase renders id, title and text, and the
@@ -32,7 +32,8 @@ CORPUS_DIR = LAWS_ROOT / "full_list"
 AUDIT_DIR = LAWS_ROOT / "audit_and_scripts"
 
 POSTED = ("id", "title", "text", "source")
-LAW_META = ("subject", "theme", "tier", "supersedes", "refs", "unresolved", "reinstated_for", "excluded_reason", "blocking")
+LAW_META = ("subject", "theme", "tier", "supersedes", "refs", "unresolved", "reinstated_for", "excluded_reason",
+            "unobservable_reason", "blocking")
 DEF_META = ("kind", "applies_to", "terms", "term_in_corpus", "note", "used_by")
 
 
@@ -70,7 +71,7 @@ def main() -> int:
     dump(CORPUS_DIR / "laws.jsonl", posted)
 
     # the analysis-bearing views move beside the audit; their lines keep their fields (minus bucket)
-    for name in ("excluded", "unresolvable", "laws_full"):
+    for name in ("excluded", "unobservable", "unresolvable", "laws_full"):
         src = CORPUS_DIR / f"{name}.jsonl"
         rows = load(src) or load(AUDIT_DIR / f"{name}.jsonl")
         for r in rows:

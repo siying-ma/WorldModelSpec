@@ -5,8 +5,9 @@
 Fails on: a corpus line with no scenario, a scenario with no corpus line, a duplicate id, an
 order that does not follow laws.jsonl, a title or source that disagrees with the corpus line, a
 subject, theme or tier that disagrees with audit_and_scripts/laws_meta.jsonl, an
-`atom` that is not in ontology/ATOMS.md, a `kind` outside the closed set, or an empty
-required_observations / activation_conditions / timing_requirements.
+`atom` that is neither an atom or primitive of ontology/ATOMS.md nor a well-formed concept id
+(`drv.<family>.<name>`, concepts being catalogued per run), a `kind` outside the closed set, or an
+empty required_observations / activation_conditions / timing_requirements.
 """
 from __future__ import annotations
 
@@ -21,6 +22,8 @@ LAWS_META = HERE.parent / "audit_and_scripts" / "laws_meta.jsonl"   # subject, t
 ATOMS_MD = HERE.parents[1] / "ontology" / "ATOMS.md"
 
 KINDS = {"point_event", "continuous", "duration", "ordering", "until", "advance", "civil_time", "span"}
+CONCEPT_ID = re.compile(r"^drv\.(?:motion|position|lane|interaction|road|control|user|env)\.[a-z][a-z_]*[a-z](?:_v[1-9]\d*)?$")
+LEGACY_CONCEPT = re.compile(r"^drv\.[a-z_0-9]+$")   # the ontology's former derived-concept ids, one segment
 META_LAW = ("title", "source")
 META_SIDECAR = ("subject", "theme", "tier")
 
@@ -33,7 +36,7 @@ def main() -> int:
     laws = load(LAWS)
     meta = {m["id"]: m for m in load(LAWS_META)}
     rows = load(HERE / "scenarios.jsonl")
-    atoms = set(re.findall(r"^\|\s*`((?:ru|kin|st|dev|sig|env|rel|drv)\.[a-z_0-9]+)`",
+    atoms = set(re.findall(r"^\|\s*`((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_0-9]+)`",
                            ATOMS_MD.read_text(encoding="utf-8"), re.M))
     errors: list[str] = []
 
@@ -59,8 +62,9 @@ def main() -> int:
             if not r.get(field):
                 errors.append(f"{rid}: {field} is empty")
         for o in r.get("required_observations", []):
-            if o.get("atom") not in atoms:
-                errors.append(f"{rid}: unknown atom {o.get('atom')}")
+            a = str(o.get("atom", ""))
+            if a not in atoms and not CONCEPT_ID.match(a) and not LEGACY_CONCEPT.match(a):
+                errors.append(f"{rid}: unknown atom {a}")
             if not o.get("note"):
                 errors.append(f"{rid}: {o.get('atom')} has no note")
         for t in r.get("timing_requirements", []):

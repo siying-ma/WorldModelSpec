@@ -28,7 +28,10 @@ Before changing anything, in this order:
 - The corpus under `laws/**` is posted law only: `id`, `title`, `text`, `source`. Every analysis
   field (tier, theme, references, overlap decisions) lives in `laws/audit_and_scripts/` sidecars.
 - The reading (`readings/<run>.json`) is the only place a number the statute did not state may
-  appear. A rule names parameters; it never carries a value. A figure the statute states is
+  appear. A rule names parameters; it never carries a value. A parameter the reading lacks is
+  proposed by the plan (`param_proposals`: name, unit, a provisional value, its convention and
+  source) and the harness enters it in the reading marked `proposed`, where it stays until the
+  operator reviews it; the doctor lists every unreviewed proposal. A figure the statute states is
   declared on its span in the blueprint and written through a `Units` constructor.
 - The Core directory holds either the full or the training variant of the split files
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.
@@ -46,6 +49,15 @@ Before changing anything, in this order:
   history of past defects, a rationale block or a "previously …" note into a `.lean` file: that
   belongs in the commit message or `pipeline/DesignFile/CORE_V2_FILES.md`. `Core/**` is read by
   the plan and code agents; keep every file short, organized and tidy.
+
+## Documents and comments
+
+- A header or comment in a `.lean` or `.py` file never cites a markdown file or a section of one:
+  it states the contract the code implements, in full, in its own words.
+- A design or audit document under `pipeline/DesignFile/` is written for a reviewer who reads it
+  alone: every fact it relies on (what a check does, what a rule requires, what a phase is shown)
+  is stated in the document, never delegated to another document or a section number. Code
+  locations (`path:line`) are the only cross-references.
 
 ## Never
 

@@ -28,8 +28,9 @@ enforce them, and nothing else adds to or bypasses them.
 
 1. **Closed set.** A rule reads the world only through the atoms of §1–§7, the primitives of
    §10, and the concepts the pipeline has accepted (§9). An element a clause needs that none of
-   these carries is an ontology change request, recorded as a residue on the rule; it is never
-   approximated by another atom.
+   these carries is an ontology change request, filed as a gap; it is never approximated by
+   another atom, and it is never absorbed as a residue on a span that decides when the rule
+   applies. A residue records only what the obligation side says and the rule does not capture.
 2. **Contract-bound.** An atom expresses only what its contract says. The "not a stand-in for"
    clauses are part of the contract; using an atom for what its contract excludes is a semantic
    error, whatever the data source happens to make convenient.
@@ -104,8 +105,8 @@ ontology change request.
 | `ru.procession_vehicle` | a vehicle displaying the pennants or insignia of an organised procession | general |
 | `ru.animal_or_animal_drawn` | ridden or herded animal, or an animal-drawn vehicle | general |
 | `ru.rail_vehicle` | a train, tram, streetcar or other on-track equipment | general |
-| `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user) | general |
-| `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars) **Not a stand-in for:** a manoeuvre | general |
+| `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user). A source that observes a change in it — a person arriving at or leaving a vehicle — but not a total, declares the count absent: what it observes then is the arrival or the departure, which is not this atom | general |
+| `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars). The fields are independent: a source declares each on its own, and one that renders a rider as part of the machine, so that no field can vary, declares all of them absent. **hands_on_controls** is a count and is the field a source is least likely to carry **Not a stand-in for:** a manoeuvre, or an arm signal, which is `sig.hand_signal` | general |
 | `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
 | `ru.aggregate` | membership of a legal aggregate the reading declares — the word the text uses ("vehicle", "motor vehicle", "traffic") is the atom's literal argument, and the reading lists the classes the jurisdiction counts under it, by their `ru.*` ids or by another aggregate word; true when the user carries a member class, unknown when no member holds and a member class is unobserved, false otherwise **Not a stand-in for:** a class the text names on its own (a bus, a taxicab) — a named class is its own atom; nor for a role the text describes (responding, overtaking) — a role is a derived concept | general |
 
@@ -202,9 +203,10 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `sig.hazard` | both indicators flashing together | general |
 | `sig.headlamp` | headlamp **state** ∈ {off, low_beam, high_beam} | general |
 | `sig.position_lamp` | position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps) | general |
+| `sig.compression_brake` | an engine compression brake sounding (audible; a source without audio declares it absent) | general |
 | `sig.warning_lamp` | a warning lamp lit; **colour** ∈ {red, blue, amber, white}, **mode** ∈ {flashing, rotating, steady}, **facing** ∈ {front, rear, side} **Not a stand-in for:** an audible warning | general (steady blue rear lamps and amber-lamp roles: local) |
-| `sig.siren` | a siren, whistle or bell sounding | general |
-| `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding **Not a stand-in for:** a siren | general |
+| `sig.siren` | a siren, whistle or bell sounding (audible; a source without audio declares it absent, and does not read a warning lamp as the sound — the two are separable and a road user may show one without the other) | general |
+| `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding (audible; a source without audio declares it absent, and no visible state stands in for it) **Not a stand-in for:** a siren | general |
 | `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {left, right, stop_or_slow, re_enter} | general |
 
 ## 6. Environment (`env`)

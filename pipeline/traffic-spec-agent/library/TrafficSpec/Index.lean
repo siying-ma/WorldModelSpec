@@ -3,9 +3,16 @@
   do not edit.
 -/
 import TrafficSpec.Core
+import TrafficSpec.Concepts.interaction.precedence_granted
+import TrafficSpec.Concepts.motion.complete_cessation
+import TrafficSpec.Concepts.motion.speed_reduction
 namespace TrafficSpec
 /-- Every registered rule, in file order. -/
 def allRules : List Rule := []
 /-- Every registered concept, in file order. -/
-def allConcepts : List Concept := []
+def allConcepts : List Concept := [
+  TrafficSpec.Concepts.interaction.precedence_granted.concept,
+  TrafficSpec.Concepts.motion.complete_cessation.concept,
+  TrafficSpec.Concepts.motion.speed_reduction.concept
+]
 end TrafficSpec

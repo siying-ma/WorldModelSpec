@@ -62,7 +62,6 @@ def c : Primitives.Ctx := Primitives.Ctx.mk' τ {}
 
 -- reading and manifest
 def readingText : String := "{\"params\": [{\"name\": \"p.stop_speed\", \"value\": 0.1, \"unit\": \"m/s\"}, {\"name\": \"p.setback\", \"value\": 15, \"unit\": \"ft\"}, {\"name\": \"p.limit\", \"value\": 25, \"unit\": \"mph\"}],
-  \"operationalizations\": [{\"standard\": \"words\", \"concepts\": [\"drv.stopped\", \"rel.surface_gap\"], \"params\": [\"p.stop_speed\"], \"convention\": \"a source\"}],
   \"aggregates\": [{\"word\": \"vehicle\", \"classes\": [\"ru.motor_vehicle\", \"ru.bicycle\"]}]}"
 def ρ : Reading := (parse reading readingText).toOption.getD {}
 #guard (ρ.param "p.stop_speed").map (Q.eq · (Q.mk' 1 10)) = some true
@@ -112,8 +111,23 @@ def sc : Scenario :=
 #guard match ({ sc with rule := "test/none" } : Scenario).run Tests.Grounding.rules with
   | .error e => e == "truck stands: rule test/none is not registered"
   | .ok _ => false
+-- an unknown witness must be unknown for a masked atom: a division by zero is the rule's, not the mask's
 def scGap : Scenario :=
   { sc with rule := "test/gap", grounding := [("x", 1), ("y", 2)], expected := .unknown [] }
-#guard (scGap.run Tests.Grounding.rules).isOk                                  -- x stands at the end: gap undefined
+#guard match scGap.run Tests.Grounding.rules with
+  | .error e => e.startsWith "truck stands: unknown for [division_by_zero:div], not for an atom the manifest masks"
+  | .ok _ => false
+#guard ({ scGap with manifest := Build.manifest ["kin.speed"] } : Scenario).run Tests.Grounding.rules |>.isOk
+#guard match ({ scGap with manifest := Build.manifest ["rel.bearing"] } : Scenario).run Tests.Grounding.rules with
+  | .error e => e.startsWith "truck stands: unknown for [division_by_zero:div]"
+  | .ok _ => false
+#guard match ({ scGap with grounding := [("x", 1)], manifest := Build.manifest ["kin.speed"] } : Scenario).run Tests.Grounding.rules with
+  | .error e => e.startsWith "truck stands: unknown for [unbound_variable:y]"      -- an unbound binder is a defect, not a masked atom
+  | .ok _ => false
+-- a not-applicable witness needs every bound track present at some instant
+#guard ({ sc with rule := "test/gap", grounding := [("x", 2), ("y", 1)], expected := .notApplicable } : Scenario).run Tests.Grounding.rules |>.isOk
+#guard match ({ sc with rule := "test/gap", grounding := [("x", 2), ("y", 9)], expected := .notApplicable } : Scenario).run Tests.Grounding.rules with
+  | .error e => e == "truck stands: not applicable, but no instant has every bound track present"
+  | .ok _ => false
 
 end TrafficSpec.Tests.Decode

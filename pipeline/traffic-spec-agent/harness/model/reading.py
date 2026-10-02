@@ -36,6 +36,10 @@ class Reading:
     def has(self, name: str) -> bool:
         return name in self.params
 
+    def proposed(self) -> list[dict]:
+        """Parameters a planner proposed and no operator has reviewed yet."""
+        return [p for p in self.data.get("params", []) if p.get("proposed")]
+
     def names(self) -> set[str]:
         return set(self.params)
 
@@ -50,6 +54,26 @@ class Reading:
             {"word": x.get("word"), "classes": x.get("classes", []), "source": x.get("definition"), "derived": "draft"} for x in records]
         r.params = dict(self.params)
         return r
+
+    @staticmethod
+    def add_proposals(path: Path, proposals: list[dict], origin: str) -> list[dict]:
+        """Enter a planner's parameter proposals into the reading at `path` as the proposed tier:
+        each becomes a `params` entry carrying `proposed: <origin>` (the run, iteration and node
+        that proposed it), its convention and source, until the operator reviews it by removing
+        the marker or changing the value. A name the reading already has is left as it is.
+        Returns the entries added."""
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"params": [], "aggregates": []}
+        have = {p.get("name") for p in data.get("params", [])}
+        added = []
+        for pr in proposals:
+            if pr.get("name") in have:
+                continue
+            entry = {"name": pr["name"], "value": pr["value"], "unit": pr["unit"], "convention": pr.get("convention", ""),
+                     "source": pr.get("source", ""), "proposed": origin}
+            data.setdefault("params", []).append(entry); have.add(pr["name"]); added.append(entry)
+        if added:
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        return added
 
     def aggregate_words(self) -> set[str]:
         return {a.get("word") for a in self.data.get("aggregates", []) if a.get("word")}

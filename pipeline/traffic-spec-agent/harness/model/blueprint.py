@@ -18,7 +18,7 @@ VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates"
 #: How a composed rule enters this node: its applicability negated (exception), its applicability
 #: (condition), or its compliance (compliance: "lawfully", "in the manner prescribed").
 AS_KINDS = {"exception", "condition", "compliance"}
-GAP_KINDS = {"atom", "value", "primitive", "operator", "definition", "unresolvable"}
+GAP_KINDS = {"atom", "operator"}   # the two ways the frozen vocabulary can fail a span: no atom (or enumeration value) carries it; no operator expresses it
 #: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
 CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
 CONCEPT_KINDS = {"formula", "quantity"}
@@ -149,9 +149,26 @@ def load(path: Path) -> list[Node]:
     return [Node(r) for r in _records(path) if "node_id" in r]
 
 
+def normalize_concept(r: dict) -> dict:
+    """A concept record with its list fields in their object form: a residue written as a bare
+    string, or as an object whose only text sits under a key other than `why`, becomes
+    `{span, why}`."""
+    out = dict(r)
+    def residue(x):
+        if not isinstance(x, dict):
+            return {"span": "contract", "why": str(x)}
+        if "why" not in x:
+            texts = [v for k, v in x.items() if k != "span" and isinstance(v, str) and v.strip()]
+            if len(texts) == 1:
+                x = {"span": x.get("span", "contract"), "why": texts[0]}
+        return x
+    out["residues"] = [residue(x) for x in (r.get("residues") or [])]
+    return out
+
+
 def load_concepts(path: Path) -> list[ConceptRecord]:
     """The concept records of a blueprint file."""
-    return [ConceptRecord(r) for r in _records(path) if "concept_id" in r and "node_id" not in r]
+    return [ConceptRecord(normalize_concept(r)) for r in _records(path) if "concept_id" in r and "node_id" not in r]
 
 
 def dump(path: Path, nodes: list[Node]) -> None:

@@ -4,24 +4,27 @@
 
 | path | what it holds |
 |---|---|
-| `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (285 obligations) and `definitions.jsonl` (123), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
+| `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (272 obligations) and `definitions.jsonl` (123), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
 | `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl`, each with the `definitions.jsonl` that goes with it |
+| `example/demo/`, `example/smoke/` | reference-closed subsets of the training set for a first run (15 lines of everyday driving) and for a smoke test (2 of them, one composing the other); each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
+| `example/archive/` | retired subsets, kept as the input of the runs made on them |
 | `evaluation_scenario/` | one evaluation description per corpus line — required observations, activation conditions, exceptions, timing requirements (see its own README) |
-| `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 11, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 296); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
+| `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 20, `unobservable.jsonl` 4, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 292); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
 
 The parsers, the selection list and the generators that produce all of it live outside the agent's
 reach in `pipeline/ontology_provenance/nrs_tools/`.
 
 ## The corpus
 
-`full_list/laws.jsonl` is the **pipeline corpus: 285 obligations** taken verbatim from the three bodies of
+`full_list/laws.jsonl` is the **pipeline corpus: 272 obligations** taken verbatim from the three bodies of
 law that govern driving on Las Vegas streets. 387 lines were cut; 65 were dropped because another
-line states the same obligation more narrowly (*Overlapping obligations* below); 42 more are kept
+line states the same obligation more narrowly (*Overlapping obligations* below); 55 more are kept
 out of the pipeline corpus because they do not judge a driving situation (`audit_and_scripts/excluded.jsonl`,
-11) or carry a reference no source can resolve (`audit_and_scripts/unresolvable.jsonl`, 31); 5 lines that had been dropped
+20), carry a reference no source can resolve (`audit_and_scripts/unresolvable.jsonl`, 31), or impose no duty
+any planned source can observe (`audit_and_scripts/unobservable.jsonl`, 4); 5 lines that had been dropped
 for a narrower text return because that text is unresolvable (`reinstated_for`).
 `audit_and_scripts/laws_full.jsonl`
-(296) is the corpus plus the excluded lines, i.e. every resolvable line. Every line has a `tier` in `audit_and_scripts/laws_meta.jsonl`
+(292) is the corpus plus the excluded lines. Every line has a `tier` in `audit_and_scripts/laws_meta.jsonl`
 (C: no judgement element, 163; Q: a concrete rule with a judgement element, 87; S: the obligation
 is only a standard of care, 35) so that the planner and the evaluation can treat them differently
 (ontology `ATOMS.md` §8).
@@ -110,13 +113,14 @@ incident' means …") are appended to the line that needs them instead.
 ## The corpus and what is kept out of it
 
 Every line has a `tier` (C / Q / S) in `audit_and_scripts/laws_meta.jsonl`; `pipeline/ontology_provenance/nrs_tools/tiers.py`
-and `references.py` hold the classification and its reasons. The corpus itself is `full_list/laws.jsonl`; the other three views live in `audit_and_scripts/`
-and partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 296).
+and `references.py` hold the classification and its reasons. The corpus itself is `full_list/laws.jsonl`; the other four views live in `audit_and_scripts/`
+and partition as follows (`laws_full.jsonl` = `laws.jsonl` + `excluded.jsonl`, 292).
 
 | file | lines | what it holds |
 |---|---|---|
-| `laws.jsonl` | 285 | **the pipeline corpus**: tiers C (163), Q (87) and S (35) together. The planner decides, per line, how a judgement element is operationalized (`ATOMS.md` §8); a tier-S rule is a surrogate and is evaluated separately |
-| `excluded.jsonl` | 11 | lines that do not judge a driving situation: rider apparel (3), equipment legality while driving (7), and NRS 484B.700(1), a permission rather than an obligation. Each carries `excluded_reason` |
+| `laws.jsonl` | 272 | **the pipeline corpus**: tiers C (155), Q (86) and S (31) together. The planner decides, per line, how a judgement element is operationalized (`ATOMS.md` §8); a tier-S rule is a surrogate and is evaluated separately |
+| `excluded.jsonl` | 20 | lines that do not judge a driving situation: rider apparel (3), equipment legality while driving (7), NRS 484B.700(1), a permission rather than an obligation, and **a rider's own body configuration on their own machine (9)** — the seat, hand and stunt duties of NRS 484B.770(1)–(2), 484B.780, 486.181(1), 486.191(1), 486.211 and LVMC 11.38.040, 11.40.150, 11.40.185(B), whose whole obligation is how the rider sits or holds the machine and is therefore neither conduct a driving plan performs nor a fact one turns on. Each carries `excluded_reason` |
+| `unobservable.jsonl` | 4 | lines whose **every** duty rests on a signal no planned source observes, so no verdict about them can be founded: three horn duties (NRS 484B.270(5)(b), 484B.280(1)(b), 484D.400(2)) and the compression brake (484D.285(1)). Neither planned source carries sound. Each carries `unobservable_reason`. Kept apart from `excluded.jsonl` because the reason is the source, not the law, and it reverses the moment a source supplies the signal; see `OBSERVABILITY_2026-09-29.md`. A line that merely *contains* such a duty beside an observable one stays in the corpus and carries a residue |
 | `unresolvable.jsonl` | 31 | **every line that carries an `unresolved` reference** (decided 2026-09-20), with `blocking` stating why. For 8 the unresolved element is the trigger or obligation itself (the two "by their nature can have no application" clauses, a trip's purpose, a park-by-park administrative determination, the golf-cart street schedule, the Pedestrian Mall map, the handicapped permit behind a blue curb). For the other 23 the mark is a peripheral reference — a City Clerk schedule (13 lines), an equipment standard or permit class in a chapter not in the corpus (7), a federal vehicle-class definition (2), a penalty clause (2), an HOV condition "established by regulation" (1) — and the line was removed on the rule that no corpus line may carry an unresolved reference. Lines that are both excluded and marked (NRS 484A.480(5)–(7), 484D.185(1)) stay in `excluded.jsonl`. Where the unresolvable line was the narrower survivor of an overlapping pair, the resolvable text it superseded is reinstated (`reinstated_for`): NRS 484B.503, 484B.507(1), 484B.477(1)(a), LVMC 11.22.100, LVMC 11.38.120(B) |
 
 A reference from a corpus line into a removed line keeps its bracketed id in the text and carries
@@ -245,7 +249,7 @@ expected to come back `unsupported`, or formalized with a stated residue:
 
 ## Sizing
 
-285 lines; 204 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 71
+272 lines; 200 bind a `driver`. At `--max-nodes-per-iter 4` a full pass is on the order of 71
 iterations. To measure on a shorter budget, filter by `subject`, `theme` or id prefix into
 `laws/<name>/laws.jsonl` and point `--laws` at it.
 

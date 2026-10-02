@@ -151,7 +151,7 @@ def kin_path_length (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.
 -- §3 Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
 private def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
-  (s.structure? r).map (·.kind == k)
+  (s.structure? r).bind fun st => if st.unobservedKinds.contains k then none else some (st.kind == k)
 
 def st_highway (s : Scene) (r : RegionId) : Option Bool := isKind s r .highway
 def st_roadway (s : Scene) (r : RegionId) : Option Bool := isKind s r .roadway
@@ -259,7 +259,7 @@ def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
 -- §4 Control devices
 -- ---------------------------------------------------------------------------------------------
 private def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
-  (s.device d).map (·.kind == k)
+  (s.device d).bind fun dv => if dv.unobservedKinds.contains k then none else some (dv.kind == k)
 
 def dev_traffic_signal (s : Scene) (d : DeviceId) : Option Bool := devKind s d .trafficSignal
 def dev_traffic_signal_indications (s : Scene) (d : DeviceId) : Option (List SignalIndication) := (s.device d).bind (·.indications)
@@ -320,6 +320,7 @@ def sig_warning_lamp_shows (s : Scene) (x : TrackId) (c : LampColour) (m : LampM
 def sig_siren (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.siren)
 def sig_horn (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.horn)
 def sig_hand_signal (s : Scene) (x : TrackId) : Option HandSignal := (s.user x).bind (·.sig.handSignal)
+def sig_compression_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.compressionBrake)
 
 -- ---------------------------------------------------------------------------------------------
 -- §6 Environment

@@ -15,6 +15,15 @@ def same (a b : Formula) : Bool := reprStr a == reprStr b
 #guard (Formula.literals (.cmp (.measure "kin_speed" [.var "x"]) .le (.param "p"))).length = 0
 #guard (Formula.literals (.cmp (.measure "kin_speed" [.var "x"]) .le (.lit Q.zero .metrePerSecond))).length = 0
 
+-- literal variants of one atom are one family; a different literal elsewhere or a different atom is not
+#guard TrafficSpec.Adequacy.family "atom dev_x_indication [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"stop\"]"
+     = TrafficSpec.Adequacy.family "atom dev_x_indication [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"turn(left)\"]"
+#guard TrafficSpec.Adequacy.family "atom dev_x_indication [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"stop\"]"
+     ≠ TrafficSpec.Adequacy.family "atom dev_x_indication [TrafficSpec.Arg.var \"e\", TrafficSpec.Arg.lit \"stop\"]"
+#guard TrafficSpec.Adequacy.family "atom dev_x_indication [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"stop\"]"
+     ≠ TrafficSpec.Adequacy.family "atom dev_y_indication [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"stop\"]"
+#guard TrafficSpec.Adequacy.family "asm b" = "asm b"
+
 -- the truck-stop witnesses: one scenario cannot exercise the single leaf both ways
 def stopped : Scenario := Tests.Decode.sc
 #guard (TrafficSpec.Adequacy.unexercised rules truckRule [stopped]).length = 0     -- tt keeps compliant, ff makes it violated
@@ -27,6 +36,11 @@ def unex := TrafficSpec.Adequacy.unexercised rules rule [idleOnly]
 #guard unex.any (·.startsWith "applicability leaf 1")
 #guard unex.any (·.startsWith "obligation leaf 0")
 -- with the following witness added, every leaf moves some verdict
-def following : Scenario := { stopped with rule := "test/gap", grounding := [("x", 1), ("y", 2)], expected := .unknown [] }
+def following : Scenario := { stopped with rule := "test/gap", grounding := [("x", 1), ("y", 2)], expected := .compliant, window := some (0, 1500) }
+#guard (following.run rules).isOk
 #guard TrafficSpec.Adequacy.unexercised rules rule [idleOnly, following] = []
+-- a witness that expects unknown under a mask exercises no leaf: the gap and speed leaves stay unexercised
+def blindOnly : Scenario := { following with manifest := Build.manifest ["kin.speed"], expected := .unknown [], window := none }
+#guard (blindOnly.run rules).isOk
+#guard (TrafficSpec.Adequacy.unexercised rules rule [idleOnly, blindOnly]).length = 2
 end TrafficSpec.Tests.Adequacy

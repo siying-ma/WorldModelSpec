@@ -1,6 +1,6 @@
 # Evaluation scenarios — what a trace must show before a line can be judged
 
-`scenarios.jsonl` carries **one record per line of `../full_list/laws.jsonl`** — 285 records, same
+`scenarios.jsonl` carries **one record per line of `../full_list/laws.jsonl`** — 272 records, same
 ids, same order. Each record says what an evaluator needs from a trace before it can decide that
 line: which observations the line requires, when the line is active, what the text excepts, and
 what it demands of timing.
@@ -50,7 +50,7 @@ Written from the verbatim text of each line and the ontology in `../../ontology/
   the commonest, and `span` (57) is the one that says a short clip is not enough.
 - **`residue`** — what the text asks for that no atom supplies: a judgement standard needing an
   operationalization claim, a legal region class, a purpose or interior state, an administrative
-  fact. Present on 218 of the 285 lines. `ATOMS.md` §8 and §9 say how each kind is handled.
+  fact. Present on 205 of the 272 lines. `ATOMS.md` §8 and §9 say how each kind is handled.
 
 ## How to use it
 

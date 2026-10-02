@@ -36,9 +36,11 @@ def _lean_list(items: list[str]) -> str:
     return "[" + (chr(10) + "  " + ("," + chr(10) + "  ").join(items) + chr(10) if items else "") + "]"
 
 
-def write_index() -> None:
-    ids = node_ids()
-    cids = concept_ids()
+def write_index(only_nodes: list[str] | None = None, only_concepts: list[str] | None = None) -> None:
+    """The registries over the files on disk; with `only_*`, over those ids alone (a gate run
+    while other sessions are coding registers the accepted nodes and its own, not theirs)."""
+    ids = node_ids() if only_nodes is None else [i for i in node_ids() if i in set(only_nodes)]
+    cids = concept_ids() if only_concepts is None else [c for c in concept_ids() if c in set(only_concepts)]
     imports = [f"import {nodeid.rule_module(i)}" for i in ids] + [f"import {nodeid.concept_module(c)}" for c in cids]
     paths.INDEX_FILE.write_text(
         "/-\n  TrafficSpec.Index — generated registry of formalized rules and concepts (harness index_sync);\n  do not edit.\n-/\n"
@@ -49,8 +51,9 @@ def write_index() -> None:
         f"def allConcepts : List Concept := {_lean_list([f'{nodeid.concept_namespace(c)}.concept' for c in cids])}\n"
         "end TrafficSpec\n",
         encoding="utf-8")
-    wids = [p.stem for p in witness_files()]
-    cwids = [nodeid.concept_id_of_path(str(p.relative_to(paths.LIBRARY))) for p in concept_witness_files()]
+    wids = [p.stem for p in witness_files() if only_nodes is None or p.stem in set(only_nodes)]
+    cwids = [c for c in (nodeid.concept_id_of_path(str(p.relative_to(paths.LIBRARY))) for p in concept_witness_files())
+             if only_concepts is None or c in set(only_concepts)]
     wimports = [f"import {nodeid.witness_module(i)}" for i in wids] + [f"import {nodeid.concept_witness_module(c)}" for c in cwids]
     wbody = " ++\n  ".join(f"{nodeid.witness_namespace(i)}.scenarios" for i in wids) or "[]"
     cbody = " ++\n  ".join(f"{nodeid.concept_witness_namespace(c)}.scenarios" for c in cwids) or "[]"

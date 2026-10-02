@@ -9,7 +9,8 @@ from ..store.state import Run
 
 
 def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict],
-                   concept_ledger=None) -> None:
+                   concept_ledger=None, deferred: list[dict] | None = None,
+                   coder_narrowings: dict[str, list[dict]] | None = None) -> None:
     lines = [f"# Feedback from iteration {run.iteration}", ""]
     lines += notes or ["(nothing to report)"]
     lines += ["", "## Laws by state", ""]
@@ -19,7 +20,9 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
     if returned:
         lines += ["", "## Returned laws and why", ""]
         for e in returned:
-            lines.append(f"- `{e.law}` (attempt {e.attempts}): " + "; ".join(e.reasons[:6]))
+            done = [i for i in e.nodes if i in run.all_nodes()]
+            lines.append(f"- `{e.law}` (attempt {e.attempts}): " + "; ".join(e.reasons[:6])
+                         + (f" — accepted already and not to be re-planned: {', '.join(done)}" if done else ""))
     failed = [e for e in ledger.entries.values() if e.state == "failed" and e.iteration == run.iteration]
     if failed:
         lines += ["", "## Laws closed as failed this iteration (reopen with `python -m harness reopen`)", ""]
@@ -34,6 +37,16 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
             lines += ["", "## Returned concepts and why", ""]
             for e in returned_c:
                 lines.append(f"- `{e.concept}` ({e.state}, attempt {e.attempts}; used by {', '.join(e.used_by) or 'no node'}): " + "; ".join(e.reasons[:6]))
+    if deferred:
+        lines += ["", "## Nodes waiting for a node they compose (coded when it is accepted; no attempt counted)", ""]
+        for d in deferred:
+            waits = sorted({c.get("rule") for c in d.get("compositions", []) if c.get("rule") not in run.all_nodes()})
+            lines.append(f"- `{d['node_id']}` waits on {', '.join(f'`{w}`' for w in waits) or '(nothing)'}")
+    if coder_narrowings:
+        lines += ["", "## Readings the coding sessions narrowed (span, and what the formulas state more narrowly than its words)", ""]
+        for nid, ns in coder_narrowings.items():
+            for x in ns:
+                lines.append(f"- `{nid}` {x.get('span')}: {x.get('why')}")
     if gaps_filed:
         lines += ["", "## Gaps filed this iteration", ""]
         for g in gaps_filed:

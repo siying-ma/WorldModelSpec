@@ -56,7 +56,8 @@ def wellFormed (r : Rule) : Bool :=
 abbrev Scope := List (String × EntityKind)
 
 /-- Resolve arguments against the scope with dummy ids, checking each variable's sort against the
-    position's expected sort when the table knows it. -/
+    position's expected sort when the table knows it. An entity position takes a variable only:
+    a literal or a number there would name a track, region or device the rule has no right to. -/
 private def dummyArgs (scope : Scope) (sorts : Option (List (Option EntityKind))) (args : List Arg)
     : Except String (List Primitives.DArg) :=
   (args.zip (List.range args.length)).mapM fun (a, k) =>
@@ -73,7 +74,10 @@ private def dummyArgs (scope : Scope) (sorts : Option (List (Option EntityKind))
       match sorts.bind (·[k]?) with
       | some (some want) => .error s!"literal `{l}` where position {k} wants a {repr want}"
       | _ => .ok (.s l)
-    | .nat n => .ok (.n n)
+    | .nat n =>
+      match sorts.bind (·[k]?) with
+      | some (some want) => .error s!"number `{n}` where position {k} wants a {repr want}"
+      | _ => .ok (.n n)
 
 private def isMalformed : UnknownReason → Option String
   | .malformed w => some w
@@ -222,19 +226,6 @@ def Rule.context (rules : List Rule) (d : Primitives.Ctx) (β : Binding) : Seman
 
 namespace Concept
 open Semantics
-
-/-- Instantiations that cover every admissible literal: the formals as themselves, then each
-    literal value once with the other literals at their first value. -/
-def samples (c : Concept) : List (List Arg) :=
-  let base : List Arg := c.args.map fun (n, s) => match s with
-    | .track => Arg.var n
-    | .literal vs => Arg.lit (vs.headD "")
-    | .nat => Arg.nat 0
-  let variants := (List.range c.args.length).flatMap fun i =>
-    match (c.args[i]? : Option (String × ArgSort)) with
-    | some (_, ArgSort.literal vs) => vs.map fun v => base.set i (Arg.lit v)
-    | _ => []
-  (base :: variants).eraseDups
 
 /-- Every defect a concept has before any trace: formals named once, parameters that are formal
     (never a reading's), no composition, every referenced concept known and no cycle, and the

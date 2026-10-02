@@ -1,8 +1,13 @@
 /-
   TrafficSpec.Core.Language.Rule
   What a specification is: binders with class formulas, an applicability and an obligation, and
-  the declarations a reviewer needs (parameters, assumptions, operationalizations, residues, the
-  rules it composes, the surrogate flag).
+  the declarations a reviewer needs (parameters, assumptions, operationalizations, residues,
+  narrowings, the rules it composes, the surrogate flag).
+
+  A residue is a span of the text the rule does not capture at all; the plan declares it and the
+  rule repeats it verbatim. A narrowing is a reading the coder chose on a span the plan does
+  carry, stated here so the review judges the rule as it is: the span it names and why. The
+  coder may add narrowings and never residues.
 
   Applicability and obligation are two formulas because a rule whose situation never arises is
   not compliant, it is not engaged: `notApplicable` is a verdict of its own, the witness check can
@@ -29,6 +34,14 @@ structure Binder where
   cls : Formula
   deriving Repr, Inhabited
 
+/-- A reading chosen on a span the plan carries, declared where it is made: the span (a
+    segmentation id for a rule, a run of the contract's words for a concept) and what the formulas
+    state more narrowly than the words. -/
+structure Narrowing where
+  span : String
+  why : String
+  deriving Repr, Inhabited, DecidableEq
+
 structure Rule where
   id : String                                   -- <theme>/<slug>
   laws : List String                            -- the corpus ids this rule formalizes
@@ -38,6 +51,7 @@ structure Rule where
   assumptions : List AsmId := []
   operationalizations : List Operationalization := []
   residues : List String := []                  -- what the text says and the rule does not capture
+  narrowings : List Narrowing := []             -- readings the coder chose on carried spans
   surrogate : Bool := false
   deriving Repr, Inhabited
 

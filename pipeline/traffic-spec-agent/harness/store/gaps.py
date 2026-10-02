@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-KINDS = {"atom", "value", "primitive", "operator", "definition", "unresolvable"}
+KINDS = {"atom", "operator"}
 STATES = {"proposed", "accepted", "rejected", "retired"}
 
 
@@ -31,21 +31,16 @@ class GapLedger:
         row = {"id": gid, "kind": proposal.get("kind"), "span": proposal.get("span_text") or proposal.get("span"),
                "law_refs": proposal.get("law_refs", []), "node_id": proposal.get("node_id"),
                "proposal": proposal.get("proposal", ""), "nearest": proposal.get("nearest", []),
-               "parameter": proposal.get("parameter", ""),
                "state": "proposed", "decision": "", "retired_by": "", "proposed_in": f"{run}/iter-{iteration:03d}"}
         self.rows.append(row)
         return gid
 
-    def retire_values(self, has_parameter) -> list[str]:
-        """A value gap is retired by the operator setting its parameter in the reading."""
-        done = []
-        for r in self.rows:
-            if r.get("kind") == "value" and r.get("parameter") and r.get("state") in ("proposed", "accepted") and has_parameter(r["parameter"]):
-                r["state"], r["retired_by"] = "retired", "reading"; done.append(r["id"])
-        return done
-
     def retired(self) -> set[str]:
         return {r["id"] for r in self.rows if r.get("state") == "retired"}
+
+    def decided(self) -> dict[str, tuple[str, str]]:
+        """Gaps the operator has closed, retired or rejected, with the decision's words."""
+        return {r["id"]: (r["state"], str(r.get("decision", ""))) for r in self.rows if r.get("state") in ("retired", "rejected")}
 
     def visible(self, law_ids: set[str], base_run: str | None = None) -> list[dict]:
         """The rows a run may be shown: gaps on a law of its corpus, and gaps its base run proposed.

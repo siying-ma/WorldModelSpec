@@ -33,7 +33,11 @@ def rules : List Rule := [rule, truckRule, composed]
 #guard rule.wellFormed
 #guard rule.atoms = ["ru_motor_vehicle", "rel_ahead_in_lane", "rel_surface_gap", "kin_speed"]
 #guard Rule.atomIds rules rule = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed"]
-#guard Rule.atomIds rules composed = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed", "ru.truck"]
+#guard truckRule.atoms = ["ru_truck", "kin_time", "kin_speed"]                                    -- a time window reads the clock
+#guard Rule.atomIds rules composed = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed", "ru.truck", "kin.time"]
+#guard Formula.atoms (.existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] [])) = ["st_lane", "rel_occupies"]
+#guard Formula.atoms (.existsDevice (.var "k") "d" (.atom "dev_governs" [.var "d", .var "r"] [])) = ["dev_governs"]
+#guard Formula.termAtoms (.distanceWhile "x" (.atom "ru_truck" [X] [])) = ["kin_path_length", "ru_truck"]
 #guard atomIdOf "st_region_geometry_distance" = some "st.region_geometry"
 -- the static check: names, arities, literals, variables, constant parameters, compositions
 #guard Rule.check rules rule = []
@@ -41,7 +45,10 @@ def rules : List Rule := [rule, truckRule, composed]
 #guard (Rule.check rules { rule with applicability := .atom "ru_unicorn" [X] [] }).length = 1
 #guard (Rule.check rules { rule with applicability := .atom "ru_motor_vehicle" [X, Y] [] }).length = 1
 #guard (Rule.check rules { rule with applicability := .atom "ru_motor_vehicle" [.var "z"] [] }).length = 1
-#guard (Rule.check rules { rule with obligation := .atom "dev_traffic_signal_shows" [.nat 9, .lit "purple"] [] }).length = 1
+#guard (Rule.check rules { rule with obligation := .atom "dev_traffic_signal_shows" [.nat 9, .lit "purple"] [] }).length = 1   -- a number names a device (reported before the spelling)
+#guard (Rule.check rules { rule with obligation := .existsDevice (.lit "traffic_signal") "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "purple"] []) }).length = 1
+#guard (Rule.check rules { rule with obligation := .existsDevice (.lit "traffic_signal") "d" (.atom "dev_traffic_signal_shows" [.var "d", .lit "circular_red"] []) }) = []
+#guard (Rule.check rules { rule with obligation := .atom "rel_occupies" [X, .nat 7] [] }).length = 1                                -- a number names a region
 #guard (Rule.check rules { rule with obligation := .cmp (.quantity "prim_heading_change" [X] [.measure "kin_speed" [X]]) .ge (.lit (degrees 1) .degree) }).length = 1
 #guard (Rule.check rules { rule with obligation := .rule "nowhere/rule" [("x", "x")] }).length = 1
 #guard (Rule.check rules { rule with obligation := .existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] []) }) = []
@@ -78,14 +85,19 @@ def noClass : Manifest := { full with entries := full.entries.map fun (id, c) =>
 #guard support rules rule noClass = .unsupported ["ru.motor_vehicle"]
 #guard !({ full with entries := full.entries.drop 1 } : Manifest).complete
 
--- masking blanks the field and only that field
+-- masking blanks the field and only that field; a masked kind leaves the entity, its kind unknown
 #guard kin_speed (mask noSpeed (sceneAt 0)) 1 = none
 #guard (kin_position (mask noSpeed (sceneAt 0)) 1).isSome
 #guard ru_motor_vehicle (mask noClass (sceneAt 0)) 1 = none
 #guard ru_truck (mask noClass (sceneAt 0)) 2 = some true
 def noSignals : Manifest := { full with entries := full.entries.map fun (id, c) => if id == "dev.traffic_signal" then (id, .absent) else (id, c) }
-#guard (mask noSignals (sceneAt 0)).devices = []
-#guard (mask full (sceneAt 0)).devices.length = 1
+#guard (mask noSignals (sceneAt 0)).devices.length = 1
+#guard dev_traffic_signal (mask noSignals (sceneAt 0)) 9 = none
+#guard dev_stop_sign (mask noSignals (sceneAt 0)) 9 = some false
+#guard dev_traffic_signal (mask full (sceneAt 0)) 9 = some true
+def noLanes : Manifest := { full with entries := full.entries.map fun (id, c) => if id == "st.lane" then (id, .absent) else (id, c) }
+#guard st_lane (mask noLanes (sceneAt 0)) 7 = none
+#guard (mask noLanes (sceneAt 0)).structures.length = (sceneAt 0).structures.length
 
 -- groundings over the unbroken trace: x, y ∈ {1, 2}, distinct
 def S : Setup := Setup.mk' rules τ ρ (seconds 2)
@@ -102,6 +114,9 @@ def strict : Rule := { rule with obligation := .cmp timeGap .ge (.lit (seconds 3
 #guard (timeline S rule g21).toList.map (·.2) = List.replicate 9 Verdict.notApplicable   -- y=1 is not ahead of x=2
 #guard episode ((timeline S rule g21).toList.map (·.2)) = .notApplicable
 #guard (Grounding.check S rule).map (fun (_, tl, ep) => (tl.live, ep.tag)) = [(true, "unknown"), (false, "not_applicable")]
+#guard (Grounding.check S rule).map (fun (_, tl, _) => tl.present) = [true, true]
+#guard !(evaluate S rule ⟨[("x", 1), ("y", 9)]⟩).present                                  -- track 9 never appears
+#guard ((evaluate S rule ⟨[("x", 1), ("y", 9)]⟩).verdicts.toList.map (·.2)) = List.replicate 9 Verdict.notApplicable
 #guard live S rule
 #guard !(live S { rule with applicability := .ff })
 #guard episode [.compliant, .notApplicable] = .compliant

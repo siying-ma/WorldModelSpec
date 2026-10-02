@@ -10,7 +10,7 @@ from ..store.ledger import Ledger
 
 def score(run_id: str, split_atoms: Path) -> dict:
     split = json.loads(split_atoms.read_text(encoding="utf-8"))
-    test_only = set(split["test_only_atoms"]) | set(split["test_only_values"]) | set(split["test_only_derived"])
+    test_only = set(split["test_only_atoms"]) | set(split["test_only_values"]) | set(split.get("test_only_primitives", []))
     run_dir = paths.run_dir(run_id)
     ledger = Ledger(run_dir / "ledger.jsonl", [], 1)
     gaps = GapLedger(paths.GAP_LEDGER)

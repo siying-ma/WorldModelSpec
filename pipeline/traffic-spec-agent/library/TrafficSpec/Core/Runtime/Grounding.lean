@@ -133,11 +133,13 @@ def predictedGroundings (S : Setup) (r : Rule) : Nat :=
 -- ---------------------------------------------------------------------------------------------
 -- Timelines
 -- ---------------------------------------------------------------------------------------------
-/-- One evaluation of a rule for a grounding: the verdict per instant and whether the rule was
-    engaged at some instant with every party present. -/
+/-- One evaluation of a rule for a grounding: the verdict per instant, whether the rule was
+    engaged at some instant with every party present, and whether every party was present at
+    some instant at all. -/
 structure Timeline where
   verdicts : Array (Timestamp × Verdict)
   live : Bool
+  present : Bool
   deriving Repr
 
 /-- Evaluate a rule for a grounding once. A binder absent inside its identity's span is an
@@ -158,8 +160,8 @@ def evaluate (S : Setup) (r : Rule) (g : Grounding) : Timeline :=
           | none => false
         if inGap.isEmpty then .notApplicable
         else .unknown (inGap.map fun (t, _) => .identityGap t)
-    (s.t, v, missing.isEmpty && engaged[i]!.v == .t)
-  ⟨rows.map fun (t, v, _) => (t, v), rows.any fun (_, _, l) => l⟩
+    (s.t, v, missing.isEmpty && engaged[i]!.v == .t, missing.isEmpty)
+  ⟨rows.map fun (t, v, _, _) => (t, v), rows.any fun (_, _, l, _) => l, rows.any fun (_, _, _, p) => p⟩
 
 def timeline (S : Setup) (r : Rule) (g : Grounding) : Array (Timestamp × Verdict) := (evaluate S r g).verdicts
 

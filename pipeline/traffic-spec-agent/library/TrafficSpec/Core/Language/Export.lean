@@ -83,6 +83,8 @@ def ArgSort.toJson : ArgSort → Json
   | .literal vs => Json.mkObj [("sort", "literal"), ("values", Json.arr (vs.map Json.str).toArray)]
   | .nat => Json.mkObj [("sort", "nat")]
 
+def Narrowing.toJson (n : Narrowing) : Json := Json.mkObj [("span", n.span), ("why", n.why)]
+
 def Concept.toJson (c : Concept) : Json :=
   Json.mkObj
     [ ("id", c.id), ("contract", c.contract)
@@ -92,6 +94,7 @@ def Concept.toJson (c : Concept) : Json :=
     , ("kind", match c.body with | .formula _ => "formula" | .quantity _ => "quantity")
     , ("body", match c.body with | .formula φ => φ.toJson | .quantity t => t.toJson)
     , ("residues", Json.arr (c.residues.map Json.str).toArray)
+    , ("narrowings", Json.arr (c.narrowings.map Narrowing.toJson).toArray)
     , ("supersedes", match c.supersedes with | some s => Json.str s | none => Json.null) ]
 
 def Rule.toJson (r : Rule) : Json :=
@@ -100,6 +103,7 @@ def Rule.toJson (r : Rule) : Json :=
     , ("binders", Json.arr (r.binders.map fun b => Json.mkObj [("name", b.name), ("cls", b.cls.toJson)]).toArray)
     , ("applicability", r.applicability.toJson), ("obligation", r.obligation.toJson)
     , ("assumptions", Json.arr (r.assumptions.map Json.str).toArray)
-    , ("residues", Json.arr (r.residues.map Json.str).toArray), ("surrogate", r.surrogate) ]
+    , ("residues", Json.arr (r.residues.map Json.str).toArray)
+    , ("narrowings", Json.arr (r.narrowings.map Narrowing.toJson).toArray), ("surrogate", r.surrogate) ]
 
 end TrafficSpec

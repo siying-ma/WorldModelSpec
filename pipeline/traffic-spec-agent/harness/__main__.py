@@ -76,9 +76,16 @@ class Cli:
              plan_attempts: int = 2, gate_budget: int = 6, judge: bool = True, dry_run: bool = False,
              max_turns: int = 80, plan_effort: str = "high", code_effort: str = "high", judge_effort: str = "medium",
              session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0,
-             mode: str = "train", base_run: str | None = None) -> int:
+             mode: str = "train", base_run: str | None = None, plan_batch: int = 8, judge_samples: int = 1,
+             workers: int = 1, reader_model: str | None = None, plan_turns: int = 40, restart: bool = False,
+             concept_attempts: int = 3, node_attempts: int = 2) -> int:
         """`mode` is `train` (concepts may supersede) or `test` (add-only over `base_run`, whose accepted
-        nodes and concepts are loaded read-only)."""
+        nodes and concepts are loaded read-only). `plan_batch` is the most laws one plan session is given;
+        `judge_samples` the number of independent judge sessions a node's review runs; `workers` the coding
+        sessions run at once; `reader_model` the blind reader's model; `plan_turns` the turn cap of a plan or
+        repair session; `restart` discards an interrupted iteration instead of resuming it; `concept_attempts`
+        the coding attempts a concept gets (the first and its repairs), separate from the laws' `plan_attempts`;
+        `node_attempts` the coding attempts a node gets (the first and one after a node repair session)."""
         from .loop import run_loop
         if mode not in ("train", "test"):
             raise SystemExit("mode must be `train` or `test`")
@@ -89,33 +96,52 @@ class Cli:
                        judge=judge, dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
                        code_effort=code_effort or None, judge_effort=judge_effort or None,
                        session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait,
-                       mode=mode, base_run=base_run)
+                       mode=mode, base_run=base_run, plan_batch=max(1, int(plan_batch)), judge_samples=max(1, int(judge_samples)),
+                       workers=max(1, int(workers)), reader_model=reader_model, plan_turns=max(4, int(plan_turns)), restart=restart,
+                       concept_attempts=max(1, int(concept_attempts)), node_attempts=max(1, int(node_attempts)))
         print(json.dumps(run_loop(opts), indent=1))
         return 0
 
-    def validate(self, blueprint_file: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
-                 reading: str = "readings/default.json") -> int:
+    def validate(self, blueprint_file: str = "", run_id: str = "", laws: str = DEFAULT_LAWS,
+                 ontology_file: str = DEFAULT_ONTOLOGY, reading: str = "readings/default.json") -> int:
+        """Validator A over a blueprint file, no sessions. With `--run_id` it is the check the loop
+        runs: the run's accepted nodes and concepts, mapping index, reading (with the draft's
+        `aggregates.jsonl` applied) and the `PLAN.md` disputes beside the blueprint. Without a run it
+        is context-free: no accepted node, concept or mapping is known, so a composition of an
+        accepted node or a call of a catalogued concept is reported as unknown."""
         from .checks import aggregates
-        nodes = blueprint.load(_p(blueprint_file))
-        by_id = {l.id: l for l in corpus.load_laws(_p(laws))}
-        onto = ontology.load(_p(ontology_file))
-        base = Reading(_p(reading))
-        agg_ok, agg_errs = aggregates.validate(aggregates.load(_p(blueprint_file).with_name("aggregates.jsonl")),
-                                               corpus.load_definitions(_p(laws)), onto, base)
+        from .phases import validate as validate_phase
+        from .store.state import Run
+        if run_id:
+            run = Run.load(run_id)
+            bp = _p(blueprint_file) if blueprint_file else _latest_blueprint(run)
+            plan_dir = bp.parent
+            law_list = corpus.load_laws(run.opts.laws)
+            defs = corpus.load_definitions(run.opts.laws)
+            onto = ontology.load(run.opts.ontology)
+            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(run.opts.reading))
+            reading_obj = Reading(run.reading_file).with_aggregates(agg_ok)
+        else:
+            if not blueprint_file:
+                raise SystemExit("give --blueprint_file, or --run_id for a run's latest plan")
+            bp = _p(blueprint_file); plan_dir = bp.parent
+            law_list = corpus.load_laws(_p(laws))
+            defs = corpus.load_definitions(_p(laws))
+            onto = ontology.load(_p(ontology_file))
+            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(_p(reading)))
+            reading_obj = Reading(_p(reading)).with_aggregates(agg_ok)
+            run = None
         bad = 0
         for e in agg_errs:
             print(f"reject  aggregate: {e}"); bad += 1
         for r in agg_ok:
             print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
-        concepts = blueprint.load_concepts(_p(blueprint_file))
-        c_outcomes = validate_a.validate_concepts(concepts, corpus.load_definitions(_p(laws)), onto, {}, nodes)
+        by_id = {l.id: l for l in law_list}
+        _nodes, _concepts, outcomes, c_outcomes = validate_phase.validate_a_for_run(run, plan_dir, by_id, reading_obj, defs, onto=onto, blueprint_file=bp)
         for o in c_outcomes:
             print(f"{o.kind:7s} concept {o.concept.id}")
             for r in o.reasons: print("        ", r)
             bad += o.kind != validate_a.ACCEPT
-        outcomes = validate_a.validate(nodes, by_id, onto, base.with_aggregates(agg_ok),
-                                       MappingIndex(_p(blueprint_file).with_name("mapping.json")), {}, set(),
-                                       {}, [o.concept for o in c_outcomes if o.kind == validate_a.ACCEPT])
         for o in outcomes:
             print(f"{o.kind:7s} {o.node.id}")
             for r in o.reasons: print("        ", r)
@@ -150,7 +176,17 @@ class Cli:
         from .store.ledger import Ledger
         ledger = Ledger(paths.run_dir(run_id) / "ledger.jsonl", [], 2)
         out = ledger.reopen([l.strip() for l in laws.split(",") if l.strip()] or None)
-        ledger.save(); print(f"reopened {len(out)}: {', '.join(out)}"); return 0
+        ledger.save()
+        # a reopened law is planned afresh: its held nodes and its node-repair entries are dropped
+        dfile = paths.run_dir(run_id) / "deferred_nodes.jsonl"
+        if dfile.exists():
+            kept = [l for l in dfile.read_text(encoding="utf-8").splitlines() if l.strip() and not (set(json.loads(l).get("law_refs", [])) & set(out))]
+            dfile.write_text("".join(k + "\n" for k in kept), encoding="utf-8")
+        nfile = paths.run_dir(run_id) / "node_ledger.jsonl"
+        if nfile.exists():
+            kept = [l for l in nfile.read_text(encoding="utf-8").splitlines() if l.strip() and json.loads(l).get("law") not in out]
+            nfile.write_text("".join(k + "\n" for k in kept), encoding="utf-8")
+        print(f"reopened {len(out)}: {', '.join(out)}"); return 0
 
     def status(self, run_id: str) -> int:
         f = paths.run_dir(run_id) / "summary.json"
@@ -175,6 +211,13 @@ class Cli:
     def score_split(self, run_id: str, split_atoms: str = "laws/audit_and_scripts/split_atoms.json") -> int:
         from .tools.score_split import score
         print(json.dumps(score(run_id, _p(split_atoms)), indent=1)); return 0
+
+
+def _latest_blueprint(run) -> Path:
+    iters = sorted(p for p in run.dir.glob("iter-*") if (p / "plan" / "blueprint.jsonl").exists())
+    if not iters:
+        raise SystemExit(f"run `{run.opts.run_id}` has no plan yet; give --blueprint_file")
+    return iters[-1] / "plan" / "blueprint.jsonl"
 
 
 def main() -> None:

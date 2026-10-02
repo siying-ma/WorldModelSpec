@@ -2,6 +2,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -12,12 +13,52 @@ from ..model.blueprint import Node, SCENARIOS
 from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
-            "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
+            "SCOPE_NARROWED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
+#: Roles whose span decides when a rule applies: a coder may not narrow one (the rule would apply
+#: where the law does not), and a plan may not carry one as a residue.
+SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
+#: Roles a narrowing may be declared on: the duty and its standards, which the plan carries by an
+#: element or an operationalization.
+NARROWABLE_ROLES = {"obligation", "standard"}
+#: Not a verdict on the node: the toolchain did not run (a timeout, a missing `lake`). The loop
+#: defers the law without counting an attempt and stops after the iteration.
+INFRA = "INFRA"
+#: Keywords and attributes that make a declaration something other than a closed, total value.
+#: Scanned in the code only (`lean.code_only`): a law's words in a header comment or in the
+#: `standard` string of an operationalization are not Lean.
 FORBIDDEN_TOKENS = ["sorry", "admit", "axiom", "unsafe", "partial", "opaque", "implemented_by", "extern", "native_decide", "panic!"]
 STANDARD_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
 ALLOWED_RULE_IMPORTS = {"TrafficSpec.Core.Language.Rule"}
 ALLOWED_WITNESS_IMPORTS_EXTRA = {"TrafficSpec.Core.Evidence.Builders"}
-GENERATED = {"TrafficSpec/Index.lean", "TrafficSpecWitness.lean"}   # written by index_sync, never by a session
+GENERATED = {"library/TrafficSpec/Index.lean", "library/TrafficSpecWitness.lean"}   # written by index_sync, never by a session
+#: Names a formula reads that no node claims: the clock, which every window over time reads and
+#: no source can fail to observe.
+FREE_USES = {"kin_time"}
+
+
+def reads_of_used(used: set[str], accepted_concepts: dict[str, dict] | None) -> set[str]:
+    """Lean names a body reads through the primitives and accepted concepts it uses: a claim among
+    them is used, although no leaf of the body names it."""
+    from ..lean import surface
+    prim = surface.primitive_reads()
+    out: set[str] = set()
+    for n in used:
+        if n.startswith("prim_"):
+            out.update(prim.get(n, []))
+        elif n.startswith("drv_") and accepted_concepts:
+            for cid, rec in accepted_concepts.items():
+                if cid.replace(".", "_") == n:
+                    out.update(a.replace(".", "_") for a in rec.get("reads", []))
+    return out
+#: Directories the repository digest does not enter: version control, build outputs, caches, and
+#: the per-iteration task directories (a running session writes its own stream there).
+DIGEST_SKIP_DIRS = {".git", ".lake", "__pycache__", ".venv", "node_modules", ".mypy_cache", ".pytest_cache"}
+#: Files the harness itself writes while sessions run, and operator logs: a run's ledgers and
+#: records (saved after every transition, so a session coding beside another would otherwise see
+#: them change), and any log or pid file. The jail denies a session these paths already.
+DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
+                         "deferred_nodes.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md"}
+DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
 
 @dataclass
@@ -31,14 +72,48 @@ class Verdict:
         return {"verdict": self.verdict, "details": self.details, **({"extras": self.extras} if self.extras else {})}
 
 
-def library_digest(root: Path) -> dict[str, str]:
-    out = {}
-    for p in root.rglob("*.lean"):
-        rel = str(p.relative_to(root))
-        if ".lake" in p.parts or rel in GENERATED:
-            continue
-        out[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
+def repo_digest(root: Path | None = None) -> dict[str, str]:
+    """A digest of every file of the pipeline a session could touch, keyed by path relative to
+    the pipeline root: the library, the harness, the prompts, the ontology, the corpus, the
+    readings, the gap ledger, the run records. Build outputs, caches, version control and the
+    per-iteration task directories are left out. The scope check compares two of these."""
+    root = (root or paths.REPO).resolve()
+    out: dict[str, str] = {}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = sorted(d for d in dirnames if d not in DIGEST_SKIP_DIRS and not d.startswith("iter-"))
+        for f in filenames:
+            p = Path(dirpath) / f
+            rel = p.relative_to(root).as_posix()
+            if rel in GENERATED or p.is_symlink() or f.endswith(DIGEST_SKIP_SUFFIXES):
+                continue
+            if rel.startswith("results/") and rel.count("/") == 2 and f in DIGEST_SKIP_RUN_FILES:
+                continue
+            try:
+                out[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
+            except OSError:
+                continue
     return out
+
+
+def lib_rel(rel: str) -> str:
+    """A path under the library, as the repository digest keys it."""
+    return "library/" + rel
+
+
+def task_registry(work: Path) -> tuple[list[str] | None, list[str] | None]:
+    """The ids a gate run from this task directory registers: the accepted ones and the task's
+    own (`registry.json`, written by the code phase), or everything on disk when absent."""
+    f = work / "registry.json"
+    if not f.exists():
+        return None, None
+    d = json.loads(f.read_text(encoding="utf-8"))
+    return d.get("nodes"), d.get("concepts")
+
+
+def task_concurrent(work: Path) -> set[str]:
+    """Files other sessions of the same wave own, which this task's scope check does not count."""
+    f = work / "concurrent.json"
+    return set(json.loads(f.read_text(encoding="utf-8"))) if f.exists() else set()
 
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
@@ -80,6 +155,7 @@ def _harness_source(node_id: str, reading_json_path: Path) -> str:
     return f'''import TrafficSpec
 import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Runtime.Decode
+import TrafficSpec.Core.Language.Export
 import {nodeid.rule_module(node_id)}
 import {nodeid.witness_module(node_id)}
 open TrafficSpec Lean
@@ -99,10 +175,13 @@ def main : IO Unit := do
     ("binders", Json.arr (r.binders.map fun b => Json.str b.name).toArray),
     ("assumptions", Json.arr (r.assumptions.map Json.str).toArray),
     ("operationalizations", Json.arr (r.operationalizations.map fun o => Json.mkObj [("standard", o.standard), ("concepts", Json.arr (o.concepts.map Json.str).toArray), ("params", Json.arr (o.params.map Json.str).toArray), ("surrogate", o.surrogate)]).toArray),
-    ("residues", Json.arr (r.residues.map Json.str).toArray), ("surrogate", r.surrogate)]
+    ("residues", Json.arr (r.residues.map Json.str).toArray),
+    ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why)]).toArray), ("surrogate", r.surrogate)]
   IO.println s!"DECL\\t{{decl.compress}}"
+  IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
+  for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
   for g in (r.binders.flatMap fun b => occF b.cls) ++ occF r.applicability ++ occF r.obligation do
     IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in r.formulas.flatMap Formula.literals do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
@@ -124,8 +203,10 @@ def _imports(text: str) -> set[str]:
     return set(re.findall(r"^import (\S+)", text, re.M))
 
 
-def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path, budget_used: int, budget: int) -> Verdict:
-    """The gate for one node. `work` is the node's task directory (harness file, reports)."""
+def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path, budget_used: int, budget: int,
+             accepted_concepts: dict[str, dict] | None = None) -> Verdict:
+    """The gate for one node. `work` is the node's task directory (harness file, reports);
+    `accepted_concepts` the catalogue, whose recorded reads count a claim as used."""
     work.mkdir(parents=True, exist_ok=True)
     lib = paths.LIBRARY
     rule_rel, wit_rel = nodeid.rule_path(node.id), nodeid.witness_path(node.id)
@@ -135,13 +216,13 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if budget_used >= budget:
         return Verdict("BUDGET_EXHAUSTED", [f"{budget} gate runs used"])
 
-    # 1. scope (the registries are regenerated first so the build below sees every node on disk)
-    index_sync.write_index()
-    now = library_digest(lib)
+    # 1. scope: nothing in the pipeline changed but the node's two files (and the files of the
+    # sessions coding beside it); the registries carry the accepted nodes and this one
+    now = repo_digest()
     changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    stray = sorted(changed - {rule_rel, wit_rel})
+    stray = sorted(changed - {lib_rel(rule_rel), lib_rel(wit_rel)} - task_concurrent(work))
     if stray:
-        return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:5]}"])
+        return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
     if not rule_file.exists() or not wit_file.exists():
         return Verdict("SCOPE_VIOLATION", [f"missing {rule_rel if not rule_file.exists() else wit_rel}"])
     rtext, wtext = rule_file.read_text(encoding="utf-8"), wit_file.read_text(encoding="utf-8")
@@ -151,24 +232,31 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if f"namespace {nodeid.rule_namespace(node.id)}" not in rtext or f"namespace {nodeid.witness_namespace(node.id)}" not in wtext:
         return Verdict("SCOPE_VIOLATION", ["namespace must be derived from the node id"])
 
-    # 2. build
-    ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)])
-    (work / "build.log").write_text(out, encoding="utf-8")
-    if not ok:
-        return Verdict("BUILD_FAIL", lean.errors(out)[:8])
-
-    # 3. sound
-    for tok in FORBIDDEN_TOKENS:
-        for name, text in (("rule", rtext), ("witness", wtext)):
-            if re.search(r"(?<![A-Za-z_.])" + re.escape(tok) + r"(?![A-Za-z_])", text):
-                details.append(f"{name} file contains `{tok}`")
-    if lean.sorry_warnings(out):
-        details.append("build reports a declaration that uses sorry")
-    harness = work / "gate_harness.lean"
-    reading_json = work / "reading.json"
-    reading_json.write_text(reading.lean_json(), encoding="utf-8")
-    harness.write_text(_harness_source(node.id, reading_json), encoding="utf-8")
-    ok, hout = lean.lean_run(lib, harness)
+    # 2. build, and 3. the harness run: one holder of the library lock at a time, so the
+    # registries this gate writes are the ones its build and its run see
+    only_nodes, only_concepts = task_registry(work)
+    with lean.library_lock(lib):
+        index_sync.write_index(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts)
+        try:
+            ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)])
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
+        (work / "build.log").write_text(out, encoding="utf-8")
+        if lean.timed_out(out):
+            return Verdict(INFRA, [out.splitlines()[0]])
+        if not ok:
+            return Verdict("BUILD_FAIL", lean.errors(out)[:8])
+        details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
+        if lean.sorry_warnings(out):
+            details.append("build reports a declaration that uses sorry")
+        harness = work / "gate_harness.lean"
+        reading_json = work / "reading.json"
+        reading_json.write_text(reading.lean_json(), encoding="utf-8")
+        harness.write_text(_harness_source(node.id, reading_json), encoding="utf-8")
+        try:
+            ok, hout = lean.lean_run(lib, harness)
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
     for m in re.finditer(r"depends on axioms: \[([^\]]*)\]", hout):
         axioms = {a.strip() for a in m.group(1).split(",") if a.strip()}
@@ -177,7 +265,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if details:
         return Verdict("UNSOUND", details)
     if not ok or "DONE" not in hout:
-        return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
+        return harness_failure(hout)
 
     rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
     def col(tag: str) -> list[list[str]]:
@@ -209,11 +297,23 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     node_residues = [r.get("why", "") for r in node.get("residues", [])]
     missing_res = [w for w in node_residues if w not in decl["residues"]]
     if missing_res: mism.append(f"residues of the node missing from the rule: {missing_res[:3]}")
-    added_residues = [w for w in decl["residues"] if w not in node_residues]
+    added_res = [w for w in decl["residues"] if w not in node_residues]
+    if added_res: mism.append(f"residues added to the rule: {added_res[:3]}; a residue is the plan's — a reading you chose on a carried span is a narrowing ⟨span, why⟩")
+    spans = node.spans()
+    narrowings = [n for n in decl.get("narrowings", []) if isinstance(n, dict)]
+    for n in narrowings:
+        if n.get("span") not in spans: mism.append(f"narrowing on `{n.get('span')}`, which is no span of the node")
+        elif not str(n.get("why", "")).strip(): mism.append(f"narrowing on {n.get('span')} states no why")
+        elif spans[n["span"]].get("role") not in NARROWABLE_ROLES | SCOPE_ROLES:
+            mism.append(f"narrowing on {n['span']} ({spans[n['span']].get('role')}), a span this node does not carry")
     exp_surrogate = any(o.get("surrogate") for o in node.get("operationalizations", []))
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
+    narrowed_scope = [f"narrowing on {n['span']} ({spans[n['span']].get('role')}): {str(n.get('why', ''))[:160]}" for n in narrowings
+                      if n.get("span") in spans and spans[n["span"]].get("role") in SCOPE_ROLES]
+    if narrowed_scope:
+        return Verdict("SCOPE_NARROWED", narrowed_scope + ["a span that decides when the rule applies is carried as the node maps it, or the node is wrong: report it in the result note"])
 
     # 6. claims and literals
     used = {a for a in col("ATOMS")[0][0].split(",") if a}
@@ -223,10 +323,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             if n == c or n.startswith(c + "_"):
                 return c
         return n
-    unclaimed = sorted({n for n in used if canon(n) not in claimed})
+    unclaimed = sorted({n for n in used if canon(n) not in claimed and n not in FREE_USES})
     if unclaimed:
         return Verdict("UNCLAIMED_ATOM", unclaimed)
-    unused = sorted(c for c in claimed if not any(canon(n) == c for n in used))
+    used_via = {canon(n) for n in reads_of_used(used, accepted_concepts)}
+    unused = sorted(c for c in claimed if not any(canon(n) == c for n in used) and c not in used_via)
     if unused:
         return Verdict("UNUSED_CLAIM", unused)
     from fractions import Fraction
@@ -247,6 +348,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     scen = col("SCEN")
     planned = {s["name"]: s for s in node.get("scenarios", [])}
     fails = []
+    masked = planned.get("blind", {}).get("masked", [])
+    masked = set([masked] if isinstance(masked, str) else masked)
+    for name, absent in col("MANIFEST"):
+        if name == "blind" and set(a for a in absent.split(",") if a) != masked:
+            fails.append(f"blind: the manifest masks {sorted(a for a in absent.split(',') if a)}, the node masks {sorted(masked)}")
     for name, expected, got, status in scen:
         if status != "ok":
             fails.append(f"{name}: {status}")
@@ -265,8 +371,28 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if adeq:
         return Verdict("VACUOUS", adeq)
     return Verdict("OK", [f"{len(scen)} witnesses, {len(used)} names, composes {col('COMPOSES')[0][0] or 'nothing'}"]
-                   + ([f"residues added by the coder: {len(added_residues)}"] if added_residues else []),
-                   extras={"residues_added": added_residues} if added_residues else {})
+                   + ([f"narrowings declared by the coder: {len(narrowings)}"] if narrowings else []),
+                   extras={"rule_json": json.loads(col("RULEJSON")[0][0]),
+                           **({"narrowings_added": narrowings} if narrowings else {})})
+
+
+def forbidden_tokens(files) -> list[str]:
+    """The forbidden keywords each file uses in code (comments and strings blanked)."""
+    out = []
+    for name, text in files:
+        code = lean.code_only(text)
+        for tok in FORBIDDEN_TOKENS:
+            if re.search(r"(?<![A-Za-z_.])" + re.escape(tok) + r"(?![A-Za-z_])", code):
+                out.append(f"{name} file contains `{tok}`")
+    return out
+
+
+def harness_failure(hout: str) -> Verdict:
+    """A gate harness that did not reach `DONE`: the toolchain's failure when it timed out or
+    reported no error, the node's when an error line names what it elaborated."""
+    if lean.timed_out(hout) or not lean.errors(hout):
+        return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
+    return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
 
 
 def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[str]:
@@ -396,12 +522,11 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         return Verdict("BUDGET_EXHAUSTED", [f"{budget} gate runs used"])
 
     # 1. scope
-    index_sync.write_index()
-    now = library_digest(lib)
+    now = repo_digest()
     changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    stray = sorted(changed - {c_rel, w_rel})
+    stray = sorted(changed - {lib_rel(c_rel), lib_rel(w_rel)} - task_concurrent(work))
     if stray:
-        return Verdict("SCOPE_VIOLATION", [f"changed outside the concept's files: {stray[:5]}"])
+        return Verdict("SCOPE_VIOLATION", [f"changed outside the concept's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
     if not c_file.exists() or not w_file.exists():
         return Verdict("SCOPE_VIOLATION", [f"missing {c_rel if not c_file.exists() else w_rel}"])
     ctext, wtext = c_file.read_text(encoding="utf-8"), w_file.read_text(encoding="utf-8")
@@ -413,24 +538,30 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if rec.get("supersedes") and mode == "test":
         return Verdict("TEST_ADD_ONLY", [f"a test run adds concepts and supersedes none; `{rec.get('supersedes')}` keeps its body, the defect is recorded"])
 
-    # 2. build
-    ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)])
-    (work / "build.log").write_text(out, encoding="utf-8")
-    if not ok:
-        return Verdict("BUILD_FAIL", lean.errors(out)[:8])
-
-    # 3. sound
-    for tok in FORBIDDEN_TOKENS:
-        for name, text in (("concept", ctext), ("witness", wtext)):
-            if re.search(r"(?<![A-Za-z_.])" + re.escape(tok) + r"(?![A-Za-z_])", text):
-                details.append(f"{name} file contains `{tok}`")
-    if lean.sorry_warnings(out):
-        details.append("build reports a declaration that uses sorry")
-    harness = work / "gate_harness.lean"
-    reading_json = work / "reading.json"
-    reading_json.write_text(reading.lean_json(), encoding="utf-8")
-    harness.write_text(_concept_harness_source(cid, reading_json), encoding="utf-8")
-    ok, hout = lean.lean_run(lib, harness)
+    # 2. build, and 3. the harness run, under the library lock
+    only_nodes, only_concepts = task_registry(work)
+    with lean.library_lock(lib):
+        index_sync.write_index(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}))
+        try:
+            ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)])
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
+        (work / "build.log").write_text(out, encoding="utf-8")
+        if lean.timed_out(out):
+            return Verdict(INFRA, [out.splitlines()[0]])
+        if not ok:
+            return Verdict("BUILD_FAIL", lean.errors(out)[:8])
+        details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
+        if lean.sorry_warnings(out):
+            details.append("build reports a declaration that uses sorry")
+        harness = work / "gate_harness.lean"
+        reading_json = work / "reading.json"
+        reading_json.write_text(reading.lean_json(), encoding="utf-8")
+        harness.write_text(_concept_harness_source(cid, reading_json), encoding="utf-8")
+        try:
+            ok, hout = lean.lean_run(lib, harness)
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
     for m in re.finditer(r"depends on axioms: \[([^\]]*)\]", hout):
         axioms = {a.strip() for a in m.group(1).split(",") if a.strip()}
@@ -439,7 +570,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if details:
         return Verdict("UNSOUND", details)
     if not ok or "DONE" not in hout:
-        return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
+        return harness_failure(hout)
     rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
     def col(tag: str) -> list[list[str]]:
         return [r[1:] for r in rows if r[0] == tag]
@@ -476,7 +607,13 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     rec_res = [r.get("why", "") for r in rec.get("residues", [])]
     missing_res = [w for w in rec_res if w not in decl["residues"]]
     if missing_res: mism.append(f"residues of the record missing from the concept: {missing_res[:3]}")
-    added_residues = [w for w in decl["residues"] if w not in rec_res]
+    added_res = [w for w in decl["residues"] if w not in rec_res]
+    if added_res: mism.append(f"residues added to the concept: {added_res[:3]}; a residue is the record's — a reading you chose that the contract leaves open is a narrowing ⟨words of the contract, why⟩")
+    contract_ws = ws(rec.get("contract"))
+    narrowings = [n for n in decl.get("narrowings", []) if isinstance(n, dict)]
+    for n in narrowings:
+        if not ws(n.get("span")) or ws(n.get("span")) not in contract_ws: mism.append(f"narrowing on `{str(n.get('span', ''))[:60]}`, which is not a run of the contract's words")
+        elif not str(n.get("why", "")).strip(): mism.append(f"narrowing on `{str(n.get('span'))[:60]}` states no why")
     if (decl.get("supersedes") or None) != (rec.get("supersedes") or None): mism.append("supersedes differs from the record")
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
@@ -489,10 +626,11 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
             if n == cl or n.startswith(cl + "_"):
                 return cl
         return n
-    unclaimed = sorted({n for n in used if canon(n) not in claimed})
+    unclaimed = sorted({n for n in used if canon(n) not in claimed and n not in FREE_USES})
     if unclaimed:
         return Verdict("UNCLAIMED_ATOM", unclaimed)
-    unused = sorted(cl for cl in claimed if not any(canon(n) == cl for n in used))
+    used_via = {canon(n) for n in reads_of_used(used, accepted)}
+    unused = sorted(cl for cl in claimed if not any(canon(n) == cl for n in used) and cl not in used_via)
     if unused:
         return Verdict("UNUSED_CLAIM", unused)
     from fractions import Fraction
@@ -551,6 +689,6 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     reads = sorted({a for n in read_names for a in [surface.atom_id_of(n, atom_ids)] if a})
     refs = sorted({_lean_concept_id(n) for n in used if n.startswith("drv_") and nodeid.is_concept_id(_lean_concept_id(n))})
     return Verdict("OK", [f"{len(scen)} witnesses, {len(used)} names, reads {len(reads)} atom(s)"]
-                   + ([f"residues added by the coder: {len(added_residues)}"] if added_residues else []),
+                   + ([f"narrowings declared by the coder: {len(narrowings)}"] if narrowings else []),
                    extras={"reads": reads, "refs": refs, "canonical_body": canonical, "body_json": body_json,
-                           **({"residues_added": added_residues} if added_residues else {})})
+                           **({"narrowings_added": narrowings} if narrowings else {})})

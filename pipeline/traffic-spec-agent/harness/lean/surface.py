@@ -171,6 +171,18 @@ def enumerations() -> str:
     return "\n".join(out) + "\n"
 
 
+def enumeration_spellings() -> dict[str, set[str]]:
+    """Enumeration name → the `Arg.lit` spellings its `ofString` accepts (`Vocab/Ontology/*.lean`)."""
+    out: dict[str, set[str]] = {}
+    for f in sorted((paths.CORE / "Vocab" / "Ontology").glob("*.lean")):
+        if f.name == "Ids.lean":
+            continue
+        t = f.read_text(encoding="utf-8")
+        for name, body in re.findall(r"namespace (\w+)\ndef ofString[^\n]*\n(.*?)\n  \| _ =>", t, re.S):
+            out[name] = {s for s, _ in re.findall(r'\| "([^"]+)" => some \.(\w+)', body)}
+    return out
+
+
 def units_table() -> str:
     u = _read("Foundations/Units.lean")
     lines = [l for l in u.splitlines() if re.match(r"^def (metres|centimetres|millimetres|kilometres|inches|feet|yards|miles|seconds|milliseconds|minutes|hours|metresPerSecond|kmh|mph|metresPerSecondSq|degrees|millidegrees|ratio|percent|micrometres\w*)\b", l)]
@@ -223,9 +235,59 @@ def concepts_table(accepted: dict[str, dict]) -> str:
     return "\n".join(out) + "\n"
 
 
-def core_surface(accepted_concepts: dict[str, dict] | None = None) -> str:
-    return "\n".join([formula_language(), rule_and_scenario(), concept_language(), concepts_table(accepted_concepts or {}),
-                       atoms_table(), atom_accessors(), primitives_table(), enumerations(), world_records(), units_table(), builders()])
+def _keep_for(claimed: set[str] | None, accepted: dict[str, dict]) -> set[str] | None:
+    """The atom ids, primitive ids and concept ids a session needs: what the record claims, what
+    its claimed concepts read and reference, and what its claimed primitives read."""
+    if claimed is None:
+        return None
+    keep = {c.split("=")[0] for c in claimed}
+    reads = primitive_reads()
+    atom_ids = set(core_atom_ids())
+    for c in list(keep):
+        for lean_name in reads.get(c.replace(".", "_"), []):
+            aid = atom_id_of(lean_name, atom_ids)
+            if aid:
+                keep.add(aid)
+        rec = accepted.get(c)
+        if rec:
+            keep |= set(rec.get("reads", [])) | set(rec.get("refs", []))
+    return keep
+
+
+def _cut_accessors(text: str, keep: set[str]) -> str:
+    atom_ids = set(core_atom_ids())
+    out = []
+    for line in text.splitlines():
+        m = re.match(r"^def (\w+) \(s : Scene\)", line)
+        if m:
+            aid = atom_id_of(m.group(1), atom_ids)
+            if aid and aid not in keep:
+                continue
+        out.append(line)
+    return "\n".join(out) + "\n"
+
+
+def _cut_primitives(text: str, keep: set[str]) -> str:
+    parts = re.split(r"(?=^def prim_)", text.split("```lean\n", 1)[1].split("```")[0], flags=re.M)
+    kept = [p for p in parts if not p.startswith("def prim_") or ("prim." + p.split()[1][5:]) in keep]
+    head, tail = text.split("```lean\n", 1)[0], text.split("```", 2)[2]
+    return head + "```lean\n" + "".join(kept) + "```" + tail
+
+
+def core_surface(accepted_concepts: dict[str, dict] | None = None, claimed: set[str] | None = None) -> str:
+    """The whole surface, or, with `claimed`, the surface cut to the ids a record claims: the
+    accessors of its atoms and of what its concepts and primitives read, its primitives, and the
+    concepts it names. The language, the records, the spellings, the units and the builders are
+    always whole, since a witness is built from them."""
+    accepted = accepted_concepts or {}
+    keep = _keep_for(claimed, accepted)
+    concepts = accepted if keep is None else {k: v for k, v in accepted.items() if k in keep}
+    accessors = atom_accessors() if keep is None else _cut_accessors(atom_accessors(), keep)
+    prims = primitives_table() if keep is None else _cut_primitives(primitives_table(), keep)
+    note = "" if keep is None else ("\n(The accessor and primitive tables are cut to what the record claims and what its concepts read; "
+                                    "every other name is off limits for this task, and the whole tables are in the files named.)\n")
+    return "\n".join([formula_language(), rule_and_scenario(), concept_language(), concepts_table(concepts),
+                       atoms_table(), accessors + note, prims, enumerations(), world_records(), units_table(), builders()])
 
 
 def primitive_reads() -> dict[str, list[str]]:

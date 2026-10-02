@@ -27,7 +27,12 @@ def both : Concept :=
 def cs : List Concept := [halted, touching, both]
 
 #guard halted.leanName = "drv_motion_halted"
-#guard halted.atoms = ["kin_speed"]
+#guard halted.atoms = ["kin_time", "kin_speed"]
+def kinds : Concept :=
+  { id := "drv.position.in_kind", contract := "the user occupies some region of the given kind"
+    args := [("x", .track), ("k", .literal ["lane", "shoulder"])], params := []
+    body := .formula (.existsRegion (.var "k") "r" (.atom "rel_occupies" [.var "x", .var "r"] [])) }
+#guard kinds.atoms = ["st_lane", "rel_occupies", "st_shoulder"]                                   -- every admissible kind, over the samples
 #guard both.refs = ["drv_motion_halted", "drv_interaction_touching_some"]
 #guard Concept.check cs halted = []
 #guard Concept.check cs touching = []
@@ -108,4 +113,6 @@ def instQRule : Rule := (Concept.asRule (bumped :: cs) instQ).getD default
 -- export
 #guard ((Formula.toJson callHalted).compress.splitOn "drv_motion_halted").length = 2
 #guard ((Concept.toJson halted).compress.splitOn "holds_for").length = 2
+#guard ((Concept.toJson { halted with narrowings := [⟨"a run of words", "read as a bound"⟩] }).compress.splitOn "\"narrowings\":[{\"span\":\"a run of words\"").length = 2
+#guard ((Concept.toJson halted).compress.splitOn "\"narrowings\":[]").length = 2
 end TrafficSpec.Tests.Concept

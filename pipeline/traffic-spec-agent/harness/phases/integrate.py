@@ -8,7 +8,7 @@ from ..checks import validate_a
 from ..model.blueprint import Node
 from ..model.reading import Reading
 from ..store.state import Run
-from .code import rollback, rollback_concept
+from .code import rollback, rollback_concept, node_dir, concept_dir
 
 
 def _witness_harness(reading_json: Path) -> str:
@@ -28,14 +28,15 @@ def main : IO Unit := do
 
 
 def verify_library(work: Path, reading: Reading) -> tuple[bool, list[str]]:
-    index_sync.write_index()
-    ok, out = lean.lake_build(paths.LIBRARY)
-    (work / "build.log").write_text(out, encoding="utf-8")
-    if not ok:
-        return False, ["library build failed"] + lean.errors(out)[:8]
-    rj = work / "reading.json"; rj.write_text(reading.lean_json(), encoding="utf-8")
-    h = work / "witness_harness.lean"; h.write_text(_witness_harness(rj), encoding="utf-8")
-    ok, hout = lean.lean_run(paths.LIBRARY, h)
+    with lean.library_lock(paths.LIBRARY):
+        index_sync.write_index()
+        ok, out = lean.lake_build(paths.LIBRARY)
+        (work / "build.log").write_text(out, encoding="utf-8")
+        if not ok:
+            return False, ["library build failed"] + lean.errors(out)[:8]
+        rj = work / "reading.json"; rj.write_text(reading.lean_json(), encoding="utf-8")
+        h = work / "witness_harness.lean"; h.write_text(_witness_harness(rj), encoding="utf-8")
+        ok, hout = lean.lean_run(paths.LIBRARY, h)
     (work / "witness_harness.out").write_text(hout, encoding="utf-8")
     fails = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("FAIL\t")]
     if not ok or "DONE" not in hout:
@@ -58,17 +59,17 @@ def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baseline
     if cycles:
         for n in reversed(accepted_now):
             if any(n.id in c for c in cycles):
-                rollback(n.id, baselines.get(n.id, {})); kept.remove(n.id); reverted.append(f"{n.id}: {cycles[0]}")
+                rollback(n.id, baselines.get(n.id, {}), node_dir(run, n.id)); kept.remove(n.id); reverted.append(f"{n.id}: {cycles[0]}")
     while True:
         ok, problems = verify_library(work, reading)
         if ok or not (kept or concepts_now):
             break
         if kept:
             victim = kept.pop()   # newest first
-            rollback(victim, baselines.get(victim, {}))
+            rollback(victim, baselines.get(victim, {}), node_dir(run, victim))
         else:
             victim = concepts_now.pop()
-            rollback_concept(victim, concept_baselines.get(victim, {}))
+            rollback_concept(victim, concept_baselines.get(victim, {}), concept_dir(run, victim))
             run.accepted_concepts.pop(victim, None)
         reverted.append(f"{victim}: library did not verify ({problems[0] if problems else 'unknown'})")
     (work / "result.json").write_text(json.dumps({"kept": kept, "reverted": reverted}, ensure_ascii=False, indent=1), encoding="utf-8")

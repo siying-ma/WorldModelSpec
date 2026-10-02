@@ -137,13 +137,25 @@ instance : Inhabited Formula := ⟨.tt⟩
 instance : Inhabited Term := ⟨.lit Q.zero .count⟩
 
 namespace Formula
--- The atom names a formula reads (for the gate, the manifest and the export).
+/-- The atom a window over a measure reads: the clock, or the subject's path length. -/
+def measureAtom : Measure → String
+  | .time => "kin_time"
+  | .path => "kin_path_length"
+
+/-- The kind atom a quantifier with a literal kind reads (`existsRegion (.lit "lane")` reads
+    `st_lane`); a variable kind is a concept's literal formal, read once the instance fills it. -/
+def kindAtom (prefix_ : String) : Arg → List String
+  | .lit k => [prefix_ ++ k]
+  | _ => []
+
+-- The atom names a formula reads (for the gate, the manifest and the export): every leaf, the
+-- measure of every window, and the kind of every quantifier with a literal kind.
 mutual
   partial def termAtoms : Term → List String
     | .measure a _ => [a]
     | .quantity c _ ps => c :: (ps.flatMap termAtoms)
-    | .distanceWhile _ φ => atoms φ
-    | .sinceRise φ => atoms φ
+    | .distanceWhile _ φ => measureAtom .path :: atoms φ
+    | .sinceRise φ => measureAtom .time :: atoms φ
     | .aggregate _ _ φ t => atoms φ ++ termAtoms t
     | .add a b | .sub a b | .mul a b | .div a b => termAtoms a ++ termAtoms b
     | .neg a | .abs a => termAtoms a
@@ -153,11 +165,12 @@ mutual
     | .cmp l _ r => termAtoms l ++ termAtoms r
     | .not φ | .always φ | .eventually φ | .rises φ => atoms φ
     | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => atoms φ ++ atoms ψ
-    | .holdsFor _ d _ φ | .within _ d _ φ => termAtoms d ++ atoms φ
-    | .untilWithin _ d _ φ ψ => termAtoms d ++ atoms φ ++ atoms ψ
+    | .holdsFor m d _ φ | .within m d _ φ => measureAtom m :: termAtoms d ++ atoms φ
+    | .untilWithin m d _ φ ψ => measureAtom m :: termAtoms d ++ atoms φ ++ atoms ψ
     | .count e s _ _ => atoms e ++ atoms s
     | .derived c _ ps => c :: ps.flatMap termAtoms
-    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsRegion k _ φ | .forallRegion k _ φ => kindAtom "st_" k ++ atoms φ
+    | .existsDevice k _ φ | .forallDevice k _ φ => kindAtom "dev_" k ++ atoms φ
     | .existsUser _ φ | .forallUser _ φ => atoms φ
     | _ => []
 end

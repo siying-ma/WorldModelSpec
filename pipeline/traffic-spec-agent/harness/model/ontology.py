@@ -10,6 +10,8 @@ ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
 DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
 ASSUMPTION_RE = re.compile(r"\basm\.[a-z_]+\b")
+ANCHORS = {"rel.occupies", "st.region_geometry"}   # the relations that tie a feature of the scene to the subject
+AGGREGATE = "ru.aggregate"                          # the atom a legal aggregate word is claimed as
 
 
 @dataclass
@@ -44,6 +46,16 @@ class Ontology:
             if c:
                 lines.append(f"| `{i}` | {c} |")
         return "\n".join(lines) + "\n"
+
+
+def anchors_text(onto: "Ontology", lean: bool = False) -> str:
+    """The anchoring relations with their contracts, for a prompt: ids, or Lean names when `lean`."""
+    parts = []
+    for a in sorted(ANCHORS):
+        name = a.replace(".", "_") if lean else a
+        contract = re.split(r"\s*[(;,]|\s+\*\*", onto.contract(a), maxsplit=1)[0].strip()
+        parts.append(f"`{name}`" + (f" ({contract})" if contract else ""))
+    return " or ".join(parts) + (" (or an accessor of one)" if lean else "")
 
 
 def load(path: Path) -> Ontology:

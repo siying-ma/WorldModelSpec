@@ -66,7 +66,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 LAW_FREE_PATTERNS = {
         "rule id": r"\bR\d{4}\b",
-        "law id": r"\b[A-Z]{2,}-[A-Z]+-\d{3,}\b",
+        "law id": r"\b(?:NRS|LVMC)-\d+[A-Z]?(?:-[A-Za-z0-9]+)+\b",
         "rule path": r"Rules/\w+/\w+",
         "map name": r"\bTown\d+\b",
         "measurement": r"[Mm]easured (?:on|against|across)\b|MEASURED\b"
@@ -164,7 +164,9 @@ class Doctor:
                   "blind_read.md": ("harness.phases.validate", "PLACEHOLDERS_BLIND"),
                   "alignment_judge.md": ("harness.phases.validate", "PLACEHOLDERS_JUDGE"),
                   "concept_blind.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_BLIND"),
-                  "concept_judge.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_JUDGE")}
+                  "concept_judge.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_JUDGE"),
+                  "concept_repair.md": ("harness.phases.plan", "PLACEHOLDERS_REPAIR"),
+                  "node_repair.md": ("harness.phases.plan", "PLACEHOLDERS_NODE_REPAIR")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():
@@ -179,6 +181,78 @@ class Doctor:
         if bad:
             return Result("prompt placeholders", FAIL, "; ".join(bad), src)
         return Result("prompt placeholders", OK, f"{n} placeholders across {len(owners)} templates all supplied", src)
+
+    def skeleton_tokens(self) -> Result:
+        """The rule skeleton the harness writes for any law of the corpus uses no forbidden keyword
+        in code: a law's words live in the header comment and in the operationalization strings,
+        which the gate's soundness scan leaves out."""
+        from harness.lean import skeleton
+        from harness.checks.gate import forbidden_tokens
+        from harness.model import corpus, blueprint
+        src = ("harness/lean/skeleton.py → rule_skeleton", "harness/checks/gate.py → forbidden_tokens over lean.code_only")
+        laws_file = self.repo / "laws" / "full_list" / "laws.jsonl"
+        laws = _nonempty(corpus.load_laws(laws_file), "laws of the corpus")
+        bad = []
+        for l in laws:
+            node = blueprint.Node({"node_id": l.id.replace("-", "_"), "law_refs": [l.id],
+                                   "segmentation": [{"id": "s1", "text": l.text, "role": "obligation"}], "elements": [],
+                                   "binders": [{"name": "x", "class_elements": []}],
+                                   "operationalizations": [{"span": "s1", "standard": l.text, "concepts": ["rel.surface_gap"],
+                                                            "params": ["p.x"], "convention": l.text}],
+                                   "applicability": "", "obligation": "", "scenarios": []})
+            hits = forbidden_tokens((("rule", skeleton.rule_skeleton(node)),))
+            if hits:
+                bad.append(f"{l.id}: {'; '.join(hits)}")
+        if bad:
+            return Result("skeleton tokens", FAIL, "; ".join(bad[:5]), src)
+        return Result("skeleton tokens", OK, f"{len(laws)} skeletons carry no forbidden keyword in code", src)
+
+    def sessions_are_isolated(self) -> Result:
+        """Every agent session is launched with the flags that keep the developer's CLAUDE.md,
+        settings, plugins, MCP servers and skills out of it, and the phases pass their deny rules."""
+        import importlib
+        sys.path.insert(0, str(self.repo))
+        runner = importlib.import_module("harness.agents.runner")
+        flags = list(getattr(runner, "ISOLATION_FLAGS", []))
+        src = ("harness/agents/runner.py → ISOLATION_FLAGS, run_claude", "harness/phases/*.py → session.run(deny=…)")
+        need = {"--setting-sources", "--strict-mcp-config", "--disable-slash-commands"}
+        missing = sorted(need - set(flags))
+        if missing:
+            return Result("session isolation", FAIL, f"runner lacks {missing}", src)
+        body = _read(self.repo / "harness" / "agents" / "runner.py")
+        if "*ISOLATION_FLAGS" not in body or "*PERMISSION_FLAGS" not in body:
+            return Result("session isolation", FAIL, "run_claude does not pass ISOLATION_FLAGS and PERMISSION_FLAGS", src)
+        perm = list(getattr(runner, "PERMISSION_FLAGS", []))
+        if perm[:4] != ["--permission-mode", "default", "--permission-prompts", "none"]:
+            return Result("session isolation", FAIL, f"sessions do not run under an allow-list: {perm}", src)
+        phases = {"plan.py": ["allow=session.plan_allow(", "cwd=plan_dir"], "code.py": ["allow=session.code_allow(", "cwd=d"],
+                  "validate.py": ["allow=[]", "disallowed_tools=session.NO_TOOLS"]}
+        bad = [f"{f}: {n}" for f, needles in phases.items() for n in needles if n not in _read(self.repo / "harness" / "phases" / f)]
+        if bad:
+            return Result("session isolation", FAIL, f"phases launch sessions outside the allow-list model: {bad}", src)
+        sess = importlib.import_module("harness.agents.session")
+        wild = [r for r in sess.code_allow([Path("/x/a.lean")], Path("/x/t"), "python -m harness gate --run_id r --node_id n")
+                if r.startswith("Bash(") and "*" in r]
+        if wild:
+            return Result("session isolation", FAIL, f"a shell rule carries a wildcard: {wild}", src)
+        if not any(r.startswith("Read(") and ".claude" in r for r in sess.deny_rules("code")):
+            return Result("session isolation", FAIL, "the Claude configuration and memory directory is not denied to reading", src)
+        # the rules admit what each session exists to write, and deny the run's records
+        plan_dir = self.repo / "results" / "r" / "iter-001" / "plan" / "batch-01"
+        task_dir = self.repo / "results" / "r" / "iter-001" / "code" / "N"
+        own = [self.repo / "library" / "TrafficSpec" / "Rules" / "X" / "N.lean"]
+        p_allow, p_deny = sess.plan_allow(plan_dir, "python -m harness validate"), sess.deny_rules("plan")
+        c_allow, c_deny = sess.code_allow(own, task_dir, "python -m harness gate"), sess.deny_rules("code")
+        must_permit = [(p_allow, p_deny, plan_dir / "blueprint.jsonl"), (p_allow, p_deny, plan_dir / "PLAN.md"),
+                       (c_allow, c_deny, task_dir / "task_result.md"), (c_allow, c_deny, own[0])]
+        must_refuse = [(p_allow, p_deny, self.repo / "results" / "r" / "ledger.jsonl"), (p_allow, p_deny, self.repo / "results" / "r" / "reading.json"),
+                       (c_allow, c_deny, self.repo / "results" / "r" / "accepted_nodes.jsonl"), (c_allow, c_deny, self.repo / "harness" / "loop.py"),
+                       (c_allow, c_deny, self.repo / "results" / "r" / "iter-001" / "plan" / "blueprint.jsonl")]
+        wrong = [str(p.relative_to(self.repo)) for a, d, p in must_permit if not sess.permitted(a, d, "Write", p)] + \
+                [str(p.relative_to(self.repo)) for a, d, p in must_refuse if sess.permitted(a, d, "Write", p)]
+        if wrong:
+            return Result("session isolation", FAIL, f"the write rules admit or refuse the wrong paths: {wrong}", src)
+        return Result("session isolation", OK, f"{len(need)} isolation flags; allow-list permissions; plan and code sessions jailed to their task directory with one exact shell command; readers and judges have no tool", src)
 
     def prompts_are_law_free(self) -> Result:
         """The templates carry no law, no rule named by its subject, no figure."""
@@ -197,6 +271,51 @@ class Doctor:
         if bad:
             return Result("prompts law-free", FAIL, "; ".join(bad[:5]), src)
         return Result("prompts law-free", OK, f"{len(self.prompts)} templates clear on all {len(patterns)} categories", src)
+
+    def prompts_are_vocabulary_free(self) -> Result:
+        """Everything project-specific reaches an agent through injected context, never through
+        the template: no atom, primitive or concept id, no Lean atom name, no reading parameter,
+        no enumeration spelling as a literal, and no term the corpus defines (the two compounds
+        the pipeline owns, "road user" and "stand-in", excepted)."""
+        import itertools
+        sys.path.insert(0, str(self.repo))
+        from harness.model import ontology as onto_mod
+        from harness.phases.plan import defined_term
+        src = ("prompts/*.md", "ontology/ATOMS.md ids; laws/full_list/definitions.jsonl terms")
+        onto = onto_mod.load(self.repo / "ontology" / "ATOMS.md")
+        ids = sorted(set(onto.atoms) | set(onto.primitives), key=len, reverse=True)
+        lean = [i.replace(".", "_") for i in ids]
+        patterns = {
+            "vocabulary id": r"\b(?:" + "|".join(re.escape(i) for i in ids) + r")\b",
+            "Lean atom name": r"\b(?:" + "|".join(re.escape(i) for i in lean) + r")\b",
+            "concept id": r"\bdrv\.[a-z_]+\.[a-z_]+\b",
+            "reading parameter": r"\bp\.[a-z_]+\b",
+            "enumeration literal": r'\.lit "[a-z_]+"',
+        }
+        terms = set()
+        defs_file = self.repo / "laws" / "full_list" / "definitions.jsonl"
+        if defs_file.exists():
+            for line in defs_file.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    for t in defined_term(json.loads(line)):
+                        t = t.strip(" ,;:.").lower()
+                        if len(t) > 3 and " / " not in t:
+                            terms.add(t)
+        bad = []
+        for path in self.prompts:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for label, pat in patterns.items():
+                for m in itertools.islice(re.finditer(pat, text), 3):
+                    bad.append(f"{path.name}:{text[:m.start()].count(chr(10)) + 1} {label} {m.group(0)!r}")
+            low = re.sub(r"\broad users?\b|\bstand-in\b", " ", text.lower())
+            for t in sorted(terms):
+                m = re.search(r"\b" + re.escape(t) + r"\b", low)
+                if m:
+                    bad.append(f"{path.name}:{low[:m.start()].count(chr(10)) + 1} defined term {t!r}")
+        if bad:
+            return Result("prompts vocabulary-free", FAIL, "; ".join(bad[:6]) + (f" (+{len(bad) - 6})" if len(bad) > 6 else ""), src)
+        return Result("prompts vocabulary-free", OK,
+                      f"{len(self.prompts)} templates name none of {len(ids)} ids and {len(terms)} defined terms", src)
 
     # ── frozen artifacts ─────────────────────────────────────────────────
 
@@ -240,6 +359,12 @@ class Doctor:
         targets = [p for p in self.repo.rglob("*.py") if "harness" in p.parts or "scripts" in p.parts] + \
             [self.repo / "README.md"]
         pat = LAW_FREE_PATTERNS["law id"]
+        # the pattern must recognise a real id, or the check certifies silence
+        corpus_ids = re.findall(r'"id": "([^"]+)"', _read_opt(self.repo / "laws" / "full_list" / "laws.jsonl")[:20000])
+        _nonempty(corpus_ids, "corpus ids")
+        unmatched = [i for i in corpus_ids[:50] if not re.fullmatch(pat.strip("\\b"), i)]
+        if unmatched:
+            return Result("harness law-free", FAIL, f"the law-id pattern does not match corpus ids such as {unmatched[:3]}", ("doctor LAW_FREE_PATTERNS", "laws/full_list/laws.jsonl"))
         bad = []
         for path in targets:
             if not path.exists():
@@ -349,12 +474,33 @@ class Doctor:
         return Result("reading figures", OK, f"{n} parameter(s) across {len(readings)} reading(s); "
                       f"{reviewed} equal a stated figure and carry a review note", tuple(src))
 
+    def reading_proposals_reviewed(self) -> Result:
+        """A parameter a plan session proposed enters the reading marked `proposed` (run, iteration and
+        node) with its convention and source, and is listed here until the operator reviews it by
+        removing the marker or changing the value. Nothing evaluated against the reading is final
+        while a proposal stands."""
+        src = ("readings/*.json → params[].proposed",)
+        rows, n = [], 0
+        for path in sorted((self.repo / "readings").glob("*.json")):
+            try:
+                data = json.loads(_read(path))
+            except json.JSONDecodeError as e:
+                return Result("reading proposals", FAIL, f"{path.name}: {e}", src)
+            for prm in data.get("params", []):
+                n += 1
+                if prm.get("proposed"):
+                    rows.append(f"{path.name}: `{prm.get('name')}` = {prm.get('value')} {prm.get('unit')} proposed by {prm.get('proposed')}: {str(prm.get('convention', ''))[:90]}")
+        if rows:
+            return Result("reading proposals", REVIEW, f"{len(rows)} proposed parameter(s) await the operator's review", tuple(rows) + src)
+        return Result("reading proposals", OK, f"{n} parameter(s), none proposed and unreviewed", src)
+
     def checks(self) -> list[Callable[[], Result]]:
-        return self.v2.checks() + [self.core_matches_active_split, self.placeholders_supplied, self.prompts_are_law_free,
+        return self.v2.checks() + [self.core_matches_active_split, self.placeholders_supplied, self.skeleton_tokens,
+                                   self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids,
                                    self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve,
-                                   self.reading_figures_reviewed]
+                                   self.reading_figures_reviewed, self.reading_proposals_reviewed]
 
     def run(self, verbose: bool = False) -> int:
         results: list[Result] = []

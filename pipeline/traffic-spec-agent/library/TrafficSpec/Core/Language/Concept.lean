@@ -37,11 +37,12 @@ inductive ConceptBody
 structure Concept where
   id : String                          -- drv.<family>.<name>
   contract : String
-  definition : Option String := none   -- the corpus definition the contract is, when it is one
+  definition : Option String := none   -- the corpus definition the contract quotes, when it has one
   args : List (String × ArgSort)
   params : List ConceptParam
   body : ConceptBody
   residues : List String := []
+  narrowings : List Narrowing := []
   supersedes : Option String := none
   deriving Repr, Inhabited
 
@@ -57,10 +58,18 @@ def bodyFormula (c : Concept) : Formula :=
   match c.body with
   | .formula φ => φ
   | .quantity t => .cmp t .eq t
-/-- Atom, primitive and concept names the body reads. -/
-def atoms (c : Concept) : List String := (Formula.atoms c.bodyFormula).eraseDups
-/-- The concepts the body references, by Lean name. -/
-def refs (c : Concept) : List String := (atoms c).filter (·.startsWith "drv_")
+/-- Instantiations that cover every admissible literal: the formals as themselves, then each
+    literal value once with the other literals at their first value. -/
+def samples (c : Concept) : List (List Arg) :=
+  let base : List Arg := c.args.map fun (n, s) => match s with
+    | .track => Arg.var n
+    | .literal vs => Arg.lit (vs.headD "")
+    | .nat => Arg.nat 0
+  let variants := (List.range c.args.length).flatMap fun i =>
+    match (c.args[i]? : Option (String × ArgSort)) with
+    | some (_, ArgSort.literal vs) => vs.map fun v => base.set i (Arg.lit v)
+    | _ => []
+  (base :: variants).eraseDups
 
 -- ---------------------------------------------------------------------------------------------
 -- Substitution: formals ↦ actuals, bound variables renamed with a tag unique to the expansion.
@@ -138,6 +147,18 @@ def instantiate (c : Concept) (args : List Arg) (ps : List Term) (tag : String) 
     some (match c.body with
       | .formula φ => .formula (substF σ φ)
       | .quantity t => .quantity (substT σ t))
+
+/-- Atom, primitive and concept names the body reads, over every sample instantiation, so a
+    quantifier whose kind is a literal formal reads every admissible kind. -/
+def atoms (c : Concept) : List String :=
+  let ps : List Term := c.params.map fun p => Term.param p.name
+  ((samples c).flatMap fun args =>
+    match instantiate c args ps "atoms" with
+    | some (.formula φ) => Formula.atoms φ
+    | some (.quantity t) => Formula.termAtoms t
+    | none => Formula.atoms c.bodyFormula).eraseDups
+/-- The concepts the body references, by Lean name. -/
+def refs (c : Concept) : List String := (atoms c).filter (·.startsWith "drv_")
 
 -- ---------------------------------------------------------------------------------------------
 -- Expansion: every concept call replaced by its body, `fuel` levels deep; a counter gives each

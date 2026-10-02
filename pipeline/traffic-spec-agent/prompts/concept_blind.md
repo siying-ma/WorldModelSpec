@@ -40,6 +40,6 @@ JSON, this schema:
  "relies_on": ["<atom or concept id>", "..."]}
 ```
 
-## Stop
+## Finish
 
-Stop when the JSON is written. No commentary outside it.
+Finish when the JSON is written. No commentary outside it.

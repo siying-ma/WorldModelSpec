@@ -4,10 +4,11 @@
 
   A rule NAMES a parameter; it never owns the value. The value lives in the run's reading, which
   the rule and the label both cite, so a standard is quantified exactly once and can be swept for
-  sensitivity. An `Operationalization` is the record that gives a judgement standard its concrete
-  meaning (ATOMS.md §8): the standard's words, the atoms or derived concepts that bound it, the parameter
-  values, the convention they come from, and whether the rule is a surrogate (the standard is the
-  whole duty) rather than the law's own rule.
+  sensitivity. A reading holds the parameter values and the legal aggregates; a rule holds its own
+  `Operationalization`s, the records that give a judgement standard its concrete meaning (ATOMS.md
+  §8): the standard's words, the atoms or concepts that bound it, the parameters, the convention
+  the values come from, and whether the rule is a surrogate (the standard is the whole duty)
+  rather than the law's own rule.
 
   No default values live here: a default in Core would be a threshold frozen before any law is seen.
 -/
@@ -43,7 +44,6 @@ structure LegalAggregate where
 
 structure Reading where
   params : List ParamValue := []
-  operationalizations : List Operationalization := []
   aggregates : List LegalAggregate := []
   deriving Repr, Inhabited
 

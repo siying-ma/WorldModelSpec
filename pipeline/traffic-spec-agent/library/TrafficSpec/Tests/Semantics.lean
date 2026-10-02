@@ -237,7 +237,7 @@ def cgeo : SemCtx := SemCtx.mk' ((List.range 9).map fun k => { sceneAt k with st
 #guard (eval c 0 (.existsRegion (.lit "lane") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .u       -- lane 7 has no geometry
 
 -- static analysis
-#guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))).eraseDups = ["kin_speed"]
+#guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))).eraseDups = ["kin_time", "kin_speed"]
 #guard (Formula.params stopped) = ["p.stop_speed"]
 #guard (Formula.composed (.and (.rule "a" []) (.rule "b" []))) = ["a", "b"]
 

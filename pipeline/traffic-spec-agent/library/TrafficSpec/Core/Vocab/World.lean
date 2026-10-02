@@ -73,6 +73,7 @@ structure Signals where
   siren : Option Bool := none
   horn : Option Bool := none
   handSignal : Option HandSignal := none
+  compressionBrake : Option Bool := none
   deriving Repr, Inhabited
 
 structure RoadUser where
@@ -107,6 +108,8 @@ structure LaneInfo where
 structure Structure where
   id : RegionId
   kind : StructureKind
+  /-- Kinds the source cannot tell for this region: whether it is one of them is unknown, not false. -/
+  unobservedKinds : List StructureKind := []
   position : Option Vec := none             -- reference point (point-like structures)
   boundary : Option (List Vec) := none      -- polygon, for regions
   lane : Option LaneInfo := none
@@ -155,6 +158,8 @@ structure Conditions where
 structure Device where
   id : DeviceId
   kind : DeviceKind
+  /-- Kinds the source cannot tell for this device: whether it is one of them is unknown, not false. -/
+  unobservedKinds : List DeviceKind := []
   position : Option Vec := none
   governs : List RegionId := []
   indications : Option (List SignalIndication) := none

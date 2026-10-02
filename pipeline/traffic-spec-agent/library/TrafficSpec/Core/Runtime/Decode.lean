@@ -125,7 +125,7 @@ def signals (path : String) (j : Json) : D Signals := do
          siren := ← opt j path "siren" bool
          horn := ← opt j path "horn" bool
          handSignal := ← opt j path "hand_signal" (enum HandSignal.ofString)
-         }
+         compressionBrake := ← opt j path "compression_brake" bool }
 
 def roadUser (path : String) (j : Json) : D RoadUser := do
   pure { track := ← req j path "track" nat
@@ -156,6 +156,7 @@ def laneInfo (path : String) (j : Json) : D LaneInfo := do
 def structure' (path : String) (j : Json) : D Structure := do
   pure { id := ← req j path "id" nat
          kind := ← req j path "kind" (enum StructureKind.ofString)
+         unobservedKinds := ← list j path "unobserved_kinds" (enum StructureKind.ofString)
          position := ← opt j path "position" vec
          boundary := ← optList j path "boundary" vec
          lane := ← opt j path "lane" laneInfo
@@ -189,6 +190,7 @@ def conditions (path : String) (j : Json) : D Conditions := do
 def device (path : String) (j : Json) : D Device := do
   pure { id := ← req j path "id" nat
          kind := ← req j path "kind" (enum DeviceKind.ofString)
+         unobservedKinds := ← list j path "unobserved_kinds" (enum DeviceKind.ofString)
          position := ← opt j path "position" vec
          governs := ← list j path "governs" nat
          indications := ← optList j path "indications" (enum SignalIndication.ofString)
@@ -305,7 +307,6 @@ def aggregate (path : String) (j : Json) : D LegalAggregate := do
   pure { word := ← req j path "word" str, classes := ← list j path "classes" str }
 def reading (j : Json) : D Reading := do
   pure { params := ← list j "reading" "params" paramValue
-         operationalizations := ← list j "reading" "operationalizations" operationalization
          aggregates := ← list j "reading" "aggregates" aggregate }
 
 def capability (path : String) (j : Json) : D Capability := do
