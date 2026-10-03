@@ -101,6 +101,10 @@ def kin (path : String) (j : Json) : D Kin := do
            match ← arr p v with
            | [l, w, h] => pure (← num p l, ← num p w, ← num p h)
            | _ => fail p "expected [half_length, half_width, half_height]"
+         engineRunning := ← opt j path "engine_running" bool
+         gear := ← opt j path "gear" int
+         throttle := ← opt j path "throttle" num
+         serviceBrake := ← opt j path "service_brake" num
          pathLength := ← opt j path "path_length" num }
 
 def posture (path : String) (j : Json) : D Posture := do
@@ -149,6 +153,7 @@ def laneInfo (path : String) (j : Json) : D LaneInfo := do
          ordinalFromLeft := ← opt j path "ordinal" nat
          countInDirection := ← opt j path "count" nat
          leadsTo := ← optList j path "leads_to" nat
+         entersIntersection := ← opt j path "enters_intersection" nat
          markingLeft := ← opt j path "marking_left" marking
          markingRight := ← opt j path "marking_right" marking
          width := ← opt j path "width" num }
@@ -239,7 +244,8 @@ def relation (path : String) (j : Json) : D MeasuredRelation := do
          oncoming := ← opt j path "oncoming" bool
          sameDirection := ← opt j path "same_direction" bool
          bearing := ← opt j path "bearing" vec
-         contact := ← opt j path "contact" bool }
+         contact := ← opt j path "contact" bool
+         visible := ← opt j path "visible" bool }
 
 def scene (path : String) (j : Json) : D Scene := do
   let users ← list j path "users" roadUser
@@ -313,9 +319,10 @@ def capability (path : String) (j : Json) : D Capability := do
   match ← str path j with
   | "exact" => pure .exact
   | "absent" => pure .absent
+  | "subject" => pure .subject
   | s => if s.startsWith "estimate:" then pure (.estimate ((s.drop 9).toString))
          else fail path s!"unknown capability {s}"
-/-- `{ "source": ..., "reid_gap": <seconds>?, "atoms": { "<atom id>": "exact"|"estimate:<class>"|"absent", ... } }` -/
+/-- `{ "source": ..., "reid_gap": <seconds>?, "atoms": { "<atom id>": "exact"|"estimate:<class>"|"absent"|"subject", ... } }` -/
 def manifest (j : Json) : D Manifest := do
   let atoms ← match field? j "atoms" with
     | some (.obj kvs) => kvs.toArray.toList.mapM fun (k, v) => do pure (k, ← capability s!"manifest.atoms.{k}" v)

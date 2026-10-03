@@ -1,9 +1,10 @@
 # Traffic-law ontology — atoms
 
-Status: **draft for review, 2026-09-20** (third draft: aligned with the pipeline corpus after its
-exclusions; the judgement-standard family is no longer a family of atoms, see §8). Frozen after
-review; changed afterwards only by an explicit ontology change, never by a rule and never by an
-agent.
+Status: **draft for review, 2026-10-03** (fourth draft: the control state of a vehicle, the
+relation of a lane to the intersection it enters, the line of sight between two road users, and
+the `subject` capability; the third draft of 2026-09-20 aligned the set with the pipeline corpus
+and made the judgement-standard family a table of operationalizations, §8). Frozen after review;
+changed afterwards only by an explicit ontology change, never by a rule and never by an agent.
 
 ## What an atom is
 
@@ -62,7 +63,10 @@ it.
 
 This file says nothing about which law refers to which atom and nothing about how any data
 source produces one. Which atoms a source can observe is declared at run time by that source's
-**capability manifest**.
+**capability manifest**, one capability per atom: `exact`, `estimate` (with a named error
+class), `absent`, or `subject` — observed for the subject track only, as an instrumented vehicle
+or a simulator reports its own controls and its own line of sight and nobody else's. Under
+`subject` a read of the atom for any other road user is unknown.
 
 **Scope column.** `general` marks an element of the ordinary road vocabulary. `local` marks an
 element that exists because the target jurisdiction's own vehicle taxonomy or device catalogue
@@ -118,7 +122,7 @@ as its argument: which classes a jurisdiction counts under each is declared by t
 expanded into a class list by a rule. A responding emergency
 vehicle is the derived concept `drv.responding_emergency`.
 
-## 2. Kinematics (`kin`) — measurements on any road user
+## 2. Kinematics and control state (`kin`) — measurements on any road user, and the inputs to a vehicle's controls
 
 | id | contract | unit / frame | scope |
 |---|---|---|---|
@@ -130,8 +134,18 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `kin.accel_longitudinal` | acceleration along heading, signed **Not a stand-in for:** speed | m/s² | general |
 | `kin.yaw_rate` | rate of change of heading **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres | deg/s | general |
 | `kin.extent` | body half-length, half-width, half-height about the reference point, along the body axes | m | general |
-| `kin.steer_angle` | front-wheel steering angle. A source often carries it for the road user whose conduct is judged and not for the others; the capability is declared for the atom, not per road user, so a source that cannot supply it for every road user declares it absent **Not a stand-in for:** road geometry, a turn, a lane change or any other manoeuvre — a steering input is not a path and not a road | deg | general |
+| `kin.steer_angle` | front-wheel steering angle. A source often carries it for the road user whose conduct is judged and not for the others; the capability is declared for the atom, not per road user, so a source that supplies it for the subject alone declares `subject` and one that cannot supply it at all declares it absent **Not a stand-in for:** road geometry, a turn, a lane change or any other manoeuvre — a steering input is not a path and not a road | deg | general |
 | `kin.path_length` | distance travelled along the body's path since the start of the trace, monotone | m | general |
+| `kin.engine_running` | the vehicle's engine or motor is running, so that propulsion is available **Not a stand-in for:** motion or a halt — a vehicle stands with its engine running and rolls with it stopped | — | general |
+| `kin.parking_brake` | the parking brake (hand brake) is set **Not a stand-in for:** the service brake (`kin.service_brake`) or the brake lamp (`sig.brake_lamp`) — a set parking brake lights no lamp and a pressed pedal sets no parking brake | — | general |
+| `kin.gear` | the gear selected: negative for reverse, zero for neutral, positive for a forward gear **Not a stand-in for:** the direction of motion — a vehicle in a forward gear rolls backwards on a grade; backing is read from kinematics | gear number, signed | general |
+| `kin.throttle` | the accelerator input, as the fraction of its full travel that is applied **Not a stand-in for:** acceleration (`kin.accel_longitudinal`) — the input is what the driver does, the acceleration is what the body does | ratio | general |
+| `kin.service_brake` | the service brake (foot brake) input, as the fraction of its full travel that is applied **Not a stand-in for:** deceleration or the brake lamp — the lamp is what other road users see, the input is what the driver does | ratio | general |
+
+The control-state atoms are observed on an instrumented vehicle — a simulator's own vehicle, a
+vehicle with a data recorder. A source that observes them on the subject's vehicle alone declares
+them `subject`; a source that observes none declares them absent, and a rule that reads one then
+reports unknown.
 
 ## 3. Road structure (`st`) — map-level atoms and occupancy
 
@@ -143,6 +157,7 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `st.lane_direction` | direction of travel a lane is designated for | general |
 | `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction **Not a stand-in for:** the marking between two lanes | general |
 | `st.lane_connectivity` | which lane a lane leads into | general |
+| `st.lane_enters` | relation: the intersection region a lane runs into at its end — the lane is an approach to that intersection **Not a stand-in for:** the lane a lane leads into (`st.lane_connectivity`), the subject's presence in the intersection (`rel.occupies`), or the region a device governs (`dev.governs`) — a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both | general |
 | `st.lane_marking` | per side of a lane: **type** ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, **colour** ∈ {white, yellow, other} | general |
 | `st.centre_line` | the marking, or the geometric centre, dividing the two directions of a two-way roadway | general |
 | `st.road_edge` | curb or edge of the roadway; **paved** attribute for the surface beyond it | general |
@@ -247,9 +262,12 @@ declares it absent, and every specification that reads it then reports unknown.
 | `rel.same_direction` | headings aligned within a tolerance | general |
 | `rel.bearing` | direction of b from a in a's frame (for "on the right of", "immediately to the rear") | general |
 | `rel.contact` | the bodies of two road users, or a road user and a structure, touch or overlap (a collision) **Not a stand-in for:** a near miss — that is `drv.time_to_conflict` | general |
+| `rel.visible` | b is visible from a: an unobstructed line of sight from a's reference point to b's body, as the source tests it (a ray cast, an occlusion test, an annotator's judgement) **Not a stand-in for:** a distance, the sight distance of a region (`st.sight_distance`), the clarity of the air (`env.visibility`), or a lamp being lit — a visible vehicle may show no lamp and a lit lamp may be hidden | general |
 
 Computed from kinematics; listed because traffic language names them directly and a source may
-supply them measured rather than derived.
+supply them measured rather than derived. `rel.visible` is the exception: it depends on what
+stands between two bodies, which no kinematics carry, so only a source supplies it and it is
+never computed.
 
 ## 8. Judgement standards — not atoms; how a rule gives them a concrete meaning
 
@@ -289,10 +307,13 @@ restriction is in effect when the sign only refers to them. These enter a formal
 Where the same category is *also* marked on the road by a sign (`dev.zone_sign`), the sign is the
 atom and the category is not.
 
-**Purpose and interior state** — why a vehicle is stopped (loading, waiting for a pedestrian,
-receiving passengers), what gear it is in, whether its engine runs or its brake is set, what a
-driver perceived. These are not observable from outside; a rule that depends on one either states
-the observable evidence the statute itself offers or carries the residue.
+**Purpose and perception** — why a vehicle is stopped (loading, waiting for a pedestrian,
+receiving passengers), what a driver perceived, knew or intended. These are not observable; a
+rule that depends on one either states the observable evidence the statute itself offers (what
+was in the driver's line of sight is `rel.visible`) or carries the residue. The control state of
+a vehicle — engine running, parking brake set, gear, throttle, service brake — is not of this
+kind: it is observed on an instrumented vehicle and carried by the control-state atoms of §2,
+under the `subject` capability where only the subject's vehicle is instrumented.
 
 **Lawfulness of another road user's conduct** ("pedestrians lawfully within the crosswalk", "a
 person lawfully riding") — a reference to another rule's verdict, expressed by rule composition in

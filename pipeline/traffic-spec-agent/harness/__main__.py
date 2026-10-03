@@ -57,15 +57,45 @@ def snapshot_library(snapshot: str) -> list[Path]:
     return moved
 
 
+def archive_proposals(snapshot: str) -> dict[str, int]:
+    """A fresh library starts from a reading without the previous run's unreviewed proposals: every
+    `params` entry still marked `proposed` is moved out of each reading under `readings/` into
+    `results/<snapshot>/reading_proposals.json`, so a planner is shown only what the operator wrote
+    or reviewed. Returns the count removed per reading."""
+    import datetime
+    dest = paths.RESULTS / moved_name(snapshot) / "reading_proposals.json"
+    archive = json.loads(dest.read_text(encoding="utf-8")) if dest.exists() else {}
+    removed: dict[str, int] = {}
+    for f in sorted(paths.REPO.joinpath("readings").glob("*.json")):
+        data = json.loads(f.read_text(encoding="utf-8"))
+        keep = [x for x in data.get("params", []) if not x.get("proposed")]
+        gone = [x for x in data.get("params", []) if x.get("proposed")]
+        if not gone:
+            continue
+        data["params"] = keep
+        f.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        archive.setdefault(f.name, []).extend([{**x, "archived": datetime.datetime.now().strftime("%Y-%m-%d")} for x in gone])
+        removed[f.name] = len(gone)
+    if removed:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(archive, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return removed
+
+
 class Cli:
     def init(self, reading: str = "readings/default.json", fresh: bool = False, snapshot: str = "") -> int:
         """Write the readings template, regenerate the registries, build. `--fresh` first moves every
         node and concept out of the library into `results/<snapshot>/library_snapshot/` (the run they
-        belong to; a timestamped name when not given), so a new run starts from an empty library."""
+        belong to; a timestamped name when not given), and every unreviewed parameter proposal out of
+        the readings into `results/<snapshot>/reading_proposals.json`, so a new run starts from an
+        empty library and a reading the operator wrote or reviewed."""
         write_template(_p(reading))
         if fresh:
             moved = snapshot_library(snapshot)
             print(f"moved {len(moved)} file(s) to results/{snapshot or moved_name(snapshot)}/library_snapshot/" if moved else "library already empty")
+            gone = archive_proposals(snapshot)
+            print(("archived unreviewed proposals: " + ", ".join(f"{k} ({v})" for k, v in gone.items())
+                   + f" → results/{snapshot or moved_name(snapshot)}/reading_proposals.json") if gone else "readings carry no unreviewed proposal")
         index_sync.write_index()
         ok, out = lean.lake_build(paths.LIBRARY)
         print("library builds" if ok else out[-2000:])

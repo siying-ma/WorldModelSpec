@@ -1,5 +1,5 @@
 /-
-  drv.motion.complete_cessation — True of a road user at an observation when its movement has entirely stopped within the observer's tolerance: the magnitude of its ground velocity stays at or below the speed tolerance throughout a window of at least the dwell, the window ending at the observation. That magnitude is the one quantity the concept bounds, and the only quantity that can fail; no other reading of the motion is taken. The definition it renders says "complete cessation from movement"; because a sampled speed never reads exactly zero and a single zero sample is indistinguishable from a sampling artefact, the absolute is observed only within a tolerance (m/s) and over a window (s) the caller sets, and those are the concept's parameters, never figures of its own. Frame: the ground — the magnitude of the road user's velocity over the ground, as kin.speed carries it. Unknown where the window behind the observation is truncated or a speed in it is unobserved. Not a stand-in for: the place of the halt, which is the caller's (this concept says nothing about where the road user is); a brake lamp or any other actuation, which is sig.brake_lamp; a vehicle standing or parked, which is a cessation of indefinite length and a different notion; or a yielding of precedence.
+  drv.motion.complete_cessation — True of one road user at an observation when its movement has ceased there: its speed is at or below a stated tolerance and has been so throughout a stated hold time ending at the observation. It renders the required sense of a stop, "complete cessation from movement", as an absolute observed over sampled measurements, within the tolerance and the hold time the caller sets. Unit: none - a condition on one road user; frame: ground plane, speed as the magnitude of velocity in the world frame. Not a stand-in for: a deceleration or a lit brake lamp, which are a rate and an actuation and not a cessation; the prohibited sense of stopping, which is any halting even momentarily; a parked or standing vehicle, whose purpose this concept does not read; or the place at which the cessation occurs, which the calling rule states on its own span.
 
   The contract is the definition `DEF-NRS-484A-255`, verbatim.
 
@@ -7,32 +7,29 @@
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    complete cessation from movement: atoms ['kin.speed'], concepts []
-    throughout a window of at least the dwell, the window ending at the observation: atoms ['kin.time'], concepts []
+    its speed is at or below a stated tolerance: atoms ['kin.speed'], concepts []
+    has been so throughout a stated hold time ending at the observation: atoms ['kin.speed'], concepts []
 
-  How the elements are written.
+  How the two elements are written.
+    "its speed is at or below a stated tolerance" is `kin_speed a ≤ stop_speed_tolerance`: the
+    measured magnitude of velocity held against the caller's bound, non-strictly, because the
+    contract says "at or below".
+    "has been so throughout a stated hold time ending at the observation" is the window operator
+    `holdsFor .time stop_hold_time` over that same comparison. The window is the formula language's
+    own; it reads no atom, so `kin.time` is not claimed. `holdsFor` includes the observation itself
+    among the observations of the window it ranges over, so the first element is not a second
+    conjunct: the whole body is the one comparison under the one window, and the body is true at an
+    observation exactly when every sampled measurement in the hold time behind it, that observation
+    included, is within the tolerance.
 
-    "complete cessation from movement" → `.cmp (.measure "kin_speed" [u]) .le (.param "speed_tolerance")`.
-    kin.speed is the magnitude of the ground velocity in m/s, so the whole span is one comparison:
-    the one quantity the contract bounds against the one tolerance it names. "at or below" is `.le`,
-    the contract's own words; the comparison is the body's only leaf, so it is also the only thing
-    that can fail, and the only thing that can be unobserved — which is the contract's unknown.
-
-    "throughout a window of at least the dwell, the window ending at the observation" →
-    `.holdsFor .time (.param "dwell") "u" …`. `holdsFor` is "φ at every observation in the window of
-    length d behind this one", and `.time` makes the window a length of trace time, which is what
-    kin.time orders and measures (`Formula.measureAtom .time = kin_time`: the window reads the clock
-    and nothing else). The window subject is the formal `u`; a time window does not use it, but it is
-    the only track this concept speaks about. Core's `holdsFor` is unknown (windowTruncated) where the
-    window reaches past the start of the trace, which is the contract's second unknown.
-
-  CONSEQUENCE (a choice the contract did not dictate; appended to `residues` below). The window is
-  written as the window of EXACTLY the dwell behind the observation. For the bound itself that is
-  the contract's "at least the dwell": a stillness longer than the dwell contains the last `dwell`
-  seconds, so it satisfies the same condition, and the concept says nothing about how much longer it
-  ran. But `holdsFor` is defined on the observed instants only, so it also reports unknown where the
-  observations inside the window are more than half the dwell apart — a sampling gap the contract
-  does not speak of, and which the caller must read as "not decided", never as movement.
+  Narrowings (readings the contract leaves open).
+    "throughout a stated hold time ending at the observation" — read as the *time* measure, not the
+    path measure. A cessation from movement is a dwell in time; a path window of a body that has
+    ceased to move would never advance and could not end. Declared in `narrowings` below.
+    The same span carries the sampling policy Core fixes for every window: the body is unknown, not
+    false, where the trace does not reach a whole hold time back, and where the observations inside
+    the window are more than half a hold time apart. That is Core's finite-trace policy ("unobserved
+    is unknown"), not a choice of this file, and so is not declared a narrowing.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -41,27 +38,33 @@ import TrafficSpec.Core.Language.Concept
 namespace TrafficSpec.Concepts.motion.complete_cessation
 
 /-- The formal arguments, as `Arg`s (a literal formal is written `.var` and filled by the caller). -/
-private def aU : Arg := .var "u"
+private def aA : Arg := .var "a"
 
 /-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/
-private def pSpeedTolerance : Term := .param "speed_tolerance"
-private def pDwell : Term := .param "dwell"
+private def pStopSpeedTolerance : Term := .param "stop_speed_tolerance"
+private def pStopHoldTime : Term := .param "stop_hold_time"
 
-/-- The magnitude of `u`'s ground velocity stays at or below the speed tolerance at every
-    observation in the window of the dwell behind this one, the window ending here. -/
+/-- "its speed is at or below a stated tolerance": the measured speed of `a` against the bound. -/
+private def withinTolerance : Formula :=
+  .cmp (.measure "kin_speed" [aA]) .le pStopSpeedTolerance
+
+/-- "… and has been so throughout a stated hold time ending at the observation": that same
+    comparison at every observation of the time window of length `stop_hold_time` behind the
+    observation, the observation itself included. -/
 private def body : Formula :=
-  .holdsFor .time pDwell "u"
-    (.cmp (.measure "kin_speed" [aU]) .le pSpeedTolerance)
+  .holdsFor .time pStopHoldTime "a" withinTolerance
 
 def concept : Concept :=
   { id := "drv.motion.complete_cessation"
-    contract := "True of a road user at an observation when its movement has entirely stopped within the observer's tolerance: the magnitude of its ground velocity stays at or below the speed tolerance throughout a window of at least the dwell, the window ending at the observation. That magnitude is the one quantity the concept bounds, and the only quantity that can fail; no other reading of the motion is taken. The definition it renders says \"complete cessation from movement\"; because a sampled speed never reads exactly zero and a single zero sample is indistinguishable from a sampling artefact, the absolute is observed only within a tolerance (m/s) and over a window (s) the caller sets, and those are the concept's parameters, never figures of its own. Frame: the ground — the magnitude of the road user's velocity over the ground, as kin.speed carries it. Unknown where the window behind the observation is truncated or a speed in it is unobserved. Not a stand-in for: the place of the halt, which is the caller's (this concept says nothing about where the road user is); a brake lamp or any other actuation, which is sig.brake_lamp; a vehicle standing or parked, which is a cessation of indefinite length and a different notion; or a yielding of precedence."
+    contract := "True of one road user at an observation when its movement has ceased there: its speed is at or below a stated tolerance and has been so throughout a stated hold time ending at the observation. It renders the required sense of a stop, \"complete cessation from movement\", as an absolute observed over sampled measurements, within the tolerance and the hold time the caller sets. Unit: none - a condition on one road user; frame: ground plane, speed as the magnitude of velocity in the world frame. Not a stand-in for: a deceleration or a lit brake lamp, which are a rate and an actuation and not a cessation; the prohibited sense of stopping, which is any halting even momentarily; a parked or standing vehicle, whose purpose this concept does not read; or the place at which the cessation occurs, which the calling rule states on its own span."
     definition := some "DEF-NRS-484A-255"
-    args := [("u", .track)]
-    params := [⟨"speed_tolerance", .metrePerSecond⟩, ⟨"dwell", .second⟩]
+    args := [("a", .track)]
+    params := [⟨"stop_speed_tolerance", .metrePerSecond⟩, ⟨"stop_hold_time", .second⟩]
     body := .formula body
-    residues := ["the definition's qualifier tells which statutory uses this sense of the word serves — it distinguishes this definition from DEF-NRS-484A-260's 'when prohibited' sense — and states no condition on the scene, so the contract carries the state of motion alone and the caller decides which sense its clause needs.",
-                 "the window is written as the window of exactly the dwell behind the observation, which is the contract's 'at least the dwell' for the bound itself (a longer stillness contains the last dwell seconds) but says nothing about how much longer the stillness ran; and because the window is defined on the observed instants only, the concept also reports unknown where the observations inside it are more than half the dwell apart — a sampling gap the contract does not speak of, to be read as not decided, never as movement."]  -- the record's, verbatim; append one entry per CONSEQUENCE in the header
+    residues := ["The definition's qualifier selects which statutory duty the word 'stop' carries in a given line. The concept states the physical cessation and leaves that selection to the rule that calls it; the prohibited sense, NRS 484A.260's 'any halting, even momentarily, of a vehicle', is a different notion and is not this concept."]  -- the record's, verbatim; not yours to change
+    narrowings :=
+      [ ⟨"has been so throughout a stated hold time ending at the observation",
+         "The hold is read as a window in time, not in path travelled: a cessation from movement is a dwell of a stated duration, and a path window of a body whose movement has ceased would not advance and so could never close. The caller's `stop_hold_time` is therefore seconds."⟩ ]
     supersedes := none }
 
 end TrafficSpec.Concepts.motion.complete_cessation

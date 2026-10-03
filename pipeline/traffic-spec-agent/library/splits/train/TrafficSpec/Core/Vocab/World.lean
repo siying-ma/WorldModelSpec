@@ -35,7 +35,8 @@ inductive EntityKind
 /-- A point or vector in the world frame, metres. -/
 abbrev Vec := Q × Q
 
-/-- Measurements on a body. World frame; SI units as exact rationals (see Units). -/
+/-- Measurements on a body (world frame; SI units as exact rationals, see Units) and the inputs
+    to a vehicle's controls, which an instrumented source observes on its own vehicle. -/
 structure Kin where
   position : Option Vec := none          -- m
   heading : Option Vec := none           -- unit vector
@@ -45,6 +46,10 @@ structure Kin where
   yawRate : Option Q := none             -- deg/s
   extent : Option (Q × Q × Q) := none    -- half-length, half-width, half-height, m
   pathLength : Option Q := none          -- m since the start of the trace
+  engineRunning : Option Bool := none    -- propulsion available
+  gear : Option Int := none              -- negative reverse, zero neutral, positive forward
+  throttle : Option Q := none            -- fraction of full travel applied
+  serviceBrake : Option Q := none        -- fraction of full travel applied
   deriving Repr, Inhabited
 
 /-- How a rider sits and holds the machine (ATOMS.md `ru.rider_posture`). -/
@@ -98,6 +103,7 @@ structure LaneInfo where
   ordinalFromLeft : Option Nat := none
   countInDirection : Option Nat := none
   leadsTo : Option (List RegionId) := none
+  entersIntersection : Option RegionId := none   -- the intersection this lane is an approach to
   markingLeft : Option (MarkingType × MarkingColour) := none
   markingRight : Option (MarkingType × MarkingColour) := none
   width : Option Q := none
@@ -192,7 +198,7 @@ structure Env where
   civilTime : Option CivilTime := none
   deriving Repr, Inhabited
 
-/-- A relation a source supplies measured rather than derived (ATOMS.md §7). -/
+/-- A relation a source supplies measured rather than derived; `visible` is only ever supplied. -/
 structure MeasuredRelation where
   a : TrackId
   b : TrackId
@@ -204,6 +210,7 @@ structure MeasuredRelation where
   sameDirection : Option Bool := none
   bearing : Option Vec := none               -- b relative to a, in a's frame (long, lat)
   contact : Option Bool := none
+  visible : Option Bool := none              -- b in a's line of sight
   deriving Repr, Inhabited
 
 structure Scene where

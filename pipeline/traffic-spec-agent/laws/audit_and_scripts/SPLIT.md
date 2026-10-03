@@ -66,6 +66,7 @@ These atoms have no support in any training line. The training-only `ATOMS_train
 | atom | test lines that mention it |
 |---|---|
 | `dev.school_bus_signal` | NRS-484B-353-1 |
+| `kin.parking_brake` | NRS-484B-533 |
 | `kin.steer_angle` | NRS-484B-533 |
 | `ru.low_speed_vehicle` | NRS-484B-637-2b |
 | `ru.mobile_carrying_device` | NRS-484B-790-2a, NRS-484B-790-2b, NRS-484B-790-2c |
@@ -96,7 +97,7 @@ Not atoms (ATOMS.md §9); reported for the audit of `Derived.lean`, which is not
 
 ## Atoms with no textual support on either side
 
-`sig.compression_brake`, `sig.hazard` — ontology design (equipment every source can observe), kept in the training ontology.
+`kin.gear`, `kin.service_brake`, `kin.throttle`, `sig.compression_brake`, `sig.hazard` — ontology design (equipment every source can observe), kept in the training ontology.
 
 ## Definitions moved to the test side
 
@@ -110,7 +111,7 @@ Not atoms (ATOMS.md §9); reported for the audit of `Derived.lean`, which is not
 
 ## Atoms shared by both sides (the test set also reuses the known vocabulary)
 
-52 atoms: `dev.governs`, `dev.human_direction`, `dev.inoperative`, `dev.lane_control_signal`, `dev.pedestrian_signal`, `dev.position`, `dev.regulatory_sign`, `dev.speed_limit_sign`, `dev.traffic_signal`, `env.ice_or_snow`, `env.visibility`, `kin.extent`, `kin.heading`, `kin.position`, `kin.speed`, `kin.time`, `kin.velocity`, `kin.yaw_rate`, `rel.ahead_behind_in_lane`, `rel.bearing`, `rel.centre_distance`, `rel.occupies`, `rel.oncoming`, `rel.same_direction`, `rel.surface_gap`, `ru.bus`, `ru.child`, `ru.motor_vehicle`, `ru.occupant_count`, `ru.pedestrian`, `ru.rider_posture`, `ru.subject`, `ru.truck`, `sig.warning_lamp`, `st.centre_line`, `st.centre_turn_lane`, `st.crosswalk`, `st.curvature`, `st.elevated_structure`, `st.grade`, `st.highway`, `st.intersection`, `st.lane`, `st.lane_direction`, `st.median_or_divider`, `st.one_way_roadway`, `st.pedestrian_grade_separation`, `st.road_edge`, `st.roadway`, `st.sidewalk`, `st.sight_distance`, `st.turn_lane`
+54 atoms: `dev.governs`, `dev.human_direction`, `dev.inoperative`, `dev.lane_control_signal`, `dev.pedestrian_signal`, `dev.position`, `dev.regulatory_sign`, `dev.speed_limit_sign`, `dev.traffic_signal`, `env.ice_or_snow`, `env.visibility`, `kin.engine_running`, `kin.extent`, `kin.heading`, `kin.position`, `kin.speed`, `kin.time`, `kin.velocity`, `kin.yaw_rate`, `rel.ahead_behind_in_lane`, `rel.bearing`, `rel.centre_distance`, `rel.occupies`, `rel.oncoming`, `rel.same_direction`, `rel.surface_gap`, `rel.visible`, `ru.bus`, `ru.child`, `ru.motor_vehicle`, `ru.occupant_count`, `ru.pedestrian`, `ru.rider_posture`, `ru.subject`, `ru.truck`, `sig.warning_lamp`, `st.centre_line`, `st.centre_turn_lane`, `st.crosswalk`, `st.curvature`, `st.elevated_structure`, `st.grade`, `st.highway`, `st.intersection`, `st.lane`, `st.lane_direction`, `st.median_or_divider`, `st.one_way_roadway`, `st.pedestrian_grade_separation`, `st.road_edge`, `st.roadway`, `st.sidewalk`, `st.sight_distance`, `st.turn_lane`
 
 ## What was rejected, and why
 

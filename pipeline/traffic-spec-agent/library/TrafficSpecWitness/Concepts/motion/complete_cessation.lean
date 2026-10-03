@@ -1,29 +1,28 @@
 /-
   Witnesses for drv.motion.complete_cessation.
 
-  The geometry, and every figure in it, is this file's own.
+  The geometry, one straight eastbound roadway for all three scenarios: a lane (region 10) from
+  x = -60 m to x = 60 m, four metres wide, and a stop line (region 11) across it just east of the
+  origin, from x = -0.5 m to x = 0 m. One tracked motor vehicle (track 1, a 4 m × 2 m body) drives
+  east along y = 0. Each trace is eight observations one second apart, t = 0 ms … 7000 ms.
 
-  One body: track 1, a motor vehicle 4.5 m long, 1.8 m wide and 1.5 m high (half-extents 2.25 m,
-  0.90 m, 0.75 m), heading east along y = 0 and moving east. No region and no device is built: the
-  concept says nothing about where the body is, so there is nothing about the place for a witness to
-  show. Each trace is eight observations one second apart, t = 0 ms … 7000 ms; the positions are the
-  running integral of the speeds, so the body moves as its kin.speed says it does.
+  The instance's own figures: stop_speed_tolerance = 0.2 m/s (a speed at which a vehicle of this
+  size is not moving by any measure a tracker resolves), stop_hold_time = 3 s.
 
-  The instance fills the formals with: speed_tolerance = 2 km/h (5/9 m/s — a magnitude below which a
-  sampled velocity is taken for sensor noise rather than a roll), dwell = 2 s. Two seconds is also
-  twice the one-second sampling of these traces, which is what the window's adequacy test asks for.
+  The instants the witnesses speak about: t = 6000 ms and t = 7000 ms. A three-second lookback is
+  truncated — unknown, by Core's finite-trace policy — at every observation before t = 3000 ms,
+  and the `holds` dwell begins at t = 3000 ms, so the window of all three scenarios is the last
+  two observations, at which the lookback is both covered (an observation precedes it) and
+  adequately sampled (the one-second spacing is at most half the hold time).
 
-  `holds`   speeds 8, 5, 2, 0, 0, 0, 0, 4 m/s: the approach, four seconds standing, then away again.
-            The window behind t = 5000 and t = 6000 lies wholly inside the standing stretch, so the
-            scenario speaks about those two instants (earlier ones are the approach, and the window
-            behind t = 0 ms and t = 1000 ms reaches past the start of the trace).
-  `fails`   speeds 8, 7, 6, 5, 4, 3, 2, 1 m/s: the roll-through. Every sample is above the tolerance,
-            so no window of the dwell holds the magnitude at or below it; the scenario speaks about
-            t = 2000 … 7000, the instants whose window the trace covers.
-  `blind`   the same roll-through positions, but the bodies carry position, heading and extent and no
-            motion reading at all — no speed and no velocity vector one could be derived from — and
-            the manifest declares kin.speed absent. Over the same t = 2000 … 7000 the comparison can
-            never be made, so the concept is unknown, and for the masked kin.speed alone.
+    holds: speeds 5, 3, 1 m/s as the vehicle brakes to the line (x = -14, -9, -6 m), then standing
+      still at x = -5 m from t = 3000 ms on. At t = 6000 ms and t = 7000 ms the whole three-second
+      window behind is at 0 m/s ≤ 0.2 m/s, so the concept holds: compliant.
+    fails: the same approach rolled through at a steady 3 m/s, from x = -14 m to x = 7 m. Every
+      sample is above the tolerance, so no window is wholly within it: violated.
+    blind: the `holds` trace, under a manifest that declares kin.speed absent together with the
+      kin.velocity it could be recovered from. The windows are covered and adequately sampled, so
+      the only reason left is the masked measurement: unknown.
 -/
 import TrafficSpec.Concepts.motion.complete_cessation
 import TrafficSpec.Core.Evidence.Builders
@@ -36,7 +35,7 @@ private def m (n : Int) : Q := Units.metres n
 private def cm (n : Int) : Q := Units.centimetres n
 private def mps (n : Int) : Q := Units.metresPerSecond n
 
--- Formals ↦ tracks: u ↦ 1
+-- Formals ↦ tracks: a ↦ 1
 
 /-- The instance every scenario speaks about: the literal formals chosen, every parameter given a
     value through a `Units` constructor, a quantity concept given its expected bounds. -/
@@ -45,81 +44,71 @@ def inst : Concept.Instance :=
     concept := "drv.motion.complete_cessation"
     literals := []
     nats := []
-    params := [("speed_tolerance", .lit (Units.kmh 2) .metrePerSecond), ("dwell", .lit (Units.seconds 2) .second)]
+    params :=
+      [ ("stop_speed_tolerance", .lit (Units.micrometresPerSecond 200000) .metrePerSecond)   -- 0.2 m/s
+      , ("stop_hold_time", .lit (Units.seconds 3) .second) ]
     bounds := none }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The half-extents of the car: 2.25 m × 0.90 m × 0.75 m. -/
-private def carExtent : Q × Q × Q := (cm 225, cm 90, cm 75)
+-- The place: one lane and the stop line across it.
+private def theLane : Structure :=
+  Build.lane 10 [(m (-60), m (-2)), (m 60, m (-2)), (m 60, m 2), (m (-60), m 2)] Build.east
+private def theStopLine : Structure :=
+  Build.rect 11 .stopLine (cm (-50)) (m (-2)) Q.zero (m 2)
 
-/-- The car at `x` metres east of the origin, heading east at `speed`. -/
-private def car (x : Q) (speed : Q) : RoadUser :=
-  Build.user 1 [.motorVehicle] (x, m 0) Build.east speed carExtent
+/-- The vehicle at an instant: a 4 m × 2 m car heading east at `(x, 0)` with speed `v`. -/
+private def car (x v : Q) : RoadUser :=
+  Build.user 1 [.motorVehicle] (x, Q.zero) Build.east v (m 2, m 1, m 1)
 
-/-- The same car as a source with no motion reading sees it: position, heading and extent only. -/
-private def stillUnreadCar (x : Q) : RoadUser :=
-  Build.withKin (Build.sparseUser 1 [.motorVehicle] (x, m 0))
-    fun k => { k with heading := some Build.east, extent := some carExtent }
+private def place (t : Timestamp) (u : RoadUser) : Scene :=
+  Build.scene t (some 1) [u] [theLane, theStopLine] []
 
-/-- `holds` (compliant): A car approaches a junction; the trace starts well before the observation, so the window behind it is full. Its kin.speed falls through the approach and stays at or below the speed tolerance for longer than the dwell before it moves off again. At the observation at the end of that stationary stretch the concept holds. -/
-private def holdsAt : Nat → Q × Q      -- position east, speed
-  | 0 => (m 0, mps 8)
-  | 1 => (m 8, mps 5)
-  | 2 => (m 13, mps 2)
-  | 3 => (m 15, mps 0)
-  | 4 => (m 15, mps 0)
-  | 5 => (m 15, mps 0)
-  | 6 => (m 15, mps 0)
-  | _ => (m 15, mps 4)
+-- The braking approach: slowing to a standstill at x = -5 m by t = 3000 ms, then standing still.
+private def dwellX : Nat → Q
+  | 0 => m (-14)
+  | 1 => m (-9)
+  | 2 => m (-6)
+  | _ => m (-5)
 
+private def dwellSpeed : Nat → Q
+  | 0 => mps 5
+  | 1 => mps 3
+  | 2 => mps 1
+  | _ => Q.zero
+
+/-- `holds` (compliant): A tracked vehicle's kin.speed falls at a stop line and stays at or below stop_speed_tolerance for longer than stop_hold_time; at the end of that dwell the concept holds of the vehicle. -/
 private def holdsTrace : Trace :=
   Build.trace 8 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ car (holdsAt k).1 (holdsAt k).2 ]
-      [ ]  -- no structure: the concept says nothing about the place of the halt
-      [ ]  -- devices
+    place t (car (dwellX k) (dwellSpeed k))
 
-/-- `fails` (violated): The same approach, the same trace length, but the car rolls through: its kin.speed falls but never reaches the tolerance, so no window of the dwell's length behind any observation holds the magnitude at or below it. The concept fails at every observation of the approach. -/
-private def rollAt : Nat → Q × Q       -- position east, speed
-  | 0 => (m 0, mps 8)
-  | 1 => (m 8, mps 7)
-  | 2 => (m 15, mps 6)
-  | 3 => (m 21, mps 5)
-  | 4 => (m 26, mps 4)
-  | 5 => (m 30, mps 3)
-  | 6 => (m 33, mps 2)
-  | _ => (m 35, mps 1)
-
+/-- `fails` (violated): A tracked vehicle rolls through the same place with kin.speed above stop_speed_tolerance at every sample, so no window of length stop_hold_time ending at any observation is entirely at or below the tolerance. -/
 private def failsTrace : Trace :=
   Build.trace 8 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ car (rollAt k).1 (rollAt k).2 ]
-      [ ]  -- no structure
-      [ ]  -- devices
+    place t (car (m (-14 + 3 * (Int.ofNat k))) (mps 3))
 
-/-- `blind` (unknown): The same rolling approach, but the source's capability manifest declares kin.speed absent, and the scenes it builds carry the car's position, heading and extent and no motion reading of any kind — neither a speed nor a velocity vector a speed could be derived from. No sampled magnitude can be compared with the tolerance, so the concept reports unknown at every observation of the window, for the absent kin.speed and for nothing else. -/
-private def blindTrace : Trace :=
-  Build.trace 8 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ stillUnreadCar (rollAt k).1 ]
-      [ ]  -- no structure
-      [ ]  -- devices
+/-- `blind` (unknown): The same approach, but the source's capability manifest declares kin.speed absent, together with the kin.velocity from which Core would otherwise compute it; no dwell can be read and the concept reports unknown at every instant. -/
+private def blindTrace : Trace := holdsTrace
+
+/-- Every witness speaks about the last two observations: before t = 3000 ms the three-second
+    lookback runs off the start of the trace, which is unknown for truncation and not about the
+    concept. -/
+private def spoken : Timestamp × Timestamp := (6000, 7000)
 
 private def witness (name : String) (τ : Trace) (expected : Verdict)
-    (window : Option (Timestamp × Timestamp) := none) (absent : List String := []) : Scenario :=
+    (absent : List String := []) : Scenario :=
   { name := name
     rule := inst.name
     trace := τ
     reading := {}          -- ignored by the gate: the run's reading is substituted
     manifest := Build.manifest absent
-    grounding := [("u", 1)]
+    grounding := [("a", 1)]
     expected := expected
-    window := window }
+    window := some spoken }
 
 def scenarios : List Scenario :=
-  [ witness "holds" holdsTrace .compliant (some (5000, 6000))
-  , witness "fails" failsTrace .violated (some (2000, 7000))
-  , witness "blind" blindTrace (.unknown []) (some (2000, 7000)) ["kin.speed"] ]
+  [ witness "holds" holdsTrace .compliant
+  , witness "fails" failsTrace .violated
+  , witness "blind" blindTrace (.unknown []) ["kin.speed", "kin.velocity"] ]
 
 end TrafficSpecWitness.Concepts.motion.complete_cessation

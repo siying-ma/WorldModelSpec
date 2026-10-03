@@ -5,7 +5,7 @@
 import TrafficSpec.Core
 import TrafficSpec.Concepts.interaction.precedence_granted
 import TrafficSpec.Concepts.motion.complete_cessation
-import TrafficSpec.Concepts.motion.speed_reduction
+import TrafficSpec.Concepts.motion.left_turn
 namespace TrafficSpec
 /-- Every registered rule, in file order. -/
 def allRules : List Rule := []
@@ -13,6 +13,6 @@ def allRules : List Rule := []
 def allConcepts : List Concept := [
   TrafficSpec.Concepts.interaction.precedence_granted.concept,
   TrafficSpec.Concepts.motion.complete_cessation.concept,
-  TrafficSpec.Concepts.motion.speed_reduction.concept
+  TrafficSpec.Concepts.motion.left_turn.concept
 ]
 end TrafficSpec

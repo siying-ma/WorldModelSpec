@@ -41,7 +41,7 @@ layer or of the layers above it, and every file imports only files above it in t
 |  | `Language/RuleEval.lean` | `Rule.verdicts`, `wellFormed`, the static checks `check` and `checkReading`, and `Concept.check`. |
 |  | `Language/Export.lean` | `Formula`, `Term`, `Concept`, `Rule` → JSON, for the renderer, the duplicate check and program synthesis. |
 | `Runtime/` | `Runtime/Grounding.lean` | Binder assignments over a trace, track re-identification, per-grounding timelines, episode verdicts. |
-|  | `Runtime/Manifest.lean` | A source's capability per atom id, `support` from syntax alone, and `mask` (a trace as a weaker source would give it). |
+|  | `Runtime/Manifest.lean` | A source's capability per atom id (`exact`, `estimate`, `absent`, or `subject` for an atom observed on the subject's own vehicle alone), `support` from syntax alone, and `mask` (a trace as a weaker source would give it). |
 |  | `Runtime/Monitor.lean` | The report, as tab-separated text (the gate's contract) and JSON lines. |
 |  | `Runtime/Decode.lean` | JSON → `Trace`, `Reading`, `Manifest`. The only place an outside string becomes a typed value. |
 | `Evidence/` | `Evidence/Builders.lean` | `Build.*` scene and trace constructors and `Scenario`. Witnesses and tests only. |

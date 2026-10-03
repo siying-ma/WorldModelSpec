@@ -191,7 +191,7 @@ class LibraryV2Checks:
             entries = set(doc.get("atoms", {}))
             missing, unknown = sorted(set(atoms) - entries), sorted(entries - set(atoms))
             values = {v for v in doc.get("atoms", {}).values()
-                      if v not in ("exact", "absent") and not str(v).startswith("estimate:")}
+                      if v not in ("exact", "absent", "subject") and not str(v).startswith("estimate:")}
             if missing or unknown or values:
                 bad.append(f"{p.name}: missing {missing[:3]} unknown {unknown[:3]} bad values {sorted(values)[:3]}")
         if bad:

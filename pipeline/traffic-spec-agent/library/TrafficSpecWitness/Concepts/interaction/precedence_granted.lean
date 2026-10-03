@@ -1,52 +1,51 @@
 /-
   Witnesses for drv.interaction.precedence_granted.
 
-  The geometry, and every figure in it, is this file's own.
+  The place, one crossing for all three scenarios: a's eastbound lane (region 10) along y = 0, four
+  metres wide, from x = -60 m to x = 60 m; b's northbound lane (region 11) along x = 7.5 m, four
+  metres wide, from y = -30 m to y = 30 m; and the intersection of the two (region 12), x in
+  [5.5, 9.5] m, y in [-2, 2] m. a is a tracked motor vehicle (track 1, a 4 m x 2 m body) heading
+  east on y = 0; b is a tracked motor vehicle (track 2, a 4 m x 2 m body) heading north on
+  x = 7.5 m, crossing in front of a at a steady 3 m/s from y = -9 m to y = 12 m. Each trace is
+  eight observations one second apart, t = 0 ms ... 7000 ms.
 
-  One junction: an east–west roadway along y = 0 and a north–south roadway along x = 0 crossing in
-  a 12 m square intersection built as a region from (−6, −6) to (6, 6). The region is inert — the
-  concept reads no structure — and is built only because the narratives speak of a junction.
+  How the gap reads here. Core takes the components of the gap in a's frame, a heading east, so
+  the longitudinal component is |b.x - a.x| less the two half-lengths (2 m each, so less 4 m) and
+  the lateral component is |b.y - a.y| less the two half-widths (1 m each, so less 2 m).
 
-  Two bodies, both motor vehicles 4.5 m long, 1.8 m wide and 1.5 m high (half-extents 2.25 m,
-  0.90 m, 0.75 m): track 1 is `a`, the granting party, on the east–west roadway heading east;
-  track 2 is `b`, the receiving party, on the north–south roadway heading north, and it is b's
-  kin.accel_longitudinal that the braking leaf reads. Each trace is ten observations one second
-  apart, t = 0 ms … 9000 ms, and every position is the running integral of the speed carried at the
-  observation before it, so each body moves as its kinematics say it does.
+  The instance's own figures: yield_clearance = 3 m (a body's width of daylight along an axis),
+  yield_window = 3 s, yield_closure_allowance = 0.5 m (the depth attributed to noise in the gap,
+  so the longitudinal floor is 2.5 m).
 
-  The instance fills the formals with: window = 2 s, horizon = 5 s, clearance_margin = 10 m,
-  induced_decel = 2 m/s² (a positive magnitude; the body compares b's signed acceleration against
-  its negation, so the bound is −2 m/s²). Two seconds is twice the one-second sampling of these
-  traces, which is what the window's adequacy asks for. With a 2 s window the look-back behind
-  t = 0 ms and t = 1000 ms reaches past the start of the trace, so no scenario counts an
-  observation before t = 2000 ms.
+  The instants the witnesses speak about: t = 3000 ms to t = 7000 ms. A three-second lookback runs
+  off the start of the trace before t = 3000 ms — unknown for truncation, by Core's finite-trace
+  policy, and not about the concept — while at t = 3000 ms and after, the window is both covered
+  (the observation three seconds back is in the trace) and adequately sampled (the one-second
+  spacing is at most half the window).
 
-  `holds`   b runs north at an unchanged 10 m/s from y = −70 m, crossing y = 0 at t = 7000 ms; a
-            waits at (−30 m, 0) until t = 8000 ms and then pulls away east at 10 m/s, crossing
-            behind b. At t = 0 and 1000 ms the predicted closest approach of the two reference
-            points lies 7 s and 6 s ahead, past the 5 s horizon, so none is predicted within it; at
-            every later observation one is predicted and its centre distance is 30 m (while a
-            stands) or about 28.3 m (once a moves), both far above the 10 m margin. b's
-            acceleration is zero throughout, so it is never below −2 m/s². Over t = 2000 … 9000 the
-            look-back behind each observation is full and wholly inside that conduct, and the
-            concept holds of (a, b).
-  `fails`   The same junction. a pulls out east at 10 m/s from x = −60 m while b runs north at
-            10 m/s from y = −70 m: the two reference points are predicted to pass about 7.07 m
-            apart, inside the 10 m margin, and that approach lies within the 5 s horizon at every
-            observation from t = 2000 ms to t = 6000 ms. Over the counted t = 4000 … 6000 the
-            look-back reaches back only to t = 2000 ms, so at each counted observation and
-            throughout its window an approach is predicted and the distance at it is below the
-            margin: the clearance alone decides, and both of its leaves are load-bearing. b brakes
-            hard for a at t = 8000 and 9000 ms (−5 m/s², past the 2 m/s² bound), after the counted
-            observations and out of reach of their look-back. The concept fails of (a, b) — and
-            would be judged separately of (b, a).
-  `blind`   The same crossing geometry as `fails`, but the source's capability manifest declares
-            kin.velocity and kin.speed absent and the scenes carry the two bodies' positions,
-            headings and extents and nothing of their motion. Neither primitive has velocities to
-            predict from, so both are unknown at every observation; b's acceleration is observed
-            and zero, within the bound, so nothing else decides the conjunction. Over the same
-            t = 2000 … 9000 the look-back is full, and the concept reports unknown, for the absent
-            kin.velocity and for nothing else.
+    holds: a stands at the entrance of the intersection at x = 0 while b crosses in front of it,
+      then edges 0.75 m forward once b has gone by and stands again. While b is crossing (t = 0 s
+      ... 4000 ms, b from y = -9 m to y = 3 m) the longitudinal component is 3.5 m and carries the
+      standing-apart condition on its own, which it must, since at t = 3000 ms b is square in
+      front of a and the lateral component is -2 m. Once b has gone by, a edges forward and the
+      longitudinal component drops to 2.75 m — below the clearance but above the 2.5 m floor — and
+      the lateral component (4 m, 7 m, 10 m) carries the condition instead. Both disjuncts are
+      therefore exercised, and the longitudinal component never sits below the floor: compliant.
+    fails: the same crossing, but a does not wait — it comes east at a steady 3 m/s from x = -6 m.
+      At t = 3000 ms b is square in front of a (lateral component -2 m) and a is 4.5 m from it,
+      so the longitudinal component is 0.5 m: neither axis reaches the 3 m clearance and the
+      longitudinal component sits 2 m below the clearance, far more than the 0.5 m allowance, so
+      a has drawn in on b. Every window from t = 3000 ms on contains that observation: violated.
+    blind: the `holds` trace, under a manifest that declares rel.surface_gap absent together with
+      the kin.position and kin.extent from which Core would otherwise compute it. The windows are
+      covered and adequately sampled, so the only reason left is the unreadable gap: unknown.
+
+  Which axis carries which phase is this witness's own: the record's narrative pairs the lateral
+  component with b's crossing and the longitudinal with b's departure, and the pairing is the
+  other way round in any geometry where "crossing in front" means passing through a's longitudinal
+  axis, since there the lateral component is at its smallest. The scenario the record asks for —
+  one axis or the other reaching the clearance at every observation, the longitudinal never below
+  the floor — is what is built.
 -/
 import TrafficSpec.Concepts.interaction.precedence_granted
 import TrafficSpec.Core.Evidence.Builders
@@ -58,7 +57,6 @@ open TrafficSpec
 private def m (n : Int) : Q := Units.metres n
 private def cm (n : Int) : Q := Units.centimetres n
 private def mps (n : Int) : Q := Units.metresPerSecond n
-private def mps2 (n : Int) : Q := Units.metresPerSecondSq n
 
 -- Formals ↦ tracks: a ↦ 1, b ↦ 2
 
@@ -69,130 +67,75 @@ def inst : Concept.Instance :=
     concept := "drv.interaction.precedence_granted"
     literals := []
     nats := []
-    params := [("window", .lit (Units.seconds 2) .second), ("horizon", .lit (Units.seconds 5) .second),
-               ("clearance_margin", .lit (Units.metres 10) .metre),
-               ("induced_decel", .lit (Units.metresPerSecondSq 2) .metrePerSecondSq)]
+    params :=
+      [ ("yield_clearance", .lit (Units.metres 3) .metre)                  -- 3 m
+      , ("yield_window", .lit (Units.seconds 3) .second)                   -- 3 s
+      , ("yield_closure_allowance", .lit (Units.centimetres 50) .metre) ]  -- 0.5 m
     bounds := none }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The half-extents of either vehicle: 2.25 m × 0.90 m × 0.75 m. -/
-private def carExtent : Q × Q × Q := (cm 225, cm 90, cm 75)
+-- The place: a's eastbound lane, b's northbound lane, and the intersection of the two.
+private def aLane : Structure :=
+  Build.lane 10 [(m (-60), m (-2)), (m 60, m (-2)), (m 60, m 2), (m (-60), m 2)] Build.east
+private def bLane : Structure :=
+  Build.lane 11 [(cm 550, m (-30)), (cm 950, m (-30)), (cm 950, m 30), (cm 550, m 30)] Build.north
+private def theCrossing : Structure :=
+  Build.rect 12 .intersection (cm 550) (m (-2)) (cm 950) (m 2)
 
-/-- The junction itself: a 12 m square where the two roadways cross. The concept reads no region;
-    the narratives name a junction, so one is built. -/
-private def junction : Structure := Build.rect 10 .intersection (m (-6)) (m (-6)) (m 6) (m 6)
+/-- a at an instant: a 4 m x 2 m car on y = 0 heading east at `(x, 0)` with speed `v`. -/
+private def carA (x v : Q) : RoadUser :=
+  Build.user 1 [.motorVehicle] (x, Q.zero) Build.east v (m 2, m 1, m 1)
 
-/-- `a`, the granting party: on the east–west roadway at y = 0, `x` metres east of the crossing,
-    heading east at `speed`. -/
-private def aCar (x speed : Q) : RoadUser :=
-  Build.user 1 [.motorVehicle] (x, m 0) Build.east speed carExtent
+/-- b at an instant: a 4 m x 2 m car on x = 7.5 m heading north at `(7.5, y)` with speed `v`. -/
+private def carB (y v : Q) : RoadUser :=
+  Build.user 2 [.motorVehicle] (cm 750, y) Build.north v (m 2, m 1, m 1)
 
-/-- `b`, the receiving party: on the north–south roadway at x = 0, `y` metres north of the
-    crossing, heading north at `speed`, with `accel` m/s² along that heading. -/
-private def bCar (y speed accel : Q) : RoadUser :=
-  Build.withKin (Build.user 2 [.motorVehicle] (m 0, y) Build.north speed carExtent)
-    fun k => { k with accelLongitudinal := some accel }
+private def place (t : Timestamp) (a b : RoadUser) : Scene :=
+  Build.scene t (some 1) [a, b] [aLane, bLane, theCrossing] []
 
-/-- `a` as a source with no reading of motion sees it: position, heading and extent only. -/
-private def aSeen (x : Q) : RoadUser :=
-  Build.withKin (Build.sparseUser 1 [.motorVehicle] (x, m 0))
-    fun k => { k with heading := some Build.east, extent := some carExtent }
+/-- b crosses in front of a at a steady 3 m/s: y = -9 m, -6 m, … , 12 m. -/
+private def crossY (k : Nat) : Q := m (-9 + 3 * Int.ofNat k)
 
-/-- `b` as the same source sees it: position, heading, extent and its longitudinal acceleration,
-    which that source does observe. -/
-private def bSeen (y accel : Q) : RoadUser :=
-  Build.withKin (Build.sparseUser 2 [.motorVehicle] (m 0, y))
-    fun k => { k with heading := some Build.north, extent := some carExtent,
-                      accelLongitudinal := some accel }
+-- The wait: a stands at x = 0 while b crosses, edges 0.75 m forward once b has gone by, stands.
+private def waitX : Nat → Q
+  | 0 | 1 | 2 | 3 | 4 => Q.zero
+  | _ => cm 75
 
-/-- b's position north of the crossing at each observation: 10 m/s from y = −70 m, so it reaches
-    the crossing at t = 7000 ms. Shared by every scenario. -/
-private def bNorthAt : Nat → Q
-  | 0 => m (-70)
-  | 1 => m (-60)
-  | 2 => m (-50)
-  | 3 => m (-40)
-  | 4 => m (-30)
-  | 5 => m (-20)
-  | 6 => m (-10)
-  | 7 => m 0
-  | 8 => m 10
-  | _ => m 20
+private def waitSpeed : Nat → Q
+  | 5 => Units.micrometresPerSecond 750000   -- 0.75 m/s, the one second of edging forward
+  | _ => Q.zero
 
-/-- `holds` (compliant): a waits at (−30 m, 0) while b crosses, then pulls away east behind it. At
-    t = 0 and 1000 ms the closest approach the two reference points are predicted to reach lies 7 s
-    and 6 s ahead, beyond the 5 s horizon, so none is predicted within the horizon there; at every
-    later observation one is predicted and the centre distance at it — 30 m while a stands, about
-    28.3 m once a moves — stays above the 10 m margin. b holds 10 m/s, so its longitudinal
-    acceleration is zero at every observation and never passes the 2 m/s² bound. The concept holds
-    of (a, b). The braking leaf is what this witness exercises: hold b to a deceleration past the
-    bound anywhere in the window and the verdict turns violated. -/
-private def aWaitsAt : Nat → Q × Q      -- position east, speed
-  | 8 => (m (-30), mps 10)
-  | 9 => (m (-20), mps 10)
-  | _ => (m (-30), mps 0)
-
+/-- `holds` (compliant): a waits at the entrance of the crossing while b crosses in front of it and
+    departs; at every observation of yield_window the two bodies stand apart by at least
+    yield_clearance along one of a's axes — longitudinally while b crosses in front, laterally once
+    b has gone by and a has edged forward — and the longitudinal component of the gap never sits
+    below yield_clearance less yield_closure_allowance, so a has kept out of b's way. -/
 private def holdsTrace : Trace :=
-  Build.trace 10 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ aCar (aWaitsAt k).1 (aWaitsAt k).2
-      , bCar (bNorthAt k) (mps 10) Q.zero ]
-      [ junction ]
-      [ ]  -- devices
+  Build.trace 8 0 (Units.seconds 1) fun k t =>
+    place t (carA (waitX k) (waitSpeed k)) (carB (crossY k) (mps 3))
 
-/-- `fails` (violated): a pulls out east at 10 m/s from x = −60 m across b's path. The two
-    reference points are predicted to pass about 7.07 m apart, inside the 10 m margin, and that
-    approach lies within the 5 s horizon at every observation from t = 2000 ms to t = 6000 ms, so
-    at each counted observation (t = 4000 … 6000) and throughout its 2 s look-back a has not stayed
-    clear of b. b's braking for a — −5 m/s², well past the 2 m/s² bound — comes at t = 8000 and
-    9000 ms, after the counted observations, and the look-back never reaches it, so the clearance
-    alone decides this witness and each of its two leaves is load-bearing. The concept fails of
-    (a, b) — and would be judged separately of (b, a). -/
-private def aCrossesAt : Nat → Q        -- position east
-  | 0 => m (-60)
-  | 1 => m (-50)
-  | 2 => m (-40)
-  | 3 => m (-30)
-  | 4 => m (-20)
-  | 5 => m (-10)
-  | 6 => m 0
-  | 7 => m 10
-  | 8 => m 20
-  | _ => m 30
-
-/-- b north of the crossing, braking hard at the last two observations: position, speed and the
-    signed acceleration along its heading. -/
-private def bBrakesAt : Nat → Q × Q × Q
-  | 8 => (m 10, mps 10, mps2 (-5))
-  | 9 => (cm 1750, mps 5, mps2 (-5))
-  | k => (bNorthAt k, mps 10, Q.zero)
-
+/-- `fails` (violated): a moves into b's path at a steady 3 m/s from x = -6 m: at t = 3000 ms,
+    within yield_window of every later observation, the two bodies stand apart by yield_clearance
+    along neither of a's axes, and the longitudinal component of the gap sits more than
+    yield_closure_allowance below that clearance, so a has drawn in on b rather than kept out of
+    its way. -/
 private def failsTrace : Trace :=
-  Build.trace 10 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ aCar (aCrossesAt k) (mps 10)
-      , bCar (bBrakesAt k).1 (bBrakesAt k).2.1 (bBrakesAt k).2.2 ]
-      [ junction ]
-      [ ]  -- devices
+  Build.trace 8 0 (Units.seconds 1) fun k t =>
+    place t (carA (m (-6 + 3 * Int.ofNat k)) (mps 3)) (carB (crossY k) (mps 3))
 
-/-- `blind` (unknown): the same crossing, but the source's capability manifest declares
-    kin.velocity and kin.speed absent, and the scenes it builds carry the two bodies' positions,
-    headings and extents and nothing of their motion. Neither primitive has velocities to predict
-    from, so prim.closest_approach_within and prim.closest_approach_distance are unknown at every
-    observation of every window. b's longitudinal acceleration is observed and zero, within the
-    bound, so nothing else decides the conjunction. The concept reports unknown, for the absent
-    kin.velocity and for nothing else. -/
-private def blindTrace : Trace :=
-  Build.trace 10 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ aSeen (aCrossesAt k)
-      , bSeen (bNorthAt k) Q.zero ]
-      [ junction ]
-      [ ]  -- devices
+/-- `blind` (unknown): The same pair of tracks as in holds, but the source's capability manifest
+    declares rel.surface_gap absent together with the kin.position and kin.extent from which Core
+    would otherwise compute it; neither component of the gap can be read at any observation of the
+    window, so neither condition is decided and the concept reports unknown. -/
+private def blindTrace : Trace := holdsTrace
+
+/-- Every witness speaks about t = 3000 ms … 7000 ms: before t = 3000 ms the three-second lookback
+    runs off the start of the trace, which is unknown for truncation and not about the concept. -/
+private def spoken : Timestamp × Timestamp := (3000, 7000)
 
 private def witness (name : String) (τ : Trace) (expected : Verdict)
-    (window : Option (Timestamp × Timestamp) := none) (absent : List String := []) : Scenario :=
+    (absent : List String := []) : Scenario :=
   { name := name
     rule := inst.name
     trace := τ
@@ -200,11 +143,11 @@ private def witness (name : String) (τ : Trace) (expected : Verdict)
     manifest := Build.manifest absent
     grounding := [("a", 1), ("b", 2)]
     expected := expected
-    window := window }
+    window := some spoken }
 
 def scenarios : List Scenario :=
-  [ witness "holds" holdsTrace .compliant (some (2000, 9000))
-  , witness "fails" failsTrace .violated (some (4000, 6000))
-  , witness "blind" blindTrace (.unknown []) (some (2000, 9000)) ["kin.velocity", "kin.speed"] ]
+  [ witness "holds" holdsTrace .compliant
+  , witness "fails" failsTrace .violated
+  , witness "blind" blindTrace (.unknown []) ["rel.surface_gap", "kin.position", "kin.extent"] ]
 
 end TrafficSpecWitness.Concepts.interaction.precedence_granted

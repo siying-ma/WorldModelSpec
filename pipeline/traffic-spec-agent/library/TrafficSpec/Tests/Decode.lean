@@ -8,14 +8,16 @@ def traceText : String := "{\"scenes\": [
   {\"t\": 0, \"subject\": 1,
    \"users\": [
      {\"track\": 1, \"classes\": [\"motor_vehicle\"],
-      \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"velocity\": [10, 0], \"speed\": 10, \"extent\": [2.25, 0.9, 0.75]},
+      \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"velocity\": [10, 0], \"speed\": 10, \"extent\": [2.25, 0.9, 0.75],
+              \"engine_running\": true, \"gear\": -1, \"throttle\": 0.2},
       \"sig\": {\"turn_indicator\": \"left\", \"brake_lamp\": null}},
      {\"track\": 2, \"classes\": [\"motor_vehicle\", \"truck\"], \"unobserved_classes\": [\"taxicab\"],
       \"kin\": {\"position\": [30, 0], \"heading\": [1, 0], \"velocity\": [0, 0], \"speed\": 0, \"extent\": [2.25, 0.9, 0.75]}}],
-   \"structures\": [{\"id\": 7, \"kind\": \"lane\", \"lane\": {\"count\": 2, \"ordinal\": 1, \"marking_left\": [\"broken\", \"white\"]}}],
+   \"structures\": [{\"id\": 7, \"kind\": \"lane\", \"lane\": {\"count\": 2, \"ordinal\": 1, \"marking_left\": [\"broken\", \"white\"], \"enters_intersection\": 20}},
+                  {\"id\": 20, \"kind\": \"intersection\"}],
    \"devices\": [{\"id\": 9, \"kind\": \"traffic_signal\", \"governs\": [7], \"indications\": [\"circular_red\", \"green_arrow(left)\"],
                   \"conditions\": {\"windows\": [{\"weekdays\": [0, 1, 2, 3, 4], \"start_minute\": 420, \"end_minute\": 600}], \"min_occupancy\": 2}}],
-   \"occupancy_observed\": true, \"occupies\": [[1, 7], [2, 7]],
+   \"occupancy_observed\": true, \"occupies\": [[1, 7], [2, 7]], \"relations\": [{\"a\": 1, \"b\": 2, \"visible\": true}],
    \"env\": {\"darkness\": false, \"civil_time\": {\"year\": 2026, \"month\": 9, \"day\": 21, \"weekday\": 0, \"minute_of_day\": 450}},
    \"assumptions\": [[\"asm.business_district\", true]]},
   {\"t\": 500, \"subject\": 1, \"users\": [{\"track\": 1, \"kin\": {\"speed\": 8.5}}], \"links\": [[3, 1]]}
@@ -38,6 +40,13 @@ def τ : Trace := decoded.toOption.getD []
 #guard dev_traffic_signal_shows τ[0]! 9 (.greenArrow .left) = some true
 #guard (dev_zone_sign_conditions τ[0]! 9).map (·.minOccupancy) = some (some 2)
 #guard (env_civil_time τ[0]!).map (·.minuteOfDay) = some 450
+#guard kin_engine_running τ[0]! 1 = some true
+#guard kin_gear τ[0]! 1 = some (-1)
+#guard (kin_throttle τ[0]! 1).map (Q.eq · (Q.mk' 1 5)) = some true
+#guard kin_engine_running τ[0]! 2 = none
+#guard st_lane_enters τ[0]! 7 = some 20
+#guard rel_visible τ[0]! 1 2 = some true
+#guard rel_visible τ[0]! 2 1 = none
 #guard rel_occupies τ[0]! 1 7 = some true
 #guard rel_occupies τ[1]! 1 7 = none                                          -- occupancy not observed in scene 1
 #guard τ[1]!.links = [(3, 1)]
@@ -70,13 +79,23 @@ def ρ : Reading := (parse reading readingText).toOption.getD {}
 #guard ρ.paramUnit "p.setback" = some .metre
 #guard (ρ.param "p.limit").map (Q.eq · (mph 25)) = some true
 #guard ρ.aggregate "vehicle" = some ["ru.motor_vehicle", "ru.bicycle"]
-def manifestText : String := "{\"source\": \"video\", \"reid_gap\": 1.5, \"atoms\": {\"kin.speed\": \"estimate:coarse\", \"ru.motor_vehicle\": \"exact\", \"env.darkness\": \"absent\"}}"
+def manifestText : String := "{\"source\": \"video\", \"reid_gap\": 1.5, \"atoms\": {\"kin.speed\": \"estimate:coarse\", \"ru.motor_vehicle\": \"exact\", \"env.darkness\": \"absent\", \"kin.engine_running\": \"subject\"}}"
 def m : Manifest := (parse manifest manifestText).toOption.getD default
 #guard m.source = "video"
 #guard Q.eq m.reidGap (Q.mk' 3 2)
 #guard m.capability "kin.speed" = .estimate "coarse"
 #guard m.capability "env.darkness" = .absent
 #guard m.capability "kin.position" = .absent                                  -- unlisted is absent
+#guard m.capability "kin.engine_running" = .subject
+#guard m.observes "kin.engine_running"
+-- a subject-only atom survives the mask on the subject and is blanked on everyone else
+def subjectOnly : Manifest :=
+  { Manifest.full "sim" with entries := (Manifest.full "sim").entries.map fun (id, c) =>
+      if id == "kin.engine_running" || id == "rel.visible" then (id, .subject) else (id, c) }
+#guard kin_engine_running (mask subjectOnly τ[0]!) 1 = some true
+#guard kin_engine_running (mask subjectOnly { τ[0]! with subject := some 2 }) 1 = none
+#guard rel_visible (mask subjectOnly τ[0]!) 1 2 = some true
+#guard rel_visible (mask subjectOnly { τ[0]! with subject := some 2 }) 1 2 = none
 #guard !m.complete
 #guard (parse manifest "{\"source\": \"x\", \"atoms\": {\"kin.speed\": \"good\"}}").isOk = false
 

@@ -15,7 +15,7 @@
     or a derived concept's business;
   - the `rel_*` atoms may compute geometry from kinematics, because their contract says they are
     "computed from kinematics; listed because a source may supply them measured" — a measured
-    value, when the source gives one, is preferred.
+    value, when the source gives one, is preferred; `rel_visible` reads a measured value only.
 
   Every atom is three-valued: `none` is "not observed on this source".
 -/
@@ -146,6 +146,10 @@ def kin_accel_longitudinal (s : Scene) (x : TrackId) : Option Q := (s.user x).bi
 def kin_yaw_rate (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.yawRate)
 def kin_extent (s : Scene) (x : TrackId) : Option (Q × Q × Q) := (s.user x).bind (·.kin.extent)
 def kin_path_length (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.pathLength)
+def kin_engine_running (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.kin.engineRunning)
+def kin_gear (s : Scene) (x : TrackId) : Option Int := (s.user x).bind (·.kin.gear)
+def kin_throttle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.throttle)
+def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.serviceBrake)
 
 -- ---------------------------------------------------------------------------------------------
 -- §3 Road structure and occupancy
@@ -163,6 +167,7 @@ def st_lane_adjacency_right (s : Scene) (r : RegionId) : Option RegionId := (st_
 def st_lane_adjacency_ordinal (s : Scene) (r : RegionId) : Option Nat := (st_lane_adjacency s r).bind (·.ordinalFromLeft)
 def st_lane_adjacency_count (s : Scene) (r : RegionId) : Option Nat := (st_lane_adjacency s r).bind (·.countInDirection)
 def st_lane_connectivity (s : Scene) (r : RegionId) : Option (List RegionId) := (st_lane_adjacency s r).bind (·.leadsTo)
+def st_lane_enters (s : Scene) (r : RegionId) : Option RegionId := (st_lane_adjacency s r).bind (·.entersIntersection)
 def st_lane_marking (s : Scene) (r : RegionId) : Option ((Option (MarkingType × MarkingColour)) × (Option (MarkingType × MarkingColour))) :=
   (st_lane_adjacency s r).map fun l => (l.markingLeft, l.markingRight)
 def st_lane_marking_left (s : Scene) (r : RegionId) : Option (MarkingType × MarkingColour) := (st_lane_adjacency s r).bind (·.markingLeft)
@@ -434,5 +439,8 @@ def rel_contact (s : Scene) (a b : TrackId) : Option Bool :=
   match (s.relation a b).bind (·.contact) with
   | some v => some v
   | none => (rel_surface_gap s a b).map fun g => Q.le g.1 Q.zero && Q.le g.2 Q.zero
+
+/-- `b` is in `a`'s line of sight, as the source tested it; never computed. -/
+def rel_visible (s : Scene) (a b : TrackId) : Option Bool := (s.relation a b).bind (·.visible)
 
 end TrafficSpec

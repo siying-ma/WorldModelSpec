@@ -82,7 +82,7 @@ python -m harness split --use full    # and back; `python -m harness split` repo
 # first's planned nodes and composes them by id. Expect: concept records gated and reviewed, three
 # nodes, one composition, an aggregates.jsonl with the three words, a proposed parameter in the reading,
 # and a review per accepted node.
-python -m harness init --fresh --snapshot <previous run>
+python -m harness init --fresh --snapshot <previous run>   # archives its library and its unreviewed parameter proposals
 python -m harness loop --run_id smoke1 --laws laws/example/smoke/laws.jsonl \
     --ontology_file ontology/ATOMS_train.md --reading readings/lasvegas.json --model opus \
     --max_iterations 3 --plan_batch 1

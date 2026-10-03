@@ -55,6 +55,12 @@ ATOMS: dict[str, str] = {
     "kin.extent": W(r"inches", r"width", r"wide", r"length", r"long", r"any portion of the vehicle", r"trailing end", r"wheels?", r"feet in length"),
     "kin.steer_angle": W(r"front wheels", r"turning the (?:front )?wheels", r"wheels to the curb"),
     "kin.path_length": W(r"last \d+ feet", r"within \d+ feet traveled", r"course of", r"traveled", r"more than \d+ feet"),
+    # control state of the vehicle (observed on an instrumented vehicle)
+    "kin.engine_running": W(r"engine", r"motor is running", r"ignition"),
+    "kin.parking_brake": W(r"setting the brake", r"brake thereon", r"parking brake", r"hand brake", r"emergency brake"),
+    "kin.gear": W(r"gears?", r"reverse gear", r"in reverse"),
+    "kin.throttle": W(r"throttle", r"accelerator"),
+    "kin.service_brake": W(r"brake pedal", r"service brakes?", r"foot brake"),
     # structure
     "st.highway": W(r"highways?", r"streets?", r"roads?"),
     "st.roadway": W(r"roadways?", r"traveled portion", r"main-traveled"),
@@ -62,6 +68,9 @@ ATOMS: dict[str, str] = {
     "st.lane_direction": W(r"direction of travel", r"direction of traffic", r"same direction", r"opposite direction", r"reversible"),
     "st.lane_adjacency": W(r"extreme (?:left|right)", r"immediate(?:ly)? (?:left|right)", r"adjacent lane", r"right-hand lane", r"left-hand lane", r"center lane", r"two or more (?:clearly marked )?lanes", r"three (?:clearly marked )?lanes", r"four or more lanes", r"lane to the (?:left|right)"),
     "st.lane_connectivity": W(r"leads? (?:to|into)", r"entrance or exit lane", r"turning course", r"approach(?:es)? to"),
+    "st.lane_enters": W(r"enter(?:ing|s|ed)? (?:the |an |any |such )?intersection", r"approach(?:es|ing)? (?:to )?(?:an |the |any |such )?intersection",
+                        r"intersecting (?:highway|roadway|street)s?", r"(?:streets?|highways?) entering (?:such|the|an) intersection", r"intersections? controlled by",
+                        r"approach(?:ing)? (?:a |the )?(?:stop|yield) (?:sign|intersection)", r"ends? at (?:the|an) intersection"),
     "st.lane_marking": W(r"striping", r"solid white line", r"solid (?:yellow|white)", r"pavement markings?", r"marked lanes?", r"clearly marked", r"lines? (?:separating|dividing)", r"double"),
     "st.centre_line": W(r"center ?lines?", r"centre ?lines?", r"center of the (?:roadway|highway)", r"left of the center"),
     "st.road_edge": W(r"right[- ]hand edge", r"edge of the (?:roadway|highway|street)", r"curbs?", r"extreme right side", r"paved portion"),
@@ -145,6 +154,8 @@ ATOMS: dict[str, str] = {
     "rel.same_direction": W(r"same direction", r"following", r"overtak\w*"),
     "rel.bearing": W(r"on the (?:right|left)", r"to the (?:right|left)", r"from the (?:right|left)", r"right of", r"left of", r"half of the (?:highway|roadway)", r"nearest"),
     "rel.contact": W(r"collid\w*", r"collisions?", r"crash\w*", r"accidents?", r"strik\w+", r"struck", r"hit"),
+    "rel.visible": W(r"visible", r"clear(?:ly)? (?:and unobstructed )?view", r"unobstructed view", r"in view", r"plainly visible", r"can see",
+                     r"has a view", r"upon observing", r"observ(?:es|ing) (?:a|the|an)"),
 }
 
 VALUES: dict[str, str] = {

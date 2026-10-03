@@ -1,0 +1,3 @@
+- gap G2 filed for `NRS-484B-250-2` by a node repair session awaits a decision in gaps/ledger.jsonl
+- parameters the reading lacks: p.cautious_speed_max (readings/)
+- `NRS_484B_250_4_o2` waits for ['NRS_484B_250_4_o1'] to be accepted; its law stays planned, no attempt counted

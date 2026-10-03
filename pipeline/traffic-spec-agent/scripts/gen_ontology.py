@@ -54,7 +54,7 @@ FILE_OF_FAMILY = {"ru": "RoadUser", "st": "Structure", "dev": "Device", "sig": "
 # the ids below are attributes or relations of that family and are not kinds.
 KIND_ENUMS = {
     "ru": ("RoadUserClass", {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}),
-    "st": ("StructureKind", {"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_marking",
+    "st": ("StructureKind", {"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_enters", "st.lane_marking",
                              "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry"}),
     "dev": ("DeviceKind", {"dev.governs", "dev.position", "dev.inoperative"}),
 }

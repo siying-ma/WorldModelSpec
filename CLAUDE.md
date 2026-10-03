@@ -31,7 +31,9 @@ Before changing anything, in this order:
   appear. A rule names parameters; it never carries a value. A parameter the reading lacks is
   proposed by the plan (`param_proposals`: name, unit, a provisional value, its convention and
   source) and the harness enters it in the reading marked `proposed`, where it stays until the
-  operator reviews it; the doctor lists every unreviewed proposal. A figure the statute states is
+  operator reviews it; the doctor lists every unreviewed proposal, and `init --fresh` archives
+  the unreviewed ones with the run's library, so a new run is never guided by the last run's
+  guesses. A figure the statute states is
   declared on its span in the blueprint and written through a `Units` constructor.
 - The Core directory holds either the full or the training variant of the split files
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.

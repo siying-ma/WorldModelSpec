@@ -26,6 +26,7 @@ DEPENDENT = [WORLD, DECODE, MANIFEST, SEMANTICS, PRIMITIVES, GROUNDING]
 #: World fields (and their JSON keys) that exist only for an atom; removed with the atom.
 FIELDS_OF_ATOM: dict[str, list[tuple[str, str]]] = {
     "kin.steer_angle": [("steerAngle", "steer_angle")],
+    "kin.parking_brake": [("parkingBrake", "parking_brake")],
     "sig.reverse_lamp": [("reverseLamp", "reverse_lamp")],
     "sig.signal_arm": [("signalArm", "signal_arm")],
     "sig.door_open": [("doorsOpen", "doors_open")],

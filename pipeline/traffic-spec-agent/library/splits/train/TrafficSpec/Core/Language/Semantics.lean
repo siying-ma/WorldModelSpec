@@ -84,6 +84,8 @@ private def q (o : Option Q) (name : String) : QR :=
   match o with | some v => .ok v | none => .error (.absentAtom name)
 private def qn (o : Option Nat) (name : String) : QR :=
   match o with | some v => .ok (Q.ofInt (Int.ofNat v)) | none => .error (.absentAtom name)
+private def qz (o : Option Int) (name : String) : QR :=
+  match o with | some v => .ok (Q.ofInt v) | none => .error (.absentAtom name)
 
 def unknownAtom (n : String) : UnknownReason := .malformed s!"atom {n}"
 def arity (n : String) : UnknownReason := .malformed s!"arity {n}"
@@ -110,6 +112,8 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "ru_rider_posture_stunt", [x] => pure (b (ru_rider_posture_stunt s (← ent x)) name)
   | "ru_emergency_vehicle_kind", [x, k] => pure (eqEnum (ru_emergency_vehicle_kind s (← ent x)) (← enumLit EmergencyKind.ofString k) name)
   | "ru_official_vehicle_kind", [x, k] => pure (eqEnum (ru_official_vehicle_kind s (← ent x)) (← enumLit OfficialKind.ofString k) name)
+  -- control state
+  | "kin_engine_running", [x] => pure (b (kin_engine_running s (← ent x)) name)
   -- structure attributes
   | "st_road_edge_paved", [r] => pure (b (st_road_edge_paved s (← ent r)) name)
   | "st_shoulder_paved", [r] => pure (b (st_shoulder_paved s (← ent r)) name)
@@ -129,6 +133,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "st_lane_adjacency_left", [r, r'] => pure (b ((st_lane_adjacency_left s (← ent r)).map (· == (← ent r'))) name)
   | "st_lane_adjacency_right", [r, r'] => pure (b ((st_lane_adjacency_right s (← ent r)).map (· == (← ent r'))) name)
   | "st_lane_connectivity", [r, r'] => pure (b ((st_lane_connectivity s (← ent r)).map (·.contains (← ent r'))) name)
+  | "st_lane_enters", [r, i] => pure (b ((st_lane_enters s (← ent r)).map (· == (← ent i))) name)
   | "st_lane_marking", [r, sd, t] =>
     match sd with
     | .s "left" => pure (eqEnum ((st_lane_marking_left s (← ent r)).map (·.1)) (← enumLit MarkingType.ofString t) name)
@@ -200,6 +205,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
     | .s "right" => pure (b (rel_bearing_right s (← ent a) (← ent a')) name)
     | _ => .error (.malformed "bearing side")
   | "rel_contact", [a, a'] => pure (b (rel_contact s (← ent a) (← ent a')) name)
+  | "rel_visible", [a, a'] => pure (b (rel_visible s (← ent a) (← ent a')) name)
   -- class atoms through the generated codecs
   | n, [x] =>
     if n.startsWith "ru_" then
@@ -227,10 +233,10 @@ where
   boolAtomNames : List String := [
     "ru_subject", "ru_aggregate", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
     "ru_rider_posture_holding_another_vehicle", "ru_rider_posture_stunt", "ru_emergency_vehicle_kind",
-    "ru_official_vehicle_kind", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
+    "ru_official_vehicle_kind", "kin_engine_running", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
     "st_curb_zone_kind", "st_curb_zone_colour", "st_obstruction_kind", "st_lane_adjacency", "st_lane_adjacency_left",
-    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
+    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
     "rel_occupies", "dev_traffic_signal_shows", "dev_traffic_signal_uncovered", "dev_pedestrian_signal_state",
     "dev_pedestrian_signal_countdown", "dev_lane_control_signal_state", "dev_speed_limit_beacon_flashing",
     "dev_crossing_warning_signal_active", "dev_speed_limit_sign_kind", "dev_regulatory_sign_code",
@@ -241,7 +247,7 @@ where
     "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
     "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
     "env_ice_or_snow", "rel_ahead_behind_in_lane", "rel_ahead_in_lane", "rel_behind_in_lane", "rel_oncoming",
-    "rel_same_direction", "rel_bearing", "rel_contact"]
+    "rel_same_direction", "rel_bearing", "rel_contact", "rel_visible"]
 
 -- ---------------------------------------------------------------------------------------------
 -- Measured atoms by name (quantity-valued), on one scene. Vector atoms take a component literal.
@@ -269,6 +275,9 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
     | .s "height" => q (e.map fun (_, _, h) => Q.mul (Q.ofInt 2) h) name
     | _ => .error (.malformed "extent")
   | "kin_path_length", [x] => q (kin_path_length s (← ent x)) name
+  | "kin_gear", [x] => qz (kin_gear s (← ent x)) name
+  | "kin_throttle", [x] => q (kin_throttle s (← ent x)) name
+  | "kin_service_brake", [x] => q (kin_service_brake s (← ent x)) name
   | "ru_occupant_count", [x] => qn (ru_occupant_count s (← ent x)) name
   | "ru_rider_posture_hands_on_controls", [x] => qn (ru_rider_posture_hands_on_controls s (← ent x)) name
   | "ru_electric_bicycle_class", [x] => qn (ru_electric_bicycle_class s (← ent x)) name
@@ -313,7 +322,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
 where
   measureNames : List String := [
     "kin_time", "kin_position", "kin_heading", "kin_velocity", "kin_speed", "kin_accel_longitudinal",
-    "kin_yaw_rate", "kin_extent", "kin_path_length", "ru_occupant_count",
+    "kin_yaw_rate", "kin_extent", "kin_path_length", "kin_gear", "kin_throttle", "kin_service_brake", "ru_occupant_count",
     "ru_rider_posture_hands_on_controls", "ru_electric_bicycle_class", "st_lane_direction", "st_lane_adjacency",
     "st_lane_adjacency_ordinal", "st_lane_adjacency_count", "st_lane_width", "st_curvature", "st_grade",
     "st_sight_distance", "st_parking_space_angle", "st_region_geometry", "st_region_geometry_distance",
@@ -341,10 +350,10 @@ def atomArgSorts (name : String) : Option (List (Option EntityKind)) :=
   | "dev_governs" => some [d, r]
   | "st_region_geometry_distance" => some [t, r]
   | "st_lane_adjacency" => some [r, none, r]
-  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" => some [r, r]
+  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" | "st_lane_enters" => some [r, r]
   | "st_lane_marking" => some [r, none, none, none]
   | "rel_oncoming" | "rel_same_direction" | "rel_ahead_behind_in_lane" | "rel_ahead_in_lane"
-  | "rel_behind_in_lane" | "rel_contact" | "rel_centre_distance" | "rel_longitudinal_overlap" => some [t, t]
+  | "rel_behind_in_lane" | "rel_contact" | "rel_visible" | "rel_centre_distance" | "rel_longitudinal_overlap" => some [t, t]
   | "rel_surface_gap" | "rel_bearing" => some [t, t, none]
   | n =>
     if !knowsAtom n then none

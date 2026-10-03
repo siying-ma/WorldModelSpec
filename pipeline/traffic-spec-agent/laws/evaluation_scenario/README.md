@@ -10,7 +10,7 @@ it fixes no threshold, decides no verdict, and is not an answer key for the plan
 quantity the law leaves open is named as a residue, not filled in.
 
 Written from the verbatim text of each line and the ontology in `../../ontology/ATOMS.md`
-(draft of 2026-09-20). Check it with `python validate.py`.
+(draft of 2026-10-03). Check it with `python validate.py`.
 
 ## Record format
 
@@ -33,9 +33,16 @@ Written from the verbatim text of each line and the ontology in `../../ontology/
   `{atom, note}`. `atom` is an id from `ATOMS.md` (§1–§7 atoms and §9 derived concepts); `note`
   says what that atom stands for *in this line*. An atom that a source declares absent makes the
   rule report `unknown`, never compliance (`ATOMS.md` termination rule, clause 6) — so this list
-  doubles as the per-line capability requirement. All 166 ids of `ATOMS.md` are required by at
-  least one line; the most frequent are `rel.occupies` (150 lines), `kin.speed` (63) and
-  `drv.standing_or_parked` (59).
+  doubles as the per-line capability requirement. Of the 134 atoms and 5 primitives of `ATOMS.md`,
+  128 are required by at least one line; the most frequent are `rel.occupies` (150 lines),
+  `kin.speed` (60) and `dev.regulatory_sign` (56). Required by no line: the primitives (a line
+  names the concept, not the computation under it), `ru.aggregate` and `st.region_geometry`
+  (how a rule reads a word or a region, not what a line asks to see), `sig.compression_brake`
+  (its line left the corpus), and the three control inputs `kin.gear`, `kin.throttle` and
+  `kin.service_brake`, which exist so that the vocabulary covers what an instrumented source
+  supplies. Where a line needs the subject's own controls or line of sight (`kin.engine_running`,
+  `kin.parking_brake`, `kin.steer_angle`, `rel.visible`), a source that has them for the subject
+  alone declares the capability `subject`, and the rule is decided for the subject only.
 - **`activation_conditions`** — the antecedent: what must hold for the line to bind at all. A
   trace in which none of them holds does not test the line, it merely fails to engage it.
 - **`exceptions`** — the carve-outs the text itself states, in the text's own terms (275 across

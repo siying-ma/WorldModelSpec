@@ -50,12 +50,18 @@ def atomIds : List String := [
   "kin.extent",
   "kin.steer_angle",
   "kin.path_length",
+  "kin.engine_running",
+  "kin.parking_brake",
+  "kin.gear",
+  "kin.throttle",
+  "kin.service_brake",
   "st.highway",
   "st.roadway",
   "st.lane",
   "st.lane_direction",
   "st.lane_adjacency",
   "st.lane_connectivity",
+  "st.lane_enters",
   "st.lane_marking",
   "st.centre_line",
   "st.road_edge",
@@ -134,7 +140,8 @@ def atomIds : List String := [
   "rel.oncoming",
   "rel.same_direction",
   "rel.bearing",
-  "rel.contact"
+  "rel.contact",
+  "rel.visible"
 ]
 
 /-- Every primitive id of ATOMS.md §10, in file order. -/

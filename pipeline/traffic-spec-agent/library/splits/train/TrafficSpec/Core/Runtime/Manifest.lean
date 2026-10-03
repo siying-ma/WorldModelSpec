@@ -4,8 +4,10 @@
 -/
 /-
   TrafficSpec.Core.Runtime.Manifest
-  What a source can observe: a capability per atom id, complete over ATOMS.md; a mask that blanks
-  every field of an absent atom before evaluation; and `support`, the first and most honest number
+  What a source can observe: a capability per atom id, complete over ATOMS.md (`subject` is an atom
+  observed for the subject track alone, as an instrumented vehicle reports its own controls); a mask
+  that blanks every field of an absent atom, and of a subject-only atom on every other road user,
+  before evaluation; and `support`, the first and most honest number
   a source gets — which rules it can be judged against at all, computed from the rules' syntax
   before any frame is read.
 
@@ -24,6 +26,7 @@ inductive Capability
   | exact
   | estimate (errorClass : String)
   | absent
+  | subject
   deriving Repr, DecidableEq, Inhabited
 
 structure Manifest where
@@ -43,6 +46,8 @@ def complete (m : Manifest) : Bool :=
   atomIds.all (fun id => (m.entries.find? (·.1 == id)).isSome) &&
   m.entries.all (fun e => atomIds.contains e.1)
 def absentIds (m : Manifest) : List String := atomIds.filter fun id => !m.observes id
+/-- The atoms observed for the subject track only. -/
+def subjectIds (m : Manifest) : List String := atomIds.filter fun id => m.capability id == .subject
 /-- A manifest that observes everything exactly (the simulator's, and the tests'). -/
 def full (source : String) (gap : Q := Q.zero) : Manifest :=
   { source := source, entries := atomIds.map fun id => (id, .exact), reidGap := gap }
@@ -138,6 +143,10 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "kin.yaw_rate" => { u with kin := { u.kin with yawRate := none } }
   | "kin.extent" => { u with kin := { u.kin with extent := none } }
   | "kin.path_length" => { u with kin := { u.kin with pathLength := none } }
+  | "kin.engine_running" => { u with kin := { u.kin with engineRunning := none } }
+  | "kin.gear" => { u with kin := { u.kin with gear := none } }
+  | "kin.throttle" => { u with kin := { u.kin with throttle := none } }
+  | "kin.service_brake" => { u with kin := { u.kin with serviceBrake := none } }
   | "sig.turn_indicator" => { u with sig := { u.sig with turnIndicator := none } }
   | "sig.brake_lamp" => { u with sig := { u.sig with brakeLamp := none } }
   | "sig.hazard" => { u with sig := { u.sig with hazard := none } }
@@ -161,6 +170,7 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.lane_adjacency" => some { st with lane := st.lane.map fun l =>
       { l with leftNeighbour := none, rightNeighbour := none, ordinalFromLeft := none, countInDirection := none } }
   | "st.lane_connectivity" => some { st with lane := st.lane.map fun l => { l with leadsTo := none } }
+  | "st.lane_enters" => some { st with lane := st.lane.map fun l => { l with entersIntersection := none } }
   | "st.lane_marking" => some { st with lane := st.lane.map fun l => { l with markingLeft := none, markingRight := none } }
   | "st.lane_width" => some { st with lane := st.lane.map fun l => { l with width := none } }
   | "st.curvature" => some { st with curvature := none }
@@ -204,6 +214,7 @@ def relation (id : String) (m : MeasuredRelation) : MeasuredRelation :=
   | "rel.same_direction" => { m with sameDirection := none }
   | "rel.bearing" => { m with bearing := none }
   | "rel.contact" => { m with contact := none }
+  | "rel.visible" => { m with visible := none }
   | _ => m
 
 /-- Blank one atom in a scene. The computed relations are blanked through the kinematics they
@@ -219,10 +230,19 @@ def scene (id : String) (s : Scene) : Scene :=
              devices := s.devices.filterMap (device id)
              env := env id s.env
              relations := s.relations.map (relation id) }
+
+/-- Blank one atom on every road user but the subject, and in every measured relation not taken
+    from the subject: what a source that instruments the subject's vehicle alone can say. -/
+def sceneExceptSubject (id : String) (s : Scene) : Scene :=
+  { s with users := s.users.map fun u => if s.subject == some u.track then u else user id u
+           relations := s.relations.map fun m => if s.subject == some m.a then m else relation id m }
 end Mask
 
-/-- The scene as the source would have produced it: every absent atom blanked. -/
-def mask (m : Manifest) (s : Scene) : Scene := m.absentIds.foldl (fun acc id => Mask.scene id acc) s
+/-- The scene as the source would have produced it: every absent atom blanked, every subject-only
+    atom blanked on everyone but the subject. -/
+def mask (m : Manifest) (s : Scene) : Scene :=
+  let s := m.absentIds.foldl (fun acc id => Mask.scene id acc) s
+  m.subjectIds.foldl (fun acc id => Mask.sceneExceptSubject id acc) s
 def maskTrace (m : Manifest) (τ : Trace) : Trace := τ.map (mask m)
 
 end TrafficSpec

@@ -42,6 +42,9 @@ def sparseUser (track : TrackId) (classes : List RoadUserClass) (pos : Vec) : Ro
 
 def withSignals (u : RoadUser) (f : Signals → Signals) : RoadUser := { u with sig := f u.sig }
 def withKin (u : RoadUser) (f : Kin → Kin) : RoadUser := { u with kin := f u.kin }
+/-- A measured relation from `a` to `b`, with the measured fields the source supplies. -/
+def relation (a b : TrackId) (f : MeasuredRelation → MeasuredRelation := id) : MeasuredRelation := f { a := a, b := b }
+def withRelations (s : Scene) (rs : List MeasuredRelation) : Scene := { s with relations := rs }
 
 /-- A region of a kind with a polygon boundary. -/
 def region (id : RegionId) (kind : StructureKind) (boundary : List Vec) : Structure :=
@@ -52,12 +55,13 @@ def rect (id : RegionId) (kind : StructureKind) (x0 y0 x1 y1 : Q) : Structure :=
 /-- A lane with its direction and neighbours. -/
 def lane (id : RegionId) (boundary : List Vec) (direction : Vec)
     (left right : Option RegionId := none) (ordinal count : Option Nat := none)
-    (leadsTo : Option (List RegionId) := none) : Structure :=
+    (leadsTo : Option (List RegionId) := none) (enters : Option RegionId := none) : Structure :=
   { id := id
     kind := .lane
     boundary := some boundary
     lane := some { direction := some direction, leftNeighbour := left, rightNeighbour := right,
-                   ordinalFromLeft := ordinal, countInDirection := count, leadsTo := leadsTo } }
+                   ordinalFromLeft := ordinal, countInDirection := count, leadsTo := leadsTo,
+                   entersIntersection := enters } }
 def point (id : RegionId) (kind : StructureKind) (pos : Vec) : Structure :=
   { id := id, kind := kind, position := some pos }
 

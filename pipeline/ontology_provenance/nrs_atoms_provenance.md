@@ -95,11 +95,17 @@ Added: see the `local` rows and the rows whose "sections" column cites only NRS 
 | `kin.accel_longitudinal` | 484B.413(3), .603, .607(1)(a) | derived from velocity where not measured |
 | `kin.yaw_rate` | turning provisions (484B.400–.413) as the observable of a turn | derived |
 | `kin.extent` | 484B.127(2) ("80 inches or more in overall width"), .270(2)(b) ("any portion of the vehicle"), .560(8) ("trailing end of the vehicle"), .457 ("right-hand wheels … within 18 inches") | CARLA bounding box; datasets box; perception estimate |
-| `kin.steer_angle` | 484B.533 ("turning the front wheels to the curb") — the only provision where a steering input is itself the obligation | CARLA control; otherwise absent |
+| `kin.steer_angle` | 484B.533 ("turning the front wheels to the curb") — the only provision where a steering input is itself the obligation | CARLA control, ego only: capability `subject`; otherwise absent |
+| `kin.engine_running` | 484B.533 ("without stopping the engine"); LVMC 11.52.030(A) names the state to say it is irrelevant ("whether or not the engine or motor is running") | not exposed by CARLA (the ego's engine always runs): absent; an instrumented vehicle: `subject` |
+| `kin.parking_brake` | 484B.533 ("effectively setting the brake thereon") — the only provision | CARLA `hand_brake`, ego only: `subject` |
+| `kin.gear` | no provision names the gear; carried so that the vocabulary covers the simulator's surface | CARLA `gear` and `reverse`, ego only: `subject`. The backing lines (484B.113) name a motion, read from kinematics, not the gear |
+| `kin.throttle`, `kin.service_brake` | no provision names the pedal inputs; carried so that the vocabulary covers the simulator's surface | CARLA `throttle`, `brake`, ego only: `subject`. "Increase the speed" (484B.207(2)) and "suddenly decrease the speed" (484B.413(3)) are kinematics |
 | `kin.path_length` | 484B.413(2) ("last 100 feet traveled"/"300 feet"), .223(3)(b),(c) ("more than 200 feet in a center turn lane", "50 feet"), .210(1)(c)(1) ("200 feet in the section of pavement"), .650(1) ("within the course of 1 mile") | integrated from position; odometer where available |
 
-Not an atom, although NRS refers to it: gear selection (484B.560(2)), engine running and brake
-set (484B.530, .533), "knows or reasonably should know" (484B.208 → `jdg.knowledge`).
+Not an atom, although NRS refers to it: "knows or reasonably should know" (484B.208 →
+`jdg.knowledge`). Gear selection, engine running and brake set (484B.530, .533, .560(2)) were
+listed here as unobservable interior state until 2026-10-03; they are now the control-state atoms
+above, observed on an instrumented vehicle under the `subject` capability (§18).
 
 ## 5. Road structure (`st`)
 
@@ -108,6 +114,7 @@ set (484B.530, .533), "knows or reasonably should know" (484B.208 → `jdg.knowl
 | `st.highway` | 484A.095 (entire width incl. sidewalks), 484A.215/.265 (road/street); "upon a highway" in nearly every provision | — | map extent |
 | `st.roadway` | 484A.220, .300 ("traveled portion … exclusive of the berm or shoulder"); 484B.440 ("paved or main-traveled part"), .627(2), .763 | — | CARLA driving lanes; HD map |
 | `st.lane`, `st.lane_direction`, `st.lane_adjacency`, `st.lane_connectivity` | 484A.110 (laned highway); 484B.208 ("extreme left lane"), .223 ("two or more clearly marked lanes", "three clearly marked lanes", "center lane", "extreme left lane"), .270(2)(a) ("lane to the immediate left"), .400 ("extreme right lane"), .560(3) ("marked for four or more lanes"), .607(1)(d) ("lane that is not adjacent") | — | CARLA waypoints; HD map; perception estimate |
+| `st.lane_enters` | 484A.450(2),(3) ("approaching a stop intersection", "the intersecting highway"); 484B.250(1)–(4) ("approaching an intersection", "enter an intersection", "intersections controlled by official traffic-control devices"), .253, .257(1),(2), .307(6)(a),(7)(a),(8)(a),(8)(c),(8)(e),(9)(a),(9)(b), .310(1), .400(2),(3),(5); LVMC 11.12.070(B), 11.16.040 ("streets or highways entering such intersection"), 11.20.070 | which lane is an approach to which intersection: the relation that makes "the intersection a device controls" readable from `dev.governs` (device → lane) and this atom (lane → intersection). CARLA: the junction id of the lane's successor waypoint; HD maps carry it |
 | `st.lane_marking` | 484B.217(2) ("pavement striping designed to mark such zone"), .587(2)(b) ("solid white line that separates an entrance or exit lane"), .213 | — | CARLA lane marking API; HD map |
 | `st.centre_line` | 484A.040; 484B.213(1) ("left side of the center"), .400(2)–(4) ("nearest the centerline") | — | HD map |
 | `st.road_edge` | 484B.120 ("right hand edge"), .267(1)(b) ("right-hand edge or … curb"), .457 ("right-hand curb"), .627(1)(a) ("extreme right side"), .210(3) ("paved portion") | — | HD map; **paved** attribute from surface type |
@@ -190,6 +197,7 @@ set (484B.530, .533), "knows or reasonably should know" (484B.208 → `jdg.knowl
 | `rel.longitudinal_overlap` | 484B.267(2)(d) ("not drive abreast of or overtake"), .777(3) ("two abreast") | new in this draft |
 | `rel.oncoming`, `rel.same_direction` | 484B.203, .207, .213, .253 ("approaching from the opposite direction"), .270(2) | |
 | `rel.bearing` | 484B.250(2) ("vehicle on the right"), .283(1)(a) ("half of the highway upon which the vehicle is traveling"), .400 | |
+| `rel.visible` | 484A.450(2),(3) ("where the driver has a view of approaching traffic"); 484B.207(2) ("upon observing the overtaking vehicle"), .208(1), .213(1) ("clearly visible"), .223(2)(a), .250(4), .257(1), .267(2) ("visible to an approaching driver"), .280(1)(c) ("upon observing a pedestrian"), .440(1) ("a clear view of such stopped vehicles"), .553(1)(d) ("an approaching train is plainly visible"); LVMC 11.16.030, 11.16.040 ("a clear and unobstructed view … of any traffic") | b in a's line of sight, measured by the source (CARLA `is_visible_from_ego`, a ray cast, ego → actor: `subject`); never computed. The visibility of a device or a lamp from a road user (484B.353(1), 484D.165(3), LVMC 11.38.120(B)) is an equipment property and stays a residue |
 
 ## 10. Judgement standards — provenance of the operationalization table (ATOMS.md §8)
 
@@ -252,7 +260,7 @@ phrasings each standard takes in the corpus, which is what the operationalizatio
 | through highway *designation* (484A.275, 484A.450(1)) | `drv.priority_roadway` from the signs at the entrances |
 | "stopped to receive or discharge any pupil" (484B.353), "stopped for the purpose of permitting a pedestrian to cross" (484B.283(1)(c)), "expeditious loading or unloading" (484B.477–.517), "engaged in the construction, maintenance or repair of the highway" (484B.208(2)(a)(4)) | purpose — not observable; rules state the evidence they use and carry the residue |
 | "lawfully within the intersection", "lawfully riding", "lawfully parked" | rule composition (another rule's verdict) |
-| gear, engine, parking brake (484B.530, .533, .560(2)) | interior state — excluded from the corpus except 484B.533's wheel angle |
+| gear, engine, parking brake (484B.530, .533, .560(2)) | atoms since 2026-10-03 (`kin.gear`, `kin.engine_running`, `kin.parking_brake`), observed on an instrumented vehicle under the `subject` capability; 484B.533 is in the corpus with all three of its conditions readable |
 | "readily identifiable vehicle of any police department" (484B.550) | `ru.emergency_vehicle` kind police with `sig.warning_lamp` red + `sig.siren` (484B.550(2) makes the signal observable) |
 | driver-assistive platooning (484B.127(5)), autonomous vehicle driver definition (484A.080) | out of scope for scene evaluation |
 
@@ -423,3 +431,36 @@ capture time, a simulator scenario's declared time of day and weekday); a source
 declares `env.civil_time` absent and every hours-conditioned rule reports unknown, which is the
 intended behaviour. The sign legend is read by the same perception that reads the sign; in
 simulation it is scenario metadata.
+
+## 18. The relation set the corpus requires, checked against the simulator's surface (2026-10-03)
+
+The corpus was scanned for every relationship between two entities of the scene, each hit read
+against the contracts, and each uncovered relationship checked against what the CARLA scene-graph
+generator observes (`controlsTrafficOf` and `mayAffect` edges from a device to a lane node, `isIn`
+from an actor to a lane, `junction_id` on lane nodes, the ego-only control keys `throttle`,
+`brake`, `steer`, `hand_brake`, `reverse`, `gear`, and the ego-to-actor ray cast
+`is_visible_from_ego`). The vocabulary must carry what the corpus needs and cover what the
+generator produces.
+
+| relationship | lines | before | added |
+|---|---|---|---|
+| a lane is an approach to an intersection | 24 lines on intersection control and entry (§5 row) | lane → lane and device → lane only | `st.lane_enters` |
+| two intersections are adjacent (484B.287(1)(c)); a highway ends at an intersection (484B.250(3)) | 2 | — | no atom: concepts over `st.lane_enters` and `st.lane_connectivity` |
+| engine running; parking brake set; gear; pedal inputs | 484B.533 (one test line) and LVMC 11.52.030(A), which names the engine to exclude it | listed as unobservable | `kin.engine_running`, `kin.parking_brake`, `kin.gear`, `kin.throttle`, `kin.service_brake` |
+| b in a's line of sight | 19 lines (§9 row) | a region's sight distance only | `rel.visible` |
+| a device or lamp visible from a road user | 4 | — | not added: an equipment property, a residue |
+| a region in view | LVMC 11.16.030, 11.16.040 | `st.sight_distance` | not added; the traffic in the region is read through `rel.visible` |
+| the generator's `at_traffic_light`, light states, speed limits, markings, weather, polygons, `isIn` | — | covered | — |
+| the generator's `safety_hazard`, `near_coll`, `super_near`, `very_near` bands | — | — | correctly absent: a format's thresholds |
+
+Because the generator carries the control keys and the ray cast for the ego alone, the manifest
+gained a fourth capability, `subject`: the atom is observed for the subject track only, and the
+mask blanks it on every other road user and in every measured relation not taken from the
+subject. `kin.steer_angle`'s contract, which had such a source declare the atom absent, now has it
+declare `subject`.
+
+The split: `kin.parking_brake` is supported by 484B.533 alone, a test line, so it is test-only
+and the training ontology omits it; `kin.engine_running` is mentioned by training lines (to
+exclude it) and stays; `kin.gear`, `kin.throttle` and `kin.service_brake` have no textual support
+and stay in the training ontology as design, like `sig.brake_lamp`; `st.lane_enters` and
+`rel.visible` are supported on both sides.

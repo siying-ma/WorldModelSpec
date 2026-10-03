@@ -61,6 +61,20 @@ def sceneUnobserved : Scene := { t := 0, users := [ua, ub] }
 #guard rel_occupies sceneUnobserved 1 7 = none           -- occupancy not observed at all
 #guard rel_occupies { scene0 with occupancyObserved := [1] } 2 7 = none   -- observed for track 1 only
 #guard rel_occupies { scene0 with occupancyObserved := [1] } 1 7 = some true
+-- control state of the subject's vehicle, the intersection its lane enters, a measured line of sight
+def ctlCar : RoadUser := { ua with kin := { ua.kin with engineRunning := some false, gear := some 0, throttle := some Q.zero } }
+def lane7in : Structure := { lane7 with lane := lane7.lane.map fun l => { l with entersIntersection := some 20 } }
+def junction20 : Structure := { id := 20, kind := .intersection }
+def sceneCtl : Scene := { scene0 with users := [ctlCar, ub, uc, ped], structures := [lane7in, junction20],
+                                      relations := [{ a := 1, b := 3, visible := some false }] }
+#guard kin_engine_running sceneCtl 1 = some false
+#guard kin_gear sceneCtl 1 = some 0
+#guard (kin_throttle sceneCtl 1).map Q.isZero = some true
+#guard kin_engine_running sceneCtl 2 = none                 -- not observed on the other car
+#guard st_lane_enters sceneCtl 7 = some 20
+#guard st_lane_enters scene0 7 = none
+#guard rel_visible sceneCtl 1 3 = some false
+#guard rel_visible sceneCtl 1 2 = none                      -- never computed from kinematics
 -- region geometry: distance to a boundary is zero inside, the nearest edge outside
 def box : Structure := { id := 8, kind := .crosswalk, boundary := some [(metres 5, metres 1), (metres 6, metres 1), (metres 6, metres 3), (metres 5, metres 3)] }
 def sceneBox : Scene := { scene0 with structures := [lane7, box] }
