@@ -36,7 +36,7 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    divergence returns the rule.
 2. **dismissed** — a reasonable reading of the law's words gives the rule's verdict, or the
    reviewer's verdict rests on something the words do not say (a fact of the situation the
-   reviewer assumed, a knowledge of what such laws usually mean), or one of rules 4 to 6 applies.
+   reviewer assumed, a knowledge of what such laws usually mean), or one of rules 4 to 7 applies.
 3. **reading** — the divergence turns only on which classes of road user a legal aggregate word
    covers, which the reading declares and the contracts list. The rule follows the reading; the
    question goes to the operator, who reviews the reading. A divergence that turns on a class the
@@ -52,14 +52,20 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    trigger, condition or exception is read relative to the act the obligation names — before the
    act, while it is under way, or only where it is recognized — the reading concerns that span,
    whichever span the record discloses it on, and is judged as a reading of that span.
-6. **Surrogates.** When the record marks the operationalization `surrogate`, the rule fixes what
+6. **Words with no observable counterpart.** An intention, a perception or a knowledge, a
+   purpose, or the legal status of a feature in the scene is read through the conduct or feature it
+   refers to, and the record discloses each such reading as an `observable_reading`. A situation
+   that turns only on what the subject intended, perceived or knew apart from that conduct, or on
+   whether a feature present in the scene is official, is dismissed. A reading of the conduct that
+   misses the duty, or forbids conduct the words permit, is upheld.
+7. **Surrogates.** When the record marks the operationalization `surrogate`, the rule fixes what
    the standard leaves open, and rule 4 governs that. Such a divergence is upheld only when it
    turns on who and when the duty binds, on a party whose absence leaves the subject unjudged, on
    a class of road user the words cover, on a factor the standard names in its own words that a
    contract carries and the rule does not read at all, on the rule returning no verdict inside the
    law's domain, or on a bound that forbids conduct no reading of the standard could call
    unreasonable.
-7. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
+8. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
    the contracts. Do not use knowledge of any jurisdiction or of what such rules usually say.
 
 ## Output

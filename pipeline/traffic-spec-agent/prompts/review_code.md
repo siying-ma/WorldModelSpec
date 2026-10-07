@@ -69,6 +69,13 @@ do not edit the rule.
 6. **Open magnitudes.** Where the words leave a magnitude open (near, sufficient, safe, a
    tolerance), the rule bounds it with a parameter the reading sets. A situation whose lawful
    verdict turns only on how large that magnitude should be is an advisory, never a divergence.
+   The rule is a check of conduct on a trace: a word with no observable counterpart (an intention,
+   a perception or a knowledge, a purpose, the legal status of a feature in the scene) is read
+   through the conduct or feature it refers to, and the record discloses each such reading as an
+   `observable_reading`. A situation that turns only on what the subject intended, perceived or
+   knew apart from that conduct, or on whether a feature present in the scene is official, is an
+   advisory, never a divergence. A reading of that conduct that misses the duty or forbids conduct
+   the words permit is a divergence.
 7. **Surrogates.** When the record marks the operationalization `surrogate`, the duty is the
    standard itself and the rule fixes the magnitude the words leave open, which question 6
    governs. A surrogate's divergence turns on the law's other words — who and when the duty

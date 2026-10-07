@@ -443,10 +443,19 @@ def check_residue_scope(node: Node) -> list[str]:
 NARROWABLE_ROLES = {"obligation", "standard"}
 
 
+#: A narrowing that reads a word with no observable counterpart through the conduct or feature it refers
+#: to, and the closed list of what such a word may be.
+OBSERVABLE_READING = "observable_reading"
+OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose"}
+
+
 def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = None) -> list[str]:
     """A narrowing is a disclosed reading of a span the plan carries by an element or an
     operationalization: the span exists, has role obligation or standard, is so carried, and the
-    narrowing says why. A span that decides when the rule applies is never narrowed; a span nothing
+    narrowing says why. An `observable_reading` (a word with no observable counterpart, read through
+    the conduct or feature it refers to, of a category in the closed list) may also be declared on a
+    trigger, subject, condition or exception span an element carries. Otherwise a span that decides
+    when the rule applies is never narrowed; a span nothing
     carries is a residue or a gap, not a narrowing. A narrowing may name in `gap` a rejected gap of
     the ledger on this law: the operator's decision that the span is carried as it is."""
     errs = []
@@ -455,6 +464,20 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = Non
     for n in node.get("narrowings", []):
         sid, role = n.get("span"), spans.get(n.get("span"), {}).get("role")
         gap = n.get("gap")
+        if n.get("kind") == OBSERVABLE_READING:          # a word with no observable counterpart, read through conduct
+            if sid not in spans:
+                errs.append(f"{node.id}: narrowing refers to unknown span {sid!r}")
+            elif role not in SCOPE_ROLES | NARROWABLE_ROLES:
+                errs.append(f"{node.id}: observable reading on span {sid} ({role}); it is declared on a span that decides when the rule applies or on its duty")
+            elif sid not in carried:
+                errs.append(f"{node.id}: observable reading on span {sid}, which no element carries: the element maps the conduct or feature the words are read through")
+            if n.get("category") not in OBSERVABLE_CATEGORIES:
+                errs.append(f"{node.id}: observable reading on span {sid} has category {n.get('category')!r}, not one of {sorted(OBSERVABLE_CATEGORIES)}")
+            if not _ws(n.get("why")):
+                errs.append(f"{node.id}: observable reading on span {sid} states no `why` (which conduct or feature the words are read through)")
+            continue
+        if n.get("kind") not in (None, "reading"):
+            errs.append(f"{node.id}: narrowing on span {sid} has kind {n.get('kind')!r}; a plan's narrowing is `reading` or `{OBSERVABLE_READING}`")
         if gap is not None:
             if not rejected_gaps or gap not in rejected_gaps:
                 errs.append(f"{node.id}: narrowing on span {sid} names gap {gap!r}, which is no rejected gap of the ledger")

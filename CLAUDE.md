@@ -77,7 +77,11 @@ Before changing anything, in this order:
 ## Never
 
 - Special-case a law in Core, the ontology, the prompts, the harness or the doctor.
-- Approximate a span the ontology cannot carry with a neighbouring atom: file a gap.
+- Approximate a span the ontology cannot carry with a neighbouring atom: file a gap. The one
+  exception is a word with no observable counterpart (an intention, a perception or a knowledge,
+  a purpose, the legal status of a feature on the road): it is read through the conduct or the
+  feature it refers to and disclosed as an `observable_reading` narrowing (`ontology/ATOMS.md`,
+  the section on what is not an atom), because the rules exist to check conduct on traces.
 - Decompose below an obligation span, or re-plan a law the ledger has closed.
 - Copy from the archived prototype; borrow ideas, cite nothing from it.
 

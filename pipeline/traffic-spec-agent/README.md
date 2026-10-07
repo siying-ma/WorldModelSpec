@@ -245,7 +245,10 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    `aggregates.jsonl`.
 2. **Validate**: A, deterministic (segmentation is a partition; total accounting; closed set;
    standards have parameters in the reading or proposed; no zero literal declared; plan narrowings
-   only on carried obligation or standard spans; node id derived from the law id; one node per
+   only on carried obligation or standard spans, except an `observable_reading` — a word with no
+   observable counterpart (an intention, a perception or a knowledge, a purpose, the legal status of
+   a feature on the road) read through the conduct or feature it refers to, of one of those four
+   categories, on any carried span, which `TO_USER.md` lists for review; node id derived from the law id; one node per
    obligation span, an accepted node never re-planned; same words same atoms across the run;
    compositions resolve, no cycles; no residue on a trigger, subject, condition or exception span
    unless it declares `scope: none`; the four witnesses; the occasion of an act observed over time,
@@ -287,7 +290,8 @@ the subject's, not any in the scene), `DECLARATION_MISMATCH` (the node's residue
 the rule and none added; a reading the coder chose on a carried span is a narrowing `{span, why, kind}`,
 carried to the review, the feedback and the accepted record under its own key),
 `SCOPE_NARROWED` (a narrowing on a trigger, subject, condition or exception span: the rule would
-apply where the law does not), `UNEXPRESSED` (a narrowing of kind `no_atom` or `no_operator`: the
+apply where the law does not; an `observable_reading` the plan declared on that span is the plan's
+own reading and is not one), `UNEXPRESSED` (a narrowing of kind `no_atom` or `no_operator`: the
 coder says the words cannot be stated; the repair withdraws the span as a gap or re-maps it, and a
 second such declaration files the gap), `UNCLAIMED_ATOM` / `UNUSED_CLAIM` / `BARE_LITERAL` (the set of literals a formula writes must equal the declared set; a figure counts once however often it is written), `WITNESS_FAIL` (a planned scenario
 has no witness, a verdict differs from the planned one, `idle` grounds a binder to a track that never appears, `blind` is unknown for

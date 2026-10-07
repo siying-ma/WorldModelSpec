@@ -882,6 +882,10 @@ def run_loop(opts: Options) -> dict:
         for n in accepted_now:
             if n.id in kept:
                 run.accepted_nodes[n.id] = {**n.raw, "narrowings": list(n.get("narrowings", [])) + coder_narrowings.get(n.id, [])}
+                for x in n.get("narrowings", []):              # each word read through conduct, for the operator to review
+                    if isinstance(x, dict) and x.get("kind") == "observable_reading":
+                        words = n.spans().get(x.get("span"), {}).get("text", "")
+                        to_user.append(f"`{n.law}` ({n.id}) reads \"{words}\" ({x.get('category')}) through conduct: {str(x.get('why', ''))[:240]}")
                 for c in n.get("compositions", []):
                     line = f"`{n.law}` span {c.get('span')} composes accepted `{c.get('rule')}` (as: {c.get('as')})"
                     notes.append(line); to_user.append(line + " — both rules can flag the same episode")

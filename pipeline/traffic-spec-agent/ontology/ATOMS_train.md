@@ -298,14 +298,29 @@ restriction is in effect when the sign only refers to them. These enter a formal
 Where the same category is *also* marked on the road by a sign (`dev.zone_sign`), the sign is the
 atom and the category is not.
 
-**Purpose and perception** — why a vehicle is stopped (loading, waiting for a pedestrian,
-receiving passengers), what a driver perceived, knew or intended. These are not observable; a
-rule that depends on one either states the observable evidence the statute itself offers (what
-was in an actual road user's line of sight is `rel.visible`; what could be seen from or at a place is
-`st.sight_distance`) or carries the residue. The control state of
+**Purpose, perception and intention** — why a vehicle is stopped (loading, waiting for a
+pedestrian, receiving passengers), what a driver perceived, knew, ascertained or intended. These
+are not observable, and a rule is a check of conduct on a trace, so a span that turns on one is
+read through the conduct or the outcome it governs: an intention by the act it leads to (an
+intention to turn by the turn the road user makes within a window ahead, or by the signal given
+for it), a duty to perceive, ascertain or make sure by the outcome the check is there to secure
+(the movement made with the clearances the reading sets), a purpose by the conduct it explains.
+Where the words offer observable evidence themselves, the rule reads that evidence (what was in an
+actual road user's line of sight is `rel.visible`; what could be seen from or at a place is
+`st.sight_distance`). Each such reading is disclosed on its span as a narrowing of kind
+`observable_reading` with its category (`intention`, `perception`, `status`, `purpose`): it is a
+reading of the words, not an approximation by a neighbouring atom, and never an assumption or a
+gap. A state of mind that shows in no conduct is outside what a trace can check, and a rule never
+assumes one. The control state of
 a vehicle — engine running, parking brake set, gear, throttle, service brake — is not of this
 kind: it is observed on an instrumented vehicle and carried by the control-state atoms of §2,
 under the `subject` capability where only the subject's vehicle is instrumented.
+
+**Legal status of a feature on the road** — that a sign, a signal, a marking, an opening or a
+crossing is official, posted or designated by an authority. The feature's presence on the road is
+the observable evidence of that status: a rule reads the feature and presumes the status (an
+`observable_reading` of category `status`). A category that no feature on the road displays is a
+legal region class (above).
 
 **Lawfulness of another road user's conduct** ("pedestrians lawfully within the crosswalk", "a
 person lawfully riding") — a reference to another rule's verdict, expressed by rule composition in

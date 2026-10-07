@@ -14,9 +14,10 @@ from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
             "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
-#: What a coder's narrowing may be: a reading the words leave open, or a declaration that the vocabulary
-#: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED`.
-NARROWING_KINDS = {"reading", "no_atom", "no_operator"}
+#: What a coder's narrowing may be: a reading the words leave open, a declaration that the vocabulary
+#: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED` —, or
+#: the coder's account of an `observable_reading` the plan declared on the same span.
+NARROWING_KINDS = {"reading", "no_atom", "no_operator", "observable_reading"}
 #: Roles whose span decides when a rule applies: a coder may not narrow one (the rule would apply
 #: where the law does not), and a plan may not carry one as a residue.
 SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
@@ -318,8 +319,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
+    # an observable reading the plan declared on a span is the plan's own reading of it, not a narrowing of its scope
+    planned_obs = {n.get("span") for n in node.get("narrowings", []) if isinstance(n, dict) and n.get("kind") == "observable_reading"}
     narrowed_scope = [f"narrowing on {n['span']} ({spans[n['span']].get('role')}): {str(n.get('why', ''))[:160]}" for n in narrowings
-                      if n.get("span") in spans and spans[n["span"]].get("role") in SCOPE_ROLES]
+                      if n.get("span") in spans and spans[n["span"]].get("role") in SCOPE_ROLES
+                      and not (n.get("kind") == "observable_reading" and n.get("span") in planned_obs)]
     if narrowed_scope:
         return Verdict("SCOPE_NARROWED", narrowed_scope + ["a span that decides when the rule applies is carried as the node maps it, or the node is wrong: report it in the result note"])
     unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]

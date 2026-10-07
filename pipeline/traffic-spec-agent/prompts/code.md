@@ -123,6 +123,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    untouched. `map` binds every binder of the composed rule; a
    binder the node has no variable for is bound by `.existsUser "<var>" (…)` around the
    composition. You never inline another rule's content.
+6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
+   in its narrowings) is written from its element's atoms as any span is. If you account for it
+   among the rule's narrowings, use the same span and kind; you never declare one the node does not.
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
