@@ -39,10 +39,6 @@ def _lean_list(items: list[str]) -> str:
     return "[" + ", ".join(items) + "]"
 
 
-def _comment(text: str, indent: str = "  ") -> str:
-    return "\n".join(f"{indent}-- {l}" if l else f"{indent}--" for l in text.splitlines()) if text else ""
-
-
 def _span_lines(node: Node, roles: set[str]) -> list[str]:
     return [f"{s['id']} ({s.get('role')}): {' '.join(str(s.get('text', '')).split())}"
             for s in node.get("segmentation", []) if s.get("role") in roles]
@@ -72,7 +68,7 @@ def rule_skeleton(node: Node) -> str:
     if comps:
         head += ["", "  Compositions (span → node, as, map):"]
         for c in comps:
-            head.append(f"    {c.get('span')}: {c.get('rule')} as {c.get('as')} map {c.get('map')}")
+            head.append(f"    {c.get('span')}: {c.get('rule')} as {c.get('as')} map {c.get('map')}" + (f" scopes {c.get('scopes')}" if c.get("scopes") else ""))
     if node.literals():
         head += ["", "  Literals the text states (each written through its Units constructor):"]
         for l in node.literals():
@@ -132,7 +128,7 @@ def rule_skeleton(node: Node) -> str:
         out.append("    operationalizations := []")
     out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in residues])}"
                "  -- the node's, verbatim; not yours to change")
-    out.append("    narrowings := []  -- one ⟨\"<span id>\", \"<why>\"⟩ per reading you chose on a carried span, explained in the header")
+    out.append("    narrowings := []  -- one { span := \"<span id>\", why := \"<why>\", kind := \"reading\" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header")
     out.append(f"    surrogate := {'true' if surrogate else 'false'} }}")
     out.append("")
     out.append(f"end {ns}")
@@ -151,10 +147,11 @@ def witness_skeleton(node: Node) -> str:
            f"namespace {ns}", "", "open TrafficSpec", "",
            "private def m (n : Int) : Q := Units.metres n", "private def cm (n : Int) : Q := Units.centimetres n", "",
            f"-- Binders ↦ tracks: {', '.join(f'{b} ↦ {i + 1}' for i, b in enumerate(binders)) or '(no binders)'}", ""]
-    for name in SCENARIOS:
+    names = list(SCENARIOS) + [x for x in scen if x and x not in SCENARIOS]   # every planned scenario, the four first
+    for name in names:
         s = scen.get(name, {})
         narrative = " ".join(str(s.get("narrative", "")).split())
-        out.append(f"/-- `{name}` ({SCENARIOS[name]}): {narrative} -/")
+        out.append(f"/-- `{name}` ({normalize_verdict(s.get('expected', SCENARIOS.get(name, '')))}): {narrative} -/")
         out.append(f"private def {name}Trace : Trace :=")
         out.append("  Build.trace 3 0 (Units.seconds 1) fun _k t =>")
         out.append("    Build.scene t (some 1)")
@@ -173,9 +170,9 @@ def witness_skeleton(node: Node) -> str:
     out.append("    expected := expected }")
     out.append("")
     lines = []
-    for name in SCENARIOS:
+    for name in names:
         s = scen.get(name, {})
-        expected = VERDICT_LEAN[normalize_verdict(s.get("expected", SCENARIOS[name]))]
+        expected = VERDICT_LEAN[normalize_verdict(s.get("expected", SCENARIOS.get(name, "")))]
         masked = s.get("masked", []) if name == "blind" else []
         if isinstance(masked, str):
             masked = [masked]
@@ -259,7 +256,7 @@ def concept_skeleton(c: ConceptRecord) -> str:
     out.append(f"    body := {body_ctor}")
     out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in c.get('residues', [])])}"
                "  -- the record's, verbatim; not yours to change")
-    out.append("    narrowings := []  -- one ⟨\"<words of the contract>\", \"<why>\"⟩ per reading you chose that the contract leaves open, explained in the header")
+    out.append("    narrowings := []  -- one { span := \"<words of the contract>\", why := \"<why>\", kind := \"reading\" } per reading you chose that the contract leaves open, explained in the header")
     out.append(f"    supersedes := {('some ' + _s(c.get('supersedes'))) if c.get('supersedes') else 'none'} }}")
     out.append("")
     out.append(f"end {ns}")

@@ -21,17 +21,17 @@ class SessionUnavailable(RuntimeError):
 
 #: Trees under the pipeline root no agent session may write: the frozen artifacts, the harness,
 #: the corpus, the readings, the gap ledger, the registries and the build files.
-PROTECTED = ["harness", "prompts", "ontology", "laws", "readings", "scripts", "gaps",
+PROTECTED = ["harness", "prompts", "ontology", "laws", "scripts", "library/TrafficSpec/Readings", "library/TrafficSpec/Gaps",
              "library/TrafficSpec/Core", "library/splits", "library/TrafficSpec/Tests",
              "library/TrafficSpec/Index.lean", "library/TrafficSpecWitness.lean", "library/TrafficSpec.lean",
              "library/lakefile.lean", "library/lakefile.toml", "library/lake-manifest.json", "library/lean-toolchain",
-             "README.md", "TO_USER.md", "setup.sh", "pyproject.toml", "uv.lock"]
+             "README.md", "setup.sh", "pyproject.toml", "uv.lock"]
 #: The run's records under `results/<run>/`, by name: a session's own outputs live in that tree
 #: too (a plan directory's `blueprint.jsonl`, a task directory's `task_result.md`), so a suffix
 #: pattern over the whole tree would deny the session what it exists to write.
 RUN_RECORDS = ["results/*/ledger.jsonl", "results/*/concept_ledger.jsonl", "results/*/accepted_nodes.jsonl",
                "results/*/accepted_concepts.jsonl", "results/*/deferred_nodes.jsonl", "results/*/mapping.json",
-               "results/*/options.json", "results/*/reading.json", "results/*/summary.json", "results/*/AUTO_NOTES.md",
+               "results/*/options.json", "results/*/reading.json", "results/*/summary.json", "results/*/AUTO_NOTES.md", "results/*/TO_USER.md",
                "results/*/iter-*/progress.json", "results/*/iter-*/validate/**", "results/*/iter-*/integrate/**",
                "results/*/library_snapshot/**"]
 #: What a kind of session may not touch of the other phases' output.
@@ -129,6 +129,12 @@ def deny_rules(kind: str) -> list[str]:
     return rules
 
 
+def vendor_of(model: Optional[str]) -> str:
+    """`openai` for a GPT or o-series model name (or an `openai:` prefix), else `anthropic`."""
+    m = (model or "").lower()
+    return "openai" if m.startswith(("openai:", "gpt-", "o1", "o3", "o4")) else "anthropic"
+
+
 def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int, effort: Optional[str],
         label: str = "session", timeout: Optional[float] = None, allow: Optional[list[str]] = None,
         deny: Optional[list[str]] = None, disallowed_tools: Optional[list[str]] = None,
@@ -136,15 +142,24 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
     """Launch, record `<label>.jsonl` and `<label>_result.json`, relaunch on a refusal. Returns the
     result record. `cwd` is the session's jail: it may read anything under it, so it holds only
     the session's own files; `allow` names everything else it may do."""
+    chosen = model or opts.model
+    if vendor_of(chosen) == "openai" and disallowed_tools != NO_TOOLS:
+        raise RuntimeError(f"{label}: an OpenAI model ({chosen}) runs only tool-less sessions (readers, judges, reviewers)")
     attempts = 0
     while True:
         attempts += 1
         suffix = "" if attempts == 1 else f".retry{attempts - 1}"
-        code, result, timed_out = runner.run_claude(
-            prompt, cwd=cwd, stream_path=out_dir / f"{label}{suffix}.jsonl", max_turns=max_turns,
-            model=model or opts.model, effort=effort, max_budget_usd=opts.session_budget_usd,
-            timeout_seconds=timeout if timeout is not None else opts.session_timeout,
-            env_overrides=env, allow=allow, deny=deny, disallowed_tools=disallowed_tools)
+        if vendor_of(chosen) == "openai":
+            from . import openai_runner
+            code, result, timed_out = openai_runner.run_openai(
+                prompt, model=chosen, stream_path=out_dir / f"{label}{suffix}.jsonl", effort=effort,
+                timeout_seconds=timeout if timeout is not None else opts.session_timeout)
+        else:
+            code, result, timed_out = runner.run_claude(
+                prompt, cwd=cwd, stream_path=out_dir / f"{label}{suffix}.jsonl", max_turns=max_turns,
+                model=chosen, effort=effort, max_budget_usd=opts.session_budget_usd,
+                timeout_seconds=timeout if timeout is not None else opts.session_timeout,
+                env_overrides=env, allow=allow, deny=deny, disallowed_tools=disallowed_tools)
         record = {"code": code, "timed_out": timed_out, "attempt": attempts, "result": result}
         (out_dir / f"{label}_result{suffix}.json").write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
         why = runner.session_failure(code, result, timed_out)

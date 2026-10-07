@@ -108,7 +108,8 @@ ontology change request.
 | `ru.fire_apparatus` | a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own) | general |
 | `ru.official_vehicle` | a vehicle in official or contracted road service, identifiable by livery or equipment; **kind** ∈ {tow, utility, highway_maintenance, incident_management, regulatory_agency, coroner, armored_car, municipal, other} **Not a stand-in for:** an emergency vehicle | general (kinds `incident_management`, `regulatory_agency`, `armored_car`: local) |
 | `ru.procession_vehicle` | a vehicle displaying the pennants or insignia of an organised procession | general |
-| `ru.animal_or_animal_drawn` | ridden or herded animal, or an animal-drawn vehicle | general |
+| `ru.ridden_or_herded_animal` | an animal ridden or herded by a person **Not a stand-in for:** a vehicle an animal draws, which is `ru.animal_drawn_vehicle` | general |
+| `ru.animal_drawn_vehicle` | a vehicle drawn by an animal **Not a stand-in for:** an animal ridden or herded on its own, which is `ru.ridden_or_herded_animal` | general |
 | `ru.rail_vehicle` | a train, tram, streetcar or other on-track equipment | general |
 | `ru.personal_delivery_device` | a small unoccupied powered delivery robot operating on pedestrian ways | local |
 | `ru.mobile_carrying_device` | a small unoccupied powered device that follows and carries for a person on foot | local |
@@ -171,8 +172,9 @@ reports unknown.
 | `st.driveway_or_alley_entrance` | private road, alley or driveway meeting the highway | general |
 | `st.alley` | a narrow way within a block serving the rear of properties | general |
 | `st.curvature` | horizontal curvature of the roadway at a point | general |
-| `st.grade` | longitudinal slope of the roadway; a crest is its sign change | general |
-| `st.sight_distance` | distance along the road within which another vehicle would be visible from a point | general |
+| `st.grade` | longitudinal slope of the roadway at a point **Not a stand-in for:** the place of a crest (`st.crest`) — the slope where a road user is says nothing of a crest ahead of it | general |
+| `st.crest` | the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel, carried as a region with a reference point and a boundary, so the ground distance from a road user to it is read through `st.region_geometry` **Not a stand-in for:** the slope at a point (`st.grade`), the view a crest restricts (`st.sight_distance`), or a horizontal bend (`st.curvature`) | general |
+| `st.sight_distance` | the distance along the road within which a vehicle at a point and another vehicle on the road could see each other, from the eye of either driver to the body of the other vehicle at the height convention the source declares: both the view of approaching traffic from that point and its being seen by drivers approaching it, whether or not any road user is there **Not a stand-in for:** whether an actual road user saw, or could see, another at an observation (`rel.visible`), or the clarity of the air (`env.visibility`) | general |
 | `st.railway_crossing` | level crossing of a railway with the roadway, and its nearest rail | general |
 | `st.controlled_access` | a highway with access only at designated points, and its entrance and exit lanes | general |
 | `st.elevated_structure` | bridge, viaduct or tunnel carrying the roadway | general |
@@ -262,7 +264,7 @@ declares it absent, and every specification that reads it then reports unknown.
 | `rel.same_direction` | headings aligned within a tolerance | general |
 | `rel.bearing` | direction of b from a in a's frame (for "on the right of", "immediately to the rear") | general |
 | `rel.contact` | the bodies of two road users, or a road user and a structure, touch or overlap (a collision) **Not a stand-in for:** a near miss — that is `drv.time_to_conflict` | general |
-| `rel.visible` | b is visible from a: an unobstructed line of sight from a's reference point to b's body, as the source tests it (a ray cast, an occlusion test, an annotator's judgement) **Not a stand-in for:** a distance, the sight distance of a region (`st.sight_distance`), the clarity of the air (`env.visibility`), or a lamp being lit — a visible vehicle may show no lamp and a lit lamp may be hidden | general |
+| `rel.visible` | b is visible from a: an unobstructed line of sight from a's reference point to b's body, as the source tests it (a ray cast, an occlusion test, an annotator's judgement) **Not a stand-in for:** a distance, the sight distance of a place (`st.sight_distance`) — what could be seen from or at a place, whether or not any road user is there, is that atom, the clarity of the air (`env.visibility`), or a lamp being lit — a visible vehicle may show no lamp and a lit lamp may be hidden | general |
 
 Computed from kinematics; listed because traffic language names them directly and a source may
 supply them measured rather than derived. `rel.visible` is the exception: it depends on what
@@ -310,7 +312,8 @@ atom and the category is not.
 **Purpose and perception** — why a vehicle is stopped (loading, waiting for a pedestrian,
 receiving passengers), what a driver perceived, knew or intended. These are not observable; a
 rule that depends on one either states the observable evidence the statute itself offers (what
-was in the driver's line of sight is `rel.visible`) or carries the residue. The control state of
+was in an actual road user's line of sight is `rel.visible`; what could be seen from or at a place is
+`st.sight_distance`) or carries the residue. The control state of
 a vehicle — engine running, parking brake set, gear, throttle, service brake — is not of this
 kind: it is observed on an instrumented vehicle and carried by the control-state atoms of §2,
 under the `subject` capability where only the subject's vehicle is instrumented.

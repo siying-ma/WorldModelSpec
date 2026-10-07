@@ -26,6 +26,7 @@ from .model.mapping import MappingIndex
 
 DEFAULT_LAWS = "laws/full_list/laws.jsonl"
 DEFAULT_ONTOLOGY = "ontology/ATOMS.md"
+DEFAULT_READING = str((paths.READINGS / "default.json").relative_to(paths.REPO))
 
 
 def _p(s: str) -> Path:
@@ -59,14 +60,14 @@ def snapshot_library(snapshot: str) -> list[Path]:
 
 def archive_proposals(snapshot: str) -> dict[str, int]:
     """A fresh library starts from a reading without the previous run's unreviewed proposals: every
-    `params` entry still marked `proposed` is moved out of each reading under `readings/` into
+    `params` entry still marked `proposed` is moved out of each reading in `paths.READINGS` into
     `results/<snapshot>/reading_proposals.json`, so a planner is shown only what the operator wrote
     or reviewed. Returns the count removed per reading."""
     import datetime
     dest = paths.RESULTS / moved_name(snapshot) / "reading_proposals.json"
     archive = json.loads(dest.read_text(encoding="utf-8")) if dest.exists() else {}
     removed: dict[str, int] = {}
-    for f in sorted(paths.REPO.joinpath("readings").glob("*.json")):
+    for f in sorted(paths.READINGS.glob("*.json")):
         data = json.loads(f.read_text(encoding="utf-8"))
         keep = [x for x in data.get("params", []) if not x.get("proposed")]
         gone = [x for x in data.get("params", []) if x.get("proposed")]
@@ -82,40 +83,68 @@ def archive_proposals(snapshot: str) -> dict[str, int]:
     return removed
 
 
+def archive_gaps(snapshot: str) -> int:
+    """A fresh library starts from a gap ledger without the previous run's undecided rows: every
+    row still `proposed` or `accepted` is moved to `results/<snapshot>/gaps_undecided.jsonl`; the
+    decided rows (`retired`, `rejected`) and the id counter stay, so a new run is shown the
+    operator's decisions and never reuses an id. Returns the count moved."""
+    from .store.gaps import GapLedger
+    ledger = GapLedger(paths.GAP_LEDGER)
+    gone = [r for r in ledger.rows if r.get("state") in ("proposed", "accepted")]
+    if not gone:
+        return 0
+    dest = paths.RESULTS / moved_name(snapshot) / "gaps_undecided.jsonl"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open("a", encoding="utf-8") as f:
+        for r in gone:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    ledger.rows = [r for r in ledger.rows if r not in gone]
+    ledger.save()
+    return len(gone)
+
+
 class Cli:
-    def init(self, reading: str = "readings/default.json", fresh: bool = False, snapshot: str = "") -> int:
+    def init(self, reading: str = DEFAULT_READING, fresh: bool = False, snapshot: str = "") -> int:
         """Write the readings template, regenerate the registries, build. `--fresh` first moves every
         node and concept out of the library into `results/<snapshot>/library_snapshot/` (the run they
         belong to; a timestamped name when not given), and every unreviewed parameter proposal out of
-        the readings into `results/<snapshot>/reading_proposals.json`, so a new run starts from an
-        empty library and a reading the operator wrote or reviewed."""
+        the readings into `results/<snapshot>/reading_proposals.json`, and every undecided gap row
+        into `results/<snapshot>/gaps_undecided.jsonl`, so a new run starts from an empty library, a
+        reading the operator wrote or reviewed, and a gap ledger of decisions only."""
         write_template(_p(reading))
         if fresh:
+            snapshot = moved_name(snapshot)          # one name for the three archives, also when it is a timestamp
             moved = snapshot_library(snapshot)
-            print(f"moved {len(moved)} file(s) to results/{snapshot or moved_name(snapshot)}/library_snapshot/" if moved else "library already empty")
+            print(f"moved {len(moved)} file(s) to results/{snapshot}/library_snapshot/" if moved else "library already empty")
             gone = archive_proposals(snapshot)
             print(("archived unreviewed proposals: " + ", ".join(f"{k} ({v})" for k, v in gone.items())
-                   + f" → results/{snapshot or moved_name(snapshot)}/reading_proposals.json") if gone else "readings carry no unreviewed proposal")
+                   + f" → results/{snapshot}/reading_proposals.json") if gone else "readings carry no unreviewed proposal")
+            gaps_gone = archive_gaps(snapshot)
+            print(f"archived {gaps_gone} undecided gap row(s) → results/{snapshot}/gaps_undecided.jsonl" if gaps_gone else "the gap ledger holds no undecided row")
         index_sync.write_index()
         ok, out = lean.lake_build(paths.LIBRARY)
         print("library builds" if ok else out[-2000:])
         return 0 if ok else 1
 
     def loop(self, run_id: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
-             reading: str = "readings/default.json", model: str | None = None, max_iterations: int = 3,
-             plan_attempts: int = 2, gate_budget: int = 6, judge: bool = True, dry_run: bool = False,
+             reading: str = DEFAULT_READING, model: str | None = None, max_iterations: int = 3,
+             plan_attempts: int = 2, gate_budget: int = 6, dry_run: bool = False,
              max_turns: int = 80, plan_effort: str = "high", code_effort: str = "high", judge_effort: str = "medium",
              session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0,
-             mode: str = "train", base_run: str | None = None, plan_batch: int = 8, judge_samples: int = 1,
-             workers: int = 1, reader_model: str | None = None, plan_turns: int = 40, restart: bool = False,
-             concept_attempts: int = 3, node_attempts: int = 2) -> int:
+             mode: str = "train", base_run: str | None = None, plan_batch: int = 8,
+             workers: int = 1, plan_turns: int = 40, restart: bool = False,
+             concept_attempts: int = 3, node_attempts: int = 2, repeat_limit: int = 3,
+             reviewer_model: str | None = None, review_effort: str = "high",
+             allow_same_vendor: bool = False) -> int:
         """`mode` is `train` (concepts may supersede) or `test` (add-only over `base_run`, whose accepted
         nodes and concepts are loaded read-only). `plan_batch` is the most laws one plan session is given;
-        `judge_samples` the number of independent judge sessions a node's review runs; `workers` the coding
-        sessions run at once; `reader_model` the blind reader's model; `plan_turns` the turn cap of a plan or
+        `workers` the coding sessions run at once;
+        `reviewer_model` the second vendor's model of the behaviour review (required); `plan_turns` the turn cap of a plan or
         repair session; `restart` discards an interrupted iteration instead of resuming it; `concept_attempts`
         the coding attempts a concept gets (the first and its repairs), separate from the laws' `plan_attempts`;
-        `node_attempts` the coding attempts a node gets (the first and one after a node repair session)."""
+        `node_attempts` the coding attempts a node gets (the first and one after a node repair session); `repeat_limit`
+        the number of times the same upheld divergence on the same words of a node, across the law's plans and repairs,
+        blocks the law for the operator."""
         from .loop import run_loop
         if mode not in ("train", "test"):
             raise SystemExit("mode must be `train` or `test`")
@@ -123,17 +152,19 @@ class Cli:
             raise SystemExit("a test run names the training run it starts from: --base_run <run id>")
         opts = Options(run_id=run_id, laws=_p(laws), ontology=_p(ontology_file), reading=_p(reading), model=model,
                        max_iterations=max_iterations, plan_attempts=plan_attempts, gate_budget=gate_budget,
-                       judge=judge, dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
+                       dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
                        code_effort=code_effort or None, judge_effort=judge_effort or None,
                        session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait,
-                       mode=mode, base_run=base_run, plan_batch=max(1, int(plan_batch)), judge_samples=max(1, int(judge_samples)),
-                       workers=max(1, int(workers)), reader_model=reader_model, plan_turns=max(4, int(plan_turns)), restart=restart,
-                       concept_attempts=max(1, int(concept_attempts)), node_attempts=max(1, int(node_attempts)))
+                       mode=mode, base_run=base_run, plan_batch=max(1, int(plan_batch)),
+                       workers=max(1, int(workers)), plan_turns=max(4, int(plan_turns)), restart=restart,
+                       concept_attempts=max(1, int(concept_attempts)), node_attempts=max(1, int(node_attempts)),
+                       repeat_limit=max(1, int(repeat_limit)), reviewer_model=reviewer_model, review_effort=review_effort or None,
+                       allow_same_vendor=allow_same_vendor)
         print(json.dumps(run_loop(opts), indent=1))
         return 0
 
     def validate(self, blueprint_file: str = "", run_id: str = "", laws: str = DEFAULT_LAWS,
-                 ontology_file: str = DEFAULT_ONTOLOGY, reading: str = "readings/default.json") -> int:
+                 ontology_file: str = DEFAULT_ONTOLOGY, reading: str = DEFAULT_READING) -> int:
         """Validator A over a blueprint file, no sessions. With `--run_id` it is the check the loop
         runs: the run's accepted nodes and concepts, mapping index, reading (with the draft's
         `aggregates.jsonl` applied) and the `PLAN.md` disputes beside the blueprint. Without a run it
@@ -167,7 +198,18 @@ class Cli:
         for r in agg_ok:
             print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
         by_id = {l.id: l for l in law_list}
-        _nodes, _concepts, outcomes, c_outcomes = validate_phase.validate_a_for_run(run, plan_dir, by_id, reading_obj, defs, onto=onto, blueprint_file=bp)
+        # the other plan batches of the same iteration that already exist: their nodes may be composed and their
+        # concepts called, as the loop's merged validation will see them
+        sib_nodes, sib_concepts = [], []
+        if plan_dir.name.startswith("batch-"):
+            for d in sorted(plan_dir.parent.glob("batch-*")):
+                if d != plan_dir and (d / "blueprint.jsonl").exists():
+                    try:
+                        sib_nodes += blueprint.load(d / "blueprint.jsonl"); sib_concepts += blueprint.load_concepts(d / "blueprint.jsonl")
+                    except ValueError:
+                        pass
+        _nodes, _concepts, outcomes, c_outcomes = validate_phase.validate_a_for_run(run, plan_dir, by_id, reading_obj, defs, onto=onto, blueprint_file=bp,
+                                                                                    extra_concepts=sib_concepts or None, known_nodes=sib_nodes or None)
         for o in c_outcomes:
             print(f"{o.kind:7s} concept {o.concept.id}")
             for r in o.reasons: print("        ", r)
@@ -195,14 +237,15 @@ class Cli:
     def index(self) -> int:
         index_sync.write_index(); print(f"{len(index_sync.node_ids())} rule(s) registered"); return 0
 
-    def verify(self, reading: str = "readings/default.json") -> int:
+    def verify(self, reading: str = DEFAULT_READING) -> int:
         from .phases.integrate import verify_library
         work = paths.RESULTS / "_verify"; work.mkdir(parents=True, exist_ok=True)
         ok, problems = verify_library(work, Reading(_p(reading)))
         print("OK" if ok else "\n".join(problems)); return 0 if ok else 1
 
     def reopen(self, run_id: str, laws: str = "") -> int:
-        """Operator action: put a run's failed laws back to `open` with a fresh attempt budget (all, or a comma list)."""
+        """Operator action: put a run's failed laws (or any law not accepted or blocked on a gap) back to `open`
+        with a fresh attempt budget (all, or a comma list); a failed concept only those laws used is cleared."""
         from .store.ledger import Ledger
         ledger = Ledger(paths.run_dir(run_id) / "ledger.jsonl", [], 2)
         out = ledger.reopen([l.strip() for l in laws.split(",") if l.strip()] or None)
@@ -216,7 +259,17 @@ class Cli:
         if nfile.exists():
             kept = [l for l in nfile.read_text(encoding="utf-8").splitlines() if l.strip() and json.loads(l).get("law") not in out]
             nfile.write_text("".join(k + "\n" for k in kept), encoding="utf-8")
-        print(f"reopened {len(out)}: {', '.join(out)}"); return 0
+        # a failed concept that only the reopened laws used gets a fresh start with them
+        from .store.ledger import ConceptLedger
+        cfile = paths.run_dir(run_id) / "concept_ledger.jsonl"
+        freed: list[str] = []
+        if cfile.exists() and out:
+            from .model import nodeid
+            cl = ConceptLedger(cfile, 1)
+            freed = [cid for cid, e in cl.entries.items() if e.state == "failed" and e.used_by
+                     and all(nodeid.law_of(str(u))[0] in out for u in e.used_by)]
+            cl.forget(freed); cl.save()
+        print(f"reopened {len(out)}: {', '.join(out)}" + (f"; failed concepts cleared: {', '.join(freed)}" if freed else "")); return 0
 
     def status(self, run_id: str) -> int:
         f = paths.run_dir(run_id) / "summary.json"

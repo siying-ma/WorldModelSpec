@@ -60,7 +60,7 @@ holds it.
 | **atom** | `family.name` / `family_name` (families `ru kin st dev sig env rel`) | `Atoms.lean`, one `def` per id; attribute accessors carry a suffix (`dev_traffic_signal_shows`) | the scene, through `World` | `Formula.atom`, `Term.measure` |
 | **concept** | `drv.<family>.<name>` / `drv_<family>_<name>` | a concept node under `Concepts/`, planned, gated and reviewed like a rule; its body is a `Formula` or `Term` over its formals, expanded into the caller before evaluation | atoms, through the body; formal parameters filled by the caller | `Formula.derived`, `Term.quantity` |
 | **primitive** | `prim.name` / `prim_name` | `Primitives.lean`, one `def` per id: a geometric computation the language cannot express | atoms, plus parameters passed as arguments | `Formula.derived`, `Term.quantity` |
-| **parameter** | a free name | nowhere in Core | the run's reading (`readings/*.json`, decoded to `Params.Reading`) | `Term.param` |
+| **parameter** | a free name | nowhere in Core | the run's reading (`library/TrafficSpec/Readings/*.json`, decoded to `Params.Reading`) | `Term.param` |
 | **assumption** | `asm.name` | nowhere in Core; declared per node | the scene's `assumptions` list | `Formula.asm` |
 | **another rule** | its node id | the other node's file | its verdict | `Formula.rule`, `Formula.ruleApplies` |
 

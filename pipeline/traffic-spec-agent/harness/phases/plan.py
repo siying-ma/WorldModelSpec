@@ -1,4 +1,4 @@
-"""Plan: one session writes blueprint.jsonl, PLAN.md and gaps/proposed.jsonl for the plannable laws."""
+"""Plan: one session writes blueprint.jsonl and PLAN.md for the plannable laws; the gaps its records propose are filed by the harness in the gap ledger."""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -274,10 +274,9 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     for f in sorted((last_task / "final").rglob("*.lean")) if (last_task / "final").exists() else []:
         finals.append(f"```lean\n-- {f.relative_to(last_task / 'final')}\n{f.read_text(encoding='utf-8')}\n```")
     verdict = "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)"
-    for name in ("judge_result.txt", "blind_result.txt"):
-        f = last_task / "review" / name
-        if f.exists():
-            verdict += f"\n\n{name.split('_')[0]} output:\n```\n{f.read_text(encoding='utf-8')[-8000:]}\n```"
+    rendered = last_task / "review" / "rendered_rule.md"
+    if rendered.exists():
+        verdict += f"\n\nThe rule the review read, rendered from the code:\n```\n{rendered.read_text(encoding='utf-8')[-8000:]}\n```"
     seg = "\n".join(f"- `{s['id']}` ({s['role']}): {s['text']}" for s in node.get("segmentation", []))
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
     prompt = render.render("node_repair.md", {

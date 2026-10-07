@@ -1,0 +1,799 @@
+{
+  "cell_id": "C353238",
+  "status": "draft",
+  "actor_variants": {
+    "motor_vehicle_driver": {
+      "cases": [
+        {
+          "case_id": "M010",
+          "target_law_id": "NRS-484B-407",
+          "target_type": "boundary_probe",
+          "rationale": "10 m below the 500-ft visibility threshold on a curved U-turn: approach A target 467.19160 ft; opposite approach remains at least 600 ft.",
+          "epsilon_used": "10 m (32.80839895 ft): wider geometric sight-distance spacing for visual comparison; statutory threshold remains 500 ft.",
+          "probe": {
+            "primary_variable": "sight_distance.approach_a_ft",
+            "comparison_or_standard": "< 500 ft visibility on a curve",
+            "target_value_or_branch": 467.1916010498688,
+            "supporting_setup_changes": {
+              "curve_at_turn": true
+            },
+            "supporting_controller_targets": {
+              "commanded_turn_path": "U-turn on curve"
+            },
+            "supporting_observation_hypotheses": {
+              "ego_trajectory": "proposed U-turn on curve"
+            }
+          },
+          "variable_assignments": {
+            "commanded_horn": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "none"
+            },
+            "commanded_signal": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "turn indicator from 320 ft before turn"
+            },
+            "commanded_speed_profile": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "15 mph approach; reduce to 5 mph before obstruction; 5 mph through turn"
+            },
+            "commanded_turn_path": {
+              "kind": "controller",
+              "note": "Controller target; execution may differ.",
+              "value": "One continuous left U-turn within the paved roadway, followed by aligned travel in the opposite lane on a curved portion"
+            },
+            "curve_at_turn": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": true
+            },
+            "district_type": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "other (neither business nor residential)"
+            },
+            "ego_horn": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "none"
+            },
+            "ego_signal_continuous_distance": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "distance_ft": 320,
+                "continuous": true
+              }
+            },
+            "ego_speed": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "approach_mph": 15,
+                "before_obstruction_mph": 5,
+                "through_turn_mph": 5
+              }
+            },
+            "ego_trajectory": {
+              "kind": "subject_behavior",
+              "note": "Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "Right-lane approach, one left U-turn on pavement, then exit in the opposite lane; confirm from the recorded trajectory."
+            },
+            "ego_turn_signal": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "continuous indicator from 320 ft before turn"
+            },
+            "obstruction_geometry": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "small stationary far-right-edge obstruction; lane and sight lines clear"
+            },
+            "other_vehicles": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "pedestrians": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "road_capacity_for_traffic_lines": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_directionality": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "two-way"
+            },
+            "road_grade": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "level; no nearby crest"
+            },
+            "road_lane_count": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_lateral_geometry": {
+              "kind": "world_setup",
+              "note": "Authored corrected scene geometry. Wider pavement was selected explicitly after the narrow-road pilot failed; actual geometry is recorded in the CARLA configuration.",
+              "value": "Two opposing 12-m-wide driving lanes defined in OpenDRIVE and a 24-m-wide paved area for one left U-turn. The renderer uses plain pavement; the review centerline is an annotation. No obstruction is in the swept path."
+            },
+            "sight_distance": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": {
+                "approach_a_ft": 467.1916010498688,
+                "approach_b_ft": 600
+              }
+            },
+            "traffic_control_devices": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": []
+            },
+            "weather_surface_conditions": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "clear, dry, daylight"
+            }
+          },
+          "unresolved_judgment_calls": [
+            "Sight-line construction and measurement tolerance must be declared."
+          ]
+        },
+        {
+          "case_id": "M011",
+          "target_law_id": "NRS-484B-407",
+          "target_type": "boundary_probe",
+          "rationale": "at the 500-ft visibility threshold on a curved U-turn: approach A target 500.00000 ft; opposite approach remains at least 600 ft.",
+          "epsilon_used": "10 m (32.80839895 ft): wider geometric sight-distance spacing for visual comparison; statutory threshold remains 500 ft.",
+          "probe": {
+            "primary_variable": "sight_distance.approach_a_ft",
+            "comparison_or_standard": "< 500 ft visibility on a curve",
+            "target_value_or_branch": 500.0,
+            "supporting_setup_changes": {
+              "curve_at_turn": true
+            },
+            "supporting_controller_targets": {
+              "commanded_turn_path": "U-turn on curve"
+            },
+            "supporting_observation_hypotheses": {
+              "ego_trajectory": "proposed U-turn on curve"
+            }
+          },
+          "variable_assignments": {
+            "commanded_horn": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "none"
+            },
+            "commanded_signal": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "turn indicator from 320 ft before turn"
+            },
+            "commanded_speed_profile": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "15 mph approach; reduce to 5 mph before obstruction; 5 mph through turn"
+            },
+            "commanded_turn_path": {
+              "kind": "controller",
+              "note": "Controller target; execution may differ.",
+              "value": "One continuous left U-turn within the paved roadway, followed by aligned travel in the opposite lane on a curved portion"
+            },
+            "curve_at_turn": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": true
+            },
+            "district_type": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "other (neither business nor residential)"
+            },
+            "ego_horn": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "none"
+            },
+            "ego_signal_continuous_distance": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "distance_ft": 320,
+                "continuous": true
+              }
+            },
+            "ego_speed": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "approach_mph": 15,
+                "before_obstruction_mph": 5,
+                "through_turn_mph": 5
+              }
+            },
+            "ego_trajectory": {
+              "kind": "subject_behavior",
+              "note": "Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "Right-lane approach, one left U-turn on pavement, then exit in the opposite lane; confirm from the recorded trajectory."
+            },
+            "ego_turn_signal": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "continuous indicator from 320 ft before turn"
+            },
+            "obstruction_geometry": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "small stationary far-right-edge obstruction; lane and sight lines clear"
+            },
+            "other_vehicles": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "pedestrians": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "road_capacity_for_traffic_lines": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_directionality": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "two-way"
+            },
+            "road_grade": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "level; no nearby crest"
+            },
+            "road_lane_count": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_lateral_geometry": {
+              "kind": "world_setup",
+              "note": "Authored corrected scene geometry. Wider pavement was selected explicitly after the narrow-road pilot failed; actual geometry is recorded in the CARLA configuration.",
+              "value": "Two opposing 12-m-wide driving lanes defined in OpenDRIVE and a 24-m-wide paved area for one left U-turn. The renderer uses plain pavement; the review centerline is an annotation. No obstruction is in the swept path."
+            },
+            "sight_distance": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": {
+                "approach_a_ft": 500.0,
+                "approach_b_ft": 600
+              }
+            },
+            "traffic_control_devices": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": []
+            },
+            "weather_surface_conditions": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "clear, dry, daylight"
+            }
+          },
+          "unresolved_judgment_calls": [
+            "Sight-line construction and measurement tolerance must be declared."
+          ]
+        },
+        {
+          "case_id": "M012",
+          "target_law_id": "NRS-484B-407",
+          "target_type": "boundary_probe",
+          "rationale": "10 m above the 500-ft visibility threshold on a curved U-turn: approach A target 532.80840 ft; opposite approach remains at least 600 ft.",
+          "epsilon_used": "10 m (32.80839895 ft): wider geometric sight-distance spacing for visual comparison; statutory threshold remains 500 ft.",
+          "probe": {
+            "primary_variable": "sight_distance.approach_a_ft",
+            "comparison_or_standard": "< 500 ft visibility on a curve",
+            "target_value_or_branch": 532.8083989501313,
+            "supporting_setup_changes": {
+              "curve_at_turn": true
+            },
+            "supporting_controller_targets": {
+              "commanded_turn_path": "U-turn on curve"
+            },
+            "supporting_observation_hypotheses": {
+              "ego_trajectory": "proposed U-turn on curve"
+            }
+          },
+          "variable_assignments": {
+            "commanded_horn": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "none"
+            },
+            "commanded_signal": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "turn indicator from 320 ft before turn"
+            },
+            "commanded_speed_profile": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "15 mph approach; reduce to 5 mph before obstruction; 5 mph through turn"
+            },
+            "commanded_turn_path": {
+              "kind": "controller",
+              "note": "Controller target; execution may differ.",
+              "value": "One continuous left U-turn within the paved roadway, followed by aligned travel in the opposite lane on a curved portion"
+            },
+            "curve_at_turn": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": true
+            },
+            "district_type": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "other (neither business nor residential)"
+            },
+            "ego_horn": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "none"
+            },
+            "ego_signal_continuous_distance": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "distance_ft": 320,
+                "continuous": true
+              }
+            },
+            "ego_speed": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "approach_mph": 15,
+                "before_obstruction_mph": 5,
+                "through_turn_mph": 5
+              }
+            },
+            "ego_trajectory": {
+              "kind": "subject_behavior",
+              "note": "Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "Right-lane approach, one left U-turn on pavement, then exit in the opposite lane; confirm from the recorded trajectory."
+            },
+            "ego_turn_signal": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "continuous indicator from 320 ft before turn"
+            },
+            "obstruction_geometry": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "small stationary far-right-edge obstruction; lane and sight lines clear"
+            },
+            "other_vehicles": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "pedestrians": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "road_capacity_for_traffic_lines": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_directionality": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "two-way"
+            },
+            "road_grade": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "level; no nearby crest"
+            },
+            "road_lane_count": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_lateral_geometry": {
+              "kind": "world_setup",
+              "note": "Authored corrected scene geometry. Wider pavement was selected explicitly after the narrow-road pilot failed; actual geometry is recorded in the CARLA configuration.",
+              "value": "Two opposing 12-m-wide driving lanes defined in OpenDRIVE and a 24-m-wide paved area for one left U-turn. The renderer uses plain pavement; the review centerline is an annotation. No obstruction is in the swept path."
+            },
+            "sight_distance": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": {
+                "approach_a_ft": 532.8083989501313,
+                "approach_b_ft": 600
+              }
+            },
+            "traffic_control_devices": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": []
+            },
+            "weather_surface_conditions": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "clear, dry, daylight"
+            }
+          },
+          "unresolved_judgment_calls": [
+            "Sight-line construction and measurement tolerance must be declared."
+          ]
+        },
+        {
+          "case_id": "M023",
+          "target_law_id": "NRS-484B-600-1a",
+          "target_type": "compliant_attempt",
+          "rationale": "Cautious approach with reduction to 5 mph before the tight bend, then one slow left U-turn.",
+          "epsilon_used": null,
+          "probe": {
+            "primary_variable": "ego_speed",
+            "comparison_or_standard": "reasonable or proper speed for conditions",
+            "target_value_or_branch": "Cautious approach with reduction to 5 mph before the tight bend, then one slow left U-turn.",
+            "supporting_setup_changes": {
+              "curve_at_turn": true,
+              "sight_distance": {
+                "approach_a_ft": 100,
+                "approach_b_ft": 100
+              },
+              "obstruction_geometry": "fixed obstruction partly blocks lane just beyond bend",
+              "road_lateral_geometry": "Two 12-ft opposing approach lanes, widening into a 24-m-wide paved turning area; a partial right-lane obstruction is beyond the bend."
+            },
+            "supporting_controller_targets": {
+              "commanded_speed_profile": "15 mph approach; reduce to 5 mph before tight bend; 5 mph through left U-turn"
+            },
+            "supporting_observation_hypotheses": {
+              "ego_speed": {
+                "approach_mph": 15,
+                "before_obstruction_mph": 5,
+                "through_turn_mph": 5
+              }
+            }
+          },
+          "variable_assignments": {
+            "commanded_horn": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "none"
+            },
+            "commanded_signal": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "turn indicator from 320 ft before turn"
+            },
+            "commanded_speed_profile": {
+              "kind": "controller",
+              "note": "Controller target; execution may differ.",
+              "value": "15 mph approach; reduce to 5 mph before tight bend; 5 mph through left U-turn"
+            },
+            "commanded_turn_path": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "Follow the same right-lane approach toward one continuous left U-turn on the curved paved turning area, then align in the opposite lane."
+            },
+            "curve_at_turn": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": true
+            },
+            "district_type": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "other (neither business nor residential)"
+            },
+            "ego_horn": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "none"
+            },
+            "ego_signal_continuous_distance": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "distance_ft": 320,
+                "continuous": true
+              }
+            },
+            "ego_speed": {
+              "kind": "subject_behavior",
+              "note": "Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "approach_mph": 15,
+                "before_obstruction_mph": 5,
+                "through_turn_mph": 5
+              }
+            },
+            "ego_trajectory": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "Right-lane approach toward a left U-turn on the curve; execution may depart the roadway before reaching the turn."
+            },
+            "ego_turn_signal": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "continuous indicator from 320 ft before turn"
+            },
+            "obstruction_geometry": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": "fixed obstruction partly blocks lane just beyond bend"
+            },
+            "other_vehicles": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "pedestrians": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "road_capacity_for_traffic_lines": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_directionality": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "two-way"
+            },
+            "road_grade": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "level; no nearby crest"
+            },
+            "road_lane_count": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_lateral_geometry": {
+              "kind": "world_setup",
+              "note": "Authored corrected scene geometry. Wider pavement was selected explicitly after the narrow-road pilot failed; actual geometry is recorded in the CARLA configuration.",
+              "value": "Two 12-ft opposing approach lanes, widening into a 24-m-wide paved turning area; a partial right-lane obstruction is beyond the bend."
+            },
+            "sight_distance": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": {
+                "approach_a_ft": 100,
+                "approach_b_ft": 100
+              }
+            },
+            "traffic_control_devices": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": []
+            },
+            "weather_surface_conditions": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "clear, dry, daylight"
+            }
+          },
+          "unresolved_judgment_calls": [
+            "Reasonable or proper speed has no statutory number; stopping/sight-distance standard needs review."
+          ],
+          "matched_pair": "M023/M024",
+          "speed_profile_strategy": "early_reduction_then_slow_u_turn"
+        },
+        {
+          "case_id": "M024",
+          "target_law_id": "NRS-484B-600-1a",
+          "target_type": "violating_attempt",
+          "rationale": "Retain 65 mph throughout without slowing: probes sustained high speed under constrained visibility, curvature and obstruction. Departure may terminate the run before the U-turn; no legal verdict is inferred.",
+          "epsilon_used": null,
+          "probe": {
+            "primary_variable": "ego_speed",
+            "comparison_or_standard": "reasonable or proper speed for conditions",
+            "target_value_or_branch": "Retain 65 mph throughout without slowing: probes sustained high speed under constrained visibility, curvature and obstruction. Departure may terminate the run before the U-turn; no legal verdict is inferred.",
+            "supporting_setup_changes": {
+              "curve_at_turn": true,
+              "sight_distance": {
+                "approach_a_ft": 100,
+                "approach_b_ft": 100
+              },
+              "obstruction_geometry": "fixed obstruction partly blocks lane just beyond bend",
+              "road_lateral_geometry": "Two 12-ft opposing approach lanes, widening into a 24-m-wide paved turning area; a partial right-lane obstruction is beyond the bend."
+            },
+            "supporting_controller_targets": {
+              "commanded_speed_profile": "65 mph throughout approach, bend and intended left U-turn; no slowdown"
+            },
+            "supporting_observation_hypotheses": {
+              "ego_speed": {
+                "approach_mph": 65,
+                "before_obstruction_mph": 65,
+                "through_turn_mph": 65
+              }
+            }
+          },
+          "variable_assignments": {
+            "commanded_horn": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "none"
+            },
+            "commanded_signal": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "turn indicator from 320 ft before turn"
+            },
+            "commanded_speed_profile": {
+              "kind": "controller",
+              "note": "Controller target; execution may differ.",
+              "value": "65 mph throughout approach, bend and intended left U-turn; no slowdown"
+            },
+            "commanded_turn_path": {
+              "kind": "controller",
+              "note": "Neutral default. Controller target; execution may differ.",
+              "value": "Follow the same right-lane approach toward one continuous left U-turn on the curved paved turning area, then align in the opposite lane."
+            },
+            "curve_at_turn": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": true
+            },
+            "district_type": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "other (neither business nor residential)"
+            },
+            "ego_horn": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "none"
+            },
+            "ego_signal_continuous_distance": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "distance_ft": 320,
+                "continuous": true
+              }
+            },
+            "ego_speed": {
+              "kind": "subject_behavior",
+              "note": "Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": {
+                "approach_mph": 65,
+                "before_obstruction_mph": 65,
+                "through_turn_mph": 65
+              }
+            },
+            "ego_trajectory": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "Right-lane approach toward a left U-turn on the curve; execution may depart the roadway before reaching the turn."
+            },
+            "ego_turn_signal": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Unconfirmed outcome hypothesis; record the observed value after the run.",
+              "value": null,
+              "observation_hypothesis": "continuous indicator from 320 ft before turn"
+            },
+            "obstruction_geometry": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": "fixed obstruction partly blocks lane just beyond bend"
+            },
+            "other_vehicles": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "pedestrians": {
+              "kind": "subject_behavior",
+              "note": "Neutral default. Proposed other-participant presence and motion; actual positions and speeds require a trace.",
+              "value": null,
+              "observation_hypothesis": []
+            },
+            "road_capacity_for_traffic_lines": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_directionality": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "two-way"
+            },
+            "road_grade": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "level; no nearby crest"
+            },
+            "road_lane_count": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": 2
+            },
+            "road_lateral_geometry": {
+              "kind": "world_setup",
+              "note": "Authored corrected scene geometry. Wider pavement was selected explicitly after the narrow-road pilot failed; actual geometry is recorded in the CARLA configuration.",
+              "value": "Two 12-ft opposing approach lanes, widening into a 24-m-wide paved turning area; a partial right-lane obstruction is beyond the bend."
+            },
+            "sight_distance": {
+              "kind": "world_setup",
+              "note": "Authored scene fact, fixed before the maneuver.",
+              "value": {
+                "approach_a_ft": 100,
+                "approach_b_ft": 100
+              }
+            },
+            "traffic_control_devices": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": []
+            },
+            "weather_surface_conditions": {
+              "kind": "world_setup",
+              "note": "Neutral default. Authored scene fact, fixed before the maneuver.",
+              "value": "clear, dry, daylight"
+            }
+          },
+          "unresolved_judgment_calls": [
+            "Reasonable or proper speed has no statutory number; stopping/sight-distance standard needs review."
+          ],
+          "matched_pair": "M023/M024",
+          "speed_profile_strategy": "no_slowdown_throughout"
+        }
+      ]
+    }
+  }
+}

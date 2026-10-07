@@ -16,8 +16,10 @@ VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates"
                      "not_applicable": "not_applicable", "notapplicable": "not_applicable", "not applicable": "not_applicable", "inapplicable": "not_applicable",
                      "unknown": "unknown"}
 #: How a composed rule enters this node: its applicability negated (exception), its applicability
-#: (condition), or its compliance (compliance: "lawfully", "in the manner prescribed").
-AS_KINDS = {"exception", "condition", "compliance"}
+#: (condition), its compliance (compliance: "lawfully", "in the manner prescribed"), or its
+#: applicability negated inside one exception or condition span of this node (unless: that span's
+#: content does not hold where the composed rule applies; `scopes` names the span).
+AS_KINDS = {"exception", "condition", "compliance", "unless"}
 GAP_KINDS = {"atom", "operator"}   # the two ways the frozen vocabulary can fail a span: no atom (or enumeration value) carries it; no operator expresses it
 #: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
 CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
@@ -169,8 +171,3 @@ def normalize_concept(r: dict) -> dict:
 def load_concepts(path: Path) -> list[ConceptRecord]:
     """The concept records of a blueprint file."""
     return [ConceptRecord(normalize_concept(r)) for r in _records(path) if "concept_id" in r and "node_id" not in r]
-
-
-def dump(path: Path, nodes: list[Node]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(json.dumps(n.raw, ensure_ascii=False) + "\n" for n in nodes), encoding="utf-8")

@@ -78,9 +78,9 @@ Run mode: `{mode}`.
    `TrafficSpec.Concepts.…` / `TrafficSpecWitness.Concepts.…` derive from the concept id `{concept_id}`.
 2. **The concept declares what the record declares.** `id`, `contract`, `definition`, `args`,
    `params`, `residues`, `supersedes` are the skeleton's; leave them. Where you choose a reading
-   the contract leaves open, you declare a **narrowing** `⟨"<a run of the contract's words>",
-   "<why>"⟩` in `narrowings`, and the header comment explains it; the review judges the body with
-   your narrowings in view.
+   the contract leaves open, you declare a **narrowing** `{ span := "<a run of the contract's
+   words>", why := "<why>", kind := "reading" }` in `narrowings`, and the header comment explains
+   it; the review judges the body with your narrowings in view.
 3. **The body uses only claimed names**: every atom and concept in it is an element of the record,
    and every claimed name is used. Arguments are the formals, variables bound in the body, or
    enumeration spellings from the surface.
@@ -89,7 +89,11 @@ Run mode: `{mode}`.
    `UNANCHORED_VARIABLE`.
 5. **Parameters, not values.** A magnitude enters the body as `.param "<formal>"`. The only
    literals are zero, enumeration spellings, and the record's declared `literals`, each written
-   through the `Units` constructor of its unit.
+   through the `Units` constructor of its unit. Never divide by a term that reads a measurement:
+   a measured quantity can be zero (a curvature where the way runs straight, a speed at rest), and
+   a division by zero is unknown, not a verdict; write the comparison with products (a ratio
+   below a bound is the dividend below the bound times the divisor). The gate returns
+   `CHECK_FAIL` on such a division.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict.

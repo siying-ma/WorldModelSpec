@@ -22,13 +22,16 @@ namespace TrafficSpec
 namespace Rule
 open Semantics
 
+/-- A rule's formula as evaluated: every comparison over a `cond` decided by cases. -/
+def evalRuleFormula (c : SemCtx) (φ : Formula) : Array R := evalAll c (Formula.elimCond φ)
+
 /-- Every binder's class holds for its bound track and the applicability holds, per instant. -/
 def engagedAll (r : Rule) (c : SemCtx) : Array R :=
-  Temporal.allOf c.n (r.binders.map (fun b => evalAll c b.cls) ++ [evalAll c r.applicability])
+  Temporal.allOf c.n (r.binders.map (fun b => evalRuleFormula c b.cls) ++ [evalRuleFormula c r.applicability])
 
 /-- The verdict at every instant. -/
 def verdicts (r : Rule) (c : SemCtx) : Array Verdict :=
-  Array.zipWith verdictAt (r.engagedAll c) (evalAll c r.obligation)
+  Array.zipWith verdictAt (r.engagedAll c) (evalRuleFormula c r.obligation)
 
 /-- The rule as a three-valued statement per instant: complied with (true), violated (false), or
     unknown. Not engaged counts as complied with — a rule that does not apply is not broken. -/
@@ -121,6 +124,7 @@ mutual
     | .aggregate _ v φ t => checkFormula ((v, .track) :: scope) where_ φ ++ checkTerm ((v, .track) :: scope) where_ t
     | .add a b | .sub a b | .mul a b | .div a b => checkTerm scope where_ a ++ checkTerm scope where_ b
     | .neg a | .abs a => checkTerm scope where_ a
+    | .cond φ a b => checkFormula scope where_ φ ++ checkTerm scope where_ a ++ checkTerm scope where_ b
 
   partial def checkFormula (scope : Scope) (where_ : String) : Formula → List String
     | .tt | .ff | .asm _ => []
@@ -143,6 +147,8 @@ mutual
       windowErrors scope where_ m d subj ++ checkTerm scope where_ d ++ checkFormula scope where_ φ
     | .untilWithin m d subj φ ψ =>
       windowErrors scope where_ m d subj ++ checkTerm scope where_ d ++ checkFormula scope where_ φ ++ checkFormula scope where_ ψ
+    | .atLast m d subj ψ φ =>
+      windowErrors scope where_ m d subj ++ checkTerm scope where_ d ++ checkFormula scope where_ ψ ++ checkFormula scope where_ φ
     | .count e sφ _ _ => checkFormula scope where_ e ++ checkFormula scope where_ sφ
     | .rises φ => checkFormula scope where_ φ
     | .definedWhen p φ => checkFormula scope where_ p ++ checkFormula scope where_ φ
@@ -187,6 +193,7 @@ where
     | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => compositions φ ++ compositions ψ
     | .holdsFor _ _ _ φ | .within _ _ _ φ => compositions φ
     | .untilWithin _ _ _ φ ψ => compositions φ ++ compositions ψ
+    | .atLast _ _ _ ψ φ => compositions ψ ++ compositions φ
     | .count e s _ _ => compositions e ++ compositions s
     | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
     | .existsUser _ φ | .forallUser _ φ => compositions φ

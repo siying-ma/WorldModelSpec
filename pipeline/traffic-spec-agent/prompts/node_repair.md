@@ -20,8 +20,8 @@ You are a one-shot session. Nothing waits for a reply.
 - **The law** — its text and the segmentation, with each span's role: fixed.
 - **The node** — the record as it was planned, without the parts that are not yours (its id, its
   law and the segmentation).
-- **The verdict** — what the gate or the review returned: the gate's details, or the judge's
-  verdict span by span with the blind reader's rendering of the rule.
+- **The verdict** — what the gate or the review returned: the gate's details, or the behaviour
+  review's divergences, each executed on its trace and upheld by the adjudicator.
 - **What the coder narrowed** — the readings the coding session declared on spans the record
   carries, each with its span.
 - **The coder's note** — the coding session's own account of what it could not satisfy and why.
@@ -68,10 +68,13 @@ You are a one-shot session. Nothing waits for a reply.
    plan defect, and you withdraw naming no atom (the law goes back to the planner).
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
    span of those roles the vocabulary cannot carry is an assumption the trace declares, or a gap.
+   A feature such a span names without a size is carried by its presence, never by a size bound
+   the words do not state.
 3b. **A narrowing the coder declared is decided by its span.** On a trigger, subject, condition
    or exception span it is never adopted: the span is re-mapped to what its words say, assumed,
-   or withdrawn as a gap. Where its `why` says the vocabulary lacks an atom or an operator for the
-   span, the span is a gap: withdraw, naming what is missing. On an obligation or standard span
+   or withdrawn as a gap. A narrowing of kind `no_atom` or `no_operator` (the gate's
+   `UNEXPRESSED`) is a gap unless the span can be re-mapped to what its words say: withdraw,
+   naming what is missing. On an obligation or standard span
    whose words leave the reading open, it may be adopted as the record's own `narrowings` entry
    (`{span, why}`), so the review holds the rule to a disclosed reading; a narrowing that drops
    what the words require is not adopted but re-mapped.
@@ -79,11 +82,19 @@ You are a one-shot session. Nothing waits for a reply.
    or under a feature of the scene claims the feature's own kind atom (the kind a quantifier in
    the rule ranges over) and an anchoring relation — {anchors} — and an aggregate word is claimed
    as `{aggregate_atom}=<word>` and never expanded.
+4b. **A binder is a party the duty cannot exist without.** A road user the duty refers to only
+   when one is present is quantified inside the applicability or the obligation; a record that
+   binds it is re-cast so, since a binder no scene supplies leaves the subject's duty unjudged when
+   the subject is alone.
 5. **Parameters come from the catalogue or are proposed** (`param_proposals`: name, unit, a
-   provisional value, convention, source); never a value in the record or the prose.
+   provisional value, convention, source); never a value in the record or the prose. A value the
+   catalogue marks proposed by a node of this law, not yet reviewed, may be proposed again with
+   another value; any other catalogued value is named as it is.
 6. **The four scenarios stay** (`forbid`, `permit`, `idle`, `blind` with `masked`); scenarios named
    `branch_<n>` with `expected` `compliant` or `violated` may be added for a side of the duty or
-   the exception the four do not visit. The coder adds further branch witnesses itself.
+   the exception the four do not visit. The coder adds further branch witnesses itself. A rule
+   that quantifies over parties other than its binders keeps a scenario with no such party in
+   the scene and a decided verdict.
 7. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
    atom or an operator is missing, what it would have to carry, and the nearest existing id with
    the clause of its contract that excludes the span, so the operator can decide a gap.
@@ -103,11 +114,12 @@ that keeps a defect returns the law to the planner.
 subject{binder, class_elements},
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance"}], residues[{span, why, scope}],
-narrowings[{span, why}] (obligation or standard spans the record carries),
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope}],
+narrowings[{span, why, gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (obligation or standard spans the record carries),
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>", expected, narrative, masked (blind only, a list)}],
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>", expected, narrative, masked (blind only, a list)}],
+occasion{act, window, under_way, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 

@@ -84,6 +84,13 @@ def sceneBox : Scene := { scene0 with structures := [lane7, box] }
 #guard (st_region_geometry_distance sceneBox 4 8).map (Q.eq · Q.zero) = some false          -- the pedestrian at (10,3) is outside
 #guard (st_region_geometry_distance sceneBox 4 8).map (Q.eq · (metres 4)) = some true       -- 4 m east of the (6,3) corner along the edge
 #guard st_region_geometry_distance sceneBox 1 99 = none
+-- a crest is a region of its own: its kind is read, and the distance to it as to any region
+def crestPatch : Structure := { id := 9, kind := .crest, boundary := some [(metres 20, metres (-2)), (metres 22, metres (-2)), (metres 22, metres 2), (metres 20, metres 2)] }
+def sceneCrest : Scene := { scene0 with structures := [lane7, crestPatch] }
+#guard st_crest sceneCrest 9 = some true
+#guard st_crest sceneCrest 7 = some false
+#guard (st_region_geometry_distance sceneCrest 1 9).map (Q.gt · Q.zero) = some true
+#guard StructureKind.ofString "crest" = some .crest
 #guard (Geom.segmentDistance (metres 3, metres 4) (metres 0, metres 0) (metres 6, metres 0)) = metres 4
 #guard (Geom.polygonDistance (Q.mk' 11 2, metres 2) [(metres 5, metres 1), (metres 6, metres 1), (metres 6, metres 3), (metres 5, metres 3)]) = some Q.zero
 #guard st_lane scene0 7 = some true

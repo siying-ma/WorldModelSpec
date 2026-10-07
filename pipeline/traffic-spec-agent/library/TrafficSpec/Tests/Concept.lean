@@ -113,6 +113,6 @@ def instQRule : Rule := (Concept.asRule (bumped :: cs) instQ).getD default
 -- export
 #guard ((Formula.toJson callHalted).compress.splitOn "drv_motion_halted").length = 2
 #guard ((Concept.toJson halted).compress.splitOn "holds_for").length = 2
-#guard ((Concept.toJson { halted with narrowings := [⟨"a run of words", "read as a bound"⟩] }).compress.splitOn "\"narrowings\":[{\"span\":\"a run of words\"").length = 2
+#guard ((Concept.toJson { halted with narrowings := [⟨"a run of words", "read as a bound", "reading"⟩] }).compress.splitOn "\"narrowings\":[{\"kind\":\"reading\",\"span\":\"a run of words\"").length = 2
 #guard ((Concept.toJson halted).compress.splitOn "\"narrowings\":[]").length = 2
 end TrafficSpec.Tests.Concept

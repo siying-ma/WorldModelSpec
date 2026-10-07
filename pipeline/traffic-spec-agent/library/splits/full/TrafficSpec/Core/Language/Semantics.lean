@@ -436,6 +436,16 @@ private def definedWhenR (pre x : R) : R :=
   | .f => R.u (.undefined "defined_when")
   | .u => ⟨.u, pre.why⟩
 
+/-- A selection at one instant: the branch the guard picks; where the guard is unknown, the
+    branches' common value, else unknown with the guard's reasons. -/
+private def condAt (g : R) (a b : QR) : QR :=
+  match g.v with
+  | .t => a
+  | .f => b
+  | .u => match a, b with
+    | .ok x, .ok y => if Q.eq x y then .ok x else .error (g.why.head?.getD (.malformed "cond"))
+    | _, _ => .error (g.why.head?.getD (.malformed "cond"))
+
 /-- An aggregate over the members present at one instant: unknown when a member's membership is
     unknown or a member's value is; `count` on an empty set is zero, the others are undefined. -/
 private def aggregateAt (op : AggOp) (xs : List (R × QR)) : QR :=
@@ -494,6 +504,9 @@ mutual
         if Q.isZero d then .error (.divisionByZero "div") else pure (Q.div (← x) d)) (evalTAll c a) (evalTAll c b')
     | .neg a => (evalTAll c a).map (·.map Q.neg)
     | .abs a => (evalTAll c a).map (·.map Q.abs)
+    | .cond φ a b' =>
+      let g := evalAll c φ; let x := evalTAll c a; let y := evalTAll c b'
+      (Array.range c.n).map fun i => condAt (g[i]?.getD (R.u .outOfRange)) (x[i]?.getD (.error .outOfRange)) (y[i]?.getD (.error .outOfRange))
   termination_by t => sizeOf t
 
   /-- Parameters of an atom or derived concept: constant terms, evaluated once. -/
@@ -554,6 +567,11 @@ mutual
         let x ← subjectFor c.β m subj
         let dv ← constOf d (evalTAll c d)
         pure (untilWithinAll (Primitives.positions c.d m x) dv "untilWithin" (Primitives.missingPos m) (evalAll c φ) (evalAll c ψ))
+    | .atLast m d subj ψ φ =>
+      liftA c.n do
+        let x ← subjectFor c.β m subj
+        let dv ← constOf d (evalTAll c d)
+        pure (atLastAll (Primitives.positions c.d m x) dv "atLast" (Primitives.missingPos m) (evalAll c ψ) (evalAll c φ))
     | .count edge sinceφ op k =>
       (countEdgesAll "count" (evalAll c edge) (evalAll c sinceφ)).map fun e => match e with
         | .error w => R.u w

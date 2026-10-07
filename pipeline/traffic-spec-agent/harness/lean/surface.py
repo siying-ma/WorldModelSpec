@@ -86,9 +86,12 @@ def formula_language() -> str:
             "excludes the subject); the variable is an `Arg.var` inside `φ`. `rises φ` is φ here and not at the\n"
             "previous observation; `definedWhen pre φ` is undefined (unknown) where `pre` fails; `Term.sinceRise φ`\n"
             "the seconds since φ last became true; `Term.aggregate op v φ t` the min/max/median/count of `t` over the\n"
-            "road users `v` satisfying φ. `holdsFor m d s φ`: φ held at every observation in\n"
+            "road users `v` satisfying φ. `Term.cond φ a b` is `a` where φ holds and `b` where it does not; a\n"
+            "comparison over it is decided wherever both selections decide it alike, so a condition that selects\n"
+            "among bounds is written with it. `holdsFor m d s φ`: φ held at every observation in\n"
             "the window of length `d` (a `Term`, usually `.param`) behind, measured in time or path of subject `s`;\n"
-            "`within` looks ahead. A window that reaches past the start of the trace is unknown (`windowTruncated`),\n"
+            "`within` looks ahead; `atLast m d s ψ φ`: φ at the last observation in the window behind at which ψ held\n"
+            "(false where ψ held nowhere in a covered window). A window that reaches past the start of the trace is unknown (`windowTruncated`),\n"
             "so a witness of a rule that looks back names `window`. `rule id map` / `ruleApplies id map`: `map` pairs\n"
             "the composed rule's binder names with this rule's variables.\n")
 
@@ -230,7 +233,9 @@ def concepts_table(accepted: dict[str, dict]) -> str:
     for cid, rec in sorted(accepted.items()):
         args = ", ".join(f"{a.get('name')}:{a.get('sort')}" + (f"{a.get('values')}" if a.get("sort") == "literal" else "") for a in rec.get("args", []))
         params = ", ".join(f"{p.get('name')} ({p.get('unit')})" for p in rec.get("params", []))
-        out.append(f"| `{cid}` | {rec.get('kind')} | {' '.join(str(rec.get('contract', '')).split())} | {rec.get('definition') or ''} | {args} | {params} | "
+        built = "; ".join(" ".join(str(a).split()) for a in rec.get("approximations", []))
+        contract = " ".join(str(rec.get("contract", "")).split()) + (f" **As built, more narrowly or broadly than these words:** {built}" if built else "")
+        out.append(f"| `{cid}` | {rec.get('kind')} | {contract} | {rec.get('definition') or ''} | {args} | {params} | "
                    f"{', '.join(rec.get('reads', []))} | {len(rec.get('used_by', []))} |")
     return "\n".join(out) + "\n"
 

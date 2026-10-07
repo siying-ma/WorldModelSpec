@@ -35,7 +35,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   they were rejected.
 - **Parameters** — the reading's parameter catalogue: every named parameter a node may use, with
   its unit and the convention its value comes from. Values are not shown and are not yours.
-- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, judge rows and gate verdicts.
+- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, review divergences and gate verdicts.
 - **User hints** — `USER_HINTS.md`.
 
 {laws}
@@ -117,9 +117,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    (`asm.<name>`, with the meaning a trace must declare; an undeclared assumption leaves the
    verdict unknown) or a gap. The one exception is a span that imposes no observable condition
    at all ("regardless of the weather"): carry it as a residue with `"scope": "none"` and say
-   why; the judge holds it to that. A reading you choose on a span you do carry, where the words
+   why; the review holds it to that. A reading you choose on a span you do carry, where the words
    leave it open and the atoms state it more narrowly, is a **narrowing** `{span, why}` on an
-   obligation or standard span; the judge holds the rule to it and returns a narrowing that drops
+   obligation or standard span; the review holds the rule to it and returns a narrowing that drops
    what the words require.
 3. **Map by contract, and quote it.** An element's justification quotes the clause of the atom's
    contract that denotes the span and says why each "not a stand-in for" exclusion does not
@@ -136,18 +136,53 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
      subject's own feature and not any feature of the scene. A relation claimed without the kind
      it ranges over leaves the coder a quantifier it cannot type, and the gate returns the rule
      for an unclaimed atom. The validator returns a node that claims a feature and no anchor.
+   - **A feature named without a measure is its presence.** A trigger, condition or subject span
+     that names a feature and no size of it (any bend, any slope) is carried by the feature
+     itself: where its atom is a magnitude, by the magnitude standing clear of zero, with a
+     parameter that names only the source's resolution. A size bound the words do not state
+     narrows where the duty applies, which a trigger, condition or subject span never is.
 4. **Every standard is operationalized**, by one operationalization per `standard` span, whose
    `concepts` list the atoms, primitives and concepts that bound it (one entry per standard,
    however many atoms and concepts bound it together), with named parameters and
    the engineering convention the values come from. If the standard is the whole obligation, or
-   it is a standard about the road user's state of mind, mark the node `surrogate`.
+   it is a standard about the road user's state of mind, mark the node `surrogate`. Each factor
+   the standard names in its own words is read by the operationalization wherever a contract
+   carries it; reading it more narrowly than its words is a narrowing, and a named factor no
+   contract carries at all is a narrowing that says so (the aspects of a named factor the
+   operationalization reads through a carried contract are part of that narrower reading and are
+   not listed one by one). A factor only a catch-all of the standard covers ("other conditions")
+   is read at the plan's choice. A factor is read by the degree to which it holds: a measured
+   magnitude enters the bound itself, so the bound moves as the magnitude moves, and a condition
+   selects among bounds. A switch that applies one fixed bound whenever any factor holds reads no
+   factor's degree and holds mild and severe conditions to one bound; reading a factor's degree is
+   the reading of the words, not a model of how the duty is performed.
+4b. **The occasion of an act.** An obligation span mapped to a concept observed over a stretch of
+   time (one with a parameter in a unit of time: a manoeuvre recognized only once it has been
+   carried out) is judged where the act is recognized, which is after it began. Each trigger,
+   condition and exception span the node maps is then read at an occasion of the act you declare
+   in `occasion`: `at_recognition` (where the act is recognized), `some_moment` (at some moment
+   while the act is under way) or `throughout` (at every moment while it is under way). The
+   words decide; where they say nothing of time, a trigger or condition is read at `some_moment`,
+   since reading one instant drops situations the words cover, and an exception `throughout`, so
+   that it excuses only an act it covers whole. `window` names the act's window parameter, and
+   `under_way` says what marks the act as under way, in atoms the obligation span claims. A span
+   read at `some_moment` or `throughout` has a scenario `occasion_<span>` in which it holds for
+   part of the act only, expecting the verdict that reading gives. An occasion the formula
+   language cannot state is an `operator` gap.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
    names another rule is a composition: `as: exception` — the duty does not apply where that rule
    applies (its binders' classes and applicability hold); `as: condition` — the duty applies where
    that rule applies; `as: compliance` — the other rule's verdict is complied with ("lawfully",
-   "in the manner prescribed by"). The composed rule's every binder is mapped to one of this
+   "in the manner prescribed by"); `as: unless` — on a `reference` span, it suspends one
+   exception or condition span of this node where the other rule applies ("except as otherwise
+   provided in …" read on the words it qualifies): `scopes` names that span, whose content then
+   does not hold where the composed rule applies, and the duty as a whole is untouched. A
+   reference to a law of this corpus is a composition or a gap, never a residue; a reference to a
+   law outside the corpus may be a residue. A `standard` span whose bound an accepted rule of the
+   library already states as its own obligation is carried by composing that rule (`as:
+   compliance`), not by an operationalization that restates it. The composed rule's every binder is mapped to one of this
    node's binders or to a road user the coding agent will quantify over. `rule` names the **node**
    (`NRS_…`, underscores; `…_o2` for the second obligation of a line), never the law id. A rule
    not in the corpus is a residue. A node never spans two law lines, and a condition, standard or exception is
@@ -162,10 +197,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    value. Every operationalization names at least one parameter: a standard is a bound the
    reading sets, and a standard rendered as a structural fact with no magnitude behind it (the
    presence of a feature standing in for an adequacy the span leaves open) is an approximation by
-   a neighbouring atom, which the validator returns and the judge marks `approximated`. A parameter the catalogue lacks is
+   a neighbouring atom, which the validator returns. A parameter the catalogue lacks is
    named (`p.<name>`) and **proposed** in the node's `param_proposals`: its unit, a provisional
    `value` taken from the named engineering `convention` (what the value bounds and how), and the
-   `source` such figures come from. The harness enters the proposal in the reading as a value
+   `source` such figures come from. A value the catalogue marks proposed by a node of this
+   law, not yet reviewed, may be proposed again with another value; any other catalogued value
+   is named as it is. The harness enters the proposal in the reading as a value
    awaiting the operator's review, so the node is coded and gated at once; the operator may change
    the value later, and the rule, which names the parameter and never carries the value, is
    unaffected. Choose the least committal parameters the words require: one tolerance where one
@@ -178,7 +215,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    atom whose absence makes the rule unknown — one the node claims, or one its claimed concepts
    read). Where the duty or the exception has alternatives the four do not visit, you may add
    `branch_<n>` scenarios expecting `violated` or `compliant`; the coder adds further branch
-   witnesses itself until every leaf of the rule is exercised.
+   witnesses itself until every leaf of the rule is exercised. Where the rule quantifies over
+   parties other than its binders, one scenario has no such party in the scene and still
+   expects a decided verdict, so the duty is shown to bind the subject alone.
 10. **No Lean, no code, no library edits.** You write `aggregates.jsonl`, `blueprint.jsonl`,
     `PLAN.md` and `proposed_gaps.jsonl` only — by hand, with the Write tool, as the files
     themselves. You do not write programs that generate them, and you do not write your own
@@ -201,7 +240,11 @@ For each law in the list:
 3. Operationalize the `standard` spans (rule 4). Decide `surrogate`.
 4. Decide the nodes (rules 5 and 6): binders (the subject first, its class from the subject/trigger
    spans), applicability (trigger and condition spans, in plain words), obligation (obligation
-   spans, in plain words).
+   spans, in plain words). A further binder is only a party without whom the duty does not exist.
+   A road user the duty refers to only when one is present (one ahead, one approaching, one
+   nearby) is quantified inside the applicability or the obligation, never a binder: a rule is
+   judged on every grounding of its binders, so a binder no scene supplies leaves the subject's
+   duty unjudged exactly when the subject is alone.
 5. Plan the four scenarios (rule 9). The `blind` scenario names the claimed atom whose absence
    must make the rule report unknown.
 6. If any span is a gap, complete the gap record (span, kind `atom` or `operator`, proposal in the
@@ -219,9 +262,10 @@ Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal)
 node_id, law_refs, subject{binder, class_elements}, segmentation[{id, text, role}],
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance"}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
-binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
+binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
+occasion{act, window, under_way, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
 gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
@@ -267,6 +311,9 @@ Run the validator on the finished file and fix what it names; then confirm by re
   elements over the contract's words, the three scenarios, and `used_by` naming nodes that claim
   it; a definition-born contract quotes the definition's words and names its tolerances as parameters;
 - every `standard` span has an operationalization;
+- a node whose obligation is an act observed over time declares `occasion` for every trigger,
+  condition and exception span it maps, with an `occasion_<span>` scenario for each span read
+  while the act is under way;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the
   obligations the law's nodes carry, in text order;
 - every composition's `rule` is a node id; every `masked` is a list;

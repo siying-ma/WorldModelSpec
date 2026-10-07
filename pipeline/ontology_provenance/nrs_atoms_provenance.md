@@ -79,7 +79,8 @@ Added: see the `local` rows and the rows whose "sections" column cites only NRS 
 | `ru.fire_apparatus` | 484B.710 (500 ft following distance), 484B.913 (fire hose) | — | livery |
 | `ru.official_vehicle` | 484B.267 ("official vehicle of a regulatory agency", 484A.205); 484B.607(3)(b)–(h) (tow car, DOT vehicle, contractor, utility, local agency); 484B.210(4)(c),(f) ("traffic incident management vehicle", "coroner vehicle") | kinds `regulatory_agency`, `incident_management` **local**: NRS-defined roles with NRS-specific lamp rights | livery + amber/blue lamps; absent in CARLA |
 | `ru.procession_vehicle` | 484A.090; 484B.703 ("pennants or other authorized insignia"), .707 | — | perception only |
-| `ru.animal_or_animal_drawn` | 484A.285 (traffic includes ridden or herded animals); 484B.103, .297(5), .703 | — | absent in CARLA |
+| `ru.ridden_or_herded_animal` | 484A.285 (traffic includes ridden or herded animals); 484B.103, .297(5), .703; LVMC 11.12.090 | — | absent in CARLA |
+| `ru.animal_drawn_vehicle` | 484A.320 (a vehicle is a device by which persons or property are drawn); LVMC 11.12.090, 11.22.120(B) | — | absent in CARLA |
 | `ru.rail_vehicle` | 484A.200, 484B.050 ("railroad train"); 484B.553–.563 ("other on-track equipment", streetcar) | — | absent in CARLA maps |
 | `ru.personal_delivery_device` | 484B.044, .045, .787 | **local**: NRS-defined device with pedestrian rights | perception only |
 | `ru.mobile_carrying_device` | 484B.029, .790 | **local**: NRS-defined device | perception only |
@@ -128,6 +129,7 @@ above, observed on an instrumented vehicle under the `subject` capability (§18)
 | `st.driveway_or_alley_entrance` | 484A.190; 484B.117(1), .210(1)(c)(2), .260, .270(3)(a), .450(1)(b),(n) | — | HD map |
 | `st.alley` | 484A.015; 484B.477 | — | HD map |
 | `st.curvature`, `st.grade`, `st.sight_distance` | 484B.213(2)(a) ("crest of a grade or upon a curve … view is obstructed"), .407 ("cannot be seen … within 500 feet"), .603 ("curve", "hill crest", "narrow or winding"), .533 ("perceptible grade") | — | map geometry; sight distance from map occlusion |
+| `st.crest` | 484B.213(2)(a) ("when approaching the crest of a grade"), .407 ("upon the approach to or near the crest of a grade"), .603(1) ("when approaching a hill crest") | gap G4: the slope at the road user's own position cannot place a crest ahead of a road user that turns before reaching it | map elevation profile (OpenDRIVE elevation in CARLA) |
 | `st.railway_crossing` | 484B.047 (railroad sign/signal), .213(2)(b), .450(1)(i), .553–.563 ("nearest rail", "nearest track") | — | HD map; absent in CARLA maps |
 | `st.controlled_access` | 484A.060; 484B.208, .263, .587 ("marked entrance or exit lane"), .627(1)(c) | — | HD map road class |
 | `st.elevated_structure` | 484B.213(2)(c), .450(1)(m), .633 | — | HD map |
@@ -384,7 +386,8 @@ no atom. Findings, and what changed:
 | "drop box for U.S. mail adjacent to a curb" | LVMC 11.52.030(A)(5) | **added** `st.obstruction` kind `mail_drop_box` |
 | "tail lamp … lighted", "lighted lamps and illuminating devices" | LVMC 11.38.120(B) (reinstated), NRS 484D.100(1), .165(3) | `sig.position_lamp` contract now names tail lamps |
 | weather: "weather", "inclement weather", "unfavorable atmospheric conditions", "regardless of the weather" | NRS 484B.600, .603, .208, .413(2), 484D.100(1)(b) | `env.precipitation`, `env.wet_road`, `env.ice_or_snow` (restored), `env.visibility` |
-| "horse", "animal" | LVMC 11.12.090, NRS 484B.297(5), .703 | `ru.animal_or_animal_drawn` |
+| "horse", "animal" | LVMC 11.12.090, NRS 484B.297(5), .703 | `ru.ridden_or_herded_animal` |
+| "horse-drawn", "drawn by a horse" | LVMC 11.12.090, 11.22.120(B) | `ru.animal_drawn_vehicle` |
 | "trimobile" | NRS 484B.307(8)(d), (9)(b), 486.351(2) | `ru.motorcycle` (three-wheeled variants) |
 | "flagman", "person stationed", "school crossing guard", "escort" | NRS 484B.330, .350, .553, .703; LVMC 11.46.030 | `dev.human_direction` roles |
 | "markers, buttons", "striping", "pavement marking" | LVMC 11.12.020; NRS 484B.217, .307(8)(a) | `dev.regulatory_sign` turn_course_marker; `st.lane_marking`; `st.stop_line` |

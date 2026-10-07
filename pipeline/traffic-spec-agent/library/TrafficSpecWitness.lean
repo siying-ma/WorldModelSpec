@@ -4,20 +4,26 @@
 -/
 import TrafficSpec
 import TrafficSpec.Core.Evidence.Builders
-import TrafficSpecWitness.Concepts.interaction.precedence_granted
-import TrafficSpecWitness.Concepts.motion.complete_cessation
-import TrafficSpecWitness.Concepts.motion.left_turn
+import TrafficSpecWitness.NRS_484B.NRS_484B_407
+import TrafficSpecWitness.NRS_484B.NRS_484B_600_1a
+import TrafficSpecWitness.Concepts.motion.braking_distance
+import TrafficSpecWitness.Concepts.motion.direction_reversal
+import TrafficSpecWitness.Concepts.motion.in_motion
+import TrafficSpecWitness.Concepts.motion.stopping_distance
 namespace TrafficSpecWitness
 open TrafficSpec
 /-- Every registered node scenario, in file order. -/
-def allScenarios : List Scenario := []
+def allScenarios : List Scenario := TrafficSpecWitness.NRS_484B_407.scenarios ++
+  TrafficSpecWitness.NRS_484B_600_1a.scenarios
 /-- Every registered concept instance and its scenarios, in file order. -/
-def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.interaction.precedence_granted.instances ++
-  TrafficSpecWitness.Concepts.motion.complete_cessation.instances ++
-  TrafficSpecWitness.Concepts.motion.left_turn.instances
-def allConceptScenarios : List Scenario := TrafficSpecWitness.Concepts.interaction.precedence_granted.scenarios ++
-  TrafficSpecWitness.Concepts.motion.complete_cessation.scenarios ++
-  TrafficSpecWitness.Concepts.motion.left_turn.scenarios
+def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.motion.braking_distance.instances ++
+  TrafficSpecWitness.Concepts.motion.direction_reversal.instances ++
+  TrafficSpecWitness.Concepts.motion.in_motion.instances ++
+  TrafficSpecWitness.Concepts.motion.stopping_distance.instances
+def allConceptScenarios : List Scenario := TrafficSpecWitness.Concepts.motion.braking_distance.scenarios ++
+  TrafficSpecWitness.Concepts.motion.direction_reversal.scenarios ++
+  TrafficSpecWitness.Concepts.motion.in_motion.scenarios ++
+  TrafficSpecWitness.Concepts.motion.stopping_distance.scenarios
 /-- The rules every witness runs against: the registered rules and the concept instances. -/
 def witnessRules : List Rule := allRules ++ allInstances.filterMap (Concept.asRule allConcepts)
 /-- Run every witness against the registered rules and concepts with a reading; the failures, by name. -/

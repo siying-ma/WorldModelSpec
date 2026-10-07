@@ -22,6 +22,7 @@ inductive StructureKind
   | stopLine
   | drivewayOrAlleyEntrance
   | alley
+  | crest
   | railwayCrossing
   | controlledAccess
   | elevatedStructure
@@ -58,6 +59,7 @@ def ofString (s : String) : Option StructureKind :=
   | "stop_line" => some .stopLine
   | "driveway_or_alley_entrance" => some .drivewayOrAlleyEntrance
   | "alley" => some .alley
+  | "crest" => some .crest
   | "railway_crossing" => some .railwayCrossing
   | "controlled_access" => some .controlledAccess
   | "elevated_structure" => some .elevatedStructure
@@ -91,6 +93,7 @@ def toString : StructureKind → String
   | .stopLine => "stop_line"
   | .drivewayOrAlleyEntrance => "driveway_or_alley_entrance"
   | .alley => "alley"
+  | .crest => "crest"
   | .railwayCrossing => "railway_crossing"
   | .controlledAccess => "controlled_access"
   | .elevatedStructure => "elevated_structure"

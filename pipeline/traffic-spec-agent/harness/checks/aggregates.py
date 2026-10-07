@@ -57,6 +57,18 @@ def validate(records: list[dict], definitions: list[dict], onto: Ontology, base:
             errs.append(f"aggregate `{w}`: the operator's reading already declares it; the operator's declaration stands")
             continue
         accepted.append(r)
+    # one word, one membership: plan sessions of one iteration may derive the same word; the first
+    # record stands, an identical one is merged into it, a different one is rejected naming both
+    first: dict[str, dict] = {}
+    unique = []
+    for r in accepted:
+        w = r["word"]
+        if w not in first:
+            first[w] = r; unique.append(r)
+        elif sorted(r["classes"]) != sorted(first[w]["classes"]):
+            errs.append(f"aggregate `{w}`: derived twice this iteration with different classes — {sorted(first[w]['classes'])} from "
+                        f"`{first[w]['definition']}` stands, {sorted(r['classes'])} from `{r['definition']}` is rejected; one word has one membership")
+    accepted = unique
     # a defined word used as a member must itself be accepted or the operator's
     ok_words = {r["word"] for r in accepted} | base.aggregate_words()
     final = []

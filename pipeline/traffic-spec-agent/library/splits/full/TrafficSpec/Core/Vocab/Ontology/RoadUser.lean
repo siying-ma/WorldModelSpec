@@ -32,7 +32,8 @@ inductive RoadUserClass
   | fireApparatus
   | officialVehicle
   | processionVehicle
-  | animalOrAnimalDrawn
+  | riddenOrHerdedAnimal
+  | animalDrawnVehicle
   | railVehicle
   | personalDeliveryDevice
   | mobileCarryingDevice
@@ -65,7 +66,8 @@ def ofString (s : String) : Option RoadUserClass :=
   | "fire_apparatus" => some .fireApparatus
   | "official_vehicle" => some .officialVehicle
   | "procession_vehicle" => some .processionVehicle
-  | "animal_or_animal_drawn" => some .animalOrAnimalDrawn
+  | "ridden_or_herded_animal" => some .riddenOrHerdedAnimal
+  | "animal_drawn_vehicle" => some .animalDrawnVehicle
   | "rail_vehicle" => some .railVehicle
   | "personal_delivery_device" => some .personalDeliveryDevice
   | "mobile_carrying_device" => some .mobileCarryingDevice
@@ -95,7 +97,8 @@ def toString : RoadUserClass → String
   | .fireApparatus => "fire_apparatus"
   | .officialVehicle => "official_vehicle"
   | .processionVehicle => "procession_vehicle"
-  | .animalOrAnimalDrawn => "animal_or_animal_drawn"
+  | .riddenOrHerdedAnimal => "ridden_or_herded_animal"
+  | .animalDrawnVehicle => "animal_drawn_vehicle"
   | .railVehicle => "rail_vehicle"
   | .personalDeliveryDevice => "personal_delivery_device"
   | .mobileCarryingDevice => "mobile_carrying_device"

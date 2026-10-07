@@ -18,23 +18,24 @@ class Options:
     plan_attempts: int = 2
     concept_attempts: int = 3      # coding attempts per concept, the first plus its repairs
     node_attempts: int = 2         # coding attempts per node, the first plus one after a node repair session
+    repeat_limit: int = 3          # the same upheld divergence on the same words of a node, drawn this many times across the law's plans and repairs, blocks the law for the operator
     gate_budget: int = 6
     max_turns: int = 80
     session_timeout: float = 3600.0
-    judge: bool = True
     dry_run: bool = False          # render prompts and run the deterministic phases, launch no session
     plan_effort: Optional[str] = "high"      # `claude --effort` for the plan session (low|medium|high|xhigh|max)
     code_effort: Optional[str] = "high"      # for each coding session
-    judge_effort: Optional[str] = "medium"   # for the blind reader and the alignment judge
+    judge_effort: Optional[str] = "medium"   # for a concept's judge and the adjudicator
     session_budget_usd: Optional[float] = None   # `--max-budget-usd` per session; None = uncapped
     session_retries: int = 2       # relaunches of a session that never ran (account limit, API error)
     retry_wait: float = 900.0      # seconds between those relaunches
     plan_batch: int = 8            # laws per plan session; a law is planned after the laws it names are accepted or in its batch
-    judge_samples: int = 1         # independent judge sessions per node review; every one must find the node aligned
     workers: int = 1               # coding sessions run at once (concepts, then nodes, in dependency waves)
-    reader_model: Optional[str] = None   # the blind reader's model; None = the run's model
     plan_turns: int = 40           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
     restart: bool = False          # discard an interrupted iteration instead of resuming it
+    reviewer_model: Optional[str] = None   # a second vendor's model for the behaviour review, every node's acceptance check (required)
+    review_effort: Optional[str] = "high"  # the reviewer's reasoning effort
+    allow_same_vendor: bool = False        # permit a reviewer from the planner's own vendor
     mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
 

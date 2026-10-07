@@ -83,11 +83,17 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
    plan's: words nothing carries. Where you choose a reading the words leave open on a span the
    node does carry — the formulas state the span more narrowly, or shift what they capture — you
-   declare a **narrowing** `⟨"<span id>", "<why>"⟩` in `narrowings`, and the header comment
-   explains it. The gate holds every narrowing to a span of the node's duty or its standards; a
-   span that decides when the rule applies (a trigger, subject, condition or exception) is never
-   narrowed: it is carried as the node maps it, or the node is wrong and you report it. The
-   review judges the rule with your narrowings in view; a choice written only in prose is lost.
+   declare a **narrowing** `{ span := "<span id>", why := "<why>", kind := "reading" }` in
+   `narrowings`, and the header comment explains it. Where the span's words cannot be stated at
+   all — no atom denotes them (`kind := "no_atom"`) or the language has no operator for them
+   (`kind := "no_operator"`) — you declare that instead of a reading: the gate returns the node
+   as `UNEXPRESSED` for the repair session to withdraw the span as a gap or re-map it, and a
+   second such declaration on the same span files the gap with your words; a reading written
+   around a missing operator is not a narrowing. The gate holds every narrowing to a span of the
+   node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
+   condition or exception) is never narrowed: it is carried as the node maps it, or the node is
+   wrong and you report it. The review judges the rule with your narrowings in view; a choice
+   written only in prose is lost.
 3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
    binder classes and `obligation` is claimed by an element or operationalization of the node,
    and every claimed name is used. Arguments are the node's binders, quantifier variables, or
@@ -102,14 +108,26 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    anchoring atom, the node is wrong: report it.
 4. **Parameters, not values.** A quantity enters as `.param "<name>"` from the node's `params`.
    The only literals are zero, enumeration spellings, and the node's declared `literals`, each
-   written through the `Units` constructor of its unit (`Units.feet 15`, `Units.mph 25`).
+   written through the `Units` constructor of its unit (`Units.feet 15`, `Units.mph 25`). Never divide by a term that reads a measurement:
+   a measured quantity can be zero (a curvature where the way runs straight, a speed at rest), and
+   a division by zero is unknown, not a verdict; write the comparison with products (a ratio
+   below a bound is the dividend below the bound times the divisor). The gate returns
+   `CHECK_FAIL` on such a division.
 5. **Standards are the node's operationalizations**, nothing else: the concept and parameters
    named there, no substitute.
 6. **Compositions follow the node's `as`.** `exception`: `.not (.ruleApplies "<id>" map)` in the
    applicability; `condition`: `.ruleApplies "<id>" map` in the applicability; `compliance`:
-   `.rule "<id>" map` where the node places it. `map` binds every binder of the composed rule; a
+   `.rule "<id>" map` where the node places it; `unless`: `.not (.ruleApplies "<id>" map)`
+   conjoined into the formula of the span named in `scopes` (an exception or condition), so that
+   span's content does not hold where that rule applies and the applicability as a whole is
+   untouched. `map` binds every binder of the composed rule; a
    binder the node has no variable for is bound by `.existsUser "<var>" (…)` around the
    composition. You never inline another rule's content.
+6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
+   is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
+   and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
+   parameter, `s` the subject and `U` the formula of `under_way`: the span is read over the
+   instants of the window at which the act is under way, never only where it is recognized.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario
@@ -118,7 +136,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    moves no decided witness, and a duty with alternatives (two devices, two ways to comply, an
    exception with two limbs) has leaves the planned scenes never reach. Add `branch_<n>`
    witnesses, each expecting `violated` or `compliant` with a one-line narrative in a comment,
-   until every leaf is exercised; they are the rule's tests, yours to write. Literal values of one
+   until every leaf is exercised; they are the rule's tests, yours to write. Every scenario the
+   node plans (`branch_<n>`, `occasion_<span>`) is a witness of that name with the planned verdict. Literal values of one
    atom's enumeration tested in separate disjuncts count as one leaf: one scene exercises them.
 8. **No history of your own.** The trace is a list of built scenes; you do not read captures,
    and you do not import anything but `TrafficSpec.Core.Language.Rule` in the rule file and the rule plus

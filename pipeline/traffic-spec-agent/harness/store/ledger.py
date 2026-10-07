@@ -14,25 +14,26 @@ class Entry:
     law: str
     state: str = OPEN
     attempts: int = 0
-    judge_failures: int = 0
     reasons: list[str] = field(default_factory=list)
     nodes: list[str] = field(default_factory=list)
     gaps: list[str] = field(default_factory=list)
     iteration: int = 0
     charged_iteration: int = 0     # the iteration whose return already counted an attempt
     charged_concepts: list[str] = field(default_factory=list)   # failed concepts whose failure already counted an attempt
+    repeats: dict[str, int] = field(default_factory=dict)       # outcome key (`review:<node>:<span>:<verdict>`) ↦ times drawn, across plans and repairs
 
 
 class Ledger:
-    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int):
+    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int, repeat_limit: int = 3):
         self.path = path
         self.plan_attempts = plan_attempts
+        self.repeat_limit = repeat_limit
         self.entries: dict[str, Entry] = {}
         if path.exists():
             for line in path.read_text(encoding="utf-8").splitlines():
                 if line.strip():
                     d = json.loads(line)
-                    self.entries[d["law"]] = Entry(**d)
+                    self.entries[d["law"]] = Entry(**{k: v for k, v in d.items() if k in Entry.__dataclass_fields__})
         for lid in law_ids:
             self.entries.setdefault(lid, Entry(lid))
 
@@ -66,6 +67,13 @@ class Ledger:
         if e.state == FAILED:
             e.reasons = [f"attempt budget ({self.plan_attempts}) spent"] + reasons
 
+    def return_uncharged(self, law: str, reasons: list[str]) -> None:
+        """The law goes back to the planner with these reasons and no attempt counted: its record
+        was right when written and another law's re-plan invalidated it."""
+        e = self.entries[law]
+        if e.state not in TERMINAL:
+            e.state, e.reasons = RETURNED, reasons
+
     def return_for_concepts(self, law: str, concepts: list[str], reasons: list[str], iteration: int) -> None:
         """The law is returned because concepts its nodes use failed. A concept's failure counts
         one attempt against the law, however many iterations later the law is still waiting on
@@ -96,14 +104,17 @@ class Ledger:
             return
         e.state, e.iteration = PLANNED, iteration
 
-    def judge_failed(self, law: str, reasons: list[str], iteration: int) -> None:
+    def record_outcomes(self, law: str, keys: list[str], limit: int | None = None) -> list[str]:
+        """Count the outcomes a node of the law drew, across its plans and repairs; the keys whose
+        count reaches the limit (the repeat limit unless given) are returned, each with its count —
+        the law is not converging and the operator decides."""
         e = self.entries[law]
-        if not self._charge(e, reasons, iteration):
-            return
-        e.judge_failures += 1
-        e.state = FAILED if e.judge_failures >= 2 or e.attempts >= self.plan_attempts else RETURNED
-        if e.state == FAILED and e.judge_failures >= 2:
-            e.reasons = ["alignment judge failed twice"] + reasons
+        hit = []
+        for k in keys:
+            e.repeats[k] = e.repeats.get(k, 0) + 1
+            if e.repeats[k] >= (limit or self.repeat_limit):
+                hit.append(f"{k} ×{e.repeats[k]}")
+        return hit
 
     def block(self, law: str, gap_ids: list[str], reasons: list[str]) -> None:
         e = self.entries[law]
@@ -118,11 +129,20 @@ class Ledger:
         e.state, e.nodes, e.reasons = ACCEPTED, node_ids, []
 
     def reopen(self, laws: list[str] | None = None) -> list[str]:
-        """Operator action: failed (or all non-accepted) laws back to open with a fresh budget."""
-        out = []
+        """Operator action: failed laws, and laws blocked for the operator's decision (every token
+        `decision:<law>`), back to open with a fresh budget — and with a decided law, every law
+        blocked on its token. A law blocked on a gap waits for the gap's decision instead."""
+        def decided_only(e: Entry) -> bool:
+            return e.state == BLOCKED and bool(e.gaps) and all(g.startswith("decision:") for g in e.gaps)
+        out, tokens = [], set()
         for e in self.entries.values():
-            if (laws is None or e.law in laws) and e.state not in (ACCEPTED, BLOCKED):
-                e.state, e.attempts, e.judge_failures, e.reasons, e.charged_concepts = OPEN, 0, 0, [], []
+            if (laws is None or e.law in laws) and (e.state not in (ACCEPTED, BLOCKED) or decided_only(e)):
+                tokens |= {g for g in e.gaps if g.startswith("decision:")}
+                e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps = OPEN, 0, [], [], {}, []
+                out.append(e.law)
+        for e in self.entries.values():
+            if decided_only(e) and set(e.gaps) <= tokens:
+                e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps = OPEN, 0, [f"reopened with {sorted(tokens)}"], [], {}, []
                 out.append(e.law)
         return out
 
@@ -175,8 +195,16 @@ class ConceptLedger:
         self.path.write_text("".join(json.dumps(asdict(e), ensure_ascii=False) + "\n" for e in self.entries.values()), encoding="utf-8")
 
     def planned(self, cid: str, used_by: list[str], iteration: int) -> None:
+        """A failed concept stays failed: only the operator's `reopen` of its laws clears it."""
         e = self.entries.setdefault(cid, ConceptEntry(cid))
+        if e.state == FAILED:
+            return
         e.state, e.used_by, e.iteration = PLANNED, used_by, iteration
+
+    def forget(self, cids: list[str]) -> None:
+        """Drop concepts from the ledger, so a re-plan may propose them afresh."""
+        for c in cids:
+            self.entries.pop(c, None)
 
     def returned(self, cid: str, reasons: list[str], last_task: str = "") -> None:
         e = self.entries.setdefault(cid, ConceptEntry(cid))

@@ -1,0 +1,130 @@
+{
+ "run": "lasvegas",
+ "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
+ "params": [
+  {
+   "name": "p.turn_window",
+   "value": 12,
+   "unit": "s",
+   "convention": "the integration window of prim.heading_change: long enough to contain a complete reversal carried out at manoeuvring speed, including one made in more than one movement, and short enough that two separate turns at successive junctions are not summed into one reversal. Taken from the manoeuvre durations implied by the minimum turning paths of design vehicles at manoeuvring speed, at the short end of that range, the turning speed AASHTO assumes for a minimum turning path being what sets it.",
+   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets — turning paths and turning speeds of design vehicles",
+   "proposed": "carla_smoke7/iter-002 NRS_484B_407"
+  },
+  {
+   "name": "p.direction_reversal_angle",
+   "value": 150,
+   "unit": "deg",
+   "convention": "the magnitude of signed heading change over the window at which a vehicle counts as proceeding in the opposite direction rather than as having turned into another way: set below a straight reversal by the margin that a bent alignment (the two ends of the turn are not parallel on a curving road) and the drift of an integrated, sampled yaw rate introduce, and well above the heading change of a right-angle turn so that turning into a side street never counts.",
+   "source": "AASHTO geometric design, U-turn manoeuvre; the heading-drift error class the source declares for its yaw-rate integration",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.motion_speed_min",
+   "value": 0.5,
+   "unit": "m/s",
+   "convention": "the speed above which a road user counts as proceeding rather than standing: the stopped/moving threshold used when trajectories are extracted, set above the noise floor of a position-derived speed so that a stationary body is not read as creeping.",
+   "source": "stopped-vehicle thresholds of trajectory-extraction conventions (NGSIM, highD processing)",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.curve_radius_resolution",
+   "value": 500,
+   "unit": "m",
+   "convention": "the largest radius of horizontal curvature the map source still tells apart from a straight road: a bend of greater radius is reported as straight by the centreline fit, so the span is read as its feature's presence — st.curvature standing clear of zero at the source's own resolution, which this parameter expresses as the radius it corresponds to. It bounds no radius the statute withholds; a source with a finer centreline fit raises it.",
+   "source": "HD-map centreline fit residual / curvature resolution declared by the map source, expressed as its reciprocal",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.crest_approach_distance",
+   "value": 150,
+   "unit": "m",
+   "convention": "crest vertical-curve sight-distance model: the length of approach ahead of a crest over which the vertical curve still hides an oncoming vehicle from a driver at that place, for the design speed of the road. It is the bound on “upon the approach to or near”, measured as the ground distance from the subject's body outline to the crest region.",
+   "source": "AASHTO crest vertical curve design and stopping sight distance for the road's design speed",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.reaction_time",
+   "value": 2.5,
+   "unit": "s",
+   "convention": "the brake-reaction time of the stopping-sight-distance model: the interval the design driver is allowed between the moment a reason to stop comes into view and the moment the brakes take effect, during which the vehicle goes on at its speed; it bounds the first part of the distance within which the driver must be able to stop for an unexpected hazard",
+   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets (Green Book), stopping sight distance",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.brake_response_time",
+   "value": 0.75,
+   "unit": "s",
+   "convention": "the response time of the following-distance model of responsibility-sensitive safety: the interval a following driver takes to react to the vehicle ahead beginning to brake, which is shorter than the design reaction time for an unexpected hazard because the vehicle ahead is already in view and shows its brake lamps; it bounds the distance the follower covers before its own brakes take effect",
+   "source": "Shalev-Shwartz, Shammah and Shashua, responsibility-sensitive safety; longitudinal safe-distance formulation",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_dry",
+   "value": 4.5,
+   "unit": "m/s^2",
+   "convention": "the deceleration a driver of ordinary firmness obtains on a dry, clean pavement: the longitudinal tyre-road friction a dry surface offers, reduced for a controlled stop that stays short of wheel lock and within the lane; it is the deceleration every stopping distance of this rule is computed at where the surface is neither wet nor icy",
+   "source": "AASHTO Green Book deceleration for stopping sight distance, taken at a dry-pavement friction coefficient; pavement-friction tables",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_wet",
+   "value": 3.4,
+   "unit": "m/s^2",
+   "convention": "the deceleration the stopping-sight-distance model assumes on a wet pavement: the rate most drivers can sustain on a wet surface while staying within their lane and in control; it is the deceleration every stopping distance of this rule is computed at where the road is wet or precipitation is falling",
+   "source": "AASHTO Green Book, stopping sight distance (deceleration for design)",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_ice",
+   "value": 1.5,
+   "unit": "m/s^2",
+   "convention": "the deceleration obtainable on a surface covered by ice or packed snow: the much lower longitudinal friction such a surface offers, again reduced to a controlled stop; it is the deceleration every stopping distance of this rule is computed at where the surface is icy or snow-covered",
+   "source": "winter-maintenance road-friction measurements; AASHTO friction values for ice and compacted snow",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lateral_accel_max",
+   "value": 2.0,
+   "unit": "m/s^2",
+   "convention": "the lateral acceleration a vehicle may call on when rounding a bend before the comfortable side friction of the point-mass curve model is exhausted, at zero superelevation: the bound on the speed a curve of a given radius leaves reasonable",
+   "source": "AASHTO Green Book, horizontal curve design (side friction factors for design speeds)",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lane_width_nominal",
+   "value": 3.66,
+   "unit": "m",
+   "convention": "the base lane width of the free-flow-speed adjustment of the Highway Capacity Manual: the width at which the lane imposes no speed reduction of its own, and from which the width deficit of a narrower lane is measured",
+   "source": "Transportation Research Board, Highway Capacity Manual, base conditions for free-flow speed",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.narrow_lane_speed_drop",
+   "value": 12.1,
+   "unit": "m/s",
+   "convention": "the speed the free-flow-speed adjustment of the Highway Capacity Manual takes off a lane's free-flow speed for a width deficit as large as the base lane width itself, the adjustment's entries for narrower lanes taken as a straight line; a lane's actual deficit enters in the proportion it bears to the base width, so what a narrow lane costs is this drop times the share of the base width the lane lacks",
+   "source": "Transportation Research Board, Highway Capacity Manual, lane-width adjustment to free-flow speed",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.free_flow_speed_base",
+   "value": 31.0,
+   "unit": "m/s",
+   "convention": "the free-flow speed the Highway Capacity Manual's adjustment starts from for a lane of the base width with adequate lateral clearance; it is set to the highest free-flow speed an unconstrained lane of this jurisdiction carries, so that what bounds the subject's speed on this leg is the lane's width deficit and not the base itself",
+   "source": "Transportation Research Board, Highway Capacity Manual, base free-flow speed; the jurisdiction's highest statutory maximum speed as the unconstrained value",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_tolerance",
+   "value": 1.0,
+   "unit": "m/s",
+   "convention": "the margin by which a measured speed must exceed a bound before the excess is read as the road user's and not the source's: the speed error of a tracked trajectory, applied to the two bounds that compare a speed with a speed",
+   "source": "the error class the reading's capability manifest declares for kin.speed in trajectory sources",
+   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+  }
+ ],
+ "aggregates": [],
+ "_fields": {
+  "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+ }
+}

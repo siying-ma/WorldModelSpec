@@ -1,5 +1,7 @@
-"""The gap ledger (design §9): what the ontology cannot carry, proposed by plan sessions,
-decided by the operator. Ids are allocated here; nothing else writes the file."""
+"""The gap ledger: what the ontology cannot carry, proposed by plan and repair sessions, decided
+by the operator. It lives beside the rules and concepts (`library/TrafficSpec/Gaps/`); ids come
+from a counter beside it that only grows, so an archived gap's id is never reused; nothing but
+the harness writes either file."""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -11,16 +13,29 @@ STATES = {"proposed", "accepted", "rejected", "retired"}
 class GapLedger:
     def __init__(self, path: Path):
         self.path = path
+        self.counter = path.with_name("counter.txt")
         self.rows: list[dict] = []
         if path.exists():
             self.rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
 
+    def _numbers(self) -> list[int]:
+        return [int(r["id"][1:]) for r in self.rows if str(r.get("id", "")).startswith("G") and str(r["id"])[1:].isdigit()]
+
+    def _counter(self) -> int:
+        try:
+            return int(self.counter.read_text(encoding="utf-8").strip() or 0) if self.counter.exists() else 0
+        except ValueError:
+            return 0
+
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in self.rows), encoding="utf-8")
+        self.counter.write_text(str(max(self._counter(), max(self._numbers(), default=0) + 1)) + "\n", encoding="utf-8")
 
     def next_id(self) -> str:
-        return f"G{len(self.rows) + 1}"
+        """The next id: past every id the ledger holds and past the counter, which remembers the
+        ids of rows archived with earlier runs."""
+        return f"G{max(self._counter(), max(self._numbers(), default=0) + 1, 1)}"
 
     def add(self, proposal: dict, run: str, iteration: int) -> str:
         span = proposal.get("span_text") or proposal.get("span")

@@ -7,12 +7,19 @@ import re
 _CMP = {"lt": "is less than", "le": "is at most", "eq": "equals", "ge": "is at least", "gt": "is more than"}
 
 
+class Unrendered(ValueError):
+    """A construct of the export this renderer has no phrasing for: the review cannot run on it,
+    since the reader would be shown the raw structure instead of prose."""
+
+
 def _arg(a: dict) -> str:
     if "var" in a:
         return f"`{a['var']}`"
     if "lit" in a:
         return f"'{a['lit']}'"
-    return str(a.get("nat", "?"))
+    if "nat" in a:
+        return str(a["nat"])
+    raise Unrendered(f"argument {sorted(a) if isinstance(a, dict) else a!r}")
 
 
 def _args(xs: list) -> str:
@@ -38,7 +45,7 @@ def gloss(name: str, glosses: dict[str, str]) -> str:
 
 def term(t, glosses: dict[str, str]) -> str:
     if not isinstance(t, dict):
-        return str(t)
+        raise Unrendered(f"term {t!r}")
     if "lit" in t:
         return _num(t)
     if "param" in t:
@@ -65,7 +72,10 @@ def term(t, glosses: dict[str, str]) -> str:
         return f"the negative of {term(t['neg'], glosses)}"
     if "abs" in t:
         return f"the absolute value of {term(t['abs'], glosses)}"
-    return str(t)
+    if "cond" in t:
+        return (f"({term(t['then'], glosses)} where ({formula(t['cond'], glosses)}) holds, "
+                f"otherwise {term(t['else'], glosses)})")
+    raise Unrendered(f"term {sorted(t)}")
 
 
 def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
@@ -75,7 +85,7 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
     if f == "ff":
         return "false"
     if not isinstance(f, dict):
-        return str(f)
+        raise Unrendered(f"formula {f!r}")
     if "atom" in f:
         g = gloss(f["atom"], glosses)
         ps = ", ".join(term(p, glosses) for p in f.get("params", []))
@@ -110,6 +120,10 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
     if "within" in f:
         return (f"at some observation within the next {term(f['length'], glosses)} of {f['within']} of `{f['subject']}`: "
                 f"({formula(f['body'], glosses, depth)})")
+    if "at_last" in f:
+        return (f"at the last observation of the last {term(f['length'], glosses)} of {f['at_last']} of `{f['subject']}` "
+                f"at which ({formula(f['when'], glosses, depth)}) held: ({formula(f['body'], glosses, depth)}) — "
+                f"false where it held at no observation of that stretch")
     if "until_within" in f:
         return (f"within the next {term(f['length'], glosses)} of {f['until_within']} of `{f['subject']}`, "
                 f"({formula(f['hold'], glosses, depth)}) holds until ({formula(f['reach'], glosses, depth)})")
@@ -129,7 +143,7 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
             k = _arg(f.get(key)) if key.endswith(("region", "device")) and isinstance(f.get(key), dict) else (f.get(key) if key.endswith(("region", "device")) else "")
             head = phrase.format(v=v, k=k)
             return f"for {head}: ({formula(f['body'], glosses, depth)})"
-    return str(f)
+    raise Unrendered(f"formula {sorted(f)}")
 
 
 def render_concept(export: dict, glosses: dict[str, str]) -> str:

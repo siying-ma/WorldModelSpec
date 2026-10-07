@@ -1,0 +1,639 @@
+{
+  "cell_id": "C353238",
+  "status": "draft",
+  "actor": "motor_vehicle_driver",
+  "acquisition": "original_live_run",
+  "cases": [
+    {
+      "case_id": "M010",
+      "law_id": "NRS-484B-407",
+      "frames": 1443,
+      "frames_with_sight_distance": 1443,
+      "frames_without_sight_distance": 0,
+      "occupancy_complete": true,
+      "required_measurements_complete": true,
+      "controller_phases": {
+        "overview": 60,
+        "approach": 1005,
+        "turn": 180,
+        "exit": 198
+      },
+      "source_recording": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M010-20261006T213326621237Z",
+      "video": "videos/M010.webm",
+      "termination_reason": "left_u_turn_completed",
+      "measured_setup": {
+        "approach_a": {
+          "distance_ft": 467.20649939509514,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 467.04575145651347,
+          "source_m": [
+            -125.24211120605469,
+            -61.67210006713867,
+            1.399999976158142
+          ],
+          "target_m": [
+            -4.6877128625055775e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -62.64792251586914,
+              -27.850624084472656,
+              1.3500213623046875
+            ],
+            "distance_from_eye_m": 71.14744567871094
+          }
+        },
+        "approach_b": {
+          "distance_ft": 754.5931758530184,
+          "bound": ">=",
+          "first_blocker": null,
+          "source_m": [
+            229.8943328857422,
+            -9.185844421386719,
+            1.399999976158142
+          ],
+          "target_m": [
+            -4.6877128625055775e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "straight_line_distance_ft": 755.8904732931943
+        },
+        "road_radius_m": 143.73008684821548,
+        "turn_station_m": 1256.7141563267878,
+        "turn_site_is_curved": true,
+        "paved_width_at_turn_m": 24,
+        "visibility_checked_before_ego_spawn": true,
+        "reference_500_ft": {
+          "distance_ft": 500.0,
+          "clear": false,
+          "source_m": [
+            -130.641357421875,
+            -70.57317352294922,
+            1.399999976158142
+          ],
+          "target_m": [
+            -4.6877128625055775e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -87.59103393554688,
+              -45.3399658203125,
+              1.3670469522476196
+            ],
+            "distance_from_eye_m": 49.90036392211914
+          },
+          "checked_without_dynamic_actors": true
+        },
+        "vehicle_geometry": {
+          "wheelbase_m": 3.0046479306423617,
+          "rear_axle_offset_m": -1.386404267852401,
+          "maximum_wheel_angle_radians": 1.2217303432379762,
+          "body_half_extent_m": [
+            2.3958897590637207,
+            1.081725001335144
+          ]
+        },
+        "obstruction": {
+          "blueprint": "static.prop.trafficcone02",
+          "station_m": 1268.7141563267878,
+          "position_m": [
+            12.161071523548182,
+            11.495812177553178
+          ],
+          "beyond_bend": true,
+          "lateral_offset_m": 11.65,
+          "effect": "far_edge_cone"
+        },
+        "peak_approach_speed_mph": 13.572512787012592,
+        "turn_entry_speed_mph": 4.982713081121637,
+        "speed_target_met": true,
+        "left_turn_attempted": true,
+        "opposite_lane_exit_completed": true,
+        "collision_events": [],
+        "termination_reason": "left_u_turn_completed",
+        "setup_confirmed": true
+      },
+      "files": {
+        "trace.json": "cases/M010/trace.json",
+        "manifest.json": "cases/M010/manifest.json",
+        "adapter_report.json": "cases/M010/adapter_report.json",
+        "supplementary_evidence.jsonl": "cases/M010/supplementary_evidence.jsonl"
+      }
+    },
+    {
+      "case_id": "M011",
+      "law_id": "NRS-484B-407",
+      "frames": 1440,
+      "frames_with_sight_distance": 1440,
+      "frames_without_sight_distance": 0,
+      "occupancy_complete": true,
+      "required_measurements_complete": true,
+      "controller_phases": {
+        "overview": 60,
+        "approach": 1000,
+        "turn": 181,
+        "exit": 199
+      },
+      "source_recording": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M011-20261006T214056661481Z",
+      "video": "videos/M011.webm",
+      "termination_reason": "left_u_turn_completed",
+      "measured_setup": {
+        "approach_a": {
+          "distance_ft": 500.00528650959643,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 499.8732238929728,
+          "source_m": [
+            -136.24862670898438,
+            -62.19294738769531,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.4563041986548342e-05,
+            6.0000152587890625,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -68.24210357666016,
+              -28.15548324584961,
+              1.3500863313674927
+            ],
+            "distance_from_eye_m": 76.04914855957031
+          }
+        },
+        "approach_b": {
+          "distance_ft": 754.5931758530184,
+          "bound": ">=",
+          "first_blocker": null,
+          "source_m": [
+            229.9099884033203,
+            -8.7886323928833,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.4563041986548342e-05,
+            6.0000152587890625,
+            1.2999999523162842
+          ],
+          "straight_line_distance_ft": 755.8567818068457
+        },
+        "road_radius_m": 164.20795931701775,
+        "turn_station_m": 1293.574326770632,
+        "turn_site_is_curved": true,
+        "paved_width_at_turn_m": 24,
+        "visibility_checked_before_ego_spawn": true,
+        "reference_500_ft": {
+          "distance_ft": 500.0,
+          "clear": true,
+          "source_m": [
+            -136.2476348876953,
+            -62.191612243652344,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.4563041986548342e-05,
+            6.0000152587890625,
+            1.2999999523162842
+          ],
+          "first_blocker": null,
+          "checked_without_dynamic_actors": true
+        },
+        "vehicle_geometry": {
+          "wheelbase_m": 3.0046454433508885,
+          "rear_axle_offset_m": -1.3864149303434523,
+          "maximum_wheel_angle_radians": 1.2217303432379762,
+          "body_half_extent_m": [
+            2.3958897590637207,
+            1.081725001335144
+          ]
+        },
+        "obstruction": {
+          "blueprint": "static.prop.trafficcone02",
+          "station_m": 1305.574326770632,
+          "position_m": [
+            12.141098574236942,
+            11.51516261221647
+          ],
+          "beyond_bend": true,
+          "lateral_offset_m": 11.65,
+          "effect": "far_edge_cone"
+        },
+        "peak_approach_speed_mph": 13.600645550089265,
+        "turn_entry_speed_mph": 5.080336437201487,
+        "speed_target_met": true,
+        "left_turn_attempted": true,
+        "opposite_lane_exit_completed": true,
+        "collision_events": [],
+        "termination_reason": "left_u_turn_completed",
+        "setup_confirmed": true
+      },
+      "files": {
+        "trace.json": "cases/M011/trace.json",
+        "manifest.json": "cases/M011/manifest.json",
+        "adapter_report.json": "cases/M011/adapter_report.json",
+        "supplementary_evidence.jsonl": "cases/M011/supplementary_evidence.jsonl"
+      }
+    },
+    {
+      "case_id": "M012",
+      "law_id": "NRS-484B-407",
+      "frames": 1437,
+      "frames_with_sight_distance": 1437,
+      "frames_without_sight_distance": 0,
+      "occupancy_complete": true,
+      "required_measurements_complete": true,
+      "controller_phases": {
+        "overview": 60,
+        "approach": 996,
+        "turn": 181,
+        "exit": 200
+      },
+      "source_recording": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z",
+      "video": "videos/M012.webm",
+      "termination_reason": "left_u_turn_completed",
+      "measured_setup": {
+        "approach_a": {
+          "distance_ft": 532.8216953227526,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 532.711960199311,
+          "source_m": [
+            -147.1549530029297,
+            -62.62662124633789,
+            1.399999976158142
+          ],
+          "target_m": [
+            3.071947139687836e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -73.72265625,
+              -28.381086349487305,
+              1.3500984907150269
+            ],
+            "distance_from_eye_m": 81.02528381347656
+          }
+        },
+        "approach_b": {
+          "distance_ft": 754.5931758530184,
+          "bound": ">=",
+          "first_blocker": null,
+          "source_m": [
+            229.92233276367188,
+            -8.460856437683105,
+            1.399999976158142
+          ],
+          "target_m": [
+            3.071947139687836e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "straight_line_distance_ft": 755.8288474095461
+        },
+        "road_radius_m": 186.08430692591764,
+        "turn_station_m": 1332.9517524666517,
+        "turn_site_is_curved": true,
+        "paved_width_at_turn_m": 24,
+        "visibility_checked_before_ego_spawn": true,
+        "reference_500_ft": {
+          "distance_ft": 500.0,
+          "clear": true,
+          "source_m": [
+            -140.308349609375,
+            -54.897621154785156,
+            1.399999976158142
+          ],
+          "target_m": [
+            3.071947139687836e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": null,
+          "checked_without_dynamic_actors": true
+        },
+        "vehicle_geometry": {
+          "wheelbase_m": 3.0046492489281604,
+          "rear_axle_offset_m": -1.3864063965814353,
+          "maximum_wheel_angle_radians": 1.2217303432379762,
+          "body_half_extent_m": [
+            2.3958897590637207,
+            1.081725001335144
+          ]
+        },
+        "obstruction": {
+          "blueprint": "static.prop.trafficcone02",
+          "station_m": 1344.9517524666517,
+          "position_m": [
+            12.124593575349266,
+            11.531103318591192
+          ],
+          "beyond_bend": true,
+          "lateral_offset_m": 11.65,
+          "effect": "far_edge_cone"
+        },
+        "peak_approach_speed_mph": 13.572669693365523,
+        "turn_entry_speed_mph": 5.023601702629354,
+        "speed_target_met": true,
+        "left_turn_attempted": true,
+        "opposite_lane_exit_completed": true,
+        "collision_events": [],
+        "termination_reason": "left_u_turn_completed",
+        "setup_confirmed": true
+      },
+      "files": {
+        "trace.json": "cases/M012/trace.json",
+        "manifest.json": "cases/M012/manifest.json",
+        "adapter_report.json": "cases/M012/adapter_report.json",
+        "supplementary_evidence.jsonl": "cases/M012/supplementary_evidence.jsonl"
+      }
+    },
+    {
+      "case_id": "M023",
+      "law_id": "NRS-484B-600-1a",
+      "frames": 2033,
+      "frames_with_sight_distance": 2033,
+      "frames_without_sight_distance": 0,
+      "occupancy_complete": true,
+      "required_measurements_complete": true,
+      "controller_phases": {
+        "overview": 60,
+        "approach": 1617,
+        "turn": 177,
+        "exit": 179
+      },
+      "source_recording": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M023-20261006T215712496982Z",
+      "video": "videos/M023.webm",
+      "termination_reason": "left_u_turn_completed",
+      "measured_setup": {
+        "approach_a": {
+          "distance_ft": 100.02156255126312,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 107.59516338038006,
+          "source_m": [
+            -19.3018741607666,
+            -20.51300048828125,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.9445416910457425e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -11.179545402526855,
+              -9.35634708404541,
+              1.357919454574585
+            ],
+            "distance_from_eye_m": 13.800374984741211
+          }
+        },
+        "approach_b": {
+          "distance_ft": 99.9751053457185,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 103.96816599087452,
+          "source_m": [
+            21.908140182495117,
+            -16.896472930908203,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.9445416910457425e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              15.708701133728027,
+              -10.41744613647461,
+              1.3717021942138672
+            ],
+            "distance_from_eye_m": 8.967463493347168
+          }
+        },
+        "road_radius_m": 17.473073426909178,
+        "turn_station_m": 1027.4466395568065,
+        "turn_site_is_curved": true,
+        "paved_width_at_turn_m": 24.0,
+        "visibility_checked_before_ego_spawn": true,
+        "vehicle_geometry": {
+          "wheelbase_m": 3.004648437499956,
+          "rear_axle_offset_m": -1.386422496132033,
+          "maximum_wheel_angle_radians": 1.2217303432379762,
+          "body_half_extent_m": [
+            2.3958897590637207,
+            1.081725001335144
+          ]
+        },
+        "obstruction": {
+          "blueprint": "static.prop.streetbarrier",
+          "station_m": 1072.171557274441,
+          "position_m": [
+            28.08966807472141,
+            -30.289668074721362
+          ],
+          "beyond_bend": true,
+          "lateral_offset_m": 2.8,
+          "effect": "partial_lane_barrier_beyond_bend",
+          "blocked_right_lane_offsets_m": [
+            2.4,
+            2.65,
+            2.9,
+            3.15,
+            3.4
+          ],
+          "clear_right_lane_offsets_m": [
+            0.15,
+            0.4,
+            0.65,
+            0.9,
+            1.15,
+            1.4,
+            1.65,
+            1.9,
+            2.15
+          ],
+          "partial_lane_overlap_verified": true
+        },
+        "peak_approach_speed_mph": 16.073946579400502,
+        "turn_entry_speed_mph": 5.430594844229558,
+        "speed_target_met": true,
+        "left_turn_attempted": true,
+        "opposite_lane_exit_completed": true,
+        "collision_events": [],
+        "termination_reason": "left_u_turn_completed",
+        "setup_confirmed": true
+      },
+      "files": {
+        "trace.json": "cases/M023/trace.json",
+        "manifest.json": "cases/M023/manifest.json",
+        "adapter_report.json": "cases/M023/adapter_report.json",
+        "supplementary_evidence.jsonl": "cases/M023/supplementary_evidence.jsonl"
+      }
+    },
+    {
+      "case_id": "M024",
+      "law_id": "NRS-484B-600-1a",
+      "frames": 408,
+      "frames_with_sight_distance": 408,
+      "frames_without_sight_distance": 0,
+      "occupancy_complete": true,
+      "required_measurements_complete": true,
+      "controller_phases": {
+        "overview": 60,
+        "approach": 348
+      },
+      "source_recording": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M024-20261006T213056530303Z",
+      "video": "videos/M024.webm",
+      "termination_reason": "roadway_departure",
+      "measured_setup": {
+        "approach_a": {
+          "distance_ft": 100.02156255126312,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 107.59516338038006,
+          "source_m": [
+            -19.3018741607666,
+            -20.51300048828125,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.9445416910457425e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              -11.179545402526855,
+              -9.35634708404541,
+              1.357919454574585
+            ],
+            "distance_from_eye_m": 13.800374984741211
+          }
+        },
+        "approach_b": {
+          "distance_ft": 99.9751053457185,
+          "bound": "cutoff",
+          "search_bracket_half_width_ft": 0.0008009863024934382,
+          "comparison_tolerance_ft": 1.0,
+          "mesh_vertex_spacing_m": 0.25,
+          "straight_line_distance_ft": 103.96816599087452,
+          "source_m": [
+            21.908140182495117,
+            -16.896472930908203,
+            1.399999976158142
+          ],
+          "target_m": [
+            1.9445416910457425e-05,
+            6.0,
+            1.2999999523162842
+          ],
+          "first_blocker": {
+            "label": "NONE",
+            "location_m": [
+              15.708701133728027,
+              -10.41744613647461,
+              1.3717021942138672
+            ],
+            "distance_from_eye_m": 8.967463493347168
+          }
+        },
+        "road_radius_m": 17.473073426909178,
+        "turn_station_m": 1027.4466395568065,
+        "turn_site_is_curved": true,
+        "paved_width_at_turn_m": 24.0,
+        "visibility_checked_before_ego_spawn": true,
+        "vehicle_geometry": {
+          "wheelbase_m": 3.004648437499956,
+          "rear_axle_offset_m": -1.386422496132033,
+          "maximum_wheel_angle_radians": 1.2217303432379762,
+          "body_half_extent_m": [
+            2.3958897590637207,
+            1.081725001335144
+          ]
+        },
+        "obstruction": {
+          "blueprint": "static.prop.streetbarrier",
+          "station_m": 1072.171557274441,
+          "position_m": [
+            28.08966807472141,
+            -30.289668074721362
+          ],
+          "beyond_bend": true,
+          "lateral_offset_m": 2.8,
+          "effect": "partial_lane_barrier_beyond_bend",
+          "blocked_right_lane_offsets_m": [
+            2.4,
+            2.65,
+            2.9,
+            3.15,
+            3.4
+          ],
+          "clear_right_lane_offsets_m": [
+            0.15,
+            0.4,
+            0.65,
+            0.9,
+            1.15,
+            1.4,
+            1.65,
+            1.9,
+            2.15
+          ],
+          "partial_lane_overlap_verified": true
+        },
+        "peak_approach_speed_mph": 64.997376596786,
+        "turn_entry_speed_mph": null,
+        "speed_target_met": true,
+        "left_turn_attempted": false,
+        "opposite_lane_exit_completed": false,
+        "collision_events": [],
+        "termination_reason": "roadway_departure",
+        "speed_near_bend_mph": 64.997376596786,
+        "speed_target_met_near_bend": true,
+        "departure_station_m": 1002.4466395568065,
+        "setup_confirmed": true
+      },
+      "files": {
+        "trace.json": "cases/M024/trace.json",
+        "manifest.json": "cases/M024/manifest.json",
+        "adapter_report.json": "cases/M024/adapter_report.json",
+        "supplementary_evidence.jsonl": "cases/M024/supplementary_evidence.jsonl"
+      }
+    }
+  ],
+  "sampling_hz": 20,
+  "visibility": "Minimum clear-side sampled any-of-nine-body horizon across both incoming lanes, measured each recorded frame; search-censored lower bounds are retained as such.",
+  "map_change": "Straight lead and tail each extended to 1000 m; local curve, turn site, obstruction and speed commands preserved.",
+  "labels": "No legal verdict or judgment threshold is supplied."
+}

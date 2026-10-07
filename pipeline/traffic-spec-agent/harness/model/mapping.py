@@ -22,8 +22,11 @@ class MappingIndex:
         e = self.index.get(normalize(span_text))
         return set(e["atoms"]) if e else None
 
-    def record(self, span_text: str, atoms: set[str], node_id: str) -> None:
-        self.index[normalize(span_text)] = {"atoms": sorted(atoms), "node": node_id}
+    def record(self, span_text: str, atoms: set[str], node_id: str, role: str | None = None) -> None:
+        self.index[normalize(span_text)] = {"atoms": sorted(atoms), "node": node_id, **({"role": role} if role else {})}
+
+    def entry(self, span_text: str) -> dict | None:
+        return self.index.get(normalize(span_text))
 
     def render(self) -> str:
         if not self.index:

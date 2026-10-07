@@ -1,6 +1,7 @@
-"""Feedback: AUTO_NOTES.md for the next plan, TO_USER.md for the operator, gap merge, summary."""
+"""Feedback: AUTO_NOTES.md for the next plan, the run's TO_USER.md for the operator (gap decisions, parameter and aggregate reviews, laws closed), summary."""
 from __future__ import annotations
 import json
+import re
 from pathlib import Path
 from ..store import paths
 from ..store.gaps import GapLedger
@@ -52,10 +53,22 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         for g in gaps_filed:
             lines.append(f"- {g['id']} ({g['kind']}) on `{g.get('span', '')[:80]}` — {', '.join(g.get('law_refs', []))}")
     run.auto_notes.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    to_user_lines = [l for l in to_user if l]
-    paths.TO_USER.write_text(("\n".join(f"- {l}" for l in to_user_lines) + "\n") if to_user_lines else "", encoding="utf-8")
+    write_to_user(run, [l for l in to_user if l])
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "laws": ledger.counts(),
                "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
                "concepts": concept_ledger.counts() if concept_ledger is not None else {},
                "gaps_total": len(GapLedger(paths.GAP_LEDGER).rows)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
+def write_to_user(run: Run, lines: list[str]) -> None:
+    """The operator's file keeps every iteration's items under the iteration's own heading, so an
+    item raised once (a gap candidate, a composition) is still there when the run ends. Writing an
+    iteration again replaces that iteration's section, so a second write never duplicates it."""
+    path = run.dir / "TO_USER.md"
+    head = f"## Iteration {run.iteration}"
+    old = path.read_text(encoding="utf-8") if path.exists() else ""
+    sections = [x for x in re.split(r"(?m)^(?=## Iteration \d+$)", old) if x.strip() and x.split("\n", 1)[0] != head]
+    if lines:
+        sections.append(head + "\n\n" + "\n".join(f"- {l}" for l in lines) + "\n")
+    path.write_text("\n".join(x.rstrip("\n") + "\n" for x in sections), encoding="utf-8")

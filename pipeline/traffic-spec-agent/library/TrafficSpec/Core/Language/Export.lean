@@ -45,6 +45,7 @@ mutual
     | .div a b => Json.mkObj [("div", Json.arr #[a.toJson, b.toJson])]
     | .neg a => Json.mkObj [("neg", a.toJson)]
     | .abs a => Json.mkObj [("abs", a.toJson)]
+    | .cond φ a b => Json.mkObj [("cond", Formula.toJson φ), ("then", a.toJson), ("else", b.toJson)]
   partial def Formula.toJson : Formula → Json
     | .tt => "tt"
     | .ff => "ff"
@@ -64,6 +65,8 @@ mutual
     | .within m d s φ => Json.mkObj [("within", m.toJson), ("length", d.toJson), ("subject", s), ("body", φ.toJson)]
     | .untilWithin m d s φ ψ =>
       Json.mkObj [("until_within", m.toJson), ("length", d.toJson), ("subject", s), ("hold", φ.toJson), ("reach", ψ.toJson)]
+    | .atLast m d s ψ φ =>
+      Json.mkObj [("at_last", m.toJson), ("length", d.toJson), ("subject", s), ("when", ψ.toJson), ("body", φ.toJson)]
     | .count e s op n => Json.mkObj [("count", e.toJson), ("since", s.toJson), ("op", op.toJson), ("n", n)]
     | .rises φ => Json.mkObj [("rises", φ.toJson)]
     | .definedWhen p φ => Json.mkObj [("defined_when", p.toJson), ("body", φ.toJson)]
@@ -83,7 +86,7 @@ def ArgSort.toJson : ArgSort → Json
   | .literal vs => Json.mkObj [("sort", "literal"), ("values", Json.arr (vs.map Json.str).toArray)]
   | .nat => Json.mkObj [("sort", "nat")]
 
-def Narrowing.toJson (n : Narrowing) : Json := Json.mkObj [("span", n.span), ("why", n.why)]
+def Narrowing.toJson (n : Narrowing) : Json := Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]
 
 def Concept.toJson (c : Concept) : Json :=
   Json.mkObj

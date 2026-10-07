@@ -309,7 +309,7 @@ authority. The ones CARLA needs:
   `trailer_or_combination`, `low_speed_vehicle`, `bicycle`, `electric_bicycle`, `electric_scooter`,
   `other_conveyance`, `pedestrian`, `pedestrian_with_white_cane_or_guide_animal`, `child`,
   `emergency_vehicle`, `fire_apparatus`, `official_vehicle`, `procession_vehicle`,
-  `animal_or_animal_drawn`, `rail_vehicle`, `personal_delivery_device`, `mobile_carrying_device`
+  `ridden_or_herded_animal`, `animal_drawn_vehicle`, `rail_vehicle`, `personal_delivery_device`, `mobile_carrying_device`
 - **StructureKind**: `highway`, `roadway`, `lane`, `centre_line`, `road_edge`, `shoulder`,
   `sidewalk`, `median_or_divider`, `one_way_roadway`, `intersection`, `crosswalk`, `stop_line`,
   `driveway_or_alley_entrance`, `alley`, `railway_crossing`, `controlled_access`,

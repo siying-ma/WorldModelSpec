@@ -79,6 +79,33 @@ def holdsForAll (pos : Array (Option Q)) (d : Q) (op : String) (missing : Unknow
       else if !w.adequate then R.u (.samplingGap op)
       else agg.all w.j0 i
 
+/-- The value of φ at the latest observation `j` in `[j0, i]` at which ψ held: unknown where ψ is
+    unknown at an observation later than any at which it held; none where ψ held nowhere in the range. -/
+private def atLastAt (ψ φ : Array R) (j0 i : Nat) : Option R :=
+  (List.range (i + 1 - j0)).foldl (fun (acc : Option R) k =>
+    match acc with
+    | some r => some r
+    | none =>
+      let j := i - k
+      match ψ[j]!.v with
+      | .t => some φ[j]!
+      | .u => some ⟨.u, ψ[j]!.why⟩
+      | .f => none) none
+
+/-- φ at the last observation in the window of length `d` behind each instant at which ψ held.
+    Unknown where a position is missing, where ψ is unknown later than any observation at which it
+    held, and where ψ held nowhere in a window that is not covered or not adequately sampled; false
+    where ψ held nowhere in a covered, adequately sampled window. -/
+def atLastAll (pos : Array (Option Q)) (d : Q) (op : String) (missing : UnknownReason) (ψ φ : Array R) : Array R :=
+  let wins := Time.backWindows pos d
+  (Array.range φ.size).map fun i =>
+    match wins[i]! with
+    | none => R.u missing
+    | some w =>
+      match atLastAt ψ φ w.j0 i with
+      | some r => r
+      | none => if !w.covered then truncated op else if !w.adequate then R.u (.samplingGap op) else R.f
+
 /-- φ at some observation in the window of length `d` ahead: true on a witness, false only when
     the window is covered, unknown when it runs off the trace. -/
 def withinAll (pos : Array (Option Q)) (d : Q) (op : String) (missing : UnknownReason) (φ : Array R) : Array R :=

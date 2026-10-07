@@ -1,0 +1,176 @@
+{
+  "status": "draft",
+  "adapter": "traffic-spec-raw-recording-adapter-v3",
+  "frames": 1437,
+  "inputs": {
+    "capture_evidence": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/capture/evidence.jsonl",
+      "sha256": "1fa5b46ab8801b47395e893cff6b6f30a1213467bd254bdbe6385006f6c0d987"
+    },
+    "frame_index": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/capture/native/frames.jsonl",
+      "sha256": "14f84f7fabac7d1cdb342fc643b1e9b995ff94a1e0782ebf6b10e1a45af3df7f"
+    },
+    "original_telemetry": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/trace.jsonl",
+      "sha256": "c4b755b5ae6ca36a0de42addca3da4ff044f187b5ccfbaaaaebe6481469dae3e"
+    },
+    "map": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/road.xodr",
+      "sha256": "bc624c91f8e8a87f56b841b53f021a5c271856ea45559d54c2bc5cc4ade96a2e"
+    },
+    "recorder_info": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/capture/recorder_info.txt",
+      "sha256": "adbc42e681774fda9eb84a60ce469d7ef6967bbeda4d2d2eb0e6bf6a3dcd1805"
+    },
+    "capture_manifest": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/capture/manifest.json",
+      "sha256": "16a476908644aaf7b3ce49dce32f54d99e6d2e0420349d87c61eba57c6e24362"
+    },
+    "native_map_facts": {
+      "path": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/downstream_reviews/C353238-extended-map-20261006/recordings/M012-20261006T214901893479Z/capture/native_map_facts.json",
+      "sha256": "a1a3c57b78d06ae1124def127c34e5c8fa9d161756acaf1463fca014314c05ae"
+    }
+  },
+  "full_core": "/pscratch/sd/m/msoroco/world-model-spec/repo_prep/nevada_sydney/pipeline/traffic-spec-agent/library/splits/full/TrafficSpec/Core",
+  "subject_blueprint": "vehicle.tesla.model3",
+  "native_junction_mapping": [],
+  "authored_speed_control_portions": [],
+  "native_painted_objects": [],
+  "native_centre_lines": [
+    {
+      "road_id": 1,
+      "section_id": 0,
+      "method": "Native opposing driving-lane divider; directed increasing source s; <=2m sampling",
+      "centre_road_marks": [
+        {
+          "sOffset": "0",
+          "type": "broken",
+          "weight": "standard",
+          "color": "yellow",
+          "width": "0.12",
+          "laneChange": "both"
+        }
+      ],
+      "scope": "Geometric divider; paint visibility and legal interpretation are not inferred",
+      "region_id": 6
+    }
+  ],
+  "adapter_sources": {
+    "adapter.py": "af20bb6e4c3c71ec032143e32fbbcd3cae2c2071674056d25182e93ddfc39e4e",
+    "geometry.py": "a8b16bd04409fee088bdb0961254991599f633059352f63c6dfa371a8beb7744",
+    "control_portions.py": "fbbf752e455205be2f81afd57074d9bc1b357d505160a229bbbb55c8ac244f4f"
+  },
+  "methods": {
+    "position": "body centre from recorded bounding-box vertices; CARLA y reflected",
+    "speed": "original live telemetry; mph multiplied by 0.44704",
+    "participant_motion": "original live graph actor.get_velocity only",
+    "yaw_rate": "unwrapped reflected heading; central/one-sided finite difference; degrees/s; subject-only estimate",
+    "path_length": "trapezoidal integration of original speed; gaps leave unknown",
+    "occupancy": "recorded convex body footprint intersects 2 m sampled OpenDRIVE lane/roadway polygons",
+    "sight_distance": "per-frame minimum clear-side any-body horizon over all required road lanes, attached to ego-overlapping lane/roadway regions; detailed evidence retained",
+    "weather": "darkness: sun altitude < 0; precipitation/wetness: parameter > 0; classifications are estimates"
+  },
+  "limitations": [
+    "Sight distance is a subject-relative sampled lower bound for the 500 ft test, not an exact or uncensored cutoff; rel.visible stays absent. Older centre-only captures remain unknown.",
+    "No observed signal-off enum; absent ego lamps are not inferred from controller signals.",
+    "Normalized steering control is not wheel angle; commanded gear is not observed gear.",
+    "Core device.governs is a non-optional list: it cannot distinguish unobserved governance from an empty list. Retain observed edges and report incomplete device coverage; no compliance conclusion follows.",
+    "Curved lanes have no single direction vector; lane direction omitted there.",
+    "Recorder-only traffic props establish existence/position but not a boundary; incomplete geometry leaves occupancy unknown because Core has no per-region observation mask.",
+    "Only captured/map-supported entities are emitted. Missing crosswalk/device inventory is not proof of absence; Core empty-domain quantification remains a limitation.",
+    "OpenDRIVE line/arc geometry only; unsupported geometry fails conversion.",
+    "Reference curvature is attached to local roadway patches, not to the full lane."
+  ],
+  "structures_without_observed_boundary": [],
+  "occupancy_complete": true,
+  "raw_attribute_keys": [
+    "angle",
+    "carla_acc_x",
+    "carla_acc_y",
+    "carla_acc_z",
+    "carla_affected_by_traffic_light",
+    "carla_ang_vel_x",
+    "carla_ang_vel_y",
+    "carla_ang_vel_z",
+    "carla_brake",
+    "carla_gear",
+    "carla_hand_brake",
+    "carla_id",
+    "carla_manual_gear_shift",
+    "carla_reverse",
+    "carla_speed",
+    "carla_steer",
+    "carla_throttle",
+    "carla_type_id",
+    "carla_vel_x",
+    "carla_vel_y",
+    "carla_vel_z",
+    "curve",
+    "ego_control_carla_brake",
+    "ego_control_carla_gear",
+    "ego_control_carla_hand_brake",
+    "ego_control_carla_manual_gear_shift",
+    "ego_control_carla_reverse",
+    "ego_control_carla_steer",
+    "ego_control_carla_throttle",
+    "entity_id",
+    "forward",
+    "geometry_capture_scope",
+    "geometry_only",
+    "is_junction",
+    "left_lane_marking_color",
+    "left_lane_marking_lane_change",
+    "left_lane_marking_type",
+    "left_lane_marking_width",
+    "light_Brake",
+    "light_Fog",
+    "light_HighBeam",
+    "light_Interior",
+    "light_LeftBlinker",
+    "light_LowBeam",
+    "light_Position",
+    "light_Reverse",
+    "light_RightBlinker",
+    "light_Special1",
+    "light_Special2",
+    "parent_segment",
+    "right",
+    "right_lane_marking_color",
+    "right_lane_marking_lane_change",
+    "right_lane_marking_type",
+    "right_lane_marking_width",
+    "sem_class",
+    "special_class",
+    "threedbbox",
+    "up",
+    "vehicle_light_state",
+    "vertex",
+    "vertex_point",
+    "waypoint",
+    "waypoint_bbox_polygon",
+    "waypoint_junction_id",
+    "waypoint_lane_change",
+    "waypoint_lane_id",
+    "waypoint_obj",
+    "waypoint_road_id",
+    "waypoint_s",
+    "waypoint_section_id"
+  ],
+  "supplementary_evidence": "supplementary_evidence.jsonl",
+  "visibility_frames_with_scalar": 1437,
+  "visibility_frames_without_scalar": 0,
+  "visibility_missing_reasons": {},
+  "decoder_validation": {
+    "passed": true,
+    "exit_code": 0,
+    "executable": "/pscratch/sd/m/msoroco/world-model-spec/runs/scenario_pipeline/adapters/traffic-spec-v1/decoder-v2/.lake/build/bin/adapterCheck",
+    "output": "decoded_frames=1437; manifest_complete=true; full_core=true",
+    "scope": "full Core decoding and entity references; no law evaluation"
+  },
+  "required_measurements_complete": true,
+  "required_observations": [
+    "rel.occupies",
+    "st.sight_distance"
+  ]
+}

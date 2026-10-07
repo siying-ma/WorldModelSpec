@@ -161,12 +161,11 @@ class Doctor:
         owners = {"plan.md": ("harness.phases.plan", "PLACEHOLDERS"),
                   "code.md": ("harness.phases.code", "PLACEHOLDERS"),
                   "code_concept.md": ("harness.phases.code", "PLACEHOLDERS_CONCEPT"),
-                  "blind_read.md": ("harness.phases.validate", "PLACEHOLDERS_BLIND"),
-                  "alignment_judge.md": ("harness.phases.validate", "PLACEHOLDERS_JUDGE"),
-                  "concept_blind.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_BLIND"),
                   "concept_judge.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_JUDGE"),
                   "concept_repair.md": ("harness.phases.plan", "PLACEHOLDERS_REPAIR"),
-                  "node_repair.md": ("harness.phases.plan", "PLACEHOLDERS_NODE_REPAIR")}
+                  "node_repair.md": ("harness.phases.plan", "PLACEHOLDERS_NODE_REPAIR"),
+                  "review_code.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CODE"),
+                  "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():
@@ -380,8 +379,8 @@ class Doctor:
     def captures_stay_out_of_the_rule_tree(self) -> Result:
         """No trace or capture sits under `library/TrafficSpec/`; traces are decoded at run time."""
         tree = self.lib / "TrafficSpec"
-        stray = [p for ext in ("*.json", "*.jsonl", "*.pkl") for p in tree.rglob(ext)]
-        src = ("library/TrafficSpec/**", "traces reach the monitor through Decode, never the library")
+        stray = [p for ext in ("*.json", "*.jsonl", "*.pkl") for p in tree.rglob(ext) if not {"Gaps", "Readings"} & set(p.relative_to(tree).parts)]
+        src = ("library/TrafficSpec/** (TrafficSpec/Gaps/ and TrafficSpec/Readings/ are the gap ledger and the parameter catalogues, not captures)", "traces reach the monitor through Decode, never the library")
         if stray:
             return Result("captures out of the rule tree", FAIL,
                           "agent-readable capture(s): " + ", ".join(str(p.relative_to(self.lib)) for p in stray[:5]), src)
@@ -444,7 +443,7 @@ class Doctor:
         sys.path.insert(0, str(self.repo))
         from harness.model.units import stated_figures, to_core
         corpus = self.repo / "laws" / "full_list" / "laws.jsonl"
-        src = [f"{corpus.relative_to(self.repo)} → stated figures", "readings/*.json → params (value, unit, figure_review)"]
+        src = [f"{corpus.relative_to(self.repo)} → stated figures", "library/TrafficSpec/Readings/*.json → params (value, unit, figure_review)"]
         stated: dict[tuple, list[tuple[str, str]]] = {}
         for line in _read(corpus).splitlines():
             if line.strip():
@@ -452,7 +451,7 @@ class Doctor:
                 for core, value, words in stated_figures(law["text"]):
                     stated.setdefault((core, value), []).append((law["id"], words))
         _nonempty(stated, "figures stated by the corpus")
-        readings = sorted((self.repo / "readings").glob("*.json"))
+        readings = sorted((self.lib / "TrafficSpec" / "Readings").glob("*.json"))
         flagged, reviewed, n = [], 0, 0
         for rf in readings:
             for p in json.loads(_read(rf)).get("params", []):
@@ -479,9 +478,9 @@ class Doctor:
         node) with its convention and source, and is listed here until the operator reviews it by
         removing the marker or changing the value. Nothing evaluated against the reading is final
         while a proposal stands."""
-        src = ("readings/*.json → params[].proposed",)
+        src = ("library/TrafficSpec/Readings/*.json → params[].proposed",)
         rows, n = [], 0
-        for path in sorted((self.repo / "readings").glob("*.json")):
+        for path in sorted((self.lib / "TrafficSpec" / "Readings").glob("*.json")):
             try:
                 data = json.loads(_read(path))
             except json.JSONDecodeError as e:

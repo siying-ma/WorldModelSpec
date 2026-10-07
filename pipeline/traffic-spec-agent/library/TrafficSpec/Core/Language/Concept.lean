@@ -107,6 +107,7 @@ mutual
     | .div a b => .div (substT σ a) (substT σ b)
     | .neg a => .neg (substT σ a)
     | .abs a => .abs (substT σ a)
+    | .cond φ a b => .cond (substF σ φ) (substT σ a) (substT σ b)
   partial def substF (σ : Subst) : Formula → Formula
     | .tt => .tt
     | .ff => .ff
@@ -125,6 +126,7 @@ mutual
     | .holdsFor m d s φ => .holdsFor m (substT σ d) (σ.name s) (substF σ φ)
     | .within m d s φ => .within m (substT σ d) (σ.name s) (substF σ φ)
     | .untilWithin m d s φ ψ => .untilWithin m (substT σ d) (σ.name s) (substF σ φ) (substF σ ψ)
+    | .atLast m d s ψ φ => .atLast m (substT σ d) (σ.name s) (substF σ ψ) (substF σ φ)
     | .count e s op n => .count (substF σ e) (substF σ s) op n
     | .rises φ => .rises (substF σ φ)
     | .definedWhen p φ => .definedWhen (substF σ p) (substF σ φ)
@@ -187,6 +189,7 @@ mutual
     | .div a b => do pure (.div (← expandT cs fuel a) (← expandT cs fuel b))
     | .neg a => do pure (.neg (← expandT cs fuel a))
     | .abs a => do pure (.abs (← expandT cs fuel a))
+    | .cond φ a b => do pure (.cond (← expandF cs fuel φ) (← expandT cs fuel a) (← expandT cs fuel b))
     | t => pure t
   partial def expandF (cs : List Concept) (fuel : Nat) : Formula → StateM Nat Formula
     | .derived n args ps => do
@@ -212,6 +215,8 @@ mutual
     | .within m d s φ => do pure (.within m (← expandT cs fuel d) s (← expandF cs fuel φ))
     | .untilWithin m d s φ ψ => do
       pure (.untilWithin m (← expandT cs fuel d) s (← expandF cs fuel φ) (← expandF cs fuel ψ))
+    | .atLast m d s ψ φ => do
+      pure (.atLast m (← expandT cs fuel d) s (← expandF cs fuel ψ) (← expandF cs fuel φ))
     | .count e s op n => do pure (.count (← expandF cs fuel e) (← expandF cs fuel s) op n)
     | .rises φ => do pure (.rises (← expandF cs fuel φ))
     | .definedWhen p φ => do pure (.definedWhen (← expandF cs fuel p) (← expandF cs fuel φ))

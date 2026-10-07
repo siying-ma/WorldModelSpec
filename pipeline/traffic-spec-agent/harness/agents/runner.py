@@ -15,7 +15,6 @@ import signal
 import subprocess
 import sys
 import threading
-import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -139,6 +138,7 @@ def run_claude(
     # have anticipated it. Stdin has no such limit.
 
     env = os.environ.copy()
+    env.pop("OPENAI_API_KEY", None)          # the second vendor's key is the harness's, never a session's
     if env_overrides:
         env.update(env_overrides)
 
@@ -238,32 +238,3 @@ def session_failure(code: int, result: Optional[dict], timed_out: bool) -> Optio
 def reset_hint(reason: str) -> str:
     m = re.search(r"resets? ([^\n]+)", reason)
     return m.group(1).strip() if m else ""
-
-
-def extract_cost(result: Optional[dict]) -> float:
-    if not result:
-        return 0.0
-    try:
-        return float(result.get("total_cost_usd", 0.0) or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-
-
-def extract_tokens(result: Optional[dict]) -> tuple[int, int, int, int]:
-    """``(input, output, cache_read, cache_creation)``; output includes thinking."""
-    if not result:
-        return 0, 0, 0, 0
-    usage = result.get("usage") or {}
-    try:
-        return (
-            int(usage.get("input_tokens", 0) or 0),
-            int(usage.get("output_tokens", 0) or 0),
-            int(usage.get("cache_read_input_tokens", 0) or 0),
-            int(usage.get("cache_creation_input_tokens", 0) or 0),
-        )
-    except (TypeError, ValueError):
-        return 0, 0, 0, 0
-
-
-def new_stream_path(base: Path, label: str) -> Path:
-    return base / f"{label}_{uuid.uuid4().hex[:8]}.jsonl"

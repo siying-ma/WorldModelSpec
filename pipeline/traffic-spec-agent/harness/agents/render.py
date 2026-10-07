@@ -18,18 +18,38 @@ def render(template: str, values: dict[str, str]) -> str:
 
 
 def extract_json(text: str) -> dict | None:
-    """The last JSON object in a session's result text."""
+    """The last top-level JSON object in a session's result text: one that opens outside any other
+    brace or bracket structure. A brace in prose before or after the answer (a set, a Lean structure) is
+    passed over, and an object nested inside an answer that does not parse is never taken for the
+    answer: an answer that does not parse yields nothing."""
     import json
-    for m in reversed(list(re.finditer(r"\{.*\}", text, re.S))):
-        try:
-            return json.loads(m.group(0))
-        except json.JSONDecodeError:
-            # try progressively shorter tails
-            s = m.group(0)
-            for i in range(len(s), 0, -1):
-                if s[i - 1] == "}":
-                    try:
-                        return json.loads(s[:i])
-                    except json.JSONDecodeError:
-                        continue
-    return None
+    dec = json.JSONDecoder()
+    found, depth, in_str, esc, i = None, 0, False, False, 0
+    while i < len(text):
+        ch = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"' and depth > 0:
+            in_str = True
+        elif ch == "{":
+            if depth == 0:
+                try:
+                    obj, end = dec.raw_decode(text, i)
+                    if isinstance(obj, dict):
+                        found = obj
+                    i = end
+                    continue
+                except json.JSONDecodeError:
+                    pass
+            depth += 1
+        elif ch == "[" and depth > 0:
+            depth += 1
+        elif ch in "}]" and depth > 0:
+            depth -= 1
+        i += 1
+    return found

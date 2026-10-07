@@ -9,11 +9,14 @@ from pathlib import Path
 from ..store import paths
 from ..model import nodeid
 from ..lean import lean, index_sync
-from ..model.blueprint import Node, SCENARIOS
+from ..model.blueprint import Node, SCENARIOS, normalize_verdict
 from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
-            "SCOPE_NARROWED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
+            "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
+#: What a coder's narrowing may be: a reading the words leave open, or a declaration that the vocabulary
+#: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED`.
+NARROWING_KINDS = {"reading", "no_atom", "no_operator"}
 #: Roles whose span decides when a rule applies: a coder may not narrow one (the rule would apply
 #: where the law does not), and a plan may not carry one as a residue.
 SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
@@ -57,7 +60,7 @@ DIGEST_SKIP_DIRS = {".git", ".lake", "__pycache__", ".venv", "node_modules", ".m
 #: records (saved after every transition, so a session coding beside another would otherwise see
 #: them change), and any log or pid file. The jail denies a session these paths already.
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
-                         "deferred_nodes.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md"}
+                         "deferred_nodes.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md", "review_compare.jsonl"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
 
@@ -129,6 +132,7 @@ partial def occT : TrafficSpec.Term → List (List String)
   | .aggregate _ v φ t => ["?" ++ v] :: (occF φ ++ occT t)
   | .add a b | .sub a b | .mul a b | .div a b => occT a ++ occT b
   | .neg a | .abs a => occT a
+  | .cond φ a b => occF φ ++ occT a ++ occT b
   | _ => []
 partial def occF : TrafficSpec.Formula → List (List String)
   | .atom _ as ps => argVars as :: ps.flatMap occT
@@ -140,6 +144,7 @@ partial def occF : TrafficSpec.Formula → List (List String)
   | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ => occF φ ++ occF ψ
   | .holdsFor _ d s φ | .within _ d s φ => [s] :: (occT d ++ occF φ)
   | .untilWithin _ d s φ ψ => [s] :: (occT d ++ occF φ ++ occF ψ)
+  | .atLast _ d s ψ φ => [s] :: (occT d ++ occF ψ ++ occF φ)
   | .count e s _ _ => occF e ++ occF s
   | .rises φ => occF φ
   | .definedWhen p φ => occF p ++ occF φ
@@ -176,7 +181,7 @@ def main : IO Unit := do
     ("assumptions", Json.arr (r.assumptions.map Json.str).toArray),
     ("operationalizations", Json.arr (r.operationalizations.map fun o => Json.mkObj [("standard", o.standard), ("concepts", Json.arr (o.concepts.map Json.str).toArray), ("params", Json.arr (o.params.map Json.str).toArray), ("surrogate", o.surrogate)]).toArray),
     ("residues", Json.arr (r.residues.map Json.str).toArray),
-    ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why)]).toArray), ("surrogate", r.surrogate)]
+    ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
@@ -273,6 +278,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
 
     # 4. static check
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")]
+    checks += divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else []
     if checks:
         return Verdict("CHECK_FAIL", checks)
 
@@ -306,6 +312,8 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
         elif not str(n.get("why", "")).strip(): mism.append(f"narrowing on {n.get('span')} states no why")
         elif spans[n["span"]].get("role") not in NARROWABLE_ROLES | SCOPE_ROLES:
             mism.append(f"narrowing on {n['span']} ({spans[n['span']].get('role')}), a span this node does not carry")
+        elif n.get("kind", "reading") not in NARROWING_KINDS:
+            mism.append(f"narrowing on {n['span']} has kind {n.get('kind')!r}; one of {sorted(NARROWING_KINDS)}")
     exp_surrogate = any(o.get("surrogate") for o in node.get("operationalizations", []))
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
@@ -314,6 +322,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
                       if n.get("span") in spans and spans[n["span"]].get("role") in SCOPE_ROLES]
     if narrowed_scope:
         return Verdict("SCOPE_NARROWED", narrowed_scope + ["a span that decides when the rule applies is carried as the node maps it, or the node is wrong: report it in the result note"])
+    unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]
+    if unexpressed:
+        return Verdict("UNEXPRESSED", [f"{n['span']} ({n['kind']}): {str(n.get('why', ''))[:200]}" for n in unexpressed]
+                       + ["the vocabulary or the language cannot state these words: the repair session withdraws the span as a gap or re-maps it"],
+                       extras={"unexpressed": unexpressed})
 
     # 6. claims and literals
     used = {a for a in col("ATOMS")[0][0].split(",") if a}
@@ -340,7 +353,8 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             declared.append((v, core))
         except (KeyError, ValueError):
             return Verdict("BARE_LITERAL", [f"declared literal {lit} has an unknown unit"])
-    declared = sorted(declared)
+    declared = sorted(set(declared))
+    used_lits = sorted(set(used_lits))                # a figure counts once, however often a formula writes it
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"formula literals {[(str(q), u) for q, u in used_lits]} ≠ the node's declared literals {[(str(q), u) for q, u in declared]}; a figure the law states is declared on its span, any other magnitude belongs in the reading"])
 
@@ -358,9 +372,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             fails.append(f"{name}: {status}")
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")
-        elif name in planned and SCENARIOS.get(name) and expected != SCENARIOS[name]:
-            fails.append(f"{name}: the witness declares {expected}, the plan requires {SCENARIOS[name]}")
-    for name in SCENARIOS:
+        elif name in planned and expected != (SCENARIOS.get(name) or normalize_verdict(planned[name].get("expected", ""))):
+            fails.append(f"{name}: the witness declares {expected}, the plan requires {SCENARIOS.get(name) or normalize_verdict(planned[name].get('expected', ''))}")
+    for name in list(SCENARIOS) + [p for p in planned if p not in SCENARIOS]:   # every planned scenario is a test
         if name not in {s[0] for s in scen}:
             fails.append(f"{name}: no witness of that name")
     if fails:
@@ -374,6 +388,33 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
                    + ([f"narrowings declared by the coder: {len(narrowings)}"] if narrowings else []),
                    extras={"rule_json": json.loads(col("RULEJSON")[0][0]),
                            **({"narrowings_added": narrowings} if narrowings else {})})
+
+
+def divisions_by_measure(tree) -> list[str]:
+    """Each division whose divisor reads a measured quantity, in an exported rule or concept body.
+    A measurement can be zero (a straight road's curvature, a halted vehicle's speed), and a
+    division by zero is unknown, never a verdict: the comparison is written with products."""
+    out: list[str] = []
+
+    def measures(x) -> list[str]:
+        if isinstance(x, dict):
+            return ([x["measure"]] if isinstance(x.get("measure"), str) else []) + [m for v in x.values() for m in measures(v)]
+        return [m for v in x for m in measures(v)] if isinstance(x, list) else []
+
+    def walk(x) -> None:
+        if isinstance(x, dict):
+            d = x.get("div")
+            if isinstance(d, list) and len(d) == 2 and measures(d[1]):
+                out.append(f"a division by a term that reads {', '.join(f'`{m}`' for m in sorted(set(measures(d[1]))))}: a measured quantity "
+                           "can be zero, and a division by zero is unknown, never a verdict — multiply instead (a bound on a ratio "
+                           "is a bound on a product: a radius below a bound is a curvature above the bound's reciprocal)")
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+    walk(tree)
+    return out
 
 
 def forbidden_tokens(files) -> list[str]:
@@ -580,6 +621,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if cyc:
         return Verdict("CONCEPT_CYCLE", cyc)
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")]
+    checks += divisions_by_measure(json.loads(col("BODY")[0][0])) if col("BODY") else []
     if checks:
         return Verdict("CHECK_FAIL", checks)
 
@@ -642,15 +684,16 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
             declared.append((v, core))
         except (KeyError, ValueError):
             return Verdict("BARE_LITERAL", [f"declared literal {lit} has an unknown unit"])
-    if used_lits != sorted(declared):
-        return Verdict("BARE_LITERAL", [f"body literals {[(str(q), u) for q, u in used_lits]} ≠ the record's declared literals {[(str(q), u) for q, u in sorted(declared)]}; a magnitude is a formal parameter unless the record declares it"])
+    declared = sorted(set(declared))
+    used_lits = sorted(set(used_lits))                # a figure counts once, however often the body (or its rendering as a formula) writes it
+    if used_lits != declared:
+        return Verdict("BARE_LITERAL", [f"body literals {[(str(q), u) for q, u in used_lits]} ≠ the record's declared literals {[(str(q), u) for q, u in declared]}; a magnitude is a formal parameter unless the record declares it"])
 
     # 7. witnesses
     fails = [f"instance {name}: a formal is unfilled" for name, status in col("INST") if status != "ok"]
     scen = col("SCEN")
     wanted = dict(CONCEPT_SCENARIOS)
     if rec.get("supersedes"):
-        from ..model.blueprint import normalize_verdict
         wanted["counterexample"] = normalize_verdict((rec.get("counterexample") or {}).get("expected", "violated"))
     for name, _rule, expected, got, status in scen:
         if status != "ok":

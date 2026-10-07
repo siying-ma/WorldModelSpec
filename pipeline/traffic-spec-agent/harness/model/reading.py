@@ -56,21 +56,37 @@ class Reading:
         return r
 
     @staticmethod
+    def own_proposal(entry: dict | None, law: str) -> bool:
+        """Whether a catalogue entry is a value a node of `law` proposed and the operator has not
+        reviewed: that law's repair or re-plan may still change it, since a value its own review
+        refuted must not bind its correction."""
+        from .nodeid import law_of
+        origin = str((entry or {}).get("proposed") or "").split()
+        return bool(origin) and law_of(origin[-1])[0] == law
+
+    @staticmethod
     def add_proposals(path: Path, proposals: list[dict], origin: str) -> list[dict]:
         """Enter a planner's parameter proposals into the reading at `path` as the proposed tier:
         each becomes a `params` entry carrying `proposed: <origin>` (the run, iteration and node
         that proposed it), its convention and source, until the operator reviews it by removing
-        the marker or changing the value. A name the reading already has is left as it is.
-        Returns the entries added."""
+        the marker or changing the value. A name the reading already has is left as it is, except
+        an unreviewed value a node of the same law proposed, which the new proposal replaces.
+        Returns the entries added or replaced."""
+        from .nodeid import law_of
         data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"params": [], "aggregates": []}
-        have = {p.get("name") for p in data.get("params", [])}
+        have = {p.get("name"): p for p in data.get("params", [])}
+        law = law_of(origin.split()[-1])[0] if origin.split() else ""
         added = []
         for pr in proposals:
-            if pr.get("name") in have:
-                continue
             entry = {"name": pr["name"], "value": pr["value"], "unit": pr["unit"], "convention": pr.get("convention", ""),
                      "source": pr.get("source", ""), "proposed": origin}
-            data.setdefault("params", []).append(entry); have.add(pr["name"]); added.append(entry)
+            old = have.get(pr.get("name"))
+            if old is not None:
+                if not Reading.own_proposal(old, law) or (old.get("value"), old.get("unit")) == (pr["value"], pr["unit"]):
+                    continue
+                old.clear(); old.update(entry); added.append(entry)
+                continue
+            data.setdefault("params", []).append(entry); have[pr["name"]] = entry; added.append(entry)
         if added:
             path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         return added

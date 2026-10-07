@@ -45,6 +45,6 @@ and `python -m harness init --fresh --snapshot <previous run>`:
 
 ```bash
 python -m harness loop --run_id demo6 --laws laws/example/demo/laws.jsonl \
-  --ontology_file ontology/ATOMS_train.md --reading readings/lasvegas.json --model opus \
+  --ontology_file ontology/ATOMS_train.md --reading library/TrafficSpec/Readings/lasvegas.json --model opus \
   --max_iterations 3 --plan_batch 4
 ```

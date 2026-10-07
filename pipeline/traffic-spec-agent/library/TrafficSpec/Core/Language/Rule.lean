@@ -34,12 +34,15 @@ structure Binder where
   cls : Formula
   deriving Repr, Inhabited
 
-/-- A reading chosen on a span the plan carries, declared where it is made: the span (a
+/-- A reading chosen on a span the record carries, declared where it is made: the span (a
     segmentation id for a rule, a run of the contract's words for a concept) and what the formulas
-    state more narrowly than the words. -/
+    state more narrowly than the words. `kind` is `reading` where the words leave the choice open,
+    `no_atom` or `no_operator` where the vocabulary or the language cannot state the words — a
+    declaration the gate returns for a gap, never a reading the rule stands on. -/
 structure Narrowing where
   span : String
   why : String
+  kind : String := "reading"
   deriving Repr, Inhabited, DecidableEq
 
 structure Rule where

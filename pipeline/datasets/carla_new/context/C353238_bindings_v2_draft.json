@@ -1,0 +1,867 @@
+{
+  "cell_id": "C353238",
+  "status": "draft",
+  "established_contexts": [],
+  "actor_variants": {
+    "motor_vehicle_driver": {
+      "law_refs": [
+        {
+          "template_id": "NRS-484B-200-1@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "medium",
+          "notes": "A roadway obstruction might close the right half and affect where the driver may travel; two-way width and the obstruction’s location must be checked."
+        },
+        {
+          "template_id": "NRS-484B-213-2a@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "medium",
+          "notes": "A winding road can contain a curve. This rule becomes live only if the driver goes left of center and the view is obstructed enough to create a hazard; the named obstruction need not be a sight obstruction."
+        },
+        {
+          "template_id": "NRS-484B-403-1@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "Direct U-turn safety rule; the obstruction and winding geometry can matter to whether the turn can be made safely. Its cited exceptions require separate facts."
+        },
+        {
+          "template_id": "NRS-484B-407@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "Directly concerns reversal on a curve. Check whether this winding-road segment is a curve and whether approaching drivers can see the vehicle within 500 feet."
+        },
+        {
+          "template_id": "NRS-484B-413-1@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "A U-turn changes direct course. The signal duties depend on whether a pedestrian or another vehicle may be affected. NRS-484B-768-1 addresses the analogous cyclist/scooter turning event."
+        },
+        {
+          "template_id": "NRS-484B-413-2@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "The U-turn changes course; signal distance depends on business/residential district versus other area."
+        },
+        {
+          "template_id": "NRS-484B-600-1a@motor_vehicle_driver",
+          "binding_kind": "general_duty",
+          "relevance_type": "general_duty",
+          "confidence": "high",
+          "notes": "Reasonable-speed duty applies while driving; a winding road and obstruction are relevant conditions. The extracted subject is driver; cyclist/scooter speed duties are separately listed."
+        },
+        {
+          "template_id": "NRS-484B-600-1b@motor_vehicle_driver",
+          "binding_kind": "general_duty",
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "Broad prohibition on an endangering speed; no speed or endangerment outcome is assumed."
+        },
+        {
+          "template_id": "NRS-484B-600-1e@motor_vehicle_driver",
+          "binding_kind": "general_duty",
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Absolute speed cap applies on a highway; exceeding it is unlikely during a U-turn, but speed before the maneuver is unspecified."
+        },
+        {
+          "template_id": "NRS-484B-603-1@motor_vehicle_driver",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "The law expressly names a winding highway and possible special hazards; it is a direct layout match, with speed reduction assessed only if necessary."
+        },
+        {
+          "template_id": "NRS-484B-653-1a@motor_vehicle_driver",
+          "binding_kind": "general_duty",
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "Broad reckless-driving prohibition; the scenario does not itself establish willful or wanton disregard."
+        }
+      ],
+      "context_refs": [
+        {
+          "template_id": "NRS-484B-227-1@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "divided_highway"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "divided_highway"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "A winding road could also be divided, but no divided roadway or median is given. Review only if the turn crosses a divider."
+        },
+        {
+          "template_id": "NRS-484B-300-1@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "official_device"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "official_device"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Would apply if an official device governs this location, such as a no-U-turn sign; none is stated. This is the general device-obedience rule behind NRS-484B-403-2."
+        },
+        {
+          "template_id": "NRS-484B-363-3@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "school_zone"
+            ],
+            [
+              "school_crossing_zone"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "school_zone"
+            ],
+            [
+              "school_crossing_zone"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "Requires an active school zone or school-crossing zone, which the scenario does not specify. The U-turn is the direct match."
+        },
+        {
+          "template_id": "NRS-484B-403-2@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "no_u_turn_device"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "no_u_turn_device"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "Requires a governing no-U-turn device, not given. LVMC-11-40-080 describes the same signed U-turn restriction for a cyclist/scooter subject."
+        },
+        {
+          "template_id": "NRS-484B-403-3@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "business_district"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "business_district"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "Requires a business district; a winding road could be in one, but district and intersection/divided-highway exceptions are unknown."
+        },
+        {
+          "template_id": "NRS-484B-413-3@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "following_vehicle"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "following_vehicle"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Could arise if the driver stops or sharply slows for the obstruction or turn and another vehicle is immediately behind; neither fact is given."
+        },
+        {
+          "template_id": "NRS-484B-600-1c@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "posted_speed_limit"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "posted_speed_limit"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Would apply if a speed limit is posted for this segment; no sign or speed is specified."
+        },
+        {
+          "template_id": "NRS-484B-623-1@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "other_traffic"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "other_traffic"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Could matter if slowing for the obstruction impedes following traffic and reduced speed is not necessary for safety; no following traffic is stated."
+        },
+        {
+          "template_id": "NRS-484B-627-2@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "other_traffic"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "other_traffic"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Could matter if the driver comes to a full stop on the roadway and blocks traffic while negotiating the obstruction; a safety-necessary stop is excepted."
+        },
+        {
+          "template_id": "LVMC-11-12-060@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "fire_station_entrance"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "fire_station_entrance",
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "A U-turn at a fire-station entrance would be covered, but neither a fire station nor Las Vegas location is stated."
+        },
+        {
+          "template_id": "LVMC-11-16-060@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "unposted_street"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "unposted_street"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Only if this road is within the City and no different speed limit is posted."
+        },
+        {
+          "template_id": "LVMC-11-22-010@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "General attention duty for vehicle operation; city-law applicability depends on the scenario location."
+        },
+        {
+          "template_id": "LVMC-11-22-020@motor_vehicle_driver",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "General careful-operation duty on a City highway; the winding road and obstruction could affect prudent operation, but City location is unknown."
+        }
+      ],
+      "fixed_parameters": [
+        {
+          "name": "road_layout",
+          "value": "winding_road"
+        },
+        {
+          "name": "intended_maneuver",
+          "value": "u_turn"
+        },
+        {
+          "name": "control_present",
+          "value": "obstruction"
+        },
+        {
+          "name": "subject_actor_variant",
+          "value": "motor_vehicle_driver"
+        }
+      ],
+      "variable_parameters": [
+        {
+          "name": "commanded_horn",
+          "type": "controller",
+          "range_or_domain": "Requested horn actuation; observed audible horn is separate",
+          "used_by_laws": [
+            "NRS-484B-413-1"
+          ]
+        },
+        {
+          "name": "commanded_signal",
+          "type": "controller",
+          "range_or_domain": "Requested turn or hand signal; observed signal is separate",
+          "used_by_laws": [
+            "NRS-484B-413-1",
+            "NRS-484B-413-2"
+          ]
+        },
+        {
+          "name": "commanded_speed_profile",
+          "type": "controller",
+          "range_or_domain": "Requested speed over time; not evidence of observed speed",
+          "used_by_laws": [
+            "NRS-484B-600-1a",
+            "NRS-484B-600-1b",
+            "NRS-484B-600-1e",
+            "NRS-484B-603-1",
+            "NRS-484B-653-1a"
+          ]
+        },
+        {
+          "name": "commanded_turn_path",
+          "type": "controller",
+          "range_or_domain": "Requested trajectory; not evidence of observed road occupancy",
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-213-2a",
+            "NRS-484B-403-1",
+            "NRS-484B-407"
+          ]
+        },
+        {
+          "name": "curve_at_turn",
+          "type": "world_setup",
+          "range_or_domain": "Curvature at the planned turn site; the actual turn location is derived from ego_trajectory",
+          "used_by_laws": [
+            "NRS-484B-213-2a",
+            "NRS-484B-407",
+            "NRS-484B-603-1"
+          ]
+        },
+        {
+          "name": "district_type",
+          "type": "world_setup",
+          "range_or_domain": "Business, residential, other, or unknown district",
+          "used_by_laws": [
+            "NRS-484B-413-2"
+          ]
+        },
+        {
+          "name": "ego_horn",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed horn onset and audibility",
+          "used_by_laws": [
+            "NRS-484B-413-1"
+          ]
+        },
+        {
+          "name": "ego_signal_continuous_distance",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed uninterrupted signal-on distance before turn, feet",
+          "used_by_laws": [
+            "NRS-484B-413-2"
+          ]
+        },
+        {
+          "name": "ego_speed",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed subject speed over time, mph",
+          "source_aliases": [
+            "kin.speed",
+            "ego kin.velocity magnitude",
+            "operating_speed"
+          ],
+          "used_by_laws": [
+            "NRS-484B-403-1",
+            "NRS-484B-600-1a",
+            "NRS-484B-600-1b",
+            "NRS-484B-600-1e",
+            "NRS-484B-603-1",
+            "NRS-484B-653-1a"
+          ]
+        },
+        {
+          "name": "ego_trajectory",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed position over time; heading change and road occupancy are derived",
+          "source_aliases": [
+            "kin.position",
+            "kin.heading",
+            "ego kin.velocity direction",
+            "rel.occupies"
+          ],
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-213-2a",
+            "NRS-484B-403-1",
+            "NRS-484B-407",
+            "NRS-484B-413-1",
+            "NRS-484B-413-2",
+            "NRS-484B-600-1b",
+            "NRS-484B-653-1a"
+          ]
+        },
+        {
+          "name": "ego_turn_signal",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed indicator state and onset relative to the turn",
+          "used_by_laws": [
+            "NRS-484B-413-1",
+            "NRS-484B-413-2"
+          ]
+        },
+        {
+          "name": "obstruction_geometry",
+          "type": "world_setup",
+          "range_or_domain": "Obstruction position and extent; whether it blocks right-side travel or sight",
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-403-1",
+            "NRS-484B-600-1a",
+            "NRS-484B-600-1b",
+            "NRS-484B-603-1"
+          ]
+        },
+        {
+          "name": "other_vehicles",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed positions and speeds of other vehicles over time, keyed by participant ID; relative speed is derived",
+          "source_aliases": [
+            "other-vehicle kin.velocity",
+            "drv.following",
+            "rel.oncoming"
+          ],
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-213-2a",
+            "NRS-484B-403-1",
+            "NRS-484B-407",
+            "NRS-484B-413-1",
+            "NRS-484B-600-1a",
+            "NRS-484B-600-1b",
+            "NRS-484B-603-1",
+            "NRS-484B-653-1a"
+          ]
+        },
+        {
+          "name": "pedestrians",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed pedestrian positions and potential conflicts over time, keyed by participant ID",
+          "used_by_laws": [
+            "NRS-484B-413-1",
+            "NRS-484B-600-1b",
+            "NRS-484B-603-1",
+            "NRS-484B-653-1a"
+          ]
+        },
+        {
+          "name": "road_capacity_for_traffic_lines",
+          "type": "world_setup",
+          "range_or_domain": "Number of traffic lines the road width can support; width judgment remains unresolved",
+          "used_by_laws": [
+            "NRS-484B-200-1"
+          ]
+        },
+        {
+          "name": "road_directionality",
+          "type": "world_setup",
+          "range_or_domain": "One-way or two-way and permitted travel direction",
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-213-2a"
+          ]
+        },
+        {
+          "name": "road_grade",
+          "type": "world_setup",
+          "range_or_domain": "Grade and crest position relative to the turn",
+          "used_by_laws": [
+            "NRS-484B-213-2a",
+            "NRS-484B-407",
+            "NRS-484B-603-1"
+          ]
+        },
+        {
+          "name": "road_lane_count",
+          "type": "world_setup",
+          "range_or_domain": "Nonnegative integer lane count and lane directions",
+          "used_by_laws": [
+            "NRS-484B-200-1"
+          ]
+        },
+        {
+          "name": "road_lateral_geometry",
+          "type": "world_setup",
+          "range_or_domain": "Road width, lane width, centerline, road edge, and lateral clearances, feet",
+          "used_by_laws": [
+            "NRS-484B-200-1",
+            "NRS-484B-213-2a",
+            "NRS-484B-600-1a"
+          ]
+        },
+        {
+          "name": "sight_distance",
+          "type": "world_setup",
+          "range_or_domain": "Sight distance from each approach at the turn, feet",
+          "used_by_laws": [
+            "NRS-484B-213-2a",
+            "NRS-484B-403-1",
+            "NRS-484B-407",
+            "NRS-484B-600-1a",
+            "NRS-484B-603-1"
+          ]
+        },
+        {
+          "name": "traffic_control_devices",
+          "type": "world_setup",
+          "range_or_domain": "Official device type, instruction, authority, position, and governing approach",
+          "used_by_laws": [
+            "NRS-484B-200-1"
+          ]
+        },
+        {
+          "name": "weather_surface_conditions",
+          "type": "world_setup",
+          "range_or_domain": "Surface, precipitation, ice/snow, and ambient visibility",
+          "used_by_laws": [
+            "NRS-484B-600-1a",
+            "NRS-484B-653-1a"
+          ]
+        }
+      ]
+    },
+    "cycle_or_scooter_operator": {
+      "law_refs": [
+        {
+          "template_id": "NRS-484B-768-1@cycle_or_scooter_operator",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "Direct rule for a bicycle, e-bike or scooter turning from a direct course; the obstruction affects the safety judgment. Signal exceptions depend on lane and safe-handling facts. Analogous driver turning event: NRS-484B-413-1."
+        },
+        {
+          "template_id": "NRS-484B-769@cycle_or_scooter_operator",
+          "binding_kind": "direct",
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "If a hand/arm turn signal is required under NRS-484B-768-1, this law specifies how the rider gives it; the act of signaling is not stated."
+        },
+        {
+          "template_id": "NRS-484B-777-1@cycle_or_scooter_operator",
+          "binding_kind": "direct",
+          "relevance_type": "specific_match",
+          "confidence": "high",
+          "notes": "The law expressly treats fixed or moving objects and surface hazards as reasons riding near the right may be unsafe. Check whether the obstruction impedes access to the right; this is the rider-side analogue of a road-position issue."
+        }
+      ],
+      "context_refs": [
+        {
+          "template_id": "NRS-484B-270-7a@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "interacting_motor_vehicle"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "interacting_motor_vehicle"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Could matter if the cyclist/scooter rider intentionally interferes with a motor vehicle while making the U-turn; no motor vehicle or intent is stated."
+        },
+        {
+          "template_id": "NRS-484B-785-1a@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "electric_scooter_subtype"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "electric_scooter_subtype"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "Applies to the electric-scooter subtype on a roadway; not to every cyclist in this actor variant. A local ordinance can alter the rule."
+        },
+        {
+          "template_id": "LVMC-11-40-070@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "official_device"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "official_device"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "low",
+          "notes": "Would apply if an official signal, sign or device governs this rider; none is stated. LVMC-11-40-080 specifically addresses a no-U-turn sign."
+        },
+        {
+          "template_id": "LVMC-11-40-080@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "no_u_turn_device"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "no_u_turn_device"
+            ]
+          ],
+          "relevance_type": "specific_match",
+          "confidence": "low",
+          "notes": "Requires an authorized no-U-turn sign and operation in the City; neither is stated. It addresses the same signed turn restriction for riders that NRS-484B-403-2 addresses for drivers."
+        },
+        {
+          "template_id": "LVMC-11-40-130@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "bicycle_subtype"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "bicycle_subtype",
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "General reasonable-speed duty for the bicycle subtype only, if in the City; winding geometry and obstruction affect conditions."
+        },
+        {
+          "template_id": "LVMC-11-40-185-B@cycle_or_scooter_operator",
+          "binding_kind": "requires_context",
+          "guard_alternatives": [
+            [
+              "las_vegas_jurisdiction",
+              "electric_bicycle_subtype"
+            ],
+            [
+              "las_vegas_jurisdiction",
+              "electric_scooter_subtype"
+            ]
+          ],
+          "missing_guard_alternatives": [
+            [
+              "electric_bicycle_subtype",
+              "las_vegas_jurisdiction"
+            ],
+            [
+              "electric_scooter_subtype",
+              "las_vegas_jurisdiction"
+            ]
+          ],
+          "relevance_type": "general_duty",
+          "confidence": "medium",
+          "notes": "General unsafe-speed/reckless-behavior restriction for electric-bicycle or scooter subtype in the City; not a claim that any stunt occurs."
+        }
+      ],
+      "fixed_parameters": [
+        {
+          "name": "road_layout",
+          "value": "winding_road"
+        },
+        {
+          "name": "intended_maneuver",
+          "value": "u_turn"
+        },
+        {
+          "name": "control_present",
+          "value": "obstruction"
+        },
+        {
+          "name": "subject_actor_variant",
+          "value": "cycle_or_scooter_operator"
+        }
+      ],
+      "variable_parameters": [
+        {
+          "name": "commanded_signal",
+          "type": "controller",
+          "range_or_domain": "Requested turn or hand signal; observed signal is separate",
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-769"
+          ]
+        },
+        {
+          "name": "commanded_turn_path",
+          "type": "controller",
+          "range_or_domain": "Requested trajectory; not evidence of observed road occupancy",
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "designated_turn_lane",
+          "type": "world_setup",
+          "range_or_domain": "Presence and geometry of a designated turn lane; actual rider occupancy is derived from ego_trajectory",
+          "used_by_laws": [
+            "NRS-484B-768-1"
+          ]
+        },
+        {
+          "name": "ego_hand_signal",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed arm-signal type, count, and time",
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-769"
+          ]
+        },
+        {
+          "name": "ego_speed",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed subject speed over time, mph",
+          "source_aliases": [
+            "kin.speed",
+            "ego kin.velocity magnitude",
+            "operating_speed"
+          ],
+          "used_by_laws": [
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "ego_trajectory",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed position over time; heading change and road occupancy are derived",
+          "source_aliases": [
+            "kin.position",
+            "kin.heading",
+            "ego kin.velocity direction",
+            "rel.occupies"
+          ],
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-769",
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "obstruction_geometry",
+          "type": "world_setup",
+          "range_or_domain": "Obstruction position and extent; whether it blocks right-side travel or sight",
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "other_vehicles",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed positions and speeds of other vehicles over time, keyed by participant ID; relative speed is derived",
+          "source_aliases": [
+            "other-vehicle kin.velocity",
+            "drv.following",
+            "rel.oncoming"
+          ],
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "pedestrians",
+          "type": "subject_behavior",
+          "range_or_domain": "Observed pedestrian positions and potential conflicts over time, keyed by participant ID",
+          "used_by_laws": [
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "rider_posture",
+          "type": "subject_behavior",
+          "range_or_domain": "Mounted/dismounted, hands on controls, and stunt posture",
+          "used_by_laws": [
+            "NRS-484B-768-1"
+          ]
+        },
+        {
+          "name": "rider_subtype",
+          "type": "world_setup",
+          "range_or_domain": "Bicycle, electric bicycle, or electric scooter",
+          "used_by_laws": [
+            "NRS-484B-768-1",
+            "NRS-484B-769",
+            "NRS-484B-777-1"
+          ]
+        },
+        {
+          "name": "road_lateral_geometry",
+          "type": "world_setup",
+          "range_or_domain": "Road width, lane width, centerline, road edge, and lateral clearances, feet",
+          "used_by_laws": [
+            "NRS-484B-777-1"
+          ]
+        }
+      ]
+    }
+  }
+}

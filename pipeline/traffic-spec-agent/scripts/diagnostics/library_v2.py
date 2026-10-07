@@ -45,8 +45,8 @@ class LibraryV2Checks:
         self.lib = library_root
         self.core = library_root / "TrafficSpec" / "Core"
 
-    def _ids(self) -> tuple[list[str], list[str]]:
-        text = (self.core / "Vocab" / "Ontology" / "Ids.lean").read_text(encoding="utf-8")
+    def _ids(self, core: Path | None = None) -> tuple[list[str], list[str]]:
+        text = ((core or self.core) / "Vocab" / "Ontology" / "Ids.lean").read_text(encoding="utf-8")
         atoms_part, _, prim_part = text.partition("def primitiveIds")
         atoms = _nonempty(re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', atoms_part, re.M), "atomIds")
         prims = _nonempty(re.findall(r'^\s*"(prim\.[a-z_]+)"', prim_part, re.M), "primitiveIds")
@@ -180,11 +180,15 @@ class LibraryV2Checks:
         return Result("rule imports", OK, f"{len(rules)} rule and {len(concepts)} concept files import only their whitelist", src)
 
     def manifests_complete(self) -> Result:
-        src = ("library/manifests/*.json → atoms", "library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → atomIds")
+        """A manifest describes a source over the full ontology, whichever split is active: the
+        monitor that reads it runs on the full split, so it is checked against the full atom ids."""
+        full_core = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
+        core = full_core if (full_core / "Vocab" / "Ontology" / "Ids.lean").exists() else self.core
+        src = ("library/manifests/*.json → atoms", f"{core.relative_to(self.lib)}/Vocab/Ontology/Ids.lean → atomIds")
         files = sorted((self.lib / "manifests").glob("*.json"))
         if not files:
             return Result("manifests complete", SKIP, "no manifests registered yet", src)
-        atoms, _ = self._ids()
+        atoms, _ = self._ids(core)
         bad = []
         for p in files:
             doc = json.loads(p.read_text(encoding="utf-8"))

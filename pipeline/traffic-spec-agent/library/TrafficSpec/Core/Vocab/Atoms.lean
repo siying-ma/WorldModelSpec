@@ -109,7 +109,8 @@ def ru_emergency_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x
 def ru_fire_apparatus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .fireApparatus
 def ru_official_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .officialVehicle
 def ru_procession_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .processionVehicle
-def ru_animal_or_animal_drawn (s : Scene) (x : TrackId) : Option Bool := hasClass s x .animalOrAnimalDrawn
+def ru_ridden_or_herded_animal (s : Scene) (x : TrackId) : Option Bool := hasClass s x .riddenOrHerdedAnimal
+def ru_animal_drawn_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .animalDrawnVehicle
 def ru_rail_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .railVehicle
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
@@ -190,6 +191,7 @@ def st_driveway_or_alley_entrance (s : Scene) (r : RegionId) : Option Bool := is
 def st_alley (s : Scene) (r : RegionId) : Option Bool := isKind s r .alley
 def st_curvature (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.curvature)
 def st_grade (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.grade)
+def st_crest (s : Scene) (r : RegionId) : Option Bool := isKind s r .crest
 def st_sight_distance (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.sightDistance)
 def st_railway_crossing (s : Scene) (r : RegionId) : Option Bool := isKind s r .railwayCrossing
 def st_controlled_access (s : Scene) (r : RegionId) : Option Bool := isKind s r .controlledAccess

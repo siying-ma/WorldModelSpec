@@ -106,7 +106,7 @@ def Setup.span (S : Setup) (t : TrackId) : Option (Nat × Nat) :=
 /-- Tracks that satisfy a binder's class at some instant (evaluated once per track). -/
 def candidates (S : Setup) (b : Binder) : List TrackId :=
   S.tracks.filter fun t =>
-    (evalAll (S.ctx ⟨[(b.name, .track t)]⟩) b.cls).any fun r => r.v == .t
+    (Rule.evalRuleFormula (S.ctx ⟨[(b.name, .track t)]⟩) b.cls).any fun r => r.v == .t
 
 def spansOverlap (S : Setup) (a b : TrackId) : Bool :=
   match S.span a, S.span b with
@@ -147,7 +147,7 @@ structure Timeline where
 def evaluate (S : Setup) (r : Rule) (g : Grounding) : Timeline :=
   let c := S.ctx g.binding
   let engaged := r.engagedAll c
-  let obl := evalAll c r.obligation
+  let obl := Rule.evalRuleFormula c r.obligation
   let spans := g.assign.map fun (_, t) => (t, S.span t)
   let rows := (Array.range S.n).map fun i =>
     let s := S.scenes[i]!

@@ -75,6 +75,22 @@ def aggRule : Rule :=
 #guard Rule.checkReading [aggRule] aggRule ρa = []
 #guard (Rule.checkReading [aggRule] aggRule ρ).length = 2
 #guard Formula.aggregateWords (.and (.atom "ru_aggregate" [.var "x", .lit "vehicle"] []) (.existsUser "u" (.atom "ru_aggregate" [.var "u", .lit "traffic"] []))) = ["vehicle", "traffic"]
+
+-- `cond` selects a quantity by a guard; τ observes darkness (false) and not the wet road. Where the
+-- guard is unknown a comparison is decided by cases exactly when both selections decide it alike.
+def wet : Formula := .atom "env_wet_road" [] []
+def dark : Formula := .atom "env_darkness" [] []
+def m (n : Int) : Term := .lit (metres n) .metre
+def onWet (op : CmpOp) (k : Int) : Formula := .cmp (.add (m 1) (.cond wet (m 10) (m 5))) op (m k)
+#guard (evalAll c (Formula.elimCond (onWet .gt 3))).all (·.v == .t)
+#guard (evalAll c (Formula.elimCond (onWet .lt 3))).all (·.v == .f)
+#guard (evalAll c (Formula.elimCond (onWet .gt 8))).all (·.v == .u)
+#guard (evalAll c (onWet .gt 3)).all (·.v == .u)
+#guard (evalAll c (.cmp (.cond wet (m 4) (m 4)) .eq (m 4))).all (·.v == .t)
+#guard (evalAll c (Formula.elimCond (.cmp (.cond dark (m 10) (m 5)) .eq (m 5)))).all (·.v == .t)
+#guard (evalAll c (Formula.elimCond (.cmp (m 0) .lt (.cond wet (.cond dark (m 1) (m 2)) (m 3))))).all (·.v == .t)
+#guard Formula.atoms (onWet .gt 3) = ["env_wet_road"]
+
 def v (i : Nat) (φ : Formula) : Tri := evalTri c i φ
 def why (i : Nat) (φ : Formula) : List UnknownReason := (eval c i φ).why
 
@@ -141,6 +157,14 @@ def following (g : Term) : Formula :=
 #guard v 8 (following (.lit (metres 5) .metre)) = .f
 #guard v 1 (.cmp (.measure "kin_accel_longitudinal" [X]) .le (.lit (metresPerSecondSq (-3)) .metrePerSecondSq)) = .u  -- no accel observed
 #guard v 8 (.existsRegion (.lit "lane") "r" (.and (.atom "rel_occupies" [X, .var "r"] []) (.cmp (.measure "st_lane_adjacency" [.var "r", .lit "count"]) .ge (.lit (Q.ofInt 2) .count)))) = .t
+
+-- the last observation at which a condition held: φ there; false in a covered window without one; unknown off the trace
+def fast4 : Formula := .cmp (.measure "kin_speed" [X]) .ge (mps 4)
+def pathGe (m : Int) : Formula := .cmp (.measure "kin_path_length" [X]) .ge (.lit (metres m) .metre)
+#guard v 8 (.atLast .time (sec 3) "x" fast4 (pathGe 12)) = .t      -- speed ≥ 4 last held at k = 3, where the path is 12 m
+#guard v 8 (.atLast .time (sec 3) "x" fast4 (pathGe 13)) = .f
+#guard v 8 (.atLast .time (sec 2) "x" fast4 (pathGe 0)) = .f       -- the window k = 4..8 has no observation with speed ≥ 4
+#guard why 1 (.atLast .time (sec 3) "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 20)) (pathGe 0)) = [.windowTruncated "atLast"]
 
 -- metric windows: adequacy and truncation
 def slow : Formula := .cmp (.measure "kin_speed" [X]) .le (mps 2)

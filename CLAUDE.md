@@ -11,9 +11,22 @@ library). The CARLA-first generation of this project lives on the branch
 **The repository is incomplete by design and updated continuously.** Only the artifacts named
 frozen below are finished; elsewhere a missing piece is work not yet done, not a decision taken.
 
+**Every change must earn its place.** Before adding or changing an agent, a phase, a script, a
+check, an option or a prompt rule, think twice about whether the pipeline needs it. The first
+requirement is that the pipeline completes the formalization of its corpus without a hand on it:
+no structural defect that only an operator can route around (the corpus has been scanned in full,
+so every line is in principle formalizable, and the only legitimate stops are a gap decision, a
+parameter review, and a law closed after repeated failure). The second is that the pipeline stays
+small: a feature is not better for being there; every agent, script and check must have a reason
+to exist that can be stated in one sentence; two checks that catch the same defect are one too
+many; a fix that removes a cause beats one that adds a mechanism. A part found without a reason is
+removed, not kept.
+
 Before changing anything, in this order:
 
-1. **State the plan first.** Name every file you intend to touch and the change.
+1. **State the plan first.** Name every file you intend to touch and the change, and for each
+   addition say in one sentence why the pipeline cannot do without it and which existing part, if
+   any, it replaces.
 2. **Separate what exists from what does not** (implemented, partial, absent), naming files.
 3. **Make the suggestion concrete**: the file, the function, and every artifact that must change
    with it — a Core change drags the generated tables, the prompts, the doctor and the tests.
@@ -27,7 +40,7 @@ Before changing anything, in this order:
   enforces this; extend its patterns rather than arguing an exception.
 - The corpus under `laws/**` is posted law only: `id`, `title`, `text`, `source`. Every analysis
   field (tier, theme, references, overlap decisions) lives in `laws/audit_and_scripts/` sidecars.
-- The reading (`readings/<run>.json`) is the only place a number the statute did not state may
+- The reading (`library/TrafficSpec/Readings/<run>.json`) is the only place a number the statute did not state may
   appear. A rule names parameters; it never carries a value. A parameter the reading lacks is
   proposed by the plan (`param_proposals`: name, unit, a provisional value, its convention and
   source) and the harness enters it in the reading marked `proposed`, where it stays until the
