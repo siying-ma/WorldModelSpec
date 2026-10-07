@@ -333,12 +333,36 @@ def acts_over_time(node: Node, concept_params: dict[str, list[dict]]) -> list[st
     return out
 
 
-def check_occasion(node: Node, concept_params: dict[str, list[dict]]) -> list[str]:
+#: Kinematic atoms that say nothing of motion: the clock and the body's size.
+STATIC_KIN = {"kin.time", "kin.extent"}
+
+
+def reads_motion(ids: list[str], onto: Ontology, concept_atoms: dict[str, set[str]]) -> bool:
+    """Whether a set of claimed ids reads the motion of a road user: a kinematic atom other than the
+    clock or the body's size, a primitive (each integrates motion), or a concept that reads one."""
+    def motion(a: str) -> bool:
+        return a.startswith("kin.") and a not in STATIC_KIN
+    for i in ids:
+        if motion(i) or i in onto.primitive_ids:
+            return True
+        if any(motion(a) for a in concept_atoms.get(i, set())):
+            return True
+    return False
+
+
+def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Ontology | None = None,
+                   concept_ids: set[str] | None = None, concept_atoms: dict[str, set[str]] | None = None) -> list[str]:
     """A node whose obligation names an act observed over time, and whose rule reads trigger,
     condition or exception spans, declares when each of those spans is read relative to the act:
-    where the act is recognized, at some moment while it is under way, or throughout it. A span
-    read other than where the act is recognized has an `occasion_<span>` scenario in which it
-    holds for part of the act only, so the witnesses pin the reading."""
+    where the act is recognized, at some moment while it is under way, or throughout it. A span read
+    while the act is under way needs `under_way`, an element mapping the words that say the act is
+    in progress to atoms or concepts that read the road user's motion (where the act is or is not
+    under way is what the reading turns on, so it is claimed and coded like any element), and two
+    scenarios that pin the reading: `occasion_<span>`, in which the span holds for part of the act
+    only, and `occasion_<span>_outside`, in which it holds only before the act began (read
+    `some_moment`) or throughout the act but not before it (read `throughout`). The two must expect
+    different verdicts: a rule that cannot tell the act from the stretch before it decides them
+    alike."""
     spans = node.spans()
     acts = acts_over_time(node, concept_params)
     scoped = sorted({e.get("span") for e in node.get("elements", []) if spans.get(e.get("span"), {}).get("role") in OCCASION_ROLES})
@@ -362,12 +386,31 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]]) -> list[st
     errs += [f"{node.id}: occasion names span `{k}`, which is not a trigger, condition or exception span the node maps" for k in read if k not in scoped]
     errs += [f"{node.id}: occasion does not say when span `{k}` is read" for k in scoped if k not in read]
     errs += [f"{node.id}: occasion of span `{k}` is {v!r}, not one of {sorted(OCCASIONS)}" for k, v in read.items() if v not in OCCASIONS]
-    during = [k for k, v in read.items() if v in ("some_moment", "throughout")]
-    if during and not str(occ.get("under_way") or "").strip():
-        errs.append(f"{node.id}: occasion `under_way` must say, in the atoms the obligation span claims, what marks the act as under way")
-    names = {sc.get("name") for sc in node.get("scenarios", [])}
-    errs += [f"{node.id}: span `{k}` is read `{read[k]}`; add scenario `occasion_{k}`, in which it holds for part of the act only"
-             for k in during if f"occasion_{k}" not in names]
+    during = sorted(k for k, v in read.items() if v in ("some_moment", "throughout"))
+    if during:
+        uw = occ.get("under_way")
+        if not isinstance(uw, dict) or not _ws(uw.get("words")) or not _ws(uw.get("justification")):
+            errs.append(f"{node.id}: occasion `under_way` must be an element {{words, atoms, derived, justification}}: the words that "
+                        "say the act is in progress, mapped to what the rule reads to tell an observation inside the act from one before it")
+        else:
+            ids = list(uw.get("atoms", [])) + list(uw.get("derived", []))
+            unknown = [i for i in ids if onto is not None and not onto.knows(i) and i not in (concept_ids or set())]
+            if unknown:
+                errs.append(f"{node.id}: occasion `under_way` names {unknown}, neither atoms of the ontology nor concepts of the catalogue or this plan")
+            elif onto is not None and not reads_motion(ids, onto, concept_atoms or {}):
+                errs.append(f"{node.id}: occasion `under_way` reads no motion of the road user ({ids or 'nothing'}): a place, a region "
+                            "or a constant cannot tell the act from the stretch before it — map it to a kinematic atom, a primitive, "
+                            "or a concept that reads one")
+    scs = {sc.get("name"): sc for sc in node.get("scenarios", [])}
+    for k in during:
+        a_, b_ = f"occasion_{k}", f"occasion_{k}_outside"
+        if a_ not in scs:
+            errs.append(f"{node.id}: span `{k}` is read `{read[k]}`; add scenario `{a_}`, in which it holds for part of the act only")
+        if b_ not in scs:
+            where = "only before the act began" if read[k] == "some_moment" else "throughout the act but not before it"
+            errs.append(f"{node.id}: span `{k}` is read `{read[k]}`; add scenario `{b_}`, in which it holds {where}")
+        if a_ in scs and b_ in scs and normalize_verdict(scs[a_].get("expected")) == normalize_verdict(scs[b_].get("expected")):
+            errs.append(f"{node.id}: scenarios `{a_}` and `{b_}` expect the same verdict; the reading of span `{k}` must decide them apart")
     return errs
 
 
@@ -624,7 +667,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += std_errs + proposal_conflicts.get(n.id, [])
         errs += check_anchoring(n)
         errs += check_scenarios(n, onto, concept_atoms)
-        errs += check_occasion(n, concept_params)
+        errs += check_occasion(n, concept_params, onto, concept_ids, concept_atoms)
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)
         errs += check_decomposition(by_law[law.id], law)

@@ -68,6 +68,10 @@ class Node:
             out.update(e.get("derived", []))
         for o in self.raw.get("operationalizations", []):
             out.update(concepts_of(o))
+        uw = (self.raw.get("occasion") or {}).get("under_way") if isinstance(self.raw.get("occasion"), dict) else None
+        if isinstance(uw, dict):                 # what marks the act under way is read by the rule, so it is claimed
+            out.update(uw.get("atoms", []))
+            out.update(uw.get("derived", []))
         return out
 
     def claimed_names(self) -> set[str]:

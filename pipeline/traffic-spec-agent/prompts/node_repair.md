@@ -118,8 +118,8 @@ compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "u
 narrowings[{span, why, gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (obligation or standard spans the record carries),
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>", expected, narrative, masked (blind only, a list)}],
-occasion{act, window, under_way, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected, narrative, masked (blind only, a list)}],
+occasion{act, window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 

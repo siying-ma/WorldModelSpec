@@ -236,8 +236,11 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    operationalizes standards with named reading parameters (proposing those the reading lacks) and
    reads each factor a standard names by its degree, declares when each trigger, condition and
    exception span is read where the obligation is an act observed over time (`occasion`: where the
-   act is recognized, at some moment while it is under way, or throughout it), plans four witnesses
-   (and an `occasion_<span>` witness for each span read while the act is under way), and files a gap
+   act is recognized, at some moment while it is under way, or throughout it; what marks the act
+   under way is an element that reads the road user's motion), plans four witnesses (and, for each
+   span read while the act is under way, an `occasion_<span>` witness where it holds for part of the
+   act and an `occasion_<span>_outside` witness where it holds only outside it, with different
+   verdicts), and files a gap
    where no contract carries a span. Writes `blueprint.jsonl`, `PLAN.md`, `proposed_gaps.jsonl`,
    `aggregates.jsonl`.
 2. **Validate**: A, deterministic (segmentation is a partition; total accounting; closed set;

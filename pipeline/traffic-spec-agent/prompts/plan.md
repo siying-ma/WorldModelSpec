@@ -164,11 +164,20 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    while the act is under way) or `throughout` (at every moment while it is under way). The
    words decide; where they say nothing of time, a trigger or condition is read at `some_moment`,
    since reading one instant drops situations the words cover, and an exception `throughout`, so
-   that it excuses only an act it covers whole. `window` names the act's window parameter, and
-   `under_way` says what marks the act as under way, in atoms the obligation span claims. A span
-   read at `some_moment` or `throughout` has a scenario `occasion_<span>` in which it holds for
-   part of the act only, expecting the verdict that reading gives. An occasion the formula
-   language cannot state is an `operator` gap.
+   that it excuses only an act it covers whole. Reading a trigger or condition only
+   `at_recognition` where the words do not place it there narrows where the rule applies, and the
+   review holds it to that like any narrowed trigger or condition, whichever span the record
+   discloses it on. `window` names the
+   act's window parameter. Where a span is read while the act is under way, `under_way` is an
+   element `{words, atoms, derived, justification}` saying what tells an observation inside the
+   act from one before it began: it reads the road user's motion (a kinematic atom such as the
+   heading's rate of change, a primitive, or a concept that reads one) and never a place or a
+   region alone, since the road user occupied the same region before the act began; its atoms are claimed and
+   coded like any element. Spans the rule joins by "and" are read at one and the same moment of the
+   act. Each span read while the act is under way has two scenarios with different verdicts:
+   `occasion_<span>`, in which it holds for part of the act only, and `occasion_<span>_outside`, in
+   which it holds only before the act began (`some_moment`) or throughout the act but not before it
+   (`throughout`). An occasion the formula language cannot state is an `operator` gap.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
@@ -264,8 +273,8 @@ elements[{span, atoms, derived, justification}], operationalizations[{span, stan
 params, convention, surrogate}], assumptions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
-occasion{act, window, under_way, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
+occasion{act, window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
 gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
@@ -312,7 +321,8 @@ Run the validator on the finished file and fix what it names; then confirm by re
   it; a definition-born contract quotes the definition's words and names its tolerances as parameters;
 - every `standard` span has an operationalization;
 - a node whose obligation is an act observed over time declares `occasion` for every trigger,
-  condition and exception span it maps, with an `occasion_<span>` scenario for each span read
+  condition and exception span it maps, an `under_way` that reads the road user's motion, and the
+  `occasion_<span>` and `occasion_<span>_outside` scenarios for each span read
   while the act is under way;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the
   obligations the law's nodes carry, in text order;

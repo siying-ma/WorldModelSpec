@@ -49,7 +49,8 @@ do not edit the rule.
    is satisfied, or its applicability does not engage? A dropped condition, a duty that
    vanishes when some other party is absent, an applicability narrower than the law's, a trigger
    or condition that holds during only part of the act the obligation names — each is such a
-   situation. Write it as a trace in which the law's verdict is `violated`.
+   situation. So, under question 2, is a trigger or condition that held only before that act
+   began. Write it as a trace in which the law's verdict is `violated`.
 2. **Rule too strict.** Is there a situation the law permits, or does not govern, in which the
    rule returns `violated`? An added condition, a duty read wider than the words, an
    applicability wider than the law's — each is such a situation. Write it as a trace in which

@@ -48,7 +48,10 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    narrowly than its words is dismissed; so is a situation that turns on a reading the record
    discloses of an obligation or standard span. A trigger, subject, condition, exception or
    obligation word the record leaves out, or narrows so that the rule applies where the law does
-   not, or not where it does, is upheld when the situation shows the verdict change.
+   not, or not where it does, is upheld when the situation shows the verdict change. When a
+   trigger, condition or exception is read relative to the act the obligation names — before the
+   act, while it is under way, or only where it is recognized — the reading concerns that span,
+   whichever span the record discloses it on, and is judged as a reading of that span.
 6. **Surrogates.** When the record marks the operationalization `surrogate`, the rule fixes what
    the standard leaves open, and rule 4 governs that. Such a divergence is upheld only when it
    turns on who and when the duty binds, on a party whose absence leaves the subject unjudged, on

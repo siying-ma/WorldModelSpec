@@ -126,8 +126,12 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
-   parameter, `s` the subject and `U` the formula of `under_way`: the span is read over the
-   instants of the window at which the act is under way, never only where it is recognized.
+   parameter, `s` the subject and `U` the formula of the `under_way` element, written from its
+   atoms like any element and never `.tt`: the span is read over the instants of the window at
+   which the act is under way, never only where it is recognized and never before the act began.
+   Spans the applicability joins by `.and` and reads at the same occasion go inside one window
+   together (`.and U (.and φ ψ)`), so they hold at the same moment. The `occasion_<span>_outside`
+   witness is the scene in which the span holds only outside the act.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario
