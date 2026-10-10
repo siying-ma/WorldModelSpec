@@ -96,9 +96,9 @@ You are a one-shot session. Nothing waits for a reply.
    that quantifies over parties other than its binders keeps a scenario with no such party in
    the scene and a decided verdict.
 7. **A word with no observable counterpart is never withdrawn.** An intention, a perception or a
-   knowledge, a purpose, or the legal status of a feature in the scene is read through the conduct
-   or feature it refers to and declared as an `observable_reading` narrowing; never assumed, never
-   a gap.
+   knowledge, a purpose, the legal status of a feature in the scene, or who or what controls a
+   road user's motion is read through the conduct or feature it refers to and declared as an
+   `observable_reading` narrowing; never assumed, never a gap.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
    atom or an operator is missing, what it would have to carry, and the nearest existing id with
    the clause of its contract that excludes the span, so the operator can decide a gap.
@@ -119,7 +119,7 @@ subject{binder, class_elements},
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope}],
-narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
+narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected, narrative, masked (blind only, a list)}],

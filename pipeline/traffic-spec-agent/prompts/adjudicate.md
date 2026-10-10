@@ -53,11 +53,12 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    act, while it is under way, or only where it is recognized — the reading concerns that span,
    whichever span the record discloses it on, and is judged as a reading of that span.
 6. **Words with no observable counterpart.** An intention, a perception or a knowledge, a
-   purpose, or the legal status of a feature in the scene is read through the conduct or feature it
-   refers to, and the record discloses each such reading as an `observable_reading`. A situation
-   that turns only on what the subject intended, perceived or knew apart from that conduct, or on
-   whether a feature present in the scene is official, is dismissed. A reading of the conduct that
-   misses the duty, or forbids conduct the words permit, is upheld.
+   purpose, the legal status of a feature in the scene, or who or what controls a road user's motion is read
+   through the conduct or feature it refers to, and the record discloses each such reading as an
+   `observable_reading`. A situation that turns only on what the subject intended, perceived or
+   knew apart from that conduct, on whether a feature present in the scene is official, or on
+   whether a person, an automated system or no one controls a road user in motion, is dismissed. A
+   reading of the conduct that misses the duty, or forbids conduct the words permit, is upheld.
 7. **Surrogates.** When the record marks the operationalization `surrogate`, the rule fixes what
    the standard leaves open, and rule 4 governs that. Such a divergence is upheld only when it
    turns on who and when the duty binds, on a party whose absence leaves the subject unjudged, on

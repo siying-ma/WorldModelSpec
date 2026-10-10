@@ -446,7 +446,7 @@ NARROWABLE_ROLES = {"obligation", "standard"}
 #: A narrowing that reads a word with no observable counterpart through the conduct or feature it refers
 #: to, and the closed list of what such a word may be.
 OBSERVABLE_READING = "observable_reading"
-OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose"}
+OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose", "agency"}
 
 
 def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = None) -> list[str]:

@@ -247,7 +247,7 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    standards have parameters in the reading or proposed; no zero literal declared; plan narrowings
    only on carried obligation or standard spans, except an `observable_reading` — a word with no
    observable counterpart (an intention, a perception or a knowledge, a purpose, the legal status of
-   a feature on the road) read through the conduct or feature it refers to, of one of those four
+   a feature on the road, who or what controls a vehicle) read through the conduct or feature it refers to, of one of those five
    categories, on any carried span, which `TO_USER.md` lists for review; node id derived from the law id; one node per
    obligation span, an accepted node never re-planned; same words same atoms across the run;
    compositions resolve, no cycles; no residue on a trigger, subject, condition or exception span

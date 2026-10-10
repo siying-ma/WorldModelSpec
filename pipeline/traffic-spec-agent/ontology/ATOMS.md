@@ -316,10 +316,13 @@ read through the conduct or the outcome it governs: an intention by the act it l
 intention to turn by the turn the road user makes within a window ahead, or by the signal given
 for it), a duty to perceive, ascertain or make sure by the outcome the check is there to secure
 (the movement made with the clearances the reading sets), a purpose by the conduct it explains.
-Where the words offer observable evidence themselves, the rule reads that evidence (what was in an
+Who or what controls a vehicle — a person at the controls, an automated driving system, no one —
+is not observable either: "drives", "operates" and "the driver" are read through the vehicle's
+controlled motion, a vehicle moving on the road is taken to be driven, and the duty binds that
+vehicle's conduct whoever or whatever controls it. Where the words offer observable evidence themselves, the rule reads that evidence (what was in an
 actual road user's line of sight is `rel.visible`; what could be seen from or at a place is
 `st.sight_distance`). Each such reading is disclosed on its span as a narrowing of kind
-`observable_reading` with its category (`intention`, `perception`, `status`, `purpose`): it is a
+`observable_reading` with its category (`intention`, `perception`, `status`, `purpose`, `agency`): it is a
 reading of the words, not an approximation by a neighbouring atom, and never an assumption or a
 gap. A state of mind that shows in no conduct is outside what a trace can check, and a rule never
 assumes one. The control state of

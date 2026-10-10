@@ -116,14 +116,16 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    dropping it makes the rule apply where the law does not. Such a span is an **assumption**
    (`asm.<name>`, with the meaning a trace must declare; an undeclared assumption leaves the
    verdict unknown) or a gap. A word with no observable counterpart is neither: an intention, a
-   perception or a knowledge, a purpose, or the legal status of a feature in the scene is read
-   through the conduct or feature it refers to (an intention to act by the act that follows within a
-   window ahead, or the signal for it; a duty to ascertain or make sure by the outcome it secures; a
-   posted or official feature by its presence), as the ontology's section on what is not an atom
+   perception or a knowledge, a purpose, the legal status of a feature in the scene, or who or what
+   controls a road user's motion is read through the conduct or feature it refers to (an intention to act by the
+   act that follows within a window ahead, or the signal for it; a duty to ascertain or make sure by
+   the outcome it secures; a posted or official feature by its presence; "drives" and "operates", and
+   the word for the one who does, by the road user's controlled motion, whether a person or an
+   automated system is at the controls), as the ontology's section on what is not an atom
    says. The element maps the atoms or concepts of that conduct or feature, and the record declares
    the reading as a narrowing `{span, why, kind: "observable_reading", category}` with category
-   `intention`, `perception`, `status` or `purpose`, on the trigger, subject, condition, exception
-   or obligation span it reads. It is only for these four kinds of word: a feature or a quantity
+   `intention`, `perception`, `status`, `purpose` or `agency`, on the trigger, subject, condition, exception
+   or obligation span it reads. It is only for these five kinds of word: a feature or a quantity
    the vocabulary lacks is still a gap. The one exception is a span that imposes no observable condition
    at all ("regardless of the weather"): carry it as a residue with `"scope": "none"` and say
    why; the review holds it to that. A reading you choose on a span you do carry, where the words
@@ -281,7 +283,7 @@ node_id, law_refs, subject{binder, class_elements}, segmentation[{id, text, role
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
-binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
+binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
 occasion{act, window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
