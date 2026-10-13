@@ -123,7 +123,7 @@ narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: 
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected, narrative, masked (blind only, a list)}],
-occasion{act, window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
+occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 

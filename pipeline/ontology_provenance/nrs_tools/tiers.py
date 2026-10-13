@@ -77,8 +77,7 @@ EXCLUDED = {
 # Words removed from a corpus line because they name an item outside the operational design domain
 # that the rest of the line does not need; the line stays. Each edit is (the words removed, the reason),
 # applied by make_laws.py and recorded on the line as `scope_edit` in laws_meta.jsonl; the corpus
-# README lists them. The unedited text stays in sources/ and in laws/example/archive/corpus_2026-09-20/
-# (decided 2026-10-13).
+# README lists them. The unedited text stays in sources/ and in git (commit 300f115) (decided 2026-10-13).
 SCOPE_EDITS = {
  'LVMC-11-22-100': ("horse or ", "a ridden horse is outside the ODD; the duty to drive no vehicle over newly laid pavement stays"),
 }

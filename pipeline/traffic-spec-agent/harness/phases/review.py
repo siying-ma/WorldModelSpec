@@ -436,7 +436,8 @@ def execute_divergences(run: Run, n: Node, answer: dict, reading: Reading,
                               f"unknown only because the trace is incomplete: " + "; ".join(sorted({_trace_remedy(r) for r in why.split(",")})))
         else:
             line = head + (f" [{why}]" if tag == "unknown" and why else "") + f'; law: "{_ws(d.get("law_words"))[:120]}"; rule: "{_ws(d.get("rule_reads"))[:120]}"'
-            confirmed.append({"line": line, "div": d, "rule": tag + (f" ({why})" if tag == "unknown" and why else "")})
+            confirmed.append({"line": line, "div": d, "rule": tag + (f" ({why})" if tag == "unknown" and why else ""),
+                              "key": f"{d.get('kind')}:{quoted_spans(n, law_text, d.get('law_words'))}"})
     return confirmed, unconfirmed, errors, incomplete
 
 
@@ -471,7 +472,8 @@ def broader_contract_items(gaps: list) -> list[dict]:
                             "situation": f"the words \"{words}\" of span {g.get('span')} exclude {_ws(g.get('factor'))}, "
                                          f"which the carried contract admits",
                             "law_words": words, "lawful_verdict": "not_applicable", "rule_reads": nearest},
-                    "rule": "not executed: no contract makes the distinction, so no trace can show it"})
+                    "rule": "not executed: no contract makes the distinction, so no trace can show it",
+                    "key": f"broader_contract:{g.get('span')}"})
     return out
 
 
@@ -533,17 +535,20 @@ def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Pat
 
 
 def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, reading: Reading, rule_json: dict | None,
-                     coder_narrowings: list[dict], out_dir: Path) -> tuple[bool, list[str], list[str]]:
-    """(accepted, reasons, advisories). Accepted when no divergence is both confirmed by execution
-    and upheld by the adjudicator; the reviewer's prose verdict alone neither accepts nor returns. A
+                     coder_narrowings: list[dict], out_dir: Path) -> tuple[bool, list[str], list[str], list[str]]:
+    """(accepted, reasons, advisories, keys). Accepted when no divergence is both confirmed by execution
+    and upheld by the adjudicator; the reviewer's prose verdict alone neither accepts nor returns.
+    `keys` name the upheld items, each by its kind and the spans whose words it quotes, for the
+    loop's count of repeated outcomes. A
     well-formed answer is run at once, and an incomplete trace (an atom left out, a look-back not
-    covered or sampled) is a defect the reviewer is asked once to repair, like a schema defect; one
-    still incomplete after that is recorded as unconfirmed. A divergence confirmed on the first
+    covered or sampled), or one on which the rule gives the very verdict the reviewer claims for the
+    law, is a defect the reviewer is asked once to repair, like a schema defect; one still incomplete
+    or agreeing after that is recorded as unconfirmed. A divergence confirmed on the first
     answer counts even when the second answer drops it."""
     if not enabled(run):
-        return True, [], ["reviewer off"]
+        return True, [], ["reviewer off"], []
     if rule_json is None:
-        return False, ["the gate exported no rule to review"], []
+        return False, ["the gate exported no rule to review"], [], []
     glosses = validate_phase.glosses_for(n, onto, run)
     aggs = validate_phase.aggregates_for(n, reading)
     try:
@@ -574,14 +579,19 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
             executed[key] = execute_divergences(run, n, a, reading, out_dir, law.text)
         return executed[key]
 
-    check = lambda a: behaviour_defects(a, law.text, rendering, binders) + run_traces(a)[3]
+    # a divergence whose trace gives the rule the law's verdict shows nothing; the reviewer revises its
+    # trace or drops it, once, like a trace left incomplete
+    check = lambda a: behaviour_defects(a, law.text, rendering, binders) + run_traces(a)[3] + [
+        f"{u.replace(' (the rule agrees with the law on this trace)', '')}: the rule gives the law's verdict on this trace, "
+        "so it does not show the situation described — revise the trace until it does, or drop the divergence"
+        for u in run_traces(a)[1]]
     answer, errs = _session(run, out_dir, "review_behaviour", prompt, check)
     if answer is None:
         if errs:
-            return False, [f"behaviour review: {e}" for e in errs], []
-        return True, [], ["review skipped (dry run)"]
+            return False, [f"behaviour review: {e}" for e in errs], [], []
+        return True, [], ["review skipped (dry run)"], []
     if answer.get("verdict") not in VERDICTS or not isinstance(answer.get("divergences", []), list):
-        return False, ["behaviour review: the answer is not a review (no verdict or divergence list): " + "; ".join(errs)], []
+        return False, ["behaviour review: the answer is not a review (no verdict or divergence list): " + "; ".join(errs)], [], []
     _c, unconfirmed, errors, incomplete = run_traces(answer)
     confirmed, seen = [], set()
     for res in executed.values():                          # every answer's confirmations, the first answer's included
@@ -600,5 +610,5 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         "reviewer_verdict": answer.get("verdict"), "rulings": [{"divergence": i["line"], "ruling": r, "why": w} for i, r, w in rulings],
         "unconfirmed": unconfirmed, "errors": errors, "schema_defects": errs}, ensure_ascii=False, indent=1), encoding="utf-8")
     if upheld:
-        return False, upheld, advisories
-    return True, [], advisories + (["the reviewer said `return` but no divergence was confirmed and upheld"] if answer.get("verdict") == "return" else [])
+        return False, upheld, advisories, sorted({i["key"] for i, r, _w in rulings if r == "upheld"})
+    return True, [], advisories + (["the reviewer said `return` but no divergence was confirmed and upheld"] if answer.get("verdict") == "return" else []), []

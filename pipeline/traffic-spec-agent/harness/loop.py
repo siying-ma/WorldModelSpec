@@ -3,7 +3,6 @@ node reviewed against its law → integrate → feedback, until nothing is plann
 accepts nothing new."""
 from __future__ import annotations
 import json
-import re
 from dataclasses import asdict
 from pathlib import Path
 import shutil
@@ -308,7 +307,8 @@ def _files_of(kind: str, ident: str) -> list[str]:
 
 
 def run_loop(opts: Options) -> dict:
-    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    import threading
     run = Run(opts)
     run.dir.mkdir(parents=True, exist_ok=True)
     if not run.reading_file.exists():
@@ -386,7 +386,15 @@ def run_loop(opts: Options) -> dict:
         # before any law is planned; its users stay held and uncharged
         repaired: list[ConceptRecord] = []
         if not stage_at_least("repaired"):
+            # repair sessions are independent and each writes only its own directory: they run together, and
+            # each is recorded in the progress file as it finishes
+            prog_lock = threading.Lock()
+
+            def record(key: str, ident: str, rdir) -> None:
+                with prog_lock:
+                    prog.setdefault(key, {})[ident] = str(rdir); save_progress(run, prog)
             try:
+                jobs = []
                 for e in concept_ledger.repairable():
                     rec_raw = None
                     for cand in sorted(run.dir.glob("iter-*/code/concept__*/concept.json"), reverse=True):
@@ -395,10 +403,11 @@ def run_loop(opts: Options) -> dict:
                             rec_raw = d; break
                     if rec_raw is None:
                         continue
-                    users = [n.raw for n in carried if e.concept in concept_deps(n)]
-                    rdir = plan_phase.run_repair(run, ConceptRecord(rec_raw), e.reasons, Path(e.last_task), defs, users)
-                    prog["repairs"][e.concept] = str(rdir)
-                    save_progress(run, prog)
+                    jobs.append((e.concept, ConceptRecord(rec_raw), e.reasons, Path(e.last_task), [n.raw for n in carried if e.concept in concept_deps(n)]))
+                with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as pool:
+                    futures = {pool.submit(plan_phase.run_repair, run, rec, reasons, last, defs, users): cid for cid, rec, reasons, last, users in jobs}
+                    for f in as_completed(futures):
+                        record("repairs", futures[f], f.result())
             except session.SessionUnavailable as ex:
                 print(f"[loop] a repair session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
                 feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: a repair session never ran — {ex}"],
@@ -406,27 +415,34 @@ def run_loop(opts: Options) -> dict:
                 persist(); break
             try:
                 planned_laws = {e.law for e in ledger.entries.values() if e.state == "planned"}
+                by_law: dict[str, list] = {}
                 for e in node_ledger.repairable(planned_laws):
                     if e.node in prog.get("node_repairs", {}):
                         continue
-                    f = Path(e.last_task) / "node.json"
-                    if not f.exists():
+                    if not (Path(e.last_task) / "node.json").exists():
                         node_ledger.failed(e.node, ["no record found in the last task directory"]); continue
-                    nrec = Node(json.loads(f.read_text(encoding="utf-8")))
-                    siblings = [Node(v) for v in run.all_nodes().values() if Node(v).law == e.law] + \
-                               [Node(d) for d in run.load_deferred() if Node(d).law == e.law and d.get("node_id") != e.node]
-                    for o in node_ledger.entries.values():      # the law's other nodes under repair: their revised record if one exists, else their last planned one
-                        if o.law != e.law or o.node == e.node or o.node in {s.id for s in siblings}:
-                            continue
-                        rec_o = plan_phase.load_node_repair(Path(prog["node_repairs"][o.node])) if o.node in prog.get("node_repairs", {}) else None
-                        fo = Path(o.last_task) / "node.json"
-                        if rec_o is None and fo.exists():
-                            rec_o = Node(json.loads(fo.read_text(encoding="utf-8")))
-                        if rec_o is not None:
-                            siblings.append(rec_o)
-                    rdir = plan_phase.run_node_repair(run, nrec, e.reasons, Path(e.last_task), by_id[e.law], defs, siblings, reading, onto)
-                    prog.setdefault("node_repairs", {})[e.node] = str(rdir)
-                    save_progress(run, prog)
+                    by_law.setdefault(e.law, []).append(e)
+
+                def repair_law(entries: list) -> None:
+                    """A law's nodes one after another: each repair sees the revised records of the siblings before it."""
+                    for e in entries:
+                        nrec = Node(json.loads((Path(e.last_task) / "node.json").read_text(encoding="utf-8")))
+                        siblings = [Node(v) for v in run.all_nodes().values() if Node(v).law == e.law] + \
+                                   [Node(d) for d in run.load_deferred() if Node(d).law == e.law and d.get("node_id") != e.node]
+                        for o in node_ledger.entries.values():  # the law's other nodes under repair: their revised record if one exists, else their last planned one
+                            if o.law != e.law or o.node == e.node or o.node in {s.id for s in siblings}:
+                                continue
+                            rec_o = plan_phase.load_node_repair(Path(prog["node_repairs"][o.node])) if o.node in prog.get("node_repairs", {}) else None
+                            fo = Path(o.last_task) / "node.json"
+                            if rec_o is None and fo.exists():
+                                rec_o = Node(json.loads(fo.read_text(encoding="utf-8")))
+                            if rec_o is not None:
+                                siblings.append(rec_o)
+                        rdir = plan_phase.run_node_repair(run, nrec, e.reasons, Path(e.last_task), by_id[e.law], defs, siblings, reading, onto)
+                        record("node_repairs", e.node, rdir)
+                with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as pool:
+                    for f in as_completed([pool.submit(repair_law, entries) for entries in by_law.values()]):
+                        f.result()
             except session.SessionUnavailable as ex:
                 print(f"[loop] a node repair session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
                 feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: a node repair session never ran — {ex}"],
@@ -810,6 +826,7 @@ def run_loop(opts: Options) -> dict:
                 futures = {n.id: ex.submit(code_phase.run_code, run, n, reading, registry,
                                            [f for o, fs in wave_files.items() if o != n.id for f in fs]) for n in wave}
                 results = {nid: f.result() for nid, f in futures.items()}
+            to_review: list[tuple] = []
             for n in wave:
                 v = results[n.id]
                 ndir = code_phase.node_dir(run, n.id)
@@ -853,13 +870,25 @@ def run_loop(opts: Options) -> dict:
                 added = list(v.extras.get("narrowings_added", []))
                 if added:
                     coder_narrowings[n.id] = added
+                to_review.append((n, v, ndir, added))
+
+            def review_one(item):
+                n, v, ndir, added = item
                 try:
-                    ok_b, reasons_b, adv_b = review_phase.review_behaviour(run, n, by_id[n.law], onto, reading, v.extras.get("rule_json"), added, ndir / "review")
+                    return review_phase.review_behaviour(run, n, by_id[n.law], onto, reading, v.extras.get("rule_json"), added, ndir / "review"), None
                 except session.SessionUnavailable as e:
+                    return None, e
+            # the wave's reviews are independent and take no lock: they run together, and their outcomes are
+            # applied only once all have finished, since a rollback rewrites files a running review reads
+            with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
+                reviewed = list(ex.map(review_one, to_review))
+            for (n, v, ndir, added), (out, e) in zip(to_review, reviewed):
+                if e is not None:
                     code_phase.rollback(n.id, baselines[n.id], ndir)
                     sessions_down = True
                     to_user.append(f"the behaviour review for `{n.id}` never ran ({e}); the law keeps its attempt budget — rerun the loop later")
                     ledger.defer(n.law, [f"behaviour review never ran: {e}"]); continue
+                ok_b, reasons_b, adv_b, keys_b = out
                 for a in adv_b:
                     if a != "reviewer off":
                         notes.append(f"behaviour review of `{n.id}`, advisory: {a}")
@@ -872,8 +901,7 @@ def run_loop(opts: Options) -> dict:
                     failed_ids.add(n.id); prog["nodes"][n.id] = "BEHAVIOUR"
                     notes.append(f"`{n.id}`: behaviour review returned it — " + "; ".join(reasons_b[:4]))
                     # one outcome per review: the same kind of divergence on the same words of the law
-                    keys = sorted({f"behaviour:{n.id}:{m.group(1)}:{m.group(2)}" for r in reasons_b
-                                   for m in [re.search(r"\((rule_[a-z_]+)\) \[([^\]]*)\]", r)] if m})
+                    keys = sorted(f"behaviour:{n.id}:{k}" for k in keys_b)
                     repeated = ledger.record_outcomes(n.law, keys)
                     reasons_full = [f"behaviour review of `{n.id}`: {r}" for r in reasons_b]
                     if repeated:

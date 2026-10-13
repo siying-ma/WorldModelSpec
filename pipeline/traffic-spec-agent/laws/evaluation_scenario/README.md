@@ -1,10 +1,10 @@
 # Evaluation scenarios — what a trace must show before a line can be judged
 
-`scenarios.jsonl` and `../example/test/scenarios.jsonl` together carry **one record per line of
-`../full_list/laws.jsonl`** — 249 records, same ids, each file in corpus order. The test lines'
-records sit beside the test split so that development, which does not read the test split, does
-not read them either; the records of the lines that left the corpus on 2026-10-13 are kept in
-`scenarios_excluded.jsonl`. Each record says what an evaluator needs from a trace before it can decide that
+`scenarios.jsonl` carries **one record per line of `../full_list/laws.jsonl`** — 249 records, same
+ids, same order; the records of the lines that left the corpus on 2026-10-13 are kept in
+`scenarios_excluded.jsonl`. This folder is the instruction set for the developers of the adapter
+(what a trace must show before each law can be judged); the pipeline and its development sessions
+do not read it. Each record says what an evaluator needs from a trace before it can decide that
 line: which observations the line requires, when the line is active, what the text excepts, and
 what it demands of timing.
 

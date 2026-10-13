@@ -5,10 +5,9 @@
 | path | what it holds |
 |---|---|
 | `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (249 obligations) and `definitions.jsonl` (123), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
-| `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl` (221 / 28), each with the `definitions.jsonl` that goes with it; the test lines' evaluation records are in `example/test/scenarios.jsonl` (`audit_and_scripts/SPLIT.md`) |
-| `example/demo/`, `example/smoke/`, `example/carla_smoke/`, `example/carla_600_1a/` | reference-closed subsets of the training set for a first run (14 lines of everyday driving), for a smoke test (2 of them, one composing the other), for a CARLA smoke test (2 lines whose duties carry standards of judgement, one of them a surrogate), and the surrogate line alone; each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
-| `example/archive/` | retired subsets, kept as the input of the runs made on them, and `corpus_2026-09-20/`: the corpus, split, sidecars, evaluation records and ontology as they were before the scope of 2026-10-13 |
-| `evaluation_scenario/` | one evaluation description per training line (the test lines' beside the test split; the excluded lines' in `scenarios_excluded.jsonl`) — required observations, activation conditions, exceptions, timing requirements (see its own README) |
+| `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl` (221 / 28), each with the `definitions.jsonl` that goes with it (`audit_and_scripts/SPLIT.md`) |
+| `example/demo/`, `example/carla_smoke/` | reference-closed subsets of the training set for a first run (16 lines of everyday driving) and for a CARLA smoke test (2 lines whose duties carry standards of judgement, one of them a surrogate); each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
+| `evaluation_scenario/` | for the adapter's developers, not read by the pipeline or its development sessions: one evaluation description per corpus line (the excluded lines' in `scenarios_excluded.jsonl`) — required observations, activation conditions, exceptions, timing requirements (see its own README) |
 | `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 43, `unobservable.jsonl` 4, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 292); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
 
 The parsers, the selection list and the generators that produce all of it live outside the agent's
@@ -35,7 +34,9 @@ These corpus lines are not the posted text as published, or not the line the cor
 the scope. Every change is made by the generator from `nrs_tools/tiers.py` (`SCOPE_EDITS`) or
 `nrs_tools/overlaps.py`, never by hand, and is recorded on the line in
 `audit_and_scripts/laws_meta.jsonl` (`scope_edit`, `supersedes`). The unedited text stays in
-`pipeline/ontology_provenance/nrs_tools/sources/` and in `example/archive/corpus_2026-09-20/`.
+`pipeline/ontology_provenance/nrs_tools/sources/` and in git: the corpus, split, sidecars, evaluation records
+and ontology before the scope of 2026-10-13 are those of commit `300f115`, and retired subsets are in
+the history of `laws/example/`.
 
 | line | change | posted words | corpus words | why |
 |---|---|---|---|---|

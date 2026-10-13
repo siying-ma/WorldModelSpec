@@ -4,7 +4,9 @@
 
 Always: the road-user classes and atoms the ontology no longer carries (the former
 `animal_or_animal_drawn` and those retired with the long-tail laws on 2026-10-13) are dropped from
-the trace's class lists and the manifest, so traces made before either change decode.
+the trace's class lists and the manifest, so traces made before either change decode. The turn
+indicator is declared absent: the adapter writes `left` in every scene of every case, whatever the
+light state, so no rule that reads a signal is judged on it until the adapter is fixed.
 
 With --fill, the facts CARLA knows but the adapter does not export are added, and the manifest
 declares them observed: no ice or snow, the visibility distance given (clear air), and a lane width
@@ -44,6 +46,7 @@ def main() -> None:
     atoms = manifest["atoms"]
     for retired in RETIRED_ATOMS:
         atoms.pop(retired, None)
+    atoms["sig.turn_indicator"] = "absent"
 
     widths = 0
     if a.fill:

@@ -354,7 +354,9 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
                    concept_ids: set[str] | None = None, concept_atoms: dict[str, set[str]] | None = None) -> list[str]:
     """A node whose obligation names an act observed over time, and whose rule reads trigger,
     condition or exception spans, declares when each of those spans is read relative to the act:
-    where the act is recognized, at some moment while it is under way, or throughout it. A span read
+    where the act is recognized, at some moment while it is under way, or throughout it. Where the
+    obligation names alternative acts, `act` lists them and they share the window, `under_way` and
+    the scenarios. A span read
     while the act is under way needs `under_way`, an element mapping the words that say the act is
     in progress to atoms or concepts that read the road user's motion (where the act is or is not
     under way is what the reading turns on, so it is claimed and coded like any element), and two
@@ -376,8 +378,11 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     if not isinstance(occ, dict):
         return [f"{node.id}: `occasion` must be an object {{act, window, under_way, spans}}"]
     errs = []
-    if occ.get("act") not in acts:
-        errs.append(f"{node.id}: occasion `act` must be the concept of the obligation span observed over time ({acts or 'none here'})")
+    act = occ.get("act")
+    named = act if isinstance(act, list) else [act]       # alternatives the obligation names share one occasion
+    if not named or any(a not in acts for a in named):
+        errs.append(f"{node.id}: occasion `act` must be the concept of the obligation span observed over time, or the list of "
+                    f"them when the obligation names alternative acts ({acts or 'none here'}); got {act!r}")
     if occ.get("window") not in node.params():
         errs.append(f"{node.id}: occasion `window` must be a parameter the node names (the act's window), got {occ.get('window')!r}")
     read = occ.get("spans")
@@ -802,6 +807,21 @@ def literal_value_errors(cid: str, formal: str, values: list[str]) -> list[str]:
     return errs
 
 
+def kind_claim_errors(c: ConceptRecord, formal: str, values: list[str]) -> list[str]:
+    """A literal formal whose admissible spellings are all region kinds (or all device kinds) is the
+    kind a quantifier ranges over. The gate counts the concept as reading the kind atom of every
+    spelling (the reads are taken over every instance), so the record claims each of them."""
+    from ..lean import surface
+    spellings = surface.enumeration_spellings()
+    for enum, prefix in (("StructureKind", "st."), ("DeviceKind", "dev.")):
+        if values and all(v in spellings.get(enum, ()) for v in values):
+            missing = [prefix + v for v in values if (prefix + v).replace(".", "_") not in c.claimed_names()]
+            if missing:
+                return [f"{c.id}: literal formal `{formal}` admits the kinds {values}, so the body reads the kind atom of each; "
+                        f"claim {missing} on the element that maps the words naming the place or device"]
+    return []
+
+
 def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accepted: dict[str, dict],
                   plan_ids: set[str], nodes: dict[str, Node], concept_atoms: dict[str, set[str]], mode: str) -> list[str]:
     errs = [f"{c.id}: missing field `{k}`" for k in CONCEPT_REQUIRED if k not in c.raw]
@@ -837,7 +857,7 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
         if s == "literal" and not (isinstance(a.get("values"), list) and a["values"] and all(isinstance(v, str) for v in a["values"])):
             errs.append(f"{cid}: literal formal `{n}` needs `values`, the admissible spellings")
         elif s == "literal":
-            errs += literal_value_errors(cid, str(n), a["values"])
+            errs += literal_value_errors(cid, str(n), a["values"]) + kind_claim_errors(c, str(n), a["values"])
     pnames = [p.get("name") for p in c.params()]
     if len(set(pnames)) != len(pnames):
         errs.append(f"{cid}: duplicate formal parameter")

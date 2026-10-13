@@ -43,6 +43,7 @@ TYPE_NAMES = {
     ("dev.human_direction", "role"): "HumanRole",
     ("dev.human_direction", "indication"): "HumanIndication",
     ("sig.headlamp", "state"): "HeadlampState",
+    ("sig.turn_indicator", "state"): "TurnIndicatorState",
     ("sig.warning_lamp", "colour"): "LampColour",
     ("sig.warning_lamp", "mode"): "LampMode",
     ("sig.warning_lamp", "facing"): "Facing",

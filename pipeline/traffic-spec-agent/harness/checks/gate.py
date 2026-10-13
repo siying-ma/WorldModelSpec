@@ -14,7 +14,7 @@ from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
             "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS",
-            "GATE_TIMEOUT", "OK"]
+            "PARAM_MISMATCH", "GATE_TIMEOUT", "OK"]
 #: What a coder's narrowing may be: a reading the words leave open, a declaration that the vocabulary
 #: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED` —, or
 #: the coder's account of an `observable_reading` the plan declared on the same span.
@@ -127,8 +127,12 @@ def task_concurrent(work: Path) -> set[str]:
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
 -- relates (a comparison does not); `?v` marks a quantifier variable, `$` a composition (its mapped
--- variables are anchored by the composed rule).
+-- variables are anchored by the composed rule). A comparison with a literal zero ties nothing: a
+-- measure compared with zero says that it is measured, not which entity it is measured of.
 def argVars (as : List TrafficSpec.Arg) : List String := as.filterMap fun a => match a with | .var v => some v | _ => none
+def isZeroLit : TrafficSpec.Term → Bool
+  | .lit q _ => TrafficSpec.Q.isZero q
+  | _ => false
 mutual
 partial def occT : TrafficSpec.Term → List (List String)
   | .measure _ as => [argVars as]
@@ -143,7 +147,8 @@ partial def occT : TrafficSpec.Term → List (List String)
 partial def occF : TrafficSpec.Formula → List (List String)
   | .atom _ as ps => argVars as :: ps.flatMap occT
   | .same a b => [argVars [a, b]]
-  | .cmp l _ r => occT l ++ occT r      -- a comparison relates magnitudes, not entities: no tie
+  | .cmp l _ r =>                        -- a comparison relates magnitudes, not entities: no tie
+    if isZeroLit l || isZeroLit r then (occT l ++ occT r).flatMap (·.map fun v => [v]) else occT l ++ occT r
   | .derived _ as ps => argVars as :: ps.flatMap occT
   | .rule _ m | .ruleApplies _ m => [("$" :: m.map (·.2))]
   | .not φ | .always φ | .eventually φ => occF φ
@@ -367,6 +372,10 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     used_lits = sorted(set(used_lits))                # a figure counts once, however often a formula writes it
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"formula literals {[(str(q), u) for q, u in used_lits]} ≠ the node's declared literals {[(str(q), u) for q, u in declared]}; a figure the law states is declared on its span, any other magnitude belongs in the reading"])
+    mism = param_mismatches(json.loads(col("RULEJSON")[0][0]), accepted_concepts,
+                            {n: str(p.get("unit", "")) for n, p in reading.params.items()}, node.literals())
+    if mism:
+        return Verdict("PARAM_MISMATCH", mism)
 
     # 7. witnesses
     scen = col("SCEN")
@@ -481,6 +490,53 @@ def harness_failure(hout: str) -> Verdict:
     return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
 
 
+def param_mismatches(formula_json, concepts: dict[str, dict] | None, sources: dict[str, str], literals: list[dict]) -> list[str]:
+    """What a concept call passes for a parameter the concept declares: a named parameter whose unit
+    (`sources`, name → unit: the reading's parameters for a rule, the concept's own formals for a
+    body) is the declared one, or a figure declared in `literals` in that unit. Any other literal,
+    zero included, stands in for a magnitude the reading should hold, and a unit that differs reads
+    the reading's value as something it is not."""
+    from fractions import Fraction
+    from ..model import units
+    core = lambda u: units.FACTORS[u][0] if u in units.FACTORS else None
+    from_json = {v: k for k, v in PUNIT_JSON.items()}
+    declared = set()
+    for lit in literals:
+        try:
+            c, v = units.to_core(lit.get("value"), lit.get("unit", ""))
+            declared.add((v, c))
+        except (KeyError, ValueError):
+            pass
+    by_name = {cid.replace(".", "_"): rec for cid, rec in (concepts or {}).items()}
+    out: list[str] = []
+
+    def visit(x) -> None:
+        if isinstance(x, dict):
+            name = x.get("derived") or x.get("quantity")
+            rec = by_name.get(name) if isinstance(name, str) else None
+            for f, t in zip(rec.get("params", []) if rec else [], x.get("params", [])):
+                want, what = core(f.get("unit", "")), f"`{name}` parameter `{f.get('name')}` ({f.get('unit')})"
+                if isinstance(t, dict) and "param" in t:
+                    got = sources.get(t["param"])
+                    if got is None:
+                        out.append(f"{what} is passed `{t['param']}`, which has no unit here: name a parameter of the reading")
+                    elif core(got) != want:
+                        out.append(f"{what} is passed `{t['param']}` in {got}: the plan proposes a parameter in {f.get('unit')}")
+                elif isinstance(t, dict) and "lit" in t:
+                    q = Fraction(int(t["lit"]["num"]), int(t["lit"]["den"]))
+                    u = from_json.get(t.get("unit"), t.get("unit"))
+                    if u != want or (q, u) not in declared:
+                        out.append(f"{what} is passed the literal {q} {t.get('unit')}, which no declared figure is: "
+                                   f"a magnitude the text leaves open is a parameter of the reading, in {f.get('unit')}")
+            for v in x.values():
+                visit(v)
+        elif isinstance(x, list):
+            for v in x:
+                visit(v)
+    visit(formula_json)
+    return out
+
+
 def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[str]:
     """Quantifier variables (`?v` groups) not connected to a binder or a composition (`$`) through
     the occurrence groups, by union-find over shared variables."""
@@ -513,7 +569,8 @@ def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[st
 # =============================================================================================
 CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND", "CONCEPT_CYCLE", "CHECK_FAIL",
                     "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL",
-                    "WITNESS_FAIL", "SUPERSESSION_NO_DIFF", "DUPLICATE_CONCEPT", "VACUOUS", "GATE_TIMEOUT", "OK"]
+                    "WITNESS_FAIL", "SUPERSESSION_NO_DIFF", "DUPLICATE_CONCEPT", "VACUOUS", "UNEXPRESSED", "PARAM_MISMATCH",
+                    "GATE_TIMEOUT", "OK"]
 ALLOWED_CONCEPT_IMPORTS = {"TrafficSpec.Core.Language.Concept"}
 PUNIT_JSON = {"metre": "metre", "second": "second", "metrePerSecond": "metre_per_second", "metrePerSecondSq": "metre_per_second_sq",
               "degree": "degree", "degreePerSecond": "degree_per_second", "ratio": "ratio", "count": "count"}
@@ -704,6 +761,12 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if (decl.get("supersedes") or None) != (rec.get("supersedes") or None): mism.append("supersedes differs from the record")
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
+    unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]
+    if unexpressed:
+        return Verdict("UNEXPRESSED", [f"`{str(n.get('span'))[:80]}` ({n['kind']}): {str(n.get('why', ''))[:200]}" for n in unexpressed]
+                       + ["the vocabulary or the language cannot state these words: the repair session retypes a formal the body "
+                          "cannot honour, or withdraws the concept naming what is missing"],
+                       extras={"unexpressed": unexpressed})
 
     # 6. claims and literals
     used = {a for a in col("ATOMS")[0][0].split(",") if a}
@@ -733,6 +796,10 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     used_lits = sorted(set(used_lits))                # a figure counts once, however often the body (or its rendering as a formula) writes it
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"body literals {[(str(q), u) for q, u in used_lits]} ≠ the record's declared literals {[(str(q), u) for q, u in declared]}; a magnitude is a formal parameter unless the record declares it"])
+    mism = param_mismatches(json.loads(col("BODY")[0][0]), accepted, {p["name"]: str(p.get("unit", "")) for p in rec.params()},
+                            rec.get("literals", []))
+    if mism:
+        return Verdict("PARAM_MISMATCH", mism)
 
     # 7. witnesses
     fails = [f"instance {name}: a formal is unfilled" for name, status in col("INST") if status != "ok"]

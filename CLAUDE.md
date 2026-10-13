@@ -57,15 +57,18 @@ Before changing anything, in this order:
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.
   Edit Core only while `full` is active, then switch back: the switch re-archives and
   regenerates, and the doctor's `core matches split` check catches an edit made under `train`.
-- The test split (`laws/example/test/`: its laws, definitions and evaluation records) is held out
-  from development: a development session does not read it, and never shapes a prompt, an
-  ontology rule or Core around a test law. The held-out atoms' rows of `ontology/ATOMS.md` are
+- The test split (`laws/example/test/`: its laws and definitions) is held out from development:
+  a development session does not read it, and never shapes a prompt, an ontology rule or Core
+  around a test law. The held-out atoms' rows of `ontology/ATOMS.md` are
   frozen in `laws/audit_and_scripts/split_atoms.json` and the doctor fails when one changes; they
   change only by regenerating the split. The harness defaults to the training split.
+- `laws/evaluation_scenario/` is the instruction set for the developers of the adapter (what a
+  trace must show before each law can be judged). Development sessions of the pipeline do not
+  read it, and nothing in the pipeline reads it.
 - The corpus covers ordinary urban Las Vegas driving, judged for a vehicle driver. A law leaves
   only by the rule in `laws/README.md` (Scope), recorded in
   `pipeline/ontology_provenance/nrs_tools/tiers.py` (`EXCLUDED`);
-  the corpus before the scope is archived in `laws/example/archive/corpus_2026-09-20/`.
+  the corpus before the scope is that of commit `300f115`.
 - Legal aggregate words ("vehicle", "traffic") are the atom `ru.aggregate` with the word as its
   argument; the reading declares membership. A rule never expands a word into classes.
 - A node is two files, `Rules/<Body>/<NodeId>.lean` and `TrafficSpecWitness/<Body>/<NodeId>.lean`,

@@ -178,7 +178,8 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    that it excuses only an act it covers whole. Reading a trigger or condition only
    `at_recognition` where the words do not place it there narrows where the rule applies, and the
    review holds it to that like any narrowed trigger or condition, whichever span the record
-   discloses it on. `window` names the
+   discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
+   and they share one occasion: the window, `under_way` and the scenarios. `window` names the
    act's window parameter. Where a span is read while the act is under way, `under_way` is an
    element `{words, atoms, derived, justification}` saying what tells an observation inside the
    act from one before it began: it reads the road user's motion (a kinematic atom such as the
@@ -285,7 +286,7 @@ params, convention, surrogate}], assumptions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
-occasion{act, window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
+occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
 gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```

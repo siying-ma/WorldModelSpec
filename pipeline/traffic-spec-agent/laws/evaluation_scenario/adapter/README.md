@@ -217,7 +217,7 @@ reading them for another vehicle reports unknown.
 
 | Key | Type | CARLA `VehicleLightState` |
 |---|---|---|
-| `turn_indicator` | `left` / `right` | `LeftBlinker` / `RightBlinker` (both lit means `hazard`) |
+| `turn_indicator` | `off` / `left` / `right` | `LeftBlinker` / `RightBlinker`; `off` when neither is lit (both lit means `hazard`, and the indicator is `off`) |
 | `brake_lamp` | bool | `Brake` |
 | `hazard` | bool | both blinkers |
 | `headlamp` | `off` / `low_beam` / `high_beam` | `LowBeam` / `HighBeam` |
@@ -227,10 +227,10 @@ reading them for another vehicle reports unknown.
 | `warning_lamps` | [{`colour`, `mode`, `facing`}] | |
 | `horn`, `hand_signal`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
 
-**Open Core gap.** `turn_indicator` has no "off" value: an indicator observed off cannot be written.
-Write nothing (unknown) until Core decides. Until then, a rule of the form "must signal before
-changing lanes" can never come out `violated` on this source. The ego's lamps also need the
-modified generator.
+Write `turn_indicator` from the light state of every frame, `off` included: a rule that requires a
+signal can come out `violated` only where the source says the indicator was off. Where the light
+state is not read, leave the key out and mark `sig.turn_indicator` absent in the manifest. The ego's
+lamps also need the modified generator.
 
 ### 4.5 Structures, devices, environment, relations
 

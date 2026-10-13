@@ -46,8 +46,10 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    tolerance, a reasonable rate), the rule bounds it with a parameter the reading sets. A
    situation whose verdict turns only on how large that magnitude should be is dismissed.
 5. **Disclosed narrowings.** A factor of a standard that the record discloses reading more
-   narrowly than its words is dismissed; so is a situation that turns on a reading the record
-   discloses of an obligation or standard span. A trigger, subject, condition, exception or
+   narrowly than its words is dismissed; so is a situation that turns on a disclosed reading of
+   how an obligation or standard is performed (a magnitude, the moment a completed act is judged).
+   A reading, disclosed or not, that changes which road users, places or other parties the duty
+   binds or concerns is judged like a word left out. A trigger, subject, condition, exception or
    obligation word the record leaves out, or narrows so that the rule applies where the law does
    not, or not where it does, is upheld when the situation shows the verdict change. When a
    trigger, condition or exception is read relative to the act the obligation names — before the

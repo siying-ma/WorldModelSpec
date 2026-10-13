@@ -17,7 +17,7 @@ needs a gap. Each held-out row of `ATOMS.md` is frozen in `split_atoms.json` (`h
 with its SHA-256), and the doctor fails when a row no longer matches.
 
 The sections below are the audit of the split of 2026-09-20, kept as its record; that split's
-files are archived in `laws/example/archive/corpus_2026-09-20/`.
+files are those of git commit `300f115`.
 
 ## The split of 2026-09-20 (archived)
 
