@@ -178,7 +178,6 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "sig_reverse_lamp", [x] => pure (b (sig_reverse_lamp s (← ent x)) name)
   | "sig_warning_lamp", [x, col] => pure (b (sig_warning_lamp_colour s (← ent x) (← enumLit LampColour.ofString col)) name)
   | "sig_warning_lamp", [x, col, m] => pure (b (sig_warning_lamp_shows s (← ent x) (← enumLit LampColour.ofString col) (← enumLit LampMode.ofString m)) name)
-  | "sig_signal_arm", [x] => pure (b (sig_signal_arm s (← ent x)) name)
   | "sig_siren", [x] => pure (b (sig_siren s (← ent x)) name)
   | "sig_horn", [x] => pure (b (sig_horn s (← ent x)) name)
   | "sig_hand_signal", [x, k] => pure (eqEnum (sig_hand_signal s (← ent x)) (← enumLit HandSignal.ofString k) name)
@@ -251,7 +250,7 @@ where
     "dev_human_direction_indication", "dev_school_bus_signal_on_track", "dev_school_bus_signal_red_flashing",
     "dev_school_bus_signal_amber_flashing", "dev_school_bus_signal_stop_arm", "dev_governs", "dev_inoperative",
     "sig_turn_indicator", "sig_brake_lamp", "sig_hazard", "sig_headlamp", "sig_position_lamp",
-    "sig_reverse_lamp", "sig_warning_lamp", "sig_signal_arm", "sig_siren", "sig_horn", "sig_hand_signal",
+    "sig_reverse_lamp", "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
     "sig_door_open", "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
     "env_ice_or_snow", "rel_ahead_behind_in_lane", "rel_ahead_in_lane", "rel_behind_in_lane", "rel_oncoming",
     "rel_same_direction", "rel_bearing", "rel_contact", "rel_visible"]

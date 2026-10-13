@@ -72,8 +72,6 @@ structure Signals where
   turnIndicator : Option TurnSide := none
   brakeLamp : Option Bool := none
   hazard : Option Bool := none
-  headlamp : Option HeadlampState := none
-  positionLamp : Option Bool := none
   warningLamps : Option (List WarningLamp) := none
   siren : Option Bool := none
   horn : Option Bool := none

@@ -243,7 +243,6 @@ inductive SignCode
   | motorVehiclesProhibited
   | truckRoute
   | noTrucks
-  | turnoutAhead
   deriving DecidableEq, Repr, Inhabited
 
 namespace SignCode
@@ -276,7 +275,6 @@ def ofString (s : String) : Option SignCode :=
   | "motor_vehicles_prohibited" => some .motorVehiclesProhibited
   | "truck_route" => some .truckRoute
   | "no_trucks" => some .noTrucks
-  | "turnout_ahead" => some .turnoutAhead
   | _ => Option.none
 def toString : SignCode → String
   | .noLeftTurn => "no_left_turn"
@@ -306,7 +304,6 @@ def toString : SignCode → String
   | .motorVehiclesProhibited => "motor_vehicles_prohibited"
   | .truckRoute => "truck_route"
   | .noTrucks => "no_trucks"
-  | .turnoutAhead => "turnout_ahead"
 instance : ToString SignCode := ⟨toString⟩
 end SignCode
 
@@ -409,7 +406,6 @@ inductive HumanRole
   | flagger
   | schoolCrossingGuard
   | railroadFlagger
-  | processionEscort
   deriving DecidableEq, Repr, Inhabited
 
 namespace HumanRole
@@ -419,14 +415,12 @@ def ofString (s : String) : Option HumanRole :=
   | "flagger" => some .flagger
   | "school_crossing_guard" => some .schoolCrossingGuard
   | "railroad_flagger" => some .railroadFlagger
-  | "procession_escort" => some .processionEscort
   | _ => Option.none
 def toString : HumanRole → String
   | .policeOfficer => "police_officer"
   | .flagger => "flagger"
   | .schoolCrossingGuard => "school_crossing_guard"
   | .railroadFlagger => "railroad_flagger"
-  | .processionEscort => "procession_escort"
 instance : ToString HumanRole := ⟨toString⟩
 end HumanRole
 

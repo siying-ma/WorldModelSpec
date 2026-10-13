@@ -108,9 +108,6 @@ def ru_child (s : Scene) (x : TrackId) : Option Bool := hasClass s x .child
 def ru_emergency_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .emergencyVehicle
 def ru_fire_apparatus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .fireApparatus
 def ru_official_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .officialVehicle
-def ru_procession_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .processionVehicle
-def ru_ridden_or_herded_animal (s : Scene) (x : TrackId) : Option Bool := hasClass s x .riddenOrHerdedAnimal
-def ru_animal_drawn_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .animalDrawnVehicle
 def ru_rail_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .railVehicle
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
@@ -316,8 +313,6 @@ def devicesOfKind (s : Scene) (k : DeviceKind) : List DeviceId :=
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnSide := (s.user x).bind (·.sig.turnIndicator)
 def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
-def sig_headlamp (s : Scene) (x : TrackId) : Option HeadlampState := (s.user x).bind (·.sig.headlamp)
-def sig_position_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.positionLamp)
 def sig_warning_lamp (s : Scene) (x : TrackId) : Option (List WarningLamp) := (s.user x).bind (·.sig.warningLamps)
 /-- A warning lamp of the given colour lit, in any mode or facing. -/
 def sig_warning_lamp_colour (s : Scene) (x : TrackId) (c : LampColour) : Option Bool :=

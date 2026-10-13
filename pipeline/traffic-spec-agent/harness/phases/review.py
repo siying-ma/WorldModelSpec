@@ -27,7 +27,7 @@ import re
 from pathlib import Path
 
 from ..agents import render, session
-from ..lean import lean
+from ..lean import lean, render_formula
 from ..model import corpus, nodeid, ontology
 from ..model.blueprint import Node
 from ..model.reading import Reading
@@ -39,8 +39,10 @@ PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms
 PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "record", "rendered", "contracts", "divergences")
 RULINGS = {"upheld", "dismissed", "reading"}
 VERDICTS = {"accept", "return"}
+GAP_KINDS = {"standard_factor", "broader_contract"}
 KINDS = {"rule_permits_unlawful", "rule_forbids_lawful", "rule_undecided"}
-LAWFUL = {"violated": "violated", "compliant": "compliant", "not_applicable": "notApplicable"}
+#: The verdicts a reviewer may give the law, spelt as the review harness prints the rule's (`Verdict.tag`).
+LAWFUL = {"violated", "compliant", "not_applicable"}
 
 
 def enabled(run: Run) -> bool:
@@ -51,8 +53,42 @@ def _ws(s) -> str:
     return " ".join(str(s or "").split())
 
 
+def _norm(s) -> str:
+    """Whitespace-normalized, case-folded, without backticks, double quotation marks or the
+    backslashes that escape them: the marks a quotation adds or drops do not make it less verbatim."""
+    return _ws(re.sub(r'[`"\\\u201c\u201d]', "", str(s or "")).replace("\u2019", "'").replace("''", "'")).lower()
+
+
 def _in(q: str, haystack: str) -> bool:
-    return bool(_ws(q)) and _ws(q).lower() in _ws(haystack).lower()
+    """The quote occurs in the haystack, punctuation at its edges aside. A quote elided with `…`,
+    `...` or `[...]` occurs when every fragment does, in order, and the fragments together carry at
+    least three words."""
+    frags = [f for f in (_norm(x).strip(" .,;:") for x in re.split(r"\[\s*(?:\u2026|\.\.\.)\s*\]|\u2026|\.\.\.", str(q or ""))) if f]
+    if not frags or (len(frags) > 1 and sum(len(f.split()) for f in frags) < 3):
+        return False
+    h, pos = _norm(haystack), 0
+    for f in frags:
+        i = h.find(f, pos)
+        if i < 0:
+            return False
+        pos = i + len(f)
+    return True
+
+
+def _quoted(q: str, haystack: str) -> bool:
+    """`_in`, also with the rendering's annotations left out of both the quote and the haystack."""
+    return _in(q, haystack) or _in(render_formula.bare(q), render_formula.bare(haystack))
+
+
+def _strings(x) -> list[str]:
+    """Every string value of a JSON value, depth first."""
+    if isinstance(x, str):
+        return [x]
+    if isinstance(x, dict):
+        return [s for v in x.values() for s in _strings(v)]
+    if isinstance(x, list):
+        return [s for v in x for s in _strings(v)]
+    return []
 
 
 def _session(run: Run, out_dir: Path, label: str, prompt: str, check):
@@ -228,8 +264,9 @@ def behaviour_defects(answer: dict, law_text: str, rendering: str, binders: list
     if not isinstance(divs, list):
         return errs + ["`divergences` must be a list"]
     gaps = answer.get("gap_candidates", [])
-    if not isinstance(gaps, list) or not all(isinstance(g, dict) and all(_ws(g.get(k)) for k in ("span", "words", "factor", "nearest")) for g in gaps):
-        errs.append("`gap_candidates` must be a list of objects with `span`, `words`, `factor` and `nearest`")
+    if not isinstance(gaps, list) or not all(isinstance(g, dict) and all(_ws(g.get(k)) for k in ("span", "words", "factor", "nearest"))
+                                             and g.get("kind") in GAP_KINDS for g in gaps):
+        errs.append("`gap_candidates` must be a list of objects with `kind` (`standard_factor` or `broader_contract`), `span`, `words`, `factor` and `nearest`")
     else:
         for k, g in enumerate(gaps, 1):
             if not _in(g.get("words", ""), law_text):
@@ -251,7 +288,7 @@ def behaviour_defects(answer: dict, law_text: str, rendering: str, binders: list
             errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
         if not _in(d.get("law_words", ""), law_text):
             errs.append(f"divergence {k}: law_words is not verbatim from the law")
-        if not _in(d.get("rule_reads", ""), rendering):
+        if not _quoted(d.get("rule_reads", ""), rendering):
             errs.append(f"divergence {k}: rule_reads is not verbatim from the rendering")
     return errs
 
@@ -368,7 +405,7 @@ def execute_divergences(run: Run, n: Node, answer: dict, reading: Reading,
     for k, d in divs.items():
         p = out_dir / f"disagreement_{k}.json"
         p.write_text(json.dumps(d.get("trace"), ensure_ascii=False, indent=1), encoding="utf-8")
-        traces.append((k, p, LAWFUL[d["lawful_verdict"]], {b: int(t) for b, t in d["grounding"].items()}))
+        traces.append((k, p, d["lawful_verdict"], {b: int(t) for b, t in d["grounding"].items()}))
     reading_json = out_dir / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
     harness = out_dir / "review_harness.lean"
@@ -404,14 +441,38 @@ def execute_divergences(run: Run, n: Node, answer: dict, reading: Reading,
 
 
 def gap_candidate_lines(gaps: list) -> list[str]:
-    """One line per factor the law names (span and verbatim words), however many aspects of it the
-    reviewer listed: the operator decides a named factor, not each thing it could be read as."""
+    """One line per factor of a standard the law names (span and verbatim words), however many
+    aspects of it the reviewer listed: the operator decides a named factor, not each thing it could
+    be read as. A `broader_contract` candidate is adjudicated instead (`broader_contract_items`)."""
     grouped: dict[tuple[str, str], list[dict]] = {}
     for g in gaps if isinstance(gaps, list) else []:
-        if isinstance(g, dict):
+        if isinstance(g, dict) and g.get("kind") != "broader_contract":
             grouped.setdefault((str(g.get("span")), _ws(g.get("words")).lower()), []).append(g)
     return [f"gap candidate: span {span} — \"{_ws(gs[0].get('words'))}\": " + "; ".join(_ws(g.get("factor")) for g in gs)
             + f" (nearest: {_ws(gs[0].get('nearest'))[:200]})" for (span, _w), gs in grouped.items()]
+
+
+def broader_contract_items(gaps: list) -> list[dict]:
+    """The reviewer's `broader_contract` candidates as adjudication items: the law's words carried by a
+    contract that admits what they exclude, which no trace can show, so the adjudicator rules on the
+    words alone. An upheld one returns the node so that the plan files a gap on the span."""
+    out, seen = [], set()
+    for g in gaps if isinstance(gaps, list) else []:
+        if not (isinstance(g, dict) and g.get("kind") == "broader_contract"):
+            continue
+        key = (str(g.get("span")), _ws(g.get("words")).lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        words, nearest = _ws(g.get("words")), _ws(g.get("nearest"))
+        out.append({"line": f"gap: span {g.get('span')} — \"{words}\" is carried by a broader contract ({nearest[:160]}); "
+                            f"the words exclude {_ws(g.get('factor'))[:160]}: file a gap on this span",
+                    "div": {"kind": "broader_contract",
+                            "situation": f"the words \"{words}\" of span {g.get('span')} exclude {_ws(g.get('factor'))}, "
+                                         f"which the carried contract admits",
+                            "law_words": words, "lawful_verdict": "not_applicable", "rule_reads": nearest},
+                    "rule": "not executed: no contract makes the distinction, so no trace can show it"})
+    return out
 
 
 def adjudication_defects(answer: dict, count: int, haystack: str) -> list[str]:
@@ -431,16 +492,17 @@ def adjudication_defects(answer: dict, count: int, haystack: str) -> list[str]:
             errs.append(f"divergence {k}: ruling must be one of {sorted(RULINGS)}")
         if not _ws(r.get("reason")):
             errs.append(f"divergence {k}: a ruling needs a reason")
-        if not _in(r.get("quote", ""), haystack):
+        if not _quoted(r.get("quote", ""), haystack):
             errs.append(f"divergence {k}: the quote is not verbatim from the law, the record, the rendering or the contracts")
     errs += [f"divergence {k} has no ruling" for k in range(1, count + 1) if k not in seen]
     return errs
 
 
-def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Path) -> list[tuple[dict, str, str]]:
-    """Each confirmed divergence with its ruling and reason. A divergence the adjudicator leaves
-    unruled, or rules with a defect it keeps, stands as upheld: the adjudicator can only release a
-    node from a confirmed divergence, never add one. Raises `SessionUnavailable` when the session
+def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Path,
+               record: dict | None = None) -> list[tuple[dict, str, str]]:
+    """Each confirmed divergence and broader-contract item with its ruling and reason. An item the
+    adjudicator leaves unruled, or rules with a defect it keeps, stands as upheld: the adjudicator
+    can only release a node from an item, never add one. Raises `SessionUnavailable` when the session
     never ran."""
     listing = "\n\n".join(
         f"{k}. ({i['div'].get('kind')}) {_ws(i['div'].get('situation'))}\n"
@@ -452,7 +514,10 @@ def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Pat
     ins = {k: blocks[k] for k in ("law_and_segmentation", "record", "rendered", "contracts")}
     ins["divergences"] = "### Divergences\n\n" + listing + "\n"
     prompt = render.render("adjudicate.md", ins)
-    hay = "\n".join(blocks[k] for k in ("law_and_segmentation", "record", "rendered", "contracts"))
+    # a quote is looked for in the blocks as shown (the record serialized, so a quote may run across a
+    # key and its value) and in the record's string values unescaped
+    hay = "\n".join(blocks[k] for k in ("law_and_segmentation", "record", "rendered", "contracts")) \
+        + "\n" + "\n".join(_strings(record or {}))
     answer, errs = validate_phase._session(run, out_dir, "adjudicate", prompt,
                                            check=lambda a: adjudication_defects(a, len(items), hay))
     rows = {r.get("divergence"): r for r in (answer or {}).get("rulings", []) if isinstance(r, dict)}
@@ -479,7 +544,6 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         return True, [], ["reviewer off"]
     if rule_json is None:
         return False, ["the gate exported no rule to review"], []
-    from ..lean import render_formula
     glosses = validate_phase.glosses_for(n, onto, run)
     aggs = validate_phase.aggregates_for(n, reading)
     try:
@@ -527,7 +591,8 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
                 seen.add(key); confirmed.append(c)
     unconfirmed = unconfirmed + [f"not confirmed — {x}" for x in incomplete]
     advisories = [str(x) for x in answer.get("advisories", [])] + unconfirmed + errors + gap_candidate_lines(answer.get("gap_candidates", []))
-    rulings = adjudicate(run, blocks, confirmed, out_dir) if confirmed else []
+    items = confirmed + broader_contract_items(answer.get("gap_candidates", []))
+    rulings = adjudicate(run, blocks, items, out_dir, record) if items else []
     upheld = [i["line"] for i, r, _w in rulings if r == "upheld"]
     advisories += [f"dismissed by the adjudicator — {i['line']}: {w}" for i, r, w in rulings if r == "dismissed"]
     advisories += [f"aggregate question: {i['line']}: {w}" for i, r, w in rulings if r == "reading"]

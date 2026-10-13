@@ -355,8 +355,8 @@ def load_node_repair(d: Path):
 
 
 def load_node_withdrawal(d: Path) -> dict | None:
-    """The withdrawal a repair session wrote, as `{span, kind, missing, nearest}`; a bare string
-    becomes `{missing}`; None when the session did not withdraw."""
+    """The withdrawal a node or concept repair session wrote, as `{span, kind, missing, nearest}`; a
+    bare string (a concept repair's form) becomes `{missing}`; None when the session did not withdraw."""
     r = _repair_line(d)
     if not isinstance(r, dict) or not r.get("withdraw"):
         return None

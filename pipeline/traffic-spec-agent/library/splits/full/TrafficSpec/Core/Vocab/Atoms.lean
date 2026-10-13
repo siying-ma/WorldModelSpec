@@ -92,27 +92,19 @@ def ru_transit_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .tran
 def ru_school_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .schoolBus
 def ru_taxicab (s : Scene) (x : TrackId) : Option Bool := hasClass s x .taxicab
 def ru_tour_bus_or_limousine (s : Scene) (x : TrackId) : Option Bool := hasClass s x .tourBusOrLimousine
-def ru_vending_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .vendingVehicle
 def ru_truck (s : Scene) (x : TrackId) : Option Bool := hasClass s x .truck
 def ru_commercial_motor_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .commercialMotorVehicle
 def ru_trailer_or_combination (s : Scene) (x : TrackId) : Option Bool := hasClass s x .trailerOrCombination
-def ru_low_speed_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .lowSpeedVehicle
 def ru_bicycle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .bicycle
 def ru_electric_bicycle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .electricBicycle
 def ru_electric_scooter (s : Scene) (x : TrackId) : Option Bool := hasClass s x .electricScooter
-def ru_other_conveyance (s : Scene) (x : TrackId) : Option Bool := hasClass s x .otherConveyance
 def ru_pedestrian (s : Scene) (x : TrackId) : Option Bool := hasClass s x .pedestrian
 def ru_pedestrian_with_white_cane_or_guide_animal (s : Scene) (x : TrackId) : Option Bool := hasClass s x .pedestrianWithWhiteCaneOrGuideAnimal
 def ru_child (s : Scene) (x : TrackId) : Option Bool := hasClass s x .child
 def ru_emergency_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .emergencyVehicle
 def ru_fire_apparatus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .fireApparatus
 def ru_official_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .officialVehicle
-def ru_procession_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .processionVehicle
-def ru_ridden_or_herded_animal (s : Scene) (x : TrackId) : Option Bool := hasClass s x .riddenOrHerdedAnimal
-def ru_animal_drawn_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .animalDrawnVehicle
 def ru_rail_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .railVehicle
-def ru_personal_delivery_device (s : Scene) (x : TrackId) : Option Bool := hasClass s x .personalDeliveryDevice
-def ru_mobile_carrying_device (s : Scene) (x : TrackId) : Option Bool := hasClass s x .mobileCarryingDevice
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
 /-- Membership of a legal aggregate ("vehicle", "traffic"): the member classes come from the
@@ -214,7 +206,6 @@ def st_curb_zone_colour (s : Scene) (r : RegionId) : Option CurbColour := (s.str
 def st_transit_stop (s : Scene) (r : RegionId) : Option Bool := isKind s r .transitStop
 def st_safety_zone (s : Scene) (r : RegionId) : Option Bool := isKind s r .safetyZone
 def st_pedestrian_grade_separation (s : Scene) (r : RegionId) : Option Bool := isKind s r .pedestrianGradeSeparation
-def st_turnout (s : Scene) (r : RegionId) : Option Bool := isKind s r .turnout
 def st_fire_hydrant (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireHydrant
 def st_fire_station_entrance (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireStationEntrance
 def st_roundabout (s : Scene) (r : RegionId) : Option Bool := isKind s r .roundabout
@@ -335,7 +326,6 @@ def sig_warning_lamp_colour (s : Scene) (x : TrackId) (c : LampColour) : Option 
   (sig_warning_lamp s x).map (·.any (·.colour == c))
 def sig_warning_lamp_shows (s : Scene) (x : TrackId) (c : LampColour) (m : LampMode) : Option Bool :=
   (sig_warning_lamp s x).map (·.any fun l => l.colour == c && l.mode == m)
-def sig_signal_arm (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.signalArm)
 def sig_siren (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.siren)
 def sig_horn (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.horn)
 def sig_hand_signal (s : Scene) (x : TrackId) : Option HandSignal := (s.user x).bind (·.sig.handSignal)

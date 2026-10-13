@@ -29,6 +29,14 @@ Current (2026-09-18, Nevada Revised Statutes target):
 - `nrs_tools/sources/` — the parsed section files the generator reads (`484A.json`, `484B.json`,
   `484D.json`, `486.json`, `lvmc.json`) and the text of the City's Transportation Engineering Fact
   Sheets (March 2025), which were read and found to contribute no obligations of their own.
+- `LONGTAIL_ENCOUNTER_RATES_2026-10-12.md` and `NICHE_VOCABULARY_SURVEY_2026-10-02.md` — the
+  external evidence behind the scope of 2026-10-13 (which laws lie outside ordinary urban Las Vegas
+  driving); the decisions are `EXCLUDED` in `nrs_tools/tiers.py`.
+
+Regenerating the corpus: run `make_laws.py` from a directory that holds the four NRS chapter files
+(`484A.json` … `486.json`) and `lvmc/lvmc.json` (links to `nrs_tools/sources/`), then
+`python -m nrs_tools.publish`, `python -m nrs_tools.split` and, with the full Core split active,
+`python -m nrs_tools.atoms_train`, all from `pipeline/ontology_provenance/` except the first.
 
 Superseded (first draft, BC MVA Part 3 target, kept for the record):
 

@@ -225,7 +225,7 @@ reading them for another vehicle reports unknown.
 | `reverse_lamp` | bool | `Reverse` (full split only) |
 | `siren` | bool | `Special1` / `Special2` |
 | `warning_lamps` | [{`colour`, `mode`, `facing`}] | |
-| `horn`, `hand_signal`, `signal_arm`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
+| `horn`, `hand_signal`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
 
 **Open Core gap.** `turn_indicator` has no "off" value: an indicator observed off cannot be written.
 Write nothing (unknown) until Core decides. Until then, a rule of the form "must signal before
@@ -305,17 +305,17 @@ The `ofString` tables in `library/splits/full/TrafficSpec/Core/Vocab/Ontology/*.
 authority. The ones CARLA needs:
 
 - **RoadUserClass**: `motor_vehicle`, `motorcycle`, `moped`, `bus`, `transit_bus`, `school_bus`,
-  `taxicab`, `tour_bus_or_limousine`, `vending_vehicle`, `truck`, `commercial_motor_vehicle`,
-  `trailer_or_combination`, `low_speed_vehicle`, `bicycle`, `electric_bicycle`, `electric_scooter`,
-  `other_conveyance`, `pedestrian`, `pedestrian_with_white_cane_or_guide_animal`, `child`,
-  `emergency_vehicle`, `fire_apparatus`, `official_vehicle`, `procession_vehicle`,
-  `ridden_or_herded_animal`, `animal_drawn_vehicle`, `rail_vehicle`, `personal_delivery_device`, `mobile_carrying_device`
+  `taxicab`, `tour_bus_or_limousine`, `truck`, `commercial_motor_vehicle`,
+  `trailer_or_combination`, `bicycle`, `electric_bicycle`, `electric_scooter`,
+  `pedestrian`, `pedestrian_with_white_cane_or_guide_animal`, `child`,
+  `emergency_vehicle`, `fire_apparatus`, `official_vehicle`,
+  `rail_vehicle`
 - **StructureKind**: `highway`, `roadway`, `lane`, `centre_line`, `road_edge`, `shoulder`,
   `sidewalk`, `median_or_divider`, `one_way_roadway`, `intersection`, `crosswalk`, `stop_line`,
   `driveway_or_alley_entrance`, `alley`, `railway_crossing`, `controlled_access`,
   `elevated_structure`, `bicycle_lane_or_path`, `reserved_lane`, `centre_turn_lane`, `turn_lane`,
   `parking_space`, `curb_zone`, `transit_stop`, `safety_zone`, `pedestrian_grade_separation`,
-  `turnout`, `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`
+  `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`
 - **DeviceKind**: `traffic_signal`, `pedestrian_signal`, `lane_control_signal`,
   `speed_limit_beacon`, `crossing_warning_signal`, `stop_sign`, `yield_sign`, `speed_limit_sign`,
   `regulatory_sign`, `zone_sign`, `railway_signal_or_gate`, `temporary_traffic_control`,
@@ -489,10 +489,10 @@ track.
 
 ## 7. Known limits that affect the adapter
 
-- **Build against the full split.** The training split's decoder silently ignores nine keys:
-  `steer_angle`, `parking_brake`, `reverse_lamp`, `signal_arm`, `doors_open`, `on_track`,
-  `red_flashing`, `amber_flashing` and `stop_arm`. Its atom list also lacks 14 ids, so a 134-id
-  manifest is reported incomplete. Build the monitor while `library/splits/ACTIVE` says `full`. Swap with
+- **Build against the full split.** The training split's decoder silently ignores ten keys:
+  `steer_angle`, `parking_brake`, `headlamp`, `position_lamp`, `reverse_lamp`, `doors_open`,
+  `on_track`, `red_flashing`, `amber_flashing` and `stop_arm`. Its atom list also lacks 9 ids, so a
+  manifest over the full list is reported incomplete. Build the monitor while `library/splits/ACTIVE` says `full`. Swap with
   `python -m harness split --use full`, never by hand.
 - **A kind the trace never lists is decided, not unknown.** A rule quantifies over the regions and
   devices that are listed in the trace. If the generator emits no crosswalks, "there is no

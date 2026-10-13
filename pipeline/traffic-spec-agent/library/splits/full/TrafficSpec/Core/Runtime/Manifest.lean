@@ -152,7 +152,6 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "sig.position_lamp" => { u with sig := { u.sig with positionLamp := none } }
   | "sig.reverse_lamp" => { u with sig := { u.sig with reverseLamp := none } }
   | "sig.warning_lamp" => { u with sig := { u.sig with warningLamps := none } }
-  | "sig.signal_arm" => { u with sig := { u.sig with signalArm := none } }
   | "sig.siren" => { u with sig := { u.sig with siren := none } }
   | "sig.horn" => { u with sig := { u.sig with horn := none } }
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }

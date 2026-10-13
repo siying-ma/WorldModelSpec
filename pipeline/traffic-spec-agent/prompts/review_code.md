@@ -90,12 +90,24 @@ do not edit the rule.
    more narrowly than its words, as the record discloses, is an advisory. A factor only a
    catch-all of the standard covers ("other conditions") is never a divergence. A factor the
    standard names in its own words that no contract in the table carries at all is not a
-   divergence: list it under `gap_candidates`, with the span, the words that name it (verbatim
-   from the span), the factor and the nearest contract with the clause that excludes it. An
+   divergence: list it under `gap_candidates` with `kind` `standard_factor`, the span, the words
+   that name it (verbatim from the span), the factor and the nearest contract with the clause that
+   excludes it. An
    aspect of a carried factor that the rule leaves out belongs to its narrower reading: an
    advisory, never a gap candidate. A disclosed omission of a trigger, subject, condition,
    exception or obligation word is always a divergence.
-9. `accept` when you find no situation under questions 1 to 3; `return` otherwise. The harness
+9. **Broader contracts.** A word of a subject, trigger, condition, exception or obligation span
+   may name an item (a kind of road user, a place, a device, a signal, a state a road user shows)
+   that the record carries with a contract that also admits things the words exclude: the words
+   name one kind within a class, the contract denotes the whole class. When no contract in the
+   table makes the distinction, no trace can show the divergence, because a situation with the
+   named item and one with another member of the class are written alike. List it under
+   `gap_candidates` with `kind` `broader_contract`: the span, the words that name the item
+   (verbatim from the span), what the words exclude that the contract admits (`factor`), and the
+   contract the record carries with the clause that makes it broader (`nearest`). A legal
+   aggregate word whose classes the reading declares, and a word read through conduct under
+   question 6, are not such items.
+10. `accept` when you find no situation under questions 1 to 3; `return` otherwise. The harness
    runs every trace: a trace on which the rule's verdict differs from the law's confirms the
    divergence; one on which they agree is recorded as your advisory and returns nothing.
 
@@ -113,7 +125,7 @@ JSON, this schema and nothing more:
                   "grounding": {"<binder>": <track id>, "...": 0},
                   "trace": {"scenes": [ ... ]}}],
  "advisories": ["<observations that return nothing: an acceptable narrowing, a residue that changes no behaviour, a parameter worth review>"],
- "gap_candidates": [{"span": "<span id>", "words": "<the words of the span that name the factor, verbatim>", "factor": "<the factor of the standard no contract carries>", "nearest": "<the closest contract and the clause that excludes the factor>"}]}
+ "gap_candidates": [{"kind": "standard_factor | broader_contract", "span": "<span id>", "words": "<the words of the span that name the factor or the item, verbatim>", "factor": "<the factor of the standard no contract carries, or what the words exclude that the carried contract admits>", "nearest": "<the closest contract and the clause that excludes the factor, or the carried contract and the clause that makes it broader>"}]}
 ```
 
 ## Finish

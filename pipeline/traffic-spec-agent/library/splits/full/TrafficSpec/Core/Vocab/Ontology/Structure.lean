@@ -35,7 +35,6 @@ inductive StructureKind
   | transitStop
   | safetyZone
   | pedestrianGradeSeparation
-  | turnout
   | fireHydrant
   | fireStationEntrance
   | roundabout
@@ -72,7 +71,6 @@ def ofString (s : String) : Option StructureKind :=
   | "transit_stop" => some .transitStop
   | "safety_zone" => some .safetyZone
   | "pedestrian_grade_separation" => some .pedestrianGradeSeparation
-  | "turnout" => some .turnout
   | "fire_hydrant" => some .fireHydrant
   | "fire_station_entrance" => some .fireStationEntrance
   | "roundabout" => some .roundabout
@@ -106,7 +104,6 @@ def toString : StructureKind → String
   | .transitStop => "transit_stop"
   | .safetyZone => "safety_zone"
   | .pedestrianGradeSeparation => "pedestrian_grade_separation"
-  | .turnout => "turnout"
   | .fireHydrant => "fire_hydrant"
   | .fireStationEntrance => "fire_station_entrance"
   | .roundabout => "roundabout"

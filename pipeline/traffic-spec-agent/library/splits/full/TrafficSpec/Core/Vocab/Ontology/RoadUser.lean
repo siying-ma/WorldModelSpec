@@ -16,27 +16,19 @@ inductive RoadUserClass
   | schoolBus
   | taxicab
   | tourBusOrLimousine
-  | vendingVehicle
   | truck
   | commercialMotorVehicle
   | trailerOrCombination
-  | lowSpeedVehicle
   | bicycle
   | electricBicycle
   | electricScooter
-  | otherConveyance
   | pedestrian
   | pedestrianWithWhiteCaneOrGuideAnimal
   | child
   | emergencyVehicle
   | fireApparatus
   | officialVehicle
-  | processionVehicle
-  | riddenOrHerdedAnimal
-  | animalDrawnVehicle
   | railVehicle
-  | personalDeliveryDevice
-  | mobileCarryingDevice
   deriving DecidableEq, Repr, Inhabited
 
 namespace RoadUserClass
@@ -50,27 +42,19 @@ def ofString (s : String) : Option RoadUserClass :=
   | "school_bus" => some .schoolBus
   | "taxicab" => some .taxicab
   | "tour_bus_or_limousine" => some .tourBusOrLimousine
-  | "vending_vehicle" => some .vendingVehicle
   | "truck" => some .truck
   | "commercial_motor_vehicle" => some .commercialMotorVehicle
   | "trailer_or_combination" => some .trailerOrCombination
-  | "low_speed_vehicle" => some .lowSpeedVehicle
   | "bicycle" => some .bicycle
   | "electric_bicycle" => some .electricBicycle
   | "electric_scooter" => some .electricScooter
-  | "other_conveyance" => some .otherConveyance
   | "pedestrian" => some .pedestrian
   | "pedestrian_with_white_cane_or_guide_animal" => some .pedestrianWithWhiteCaneOrGuideAnimal
   | "child" => some .child
   | "emergency_vehicle" => some .emergencyVehicle
   | "fire_apparatus" => some .fireApparatus
   | "official_vehicle" => some .officialVehicle
-  | "procession_vehicle" => some .processionVehicle
-  | "ridden_or_herded_animal" => some .riddenOrHerdedAnimal
-  | "animal_drawn_vehicle" => some .animalDrawnVehicle
   | "rail_vehicle" => some .railVehicle
-  | "personal_delivery_device" => some .personalDeliveryDevice
-  | "mobile_carrying_device" => some .mobileCarryingDevice
   | _ => Option.none
 def toString : RoadUserClass → String
   | .motorVehicle => "motor_vehicle"
@@ -81,27 +65,19 @@ def toString : RoadUserClass → String
   | .schoolBus => "school_bus"
   | .taxicab => "taxicab"
   | .tourBusOrLimousine => "tour_bus_or_limousine"
-  | .vendingVehicle => "vending_vehicle"
   | .truck => "truck"
   | .commercialMotorVehicle => "commercial_motor_vehicle"
   | .trailerOrCombination => "trailer_or_combination"
-  | .lowSpeedVehicle => "low_speed_vehicle"
   | .bicycle => "bicycle"
   | .electricBicycle => "electric_bicycle"
   | .electricScooter => "electric_scooter"
-  | .otherConveyance => "other_conveyance"
   | .pedestrian => "pedestrian"
   | .pedestrianWithWhiteCaneOrGuideAnimal => "pedestrian_with_white_cane_or_guide_animal"
   | .child => "child"
   | .emergencyVehicle => "emergency_vehicle"
   | .fireApparatus => "fire_apparatus"
   | .officialVehicle => "official_vehicle"
-  | .processionVehicle => "procession_vehicle"
-  | .riddenOrHerdedAnimal => "ridden_or_herded_animal"
-  | .animalDrawnVehicle => "animal_drawn_vehicle"
   | .railVehicle => "rail_vehicle"
-  | .personalDeliveryDevice => "personal_delivery_device"
-  | .mobileCarryingDevice => "mobile_carrying_device"
 instance : ToString RoadUserClass := ⟨toString⟩
 end RoadUserClass
 

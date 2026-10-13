@@ -40,6 +40,11 @@ Before changing anything, in this order:
   enforces this; extend its patterns rather than arguing an exception.
 - The corpus under `laws/**` is posted law only: `id`, `title`, `text`, `source`. Every analysis
   field (tier, theme, references, overlap decisions) lives in `laws/audit_and_scripts/` sidecars.
+  The one exception to verbatim text is a scope edit the operator decides: words naming an item
+  outside the scope are removed by the generator from
+  `pipeline/ontology_provenance/nrs_tools/tiers.py` (`SCOPE_EDITS`), recorded as `scope_edit` in
+  the sidecar and listed in `laws/README.md` (Laws changed for the scope). Never edit a corpus
+  line by hand.
 - The reading (`library/TrafficSpec/Readings/<run>.json`) is the only place a number the statute did not state may
   appear. A rule names parameters; it never carries a value. A parameter the reading lacks is
   proposed by the plan (`param_proposals`: name, unit, a provisional value, its convention and
@@ -52,6 +57,15 @@ Before changing anything, in this order:
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.
   Edit Core only while `full` is active, then switch back: the switch re-archives and
   regenerates, and the doctor's `core matches split` check catches an edit made under `train`.
+- The test split (`laws/example/test/`: its laws, definitions and evaluation records) is held out
+  from development: a development session does not read it, and never shapes a prompt, an
+  ontology rule or Core around a test law. The held-out atoms' rows of `ontology/ATOMS.md` are
+  frozen in `laws/audit_and_scripts/split_atoms.json` and the doctor fails when one changes; they
+  change only by regenerating the split. The harness defaults to the training split.
+- The corpus covers ordinary urban Las Vegas driving, judged for a vehicle driver. A law leaves
+  only by the rule in `laws/README.md` (Scope), recorded in
+  `pipeline/ontology_provenance/nrs_tools/tiers.py` (`EXCLUDED`);
+  the corpus before the scope is archived in `laws/example/archive/corpus_2026-09-20/`.
 - Legal aggregate words ("vehicle", "traffic") are the atom `ru.aggregate` with the word as its
   argument; the reading declares membership. A rule never expands a word into classes.
 - A node is two files, `Rules/<Body>/<NodeId>.lean` and `TrafficSpecWitness/<Body>/<NodeId>.lean`,
@@ -99,3 +113,10 @@ corpus and its split from `pipeline/ontology_provenance/nrs_tools/` (`make_laws`
 at build time (`lake build`) and pin the arithmetic and semantics with `#guard`. Rules import
 `TrafficSpec.Core.Language.Rule` only; evaluation, checking and grounding are in files no rule may import.
 `Index.lean` and `TrafficSpecWitness.lean` are generated.
+
+## Driving data
+
+The CARLA dataset is built top-down and problem-driven: its scenarios are designed from the laws
+the pipeline formalizes, not collected and then matched to laws, and they are added gradually
+until the dataset covers most of the corpus. `pipeline/datasets/carla_new/` is its first part.
+Other sources (nuPlan, filtered SAVeD) are added the same way.

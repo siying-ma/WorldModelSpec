@@ -1,11 +1,8 @@
 {
  "test_ids": [
   "LVMC-11-12-100-C",
-  "LVMC-11-22-130-A",
-  "LVMC-11-22-130-B",
-  "LVMC-11-22-130-C",
-  "LVMC-11-22-150-A",
-  "LVMC-11-22-150-B",
+  "LVMC-11-20-070",
+  "LVMC-11-38-120-B",
   "LVMC-11-42-030",
   "LVMC-11-43-010-A",
   "LVMC-11-43-010-B",
@@ -16,37 +13,34 @@
   "NRS-484B-220-2",
   "NRS-484B-353-1",
   "NRS-484B-360-1",
+  "NRS-484B-363-4",
+  "NRS-484B-410",
   "NRS-484B-450-1m",
+  "NRS-484B-473-2",
   "NRS-484B-533",
-  "NRS-484B-630-1",
+  "NRS-484B-587-1",
+  "NRS-484B-623-1",
   "NRS-484B-633-2",
-  "NRS-484B-637-2b",
-  "NRS-484B-787-2a",
-  "NRS-484B-787-2b",
-  "NRS-484B-787-2c",
-  "NRS-484B-790-2a",
-  "NRS-484B-790-2b",
-  "NRS-484B-790-2c",
-  "NRS-484D-205-4"
+  "NRS-484B-768-1",
+  "NRS-484D-100-1",
+  "NRS-484D-165-3",
+  "NRS-484D-165-4",
+  "NRS-484D-205-4",
+  "NRS-484D-215-1",
+  "NRS-484D-215-2"
  ],
  "test_only_atoms": [
   "dev.school_bus_signal",
   "kin.parking_brake",
   "kin.steer_angle",
-  "ru.low_speed_vehicle",
-  "ru.mobile_carrying_device",
-  "ru.other_conveyance",
-  "ru.personal_delivery_device",
   "ru.school_bus",
-  "ru.vending_vehicle",
   "sig.door_open",
+  "sig.headlamp",
+  "sig.position_lamp",
   "sig.reverse_lamp",
-  "sig.signal_arm",
-  "st.roundabout",
-  "st.turnout"
+  "st.roundabout"
  ],
  "test_only_values": [
-  "dev.regulatory_sign=turnout_ahead",
   "dev.speed_limit_sign=structure_maximum"
  ],
  "test_only_primitives": [],
@@ -57,6 +51,44 @@
   "sig.compression_brake",
   "sig.hazard"
  ],
+ "held_out_rows": {
+  "ru.school_bus": {
+   "row": "| `ru.school_bus` | bus designated for carrying school children, with the jurisdiction's markings | general |",
+   "sha256": "5b8d9b8e16d2eb1bdb1dd4a64e8092861306a45da518335ade0b64bc462732eb"
+  },
+  "kin.steer_angle": {
+   "row": "| `kin.steer_angle` | front-wheel steering angle. A source often carries it for the road user whose conduct is judged and not for the others; the capability is declared for the atom, not per road user, so a source that supplies it for the subject alone declares `subject` and one that cannot supply it at all declares it absent **Not a stand-in for:** road geometry, a turn, a lane change or any other manoeuvre — a steering input is not a path and not a road | deg | general |",
+   "sha256": "baadb3de5447d419d4e6923877c37ce33dc7c4567b1e295cc5940c222d684ae1"
+  },
+  "kin.parking_brake": {
+   "row": "| `kin.parking_brake` | the parking brake (hand brake) is set **Not a stand-in for:** the service brake (`kin.service_brake`) or the brake lamp (`sig.brake_lamp`) — a set parking brake lights no lamp and a pressed pedal sets no parking brake | — | general |",
+   "sha256": "7e2563f7a2c4554ecf77e17a491ee40250c0574a86bcf7d517a803c92c7bef93"
+  },
+  "st.roundabout": {
+   "row": "| `st.roundabout` | a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches | general |",
+   "sha256": "614b72851aa9371f86110eb2c7a265f212ba0bd9daf76ee644d10b7f393fe4e7"
+  },
+  "dev.school_bus_signal": {
+   "row": "| `dev.school_bus_signal` | the school bus's own devices; **red_flashing**, **amber_flashing**, **stop_arm** attributes | general |",
+   "sha256": "364846e7c56848f8971552af6d21c09b842d4a61f5f16bebf2d997a8dbbd3b73"
+  },
+  "sig.headlamp": {
+   "row": "| `sig.headlamp` | headlamp **state** ∈ {off, low_beam, high_beam} | general |",
+   "sha256": "0a3244afe600c29ff1a6050cc0300af099d6cfe62bb285b5e7c525c4467b1fdb"
+  },
+  "sig.position_lamp": {
+   "row": "| `sig.position_lamp` | position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps) | general |",
+   "sha256": "7e405897a1a7775f5107b5a24e998d1631803ebaeae664844211b81b3c2b45d6"
+  },
+  "sig.reverse_lamp": {
+   "row": "| `sig.reverse_lamp` | reversing lamps lit | general |",
+   "sha256": "27a78e6c896064f0977ea626d99a29c0e9af577e3e04e25f6abd3cf22e0563eb"
+  },
+  "sig.door_open": {
+   "row": "| `sig.door_open` | a door open; **side** ∈ {traffic, curb} | general |",
+   "sha256": "7f6a2ee793b12c31863ae4e1b691da33059b9592e55de7629cc7f8f9c5825d2b"
+  }
+ },
  "train_atoms": [
   "dev.crossing_warning_signal",
   "dev.governs",
@@ -103,7 +135,6 @@
   "rel.same_direction",
   "rel.surface_gap",
   "rel.visible",
-  "ru.animal_drawn_vehicle",
   "ru.bicycle",
   "ru.bus",
   "ru.child",
@@ -119,9 +150,7 @@
   "ru.official_vehicle",
   "ru.pedestrian",
   "ru.pedestrian_with_white_cane_or_guide_animal",
-  "ru.procession_vehicle",
   "ru.rail_vehicle",
-  "ru.ridden_or_herded_animal",
   "ru.rider_posture",
   "ru.subject",
   "ru.taxicab",
@@ -133,9 +162,7 @@
   "sig.compression_brake",
   "sig.hand_signal",
   "sig.hazard",
-  "sig.headlamp",
   "sig.horn",
-  "sig.position_lamp",
   "sig.siren",
   "sig.turn_indicator",
   "sig.warning_lamp",

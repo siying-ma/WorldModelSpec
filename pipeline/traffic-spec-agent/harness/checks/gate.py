@@ -13,7 +13,8 @@ from ..model.blueprint import Node, SCENARIOS, normalize_verdict
 from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
-            "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS", "OK"]
+            "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS",
+            "GATE_TIMEOUT", "OK"]
 #: What a coder's narrowing may be: a reading the words leave open, a declaration that the vocabulary
 #: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED` —, or
 #: the coder's account of an `observable_reading` the plan declared on the same span.
@@ -24,9 +25,13 @@ SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
 #: Roles a narrowing may be declared on: the duty and its standards, which the plan carries by an
 #: element or an operationalization.
 NARROWABLE_ROLES = {"obligation", "standard"}
-#: Not a verdict on the node: the toolchain did not run (a timeout, a missing `lake`). The loop
-#: defers the law without counting an attempt and stops after the iteration.
+#: Not a verdict on the node: the toolchain did not run (a missing `lake`, a build that timed out, a
+#: harness that stopped with no error). The loop defers the law without counting an attempt and
+#: stops after the iteration.
 INFRA = "INFRA"
+#: A verdict on the node: its harness ran out of time, its formulas being too costly to evaluate on
+#: its witnesses. The loop returns the law to the planner with the rule's nesting.
+GATE_TIMEOUT = "GATE_TIMEOUT"
 #: Keywords and attributes that make a declaration something other than a closed, total value.
 #: Scanned in the code only (`lean.code_only`): a law's words in a header comment or in the
 #: `standard` string of an operationalization are not Lean.
@@ -185,6 +190,7 @@ def main : IO Unit := do
     ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
+  (← IO.getStdout).flush
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
   for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
@@ -432,10 +438,45 @@ def forbidden_tokens(files) -> list[str]:
     return out
 
 
+QUANTIFIERS = ("exists_user", "forall_user", "exists_region", "forall_region", "exists_device", "forall_device", "aggregate")
+WINDOWS = ("holds_for", "within", "until_within", "at_last")
+
+
+def nesting(j, quants: int = 0, windows: int = 0) -> tuple[int, int]:
+    """The deepest chain of quantifiers in an exported formula, as (quantifiers, window operators
+    around them): each quantifier evaluates its body once per entity of the scene, and each window
+    operator once per observation of its window."""
+    best = (quants, windows)
+    if isinstance(j, dict):
+        q = quants + any(k in j for k in QUANTIFIERS)
+        w = windows + any(k in j for k in WINDOWS)
+        for v in j.values():
+            best = max(best, nesting(v, q, w))
+    elif isinstance(j, list):
+        for v in j:
+            best = max(best, nesting(v, quants, windows))
+    return best
+
+
 def harness_failure(hout: str) -> Verdict:
-    """A gate harness that did not reach `DONE`: the toolchain's failure when it timed out or
-    reported no error, the node's when an error line names what it elaborated."""
-    if lean.timed_out(hout) or not lean.errors(hout):
+    """A gate harness that did not reach `DONE`. A harness that ran out of time is the node's:
+    its formulas take longer to evaluate on its witnesses than the gate allows, and the details
+    give the deepest nesting of quantifiers the exported rule shows. One that reported no error is
+    the toolchain's; one whose error line names what it elaborated is the node's."""
+    if lean.timed_out(hout):
+        lines = hout.splitlines()
+        shape = []
+        rj = [l.split("\t", 1)[1] for l in lines if l.startswith("RULEJSON\t")]
+        if rj:
+            try:
+                q, w = nesting(json.loads(rj[0]))
+                shape = [f"the deepest chain of the rule nests {q} quantifier(s) over road users, regions or devices "
+                         f"under {w} window operator(s); each is evaluated per entity, per observation, per witness "
+                         "and per adequacy mutation"]
+            except json.JSONDecodeError:
+                pass
+        return Verdict(GATE_TIMEOUT, [lines[0]] + shape)
+    if not lean.errors(hout):
         return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
     return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
 
@@ -472,7 +513,7 @@ def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[st
 # =============================================================================================
 CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND", "CONCEPT_CYCLE", "CHECK_FAIL",
                     "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL",
-                    "WITNESS_FAIL", "SUPERSESSION_NO_DIFF", "DUPLICATE_CONCEPT", "VACUOUS", "OK"]
+                    "WITNESS_FAIL", "SUPERSESSION_NO_DIFF", "DUPLICATE_CONCEPT", "VACUOUS", "GATE_TIMEOUT", "OK"]
 ALLOWED_CONCEPT_IMPORTS = {"TrafficSpec.Core.Language.Concept"}
 PUNIT_JSON = {"metre": "metre", "second": "second", "metrePerSecond": "metre_per_second", "metrePerSecondSq": "metre_per_second_sq",
               "degree": "degree", "degreePerSecond": "degree_per_second", "ratio": "ratio", "count": "count"}

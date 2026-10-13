@@ -500,7 +500,7 @@ if __name__ == '__main__':
               f"- lines in the corpus after resolution: {len(out)}", ""]
     open(AUDIT_DIR / 'OVERLAPS.md', 'w', encoding='utf-8').write('\n'.join(lines))
     # ---- classification into the four views (tiers.py) ----
-    from tiers import tier, bucket, EXCLUDED, BLOCKING, UNOBSERVABLE
+    from tiers import tier, bucket, EXCLUDED, BLOCKING, UNOBSERVABLE, SCOPE_EDITS
     for k in list(EXCLUDED) + list(BLOCKING) + list(UNOBSERVABLE):
         assert k in kept_ids, ('tiers.py names a line not in the corpus', k)
     for o in out:
@@ -539,6 +539,13 @@ if __name__ == '__main__':
                     out.append(r); by_id[d] = r; reinstated.append((d, o['id']))
     if reinstated:
         print('reinstated (survivor unresolvable):', reinstated)
+    # scope edits (tiers.SCOPE_EDITS), applied to the final set of lines, reinstated ones included
+    for k in SCOPE_EDITS:
+        assert k in by_id, ('tiers.py SCOPE_EDITS names a line not in the corpus', k)
+        words, why = SCOPE_EDITS[k]
+        assert by_id[k]['text'].count(words) == 1, ('scope edit does not match exactly once', k, words)
+        by_id[k]['text'] = by_id[k]['text'].replace(words, '', 1)
+        by_id[k]['scope_edit'] = {'removed': words.strip(), 'reason': why}
     views = {'excluded': [], 'unobservable': [], 'unresolvable': [], 'judgement': [], 'concrete': []}
     for o in out: views[o['bucket']].append(o)
     for name in ('excluded', 'unobservable', 'unresolvable'):

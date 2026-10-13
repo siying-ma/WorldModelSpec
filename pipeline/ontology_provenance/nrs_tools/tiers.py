@@ -44,6 +44,43 @@ EXCLUDED = {
  'LVMC-11-40-185-B': "stunts, wheelies and riding on handlebars: the rider's own posture",
  'NRS-484B-770-2': "carrying more persons than a cycle is designed for: how many ride the machine and where they sit, not conduct a driving plan performs or reacts to",
  'NRS-486-181-1': "carrying a passenger on a motorcycle not designed for one: as above",
+ # outside the operational design domain, ordinary urban Las Vegas driving: the law is triggered by
+ # a rare actor or event, or needs a road the valley does not have; evidence in
+ # LONGTAIL_ENCOUNTER_RATES_2026-10-12.md (decided 2026-10-13)
+ 'NRS-484B-703-1': "outside the ODD: triggered by a funeral procession",
+ 'NRS-484B-707-1': "outside the ODD: triggered by a funeral procession",
+ 'NRS-484B-707-2': "outside the ODD: triggered by a funeral procession",
+ 'LVMC-11-22-150-A': "outside the ODD: triggered by an ice-cream truck with its signal arm out",
+ 'LVMC-11-22-150-B': "outside the ODD: triggered by an ice-cream truck with its signal arm out",
+ 'LVMC-11-12-090': "outside the ODD: triggered by a horse ridden or drawing a vehicle",
+ 'NRS-484B-787-2a': "outside the ODD: a personal delivery device's duty; deployment confined to the UNLV area",
+ 'NRS-484B-787-2b': "outside the ODD: a personal delivery device's duty; deployment confined to the UNLV area",
+ 'NRS-484B-787-2c': "outside the ODD: a personal delivery device's duty; deployment confined to the UNLV area",
+ 'NRS-484B-790-2a': "outside the ODD: a mobile carrying device's duty; no deployment found in the valley",
+ 'NRS-484B-790-2b': "outside the ODD: a mobile carrying device's duty; no deployment found in the valley",
+ 'NRS-484B-790-2c': "outside the ODD: a mobile carrying device's duty; no deployment found in the valley",
+ 'NRS-484B-637-2b': "outside the ODD: a low-speed vehicle's duty; golf carts only in approved developments",
+ 'NRS-484B-553-1': "outside the ODD: triggered by a train approaching a grade crossing",
+ 'NRS-484B-553-2': "outside the ODD: triggered by a crossing gate closed or moving",
+ 'NRS-484B-560-6': "outside the ODD: triggered by tracks not clear of a train",
+ 'LVMC-11-30-080': "outside the ODD: triggered by a crossing gate closed or moving",
+ 'NRS-484B-120': "outside the ODD: canyons and mountain highways, a road the valley does not have",
+ 'NRS-484B-630-1': "outside the ODD: a two-lane rural highway with turnouts, a road the valley does not have",
+ # ego scope: the system under test is a vehicle driver; a law binding only a skateboard or moped
+ # rider judges a road user whose conduct is not under test (decided 2026-10-13)
+ 'LVMC-11-22-130-A': "ego scope: binds a rider of a coaster, skates, scooter or skateboard",
+ 'LVMC-11-22-130-B': "ego scope: binds a rider of a coaster, skates, scooter or skateboard",
+ 'LVMC-11-22-130-C': "ego scope: binds a rider of a coaster, skates, scooter or skateboard",
+ 'NRS-486-351-4': "ego scope: binds a moped rider",
+}
+
+# Words removed from a corpus line because they name an item outside the operational design domain
+# that the rest of the line does not need; the line stays. Each edit is (the words removed, the reason),
+# applied by make_laws.py and recorded on the line as `scope_edit` in laws_meta.jsonl; the corpus
+# README lists them. The unedited text stays in sources/ and in laws/example/archive/corpus_2026-09-20/
+# (decided 2026-10-13).
+SCOPE_EDITS = {
+ 'LVMC-11-22-100': ("horse or ", "a ridden horse is outside the ODD; the duty to drive no vehicle over newly laid pavement stays"),
 }
 
 # Lines whose EVERY duty rests on a signal no planned source observes, so no verdict about them can
@@ -75,7 +112,7 @@ TIER_S = set("""NRS-484B-113-1 NRS-484B-127-3 NRS-484B-210-2 NRS-484B-270-1 NRS-
 NRS-484B-270-7b NRS-484B-280-1a NRS-484B-280-1b NRS-484B-280-1c NRS-484B-293 NRS-484B-310-2 NRS-484B-403-1 NRS-484B-410
 NRS-484B-413-1 NRS-484B-600-1a NRS-484B-600-1b NRS-484B-603-1 NRS-484B-607-1b NRS-484B-607-1c NRS-484B-267-2b NRS-484B-267-2c
 NRS-484B-623-1 NRS-484B-627-2 NRS-484B-653-1a NRS-484B-707-1 NRS-484B-787-2c NRS-484B-790-2c NRS-484D-400-2
-LVMC-11-12-080-A LVMC-11-12-090 LVMC-11-22-010 LVMC-11-22-020 LVMC-11-22-150-A LVMC-11-40-130 LVMC-11-40-185-B""".split())
+NRS-484B-127-1 LVMC-11-12-090 LVMC-11-22-010 LVMC-11-22-020 LVMC-11-22-150-A LVMC-11-40-130 LVMC-11-40-185-B""".split())
 
 # lines where every matched word is not a judgement standard -> tier C
 FALSE_POSITIVE = set("""NRS-484B-110 NRS-484B-223-3a NRS-484B-223-4a NRS-484B-500 NRS-484B-620-2 NRS-484B-703-1 NRS-484B-633-2

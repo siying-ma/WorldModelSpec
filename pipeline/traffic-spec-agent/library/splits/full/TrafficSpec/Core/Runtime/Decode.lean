@@ -125,7 +125,6 @@ def signals (path : String) (j : Json) : D Signals := do
          positionLamp := ← opt j path "position_lamp" bool
          reverseLamp := ← opt j path "reverse_lamp" bool
          warningLamps := ← optList j path "warning_lamps" warningLamp
-         signalArm := ← opt j path "signal_arm" bool
          siren := ← opt j path "siren" bool
          horn := ← opt j path "horn" bool
          handSignal := ← opt j path "hand_signal" (enum HandSignal.ofString)

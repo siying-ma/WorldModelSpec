@@ -435,6 +435,28 @@ class Doctor:
             return Result("core matches split", FAIL, f"`{which}` is active but Core differs from its source in {drift}: edit Core with `full` active, then `python -m harness split --use train`", src)
         return Result("core matches split", OK, f"`{which}` active, {len(files)} split files match their source", src)
 
+    def held_out_rows_frozen(self) -> Result:
+        """Each atom the test split holds out keeps the ATOMS.md row it had when the split was made:
+        that row is the one added back when a test run proposes the atom, so it must not be reshaped
+        by development. A held-out row changes only by regenerating the split."""
+        import hashlib
+        split = self.repo / "laws" / "audit_and_scripts" / "split_atoms.json"
+        atoms_md = self.repo / "ontology" / "ATOMS.md"
+        src = ("laws/audit_and_scripts/split_atoms.json → held_out_rows", "ontology/ATOMS.md → the held-out rows")
+        frozen = json.loads(_read(split)).get("held_out_rows", {})
+        if not frozen:
+            return Result("held-out rows frozen", SKIP, "the split records no held-out rows", src)
+        rows = {}
+        for line in _read(atoms_md).splitlines():
+            m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
+            if m and m.group(1) in frozen:
+                rows[m.group(1)] = hashlib.sha256(line.encode("utf-8")).hexdigest()
+        bad = [a for a, f in frozen.items() if rows.get(a) != f.get("sha256")]
+        if bad:
+            return Result("held-out rows frozen", FAIL, f"ATOMS.md rows differ from the split's frozen copy: {bad}; "
+                          "restore them, or regenerate the split (nrs_tools.split) as a recorded decision", src)
+        return Result("held-out rows frozen", OK, f"{len(frozen)} held-out ATOMS.md row(s) match the split's frozen copy", src)
+
     def reading_figures_reviewed(self) -> Result:
         """A reading holds the numbers no statute states. A parameter whose value is a figure some law of
         the corpus states may be that statute's figure entering every rule through the reading; each such
@@ -494,7 +516,7 @@ class Doctor:
         return Result("reading proposals", OK, f"{n} parameter(s), none proposed and unreviewed", src)
 
     def checks(self) -> list[Callable[[], Result]]:
-        return self.v2.checks() + [self.core_matches_active_split, self.placeholders_supplied, self.skeleton_tokens,
+        return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.placeholders_supplied, self.skeleton_tokens,
                                    self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids,

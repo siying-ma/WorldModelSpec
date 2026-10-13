@@ -74,7 +74,6 @@ structure Signals where
   positionLamp : Option Bool := none
   reverseLamp : Option Bool := none
   warningLamps : Option (List WarningLamp) := none
-  signalArm : Option Bool := none
   siren : Option Bool := none
   horn : Option Bool := none
   handSignal : Option HandSignal := none

@@ -185,7 +185,8 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
             session.run(prompt, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.max_turns,
                         effort=run.opts.code_effort, label="session",
                         allow=session.code_allow([rule_abs, wit_abs], d, gate_cli(run, node.id)),
-                        deny=session.deny_rules("code"), disallowed_tools=session.NO_SEARCH, env=session.harness_env())
+                        deny=session.deny_rules("code"), disallowed_tools=session.NO_SEARCH,
+                        env=session.harness_env(run.opts.session_timeout))
         except session.SessionUnavailable as e:
             rollback(node.id, baseline, d)
             v = gate.Verdict(SESSION_FAILED, [str(e)])
@@ -317,7 +318,8 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
             session.run(prompt, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.max_turns,
                         effort=run.opts.code_effort, label="session",
                         allow=session.code_allow([c_abs, w_abs], d, gate_cli(run, rec.id)),
-                        deny=session.deny_rules("code"), disallowed_tools=session.NO_SEARCH, env=session.harness_env())
+                        deny=session.deny_rules("code"), disallowed_tools=session.NO_SEARCH,
+                        env=session.harness_env(run.opts.session_timeout))
         except session.SessionUnavailable as e:
             rollback_concept(rec.id, baseline, d)
             v = gate.Verdict(SESSION_FAILED, [str(e)])

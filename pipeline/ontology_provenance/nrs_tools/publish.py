@@ -33,7 +33,7 @@ AUDIT_DIR = LAWS_ROOT / "audit_and_scripts"
 
 POSTED = ("id", "title", "text", "source")
 LAW_META = ("subject", "theme", "tier", "supersedes", "refs", "unresolved", "reinstated_for", "excluded_reason",
-            "unobservable_reason", "blocking")
+            "unobservable_reason", "blocking", "scope_edit")
 DEF_META = ("kind", "applies_to", "terms", "term_in_corpus", "note", "used_by")
 
 

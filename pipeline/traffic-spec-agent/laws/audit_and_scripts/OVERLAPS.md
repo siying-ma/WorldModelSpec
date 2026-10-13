@@ -20,7 +20,6 @@ recorded below as partial.
 
 | kept | dropped | why the kept text is the narrower definition |
 |---|---|---|
-| `LVMC-11-12-080-A` | `NRS-484B-127-1` | Same words, but LVMC binds the driver of a motor vehicle on a street and carries the funeral-procession exception; NRS binds any vehicle on any highway. |
 | `LVMC-11-18-030-B` | `NRS-484B-223-1a` | LVMC states the exceptions to lane-keeping (lawfully passing, preparing a lawful turn); NRS states the duty as 'as nearly as practicable', a judgement. |
 | `LVMC-11-30-030` | `NRS-484B-283-1c` | LVMC triggers on a vehicle stopped at a crosswalk to permit a pedestrian to cross and prohibits passing outright; NRS makes the prohibition depend on what the overtaking driver 'has determined', a knowledge standard. |
 | `LVMC-11-30-060-A` | `NRS-484B-287-1a` | LVMC binds a pedestrian crossing the roadway (the travelled part); NRS binds one crossing the highway (the whole right-of-way including shoulder). |
@@ -42,6 +41,7 @@ recorded below as partial.
 | `NRS-484B-100` | `LVMC-11-06-030` | NRS limits the duty to a police officer performing enforcement duties; LVMC extends it to any authorized official. |
 | `NRS-484B-110` | `LVMC-11-22-070` | Identical words. Tie-breaker: statute. |
 | `NRS-484B-117-1` | `LVMC-11-22-040` | NRS excepts driveway and alley entrances; LVMC excepts only driveways and adds standing on a sidewalk, which the parking rules already carry (NRS 484B.450(1)(a)). |
+| `NRS-484B-127-1` | `LVMC-11-12-080-A` | Same words (tie-breaker 2); LVMC adds only an exception for funeral processions, which are outside the operational design domain (decided 2026-10-13). |
 | `NRS-484B-127-2` | `LVMC-11-12-080-B` | NRS defines the vehicles (trucks or combinations 80 inches or more wide following the same), the space (500 feet) and the exception (two or more lanes in the direction); LVMC has none of these. |
 | `NRS-484B-153-2`, `NRS-484B-153-3` | `LVMC-11-22-090` | NRS states the door duty as interference with moving traffic (observable) rather than LVMC's 'reasonably safe' (judgement), and splits the two duties. |
 | `NRS-484B-220-1` | `LVMC-11-42-020` | NRS keys the one-way duty to a highway 'designated and signposted'; LVMC keys it to Schedules 26-I/II held by the City Clerk. |
@@ -98,6 +98,6 @@ recorded below as partial.
 
 ## Tally
 
-- dropped municipal lines: 47
-- dropped statutory lines: 18
+- dropped municipal lines: 48
+- dropped statutory lines: 17
 - lines in the corpus after resolution: 322

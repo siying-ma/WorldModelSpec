@@ -89,8 +89,8 @@ def main() -> int:
                         "--out", str(TRAIN_ROOT / "Vocab" / "Ontology")], cwd=AGENT, capture_output=True, text=True)
     print(r.stdout.strip(), r.stderr.strip())
     # what the training ontology still says about a test-only concept, for the reviewer
-    words = re.compile(r"school bus|turnout|roundabout|rotary|delivery device|carrying device|skate|low-speed|"
-                       r"vending|compression brake|reversing lamp|steering angle|signal arm|door|queue", re.I)
+    words = re.compile(r"school bus|roundabout|rotary|headlamp|position lamp|parking lamp|cowl|reversing lamp|"
+                       r"reverse lamp|backup lamp|steering angle|parking brake|door", re.I)
     residue = [f"  ATOMS_train.md:{n}: {l[:120]}" for n, l in enumerate(ATOMS_TRAIN_MD.read_text(encoding='utf-8').splitlines(), 1) if words.search(l)]
     print(f"removed {len(atoms)} atoms, {len(values)} values, {len(derived)} primitives")
     print("training ontology lines still mentioning a test-only concept (reviewed in SPLIT.md):")

@@ -1,7 +1,10 @@
 # Evaluation scenarios — what a trace must show before a line can be judged
 
-`scenarios.jsonl` carries **one record per line of `../full_list/laws.jsonl`** — 272 records, same
-ids, same order. Each record says what an evaluator needs from a trace before it can decide that
+`scenarios.jsonl` and `../example/test/scenarios.jsonl` together carry **one record per line of
+`../full_list/laws.jsonl`** — 249 records, same ids, each file in corpus order. The test lines'
+records sit beside the test split so that development, which does not read the test split, does
+not read them either; the records of the lines that left the corpus on 2026-10-13 are kept in
+`scenarios_excluded.jsonl`. Each record says what an evaluator needs from a trace before it can decide that
 line: which observations the line requires, when the line is active, what the text excepts, and
 what it demands of timing.
 
@@ -33,9 +36,9 @@ Written from the verbatim text of each line and the ontology in `../../ontology/
   `{atom, note}`. `atom` is an id from `ATOMS.md` (§1–§7 atoms and §9 derived concepts); `note`
   says what that atom stands for *in this line*. An atom that a source declares absent makes the
   rule report `unknown`, never compliance (`ATOMS.md` termination rule, clause 6) — so this list
-  doubles as the per-line capability requirement. Of the 134 atoms and 5 primitives of `ATOMS.md`,
-  128 are required by at least one line; the most frequent are `rel.occupies` (150 lines),
-  `kin.speed` (60) and `dev.regulatory_sign` (56). Required by no line: the primitives (a line
+  doubles as the per-line capability requirement. Of the 126 atoms and 5 primitives of `ATOMS.md`,
+  120 are required by at least one line; the most frequent are `rel.occupies` (137 lines),
+  `dev.regulatory_sign` (53) and `kin.speed` (51). Required by no line: the primitives (a line
   names the concept, not the computation under it), `ru.aggregate` and `st.region_geometry`
   (how a rule reads a word or a region, not what a line asks to see), `sig.compression_brake`
   (its line left the corpus), and the three control inputs `kin.gear`, `kin.throttle` and
@@ -45,19 +48,19 @@ Written from the verbatim text of each line and the ontology in `../../ontology/
   alone declares the capability `subject`, and the rule is decided for the subject only.
 - **`activation_conditions`** — the antecedent: what must hold for the line to bind at all. A
   trace in which none of them holds does not test the line, it merely fails to engage it.
-- **`exceptions`** — the carve-outs the text itself states, in the text's own terms (275 across
-  146 lines). An exception is not a separate rule here: it is what an evaluator must rule out
+- **`exceptions`** — the carve-outs the text itself states, in the text's own terms (253 across
+  133 lines). An exception is not a separate rule here: it is what an evaluator must rule out
   before calling a violation.
 - **`timing_requirements`** — what the line demands of time, as `{kind, requirement}`. `kind` is
   one of eight: `point_event` (decided at one instant), `continuous` (holds at every instant while
   active), `duration` (a minimum or maximum elapsed time), `ordering` (event A before event B),
   `until` (persists until a stated release), `advance` (something must precede an act by a stated
   distance or time), `civil_time` (a calendar or clock window), `span` (the trace itself must cover
-  a window, or the line cannot be decided). 503 entries; `continuous` (209) and `ordering` (92) are
-  the commonest, and `span` (57) is the one that says a short clip is not enough.
+  a window, or the line cannot be decided). 440 entries; `continuous` (179) and `ordering` (84) are
+  the commonest, and `span` (53) is the one that says a short clip is not enough.
 - **`residue`** — what the text asks for that no atom supplies: a judgement standard needing an
   operationalization claim, a legal region class, a purpose or interior state, an administrative
-  fact. Present on 205 of the 272 lines. `ATOMS.md` §8 and §9 say how each kind is handled.
+  fact. Present on 187 of the 249 lines. `ATOMS.md` §8 and §9 say how each kind is handled.
 
 ## How to use it
 

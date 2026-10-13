@@ -36,8 +36,9 @@ def run(cmd: list[str], cwd: Path, timeout: float) -> tuple[int, str]:
         p = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, timeout=timeout)
     except FileNotFoundError as exc:
         raise LeanUnavailable(f"could not run {cmd[0]!r}: {exc}; install the toolchain (bash setup.sh)") from exc
-    except subprocess.TimeoutExpired:
-        return 124, f"TIMEOUT: {' '.join(cmd)} exceeded {timeout:.0f}s"
+    except subprocess.TimeoutExpired as exc:              # what the process printed before it was stopped follows the first line
+        partial = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+        return 124, f"TIMEOUT: {' '.join(cmd)} exceeded {timeout:.0f}s" + (f"\n{partial}" if partial else "")
     return p.returncode, (p.stdout or "") + (p.stderr or "")
 
 

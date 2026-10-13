@@ -1,4 +1,25 @@
-# Split audit of the unsplit Core files (2026-09-20)
+# Split audit of the unsplit Core files
+
+## The split of 2026-10-13 (current)
+
+The test split holds out nine atoms (`st.roundabout`, `sig.headlamp`, `sig.position_lamp`,
+`sig.reverse_lamp`, `kin.steer_angle`, `kin.parking_brake`, `ru.school_bus`,
+`dev.school_bus_signal`, `sig.door_open`) and one value (`dev.speed_limit_sign=structure_maximum`).
+The training variant of Core drops every line that reads them: `harness/tools/split.py` removes the
+World fields and decoder keys listed in its `FIELDS_OF_ATOM` (now including `headlamp` and
+`positionLamp`), the manifest mask arms and the Semantics dispatch arms and names;
+`nrs_tools/atoms_train.py` removes their accessors from `Atoms.lean` and their rows and values from
+`ATOMS_train.md`. The library and its tests build under either variant (checked 2026-10-13), and
+no accepted rule or concept reads a held-out atom. One line of the training ontology still names
+a held-out state in prose: the general rule on observable readings lists "parking brake set" among
+the control states a vehicle shows; it names no atom, so a law that needs `kin.parking_brake` still
+needs a gap. Each held-out row of `ATOMS.md` is frozen in `split_atoms.json` (`held_out_rows`,
+with its SHA-256), and the doctor fails when a row no longer matches.
+
+The sections below are the audit of the split of 2026-09-20, kept as its record; that split's
+files are archived in `laws/example/archive/corpus_2026-09-20/`.
+
+## The split of 2026-09-20 (archived)
 
 `SPLIT.md` lists the atoms, enumeration values and derived concept whose only textual support is
 a test line. The training-only artifacts (`ontology/ATOMS_train.md`, `library/splits/train/…/
@@ -10,14 +31,14 @@ Method: (1) a scratch copy of the library with the three training files swapped 
 constructors, the World fields only a removed atom reads, the removed derived concept) was searched
 for across `Core/*.lean`, `Tests/*.lean`, `Main.lean` and the witness root.
 
-## Build result
+### Build result
 
 The swapped library fails at `World.lean` (the first module after the ontology): `DoorSide` is
 unknown, because the `sig.door_open` value set is test-only and the training `Signal.lean` no
 longer defines the type. Every module downstream is blocked by that one error, so the remaining
 findings come from the search.
 
-## Findings, by file
+### Findings, by file
 
 | file | what only a test line brings | would have to go for a strictly training-only Core |
 |---|---|---|
@@ -31,7 +52,7 @@ findings come from the search.
 | `Core/{Tri,Units,Time,Unknown,Formula,Assumptions,Params,Rule,Grounding,Monitor,Builders}.lean` | nothing: no reference to a test-only atom, value, field or concept | — |
 | `Tests/*.lean`, `Main.lean`, `TrafficSpecWitness.lean` | nothing | — |
 
-## What is NOT flagged, and why
+### What is NOT flagged, and why
 
 - `ru.child`, `dev.zone_sign` kinds `school` / `school_crossing`, the school-zone hours machinery
   (`CivilTime`, `TimeWindow`, `Conditions`, `drv.condition_in_effect`): the school-zone lines
@@ -44,7 +65,7 @@ findings come from the search.
 - `env.darkness`, `env.civil_time`: fixed clock windows in LVMC 11.48.050 and 11.52.300 (training)
   support them; the sunset/sunrise lines in `lamps_and_warnings` are training too.
 
-## If the training Core is to be strictly training-only
+### If the training Core is to be strictly training-only
 
 Removing the flagged fields changes `World.lean`, which every other file imports, so it is a
 Core change that drags `Decode`, `Manifest`, `Semantics` and the tests along (CLAUDE.md working
@@ -53,7 +74,7 @@ agreement, step 3). The alternative that keeps one Core for both splits: leave t
 accessor for them, so no training rule can read them, and the manifest marks them absent.
 Which of the two the evaluation wants is the operator's decision; nothing was changed.
 
-## Resolution (2026-09-22)
+### Resolution (2026-09-22)
 
 The training variant now covers the flagged files too: `harness/tools/split.py` derives training
 versions of `World`, `Decode`, `Manifest`, `Semantics`, `Derived` and `Grounding` by removing

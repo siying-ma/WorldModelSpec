@@ -27,9 +27,6 @@ inductive RoadUserClass
   | emergencyVehicle
   | fireApparatus
   | officialVehicle
-  | processionVehicle
-  | riddenOrHerdedAnimal
-  | animalDrawnVehicle
   | railVehicle
   deriving DecidableEq, Repr, Inhabited
 
@@ -55,9 +52,6 @@ def ofString (s : String) : Option RoadUserClass :=
   | "emergency_vehicle" => some .emergencyVehicle
   | "fire_apparatus" => some .fireApparatus
   | "official_vehicle" => some .officialVehicle
-  | "procession_vehicle" => some .processionVehicle
-  | "ridden_or_herded_animal" => some .riddenOrHerdedAnimal
-  | "animal_drawn_vehicle" => some .animalDrawnVehicle
   | "rail_vehicle" => some .railVehicle
   | _ => Option.none
 def toString : RoadUserClass → String
@@ -80,9 +74,6 @@ def toString : RoadUserClass → String
   | .emergencyVehicle => "emergency_vehicle"
   | .fireApparatus => "fire_apparatus"
   | .officialVehicle => "official_vehicle"
-  | .processionVehicle => "procession_vehicle"
-  | .riddenOrHerdedAnimal => "ridden_or_herded_animal"
-  | .animalDrawnVehicle => "animal_drawn_vehicle"
   | .railVehicle => "rail_vehicle"
 instance : ToString RoadUserClass := ⟨toString⟩
 end RoadUserClass

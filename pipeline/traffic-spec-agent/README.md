@@ -25,7 +25,7 @@ removed, not kept.
 
 | path | what it is | frozen? |
 |---|---|---|
-| `ontology/ATOMS.md`, `ontology/ATOMS_train.md` | the closed set of atoms (135; 121 in the training variant), enumeration values and primitives, each with its contract; the training variant omits what only test lines support. Concepts are not in the ontology: they are records the plan proposes and the library holds (`library/TrafficSpec/Concepts/`) | yes |
+| `ontology/ATOMS.md`, `ontology/ATOMS_train.md` | the closed set of atoms (126; 117 in the training variant), enumeration values and primitives, each with its contract; the training variant omits what only test lines support. Concepts are not in the ontology: they are records the plan proposes and the library holds (`library/TrafficSpec/Concepts/`) | yes |
 | `library/TrafficSpec/Core/**` | the Core library in five layers (see *Core structure*): three-valued semantics, units and time, the vocabulary and primitives, the language and its static check, grounding and the monitor, witness builders and adequacy. `library/splits/{full,train}/` hold the two variants of the files the split touches; `library/splits/ACTIVE` says which one the Core directory holds (`python -m harness split`) | yes |
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo,smoke,carla_*}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/`, `smoke/` and the `carla_*` folders are reference-closed subsets of the training set (a first run; a small test of composition and aggregates; lines with standards of judgement, scored on simulator captures), made with `python -m nrs_tools.subset`, older subsets under `laws/example/archive/`; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
@@ -94,7 +94,8 @@ python -m harness split --use train   # swap the training-only Core files in (ar
 python -m harness split --use full    # and back; `python -m harness split` reports which is active
 
 # a run: archive the previous run's library and unreviewed proposals, then loop over a corpus folder
-# (`laws/full_list/` or a subset under `laws/example/`); with a reviewer, source the key file first
+# (`laws/example/train/` or a subset of it; without --laws and --ontology_file a run uses the
+# training split and ATOMS_train.md); with a reviewer, source the key file first
 python -m harness init --fresh --snapshot <previous run>
 source ~/.config/traffic-spec/openai.env
 python -m harness loop --run_id <run> --laws laws/example/<subset>/laws.jsonl \

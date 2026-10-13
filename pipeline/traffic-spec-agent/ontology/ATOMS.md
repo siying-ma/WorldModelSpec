@@ -92,27 +92,19 @@ ontology change request.
 | `ru.school_bus` | bus designated for carrying school children, with the jurisdiction's markings | general |
 | `ru.taxicab` | passenger vehicle for hire, identifiable by its markings | general |
 | `ru.tour_bus_or_limousine` | a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery | local |
-| `ru.vending_vehicle` | a vehicle from which food or goods are sold at the roadside, displaying the warning equipment its class carries | local |
 | `ru.truck` | motor vehicle for carrying goods, with a body built for that purpose | general |
 | `ru.commercial_motor_vehicle` | vehicle over the jurisdiction's commercial mass class or marked as commercially licensed | general |
 | `ru.trailer_or_combination` | vehicle drawn by another, or the combination | general |
-| `ru.low_speed_vehicle` | a small four-wheeled motor vehicle of the jurisdiction's low-speed class, identifiable by its body type and markings | local |
 | `ru.bicycle` | human-powered wheeled vehicle ridden by a person | general |
 | `ru.electric_bicycle` | a bicycle with an assisting electric motor; **class** attribute as the jurisdiction's taxonomy labels it | local |
 | `ru.electric_scooter` | a standing or seated electric scooter with handlebars | local |
-| `ru.other_conveyance` | skates, a skateboard, a sled, a coaster or a toy vehicle ridden by a person | general |
 | `ru.pedestrian` | a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot **Not a stand-in for:** a person on a bicycle or scooter | general |
 | `ru.pedestrian_with_white_cane_or_guide_animal` | pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person | general |
 | `ru.child` | pedestrian who is visibly a child | general |
 | `ru.emergency_vehicle` | vehicle of a class the jurisdiction designates as emergency; **kind** ∈ {police, fire, ambulance, other} **Not a stand-in for:** a responding emergency vehicle — the class alone is not responding; use `drv.responding_emergency`, and an unobserved lamp or siren makes the rule unknown, not satisfied | general |
 | `ru.fire_apparatus` | a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own) | general |
 | `ru.official_vehicle` | a vehicle in official or contracted road service, identifiable by livery or equipment; **kind** ∈ {tow, utility, highway_maintenance, incident_management, regulatory_agency, coroner, armored_car, municipal, other} **Not a stand-in for:** an emergency vehicle | general (kinds `incident_management`, `regulatory_agency`, `armored_car`: local) |
-| `ru.procession_vehicle` | a vehicle displaying the pennants or insignia of an organised procession | general |
-| `ru.ridden_or_herded_animal` | an animal ridden or herded by a person **Not a stand-in for:** a vehicle an animal draws, which is `ru.animal_drawn_vehicle` | general |
-| `ru.animal_drawn_vehicle` | a vehicle drawn by an animal **Not a stand-in for:** an animal ridden or herded on its own, which is `ru.ridden_or_herded_animal` | general |
 | `ru.rail_vehicle` | a train, tram, streetcar or other on-track equipment | general |
-| `ru.personal_delivery_device` | a small unoccupied powered delivery robot operating on pedestrian ways | local |
-| `ru.mobile_carrying_device` | a small unoccupied powered device that follows and carries for a person on foot | local |
 | `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user). A source that observes a change in it — a person arriving at or leaving a vehicle — but not a total, declares the count absent: what it observes then is the arrival or the departure, which is not this atom | general |
 | `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars). The fields are independent: a source declares each on its own, and one that renders a rider as part of the machine, so that no field can vary, declares all of them absent. **hands_on_controls** is a count and is the field a source is least likely to carry **Not a stand-in for:** a manoeuvre, or an arm signal, which is `sig.hand_signal` | general |
 | `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
@@ -187,7 +179,6 @@ reports unknown.
 | `st.transit_stop` | a bus stop, bench, shelter or platform for public transport passengers | general |
 | `st.safety_zone` | an area within the highway marked off for pedestrians only | general |
 | `st.pedestrian_grade_separation` | a pedestrian tunnel or overpass at a point on the highway | general |
-| `st.turnout` | a signed or evident place beside the roadway where a vehicle can pull off | general |
 | `st.fire_hydrant` | a fire hydrant beside the roadway | general |
 | `st.fire_station_entrance` | the driveway entrance of a fire station | general |
 | `st.roundabout` | a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches | general |
@@ -208,11 +199,11 @@ reports unknown.
 | `dev.stop_sign` | regulatory sign requiring a full halt | general |
 | `dev.yield_sign` | regulatory sign requiring yielding without a mandatory halt | general |
 | `dev.speed_limit_sign` | sign stating a maximum or minimum speed, with value and unit; **kind** ∈ {maximum, minimum, structure_maximum, zone} | general |
-| `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign` where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks, turnout_ahead **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
+| `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign` where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
 | `dev.zone_sign` | a sign that begins or ends a signed zone along the road; **kind** ∈ {school, school_crossing, pedestrian_safety, temporary_traffic_control, no_passing, high_occupancy_lane, heavy_vehicle_lane, speed_zone, narrow_highway, hazardous_place, parking_restricted, trail}; **end** attribute; **conditions** attribute: a structured reading of the sign's legend — a list of time windows (a set of weekdays or a calendar class such as school days, a start and an end time of day), a minimum occupancy, a duration limit, a vehicle class, or a "when children present" flag **Not a stand-in for:** whether the condition holds now — that is `drv.condition_in_effect` | general (kinds `school_crossing`, `pedestrian_safety`, `high_occupancy_lane`: local) |
 | `dev.railway_signal_or_gate` | the devices at a level crossing; **lights** ∈ {flashing, dark}; **gate** ∈ {up, lowering, down, raising, none}; **bell** attribute | general |
 | `dev.temporary_traffic_control` | cones, barricades, temporary signs and flashers marking works, a closure or an obstruction | general |
-| `dev.human_direction` | a person directing traffic and the direction given; **role** ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger, procession_escort}; **indication** ∈ {stop, proceed, slow, turn(dir)} | general |
+| `dev.human_direction` | a person directing traffic and the direction given; **role** ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}; **indication** ∈ {stop, proceed, slow, turn(dir)} | general |
 | `dev.school_bus_signal` | the school bus's own devices; **red_flashing**, **amber_flashing**, **stop_arm** attributes | general |
 | `dev.governs` | relation: the device applies to a lane, approach or region (which traffic it faces) **Not a stand-in for:** a position — the region a device acts on is not where a halt is required and not the intersection region | general |
 | `dev.position` | location of the device head / sign face **Not a stand-in for:** a stop line or a crossing — the distance to a signal head is a different quantity from the distance to the line or region | general |
@@ -230,7 +221,6 @@ reports unknown.
 | `sig.compression_brake` | an engine compression brake sounding (audible; a source without audio declares it absent) | general |
 | `sig.reverse_lamp` | reversing lamps lit | general |
 | `sig.warning_lamp` | a warning lamp lit; **colour** ∈ {red, blue, amber, white}, **mode** ∈ {flashing, rotating, steady}, **facing** ∈ {front, rear, side} **Not a stand-in for:** an audible warning | general (steady blue rear lamps and amber-lamp roles: local) |
-| `sig.signal_arm` | a mechanical arm extended from a vehicle's side, with its lamps if any | local |
 | `sig.siren` | a siren, whistle or bell sounding (audible; a source without audio declares it absent, and does not read a warning lamp as the sound — the two are separable and a road user may show one without the other) | general |
 | `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding (audible; a source without audio declares it absent, and no visible state stands in for it) **Not a stand-in for:** a siren | general |
 | `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {left, right, stop_or_slow, re_enter} | general |

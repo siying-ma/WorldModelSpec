@@ -24,8 +24,8 @@ from .model.reading import Reading, write_template
 from .store.state import Options
 from .model.mapping import MappingIndex
 
-DEFAULT_LAWS = "laws/full_list/laws.jsonl"
-DEFAULT_ONTOLOGY = "ontology/ATOMS.md"
+DEFAULT_LAWS = "laws/example/train/laws.jsonl"
+DEFAULT_ONTOLOGY = "ontology/ATOMS_train.md"
 DEFAULT_READING = str((paths.READINGS / "default.json").relative_to(paths.REPO))
 
 

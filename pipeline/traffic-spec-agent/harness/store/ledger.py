@@ -214,6 +214,11 @@ class ConceptLedger:
             e.last_task = last_task
         e.state = FAILED if e.attempts >= self.attempts else RETURNED
 
+    def fail(self, cid: str, reasons: list[str]) -> None:
+        """The concept is closed with these reasons, whatever its budget: its repair session withdrew it."""
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.state, e.reasons = FAILED, reasons
+
     def repairable(self) -> list[ConceptEntry]:
         """Concepts a repair session may re-propose: returned by the gate or the review, with a
         coding attempt on record and budget left."""

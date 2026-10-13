@@ -400,7 +400,6 @@ inductive HumanRole
   | flagger
   | schoolCrossingGuard
   | railroadFlagger
-  | processionEscort
   deriving DecidableEq, Repr, Inhabited
 
 namespace HumanRole
@@ -410,14 +409,12 @@ def ofString (s : String) : Option HumanRole :=
   | "flagger" => some .flagger
   | "school_crossing_guard" => some .schoolCrossingGuard
   | "railroad_flagger" => some .railroadFlagger
-  | "procession_escort" => some .processionEscort
   | _ => Option.none
 def toString : HumanRole → String
   | .policeOfficer => "police_officer"
   | .flagger => "flagger"
   | .schoolCrossingGuard => "school_crossing_guard"
   | .railroadFlagger => "railroad_flagger"
-  | .processionEscort => "procession_escort"
 instance : ToString HumanRole := ⟨toString⟩
 end HumanRole
 

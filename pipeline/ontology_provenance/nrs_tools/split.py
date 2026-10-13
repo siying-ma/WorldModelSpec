@@ -25,6 +25,7 @@ constraints the split must satisfy, which this script checks and refuses to writ
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -44,60 +45,53 @@ PROVENANCE = HERE.parent / "nrs_atoms_provenance.md"
 ATOMS_MD = PIPE / "traffic-spec-agent" / "ontology" / "ATOMS.md"
 
 # --------------------------------------------------------------------------------------------
-# The test set: 28 of 281 lines (10.0%), in clusters that each bring something the training set
-# never mentions. "Ordinary" lines test plain generalization to a new rule over known atoms.
+# The test set (2026-10-13): 28 of 249 lines (11.2%). Novelty families each bring atoms no training
+# line needs; controls share words or setting with a family but need only training atoms, so a
+# pipeline that files a gap whenever a law looks unfamiliar fails them. The claim is limited to
+# atoms: no test line needs a formula operator the training Core lacks.
 # --------------------------------------------------------------------------------------------
 TEST: dict[str, str] = {
-    # a device class the statute created in 2019: rights of a pedestrian, its own duties
-    "NRS-484B-787-2a": "personal delivery device: new road-user class `ru.personal_delivery_device`",
-    "NRS-484B-787-2b": "personal delivery device: same class, device-obedience duty",
-    "NRS-484B-787-2c": "personal delivery device: same class, interference standard (tier S)",
-    # a second statute-created device class (2021)
-    "NRS-484B-790-2a": "mobile carrying device: new road-user class `ru.mobile_carrying_device`",
-    "NRS-484B-790-2b": "mobile carrying device: same class, device-obedience duty",
-    "NRS-484B-790-2c": "mobile carrying device: same class, interference standard (tier S)",
     # a road structure with its own traffic pattern
     "NRS-484B-220-2": "rotary island: new structure `st.roundabout` (statute wording)",
     "LVMC-11-43-010-A": "roundabout: circulation direction",
     "LVMC-11-43-010-B": "roundabout: yield on entry",
     "LVMC-11-43-010-C1": "roundabout: exit lane discipline (left)",
     "LVMC-11-43-010-C2": "roundabout: exit lane discipline (right)",
-    # a vehicle class the statute defines by speed capability
-    "NRS-484B-637-2b": "low-speed vehicle: new class `ru.low_speed_vehicle`, posted-limit condition",
-    # a vending vehicle with engaged safety equipment
-    "LVMC-11-22-150-A": "ice cream truck: new class `ru.vending_vehicle` (tier S)",
-    "LVMC-11-22-150-B": "ice cream truck: same class, 15 mph within 100 ft",
-    # (an audible-device cluster stood here: NRS-484D-285-1, `sig.compression_brake`. It moved to
-    #  unobservable.jsonl on 2026-09-29 -- no planned source carries sound -- so the test set no
-    #  longer exercises extending the ontology with a new signal atom.)
-    # a structure designated by sign
-    "NRS-484B-630-1": "slow vehicle with five following: new structure `st.turnout`, queue concept (tier Q)",
-    # doors
-    "NRS-484B-153-2": "opening a door toward traffic: new signal `sig.door_open` (tier Q)",
-    "NRS-484B-153-3": "door left open: same signal (tier Q)",
+    # lamp states at night: an everyday family
+    "NRS-484D-100-1": "lamps lit from half an hour after sunset: new signals `sig.headlamp`, `sig.position_lamp`",
+    "NRS-484D-165-3": "lamps on a vehicle parked on the highway at night: same signals",
+    "NRS-484D-165-4": "headlamps dimmed on a parked vehicle: same signals",
+    "NRS-484D-215-1": "high beam dimmed for an oncoming vehicle: same signals",
+    "NRS-484D-215-2": "high beam dimmed when following: same signals",
+    "NRS-484B-473-2": "lights on a vehicle parked at night dimmed: same signals",
+    "LVMC-11-38-120-B": "a motorcycle carries a lighted headlamp: same signals",
     # a lamp state
     "NRS-484D-205-4": "backup lamps in forward motion: new signal `sig.reverse_lamp`",
-    # a steering input as the obligation itself
-    "NRS-484B-533": "unattended on a grade: new kinematic atom `kin.steer_angle`",
-    # small wheeled devices with pedestrian duties
-    "LVMC-11-22-130-A": "coasters, skates, skateboards: new class `ru.other_conveyance`",
-    "LVMC-11-22-130-B": "same class: posted sidewalk prohibition",
-    "LVMC-11-22-130-C": "same class: posted property prohibition",
+    # the vehicle's own controls as the obligation itself
+    "NRS-484B-533": "unattended on a grade: new kinematic atoms `kin.steer_angle`, `kin.parking_brake`",
+    # a sign kind
+    "NRS-484B-633-2": "bridge speed: new sign kind `dev.speed_limit_sign` = structure_maximum",
     # school bus stop
     "NRS-484B-353-1": "stopped school bus with flashing red: new class `ru.school_bus`, device `dev.school_bus_signal`",
     "NRS-484B-360-1": "school bus speed cap: same class",
-    # a sign kind
-    "NRS-484B-633-2": "bridge speed: new sign kind `dev.speed_limit_sign` = structure_maximum",
-    # ordinary new rule over known atoms (a reversible lane): plain generalization
-    "LVMC-11-42-030": "reversible lanes by sign and period: ordinary line over known atoms",
-    # two ordinary lines, so the test set is not only new-atom lines
-    "LVMC-11-12-100-C": "two-way left-turn lane discipline: ordinary line over known atoms",
-    "NRS-484B-450-1m": "no stopping on a bridge or in a tunnel: ordinary line over known atoms",
+    # doors
+    "NRS-484B-153-2": "opening a door toward traffic: new signal `sig.door_open` (tier Q)",
+    "NRS-484B-153-3": "door left open: same signal (tier Q)",
+    # controls: no new atom; each shares words or setting with a family
+    "NRS-484B-363-4": "control (school bus): no overtaking in a school zone",
+    "LVMC-11-20-070": "control (roundabout): do not enter an intersection without room on the far side",
+    "NRS-484B-410": "control (doors, reverse lamp, grade): do not start a stopped vehicle until it is safe",
+    "NRS-484B-450-1m": "control (bridge speed): no stopping on a bridge or in a tunnel",
+    "NRS-484B-623-1": "control: do not drive so slowly as to impede traffic",
+    "NRS-484B-768-1": "control: a cyclist turns only with reasonable safety",
+    "LVMC-11-12-100-C": "control: two-way left-turn lane discipline",
+    "LVMC-11-42-030": "control: reversible lanes by sign and period",
+    "NRS-484B-587-1": "control: enter or leave a controlled-access highway only at the signed points",
 }
 
 # Atoms with no support on either side are ontology design, not test knowledge: they stay in the
 # training ontology. Listed so the report can say so.
-ZERO_SUPPORT_STAY = ("sig.brake_lamp", "sig.hazard", "sig.signal_arm")
+ZERO_SUPPORT_STAY = ("sig.brake_lamp", "sig.hazard")
 
 
 def load(name: str, root: Path = None) -> list[dict]:
@@ -154,6 +148,21 @@ def provenance_support(law_ids: list[str]) -> dict[str, set[str]]:
                     if lid == p or lid.startswith(p + "-"):
                         out[a].add(lid)
     return out
+
+
+def held_out_rows(atoms: list[str]) -> dict[str, dict[str, str]]:
+    """Each held-out atom's ATOMS.md row, verbatim, with its SHA-256: the version the operator adds
+    back when the test run proposes it. The doctor fails when a held-out row of ATOMS.md no longer
+    matches, so a row changes only by regenerating the split."""
+    rows = {}
+    for line in ATOMS_MD.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
+        if m and m.group(1) in atoms:
+            rows[m.group(1)] = {"row": line, "sha256": hashlib.sha256(line.encode("utf-8")).hexdigest()}
+    missing = [a for a in atoms if a not in rows]
+    if missing:
+        raise SystemExit(f"held-out atoms with no ATOMS.md row: {missing}")
+    return rows
 
 
 def main() -> int:
@@ -225,6 +234,7 @@ def main() -> int:
         "test_only_values": test_only_values,
         "test_only_primitives": [],   # concepts are pipeline nodes since 2026-09-28; no primitive is test-only
         "zero_support_atoms_kept_in_train": zero,
+        "held_out_rows": held_out_rows(test_only_atoms),
         "train_atoms": sorted(a for a in ATOMS if a not in test_only_atoms),
     }, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -233,7 +243,7 @@ def main() -> int:
     themes = defaultdict(int)
     for x in test: themes[x["theme"]] += 1
     L = []
-    L.append("# Corpus split — training and test (2026-09-20)\n")
+    L.append("# Corpus split — training and test (2026-10-13)\n")
     L.append("Generated by `ontology_provenance/nrs_tools/split.py`; do not edit by hand.\n")
     L.append(f"| set | lines | C | Q | S | file |\n|---|---|---|---|---|---|")
     L.append(f"| training | {len(train)} | {tiers(train)['C']} | {tiers(train)['Q']} | {tiers(train)['S']} | `example/train/laws.jsonl` |")
@@ -245,9 +255,25 @@ def main() -> int:
              "this report uses come from `audit_and_scripts/laws_meta.jsonl`.\n")
     L.append("## Purpose\n")
     L.append("The training set builds the autoformalization repository: its ontology, derived concepts, plans and rules. "
-             "The test set stands for legislation the repository has never seen — new road-user classes the statute "
-             "creates, a road structure with its own traffic pattern, new devices, new signals — and asks whether the "
-             "pipeline can extend the ontology and formalize the new text, not only reuse what it has.\n")
+             "The test set stands for legislation the repository has never seen — a road structure with its own traffic "
+             "pattern, a road-user class and its device, new vehicle states — and asks whether the pipeline notices that "
+             "the ontology lacks an atom the new text needs (a person then decides to add it), and formalizes the text "
+             "once the atom is added. Controls, which need only training atoms, test that it does not ask for an atom "
+             "a law does not need.\n")
+    L.append("## Limits of the claim\n")
+    L.append("- **Atoms only.** No test line needs a formula operator the training Core lacks; whether the pipeline "
+             "notices a missing operator is not measured.")
+    L.append("- **Seven families.** Results are reported per family, not per line. The families a simulator shows "
+             "now (roundabout, lighting, reverse lamp, the grade) are judged end to end; the others on formalization "
+             "until their assets exist.")
+    L.append("- **Visible novelty.** The missing atom is named in the text (a structure, a class, a lamp). Atoms whose "
+             "need is hidden in ordinary words and can be computed from training atoms were not held out: for them the "
+             "right answer is a derived concept, not a gap.")
+    L.append("- **Scope.** The corpus covers ordinary urban Las Vegas driving with a vehicle driver as the party judged. "
+             "Laws triggered by a rare actor or event (funeral processions, ice-cream trucks, horses, delivery robots, "
+             "mobile carrying devices, low-speed vehicles, a train at a crossing) or needing a road the valley does not "
+             "have (canyons, rural turnouts), and laws binding only a skateboard or moped rider, are outside it; they "
+             "are listed with their reasons in `audit_and_scripts/excluded.jsonl`.\n")
     L.append("## Constraints checked\n")
     L.append("1. **Self-contained training set.** No training line references a test line. "
              f"Test lines referencing training lines (allowed, new law builds on old): {back_refs or 'none'}.")
@@ -304,7 +330,7 @@ def main() -> int:
              "parking lines; moving it would gut the training parking corpus.")
     (AUDIT_DIR / "SPLIT.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
-    for a in ("st.roundabout", "ru.school_bus", "dev.school_bus_signal", "sig.hazard", "sig.signal_arm", "sig.brake_lamp", "ru.other_conveyance", "st.turnout", "kin.steer_angle"):
+    for a in ("st.roundabout", "ru.school_bus", "dev.school_bus_signal", "sig.headlamp", "sig.position_lamp", "sig.reverse_lamp", "sig.door_open", "kin.steer_angle", "kin.parking_brake"):
         print(f"  {a}: lex={sorted(lex_atoms.get(a, []))} prov={sorted(prov.get(a, []))}")
     for v in ("dev.speed_limit_sign=structure_maximum",):
         print(f"  {v}: lex={sorted(lex_values.get(v, []))}")

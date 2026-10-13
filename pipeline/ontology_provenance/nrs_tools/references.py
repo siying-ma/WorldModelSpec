@@ -64,7 +64,7 @@ REFS = {
                     ('in violation of NRS 484B.300', ['NRS-484B-300-1']),
                     ('in violation of NRS 484B.210', ['NRS-484B-210-3']),
                     ('in violation of NRS 484B.223', [_sec('NRS-484B-223-')]),
-                    ('in violation of NRS 484B.127', ['LVMC-11-12-080-A', 'NRS-484B-127-2', 'NRS-484B-127-3']),
+                    ('in violation of NRS 484B.127', ['NRS-484B-127-1', 'NRS-484B-127-2', 'NRS-484B-127-3']),
                     ('NRS 484B.250 to 484B.267, inclusive', [_sec('NRS-484B-250-'), 'NRS-484B-253', _sec('NRS-484B-257-'), 'NRS-484B-260', 'NRS-484B-263', _sec('NRS-484B-267-')])],
  'NRS-484B-270-2b': [('NRS 484B.213 and 484B.217', ['NRS-484B-213-1', 'NRS-484B-213-2a', 'NRS-484B-213-2b', 'NRS-484B-213-2c', 'NRS-484B-217-2'])],
  'NRS-484B-270-3': [('subsection 6 of NRS 484B.297', ['NRS-484B-297-6'])],

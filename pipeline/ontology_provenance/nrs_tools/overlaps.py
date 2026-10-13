@@ -63,8 +63,8 @@ DROP = {
  'LVMC-11-52-240': (['NRS-484B-450-1o'], "A schedule-based restatement of the sign/red-curb prohibition already carried by NRS 484B.450(1)(o); the curb-colour meaning is carried by LVMC 11.52.030(A), which stays."),
  'LVMC-11-60-020': (['NRS-484B-517'], "NRS carries the passenger-vehicle temporary-stop exception; LVMC has no exception."),
  'LVMC-11-60-080': (['NRS-484B-517'], "Contained in NRS 484B.517 (taxicab stands) with the same loading exception; LVMC adds only an emergency-vehicle exception."),
+ 'LVMC-11-12-080-A': (['NRS-484B-127-1'], "Same words (tie-breaker 2); LVMC adds only an exception for funeral processions, which are outside the operational design domain (decided 2026-10-13)."),
  # ---- statute text dropped, municipal kept ----
- 'NRS-484B-127-1': (['LVMC-11-12-080-A'], "Same words, but LVMC binds the driver of a motor vehicle on a street and carries the funeral-procession exception; NRS binds any vehicle on any highway."),
  'NRS-484B-223-1a': (['LVMC-11-18-030-B'], "LVMC states the exceptions to lane-keeping (lawfully passing, preparing a lawful turn); NRS states the duty as 'as nearly as practicable', a judgement."),
  'NRS-484B-283-1c': (['LVMC-11-30-030'], "LVMC triggers on a vehicle stopped at a crosswalk to permit a pedestrian to cross and prohibits passing outright; NRS makes the prohibition depend on what the overtaking driver 'has determined', a knowledge standard."),
  'NRS-484B-287-1a': (['LVMC-11-30-060-A'], "LVMC binds a pedestrian crossing the roadway (the travelled part); NRS binds one crossing the highway (the whole right-of-way including shoulder)."),

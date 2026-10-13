@@ -17,7 +17,8 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
 - **The contracts** — what every name the rule uses denotes, and the classes the reading counts
   under each legal aggregate word.
 - **The divergences** — each with its number, kind, situation, the words of the law the reviewer
-  says decide it, the reviewer's verdict for the law, and the rule's executed verdict.
+  says decide it, the reviewer's verdict for the law, and the rule's executed verdict. An item of
+  kind `broader_contract` has no executed verdict (rule 8).
 
 {law_and_segmentation}
 
@@ -66,7 +67,15 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    contract carries and the rule does not read at all, on the rule returning no verdict inside the
    law's domain, or on a bound that forbids conduct no reading of the standard could call
    unreasonable.
-8. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
+8. **Broader contracts.** An item of kind `broader_contract` says the record carries words of a
+   subject, trigger, condition, exception or obligation span with a contract that admits things
+   the words exclude, and that no contract in the table makes the distinction, so no trace can
+   show it. Uphold it when the contract's own words admit what the law's words exclude and the
+   difference changes where the law applies or what it requires; an upheld item returns the rule
+   so that the plan files a gap on that span. Dismiss it when the contract denotes what the words
+   name, when the words are a legal aggregate word whose classes the reading declares, or when
+   they are read through conduct under rule 6.
+9. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
    the contracts. Do not use knowledge of any jurisdiction or of what such rules usually say.
 
 ## Output

@@ -2,8 +2,9 @@
 
     python3 prepare_cases.py <case dir> <out dir> [--fill] [--visibility M] [--lane-width M] [--engine]
 
-Always: the retired road-user class `animal_or_animal_drawn` is written as the two classes it was
-split into, so traces made before the split decode.
+Always: the road-user classes and atoms the ontology no longer carries (the former
+`animal_or_animal_drawn` and those retired with the long-tail laws on 2026-10-13) are dropped from
+the trace's class lists and the manifest, so traces made before either change decode.
 
 With --fill, the facts CARLA knows but the adapter does not export are added, and the manifest
 declares them observed: no ice or snow, the visibility distance given (clear air), and a lane width
@@ -16,12 +17,15 @@ import argparse
 import json
 import os
 
-NEW_ANIMAL_CLASSES = ["ridden_or_herded_animal", "animal_drawn_vehicle"]
+RETIRED_CLASSES = {"low_speed_vehicle", "mobile_carrying_device", "personal_delivery_device", "procession_vehicle",
+                   "vending_vehicle", "animal_drawn_vehicle", "other_conveyance", "ridden_or_herded_animal",
+                   "animal_or_animal_drawn"}
+RETIRED_ATOMS = {"ru." + c for c in RETIRED_CLASSES} | {"sig.signal_arm", "st.turnout"}
 
 
 def respell(x):
     if isinstance(x, list):
-        return [y for v in x for y in (NEW_ANIMAL_CLASSES if v == "animal_or_animal_drawn" else [respell(v)])]
+        return [respell(v) for v in x if not (isinstance(v, str) and v in RETIRED_CLASSES)]
     return {k: respell(v) for k, v in x.items()} if isinstance(x, dict) else x
 
 
@@ -38,9 +42,8 @@ def main() -> None:
     trace = respell(json.load(open(os.path.join(a.case, "trace.json"))))
     manifest = json.load(open(os.path.join(a.case, "manifest.json")))
     atoms = manifest["atoms"]
-    if "ru.animal_or_animal_drawn" in atoms:
-        v = atoms.pop("ru.animal_or_animal_drawn")
-        atoms["ru.ridden_or_herded_animal"] = atoms["ru.animal_drawn_vehicle"] = v
+    for retired in RETIRED_ATOMS:
+        atoms.pop(retired, None)
 
     widths = 0
     if a.fill:

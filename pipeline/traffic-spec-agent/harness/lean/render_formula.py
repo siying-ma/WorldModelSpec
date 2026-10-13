@@ -5,6 +5,14 @@ from __future__ import annotations
 import re
 
 _CMP = {"lt": "is less than", "le": "is at most", "eq": "equals", "ge": "is at least", "gt": "is more than"}
+#: The annotations the rendering adds after a name: the contract's gloss in brackets, and a
+#: parameter's note. A reader quoting the rule's words may leave them out.
+_ANNOTATION = re.compile(r" \[[^\[\]]*\]| \((?:a bound the reading sets|a parameter the caller sets)\)")
+
+
+def bare(text: str) -> str:
+    """The text without the rendering's annotations."""
+    return _ANNOTATION.sub("", str(text or ""))
 
 
 class Unrendered(ValueError):

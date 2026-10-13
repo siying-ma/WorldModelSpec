@@ -88,9 +88,15 @@ def permitted(allow: list[str], deny: list[str], tool: str, path: Path) -> bool:
     return any(rule_matches(r, tool, path) for r in allow)
 
 
-def harness_env() -> dict[str, str]:
-    """`python -m harness` resolves from any working directory."""
-    return {"PYTHONPATH": str(paths.REPO.resolve())}
+def harness_env(shell_timeout: float | None = None) -> dict[str, str]:
+    """`python -m harness` resolves from any working directory. With `shell_timeout` (seconds), a
+    shell command may run that long in the foreground: a gate waits for the library lock behind
+    other sessions' gates and then runs, and only the session's own limit bounds both."""
+    env = {"PYTHONPATH": str(paths.REPO.resolve())}
+    if shell_timeout:
+        ms = str(int(shell_timeout * 1000))
+        env.update({"BASH_DEFAULT_TIMEOUT_MS": ms, "BASH_MAX_TIMEOUT_MS": ms})
+    return env
 
 
 def config_dirs() -> list[Path]:
