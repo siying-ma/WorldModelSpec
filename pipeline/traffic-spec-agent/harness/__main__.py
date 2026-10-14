@@ -166,8 +166,8 @@ class Cli:
     def validate(self, blueprint_file: str = "", run_id: str = "", laws: str = DEFAULT_LAWS,
                  ontology_file: str = DEFAULT_ONTOLOGY, reading: str = DEFAULT_READING) -> int:
         """Validator A over a blueprint file, no sessions. With `--run_id` it is the check the loop
-        runs: the run's accepted nodes and concepts, mapping index, reading (with the draft's
-        `aggregates.jsonl` applied) and the `PLAN.md` disputes beside the blueprint. Without a run it
+        runs: the run's accepted nodes and concepts, mapping index and reading (with the draft's
+        `aggregates.jsonl` applied). Without a run it
         is context-free: no accepted node, concept or mapping is known, so a composition of an
         accepted node or a call of a catalogued concept is reported as unknown."""
         from .checks import aggregates

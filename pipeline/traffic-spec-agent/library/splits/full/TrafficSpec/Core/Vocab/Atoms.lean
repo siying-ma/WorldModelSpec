@@ -150,7 +150,8 @@ def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (�
 -- ---------------------------------------------------------------------------------------------
 -- §3 Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
-private def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
+/-- Whether a region is of a kind: unknown where the source cannot tell that kind. -/
+def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
   (s.structure? r).bind fun st => if st.unobservedKinds.contains k then none else some (st.kind == k)
 
 def st_highway (s : Scene) (r : RegionId) : Option Bool := isKind s r .highway
@@ -162,6 +163,22 @@ def st_lane_adjacency_left (s : Scene) (r : RegionId) : Option RegionId := (st_l
 def st_lane_adjacency_right (s : Scene) (r : RegionId) : Option RegionId := (st_lane_adjacency s r).bind (·.rightNeighbour)
 def st_lane_adjacency_ordinal (s : Scene) (r : RegionId) : Option Nat := (st_lane_adjacency s r).bind (·.ordinalFromLeft)
 def st_lane_adjacency_count (s : Scene) (r : RegionId) : Option Nat := (st_lane_adjacency s r).bind (·.countInDirection)
+/-- Whether `r'` is lane `r`'s neighbour of the same direction on its left: decided false for every
+    `r'` where `r` is first from the left, unknown where neither the neighbour nor the lane's place
+    is observed. -/
+def st_lane_left_of (s : Scene) (r r' : RegionId) : Option Bool :=
+  match st_lane_adjacency_left s r with
+  | some n => some (n == r')
+  | none => if st_lane_adjacency_ordinal s r == some 1 then some false else none
+/-- Whether `r'` is lane `r`'s neighbour of the same direction on its right: decided false for every
+    `r'` where `r` is last of the lanes in its direction. -/
+def st_lane_right_of (s : Scene) (r r' : RegionId) : Option Bool :=
+  match st_lane_adjacency_right s r with
+  | some n => some (n == r')
+  | none =>
+    match st_lane_adjacency_ordinal s r, st_lane_adjacency_count s r with
+    | some o, some n => if o == n then some false else none
+    | _, _ => none
 def st_lane_connectivity (s : Scene) (r : RegionId) : Option (List RegionId) := (st_lane_adjacency s r).bind (·.leadsTo)
 def st_lane_enters (s : Scene) (r : RegionId) : Option RegionId := (st_lane_adjacency s r).bind (·.entersIntersection)
 def st_lane_marking (s : Scene) (r : RegionId) : Option ((Option (MarkingType × MarkingColour)) × (Option (MarkingType × MarkingColour))) :=
@@ -251,6 +268,10 @@ def st_region_geometry_distance (s : Scene) (x : TrackId) (r : RegionId) : Optio
 /-- The regions of a kind present in the scene. -/
 def regionsOfKind (s : Scene) (k : StructureKind) : List RegionId :=
   (s.structures.filter (·.kind == k)).map (·.id)
+/-- The regions a quantifier over a kind ranges over: those of the kind, and those whose kind the
+    source cannot tell, which may be of it. -/
+def regionCandidates (s : Scene) (k : StructureKind) : List RegionId :=
+  (s.structures.filter fun st => st.kind == k || st.unobservedKinds.contains k).map (·.id)
 
 def rel_occupies (s : Scene) (x : TrackId) (r : RegionId) : Option Bool :=
   if s.occupancyObserved.contains x then some (s.occupies.contains (x, r)) else none
@@ -261,7 +282,8 @@ def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
 -- ---------------------------------------------------------------------------------------------
 -- §4 Control devices
 -- ---------------------------------------------------------------------------------------------
-private def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
+/-- Whether a device is of a kind: unknown where the source cannot tell that kind. -/
+def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
   (s.device d).bind fun dv => if dv.unobservedKinds.contains k then none else some (dv.kind == k)
 
 def dev_traffic_signal (s : Scene) (d : DeviceId) : Option Bool := devKind s d .trafficSignal
@@ -303,18 +325,24 @@ def dev_school_bus_signal_on_track (s : Scene) (d : DeviceId) : Option TrackId :
 def dev_school_bus_signal_red_flashing (s : Scene) (d : DeviceId) : Option Bool := (s.device d).bind (·.redFlashing)
 def dev_school_bus_signal_amber_flashing (s : Scene) (d : DeviceId) : Option Bool := (s.device d).bind (·.amberFlashing)
 def dev_school_bus_signal_stop_arm (s : Scene) (d : DeviceId) : Option Bool := (s.device d).bind (·.stopArm)
-def dev_governs (s : Scene) (d : DeviceId) (r : RegionId) : Option Bool := (s.device d).map (·.governs.contains r)
-def dev_governs_regions (s : Scene) (d : DeviceId) : Option (List RegionId) := (s.device d).map (·.governs)
+def dev_governs (s : Scene) (d : DeviceId) (r : RegionId) : Option Bool :=
+  (s.device d).bind fun dv => if dv.governsObserved then some (dv.governs.contains r) else none
+def dev_governs_regions (s : Scene) (d : DeviceId) : Option (List RegionId) :=
+  (s.device d).bind fun dv => if dv.governsObserved then some dv.governs else none
 def dev_position (s : Scene) (d : DeviceId) : Option Vec := (s.device d).bind (·.position)
 def dev_inoperative (s : Scene) (d : DeviceId) : Option Bool := (s.device d).bind (·.inoperative)
 /-- The devices of a kind present in the scene. -/
 def devicesOfKind (s : Scene) (k : DeviceKind) : List DeviceId :=
   (s.devices.filter (·.kind == k)).map (·.id)
+/-- The devices a quantifier over a kind ranges over: those of the kind, and those whose kind the
+    source cannot tell, which may be of it. -/
+def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
+  (s.devices.filter fun d => d.kind == k || d.unobservedKinds.contains k).map (·.id)
 
 -- ---------------------------------------------------------------------------------------------
 -- §5 Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
-def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnSide := (s.user x).bind (·.sig.turnIndicator)
+def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
 def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
 def sig_headlamp (s : Scene) (x : TrackId) : Option HeadlampState := (s.user x).bind (·.sig.headlamp)

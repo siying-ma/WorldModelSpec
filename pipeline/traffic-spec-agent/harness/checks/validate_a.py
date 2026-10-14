@@ -11,7 +11,7 @@ from ..model.mapping import MappingIndex, normalize
 from ..model.ontology import Ontology
 from ..model.reading import Reading
 
-ACCEPT, RETURN, BLOCK, FAIL = "accept", "return", "block", "fail"
+ACCEPT, RETURN, FAIL = "accept", "return", "fail"
 _STRIP = re.compile(r"[\s\.,;:()\[\]“”\"'‘’—–-]+")
 
 
@@ -99,8 +99,9 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
                 continue          # the word itself is checked against the reading
             if not onto.knows(ident) and ident not in concept_ids:
                 if e.get("span") in proposed:
-                    continue
-                if nodeid.is_concept_id(ident):
+                    errs.append(f"{node.id}: span {e.get('span')} carries a gap and maps to `{ident}`, which does not exist: map the span "
+                                "to its nearest atoms or concepts (the coder tries them first) and let the gap's proposal name what is missing")
+                elif nodeid.is_concept_id(ident):
                     errs.append(f"{node.id}: concept `{ident}` is neither accepted nor proposed in this plan (a concept record for span {e.get('span')})")
                 else:
                     errs.append(f"{node.id}: `{ident}` is not in the ontology and no gap is proposed for span {e.get('span')}")
@@ -111,14 +112,33 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
         for c in cs:
             if c not in onto.primitive_ids and c not in onto.atom_ids and c not in concept_ids:
                 errs.append(f"{node.id}: operationalization concept `{c}` is neither a concept, a primitive nor an atom")
+    constructors = formula_constructors()
     for g in node.gaps():
         if g.get("kind") not in GAP_KINDS:
             errs.append(f"{node.id}: gap kind {g.get('kind')!r} not in {sorted(GAP_KINDS)}")
         if not g.get("proposal") or not g.get("nearest"):
             errs.append(f"{node.id}: gap for span {g.get('span')} lacks a proposal or its nearest atoms")
-        else:
-            gaps.append(g)
+            continue
+        proposal = str(g.get("proposal"))
+        named = re.match(r"\s*\|?\s*`((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)`", proposal)
+        if g.get("kind") == "atom" and named and onto.knows(named.group(1)):
+            errs.append(f"{node.id}: the gap on span {g.get('span')} proposes `{named.group(1)}`, which the ontology already has: map the span to it")
+            continue
+        op = re.match(r"\s*`(?:Formula\.|Term\.|Measure\.)?\.?(\w+)", proposal)
+        if g.get("kind") == "operator" and op and op.group(1) in constructors:
+            errs.append(f"{node.id}: the gap on span {g.get('span')} proposes `{op.group(1)}`, which the formula language already has: "
+                        "write the span with it")
+            continue
+        gaps.append(g)
     return errs, gaps
+
+
+def formula_constructors() -> set[str]:
+    """The constructor names of the formula language (`Formula`, `Term`, `Measure`), read from Core:
+    what an `operator` gap may not propose again."""
+    from ..lean import surface
+    text = surface.formula_language()
+    return {c for line in text.splitlines() if line.lstrip().startswith("|") for c in re.findall(r"\|\s*(\w+)", line)}
 
 
 _PARAM = re.compile(r"^p\.[a-z][a-z0-9_]*$")
@@ -433,7 +453,7 @@ SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
 def check_residue_scope(node: Node) -> list[str]:
     """A residue on a span that decides when the rule applies would make the rule apply where the
     law does not; such a span is an assumption the trace declares or a gap, unless the residue
-    says the span imposes no observable condition (`scope: none`), which the judge then holds it to."""
+    says the span imposes no observable condition (`scope: none`), which the review then holds it to."""
     errs = []
     spans = node.spans()
     for r in node.get("residues", []):
@@ -557,26 +577,19 @@ def check_decomposition(nodes: list[Node], law: Law) -> list[str]:
     return errs
 
 
-def check_consistency(node: Node, index: MappingIndex, plan_index: dict[str, tuple[set[str], str]], disputes: set[str]) -> list[str]:
+def check_segment_roles(node: Node, index: MappingIndex) -> list[str]:
+    """The role of a law's words is fixed with its segmentation once a node of the law is accepted:
+    a sibling planned later segments the same words alike. (How another law maps the same words is
+    no constraint: the index is shown to the planner as information.)"""
     errs = []
     for e in node.get("elements", []):
         sid = e.get("span")
         text = node.spans().get(sid, {}).get("text", "")
-        atoms = set(e.get("atoms", [])) | set(e.get("derived", []))
-        key = normalize(text)
-        if not key:
-            continue
-        prior = index.lookup(text)
-        if prior is not None and prior != atoms and key not in disputes:
-            errs.append(f"{node.id}: span {sid} maps `{text[:60]}` to {sorted(atoms)}, an accepted node mapped it to {sorted(prior)}; no dispute recorded")
-        prior_e = index.entry(text)
+        prior_e = index.entry(text) if text.strip() else None
         role = node.spans().get(sid, {}).get("role")
         if prior_e and prior_e.get("role") and role and prior_e["role"] != role and nodeid.law_of(prior_e["node"])[0] == node.law:
             errs.append(f"{node.id}: span {sid} `{text[:60]}` has role {role}; accepted node {prior_e['node']} of the same law segments these words "
                         f"as {prior_e['role']}, and the role of words is fixed with the segmentation once a node of the law is accepted")
-        if key in plan_index and plan_index[key][0] != atoms and key not in disputes:
-            errs.append(f"{node.id}: span {sid} maps `{text[:60]}` differently from node {plan_index[key][1]} in this plan")
-        plan_index.setdefault(key, (atoms, node.id))
     return errs
 
 
@@ -645,7 +658,7 @@ def acyclic(nodes: dict[str, Node]) -> list[str]:
 
 
 def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: Reading,
-             index: MappingIndex, accepted: dict[str, Node], disputes: set[str],
+             index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
              known_nodes: list[Node] | None = None, rejected_gaps: dict[str, set[str]] | None = None) -> list[Outcome]:
     """`known_nodes` are nodes of the same iteration's other plan batches: a composition may name
@@ -662,7 +675,6 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
     known = dict(accepted); known.update({n.id: n for n in (known_nodes or [])}); known.update({n.id: n for n in nodes})
     for n in nodes:
         resolve_rule_ids(n, known)
-    plan_index: dict[str, tuple[set[str], str]] = {}
     by_law: dict[str, list[Node]] = {}
     for n in nodes:
         by_law.setdefault(n.get("law_refs", ["?"])[0], []).append(n)
@@ -699,7 +711,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)
         errs += check_decomposition(by_law[law.id], law)
-        errs += check_consistency(n, index, plan_index, disputes)
+        errs += check_segment_roles(n, index)
         errs += check_compositions(n, known)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps)
@@ -707,16 +719,15 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += [c for c in cycle_errs if n.id in c]
         obligation_residue = any(n.spans().get(r.get("span"), {}).get("role") == "obligation" for r in n.get("residues", []))
         # the obligation itself in a residue closes the law: the vocabulary cannot carry the duty, and
-        # no re-plan changes that; a gap blocks the law until the operator decides, whatever else the
-        # record gets wrong (the errors travel with the block and are shown when the law reopens)
+        # no re-plan changes that. A gap the plan proposes does not block here: the node is coded with the
+        # span mapped to its nearest atoms, and the gap is filed only when the coder confirms the words
+        # cannot be written with them (the gate's `UNEXPRESSED` on that span)
         if obligation_residue and not gaps:
             outcomes.append(Outcome(n, FAIL, [f"{n.id}: the obligation itself is a residue — not expressible"] + errs))
-        elif gaps:
-            outcomes.append(Outcome(n, BLOCK, [f"{n.id}: {len(gaps)} span(s) ground in nothing"] + errs, gaps))
         elif errs:
-            outcomes.append(Outcome(n, RETURN, errs))
+            outcomes.append(Outcome(n, RETURN, errs, gaps))
         else:
-            outcomes.append(Outcome(n, ACCEPT, proposals=proposals))
+            outcomes.append(Outcome(n, ACCEPT, proposals=proposals, gaps=gaps))
     return outcomes
 
 
@@ -925,12 +936,13 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
             errs.append(f"{cid}: the blind scenario's `masked` must be a non-empty list of atom ids")
         elif not (set(masked) & concept_atoms.get(cid, set())):
             errs.append(f"{cid}: the blind scenario masks {masked}, none of which the concept reads")
-    # users
+    # users: those present must claim it; a recorded user no longer in the plan (its law was returned
+    # or blocked since) is not the concept's defect, and the loop derives the users from the plan
     for nid in c.used_by():
         n = nodes.get(nid)
         if n is None:
-            errs.append(f"{cid}: `used_by` names `{nid}`, not a node of this plan")
-        elif cid not in {d for e in n.get("elements", []) for d in e.get("derived", [])} | {x for o in n.get("operationalizations", []) for x in concepts_of(o)}:
+            continue
+        if cid not in {d for e in n.get("elements", []) for d in e.get("derived", [])} | {x for o in n.get("operationalizations", []) for x in concepts_of(o)}:
             errs.append(f"{cid}: node `{nid}` does not claim it")
     # supersession
     old = c.get("supersedes")

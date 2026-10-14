@@ -161,11 +161,12 @@ class Doctor:
         owners = {"plan.md": ("harness.phases.plan", "PLACEHOLDERS"),
                   "code.md": ("harness.phases.code", "PLACEHOLDERS"),
                   "code_concept.md": ("harness.phases.code", "PLACEHOLDERS_CONCEPT"),
-                  "concept_judge.md": ("harness.phases.validate", "PLACEHOLDERS_CONCEPT_JUDGE"),
                   "concept_repair.md": ("harness.phases.plan", "PLACEHOLDERS_REPAIR"),
                   "node_repair.md": ("harness.phases.plan", "PLACEHOLDERS_NODE_REPAIR"),
                   "review_code.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CODE"),
-                  "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE")}
+                  "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE"),
+                  "review_concept.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CONCEPT"),
+                  "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():

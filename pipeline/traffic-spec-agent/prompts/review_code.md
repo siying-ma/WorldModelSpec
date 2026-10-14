@@ -109,7 +109,8 @@ do not edit the rule.
    question 6, are not such items.
 10. `accept` when you find no situation under questions 1 to 3; `return` otherwise. The harness
    runs every trace: a trace on which the rule's verdict differs from the law's confirms the
-   divergence; one on which they agree is recorded as your advisory and returns nothing.
+   divergence; one on which they agree, or differ only between `compliant` and `not_applicable`
+   (neither is a violation), is recorded as your advisory and returns nothing.
 
 ## Output
 

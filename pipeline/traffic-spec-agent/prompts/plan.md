@@ -25,12 +25,15 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   ones that define a class of road users are the source of the **aggregates** (rule 0).
 - **Ontology** — every atom (id, contract, scope), every attribute value, and every primitive
   with its parameters. With the concept catalogue, this is the **closed set**.
+- **Formula language** — every operator a rule or a concept is written with: what a formula can
+  express. An occasion, a window or a comparison you plan is one of these; an `operator` gap
+  proposes only what none of them writes.
 - **Library summary** — accepted nodes: id, law refs, binders, atoms claimed.
 - **Concept catalogue** — accepted concepts: id, contract, formals, parameters, the atoms each
   reads, how many nodes use it. A node calls a catalogued concept by its id; a notion no entry
   denotes is proposed as a **concept record** (rule 0b).
 - **Mapping index** — span text → atoms, from every accepted node of this run, and below it the
-  spans the earlier batches of this iteration mapped: the validator holds you to those too.
+  spans the earlier batches of this iteration mapped: information, not a rule.
 - **Gaps** — open gaps (a law citing one is not in your list) and closed gaps with the reason
   they were rejected.
 - **Parameters** — the reading's parameter catalogue: every named parameter a node may use, with
@@ -41,6 +44,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 {laws}
 {definitions}
 {ontology}
+{formula_language}
 {library_summary}
 {concepts}
 {mapping_index}
@@ -89,11 +93,19 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
      one word are two records, told apart by a qualifier naming the physical difference;
    - a span with no definition gives a record whose contract you write, general enough for any
      law that needs the notion: the reviewer returns a contract tuned to one span.
-   A standard of judgement is never a concept; it is operationalized (rule 4) by concepts and
-   parameters. A concept the catalogue already carries, or one an earlier batch of this iteration
-   proposed (listed under the catalogue), is reused by its id and never re-proposed: a second
-   record under the same id is dropped at the merge, and only the first batch's contract reaches
-   the coder. A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
+   A standard of judgement is never a concept, and no part of one is. A concept's parameters make
+   an observable notion measurable — a tolerance below which a reading counts as none, the window
+   over which a manoeuvre is recognized, the reach within which a region is the road user's own —
+   and never decide how much is enough: a speed that is reasonable, a clearance that is safe, a
+   distance that is near enough. Such a bound is the standard's, and it belongs to the rule's
+   operationalization (rule 4), where the review judges it against the law; the concepts it calls
+   compute the observable magnitudes the bound is compared with (a stopping distance, a time
+   headway, a closest approach). The test: a concept answers the same for the same motion whatever
+   law calls it; one whose answer would change with the standard of the law calling it carries a
+   bound, and so does one that bundles several factors of one standard into one verdict. A concept
+   the catalogue already carries, or one a concept repair or an earlier batch of this iteration
+   proposed (listed under the catalogue), is reused by its id and never re-proposed: a second record
+   under the same id is dropped, and only the first contract reaches the coder. A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
    edited: a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
    the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
    gives the wrong verdict; a different contract is a new concept under a new name. In a `test`
@@ -211,9 +223,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    a gap or a residue, never a further decomposition.
 6. **The node id is derived, not chosen.** It is the law id with `-` replaced by `_`; a line with
    several obligation spans numbers its nodes `_o1`, `_o2`, … in text order.
-7. **Same words, same atoms.** If the mapping index already maps a span's words, use that
-   mapping, or record a dispute under `## Disputes` in `PLAN.md` with the reason. Never diverge
-   silently.
+7. **Same words, same atoms, where they mean the same.** If the mapping index maps a span's
+   words, reuse that mapping where the words mean the same in your law; map them differently,
+   saying why in `PLAN.md`, where your law's words need it.
 8. **Parameters come from the catalogue.** Name parameters from the catalogue; never state a
    value. Every operationalization names at least one parameter: a standard is a bound the
    reading sets, and a standard rendered as a structural fact with no magnitude behind it (the
@@ -269,10 +281,11 @@ For each law in the list:
 5. Plan the four scenarios (rule 9). The `blind` scenario names the claimed atom whose absence
    must make the rule report unknown.
 6. If any span is a gap, complete the gap record (span, kind `atom` or `operator`, proposal in the
-   ontology's row format, nearest atoms with the excluding clause) and mark the node blocked. A
-   blocked node produces no Lean this iteration.
+   ontology's row format or the operator, nearest atoms with the excluding clause), and still map
+   the span to those nearest atoms or concepts: the coding session tries them, and the gap is filed
+   only if it confirms the words cannot be written with them.
 
-Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal), `## Disputes`,
+Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal), and
 `## For the operator`.
 
 ## Output
@@ -292,9 +305,12 @@ gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 
 A gap has two kinds and no other: `atom`, when no atom and no enumeration value of the ontology
-carries the span (the proposal is the ontology row that would), and `operator`, when the formula
-language cannot express it (the proposal is the operator). A gap blocks its law until the
-operator decides it; nothing else is a gap.
+carries the span (the proposal is the ontology row that would, starting with its new id), and
+`operator`, when the formula language cannot express it (the proposal is the operator, starting
+with its new name). An atom gap never proposes an atom the ontology has, and an operator gap never
+proposes what the formula language already writes. A gap is filed, and blocks its law until the
+operator decides it, only when the coding session confirms the span cannot be written with the
+atoms and operators you map it to; nothing else is a gap.
 
 Concept records, in the same file, one JSON object per concept, this schema and nothing more:
 

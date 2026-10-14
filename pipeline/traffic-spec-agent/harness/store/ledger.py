@@ -172,7 +172,7 @@ class Ledger:
 class ConceptEntry:
     concept: str
     state: str = OPEN            # open | planned | returned | accepted | failed
-    attempts: int = 0
+    attempts: int = 0            # coding attempts the gate or the review returned; a validator's return counts none
     reasons: list[str] = field(default_factory=list)
     used_by: list[str] = field(default_factory=list)
     iteration: int = 0
@@ -213,6 +213,14 @@ class ConceptLedger:
         if last_task:
             e.last_task = last_task
         e.state = FAILED if e.attempts >= self.attempts else RETURNED
+
+    def noted(self, cid: str, reasons: list[str]) -> None:
+        """The concept goes back with these reasons, no coding attempt counted: the validator or a
+        dependency returned it before any session coded it."""
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.reasons = reasons
+        if e.state != FAILED:
+            e.state = RETURNED
 
     def fail(self, cid: str, reasons: list[str]) -> None:
         """The concept is closed with these reasons, whatever its budget: its repair session withdrew it."""

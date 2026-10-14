@@ -1,7 +1,7 @@
 # Observability audit — what the two sources can judge, and what left the corpus
 
 Date: 2026-09-29. Scope: all 272 lines of `full_list/laws.jsonl`. Method: join each line's
-`required_observations` in `evaluation_scenario/scenarios.jsonl` against a per-atom capability
+`required_observations` in `pipeline/evaluation/evaluation_scenario/scenarios.jsonl` against a per-atom capability
 table, then refine each hit by the role the scenario's own note says the atom plays in that line.
 Reproduced by `python3 audit_and_scripts/observability_nuplan.py`; per-line records in
 `audit_and_scripts/observability_nuplan.jsonl`.
@@ -178,7 +178,7 @@ class named "rare_gesture", which invited exactly this confusion; it is now `off
 signal for a right turn by extending his or her right hand and arm") listed `ru.rider_posture` with
 the note "which arm is extended and how". An extended arm is `sig.hand_signal`, which that record
 already carried; `Posture` has no field for it. The spurious atom was removed from
-`evaluation_scenario/scenarios.jsonl`, taking `ru.rider_posture` from 13 lines to 12.
+`pipeline/evaluation/evaluation_scenario/scenarios.jsonl`, taking `ru.rider_posture` from 13 lines to 12.
 `NRS-484B-768-1` keeps both atoms correctly: its duty is the hand signal, and posture appears only
 in exception (b), where both hands are needed for safe operation.
 

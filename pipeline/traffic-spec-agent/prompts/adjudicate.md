@@ -19,6 +19,7 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
 - **The divergences** — each with its number, kind, situation, the words of the law the reviewer
   says decide it, the reviewer's verdict for the law, and the rule's executed verdict. An item of
   kind `broader_contract` has no executed verdict (rule 8).
+- **Earlier rulings** — what was ruled on this law in earlier reviews, and why (rule 9).
 
 {law_and_segmentation}
 
@@ -29,6 +30,8 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
 {contracts}
 
 {divergences}
+
+{precedents}
 
 ## Rulings
 
@@ -77,7 +80,10 @@ divergence. You do not judge the code, propose a fix, or look for further diverg
    so that the plan files a gap on that span. Dismiss it when the contract denotes what the words
    name, when the words are a legal aggregate word whose classes the reading declares, or when
    they are read through conduct under rule 6.
-9. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
+9. **Earlier rulings.** A situation an earlier ruling on this law decided is ruled the same way,
+   unless the record or the rendering changed on the point that ruling turned on; a ruling that
+   departs from an earlier one names, in its reason, the change it turns on.
+10. Quote, verbatim, the words that decide each ruling: from the law, the record, the rendering or
    the contracts. Do not use knowledge of any jurisdiction or of what such rules usually say.
 
 ## Output

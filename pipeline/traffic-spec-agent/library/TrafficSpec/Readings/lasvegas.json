@@ -3,124 +3,100 @@
  "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
  "params": [
   {
-   "name": "p.turn_window",
-   "value": 12,
-   "unit": "s",
-   "convention": "the integration window of prim.heading_change: long enough to contain a complete reversal carried out at manoeuvring speed, including one made in more than one movement, and short enough that two separate turns at successive junctions are not summed into one reversal. Taken from the manoeuvre durations implied by the minimum turning paths of design vehicles at manoeuvring speed, at the short end of that range, the turning speed AASHTO assumes for a minimum turning path being what sets it.",
-   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets — turning paths and turning speeds of design vehicles",
-   "proposed": "carla_smoke7/iter-002 NRS_484B_407"
-  },
-  {
-   "name": "p.direction_reversal_angle",
-   "value": 150,
-   "unit": "deg",
-   "convention": "the magnitude of signed heading change over the window at which a vehicle counts as proceeding in the opposite direction rather than as having turned into another way: set below a straight reversal by the margin that a bent alignment (the two ends of the turn are not parallel on a curving road) and the drift of an integrated, sampled yaw rate introduce, and well above the heading change of a right-angle turn so that turning into a side street never counts.",
-   "source": "AASHTO geometric design, U-turn manoeuvre; the heading-drift error class the source declares for its yaw-rate integration",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
-  },
-  {
-   "name": "p.motion_speed_min",
-   "value": 0.5,
-   "unit": "m/s",
-   "convention": "the speed above which a road user counts as proceeding rather than standing: the stopped/moving threshold used when trajectories are extracted, set above the noise floor of a position-derived speed so that a stationary body is not read as creeping.",
-   "source": "stopped-vehicle thresholds of trajectory-extraction conventions (NGSIM, highD processing)",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
-  },
-  {
-   "name": "p.curve_radius_resolution",
-   "value": 500,
-   "unit": "m",
-   "convention": "the largest radius of horizontal curvature the map source still tells apart from a straight road: a bend of greater radius is reported as straight by the centreline fit, so the span is read as its feature's presence — st.curvature standing clear of zero at the source's own resolution, which this parameter expresses as the radius it corresponds to. It bounds no radius the statute withholds; a source with a finer centreline fit raises it.",
-   "source": "HD-map centreline fit residual / curvature resolution declared by the map source, expressed as its reciprocal",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
-  },
-  {
-   "name": "p.crest_approach_distance",
-   "value": 150,
-   "unit": "m",
-   "convention": "crest vertical-curve sight-distance model: the length of approach ahead of a crest over which the vertical curve still hides an oncoming vehicle from a driver at that place, for the design speed of the road. It is the bound on “upon the approach to or near”, measured as the ground distance from the subject's body outline to the crest region.",
-   "source": "AASHTO crest vertical curve design and stopping sight distance for the road's design speed",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_407"
-  },
-  {
-   "name": "p.reaction_time",
-   "value": 2.5,
-   "unit": "s",
-   "convention": "the brake-reaction time of the stopping-sight-distance model: the interval the design driver is allowed between the moment a reason to stop comes into view and the moment the brakes take effect, during which the vehicle goes on at its speed; it bounds the first part of the distance within which the driver must be able to stop for an unexpected hazard",
-   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets (Green Book), stopping sight distance",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.brake_response_time",
-   "value": 0.75,
-   "unit": "s",
-   "convention": "the response time of the following-distance model of responsibility-sensitive safety: the interval a following driver takes to react to the vehicle ahead beginning to brake, which is shorter than the design reaction time for an unexpected hazard because the vehicle ahead is already in view and shows its brake lamps; it bounds the distance the follower covers before its own brakes take effect",
-   "source": "Shalev-Shwartz, Shammah and Shashua, responsibility-sensitive safety; longitudinal safe-distance formulation",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.decel_dry",
-   "value": 4.5,
-   "unit": "m/s^2",
-   "convention": "the deceleration a driver of ordinary firmness obtains on a dry, clean pavement: the longitudinal tyre-road friction a dry surface offers, reduced for a controlled stop that stays short of wheel lock and within the lane; it is the deceleration every stopping distance of this rule is computed at where the surface is neither wet nor icy",
-   "source": "AASHTO Green Book deceleration for stopping sight distance, taken at a dry-pavement friction coefficient; pavement-friction tables",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.decel_wet",
-   "value": 3.4,
-   "unit": "m/s^2",
-   "convention": "the deceleration the stopping-sight-distance model assumes on a wet pavement: the rate most drivers can sustain on a wet surface while staying within their lane and in control; it is the deceleration every stopping distance of this rule is computed at where the road is wet or precipitation is falling",
-   "source": "AASHTO Green Book, stopping sight distance (deceleration for design)",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.decel_ice",
-   "value": 1.5,
-   "unit": "m/s^2",
-   "convention": "the deceleration obtainable on a surface covered by ice or packed snow: the much lower longitudinal friction such a surface offers, again reduced to a controlled stop; it is the deceleration every stopping distance of this rule is computed at where the surface is icy or snow-covered",
-   "source": "winter-maintenance road-friction measurements; AASHTO friction values for ice and compacted snow",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.lateral_accel_max",
-   "value": 2.0,
-   "unit": "m/s^2",
-   "convention": "the lateral acceleration a vehicle may call on when rounding a bend before the comfortable side friction of the point-mass curve model is exhausted, at zero superelevation: the bound on the speed a curve of a given radius leaves reasonable",
-   "source": "AASHTO Green Book, horizontal curve design (side friction factors for design speeds)",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.lane_width_nominal",
-   "value": 3.66,
-   "unit": "m",
-   "convention": "the base lane width of the free-flow-speed adjustment of the Highway Capacity Manual: the width at which the lane imposes no speed reduction of its own, and from which the width deficit of a narrower lane is measured",
-   "source": "Transportation Research Board, Highway Capacity Manual, base conditions for free-flow speed",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.narrow_lane_speed_drop",
-   "value": 12.1,
-   "unit": "m/s",
-   "convention": "the speed the free-flow-speed adjustment of the Highway Capacity Manual takes off a lane's free-flow speed for a width deficit as large as the base lane width itself, the adjustment's entries for narrower lanes taken as a straight line; a lane's actual deficit enters in the proportion it bears to the base width, so what a narrow lane costs is this drop times the share of the base width the lane lacks",
-   "source": "Transportation Research Board, Highway Capacity Manual, lane-width adjustment to free-flow speed",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.free_flow_speed_base",
-   "value": 31.0,
-   "unit": "m/s",
-   "convention": "the free-flow speed the Highway Capacity Manual's adjustment starts from for a lane of the base width with adequate lateral clearance; it is set to the highest free-flow speed an unconstrained lane of this jurisdiction carries, so that what bounds the subject's speed on this leg is the lane's width deficit and not the base itself",
-   "source": "Transportation Research Board, Highway Capacity Manual, base free-flow speed; the jurisdiction's highest statutory maximum speed as the unconstrained value",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.speed_tolerance",
+   "name": "p.backing_window",
    "value": 1.0,
+   "unit": "s",
+   "convention": "The length of the window behind over which rearward travel is recognized as backing rather than as sampling noise or a momentary roll-back on a grade, and the window over which the heading swing of a corner is integrated. It bounds the recognition of the act, not how far a vehicle may reverse.",
+   "source": "manoeuvre-recognition windows over trajectory datasets sampled at their usual rate.",
+   "proposed": "demo10/iter-001 NRS_484B_113_2"
+  },
+  {
+   "name": "p.speed_zero_tolerance",
+   "value": 0.1,
    "unit": "m/s",
-   "convention": "the margin by which a measured speed must exceed a bound before the excess is read as the road user's and not the source's: the speed error of a tracked trajectory, applied to the two bounds that compare a speed with a speed",
-   "source": "the error class the reading's capability manifest declares for kin.speed in trajectory sources",
-   "proposed": "carla_smoke7/iter-001 NRS_484B_600_1a"
+   "convention": "The speed at or below which a tracked body's displacement between observations is indistinguishable from standing on the source's own position resolution; here it is the floor below which rearward travel counts as no motion at all.",
+   "source": "position-noise and resting-speed figures of road-user tracking datasets and perception benchmarks.",
+   "proposed": "demo10/iter-001 NRS_484B_113_2"
+  },
+  {
+   "name": "p.corner_heading_change",
+   "value": 60.0,
+   "unit": "deg",
+   "convention": "The heading swing through which a body passes in going from one street into an intersecting one. DEF-NRS-484A-105 has the two highways “join one another at, or approximately at, right angles”, and the bound is set inside that angle so that skewed junctions and a reversing path that is still completing its swing are covered, while a vehicle reversing straight back is not.",
+   "source": "turning-path templates for intersection design (passenger-car turning envelopes).",
+   "proposed": "demo10/iter-001 NRS_484B_113_2"
+  },
+  {
+   "name": "p.corner_reach",
+   "value": 15.0,
+   "unit": "m",
+   "convention": "The ground distance from the intersection region within which a reversing turn counts as taken around that junction's corner, so that a swing made far down the block is not. It is a corner-geometry figure, the reach of the turning envelope off the junction.",
+   "source": "turning-path templates for intersection design: corner radii and turning-envelope offsets.",
+   "proposed": "demo10/iter-001 NRS_484B_113_2"
+  },
+  {
+   "name": "p.turn_window",
+   "value": 8.0,
+   "unit": "s",
+   "convention": "The length of the window behind over which a turning's heading change is integrated: the time an ordinary vehicle takes to carry a turn at a junction, or a reversal of direction, from the start of the swing to its end, long enough to carry a reversal made in more than one movement as DEF-NRS-484B-077 requires. It bounds the observation of the manoeuvre and is not a judgement of how long a turn may take.",
+   "source": "turning-manoeuvre durations at low speed reported in junction design guidance",
+   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.turn_reversal_tolerance",
+   "value": 30.0,
+   "unit": "deg",
+   "convention": "The angle by which an integrated heading change may fall short of a half turn and still be read as a turning “so as to proceed in the opposite direction”: the spread of headings a way holds between its two directions, which its bends and its camber give a body that has turned about. It is an observer's tolerance on an absolute of the definition, not a judgement of how complete a turn must be.",
+   "source": "lane alignment and heading tolerances in road geometry and map matching",
+   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.yaw_rate_floor",
+   "value": 2.0,
+   "unit": "deg/s",
+   "convention": "The rate of change of heading at or above which a tracked body counts as turning rather than holding its heading: the resolution of the source's yaw channel, below which a reading is indistinguishable from tracking noise. It names only the source's resolution and no degree of manoeuvre.",
+   "source": "yaw-rate noise floors of vehicle inertial units and of heading estimates on tracked road users",
+   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.yellow_phase_window",
+   "value": 6.0,
+   "unit": "s",
+   "convention": "The window behind an observation within which a steady yellow is sought when the head shows red: the length of the yellow change interval a signal is timed with, so that a red displayed within it is the red the yellow of this paragraph warned of, and a red displayed later belongs to a phase of its own. The interval is set from the approach speed and the driver's reaction and braking, and the value is taken at the upper end of the range ordinary signal timing uses.",
+   "source": "ITE Traffic Engineering Handbook and the MUTCD guidance on yellow change intervals.",
+   "proposed": "demo10/iter-001 NRS_484B_307_6a"
+  },
+  {
+   "name": "p.turn_intent_window",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "The window ahead within which the turn a road user is intending must be made for the intention to be read from the act: the time between the point at which a driver has committed to a turn at a junction and the turning itself, over an ordinary approach at junction speeds.",
+   "source": "Driver-behaviour studies of turn preparation and signalling distance on junction approaches (ITE and NCHRP intersection-design literature).",
+   "proposed": "demo10/iter-001 NRS_484B_400_2a"
+  },
+  {
+   "name": "p.approach_lookback_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "The window behind within which the lane by which a road user reached a junction is sought: the time an ordinary approach to a junction takes from the lane being settled to the entry, at urban approach speeds.",
+   "source": "Junction approach timing in the ITE Traffic Engineering Handbook.",
+   "proposed": "demo10/iter-001 NRS_484B_400_2a"
+  },
+  {
+   "name": "p.curve_radius_floor",
+   "value": 500.0,
+   "unit": "m",
+   "convention": "The radius of the flattest horizontal alignment a road map's geometry and a fitted trajectory still tell from a tangent, with which the curvature read at a road user's position is compared by its reciprocal. The parameter names the source's resolution only, so that the condition is the presence of a bend and not a bend of some stated sharpness.",
+   "source": "Curvature estimation tolerances of road centreline geometry and map-matched trajectories.",
+   "proposed": "demo10/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.crest_reach",
+   "value": 100.0,
+   "unit": "m",
+   "convention": "The ground distance from a crest region within which a road user is upon the approach to or near that crest: the length of approach over which the crest cuts short a driver's view of the road beyond, taken as the stopping sight distance a rural two-lane highway of ordinary design speed is laid out for, which is the length the crest's vertical curve is designed from.",
+   "source": "AASHTO Green Book stopping sight distance and crest vertical curve design.",
+   "proposed": "demo10/iter-001 NRS_484B_407"
   }
  ],
  "aggregates": [],

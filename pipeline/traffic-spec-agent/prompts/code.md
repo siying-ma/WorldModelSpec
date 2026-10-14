@@ -78,7 +78,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 ## Hard rules
 
 1. **Two files.** Edit `{rule_path}` and `{witness_path}` only; their paths and the namespace
-   `TrafficSpec.Rules.{node_id}` are derived from the node id and are not yours to choose.
+   `TrafficSpec.Rules.{node_id}` are derived from the node id and are not yours to choose. Declare
+   every definition with `def`, never `private def`: each file has its own namespace, and every
+   part of a rule or a witness stays reachable to the tools that inspect it.
 2. **The rule declares what the node declares.** `laws`, `binders` (names, order), `assumptions`,
    `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
    plan's: words nothing carries. Where you choose a reading the words leave open on a span the
@@ -89,7 +91,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    (`kind := "no_operator"`) — you declare that instead of a reading: the gate returns the node
    as `UNEXPRESSED` for the repair session to withdraw the span as a gap or re-map it, and a
    second such declaration on the same span files the gap with your words; a reading written
-   around a missing operator is not a narrowing. The gate holds every narrowing to a span of the
+   around a missing operator is not a narrowing. Where the record carries a gap on a span, the
+   plan doubts the atoms it maps that span to: write the span with them if they carry its words,
+   and otherwise declare `no_atom` or `no_operator` on it, which files the plan's gap at once. The gate holds every narrowing to a span of the
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed: it is carried as the node maps it, or the node is
    wrong and you report it. The review judges the rule with your narrowings in view; a choice

@@ -127,11 +127,11 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "st_obstruction_kind", [r, k] => pure (eqEnum (st_obstruction_kind s (← ent r)) (← enumLit ObstructionKind.ofString k) name)
   | "st_lane_adjacency", [r, sd, r'] =>
     match sd with
-    | .s "left" => pure (b ((st_lane_adjacency_left s (← ent r)).map (· == (← ent r'))) name)
-    | .s "right" => pure (b ((st_lane_adjacency_right s (← ent r)).map (· == (← ent r'))) name)
+    | .s "left" => pure (b (st_lane_left_of s (← ent r) (← ent r')) name)
+    | .s "right" => pure (b (st_lane_right_of s (← ent r) (← ent r')) name)
     | _ => .error (.malformed "side")
-  | "st_lane_adjacency_left", [r, r'] => pure (b ((st_lane_adjacency_left s (← ent r)).map (· == (← ent r'))) name)
-  | "st_lane_adjacency_right", [r, r'] => pure (b ((st_lane_adjacency_right s (← ent r)).map (· == (← ent r'))) name)
+  | "st_lane_adjacency_left", [r, r'] => pure (b (st_lane_left_of s (← ent r) (← ent r')) name)
+  | "st_lane_adjacency_right", [r, r'] => pure (b (st_lane_right_of s (← ent r) (← ent r')) name)
   | "st_lane_connectivity", [r, r'] => pure (b ((st_lane_connectivity s (← ent r)).map (·.contains (← ent r'))) name)
   | "st_lane_enters", [r, i] => pure (b ((st_lane_enters s (← ent r)).map (· == (← ent i))) name)
   | "st_lane_marking", [r, sd, t] =>
@@ -169,7 +169,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "dev_governs", [d, r] => pure (b (dev_governs s (← ent d) (← ent r)) name)
   | "dev_inoperative", [d] => pure (b (dev_inoperative s (← ent d)) name)
   -- signals emitted
-  | "sig_turn_indicator", [x, k] => pure (eqEnum (sig_turn_indicator s (← ent x)) (← enumLit TurnSide.ofString k) name)
+  | "sig_turn_indicator", [x, k] => pure (eqEnum (sig_turn_indicator s (← ent x)) (← enumLit TurnIndicatorState.ofString k) name)
   | "sig_brake_lamp", [x] => pure (b (sig_brake_lamp s (← ent x)) name)
   | "sig_hazard", [x] => pure (b (sig_hazard s (← ent x)) name)
   | "sig_warning_lamp", [x, col] => pure (b (sig_warning_lamp_colour s (← ent x) (← enumLit LampColour.ofString col)) name)
@@ -213,11 +213,11 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
       | none => .error (unknownAtom n)
     else if n.startsWith "st_" then
       match StructureKind.ofString (n.drop 3).toString with
-      | some k => pure (b ((s.structure? (← ent x)).map (·.kind == k)) n)
+      | some k => pure (b (isKind s (← ent x) k) n)
       | none => .error (unknownAtom n)
     else if n.startsWith "dev_" then
       match DeviceKind.ofString (n.drop 4).toString with
-      | some k => pure (b ((s.device (← ent x)).map (·.kind == k)) n)
+      | some k => pure (b (devKind s (← ent x) k) n)
       | none => .error (unknownAtom n)
     else .error (unknownAtom n)
   | n, _ =>
@@ -394,11 +394,19 @@ def subjectFor (β : Binding) (m : Measure) (v : String) : Except UnknownReason 
   | .time => .ok 0
   | .path => match β.track v with | some t => .ok t | none => .error (.unboundVariable v)
 
-/-- Every region of a kind present in some scene of the trace. -/
+/-- Every region a quantifier over a kind ranges over in some scene of the trace: those of the
+    kind, and those whose kind the source cannot tell. -/
 def regionsOf (c : SemCtx) (k : StructureKind) : List RegionId :=
-  (c.scenes.toList.flatMap fun s => regionsOfKind s k).eraseDups
+  (c.scenes.toList.flatMap fun s => regionCandidates s k).eraseDups
 def devicesOf (c : SemCtx) (k : DeviceKind) : List DeviceId :=
-  (c.scenes.toList.flatMap fun s => devicesOfKind s k).eraseDups
+  (c.scenes.toList.flatMap fun s => deviceCandidates s k).eraseDups
+/-- At each instant, whether the region is of the kind: true, false, or unknown where the source
+    cannot tell the kind. A quantifier conjoins it with its body, so a region the source cannot
+    place in the kind makes the quantifier unknown, never decided by its absence. -/
+def regionIsKind (c : SemCtx) (r : RegionId) (k : StructureKind) : Array R :=
+  c.scenes.map fun s => R.ofOption (isKind s r k) (.absentAtom s!"st_{k}")
+def deviceIsKind (c : SemCtx) (d : DeviceId) (k : DeviceKind) : Array R :=
+  c.scenes.map fun s => R.ofOption (devKind s d k) (.absentAtom s!"dev_{k}")
 /-- Every road user present in some scene of the trace. -/
 def usersOf (c : SemCtx) : List TrackId :=
   (c.scenes.toList.flatMap (·.tracks)).eraseDups
@@ -585,22 +593,26 @@ mutual
     | .existsRegion k v φ =>
       match regionKindOf k with
       | .error w => constU c.n w
-      | .ok kd => perScene c ((regionsOf c kd).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
+      | .ok kd => perScene c ((regionsOf c kd).map fun r =>
+            (r, Array.zipWith R.and (regionIsKind c r kd) (evalAll (c.bindVar v (.region r)) φ)))
           (fun s r => (s.structure? r).isSome) R.any
     | .forallRegion k v φ =>
       match regionKindOf k with
       | .error w => constU c.n w
-      | .ok kd => perScene c ((regionsOf c kd).map fun r => (r, evalAll (c.bindVar v (.region r)) φ))
+      | .ok kd => perScene c ((regionsOf c kd).map fun r =>
+            (r, Array.zipWith R.implies (regionIsKind c r kd) (evalAll (c.bindVar v (.region r)) φ)))
           (fun s r => (s.structure? r).isSome) R.all
     | .existsDevice k v φ =>
       match deviceKindOf k with
       | .error w => constU c.n w
-      | .ok kd => perScene c ((devicesOf c kd).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
+      | .ok kd => perScene c ((devicesOf c kd).map fun d =>
+            (d, Array.zipWith R.and (deviceIsKind c d kd) (evalAll (c.bindVar v (.device d)) φ)))
           (fun s d => (s.device d).isSome) R.any
     | .forallDevice k v φ =>
       match deviceKindOf k with
       | .error w => constU c.n w
-      | .ok kd => perScene c ((devicesOf c kd).map fun d => (d, evalAll (c.bindVar v (.device d)) φ))
+      | .ok kd => perScene c ((devicesOf c kd).map fun d =>
+            (d, Array.zipWith R.implies (deviceIsKind c d kd) (evalAll (c.bindVar v (.device d)) φ)))
           (fun s d => (s.device d).isSome) R.all
   termination_by φ => sizeOf φ
 end

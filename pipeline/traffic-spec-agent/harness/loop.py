@@ -492,24 +492,33 @@ def run_loop(opts: Options) -> dict:
             rec = plan_phase.load_repair(Path(rdir))
             wd = plan_phase.load_node_withdrawal(Path(rdir)) if rec is None else None
             if wd and wd.get("missing"):
-                # the session says the vocabulary cannot carry the notion: the operator decides it as a gap,
-                # and every law whose nodes use the concept waits on that decision
+                # a concept is the planner's decomposition of a law, not the law: when its repair withdraws it,
+                # the laws that use it go back to the planner with the reason (and the replacements, if the
+                # repair split it); a gap is filed for the operator to see, and blocks nothing
                 why = str(wd["missing"])
+                replacements = plan_phase.load_replacements(Path(rdir))
                 e_c = concept_ledger.entries.get(cid)
                 laws = sorted({n.law for n in carried if cid in concept_deps(n)}
                               | {nodeid.law_of(u)[0] for u in (e_c.used_by if e_c else []) if not nodeid.is_concept_id(u)})
-                gid = gap_ledger.add({"span": cid, "kind": "concept", "proposal": why, "nearest": [], "span_text": f"concept {cid}",
-                                      "law_refs": laws, "node_id": cid}, opts.run_id, run.iteration)
-                gap_ledger.save()
-                if not any(g["id"] == gid for g in gaps_filed):
-                    gaps_filed.append({"id": gid, "kind": "concept", "span": f"concept {cid}", "law_refs": laws})
-                concept_ledger.fail(cid, [f"withdrawn by its repair session: gap {gid} — {why}"])
+                concept_ledger.fail(cid, [f"withdrawn by its repair session — {why}"])
+                if replacements:
+                    new_ids = [r.id for r in replacements]
+                    repaired.extend(replacements)
+                    reason = f"concept `{cid}` was split by its repair session into {new_ids}: map its spans to them — {why[:300]}"
+                    notes.append(f"concept `{cid}`: split by its repair session into {new_ids}; {laws} return to the planner")
+                else:
+                    gid = gap_ledger.add({"span": cid, "kind": "concept", "proposal": why, "nearest": [], "span_text": f"concept {cid}",
+                                          "law_refs": laws, "node_id": cid}, opts.run_id, run.iteration)
+                    gap_ledger.save()
+                    if not any(g["id"] == gid for g in gaps_filed):
+                        gaps_filed.append({"id": gid, "kind": "concept", "span": f"concept {cid}", "law_refs": laws})
+                    reason = f"concept `{cid}` was withdrawn by its repair session: map the spans without it — {why[:300]}"
+                    notes.append(f"concept `{cid}`: withdrawn by its repair session; gap {gid} filed for the operator; {laws} return to the planner")
+                    to_user.append(f"gap {gid}: the repair session withdrew concept `{cid}` ({why[:200]}). Its laws {laws} return to the planner; "
+                                   "the gap blocks nothing and is for your review. A withdrawal states a session's view of the vocabulary, not a verdict it received")
                 for law in laws:
-                    if law in ledger.entries and ledger.entries[law].state not in ("accepted", "failed"):
-                        ledger.block(law, [gid], [f"uses concept `{cid}`, withdrawn by its repair session: {why[:300]}"])
-                notes.append(f"concept `{cid}`: the repair session withdrew it — gap {gid} filed, {laws} blocked")
-                to_user.append(f"gap {gid}: the repair session withdrew concept `{cid}` ({why[:200]}); {laws} wait for the decision in "
-                               f"{paths.GAP_LEDGER.relative_to(paths.REPO)}. A withdrawal states a session's view of the vocabulary, not a verdict it received")
+                    if law in ledger.entries and ledger.entries[law].state not in ("accepted", "failed", "blocked"):
+                        ledger.return_for_concepts(law, [cid], [reason], run.iteration)
             elif rec is None:
                 concept_ledger.returned(cid, ["the repair session wrote no record"])
                 notes.append(f"concept `{cid}`: the repair session wrote no record")
@@ -522,7 +531,10 @@ def run_loop(opts: Options) -> dict:
         # siblings they would fail for the missing sibling, and those reasons would bury the law's own
         carried = [n for n in carried if n.law not in ledger.entries or ledger.entries[n.law].state == "planned"]
 
-        # --- plan: one session per batch, root laws before the laws that name them
+        # --- plan: one session per batch, root laws before the laws that name them; a law a repair above
+        # returned is planned in this iteration
+        if not stage_at_least("planned"):
+            plannable = ledger.plannable()
         batches, waiting, dead = plan_batches(plannable, ledger, by_id, opts.plan_batch)
         if not stage_at_least("planned"):
             for law, refs_ in dead.items():
@@ -549,11 +561,12 @@ def run_loop(opts: Options) -> dict:
                         ledger.return_law(lw.id, [f"the plan session's records could not be read: {bad}"], run.iteration)
                     notes.append(f"plan records unreadable ({d.name}), {len(batch)} law(s) returned: {bad}")
                     return True
+                under_repair = [r.raw for r in repaired]           # the planner reuses these ids and proposes none of them again
                 if len(batches) == 1:
-                    plan_dir = plan_phase.run_plan(run, batches[0], defs)
+                    plan_dir = plan_phase.run_plan(run, batches[0], defs, pending=under_repair)
                     unreadable(plan_dir, batches[0])
                 else:
-                    dirs, pending = [], []
+                    dirs, pending = [], list(under_repair)
                     for k, batch in enumerate(batches, 1):
                         d = plan_phase.run_plan(run, batch, defs, tag=f"batch-{k:02d}", pending=pending)
                         if unreadable(d, batch):
@@ -597,15 +610,28 @@ def run_loop(opts: Options) -> dict:
                                                                  extra_validate_nodes=carried)
         to_code_concepts: list[ConceptRecord] = []
         failed_ids = {cid for cid, e in concept_ledger.entries.items() if e.state == "failed"}
+        # the concepts this plan's nodes and the held nodes use, directly or through another concept's body
+        needed = {cd for n in [v.node for v in verdicts] + carried for cd in concept_deps(n)}
+        refs_of = {cv.concept.id: set(cv.concept.refs()) for cv in concept_verdicts}
+        grown = True
+        while grown:
+            more = {r for cid in needed for r in refs_of.get(cid, set())} - needed
+            needed |= more; grown = bool(more)
         for cv in concept_verdicts:
             if cv.concept.id in failed_ids:
                 notes.append(f"concept `{cv.concept.id}` failed earlier in this run and is not coded again")
             elif cv.kind == "accept":
-                users = set(cv.concept.used_by()) | {v.node.id for v in verdicts if cv.concept.id in concept_deps(v.node)}
+                # the users are the nodes of this plan and the held nodes that claim the concept, derived here;
+                # a concept none of them uses (a repair's replacement the planner did not take up) is not coded
+                users = {v.node.id for v in verdicts if cv.concept.id in concept_deps(v.node)} | \
+                        {n.id for n in carried if cv.concept.id in concept_deps(n)}
+                if cv.concept.id not in needed:
+                    notes.append(f"concept `{cv.concept.id}`: no node of this plan uses it; not coded")
+                    continue
                 concept_ledger.planned(cv.concept.id, sorted(users), run.iteration)
                 to_code_concepts.append(cv.concept)
             else:
-                concept_ledger.returned(cv.concept.id, cv.reasons)
+                concept_ledger.noted(cv.concept.id, cv.reasons)
                 notes.append(f"concept `{cv.concept.id}` returned by the validator — " + "; ".join(cv.reasons[:4]))
         for v in verdicts:                                    # a plan that names a failed concept is a defect of the plan
             dead = sorted(cd for cd in concept_deps(v.node) if cd in failed_ids)
@@ -624,16 +650,6 @@ def run_loop(opts: Options) -> dict:
             if any(v.kind == validate_a.FAIL for v in vs):
                 ledger.fail(law, [r for v in vs for r in v.reasons])
                 notes.append(f"`{law}`: closed as failed — " + "; ".join(r for v in vs for r in v.reasons[:2]))
-            elif any(v.kind == "block" for v in vs):
-                ids = []
-                for v in vs:
-                    for g in v.gaps:
-                        span_text = v.node.spans().get(g.get("span"), {}).get("text", "")
-                        gid = gap_ledger.add({**g, "span_text": span_text, "law_refs": [law], "node_id": v.node.id}, opts.run_id, run.iteration)
-                        if gid not in ids:
-                            ids.append(gid); gaps_filed.append({**g, "id": gid, "span": span_text, "law_refs": [law]})
-                ledger.block(law, ids, [r for v in vs for r in v.reasons])
-                to_user.append(f"gap(s) {', '.join(ids)} filed for `{law}` await a decision in {paths.GAP_LEDGER.relative_to(paths.REPO)}")
             elif any(v.kind == "return" for v in vs):
                 carried_ids = {c.id for c in carried}
                 if all(v.node.id in carried_ids for v in vs if v.kind == "return"):
@@ -671,7 +687,7 @@ def run_loop(opts: Options) -> dict:
             if not wave:
                 for c in remaining:
                     unmet = sorted(r for r in c.refs() if r not in accepted_c and r not in onto.primitive_ids)
-                    concept_ledger.returned(c.id, [f"references {unmet}, not accepted"]); failed_concepts.add(c.id)
+                    concept_ledger.noted(c.id, [f"references {unmet}, not accepted"]); failed_concepts.add(c.id)
                     notes.append(f"concept `{c.id}`: not coded, references {unmet} which is not accepted")
                     prog["concepts"][c.id] = "UNMET"
                 persist(); break
@@ -682,6 +698,7 @@ def run_loop(opts: Options) -> dict:
                 futures = {c.id: ex.submit(code_phase.run_code_concept, run, c, reading, registry,
                                            [f for o, fs in wave_files.items() if o != c.id for f in fs]) for c in wave}
                 results = {cid: f.result() for cid, f in futures.items()}
+            to_review_c: list[tuple] = []
             for c in wave:
                 v = results[c.id]
                 cdir = code_phase.concept_dir(run, c.id)
@@ -697,13 +714,25 @@ def run_loop(opts: Options) -> dict:
                 if v.verdict != "OK":
                     concept_ledger.returned(c.id, [f"gate {v.verdict}"] + v.details[:6], last_task=str(cdir)); failed_concepts.add(c.id)
                     prog["concepts"][c.id] = v.verdict; persist(); continue
+                to_review_c.append((c, v, cdir))
+
+            def review_one_concept(item):
+                c, v, cdir = item
                 try:
-                    ok, reasons, judge = validate_phase.review_concept(run, c, v.extras, cdir / "review", nodes + carried, defs)
+                    return review_phase.review_concept(run, c, v.extras, cdir / "review"), None
                 except session.SessionUnavailable as e:
+                    return None, e
+            # the wave's concept reviews are independent: they run together, and their outcomes are applied
+            # once all have finished, since a rollback rewrites files a running review reads
+            with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
+                reviewed_c = list(ex.map(review_one_concept, to_review_c))
+            for (c, v, cdir), (out, e) in zip(to_review_c, reviewed_c):
+                if e is not None:
                     code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
                     sessions_down = True
                     to_user.append(f"the review session for concept `{c.id}` never ran ({e}); rerun the loop later")
                     continue
+                ok, reasons, review_notes = out
                 if not ok:
                     code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
                     concept_ledger.returned(c.id, ["review: " + "; ".join(reasons)], last_task=str(cdir)); failed_concepts.add(c.id)
@@ -713,10 +742,10 @@ def run_loop(opts: Options) -> dict:
                           "canonical_body": v.extras.get("canonical_body"), "body_json": v.extras.get("body_json"),
                           "accepted_in": f"{opts.run_id}/iter-{run.iteration:03d}"}
                 record["narrowings"] = list(v.extras.get("narrowings_added", []))
-                approx = validate_phase.concept_approximations(judge)
+                approx = [x for x in review_notes if x != "reviewer off"]   # what it computes as built, for every later plan
                 if approx:
                     record["approximations"] = approx
-                    notes.append(f"concept `{c.id}`: accepted as approximated, recorded on it — " + "; ".join(a[:200] for a in approx[:3]))
+                    notes.append(f"concept `{c.id}`: accepted; the review's notes are recorded on it — " + "; ".join(a[:200] for a in approx[:3]))
                 if record["narrowings"]:
                     coder_narrowings[c.id] = record["narrowings"]
                 run.accepted_concepts[c.id] = record
@@ -844,23 +873,28 @@ def run_loop(opts: Options) -> dict:
                     reasons_g = [f"gate {v.verdict}"] + v.details[:6]
                     unexpressed = v.extras.get("unexpressed", []) if v.verdict == "UNEXPRESSED" else []
                     hit = ledger.record_outcomes(n.law, [f"gate:UNEXPRESSED:{n.id}:{u.get('span')}" for u in unexpressed], limit=2) if unexpressed else []
-                    if hit:                                   # the coder said twice that the words cannot be stated: the gap is filed with its words
-                        hit_spans = {h.split(":")[3].split(" ×")[0] for h in hit}
+                    planned_gaps = {g.get("span"): g for g in n.gaps()}
+                    confirmed = {u.get("span") for u in unexpressed if u.get("span") in planned_gaps}
+                    if hit or confirmed:                      # the coder said twice, or the planner and the coder agree, that the words cannot be stated
+                        hit_spans = {h.split(":")[3].split(" ×")[0] for h in hit} | confirmed
                         ids = []
                         for u in unexpressed:
                             if u.get("span") not in hit_spans:
                                 continue
                             kind = "atom" if u.get("kind") == "no_atom" else "operator"
                             span_text = n.spans().get(u.get("span"), {}).get("text", "")
-                            gid = gap_ledger.add({"span": u.get("span"), "kind": kind, "proposal": u.get("why", ""), "nearest": [],
+                            pg = planned_gaps.get(u.get("span"), {})
+                            gid = gap_ledger.add({"span": u.get("span"), "kind": pg.get("kind", kind),
+                                                  "proposal": pg.get("proposal") or u.get("why", ""), "nearest": pg.get("nearest", []),
                                                   "span_text": span_text, "law_refs": [n.law], "node_id": n.id}, opts.run_id, run.iteration)
                             if gid not in ids:
                                 ids.append(gid); gaps_filed.append({"id": gid, "kind": kind, "span": span_text, "law_refs": [n.law]})
                         gap_ledger.save()
                         node_ledger.failed(n.id, reasons_g); ledger.block(n.law, ids, reasons_g)
-                        to_user.append(f"gap(s) {', '.join(ids)} filed for `{n.law}`: two coding sessions declared the span cannot be stated; "
+                        why_filed = "the plan proposed the gap and the coding session confirmed it" if confirmed else "two coding sessions declared the span cannot be stated"
+                        to_user.append(f"gap(s) {', '.join(ids)} filed for `{n.law}`: {why_filed}; "
                                        f"a decision is awaited in {paths.GAP_LEDGER.relative_to(paths.REPO)}")
-                        notes.append(f"`{n.id}`: gate UNEXPRESSED for the second time on {sorted(hit_spans)} — gap(s) {ids} filed, law blocked")
+                        notes.append(f"`{n.id}`: gate UNEXPRESSED on {sorted(hit_spans)} ({why_filed}) — gap(s) {ids} filed, law blocked")
                     elif v.verdict not in ("SCOPE_VIOLATION", gate.GATE_TIMEOUT) and node_ledger.budget_left(n.id):
                         node_ledger.returned(n.id, n.law, reasons_g, str(ndir), run.iteration); ledger.hold(n.law, run.iteration)
                         notes.append(f"`{n.id}`: gate {v.verdict} — sent to a node repair session; no attempt counted")
@@ -934,6 +968,9 @@ def run_loop(opts: Options) -> dict:
         for n in accepted_now:
             if n.id in kept:
                 run.accepted_nodes[n.id] = {**n.raw, "narrowings": list(n.get("narrowings", [])) + coder_narrowings.get(n.id, [])}
+                for g in n.gaps():                             # the plan doubted the vocabulary; the coder wrote the span with it
+                    to_user.append(f"`{n.law}` ({n.id}): the plan proposed a {g.get('kind')} gap on span {g.get('span')}, but the coding "
+                                   "session wrote the span with the mapped atoms and the rule was accepted; no gap is filed")
                 for x in n.get("narrowings", []):              # each word read through conduct, for the operator to review
                     if isinstance(x, dict) and x.get("kind") == "observable_reading":
                         words = n.spans().get(x.get("span"), {}).get("text", "")

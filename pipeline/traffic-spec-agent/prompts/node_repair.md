@@ -29,6 +29,8 @@ You are a one-shot session. Nothing waits for a reply.
   yours to keep.
 - **The ontology** — every atom with its contract, and the primitives. With the catalogue, the
   closed set.
+- **The formula language** — every operator a formula is written with. A span or a notion none of
+  them writes is an `operator` gap; one they write is not.
 - **The concept catalogue** — accepted concepts a rule may call.
 - **The parameters** — the reading's catalogue so far, with the conventions values come from.
 
@@ -51,6 +53,8 @@ You are a one-shot session. Nothing waits for a reply.
 {final_files}
 
 {ontology}
+
+{formula_language}
 
 {concepts}
 

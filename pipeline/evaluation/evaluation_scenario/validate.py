@@ -1,6 +1,6 @@
 """Check scenarios.jsonl against the corpus and the ontology.
 
-    python validate.py            # from laws/evaluation_scenario
+    python validate.py            # from pipeline/evaluation/evaluation_scenario
 
 Fails on: a corpus line with no scenario, a scenario with no corpus line, a duplicate id, an
 order that does not follow laws.jsonl, a title or source that disagrees with the corpus line, a
@@ -17,9 +17,10 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-LAWS = HERE.parent / "full_list" / "laws.jsonl"
-LAWS_META = HERE.parent / "audit_and_scripts" / "laws_meta.jsonl"   # subject, theme, tier: analysis, not law
-ATOMS_MD = HERE.parents[1] / "ontology" / "ATOMS.md"
+AGENT = HERE.parents[1] / "traffic-spec-agent"
+LAWS = AGENT / "laws" / "full_list" / "laws.jsonl"
+LAWS_META = AGENT / "laws" / "audit_and_scripts" / "laws_meta.jsonl"   # subject, theme, tier: analysis, not law
+ATOMS_MD = AGENT / "ontology" / "ATOMS.md"
 
 KINDS = {"point_event", "continuous", "duration", "ordering", "until", "advance", "civil_time", "span"}
 CONCEPT_ID = re.compile(r"^drv\.(?:motion|position|lane|interaction|road|control|user|env)\.[a-z][a-z_]*[a-z](?:_v[1-9]\d*)?$")

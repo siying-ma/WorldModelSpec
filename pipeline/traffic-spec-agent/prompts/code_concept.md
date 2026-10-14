@@ -76,11 +76,18 @@ Run mode: `{mode}`.
 
 1. **Two files.** Edit `{concept_path}` and `{witness_path}` only; the paths and the namespaces
    `TrafficSpec.Concepts.…` / `TrafficSpecWitness.Concepts.…` derive from the concept id `{concept_id}`.
+   Declare every definition with `def`, never `private def`: each file has its own namespace, and
+   every part of a concept or a witness stays reachable to the tools that inspect it.
 2. **The concept declares what the record declares.** `id`, `contract`, `definition`, `args`,
-   `params`, `residues`, `supersedes` are the skeleton's; leave them. Where you choose a reading
-   the contract leaves open, you declare a **narrowing** `{ span := "<a run of the contract's
-   words>", why := "<why>", kind := "reading" }` in `narrowings`, and the header comment explains
-   it; the review judges the body with your narrowings in view.
+   `params`, `residues`, `supersedes` are the skeleton's; leave them. Where the contract leaves the
+   writing open, you may choose only among meanings its words already allow, and you declare that
+   choice as a **narrowing** `{ span := "<a run of the contract's words>", why := "<why>", kind :=
+   "reading" }` in `narrowings`, explained in the header comment; the review judges the body with
+   your narrowings in view. Where the contract's words cannot be written with the atoms and
+   operators the record names — no atom denotes them (`kind := "no_atom"`) or the formula language
+   has no operator for them (`kind := "no_operator"`) — you declare that instead and go no further: the gate
+   returns the concept as `UNEXPRESSED`, and the repair session re-plans it. A reading written
+   around a missing atom or operator is not a narrowing: you never approximate, re-map or plan.
 3. **The body uses only claimed names**: every atom and concept in it is an element of the record,
    and every claimed name is used. Arguments are the formals, variables bound in the body, or
    enumeration spellings from the surface.

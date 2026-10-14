@@ -9,157 +9,146 @@
     s2 (obligation): shall not be turned so as to proceed in the opposite direction
     s3 (condition): upon any curve,
     s4 (boilerplate): or
-    s5 (standard): upon the approach to or near
-    s6 (condition): the crest of a grade,
-    s7 (condition): where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet.
+    s5 (condition): upon the approach to or near the crest of a grade,
+    s6 (condition): where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet.
 
   Elements (span → atoms, derived):
     s1: atoms ['ru.aggregate=vehicle'], derived []
-    s2: atoms [], derived ['drv.motion.direction_reversal']
-    s3: atoms ['st.curvature', 'st.roadway', 'rel.occupies'], derived []
-    s6: atoms ['st.crest', 'st.region_geometry'], derived []
-    s7: atoms ['st.sight_distance', 'st.roadway', 'rel.occupies'], derived []
+    s2: atoms [], derived ['drv.motion.u_turn']
+    s3: atoms ['st.curvature', 'rel.occupies', 'st.roadway'], derived []
+    s5: atoms ['st.crest', 'st.region_geometry'], derived []
+    s6: atoms ['st.sight_distance'], derived []
 
   Literals the text states (each written through its Units constructor):
-    s7: 500 ft — 500 feet
+    s6: 500 ft — 500 feet
+
+  No magnitude below is this file's own: parameters name the reading, literals are the text's.
 
   How each span is written.
 
-  s1 — the binder's class: `ru_aggregate veh "vehicle"`, the aggregate word the text uses and never
-  the classes the reading lists under it. The word is not narrowed here by any class of its own.
+  s1 — `clsV` is the aggregate word itself, `ru_aggregate v "vehicle"`: the word the text uses,
+  never the member classes the run's reading derives for it.
 
-  s2 — the obligation is the negation of the act: `drv.motion.direction_reversal` of the subject,
-  taken with the node's three parameters in the concept's own order (`p.turn_window`, the window
-  the heading change is integrated over; `p.direction_reversal_angle`, the magnitude at which the
-  body counts as proceeding the other way; `p.motion_speed_min`, the speed above which it is
-  proceeding and not standing). The subject complies where the concept does not hold of it. The
-  concept's own atoms (kin.speed, kin.yaw_rate through prim.heading_change, rel.occupies on
-  st.roadway) are the concept's: this file claims the concept whole and restates none of them.
+  s3 — `uponACurve` is read on the roadway region the subject's footprint overlaps
+  (`existsRegion "roadway" rw`, `rel_occupies v rw`), so the bend is the one the subject is upon
+  and not a bend elsewhere in the scene. The span states no sharpness, so the condition is the
+  presence of a bend: the magnitude of the roadway's curvature at that place is at or above the
+  reciprocal of `p.curve_radius_floor`, the flattest alignment the source still tells from a
+  tangent. That comparison, `|κ| ≥ 1 / R`, is written with the division cleared: both sides
+  multiplied by the floor radius squared, which is positive, give `|κ| · R · R ≥ R`, two lengths
+  compared. The rule therefore divides nothing and states no magnitude of its own — neither a
+  bound of the reading's nor the bare one a reciprocal would need: the only figure in the
+  condition is the parameter, written twice.
 
-  s3 — the condition, quantified over the roadway the subject is on: for some region `rd` of kind
-  roadway, `st_roadway rd` and `rel_occupies veh rd` and the bend at that place stands clear of
-  zero at the source's resolution. "Clear of zero at the source's resolution" is the span's own
-  reading, which the record states: the radius of curvature there, 1/|st.curvature|, below
-  `p.curve_radius_resolution`, the largest radius the map source still tells a bend apart from a
-  straight road by. The comparison is written without a division: `1/|κ| < R` is multiplied through
-  by `|κ| · R` (both positive wherever the way bends) and stated as `|κ| · R · R > R`. The two are
-  the same bound wherever the roadway bends; where it runs straight, κ is zero and the bound as
-  written is passed by no road — which is the reading intended, a bend being what the span names.
-  Nothing is divided by a measured quantity, and the parameter carries the whole magnitude.
+  s5 — `nearACrest` is the ground distance from the subject's body outline to a crest region
+  (`st_region_geometry_distance v cr` over `existsRegion "crest" cr`) at or below `p.crest_reach`.
+  The reach is what the span's own words, "the approach to or near", state without a figure, and
+  it is two-sided, as the distance to a region is. `st.grade` is not read: the slope where a road
+  user is says nothing of a crest ahead of it.
 
-  s5 + s6 — the standard and the condition it qualifies, written together as the
-  operationalization declares: for some region `cr` of kind crest, `st_crest cr` and the ground
-  distance `st_region_geometry_distance veh cr` — the accessor of st.region_geometry that measures
-  from the subject's body outline to the region — below `p.crest_approach_distance`. The crest is
-  tied to the subject by that distance alone, which is the only relation the ontology carries
-  between a road user and a crest; the record's narrowing on s5 is declared below.
+  s6 — `cannotBeSeen` is the sight distance of the place the subject is at, below the 500 feet the
+  text states. The blueprint reads the words through the road's own geometry rather than through
+  what a driver perceives (its narrowing on s6, gap G5): `st_sight_distance` speaks of both
+  directions and of whether a vehicle at the place could be seen, whether or not another road user
+  is there, which is the case the words are written for. That reading is the node's and is left
+  where the node records it; this file adds no narrowing of its own.
 
-  s7 — the condition, read at the place the subject occupies, as on s3: for some region `sd` of
-  kind roadway, `st_roadway sd` and `rel_occupies veh sd` and `st_sight_distance sd` less than the
-  text's own 500 feet. The sight distance is the atom's revised contract — the view of approaching
-  traffic from that point and its being seen from either direction, whether or not any road user is
-  there — so no second vehicle is quantified over and rel.visible is not read.
+  s3, s5, s6 together — the place the duty speaks of is one formula, `atSuchAPlace`: upon a
+  roadway the subject occupies, either the bend (s3) or the nearness to a crest (s5), and, joined
+  to whichever holds, the short sight distance (s6). It stands bare in `applicability` — the rule
+  is engaged of a vehicle at such a place, which is what the node's applicability states "at the
+  observation" and what the `permit` scene needs to be cleared rather than left not applicable.
 
-  The applicability is `(s3 or s6) and s7`, the text's own structure: upon a curve, or upon the
-  approach to or near the crest of a grade, where the vehicle cannot be seen within 500 feet.
-
-  The occasion. The node records the act as `drv.motion.direction_reversal` over `p.turn_window`
-  and reads each of s3, s6 and s7 `at_recognition`: each condition is stated as it is, at the
-  observation at which the reversal is recognized, and no span is read over the window behind.
-  The `under_way` condition therefore governs no span and appears in no formula.
-
-  Narrowings declared below are the record's two, on s2 and s5 — the duty's span and the standard's.
-  Nothing is narrowed on s1, s3, s6 or s7: they decide when the rule applies and are carried as
-  the node maps them. The curve bound's algebra above changes no case and is a restatement, not a
-  reading.
-
-  No magnitude below is this file's own: parameters name the reading, literals are the text's.
+  s2 and the occasion — `obligation` forbids the act: the turning about is
+  `drv.motion.u_turn v [p.turn_window, p.turn_reversal_tolerance]`, taken from the catalogue by
+  its id, which observes over the window behind a turning "so as to proceed in the opposite
+  direction", "whether accomplished by one continuous movement or not". The node reads spans
+  s3/s5/s6 at `some_moment` of that act, so the prohibition is not of turning about anywhere but
+  of turning about whose course included an observation, with the act under way, at which the
+  place conditions held together: `.not (.holdsFor .time p.turn_window v (.not (U ∧ place)))`,
+  with U the `under_way` element `|kin_yaw_rate v| ≥ p.yaw_rate_floor` — the rate at which a
+  tracked body counts as turning rather than holding its heading, which is what tells an
+  observation inside the turning from one before it began, since the place cannot.
 -/
 import TrafficSpec.Core.Language.Rule
 
 namespace TrafficSpec.Rules.NRS_484B_407
 
 /-- The binders, as arguments (order and names are the node's). -/
-private def vVeh : Arg := .var "veh"
+def vV : Arg := .var "v"
 
-/-- The regions the applicability quantifies over, each tied to `veh`: the roadway whose bend is
-    read, the crest region, and the roadway whose sight distance is read. -/
-private def vRd : Arg := .var "rd"
-private def vCr : Arg := .var "cr"
-private def vSd : Arg := .var "sd"
+/-- The roadway the subject occupies, and the crest region the distance is read to. -/
+def rwV : Arg := .var "rw"
+def crV : Arg := .var "cr"
 
 /-- The reading's parameters; no value of any of them lives in this file. -/
-private def pCrestApproachDistance : Term := .param "p.crest_approach_distance"
-private def pCurveRadiusResolution : Term := .param "p.curve_radius_resolution"
-private def pDirectionReversalAngle : Term := .param "p.direction_reversal_angle"
-private def pMotionSpeedMin : Term := .param "p.motion_speed_min"
-private def pTurnWindow : Term := .param "p.turn_window"
+def pCrestReach : Term := .param "p.crest_reach"
+def pCurveRadiusFloor : Term := .param "p.curve_radius_floor"
+def pTurnReversalTolerance : Term := .param "p.turn_reversal_tolerance"
+def pTurnWindow : Term := .param "p.turn_window"
+def pYawRateFloor : Term := .param "p.yaw_rate_floor"
 
-/-- The text's own figure on s7. -/
-private def fiveHundredFeet : Term := .lit (Units.feet 500) .metre
+def zeroMetres : Term := .lit Q.zero .metre
 
-/-- s3 (condition): upon any curve — the roadway the subject occupies bends at its place, its
-    radius of curvature below the largest radius the source tells apart from a straight road.
-    `1/|κ| < R` multiplied through by `|κ| · R`, so nothing is divided by a measurement. -/
-private def uponAnyCurve : Formula :=
-  .existsRegion (.lit "roadway") "rd"
-    (.and (.atom "st_roadway" [vRd] [])
-      (.and (.atom "rel_occupies" [vVeh, vRd] [])
-        (.cmp (.mul (.mul (.abs (.measure "st_curvature" [vRd])) pCurveRadiusResolution)
-                    pCurveRadiusResolution)
-              .gt pCurveRadiusResolution)))
+/-- The distance s6 states, in the Units constructor of its unit. -/
+def fiveHundredFeet : Term := .lit (Units.feet 500) .metre
 
-/-- s5 (standard) + s6 (condition): upon the approach to or near the crest of a grade — the ground
-    distance from the subject's body outline to a crest region is below the crest approach
-    distance. -/
-private def nearTheCrestOfAGrade : Formula :=
+/-- Class of `v`: ru.aggregate=vehicle -/
+def clsV : Formula := .atom "ru_aggregate" [vV, .lit "vehicle"] []
+
+/-- s3: upon any curve — the roadway's curvature at the subject's place, at or above the
+    reciprocal of the radius floor (`|κ| ≥ 1 / R`, multiplied through by `R · R`). -/
+def uponACurve : Formula :=
+  .cmp (.mul (.abs (.measure "st_curvature" [rwV])) (.mul pCurveRadiusFloor pCurveRadiusFloor))
+    .ge pCurveRadiusFloor
+
+/-- s5: upon the approach to or near the crest of a grade — the ground distance from the
+    subject's body outline to a crest region, at or below the reach. -/
+def nearACrest : Formula :=
   .existsRegion (.lit "crest") "cr"
-    (.and (.atom "st_crest" [vCr] [])
-      (.cmp (.measure "st_region_geometry_distance" [vVeh, vCr]) .lt pCrestApproachDistance))
+    (.cmp (.measure "st_region_geometry_distance" [vV, crV]) .le pCrestReach)
 
-/-- s7 (condition): where such vehicle cannot be seen by the driver of any other vehicle
-    approaching from either direction within 500 feet — the sight distance of the place the
-    subject occupies is below the text's figure. -/
-private def cannotBeSeenWithinFiveHundredFeet : Formula :=
-  .existsRegion (.lit "roadway") "sd"
-    (.and (.atom "st_roadway" [vSd] [])
-      (.and (.atom "rel_occupies" [vVeh, vSd] [])
-        (.cmp (.measure "st_sight_distance" [vSd]) .lt fiveHundredFeet)))
+/-- s6: where such vehicle cannot be seen … within 500 feet — the sight distance of the place. -/
+def cannotBeSeen : Formula :=
+  .cmp (.measure "st_sight_distance" [rwV]) .lt fiveHundredFeet
 
-/-- Class of `veh`: ru.aggregate=vehicle -/
-private def clsVeh : Formula := .atom "ru_aggregate" [vVeh, .lit "vehicle"] []
+/-- The place the duty speaks of: upon a roadway the subject occupies, a bend (s3) or a nearness
+    to a crest (s5), and with it the short sight distance (s6). -/
+def atSuchAPlace : Formula :=
+  .existsRegion (.lit "roadway") "rw"
+    (.and (.atom "rel_occupies" [vV, rwV] [])
+      (.and (.or uponACurve nearACrest) cannotBeSeen))
 
-/-- Applicability: s3 (condition): upon any curve,; s6 (condition): the crest of a grade,; s7 (condition): where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet. -/
-private def applicability : Formula :=
-  .and (.or uponAnyCurve nearTheCrestOfAGrade) cannotBeSeenWithinFiveHundredFeet
+/-- Applicability: s3 (condition): upon any curve,; s5 (condition): upon the approach to or near the crest of a grade,; s6 (condition): where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet. -/
+def applicability : Formula := atSuchAPlace
 
-/-- Obligation: s2 (obligation): shall not be turned so as to proceed in the opposite direction; s5 (standard): upon the approach to or near -/
-private def obligation : Formula :=
-  .not (.derived "drv_motion_direction_reversal" [vVeh]
-          [pTurnWindow, pDirectionReversalAngle, pMotionSpeedMin])
+/-- s2: the act — a turning about so as to proceed in the opposite direction. -/
+def turningAbout : Formula :=
+  .derived "drv_motion_u_turn" [vV] [pTurnWindow, pTurnReversalTolerance]
+
+/-- The occasion's `under_way`: the body is turning, not holding its heading. -/
+def underWay : Formula :=
+  .cmp (.abs (.measure "kin_yaw_rate" [vV])) .ge pYawRateFloor
+
+/-- The place conditions held together at some observation of the window behind at which the
+    turning was under way. -/
+def atSuchAPlaceWhileUnderWay : Formula :=
+  .not (.holdsFor .time pTurnWindow "v" (.not (.and underWay atSuchAPlace)))
+
+/-- Obligation: s2 (obligation): shall not be turned so as to proceed in the opposite direction -/
+def obligation : Formula := .not (.and turningAbout atSuchAPlaceWhileUnderWay)
 
 def rule : Rule :=
   { id := "NRS_484B_407"
     laws := ["NRS-484B-407"]
     binders :=
-      [ { name := "veh", cls := clsVeh } ]
+      [ { name := "v", cls := clsV } ]
     applicability := applicability
     obligation := obligation
     assumptions := []
-    operationalizations :=
-      [ { standard := "upon the approach to or near"
-          concepts := ["st.crest", "st.region_geometry"]
-          params := ["p.crest_approach_distance"]
-          convention := "crest vertical-curve sight-distance model: the length of approach ahead of a crest over which the vertical curve hides an oncoming vehicle from a driver at the subject's place, for the design speed of the road. The standard is bounded by the ground distance st.region_geometry gives from the subject's body outline to the st.crest region: the subject is upon the approach to or near the crest when that distance is below p.crest_approach_distance, and the bound moves with the design speed the reading sets it from. The standard qualifies an otherwise concrete duty, so the node is the law's own rule and not a surrogate."
-          surrogate := false } ]
+    operationalizations := []
     residues := []  -- the node's, verbatim; not yours to change
-    narrowings :=
-      [ { span := "s2"
-          why := "The words leave the manoeuvre's duration open; the duty is read as forbidding a reversal carried out within p.turn_window, the window the heading-change primitive is integrated over, so a reversal spread over more than that window, or one whose look-back reaches back before the trace begins, is unknown rather than violated — the integration is then unobserved, and an unobserved reading is unknown. 'So as to' is read as the result and not the purpose: the rule reads the reversal the vehicle carried out, not the driver's purpose in turning, which no source observes, so a turn begun in order to proceed the other way but abandoned before the body's heading reverses is not judged. The act being one observed over time, this reading also fixes when the law's conditions are read against it: at the observation at which the reversal is recognized, the place at which the vehicle has been turned, and not at any moment of the window behind it. A reversal begun upon a curve, or upon the approach to a crest, and completed clear of it is therefore not judged by that route — the narrower side of the reading — while a bend, a crest or a blind place the vehicle merely passed earlier on its way no longer engages the duty. The act's own conditions, that the subject is in motion and that its heading has turned through the reversal angle over the window, are inside drv.motion.direction_reversal, which this rule claims whole and whose atoms (kin.speed, prim.heading_change) it does not restate as atoms of its own."
-          kind := "reading" }
-      , { span := "s5"
-          why := "'Near' and 'the approach to' state no distance; the standard is bounded by p.crest_approach_distance, measured as the ground distance st.region_geometry gives from the subject's body outline to the crest region, so a vehicle farther from the crest than that bound is outside the duty however restricted its view — the sight-distance condition on s7 still has to be met, but it cannot by itself bring a distant approach back in. Further, the crest the bound reads is any crest region of the scene within that distance, the nearest by ground distance: the ontology carries no relation of a crest to the subject's own roadway, so a crest region of a neighbouring road lying within that distance would be read as the subject's."
-          kind := "reading" } ]
+    narrowings := []
     surrogate := false }
 
 end TrafficSpec.Rules.NRS_484B_407

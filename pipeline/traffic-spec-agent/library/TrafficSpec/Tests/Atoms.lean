@@ -123,4 +123,13 @@ def sceneCrest : Scene := { scene0 with structures := [lane7, crestPatch] }
 #guard (({ aggregates := [{ word := "vehicle", classes := ["nothing"] }] } : Reading).aggregate "vehicle") = some ["nothing"]
 #guard (({ aggregates := [] } : Reading).aggregate "vehicle") = none
 #guard CurbColour.ofString "purple" = none
+-- a lane first from the left has no left neighbour, decidedly; its right one is not observed
+#guard st_lane_left_of scene0 7 8 = some false
+#guard st_lane_right_of scene0 7 8 = none
+-- a device whose governed regions the source does not observe governs none decidedly
+#guard dev_governs scene0 9 7 = some true
+#guard dev_governs { scene0 with devices := [{ sig9 with governs := [], governsObserved := false }] } 9 7 = none
+-- an indicator observed off
+#guard TurnIndicatorState.ofString "off" = some .off
+#guard sig_turn_indicator { scene0 with users := [{ ub with sig := { turnIndicator := some .off } }] } 2 = some .off
 end TrafficSpec.Tests

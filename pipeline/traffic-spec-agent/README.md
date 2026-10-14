@@ -30,7 +30,7 @@ removed, not kept.
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo,carla_smoke}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` and `carla_smoke/` are reference-closed subsets of the training set (a first run; lines with standards of judgement, scored on simulator captures), made with `python -m nrs_tools.subset`, older subsets in git history; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
-| `prompts/*.md` | eight templates: `plan`, `code`, `code_concept`, `concept_repair`, `node_repair`, `concept_judge`, the second vendor's `review_code`, and `adjudicate` | yes, law-free |
+| `prompts/*.md` | nine templates: `plan`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code` and `review_concept`, and `adjudicate` and `adjudicate_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `scripts/gen_ontology.py`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
 | `library/TrafficSpec/Gaps/ledger.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
@@ -165,15 +165,26 @@ session of the agents' vendor), which upholds it, dismisses it (a reasonable rea
 rule's verdict, or an open magnitude, a disclosed narrowing or a surrogate's open standard makes it
 an advisory), or sends it to the operator as a question about an aggregate word's membership. Only
 an upheld divergence returns the node; a ruling the adjudicator leaves defective stands as upheld.
+Every ruling is kept in `results/<run>/rulings.jsonl`, and the adjudicator sees the earlier rulings
+on the same law: a situation decided once is decided alike unless the record changed on the point
+the ruling turned on. A trace on which the rule and the law differ only between compliant and not
+applicable confirms nothing: neither is a violation.
 The reviews of a coding wave run in parallel, and their outcomes are applied once all have finished.
 `--review_effort` (high) sets the reviewer's reasoning effort.
 
-**The concept review.** A concept the gate accepts is rendered as prose from its body and a judge
-(`prompts/concept_judge.md`) compares that rendering, with the coder's narrowings, against the
-contract. `contradicted` (a plain instance of the notion decided the other way), `not_general` or a
-misfiled family returns it; `approximated` (a nearby reading, or a narrowing the coder disclosed)
-accepts it with the judge's reasons recorded on the concept and shown in the catalogue beside its
-contract. A concept that has failed in a run stays failed: a plan that names it again is returned
+**The concept review.** A concept the gate accepts is reviewed the way a rule is: the second vendor
+(`prompts/review_concept.md`) reads the contract, the record with the coder's readings, and the body
+rendered as prose, and writes every situation in which the body decides differently from the
+contract as a trace with an instance (a spelling for each literal formal, a value for each
+parameter, a track for each track formal); the harness runs the concept on it as a rule
+(`Concept.asRule`), so a divergence counts only where the body's executed verdict differs from the
+contract's. A trace that does not show what it claims is asked for once more. Each confirmed
+divergence, and each `not_general` item (words of the contract or the body tuned to one use), goes
+to the concept adjudicator (`prompts/adjudicate_concept.md`), which rules by the contract's words and
+by its own earlier rulings on the concept; an upheld item returns the concept to concept repair. The
+dismissed items and the reviewer's advisories are recorded on the accepted concept and shown in the
+catalogue beside its contract. The reviews of a concept wave run in parallel. A concept that has
+failed in a run stays failed: a plan that names it again is returned
 and charged, and only `reopen` of the laws that used it clears it. Validator A returns a concept
 whose contract states a figure its `literals` do not declare, and one with a literal formal whose
 values are region or device kinds that does not claim the kind atom of each (the body reads them all).
@@ -230,8 +241,10 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 0. **Repair** (one session per concept, and one per node, the gate or a review returned last
    iteration while it has budget): a concept repair sees the record, the verdict, the coder's result
    note and files, the ontology and the catalogue, no law; a node repair also sees its law and
-   segmentation. Each writes a revised record or a withdrawal naming the missing atom or operator
-   (a gap; a withdrawn concept files one gap and blocks every law whose nodes use it). Laws whose
+   segmentation. Each writes a revised record or a withdrawal naming the missing atom or operator;
+   a concept repair may also split the concept into new records under new ids. A withdrawn or split
+   concept returns every law whose nodes use it to the planner (a withdrawal files a gap for the
+   operator to see, which blocks nothing); a node repair's withdrawn span files a gap. Laws whose
    nodes wait on a repair stay `planned` on hold, uncharged. A repair that keeps a defect returns the
    law with the reasons that sent the node to repair ahead of the repair's own, and the law's held
    nodes go back with it. The sessions run in parallel (`--workers`); a law's own node repairs run
@@ -248,20 +261,23 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    under way is an element that reads the road user's motion), plans four witnesses (and, for each
    span read while the act is under way, an `occasion_<span>` witness where it holds for part of the
    act and an `occasion_<span>_outside` witness where it holds only outside it, with different
-   verdicts), and files a gap
-   where no contract carries a span. Writes `blueprint.jsonl`, `PLAN.md`, `proposed_gaps.jsonl`,
-   `aggregates.jsonl`.
+   verdicts), and proposes a gap where no contract carries a span, still mapping the span to its
+   nearest atoms. It is shown the ontology, the catalogue and the formula language: an atom gap may
+   not propose an atom the ontology has, nor an operator gap an operator the language has. Writes
+   `blueprint.jsonl`, `PLAN.md`, `proposed_gaps.jsonl`, `aggregates.jsonl`.
 2. **Validate**: A, deterministic (segmentation is a partition; total accounting; closed set;
    standards have parameters in the reading or proposed; no zero literal declared; plan narrowings
    only on carried obligation or standard spans, except an `observable_reading` — a word with no
    observable counterpart (an intention, a perception or a knowledge, a purpose, the legal status of
    a feature on the road, who or what controls a vehicle) read through the conduct or feature it refers to, of one of those five
    categories, on any carried span, which `TO_USER.md` lists for review; node id derived from the law id; one node per
-   obligation span, an accepted node never re-planned; same words same atoms across the run;
+   obligation span, an accepted node never re-planned; the role of a law's words fixed once a node of
+   the law is accepted;
    compositions resolve, no cycles; no residue on a trigger, subject, condition or exception span
    unless it declares `scope: none`; the four witnesses; the occasion of an act observed over time,
    with its witnesses). An obligation carried only by a residue
-   fails the law; a gap blocks it whatever else is wrong; errors alone return it. The same check,
+   fails the law; errors return it; a proposed gap does not block: the node is coded, and the gap is
+   filed only when the coder declares the span unexpressible (`UNEXPRESSED`). The same check,
    in the run's context, is the draft validator the planner runs (`python -m harness validate
    --run_id <run>`).
 3. **Code** (one session per concept, then per node, in dependency waves of `--workers`): a node's

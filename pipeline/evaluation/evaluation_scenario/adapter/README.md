@@ -9,6 +9,9 @@ The monitor runs the formalized traffic rules over that trace and reports a verd
 adapter knows no law. It writes everything the capture supports in the atom vocabulary, and the
 manifest declares honestly what it cannot supply.
 
+This folder is `pipeline/evaluation/evaluation_scenario/adapter/`. Paths below that begin with
+`library/`, `harness`, `results/` or `ontology/` are relative to `pipeline/traffic-spec-agent/`.
+
 Files in this folder:
 
 | File | What it is |
@@ -87,7 +90,7 @@ Step by step:
    - completeness: the share of rules supported, then of those, the share engaged.
 
    A miss is either a wrong verdict, which is a formalization defect, or an unknown, which is a gap
-   in perception, the generator, the adapter or the ontology. `laws/evaluation_scenario/scenarios.jsonl`
+   in perception, the generator, the adapter or the ontology. `pipeline/evaluation/evaluation_scenario/scenarios.jsonl`
    is a reading aid, not labels; it never enters the pipeline or the scorer.
 
 ## 2. Why the adapter writes JSON, not a Lean trace module
@@ -432,7 +435,7 @@ signal that governs them controls that intersection.
 Make one per generator version, never per capture:
 
 ```bash
-cd laws/evaluation_scenario/adapter
+cd pipeline/evaluation/evaluation_scenario/adapter
 python make_manifest.py > manifest.json     # edit OBSERVED and SOURCE first
 ```
 

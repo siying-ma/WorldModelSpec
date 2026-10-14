@@ -32,6 +32,30 @@ Before changing anything, in this order:
    with it — a Core change drags the generated tables, the prompts, the doctor and the tests.
 4. **Only then edit**, and report what landed against the plan.
 
+## Who does what
+
+Each agent of the loop has one responsibility, and a defect is routed back to the role that owns
+it, never fixed by the role that found it. Every role, phase and check exists for one stated use: a
+feature is not better for being there, and one whose use cannot be stated is removed.
+
+- **The planner** (the plan session, and the node and concept repair sessions, which re-plan)
+  decides everything a rule or a concept means: the segmentation, which atoms, concepts and
+  operators each span maps to, the readings of open words, the occasion of an act, the parameters
+  it proposes, and every concept's contract. Only a planning session changes a mapping or a
+  contract.
+- **The coder** (a node or a concept coding session) writes the Lean the record states. Where the
+  record leaves the writing open it may choose only among meanings the words already allow, and
+  discloses each choice as a `reading`. A span it cannot write with the planned atoms and operators
+  it reports (`no_atom`, `no_operator`) and stops; it never approximates, re-maps or plans.
+- **The reviewer** (a second vendor's model) shows, as executable traces, situations in which the
+  code and the words it formalizes (the law for a node, the contract for a concept) decide
+  differently. It never proposes a fix or a mapping.
+- **The adjudicator** rules on each divergence execution confirmed, by the words alone. It never
+  judges the code or re-plans.
+- **The harness** validates, gates, executes and routes each outcome to the role that owns it; it
+  decides nothing a role above decides.
+- **The operator** decides gaps, the values of parameters and the membership of aggregate words.
+
 ## What is frozen, and what that means
 
 - `ontology/ATOMS.md` (and the derived `ATOMS_train.md`), `library/TrafficSpec/Core/**`, and
@@ -62,9 +86,20 @@ Before changing anything, in this order:
   around a test law. The held-out atoms' rows of `ontology/ATOMS.md` are
   frozen in `laws/audit_and_scripts/split_atoms.json` and the doctor fails when one changes; they
   change only by regenerating the split. The harness defaults to the training split.
-- `laws/evaluation_scenario/` is the instruction set for the developers of the adapter (what a
-  trace must show before each law can be judged). Development sessions of the pipeline do not
-  read it, and nothing in the pipeline reads it.
+  The driving data a run is evaluated on (`pipeline/datasets/**`, read only by
+  `pipeline/evaluation/` after a run) is test data in the same sense: no pipeline session reads
+  it, and no change to the prompts, the ontology, Core or the harness is made because of what a
+  dataset contains or lacks. A defect an evaluation reveals is fixed where it lies: in the adapter
+  when the trace misreports the scene, in the pipeline only when the defect holds whatever the
+  data.
+- Everything that evaluates a run lives in `pipeline/evaluation/`, outside the pipeline: the
+  scripts that run the monitor on driving data, and `evaluation_scenario/`, the instruction set for
+  the developers of the adapter (what a trace must show before each law can be judged). Nothing in
+  the pipeline reads `pipeline/evaluation/`. Development sessions of the pipeline do not read or
+  edit `evaluation_scenario/`, with two exceptions: its `README.md` and its `adapter/` folder (the
+  trace format and the adapter's contract), which a development session may read and edit when a
+  change to Core or the ontology changes what a trace carries, and where the changes the pipeline
+  requires of the adapter are recorded.
 - The corpus covers ordinary urban Las Vegas driving, judged for a vehicle driver. A law leaves
   only by the rule in `laws/README.md` (Scope), recorded in
   `pipeline/ontology_provenance/nrs_tools/tiers.py` (`EXCLUDED`);

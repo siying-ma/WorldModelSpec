@@ -78,29 +78,29 @@ def rule_skeleton(node: Node) -> str:
     out = head + ["import TrafficSpec.Core.Language.Rule", "", f"namespace {ns}", ""]
     out.append("/-- The binders, as arguments (order and names are the node's). -/")
     for b in binders:
-        out.append(f"private def {_ident('v_' + b['name'])} : Arg := .var {_s(b['name'])}")
+        out.append(f"def {_ident('v_' + b['name'])} : Arg := .var {_s(b['name'])}")
     out.append("")
     if params:
         out.append("/-- The reading's parameters; no value of any of them lives in this file. -/")
         for p in params:
-            out.append(f"private def {_ident(p)} : Term := .param {_s(p)}")
+            out.append(f"def {_ident(p)} : Term := .param {_s(p)}")
         out.append("")
-    out.append("private def zeroMetres : Term := .lit Q.zero .metre")
+    out.append("def zeroMetres : Term := .lit Q.zero .metre")
     out.append("")
     out.append("-- TODO(code): class formulas, applicability and obligation — from the node's elements,")
     out.append("-- operationalizations and compositions, using only the claimed names. `.tt` is the placeholder.")
     out.append("")
     for b in binders:
         out.append(f"/-- Class of `{b['name']}`: {', '.join(b.get('class_elements', []))} -/")
-        out.append(f"private def {_ident('cls_' + b['name'])} : Formula := .tt  -- TODO")
+        out.append(f"def {_ident('cls_' + b['name'])} : Formula := .tt  -- TODO")
     out.append("")
     app_spans = _span_lines(node, {"trigger", "condition", "exception"})
     obl_spans = _span_lines(node, {"obligation", "standard"})
     out.append("/-- Applicability: " + ("; ".join(app_spans) if app_spans else "(no trigger/condition span)") + " -/")
-    out.append("private def applicability : Formula := .tt  -- TODO")
+    out.append("def applicability : Formula := .tt  -- TODO")
     out.append("")
     out.append("/-- Obligation: " + ("; ".join(obl_spans) if obl_spans else "(no obligation span)") + " -/")
-    out.append("private def obligation : Formula := .tt  -- TODO")
+    out.append("def obligation : Formula := .tt  -- TODO")
     out.append("")
     out.append("def rule : Rule :=")
     out.append(f"  {{ id := {_s(node.id)}")
@@ -145,21 +145,21 @@ def witness_skeleton(node: Node) -> str:
            "  figure here is the witness's own and appears nowhere in the rule.", "-/",
            f"import {nodeid.rule_module(node.id)}", "import TrafficSpec.Core.Evidence.Builders", "",
            f"namespace {ns}", "", "open TrafficSpec", "",
-           "private def m (n : Int) : Q := Units.metres n", "private def cm (n : Int) : Q := Units.centimetres n", "",
+           "def m (n : Int) : Q := Units.metres n", "def cm (n : Int) : Q := Units.centimetres n", "",
            f"-- Binders ↦ tracks: {', '.join(f'{b} ↦ {i + 1}' for i, b in enumerate(binders)) or '(no binders)'}", ""]
     names = list(SCENARIOS) + [x for x in scen if x and x not in SCENARIOS]   # every planned scenario, the four first
     for name in names:
         s = scen.get(name, {})
         narrative = " ".join(str(s.get("narrative", "")).split())
         out.append(f"/-- `{name}` ({normalize_verdict(s.get('expected', SCENARIOS.get(name, '')))}): {narrative} -/")
-        out.append(f"private def {name}Trace : Trace :=")
+        out.append(f"def {name}Trace : Trace :=")
         out.append("  Build.trace 3 0 (Units.seconds 1) fun _k t =>")
         out.append("    Build.scene t (some 1)")
         out.append("      [ ]  -- TODO users: Build.user <track> [<classes>] (x, y) <heading> <speed> (halfLen, halfWid, halfHt)")
         out.append("      [ ]  -- TODO structures: Build.rect / Build.lane / Build.point …")
         out.append("      [ ]  -- devices")
         out.append("")
-    out.append("private def witness (name : String) (τ : Trace) (expected : Verdict)")
+    out.append("def witness (name : String) (τ : Trace) (expected : Verdict)")
     out.append("    (absent : List String := []) : Scenario :=")
     out.append("  { name := name")
     out.append(f"    rule := {_s(node.id)}")
@@ -231,20 +231,20 @@ def concept_skeleton(c: ConceptRecord) -> str:
     out = head + ["import TrafficSpec.Core.Language.Concept", "", f"namespace {ns}", ""]
     out.append("/-- The formal arguments, as `Arg`s (a literal formal is written `.var` and filled by the caller). -/")
     for a in c.args():
-        out.append(f"private def {_ident('a_' + a['name'])} : Arg := .var {_s(a['name'])}")
+        out.append(f"def {_ident('a_' + a['name'])} : Arg := .var {_s(a['name'])}")
     if c.params():
         out.append("")
         out.append("/-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/")
         for pr in c.params():
-            out.append(f"private def {_ident('p_' + pr['name'])} : Term := .param {_s(pr['name'])}")
+            out.append(f"def {_ident('p_' + pr['name'])} : Term := .param {_s(pr['name'])}")
     out.append("")
     if c.get("kind") == "quantity":
         out.append("-- TODO(code): the quantity, from the contract's elements, over the formals and claimed names only.")
-        out.append("private def body : Term := .lit Q.zero .count  -- TODO")
+        out.append("def body : Term := .lit Q.zero .count  -- TODO")
         body_ctor = ".quantity body"
     else:
         out.append("-- TODO(code): the formula, from the contract's elements, over the formals and claimed names only.")
-        out.append("private def body : Formula := .tt  -- TODO")
+        out.append("def body : Formula := .tt  -- TODO")
         body_ctor = ".formula body"
     out.append("")
     out.append("def concept : Concept :=")
@@ -276,7 +276,7 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
            "  here is the witness's own, including the values the instance gives the formal parameters.", "-/",
            f"import {nodeid.concept_module(c.id)}", "import TrafficSpec.Core.Evidence.Builders", "",
            f"namespace {ns}", "", "open TrafficSpec", "",
-           "private def m (n : Int) : Q := Units.metres n", "private def cm (n : Int) : Q := Units.centimetres n", "",
+           "def m (n : Int) : Q := Units.metres n", "def cm (n : Int) : Q := Units.centimetres n", "",
            f"-- Formals ↦ tracks: {', '.join(f'{n} ↦ {i + 1}' for i, n in enumerate(tracks)) or '(no track formal)'}", "",
            "/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a",
            "    value through a `Units` constructor (TODO), a quantity concept given its expected bounds. -/",
@@ -296,14 +296,14 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
         expected = normalize_verdict(s.get("expected", CONCEPT_SCENARIOS.get(name, "violated")))
         narrative = " ".join(str(s.get("narrative", "")).split())
         out.append(f"/-- `{name}` ({expected}): {narrative} -/")
-        out.append(f"private def {name}Trace : Trace :=")
+        out.append(f"def {name}Trace : Trace :=")
         out.append("  Build.trace 3 0 (Units.seconds 1) fun _k t =>")
         out.append("    Build.scene t (some 1)")
         out.append("      [ ]  -- TODO users: Build.user <track> [<classes>] (x, y) <heading> <speed> (halfLen, halfWid, halfHt)")
         out.append("      [ ]  -- TODO structures")
         out.append("      [ ]  -- devices")
         out.append("")
-    out.append("private def witness (name : String) (τ : Trace) (expected : Verdict)")
+    out.append("def witness (name : String) (τ : Trace) (expected : Verdict)")
     out.append("    (absent : List String := []) : Scenario :=")
     out.append("  { name := name")
     out.append("    rule := inst.name")

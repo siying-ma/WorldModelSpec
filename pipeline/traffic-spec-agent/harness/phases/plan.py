@@ -9,6 +9,7 @@ from ..store import paths
 from ..store.gaps import GapLedger
 from ..model.mapping import MappingIndex
 from ..model.reading import Reading
+from ..lean import surface
 from ..model.blueprint import ConceptRecord
 from ..store.state import Run
 
@@ -27,10 +28,11 @@ def parameter_catalogue(reading: Reading) -> str:
             "(`aggregates.jsonl`) before any node claims it:", "", aggregates.render(reading)]
     return "\n".join(out) + "\n"
 
-PLACEHOLDERS = ("laws", "definitions", "ontology", "library_summary", "concepts", "mapping_index", "parameters", "gaps", "feedback", "user_hints",
-                "anchors", "aggregate_atom")
-PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "concepts", "definition", "users")
-PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "coder_narrowings", "task_result", "final_files", "ontology", "concepts", "parameters", "anchors", "aggregate_atom")
+PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "library_summary", "concepts", "mapping_index", "parameters", "gaps",
+                "feedback", "user_hints", "anchors", "aggregate_atom")
+PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concepts", "definition", "users")
+PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language", "concepts",
+                            "parameters", "anchors", "aggregate_atom")
 
 
 def defined_term(d: dict) -> list[str]:
@@ -64,7 +66,6 @@ def definitions_for(laws: list[corpus.Law], defs: list[dict]) -> list[dict]:
 
 
 def concept_catalogue(run: Run) -> str:
-    from ..lean import surface
     from ..model import nodeid
     text = surface.concepts_table(run.all_concepts())
     if run.opts.mode == "test":
@@ -86,12 +87,12 @@ def library_summary(run: Run, pending: list[dict] | None = None) -> str:
 
 
 def pending_concepts_table(pending: list[dict] | None) -> str:
-    """The concept records earlier batches of this iteration proposed: a later batch reuses them by
-    id and proposes none of them again."""
+    """The concept records a concept repair or an earlier batch of this iteration proposed: the
+    planner reuses them by id and proposes none of them again."""
     recs = [r for r in pending or [] if "concept_id" in r and "node_id" not in r]
     if not recs:
         return ""
-    out = ["", "### Concepts proposed this iteration by an earlier batch (not yet accepted; reuse by id, never re-propose; a differing record under the same id is dropped at the merge)",
+    out = ["", "### Concepts proposed this iteration by a concept repair or an earlier batch (not yet accepted; reuse by id, never re-propose; a differing record under the same id is dropped)",
            "| id | kind | contract | definition | args | params | atoms | used by |", "|---|---|---|---|---|---|---|---|"]
     for rec in recs:
         args = ", ".join(f"{a.get('name')}:{a.get('sort')}" + (f"{a.get('values')}" if a.get("sort") == "literal" else "") for a in rec.get("args", []))
@@ -158,6 +159,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         "laws": corpus.render_laws(laws),
         "definitions": corpus.render_definitions(definitions_for(laws, defs)),
         "ontology": onto.text,
+        "formula_language": surface.formula_language(),
         "library_summary": library_summary(run, [n for n in pending or [] if "node_id" in n]),
         "concepts": concept_catalogue(run) + pending_concepts_table(pending),
         "mapping_index": MappingIndex(run.mapping_file).render() + pending_mappings_table(pending),
@@ -174,9 +176,9 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
                "`proposed_gaps.jsonl` there with the Write tool, as files, by hand. Everything you need is in this prompt: you read no "
                "other file, and the shell runs exactly one command, the validator below — any other command is denied.\n\n"
                "## Checking a draft\n\nThe deterministic validator the harness will run, with the run's accepted nodes, concepts, "
-               "mapping index, reading and your `aggregates.jsonl` and `PLAN.md` disputes, is available to you on a draft:\n\n"
-               f"```\n{validate_cmd}\n```\n\nRun it exactly as written. It prints one line per node (`accept`, `return`, `block`) with the reasons. "
-               "Run it once the file is complete, fix what it names, and stop when every node is `accept` or `block`. "
+               "mapping index, reading and your `aggregates.jsonl`, is available to you on a draft:\n\n"
+               f"```\n{validate_cmd}\n```\n\nRun it exactly as written. It prints one line per node (`accept`, `return`, `fail`) with the reasons. "
+               "Run it once the file is complete, fix what it names, and stop when every node is `accept`. "
                "It is the only program you run; the self-check is yours, the schema check is its.\n")
     (plan_dir / "prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
@@ -195,9 +197,9 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
                users: list[dict]) -> Path:
     """One repair session for a concept the gate or the review returned: it sees the record, the
     verdict, the coder's result note and the files the coder left, the ontology, the catalogue and
-    the definition (if the contract is one) — no law — and writes a revised record, or a
-    withdrawal, to `record.jsonl` in its own directory. Returns that directory."""
-    from ..lean import surface
+    the definition (if the contract is one) — no law — and writes a revised record, a split (the
+    concept withdrawn and replaced by new records under new ids), or a withdrawal, to
+    `record.jsonl` in its own directory. Returns that directory."""
     from ..model import nodeid
     d = run.iter / "repair" / nodeid.concept_lean_name(rec.id)
     d.mkdir(parents=True, exist_ok=True)
@@ -214,12 +216,14 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         "concept": json.dumps(rec.raw, ensure_ascii=False, indent=1),
         "verdict": "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)",
         "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "concepts": surface.concepts_table(run.all_concepts()), "definition": definition,
+        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
+        "definition": definition,
         "users": ", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)"})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
-               "object, the revised concept record with the same `concept_id`, or `{\"concept_id\": \"<id>\", \"withdraw\": \"<why the "
-               "notion cannot be defined over this vocabulary>\"}`. Everything you may know is in this prompt: you read no file and "
-               "the shell runs nothing.\n")
+               "object per line — the revised concept record with the same `concept_id`; or a split, `{\"concept_id\": \"<id>\", "
+               "\"withdraw\": \"<why the notion is two notions>\", \"replaced_by\": [\"<new id>\", ...]}` followed by one line per "
+               "new record; or a withdrawal, `{\"concept_id\": \"<id>\", \"withdraw\": \"<why the notion cannot be defined over this "
+               "vocabulary>\"}`. Everything you may know is in this prompt: you read no file and the shell runs nothing.\n")
     (d / "prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return d
@@ -231,9 +235,10 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
                     allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan"),
                     disallowed_tools=session.NO_SEARCH + ["Bash"], env=session.harness_env())
         rec2 = load_repair(d)
-        if rec2 is None:
+        recs = [rec2] if rec2 is not None else load_replacements(d)
+        if not recs:
             return d                                     # withdrawn, or nothing written: the loop records it
-        outcome = validate_a.validate_concepts([rec2], defs, onto, run.all_concepts(), [Node(u) for u in users], run.opts.mode)
+        outcome = validate_a.validate_concepts(recs, defs, onto, run.all_concepts(), [Node(u) for u in users], run.opts.mode)
         errs = [e for o in outcome for e in o.reasons]
         (d / "validation.txt").write_text("\n".join(errs) or "accept", encoding="utf-8")
         if not errs or attempt:
@@ -250,7 +255,6 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     withdrawal to `record.jsonl` in its own directory. The record is validated in the plan's
     context (the law's accepted and held siblings) with one re-ask; `validation.txt` records the
     outcome. Returns the directory."""
-    from ..lean import surface
     from ..checks import validate_a
     from ..model.blueprint import Node
     d = run.iter / "repair" / node.id
@@ -283,7 +287,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n",
         "verdict": verdict, "coder_narrowings": coder_block, "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "concepts": surface.concepts_table(run.all_concepts()),
+        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
@@ -307,7 +311,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
             return d
         errs = []
         others = [s for s in siblings if s.id != node.id]
-        outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, set(), run.all_concepts(), [])
+        outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [])
         errs += [r for o in outcomes if o.node.id == node.id for r in o.reasons]
         # a mapping the repair changed on words a sibling also carries: the same-words rule lands on the sibling, and is the repair's to keep or dispute
         errs += [f"{node.id}: your mapping of shared words differs from the held sibling's — {r}" for o in outcomes if o.node.id != node.id
@@ -380,6 +384,27 @@ def load_repair(d: Path) -> ConceptRecord | None:
             from ..model.blueprint import normalize_concept
             return ConceptRecord(normalize_concept(r))
     return None
+
+
+def load_replacements(d: Path) -> list[ConceptRecord]:
+    """The records a concept repair wrote to replace the concept it withdrew: the lines after the
+    withdrawal whose ids its `replaced_by` names, each a concept under its own id."""
+    from ..model.blueprint import normalize_concept
+    f = d / "record.jsonl"
+    if not f.exists():
+        return []
+    rows = []
+    for line in f.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                return []
+    if not rows or not isinstance(rows[0], dict) or not rows[0].get("withdraw"):
+        return []
+    named = set(rows[0].get("replaced_by") or [])
+    return [ConceptRecord(normalize_concept({**r, "used_by": []})) for r in rows[1:]
+            if isinstance(r, dict) and r.get("concept_id") in named and r.get("concept_id") != rows[0].get("concept_id")]
 
 
 def merge_batches(run: Run, batch_dirs: list[Path]) -> Path:

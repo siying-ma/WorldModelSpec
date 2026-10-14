@@ -185,7 +185,7 @@ def structure' (id : String) (st : Structure) : Option Structure :=
 
 def device (id : String) (d : Device) : Option Device :=
   match id with
-  | "dev.governs" => some { d with governs := [] }
+  | "dev.governs" => some { d with governs := [], governsObserved := false }
   | "dev.position" => some { d with position := none }
   | "dev.inoperative" => some { d with inoperative := none }
   | _ =>

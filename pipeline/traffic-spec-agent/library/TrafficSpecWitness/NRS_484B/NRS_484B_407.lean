@@ -1,39 +1,29 @@
 /-
   Witnesses for NRS_484B_407.
 
-  The stretch. Every scene is laid out on one stretch of highway running east, carried as roadway
-  regions 12 m wide about the line y = 0: each declares the curvature of its places (1/m, zero
-  where it runs straight) and the sight distance of them. A scene that needs a crest of a grade
-  carries it as a short region about a stated place, with its reference point, so the ground
-  distance from the subject's body outline to it is the distance the rule reads. The subject
-  (track 1) is a car, half-length 2 m and half-width 1 m, on the roadway at y = 0 throughout; no
-  other road user is anywhere in any scene.
+  One carriageway, built east-west in the world frame (+x east), 24 m wide so that a body turning
+  about stays within it; every roadway segment is a rectangle of kind `roadway` carrying its own
+  horizontal curvature and its own sight distance, so that "the curvature at the vehicle's
+  position" and "the sight distance of the place it is at" are read off the region the vehicle
+  occupies. A crest, where a scene needs one, is a ten-metre block of the same carriageway of kind
+  `crest` with its reference point at its centre; where a scene needs no crest, one stands far down
+  the road (x = 2000 m) so that the crest leaf is decided false rather than left unobserved.
 
-  The instants. Each witness is 24 observations a second apart, t = 0 … 23 s. The rule looks back
-  over the turn window, so every witness names the instants it speaks about: t = 12 s onwards,
-  from which the look-back is covered at every instant (12 s behind, sampled every second, well
-  inside the adequacy bound). Nothing before t = 12 s is spoken about.
+  Magnitudes (all the witness's own; none appears in the rule):
+    a bend          curvature 1/100 m⁻¹ (a 100 m radius), well inside the 500 m radius floor;
+    a tangent       curvature 0, so the curve leaf is decided false;
+    a blind place   sight distance 100 m, below the 500 feet (152.4 m) the text states;
+    an open place   sight distance 300 m, above it;
+    the body        a motor vehicle, half-extents 2 m × 0.9 m × 1.5 m;
+    a turning about yaw rate 22.5 deg/s held over nine observations, so the heading change
+                    integrated over the 8 s window behind is 180 deg at the end of the swing and
+                    at least 157.5 deg on either side of it — inside the 30 deg tolerance;
+    rounding a bend yaw rate 3 deg/s, 24 deg over the window: a bend taken, not a turning about.
 
-  The reversal. Where a scene carries one, the subject yaws left at 30 deg/s through the six
-  seconds k = 11 … 16 and runs straight otherwise: 180° of heading change in all, integrated over
-  a 12 s window that holds the whole of it from k = 16 to k = 22, far above the reversal angle,
-  and 90° or less at k = 12 … 14, far below it. Its speed is cruising before and after and
-  manoeuvring through the turn, always above the motion speed. The scene of 'permit' yaws at
-  3 deg/s instead, so the window holds 36° at every instant — the subject drives round the bend
-  without turning about.
-
-  The places. The subject's place advances along the stretch at the speed each scene reports, the
-  reversal included: these are built scenes and not a simulation, and what the rule reads of the
-  manoeuvre is the yaw rate the window integrates, the speed, and the place at which the reversal
-  is recognized. Laying the places out this way is what lets each occasion witness put the place
-  of the turn on the far side of a threshold the act began on.
-
-  The margins. A bend is declared at a radius of 100 m, a fifth of the resolution the reading
-  gives, and a straight place at zero curvature exactly; a short sight distance is 50 m, a third
-  of the 500 feet the text states, and a long one 400 m, well over twice it; a crest is placed so
-  that the distance to it clears the crest approach distance by about 27 m at the start of an act
-  and falls about 27 m below it where the reversal is recognized. Every figure here is the
-  witness's own and appears nowhere in the rule.
+  Every trace is sampled at 1 s, which is inside the 4 s adequacy limit of an 8 s window, and every
+  trace holds its opening scene for the first nine observations so that the window behind is
+  covered from t = 9 s. Each scenario names that range in `window`: the instants it speaks about
+  are the ones at which the look-back is covered, and nothing is unknown there for want of trace.
 -/
 import TrafficSpec.Rules.NRS_484B.NRS_484B_407
 import TrafficSpec.Core.Evidence.Builders
@@ -42,147 +32,168 @@ namespace TrafficSpecWitness.NRS_484B_407
 
 open TrafficSpec
 
-private def m (n : Int) : Q := Units.metres n
-private def mps (n : Int) : Q := Units.metresPerSecond n
-private def degPerSecond (n : Int) : Q := Units.degrees n
+def m (n : Int) : Q := Units.metres n
+def cm (n : Int) : Q := Units.centimetres n
+def mps (n : Int) : Q := Units.metresPerSecond n
 
--- Binders ↦ tracks: veh ↦ 1
+-- Binders ↦ tracks: v ↦ 1
 
-/-- Half-length, half-width, half-height of the subject car. -/
-private def carExtent : Q × Q × Q := (m 2, m 1, m 1)
+/-- Half-length, half-width, half-height of the body. -/
+def halfExtent : Q × Q × Q := (m 2, cm 90, cm 150)
 
-/-- The bend the curved stretches declare (1/m: a radius of 100 m), and a straight place. -/
-private def bend : Q := Units.ratio 1 100
-private def straight : Q := Q.zero
+/-- 22.5 deg/s: nine observations of it integrate to a half turn over the 8 s window. -/
+def turnRate : Q := Units.millidegrees 22500
+/-- 3 deg/s: the yaw of a body following a 100 m bend at 5 m/s. -/
+def bendRate : Q := Units.degrees 3
 
-/-- Sight distances: one far below the text's 500 feet, one far above it. -/
-private def shortSight : Q := m 50
-private def longSight : Q := m 400
+/-- The curvature of the bend (a 100 m radius) and of a tangent. -/
+def kBend : Q := Units.ratio 1 100
+def kTangent : Q := Q.zero
+/-- Sight distances: one short of the 500 feet the text states, one well beyond. -/
+def sightBlind : Q := m 100
+def sightOpen : Q := m 300
 
-/-- A roadway of the stretch, carrying the bend of its places and their sight distance. -/
-private def roadway (id : RegionId) (x0 x1 : Int) (curvature sight : Q) : Structure :=
-  { Build.rect id .roadway (m x0) (m (-6)) (m x1) (m 6) with
-      curvature := some curvature, sightDistance := some sight }
+/-- The subject: a motor vehicle with its position, heading, speed and yaw rate. -/
+def car (pos : Vec) (heading : Vec) (speed yaw : Q) : RoadUser :=
+  Build.withKin (Build.user 1 [.motorVehicle] pos heading speed halfExtent)
+    (fun k => { k with yawRate := some yaw })
 
-/-- The crest of a grade: a short region about `x`, with its reference point. -/
-private def crestAt (id : RegionId) (x : Int) : Structure :=
-  { Build.rect id .crest (m (x - 1)) (m (-6)) (m (x + 1)) (m 6) with position := some (m x, m 0) }
+/-- Nine headings from east round to west through north: the body's attitude through a swing. -/
+def headingOfIndex : Nat → Vec
+  | 0 => Build.east
+  | 1 => (Q.mk' 92 100, Q.mk' 38 100)
+  | 2 => (Q.mk' 71 100, Q.mk' 71 100)
+  | 3 => (Q.mk' 38 100, Q.mk' 92 100)
+  | 4 => Build.north
+  | 5 => (Q.mk' (-38) 100, Q.mk' 92 100)
+  | 6 => (Q.mk' (-71) 100, Q.mk' 71 100)
+  | 7 => (Q.mk' (-92) 100, Q.mk' 38 100)
+  | _ => Build.west
 
-/-- The subject, with the yaw rate the heading-change primitive integrates. -/
-private def subjectCar (pos : Vec) (heading : Vec) (speed yaw : Q) : RoadUser :=
-  Build.withKin (Build.user 1 [.motorVehicle] pos heading speed carExtent)
-    (fun kin => { kin with yawRate := some yaw })
+/-- The swing runs over the nine observations `lo … lo + 8`. -/
+def swingYaw (k lo : Nat) : Q := if lo ≤ k ∧ k ≤ lo + 8 then turnRate else Q.zero
+def swingHeading (k lo : Nat) : Vec :=
+  headingOfIndex (if k ≤ lo then 0 else min (k - lo) 8)
 
--- The reversal, as the scenes that carry one report it.
+/-- A body that holds `x0` until `lo`, moves `step` metres an observation, and holds from `hi`. -/
+def rampX (x0 step : Int) (k lo hi : Nat) : Q :=
+  m (x0 + step * Int.ofNat (min (max k lo) hi - lo))
 
-/-- 30 deg/s through the six seconds of the turn, nothing before or after: 180° in all. -/
-private def yawAt (k : Nat) : Q := if 11 ≤ k ∧ k ≤ 16 then degPerSecond 30 else Q.zero
+/-- A stretch of carriageway with its own curvature and sight distance. -/
+def roadSeg (id : RegionId) (x0 x1 : Int) (curv sight : Q) : Structure :=
+  { Build.rect id .roadway (m x0) (m (-12)) (m x1) (m 12) with
+      curvature := some curv, sightDistance := some sight }
 
-/-- Manoeuvring speed through the turn, cruising speed before and after it. -/
-private def speedAt (k : Nat) : Q := if 11 ≤ k ∧ k ≤ 16 then mps 3 else mps 6
+/-- A crest: ten metres of the carriageway, with its reference point at its centre. -/
+def crestRegion (id : RegionId) (x : Int) : Structure :=
+  { Build.rect id .crest (m (x - 5)) (m (-12)) (m (x + 5)) (m 12) with
+      position := some (m x, Q.zero) }
 
-/-- The heading through the turn, sampled every 30°: east before it, west after it. -/
-private def headingAt (k : Nat) : Vec :=
-  if k ≤ 10 then Build.east
-  else if k = 11 then (Units.ratio 866 1000, Units.ratio 500 1000)
-  else if k = 12 then (Units.ratio 500 1000, Units.ratio 866 1000)
-  else if k = 13 then Build.north
-  else if k = 14 then (Units.ratio (-500) 1000, Units.ratio 866 1000)
-  else if k = 15 then (Units.ratio (-866) 1000, Units.ratio 500 1000)
-  else Build.west
+/-- The crest a scene keeps far away, so that the crest leaf is decided false. -/
+def farCrest : Structure := crestRegion 9 2000
 
-/-- The ground the subject has run along the stretch by instant `k`, at those speeds. -/
-private def runAt (k : Nat) : Int :=
-  let j : Int := Int.ofNat k
-  if k ≤ 10 then 6 * j
-  else if k ≤ 16 then 60 + 3 * (j - 10)
-  else 78 + 6 * (j - 16)
+def sceneAt (t : Timestamp) (u : RoadUser) (rs : List Structure) : Scene :=
+  Build.scene t (some 1) [u] rs []
 
-/-- The subject's place at instant `k`, from `x0` at the start of the trace. -/
-private def placeAt (x0 : Int) (k : Nat) : Vec := (m (x0 + runAt k), m 0)
+/-- `forbid` (violated): A single vehicle on a two-lane rural roadway, with no other vehicle anywhere in the scene and no other road user at all; every atom is observed and the trace runs well before the window behind. The roadway's curvature at the vehicle's position stands well clear of the source's resolution, and the sight distance of that place is less than the distance the text states. Over the window behind, the vehicle's integrated heading change comes within the tolerance of a half turn, and its yaw rate stands above the floor at every observation of the swing, so the turning is under way upon that curve and at that restricted place. That the rule convicts with no second vehicle in the scene is what the place's sight distance, rather than another road user's line of sight, is read for. -/
+def forbidRegions : List Structure := [ roadSeg 1 0 400 kBend sightBlind, farCrest ]
 
-/-- The subject of a scene that carries a reversal, from `x0`. -/
-private def turningCar (x0 : Int) (k : Nat) : RoadUser :=
-  subjectCar (placeAt x0 k) (headingAt k) (speedAt k) (yawAt k)
-
-/-- `forbid` (violated): A two-lane highway bends left through a cutting. The subject is a car, a member class of the aggregate vehicle, and its footprint overlaps the roadway (rel.occupies on st.roadway); the roadway's radius of curvature at its place is far below p.curve_radius_resolution throughout, so st.curvature there stands clear of zero at the source's resolution, and st.sight_distance there is far below the literal 500 feet throughout. It slows to manoeuvring speed and swings through a turn that leaves it heading back the way it came: over p.turn_window, prim.heading_change exceeds p.direction_reversal_angle in magnitude and kin.speed is above p.motion_speed_min, so drv.motion.direction_reversal holds, and at the observation at which it is recognized the bend and the short sight distance are both reported at the subject's place. No other road user is anywhere in the scene, and every atom the rule reads is observed at every observation of the window and of the look-back. -/
-private def forbidTrace : Trace :=
+def forbidTrace : Trace :=
   Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 140 k ]
-      [ roadway 11 0 420 bend shortSight ]
-      []
+    sceneAt t (car (m 200, Q.zero) (swingHeading k 10) (mps 2) (swingYaw k 10)) forbidRegions
 
-/-- `permit` (compliant): The same bend, the same car on the roadway, st.sight_distance at its place again far below the literal 500 feet and st.curvature standing clear of zero (its radius of curvature far below p.curve_radius_resolution), and no st.crest region within p.crest_approach_distance. It drives through the bend without turning about: over p.turn_window, prim.heading_change stays far below p.direction_reversal_angle at every observation, so drv.motion.direction_reversal fails. No other road user is in the scene. Curvature, crest geometry, sight distance, occupancy, speed and yaw rate are all reported at every observation of the window and of the look-back behind it, so no leaf is unknown and the compliant verdict is not displaced. -/
-private def permitTrace : Trace :=
+/-- `permit` (compliant): The same vehicle on the same restricted stretch of curve, every atom observed and the window behind covered by the trace: it is upon the curve, and the sight distance of the place is less than the distance the text states, so the rule is engaged, but the vehicle holds its heading through and past the bend - its yaw rate never standing above the floor for a swing, and its integrated heading change never coming within the tolerance of a half turn at any observation of the trace - and turns about nowhere. -/
+def permitTrace : Trace :=
   Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ subjectCar (m (140 + 6 * Int.ofNat k), m 0) Build.east (mps 6) (degPerSecond 3) ]
-      [ roadway 11 0 420 bend shortSight ]
-      []
+    sceneAt t (car (rampX 100 5 k 0 23, Q.zero) (headingOfIndex (k / 8)) (mps 5) bendRate)
+      forbidRegions
 
-/-- `idle` (not_applicable): A straight, level highway in open country, with a crest of a grade behind the subject: earlier on its way the subject passed within p.crest_approach_distance of that st.crest region, where st.sight_distance was well above the literal 500 feet. It then drives on past the crest and, on the open straight beyond it, swings through a full reversal and drives back the way it came, so the obligation's concept holds. At the observation at which that reversal is recognized the radius of curvature at its place is above p.curve_radius_resolution, so st.curvature reports no bend; the ground distance st.region_geometry gives to the crest region is above p.crest_approach_distance; and st.sight_distance at its place is well above the literal 500 feet. No condition of the applicability holds where the vehicle was turned, so the duty does not engage — the crest it passed earlier in the window is not the place of the turn. Every atom the rule reads is reported at every observation of the window and of the look-back, so the verdict is decided and not unknown. -/
-private def idleTrace : Trace :=
+/-- `idle` (not_applicable): The same vehicle turns about on a straight and level stretch of the same roadway, every atom observed and the trace running well before the window behind: the curvature at its position is below the source's resolution at every observation, the nearest crest region lies farther from its body outline than the reach throughout, and the sight distance of the place exceeds the distance the text states, so no place condition holds while the turning is under way or at any other observation. -/
+def idleRegions : List Structure := [ roadSeg 1 (-400) 400 kTangent sightOpen, farCrest ]
+
+def idleTrace : Trace :=
   Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 120 k ]
-      [ roadway 11 0 420 straight longSight, crestAt 12 0 ]
-      []
+    sceneAt t (car (Q.zero, Q.zero) (swingHeading k 10) (mps 2) (swingYaw k 10)) idleRegions
 
-/-- `blind` (unknown): The forbid scene exactly — the bend, the subject on the roadway, the reversal carried out over p.turn_window — except that the source's capability manifest declares st.sight_distance absent: this map carries no sight-distance model, and the atom is unobserved at every observation, the roadway region itself and its curvature being reported as before. Curvature, occupancy and the reversal stay decided, so the duty turns on the one condition that is unknown at the observation at which the reversal is recognized. -/
-private def blindTrace : Trace := forbidTrace
+/-- `blind` (unknown): The forbid scene - the vehicle upon a mapped curve whose curvature stands clear of the resolution, turning about within the tolerance of a half turn with its yaw rate above the floor - except that the source's manifest declares the sight distance of a place absent: it maps the road's horizontal geometry but carries no sight-distance model, so whether the vehicle could be seen from either direction within the stated distance is never decided, and the rule neither clears nor convicts. -/
+def blindTrace : Trace := forbidTrace
 
-/-- `branch_1` (violated): A straight road rising to a crest. The radius of curvature at the subject's place stays above p.curve_radius_resolution throughout, so st.curvature reports no bend and the curve route is false; the ground distance st.region_geometry gives from the subject to the st.crest region is below p.crest_approach_distance at the observation at which the reversal is recognized, and st.sight_distance at its place is below the literal 500 feet there. The subject, on the roadway, swings through a reversal: prim.heading_change over p.turn_window exceeds p.direction_reversal_angle and kin.speed is above p.motion_speed_min. No other road user is in the scene, and every atom is observed throughout. -/
-private def branch_1Trace : Trace :=
-  Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 140 k ]
-      [ roadway 11 0 420 straight shortSight, crestAt 12 320 ]
-      []
+/-- `occasion_s3` (violated): The turning begins on the straight approach, where the curvature is below the source's resolution, and carries on into the bend: at the later observations of the swing, with the yaw rate above the floor, the vehicle's position is upon the curve and the sight distance of that place is below the distance the text states. The curve condition holds for part of the act only, and that part is enough. -/
+def s3Regions : List Structure :=
+  [ roadSeg 1 (-400) 0 kTangent sightOpen, roadSeg 2 0 400 kBend sightBlind, farCrest ]
 
-/-- `occasion_s3` (violated): The subject begins its reversal on the straight approach to a bend — the radius of curvature at its place above p.curve_radius_resolution at the first observations of the turn, so st.curvature reports no bend there — and completes it after swinging into the bend, where the curvature is well clear of the source's resolution and st.sight_distance is below the literal 500 feet. The curve condition is false while the act is under way and true at the observation at which the reversal is recognized, which is where the occasion reads it (at_recognition), so the duty engages at the place the vehicle was turned. -/
-private def occasion_s3Trace : Trace :=
-  Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 140 k ]
-      [ roadway 11 0 208 straight shortSight, roadway 12 208 420 bend shortSight ]
-      []
+def occasion_s3Trace : Trace :=
+  Build.trace 28 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX (-30) 8 k 10 18, Q.zero) (swingHeading k 10) (mps 8) (swingYaw k 10))
+      s3Regions
 
-/-- `occasion_s6` (violated): On a straight road rising to a crest, the subject's reversal begins while the ground distance st.region_geometry gives to the st.crest region is still above p.crest_approach_distance and finishes once that distance has fallen below it, with st.sight_distance below the literal 500 feet at that moment and the radius of curvature above p.curve_radius_resolution throughout, so st.curvature reports no bend. The crest condition is false at the start of the act and true at the observation at which the reversal is recognized, which is where the occasion reads it. -/
-private def occasion_s6Trace : Trace :=
-  Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 140 k ]
-      [ roadway 11 0 420 straight shortSight, crestAt 12 380 ]
-      []
+/-- `occasion_s3_outside` (compliant): The vehicle travels a restricted bend whose curvature stands clear of the resolution and whose sight distance is below the stated distance - so the rule is engaged there - then runs out onto a straight stretch, open in both directions and far from any crest, and only there turns about: at every observation of the swing the curvature is below the resolution, no crest lies within the reach, and the sight distance exceeds the stated distance. The curve condition held only before the act began. -/
+def s3OutRegions : List Structure :=
+  [ roadSeg 1 (-400) 0 kBend sightBlind, roadSeg 2 0 400 kTangent sightOpen, farCrest ]
 
-/-- `occasion_s7` (violated): On the bend of the forbid scene, st.sight_distance at the subject's place is above the literal 500 feet where the turn begins, near the mouth of the cutting, and falls below it as the subject swings round into the inside of the bend. The radius of curvature stays far below p.curve_radius_resolution throughout, so the bend is reported at every observation, and the reversal is completed within p.turn_window. The sight-distance condition is false at the start of the act and true at the observation at which the reversal is recognized, which is where the occasion reads it. -/
-private def occasion_s7Trace : Trace :=
-  Build.trace 24 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ turningCar 140 k ]
-      [ roadway 11 0 208 bend longSight, roadway 12 208 420 bend shortSight ]
-      []
+def occasion_s3_outsideTrace : Trace :=
+  Build.trace 28 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX (-110) 20 k 9 15, Q.zero) (swingHeading k 15) (mps 20) (swingYaw k 15))
+      s3OutRegions
 
-private def witness (name : String) (τ : Trace) (expected : Verdict)
-    (absent : List String := []) : Scenario :=
+/-- `occasion_s5` (violated): The vehicle begins to turn about on open straight road beyond the reach of the crest region and backs and fills its way round, drifting toward the hill: at the later observations of the swing, with the yaw rate above the floor, the ground distance from its body outline to the crest region has fallen to within the reach and the sight distance of the place is below the stated distance. The crest condition holds for part of the act only. -/
+def s5Regions : List Structure :=
+  [ roadSeg 1 (-400) 400 kTangent sightBlind, crestRegion 2 300 ]
+
+def occasion_s5Trace : Trace :=
+  Build.trace 28 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX 60 20 k 10 18, Q.zero) (swingHeading k 10) (mps 20) (swingYaw k 10))
+      s5Regions
+
+/-- `occasion_s5_outside` (compliant): The vehicle climbs to within the reach of the crest region, where the sight distance is below the stated distance, so the rule is engaged there; it goes over and on down the far side until the crest region lies farther from its body outline than the reach and the road ahead and behind is open, and turns about there, on a stretch whose curvature is below the source's resolution. The crest condition held only before the act began. -/
+def s5OutRegions : List Structure :=
+  [ roadSeg 1 (-400) 420 kTangent sightBlind, roadSeg 2 420 1000 kTangent sightOpen,
+    crestRegion 3 300 ]
+
+def occasion_s5_outsideTrace : Trace :=
+  Build.trace 34 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX 250 25 k 9 19, Q.zero) (swingHeading k 20) (mps 25) (swingYaw k 20))
+      s5OutRegions
+
+/-- `occasion_s6` (violated): The whole turning is made upon one long bend whose curvature stands clear of the resolution. The sight distance of the place changes along it: at the first observations of the swing it exceeds the distance the text states, and at the later ones, as the vehicle works round toward the blind part of the bend, it falls below it while the yaw rate is still above the floor. The sight condition holds for part of the act only, and at the same moments as the curve condition it is joined to. -/
+def s6Regions : List Structure :=
+  [ roadSeg 1 (-400) 0 kBend sightOpen, roadSeg 2 0 400 kBend sightBlind, farCrest ]
+
+def occasion_s6Trace : Trace :=
+  Build.trace 28 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX (-30) 8 k 10 18, Q.zero) (swingHeading k 10) (mps 8) (swingYaw k 10))
+      s6Regions
+
+/-- `occasion_s6_outside` (compliant): The vehicle stands on a part of the same bend where the sight distance is below the distance the text states, then goes on round to the open part of the bend, whose curvature still stands clear of the resolution but whose sight distance exceeds the stated distance, and turns about there: at every observation of the swing the place can be seen from either direction beyond the stated distance. The sight condition held only before the act began, and the curve alone does not engage the duty. -/
+def s6OutRegions : List Structure :=
+  [ roadSeg 1 (-400) 0 kBend sightBlind, roadSeg 2 0 400 kBend sightOpen, farCrest ]
+
+def occasion_s6_outsideTrace : Trace :=
+  Build.trace 28 0 (Units.seconds 1) fun k t =>
+    sceneAt t (car (rampX (-110) 20 k 9 15, Q.zero) (swingHeading k 15) (mps 20) (swingYaw k 15))
+      s6OutRegions
+
+def witness (name : String) (τ : Trace) (expected : Verdict)
+    (absent : List String := []) (win : Option (Timestamp × Timestamp) := none) : Scenario :=
   { name := name
     rule := "NRS_484B_407"
     trace := τ
     reading := {}          -- ignored by the gate: the run's reading is substituted
     manifest := Build.manifest absent
-    grounding := [("veh", 1)]
+    grounding := [("v", 1)]
     expected := expected
-    window := some (12000, 23000) }
+    window := win }
 
 def scenarios : List Scenario :=
-  [ witness "forbid" forbidTrace .violated
-  , witness "permit" permitTrace .compliant
-  , witness "idle" idleTrace .notApplicable
-  , witness "blind" blindTrace (.unknown []) ["st.sight_distance"]
-  , witness "branch_1" branch_1Trace .violated
-  , witness "occasion_s3" occasion_s3Trace .violated
-  , witness "occasion_s6" occasion_s6Trace .violated
-  , witness "occasion_s7" occasion_s7Trace .violated ]
+  [ witness "forbid" forbidTrace .violated [] (some (9000, 23000))
+  , witness "permit" permitTrace .compliant [] (some (9000, 23000))
+  , witness "idle" idleTrace .notApplicable [] (some (9000, 23000))
+  , witness "blind" blindTrace (.unknown []) ["st.sight_distance"] (some (9000, 23000))
+  , witness "occasion_s3" occasion_s3Trace .violated [] (some (9000, 27000))
+  , witness "occasion_s3_outside" occasion_s3_outsideTrace .compliant [] (some (9000, 27000))
+  , witness "occasion_s5" occasion_s5Trace .violated [] (some (9000, 27000))
+  , witness "occasion_s5_outside" occasion_s5_outsideTrace .compliant [] (some (9000, 33000))
+  , witness "occasion_s6" occasion_s6Trace .violated [] (some (9000, 27000))
+  , witness "occasion_s6_outside" occasion_s6_outsideTrace .compliant [] (some (9000, 27000)) ]
 
 end TrafficSpecWitness.NRS_484B_407

@@ -67,7 +67,7 @@ structure WarningLamp where
 
 /-- Signals a road user emits (ATOMS.md §5). -/
 structure Signals where
-  turnIndicator : Option TurnSide := none
+  turnIndicator : Option TurnIndicatorState := none
   brakeLamp : Option Bool := none
   hazard : Option Bool := none
   headlamp : Option HeadlampState := none
@@ -168,6 +168,9 @@ structure Device where
   unobservedKinds : List DeviceKind := []
   position : Option Vec := none
   governs : List RegionId := []
+  /-- Whether the source observes which regions the device governs; where it does not, `governs`
+      is empty and no region is decidedly governed or not. -/
+  governsObserved : Bool := true
   onTrack : Option TrackId := none                  -- a device carried by a road user (school bus)
   indications : Option (List SignalIndication) := none
   uncovered : Option Bool := none

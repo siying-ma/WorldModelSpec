@@ -257,7 +257,7 @@ changing anything on the 93% of days that are dry.
 ## 6. The vocabulary, item by item
 
 Columns:
-- **lines:** corpus lines whose evaluation record (`laws/evaluation_scenario/scenarios.jsonl`)
+- **lines:** corpus lines whose evaluation record (`pipeline/evaluation/evaluation_scenario/scenarios.jsonl`)
   requires the atom.
 - **roles:** what the text shows.
 - **suggested status:** a recommendation only; the frozen ontology is not changed by this

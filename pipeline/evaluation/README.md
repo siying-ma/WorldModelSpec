@@ -1,9 +1,16 @@
-# Evaluation on carla_new
+# Evaluation
 
-External evaluation of a run's accepted rules on the CARLA recordings in `../datasets/carla_new/`.
-Nothing here is part of the pipeline: no phase reads these files, no rule is accepted or returned
-by them, and the scripts write only to their work directory. They read the pipeline tree and the
-dataset.
+Everything that evaluates a run lives here, outside the pipeline: no phase reads these files, and
+no rule is accepted or returned by them.
+
+- `evaluation_scenario/` — the instruction set for the developers of the adapter: for every corpus
+  line, what a trace must show before the line can be judged, and in `adapter/` the trace format,
+  the adapter's contract and the changes the pipeline requires of the adapter (see its README).
+- The scripts below — the evaluation of a run's accepted rules on the CARLA recordings in
+  `../datasets/carla_new/`. They read the pipeline tree and the dataset and write only to their
+  work directory.
+
+## Evaluation on carla_new
 
 | file | what it does |
 |---|---|

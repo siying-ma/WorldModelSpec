@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 from pathlib import Path
 
 from ..agents import render, session
@@ -36,11 +37,15 @@ from ..store.state import Run
 from . import validate as validate_phase
 
 PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format")
-PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "record", "rendered", "contracts", "divergences")
+PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "record", "rendered", "contracts", "divergences", "precedents")
 RULINGS = {"upheld", "dismissed", "reading"}
 VERDICTS = {"accept", "return"}
 GAP_KINDS = {"standard_factor", "broader_contract"}
 KINDS = {"rule_permits_unlawful", "rule_forbids_lawful", "rule_undecided"}
+#: How an unconfirmed divergence is marked: the rule agrees with the law on the trace, or the two
+#: differ only between compliant and not applicable, neither of which is a violation.
+AGREES = " (the rule agrees with the law on this trace)"
+NO_VIOLATION = " (neither verdict is a violation)"
 #: The verdicts a reviewer may give the law, spelt as the review harness prints the rule's (`Verdict.tag`).
 LAWFUL = {"violated", "compliant", "not_applicable"}
 
@@ -108,8 +113,9 @@ the rule reads can be written. A trace is `{"scenes": [scene, ...]}` with `t` st
 units: metres, seconds, m/s, m/s², degrees and degrees per second; positions, headings and
 velocities in one world frame. Occupancy is decided only for the tracks `occupancy_observed`
 lists (`true` lists every user): for them a pair in `occupies` is occupied and any other pair is
-not, or, with `occupies` left out, occupancy is computed from footprints and boundaries; for any
-other track every occupancy is unknown, whatever `occupies` says. Relations are computed from
+not, so list in `occupies` every [track, region] pair whose footprint overlaps the region — it is
+never computed from footprints and boundaries; for any other track every occupancy is unknown,
+whatever `occupies` says. Relations are computed from
 kinematics when absent, except `visible`. The map is repeated in every scene. A look-back of
 length d needs scenes reaching d before the observation judged, no two consecutive scenes more
 than d/2 apart; otherwise the look-back is unknown. Instants whose look-back reaches before the
@@ -227,11 +233,11 @@ def atoms_read(rule_json: dict, concepts: dict[str, dict]) -> list[str]:
     return sorted(reads)
 
 
-def atoms_read_block(rule_json: dict, concepts: dict[str, dict]) -> str:
+def atoms_read_block(rule_json: dict, concepts: dict[str, dict], what: str = "rule") -> str:
     keys = decoder_keys((paths.CORE / "Runtime" / "Decode.lean").read_text(encoding="utf-8"))
     rows = "\n".join(f"- `{a}` — in the trace: {trace_place(a, keys)}" for a in atoms_read(rule_json, concepts))
-    return ("### The atoms this rule reads\n\nEvery atom the rule reads, including those its concepts and primitives "
-            "read, and where a trace writes it. A trace that leaves one out where the rule reads it leaves the rule "
+    return (f"### The atoms this {what} reads\n\nEvery atom the {what} reads, including those its concepts and primitives "
+            f"read, and where a trace writes it. A trace that leaves one out where the {what} reads it leaves the {what} "
             "unknown there.\n\n" + rows + "\n")
 
 
@@ -253,10 +259,11 @@ def _parameters_block(reading: Reading, names: set[str] | None = None) -> str:
     return "### Parameters\n\n" + ("\n".join(rows) or "(none)") + "\n"
 
 
-def behaviour_defects(answer: dict, law_text: str, rendering: str, binders: list[str]) -> list[str]:
+def behaviour_defects(answer: dict, law_text: str, binders: list[str]) -> list[str]:
     """Defects of the answer as an answer: the verdict word, each divergence's kind, lawful verdict,
-    grounding over the rule's binders, a trace with scenes, and quotes that occur in the law and in
-    the rendering."""
+    grounding over the rule's binders, a trace with scenes, and quotes of the law that occur in it.
+    The rule's words a divergence cites are the reviewer's pointer and are not held to the rendering:
+    the trace's execution shows what the rule does."""
     errs = []
     if answer.get("verdict") not in VERDICTS:
         errs.append("`verdict` must be `accept` or `return`")
@@ -288,8 +295,6 @@ def behaviour_defects(answer: dict, law_text: str, rendering: str, binders: list
             errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
         if not _in(d.get("law_words", ""), law_text):
             errs.append(f"divergence {k}: law_words is not verbatim from the law")
-        if not _quoted(d.get("rule_reads", ""), rendering):
-            errs.append(f"divergence {k}: rule_reads is not verbatim from the rendering")
     return errs
 
 
@@ -360,17 +365,21 @@ def _trace_remedy(reason: str) -> str:
 
 def quoted_spans(n: Node, law_text: str, quote: str) -> str:
     """The substantive spans of the node whose words the quote covers, as `s1,s4` (`-` when the
-    quote is not found): what a divergence objects to, so a repeat is the same objection to the same words."""
-    norm = lambda x: " ".join(str(x or "").split()).lower()
-    lt, q = norm(law_text), norm(quote)
-    a = lt.find(q) if q else -1
-    if a < 0:
-        return "-"
-    b, ids = a + len(q), []
+    quote is not found; an elided quote covers the words of each of its fragments): what a
+    divergence objects to, so a repeat is the same objection to the same words."""
+    lt = _norm(law_text)
+    frags = [f for f in (_norm(x).strip(" .,;:") for x in re.split(r"\[\s*(?:\u2026|\.\.\.)\s*\]|\u2026|\.\.\.", str(quote or ""))) if f]
+    covered, pos = [], 0                                    # the stretches of the law each fragment of an elided quote covers
+    for f in frags:
+        a = lt.find(f, pos)
+        if a < 0:
+            return "-"
+        covered.append((a, a + len(f))); pos = a + len(f)
+    ids = []
     for s in n.get("segmentation", []):
-        t = norm(s.get("text"))
+        t = _norm(s.get("text"))
         i = lt.find(t) if t and s.get("role") != "boilerplate" else -1
-        if i >= 0 and i < b and i + len(t) > a:
+        if i >= 0 and any(i < b and i + len(t) > a for a, b in covered):
             ids.append(str(s.get("id")))
     return ",".join(ids) or "-"
 
@@ -379,7 +388,8 @@ def execute_divergences(run: Run, n: Node, answer: dict, reading: Reading,
                         out_dir: Path, law_text: str = "") -> tuple[list[dict], list[str], list[str], list[str]]:
     """Run the rule on every divergence trace. Returns (confirmed, unconfirmed, errors, incomplete):
     a trace on which the rule's verdict differs from the law's (or is unknown where the law
-    decides) confirms the divergence, returned as `{line, div, rule}`; one on which they agree is the reviewer's advisory; one on
+    decides) confirms the divergence, unless the two differ only between compliant and not
+    applicable, which is no difference in conduct; returned as `{line, div, rule}`; one on which they agree is the reviewer's advisory; one on
     which the rule is unknown only because the trace leaves out an atom the rule reads, or does not
     cover or sample a look-back (`_trace_defect`), is incomplete, the trace's defect and not the
     rule's, named with what to write; a divergence whose verdict,
@@ -430,7 +440,9 @@ def execute_divergences(run: Run, n: Node, answer: dict, reading: Reading,
         elif tag == "missing":
             errors.append(f"divergence {k}: the harness printed no verdict")
         elif tag == lawful:
-            unconfirmed.append(head + " (the rule agrees with the law on this trace)")
+            unconfirmed.append(head + AGREES)
+        elif {tag, lawful} == {"compliant", "not_applicable"}:
+            unconfirmed.append(head + NO_VIOLATION)
         elif tag == "unknown" and why and all(_trace_defect(r, d.get("kind")) for r in why.split(",")):
             incomplete.append(f"divergence {k} ({d.get('kind')}): {_ws(d.get('situation'))[:120]} — the rule's verdict on the trace is "
                               f"unknown only because the trace is incomplete: " + "; ".join(sorted({_trace_remedy(r) for r in why.split(",")})))
@@ -500,8 +512,44 @@ def adjudication_defects(answer: dict, count: int, haystack: str) -> list[str]:
     return errs
 
 
+_RULINGS_LOCK = threading.Lock()
+
+
+def _rulings_file(run: Run) -> Path:
+    return run.dir / "rulings.jsonl"
+
+
+def precedents_block(run: Run, key: str) -> str:
+    """The earlier rulings under `key` (a law, or a concept), most recent first: what the
+    adjudicator decided before, and why, so a situation decided once is decided alike."""
+    rows = []
+    f = _rulings_file(run)
+    if f.exists():
+        for line in f.read_text(encoding="utf-8").splitlines():
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if r.get("key") == key:
+                rows.append(r)
+    if not rows:
+        return "### Earlier rulings\n\n(none)\n"
+    out = ["### Earlier rulings (most recent first)", ""]
+    for r in reversed(rows[-30:]):
+        out.append(f"- iteration {r.get('iteration')}, `{r.get('subject')}`: {r.get('item')} — **{r.get('ruling')}**: {r.get('reason')}")
+    return "\n".join(out) + "\n"
+
+
+def record_rulings(run: Run, key: str, subject: str, rulings: list[tuple[dict, str, str]]) -> None:
+    """Append each ruling under `key`, for the next adjudication of the same law or concept."""
+    with _RULINGS_LOCK, _rulings_file(run).open("a", encoding="utf-8") as fh:
+        for i, ruling, why in rulings:
+            fh.write(json.dumps({"key": key, "subject": subject, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
+                                 "ruling": ruling, "reason": _ws(why)[:600]}, ensure_ascii=False) + "\n")
+
+
 def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Path,
-               record: dict | None = None) -> list[tuple[dict, str, str]]:
+               record: dict | None = None, key: str = "", subject: str = "") -> list[tuple[dict, str, str]]:
     """Each confirmed divergence and broader-contract item with its ruling and reason. An item the
     adjudicator leaves unruled, or rules with a defect it keeps, stands as upheld: the adjudicator
     can only release a node from an item, never add one. Raises `SessionUnavailable` when the session
@@ -515,6 +563,7 @@ def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Pat
         for k, i in enumerate(items, 1))
     ins = {k: blocks[k] for k in ("law_and_segmentation", "record", "rendered", "contracts")}
     ins["divergences"] = "### Divergences\n\n" + listing + "\n"
+    ins["precedents"] = precedents_block(run, key) if key else "### Earlier rulings\n\n(none)\n"
     prompt = render.render("adjudicate.md", ins)
     # a quote is looked for in the blocks as shown (the record serialized, so a quote may run across a
     # key and its value) and in the record's string values unescaped
@@ -531,6 +580,8 @@ def adjudicate(run: Run, blocks: dict[str, str], items: list[dict], out_dir: Pat
             out.append((i, "upheld", "no valid ruling" + (f" ({'; '.join(errs)[:200]})" if errs else "")))
         else:
             out.append((i, r["ruling"], f"{_ws(r.get('reason'))} — \"{_ws(r.get('quote'))[:160]}\""))
+    if key:
+        record_rulings(run, key, subject, out)
     return out
 
 
@@ -581,9 +632,11 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
 
     # a divergence whose trace gives the rule the law's verdict shows nothing; the reviewer revises its
     # trace or drops it, once, like a trace left incomplete
-    check = lambda a: behaviour_defects(a, law.text, rendering, binders) + run_traces(a)[3] + [
-        f"{u.replace(' (the rule agrees with the law on this trace)', '')}: the rule gives the law's verdict on this trace, "
-        "so it does not show the situation described — revise the trace until it does, or drop the divergence"
+    check = lambda a: behaviour_defects(a, law.text, binders) + run_traces(a)[3] + [
+        (f"{u[:-len(AGREES)]}: the rule gives the law's verdict on this trace, so it does not show the situation "
+         "described — revise the trace until it does, or drop the divergence") if u.endswith(AGREES) else
+        (f"{u[:-len(NO_VIOLATION)]}: compliant and not applicable are both no violation, so the trace shows no "
+         "divergence in conduct — show the situation with a violation on one side, or drop the divergence")
         for u in run_traces(a)[1]]
     answer, errs = _session(run, out_dir, "review_behaviour", prompt, check)
     if answer is None:
@@ -602,7 +655,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     unconfirmed = unconfirmed + [f"not confirmed — {x}" for x in incomplete]
     advisories = [str(x) for x in answer.get("advisories", [])] + unconfirmed + errors + gap_candidate_lines(answer.get("gap_candidates", []))
     items = confirmed + broader_contract_items(answer.get("gap_candidates", []))
-    rulings = adjudicate(run, blocks, items, out_dir, record) if items else []
+    rulings = adjudicate(run, blocks, items, out_dir, record, key=f"law:{n.law}", subject=n.id) if items else []
     upheld = [i["line"] for i, r, _w in rulings if r == "upheld"]
     advisories += [f"dismissed by the adjudicator — {i['line']}: {w}" for i, r, w in rulings if r == "dismissed"]
     advisories += [f"aggregate question: {i['line']}: {w}" for i, r, w in rulings if r == "reading"]
@@ -612,3 +665,302 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     if upheld:
         return False, upheld, advisories, sorted({i["key"] for i, r, _w in rulings if r == "upheld"})
     return True, [], advisories + (["the reviewer said `return` but no divergence was confirmed and upheld"] if answer.get("verdict") == "return" else []), []
+
+
+# ---------------------------------------------------------------------------------------------
+# Review of a concept: claims about the body against the contract, as traces, executed
+# ---------------------------------------------------------------------------------------------
+PLACEHOLDERS_REVIEW_CONCEPT = ("contract", "record", "rendered", "atoms_read", "contracts", "trace_format")
+PLACEHOLDERS_ADJUDICATE_CONCEPT = ("contract", "record", "rendered", "contracts", "items", "precedents")
+CONCEPT_KINDS = {"holds_wrongly", "fails_wrongly", "undecided"}
+#: The contract's verdict, as the episode verdict the concept's instance gives when the body agrees.
+CONTRACT_VERDICTS = {"holds": "compliant", "fails": "violated"}
+CONCEPT_RULINGS = {"upheld", "dismissed"}
+CONCEPT_AGREES = " (the body agrees with the contract on this trace)"
+
+
+def _track_formals(rec) -> list[str]:
+    return [a["name"] for a in rec.args() if a.get("sort") == "track"]
+
+
+def concept_review_defects(answer: dict, rec, contract: str, rendering: str) -> list[str]:
+    """Defects of a concept review as an answer: the verdict word; each divergence's kind, the
+    contract's verdict, the contract's words (verbatim), an instance that fills every literal formal
+    with an admissible spelling and every parameter with a value in its unit, a grounding of every
+    track formal, and a trace with scenes; each `not_general` item's words, verbatim."""
+    errs = []
+    if answer.get("verdict") not in VERDICTS:
+        errs.append("`verdict` must be `accept` or `return`")
+    divs, tuned = answer.get("divergences", []), answer.get("not_general", [])
+    if not isinstance(divs, list) or not isinstance(tuned, list):
+        return errs + ["`divergences` and `not_general` must be lists"]
+    if answer.get("verdict") == "return" and not divs and not tuned:
+        errs.append("a return needs at least one divergence with a trace or one `not_general` item")
+    for k, d in enumerate(divs, 1):
+        errs += concept_divergence_defects(k, d, rec, contract)
+    for k, t in enumerate(tuned, 1):
+        if not isinstance(t, dict) or not _ws(t.get("why")) or not _quoted(t.get("words", ""), contract + "\n" + rendering):
+            errs.append(f"not_general {k}: `words` must be verbatim from the contract or the rendering, with a `why`")
+    return errs
+
+
+def concept_divergence_defects(k: int, d, rec, contract: str) -> list[str]:
+    """The defects of one divergence of a concept review; one without defects can be run."""
+    from ..model import units
+    if not isinstance(d, dict):
+        return [f"divergence {k} is not an object"]
+    errs = []
+    tracks = _track_formals(rec)
+    literals = {a["name"]: set(a.get("values", [])) for a in rec.args() if a.get("sort") == "literal"}
+    params = {p["name"]: str(p.get("unit", "")) for p in rec.params()}
+    if d.get("kind") not in CONCEPT_KINDS:
+        errs.append(f"divergence {k}: kind must be one of {sorted(CONCEPT_KINDS)}")
+    if d.get("contract_verdict") not in CONTRACT_VERDICTS:
+        errs.append(f"divergence {k}: contract_verdict must be one of {sorted(CONTRACT_VERDICTS)}")
+    if not _in(d.get("contract_words", ""), contract):
+        errs.append(f"divergence {k}: contract_words is not verbatim from the contract")
+    inst = d.get("instance") if isinstance(d.get("instance"), dict) else {}
+    lits = inst.get("literals") if isinstance(inst.get("literals"), dict) else {}
+    if set(lits) != set(literals) or any(lits[f] not in literals[f] for f in lits):
+        errs.append(f"divergence {k}: instance.literals must give every literal formal {sorted(literals)} one of its admissible spellings")
+    ps = inst.get("params") if isinstance(inst.get("params"), dict) else {}
+    if set(ps) != set(params):
+        errs.append(f"divergence {k}: instance.params must give every parameter {sorted(params)} a [value, unit]")
+    for name, v in ps.items():
+        ok = isinstance(v, list) and len(v) == 2 and isinstance(v[0], (int, float)) and v[1] in units.FACTORS \
+            and name in params and params[name] in units.FACTORS and units.FACTORS[v[1]][0] == units.FACTORS[params[name]][0]
+        if not ok:
+            errs.append(f"divergence {k}: parameter `{name}` must be [value, unit] in a unit of {params.get(name)!r}")
+    g = d.get("grounding")
+    if not isinstance(g, dict) or set(g) != set(tracks) or not all(isinstance(x, int) for x in g.values()):
+        errs.append(f"divergence {k}: grounding must map exactly the track formals {tracks} to track ids")
+    tr = d.get("trace")
+    if not isinstance(tr, dict) or not isinstance(tr.get("scenes"), list) or not tr["scenes"]:
+        errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
+    return errs
+
+
+def _lean_q(value: float, unit: str) -> str:
+    """A parameter value as a Core literal term: the value converted to the Core unit, exactly."""
+    from ..model import units
+    core, q = units.to_core(value, unit)
+    return f".lit (Q.mk' ({q.numerator}) {q.denominator}) .{core}"
+
+
+def _concept_review_harness_source(cid: str, traces: list[tuple[int, Path, dict[str, int], dict[str, str], dict[str, list]]]) -> str:
+    """A Lean program that runs the concept, as the instance each divergence names, on its trace and
+    prints the episode verdict: compliant where the body holds throughout, violated where it fails,
+    unknown where it has no value; an instant whose only unknown is a window reaching past the
+    trace's start or end is not judged, as for a rule."""
+    ns = nodeid.concept_namespace(cid)
+    items = ", ".join(
+        f'({k}, {json.dumps(str(p.resolve()))}, [{", ".join(f"({json.dumps(b)}, {t})" for b, t in g.items())}], '
+        f'[{", ".join(f"({json.dumps(f)}, {json.dumps(v)})" for f, v in lits.items())}], '
+        f'[{", ".join(f"({json.dumps(n)}, ({_lean_q(v[0], v[1])} : TrafficSpec.Term))" for n, v in ps.items())}])'
+        for k, p, g, lits, ps in traces)
+    return f'''import TrafficSpec
+import TrafficSpec.Core.Runtime.Decode
+import TrafficSpec.Core.Evidence.Builders
+import {nodeid.concept_module(cid)}
+open TrafficSpec Lean
+def main : IO Unit := do
+  let c := {ns}.concept
+  let cs := (allConcepts.filter (·.id != c.id)) ++ [c]
+  let items : List (Nat × String × List (String × Nat) × List (String × String) × List (String × TrafficSpec.Term)) := [{items}]
+  for (k, path, grounding, lits, ps) in items do
+    let inst : Concept.Instance := {{ name := s!"review_{{k}}", concept := c.id, literals := lits, params := ps }}
+    match Concept.asRule cs inst with
+    | none => IO.println s!"DIS\\t{{k}}\\tunfilled\\t"
+    | some r =>
+      let r' := Concept.expandRule cs r
+      let text ← IO.FS.readFile path
+      match Decode.parse Decode.trace text with
+      | .error e => IO.println s!"DIS\\t{{k}}\\tdecode\\t{{e}}"
+      | .ok τ =>
+        let m := Manifest.full "review"
+        let S := Grounding.Setup.mk' [r'] (maskTrace m τ) ({{}} : Reading) m.reidGap
+        let g : Grounding.Grounding := ⟨grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
+        let tl := Grounding.evaluate S r' g
+        let vs := tl.verdicts.toList.map (·.2)
+        let edge := fun (v : Verdict) => match v with
+          | .unknown rs => !rs.isEmpty && rs.all (fun x => match x with | .windowTruncated _ => true | _ => false)
+          | _ => false
+        let judged := vs.filter (fun v => !edge v)
+        let got := Grounding.episode (if judged.isEmpty then vs else judged)
+        IO.println s!"DIS\\t{{k}}\\t{{got.tag}}\\t{{String.intercalate "," (got.reasons.map UnknownReason.tag)}}"
+'''
+
+
+def execute_concept_divergences(rec, answer: dict, out_dir: Path) -> tuple[list[dict], list[str], list[str], list[str]]:
+    """Run the concept on every divergence trace, as `execute_divergences` runs a rule. Returns
+    (confirmed, unconfirmed, errors, incomplete): a trace on which the body's verdict differs from
+    the contract's — or is unknown where the contract decides, for a divergence claiming the body
+    undecided — confirms it; one on which they agree is the reviewer's advisory; one unknown only
+    because the trace leaves an atom out or does not cover or sample a look-back is incomplete."""
+    contract = " ".join(str(rec.get("contract", "")).split())
+    listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
+    divs = {k: d for k, d in enumerate(listed, 1) if not concept_divergence_defects(k, d, rec, contract)}
+    if not divs:
+        return [], [], [], []
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("disagreement_*.json"):
+        stale.unlink()
+    traces = []
+    for k, d in divs.items():
+        p = out_dir / f"disagreement_{k}.json"
+        p.write_text(json.dumps(d.get("trace"), ensure_ascii=False, indent=1), encoding="utf-8")
+        inst = d.get("instance") or {}
+        traces.append((k, p, {b: int(t) for b, t in d["grounding"].items()}, dict(inst.get("literals") or {}), dict(inst.get("params") or {})))
+    harness = out_dir / "review_harness.lean"
+    harness.write_text(_concept_review_harness_source(rec.id, traces), encoding="utf-8")
+    ok, hout = lean.lean_run(paths.LIBRARY, harness)
+    (out_dir / "review_harness.out").write_text(hout, encoding="utf-8")
+    if not ok:
+        return [], [], [f"the review harness did not run: {hout[-600:]}"], []
+    got = {}
+    for line in hout.splitlines():
+        parts = line.split("\t")
+        if parts[0] == "DIS" and len(parts) >= 3:
+            got[int(parts[1])] = (parts[2], parts[3] if len(parts) > 3 else "")
+    confirmed, unconfirmed, errors, incomplete = [], [], [], []
+    for k, d in divs.items():
+        tag, why = got.get(k, ("missing", ""))
+        claimed = CONTRACT_VERDICTS[d["contract_verdict"]]
+        body = {"compliant": "holds", "violated": "fails"}.get(tag, tag)
+        head = (f"divergence {k} ({d.get('kind')}): {_ws(d.get('situation'))[:160]} — contract: {d.get('contract_verdict')}, body: {body}")
+        if tag in ("decode", "missing", "unfilled"):
+            errors.append(f"divergence {k}: " + {"decode": f"the trace does not decode: {why[:200]}", "missing": "the harness printed no verdict",
+                                                  "unfilled": "the instance leaves a formal unfilled"}[tag])
+        elif tag == claimed:
+            unconfirmed.append(head + CONCEPT_AGREES)
+        elif tag == "unknown" and why and all(_trace_defect(r, "rule_undecided" if d.get("kind") == "undecided" else None) for r in why.split(",")):
+            incomplete.append(f"divergence {k}: {_ws(d.get('situation'))[:120]} — the body's verdict on the trace is unknown only because the "
+                              "trace is incomplete: " + "; ".join(sorted({_trace_remedy(r) for r in why.split(",")})))
+        else:
+            line = head + (f" [{why}]" if tag == "unknown" and why else "") + f'; contract: "{_ws(d.get("contract_words"))[:120]}"'
+            confirmed.append({"line": line, "div": d, "rule": body + (f" ({why})" if tag == "unknown" and why else ""),
+                              "key": f"{d.get('kind')}"})
+    return confirmed, unconfirmed, errors, incomplete
+
+
+def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict], out_dir: Path) -> list[tuple[dict, str, str]]:
+    """Each confirmed divergence and `not_general` item of a concept with its ruling. An item left
+    unruled, or ruled with a defect the adjudicator keeps, stands as upheld."""
+    listing = "\n\n".join(
+        (f"{k}. ({i['div'].get('kind')}) {_ws(i['div'].get('situation'))}\n"
+         f"   the contract's words, per the reviewer: \"{_ws(i['div'].get('contract_words'))}\"\n"
+         f"   the reviewer's verdict for the contract: {i['div'].get('contract_verdict')}\n"
+         f"   the body's executed verdict: {i['rule']}")
+        if i["div"].get("kind") != "not_general" else
+        (f"{k}. (not_general) the words \"{_ws(i['div'].get('words'))}\": {_ws(i['div'].get('why'))}")
+        for k, i in enumerate(items, 1))
+    key = f"concept:{rec.id}"
+    prompt = render.render("adjudicate_concept.md", {**{k: blocks[k] for k in ("contract", "record", "rendered", "contracts")},
+                                                      "items": "### Items\n\n" + listing + "\n", "precedents": precedents_block(run, key)})
+    hay = "\n".join(blocks[k] for k in ("contract", "record", "rendered", "contracts")) + "\n" + "\n".join(_strings(rec.raw))
+
+    def defects(a: dict) -> list[str]:
+        errs = []
+        rows = a.get("rulings")
+        if not isinstance(rows, list):
+            return ["`rulings` must be a list"]
+        seen = []
+        for r in rows:
+            k = r.get("item") if isinstance(r, dict) else None
+            if not isinstance(k, int) or not 1 <= k <= len(items):
+                errs.append(f"a ruling must name an item by its number, 1 to {len(items)}"); continue
+            if k in seen:
+                errs.append(f"item {k} is ruled twice")
+            seen.append(k)
+            if r.get("ruling") not in CONCEPT_RULINGS:
+                errs.append(f"item {k}: ruling must be one of {sorted(CONCEPT_RULINGS)}")
+            if not _ws(r.get("reason")):
+                errs.append(f"item {k}: a ruling needs a reason")
+            if not _quoted(r.get("quote", ""), hay):
+                errs.append(f"item {k}: the quote is not verbatim from the contract, the record or the rendering")
+        errs += [f"item {k} has no ruling" for k in range(1, len(items) + 1) if k not in seen]
+        return errs
+    answer, errs = validate_phase._session(run, out_dir, "adjudicate", prompt, check=defects)
+    rows = {r.get("item"): r for r in (answer or {}).get("rulings", []) if isinstance(r, dict)}
+    bad = {int(m) for e in errs for m in re.findall(r"^item (\d+)", e)}
+    out = []
+    for k, i in enumerate(items, 1):
+        r = rows.get(k)
+        if r is None or k in bad or r.get("ruling") not in CONCEPT_RULINGS:
+            out.append((i, "upheld", "no valid ruling" + (f" ({'; '.join(errs)[:200]})" if errs else "")))
+        else:
+            out.append((i, r["ruling"], f"{_ws(r.get('reason'))} — \"{_ws(r.get('quote'))[:160]}\""))
+    record_rulings(run, key, rec.id, out)
+    return out
+
+
+def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> tuple[bool, list[str], list[str]]:
+    """(accepted, reasons, notes). The concept's body, rendered from its code, is reviewed by a
+    second vendor against its contract: each divergence comes as a trace and an instance, the
+    harness runs the body on it, and every divergence execution confirms, and every `not_general`
+    item, goes to the adjudicator, which rules by the contract's words. Accepted when nothing is
+    upheld; `notes` are the dismissed items and the reviewer's advisories, recorded on the accepted
+    concept as what it computes as built. Raises `SessionUnavailable` when a session never ran."""
+    if not enabled(run):
+        return True, [], ["reviewer off"]
+    onto = ontology.load(run.opts.ontology)
+    glosses = {aid: onto.contract(aid) for aid in extras.get("reads", [])}
+    for cid, crec in run.all_concepts().items():
+        glosses[cid] = " ".join(str(crec.get("contract", "")).split())
+    try:
+        rendering = render_formula.render_concept({"args": [{"name": a["name"], "sort": {"sort": a["sort"], "values": a.get("values", [])}} for a in rec.args()],
+                                                   "params": [{"name": p["name"], "unit": p["unit"]} for p in rec.params()],
+                                                   "kind": rec.get("kind"), "body": extras.get("body_json")}, glosses)
+    except render_formula.Unrendered as e:
+        raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "rendered_body.md").write_text(rendering, encoding="utf-8")
+    contract = " ".join(str(rec.get("contract", "")).split())
+    record = {k: v for k, v in rec.raw.items() if k not in ("scenarios", "used_by")}
+    record["narrowings_by_the_coder"] = [n for n in extras.get("narrowings_added", []) if isinstance(n, dict)]
+    definition = f"\n\nThe definition it quotes: `{rec.get('definition')}`" if rec.get("definition") else ""
+    blocks = {
+        "contract": f"### Contract\n\n`{rec.id}`: {contract}{definition}\n",
+        "record": "### Record\n\n```json\n" + json.dumps(record, ensure_ascii=False, indent=1) + "\n```\n",
+        "rendered": "### Rendering\n\n" + rendering + "\n",
+        "atoms_read": atoms_read_block(extras.get("body_json") or {}, run.all_concepts(), what="concept"),
+        "contracts": validate_phase.contracts_table(glosses, {}),
+        "trace_format": trace_format_block(),
+    }
+    prompt = render.render("review_concept.md", blocks)
+    executed: dict[str, tuple] = {}
+
+    def run_traces(a: dict) -> tuple:
+        key = json.dumps(a, sort_keys=True, ensure_ascii=False)
+        if key not in executed:
+            executed[key] = execute_concept_divergences(rec, a, out_dir)
+        return executed[key]
+
+    check = lambda a: concept_review_defects(a, rec, contract, rendering) + run_traces(a)[3] + [
+        f"{u[:-len(CONCEPT_AGREES)]}: the body gives the contract's verdict on this trace, so it does not show the situation "
+        "described — revise the trace or the instance until it does, or drop the divergence" for u in run_traces(a)[1]]
+    answer, errs = _session(run, out_dir, "review_concept", prompt, check)
+    if answer is None:
+        if errs:
+            return False, [f"concept review: {e}" for e in errs], []
+        return True, [], ["review skipped (dry run)"]
+    if answer.get("verdict") not in VERDICTS:
+        return False, ["concept review: the answer is not a review: " + "; ".join(errs)], []
+    _c, unconfirmed, errors, incomplete = run_traces(answer)
+    confirmed, seen = [], set()
+    for res in executed.values():                        # every answer's confirmations, the first answer's included
+        for c in res[0]:
+            k = (c["div"].get("kind"), _ws(c["div"].get("situation")))
+            if k not in seen:
+                seen.add(k); confirmed.append(c)
+    tuned = [{"line": f"not general: \"{_ws(t.get('words'))}\" — {_ws(t.get('why'))}", "div": {"kind": "not_general", **t}, "rule": "not executed",
+              "key": "not_general"} for t in answer.get("not_general", []) if isinstance(t, dict)]
+    items = confirmed + tuned
+    rulings = adjudicate_concept(run, rec, blocks, items, out_dir) if items else []
+    upheld = [f"{i['line']} — upheld: {w}" for i, r, w in rulings if r == "upheld"]
+    notes = [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in rulings if r == "dismissed"]
+    (out_dir / "review_outcome.json").write_text(json.dumps({
+        "reviewer_verdict": answer.get("verdict"), "rulings": [{"item": i["line"], "ruling": r, "why": w} for i, r, w in rulings],
+        "unconfirmed": unconfirmed + [f"not confirmed — {x}" for x in incomplete], "errors": errors, "schema_defects": errs},
+        ensure_ascii=False, indent=1), encoding="utf-8")
+    return (not upheld), upheld, notes

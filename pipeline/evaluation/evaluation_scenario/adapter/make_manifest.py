@@ -15,7 +15,7 @@ import re
 import sys
 from pathlib import Path
 
-PIPELINE = Path(__file__).resolve().parents[3]
+PIPELINE = Path(__file__).resolve().parents[3] / "traffic-spec-agent"
 IDS = PIPELINE / "library/splits/full/TrafficSpec/Core/Vocab/Ontology/Ids.lean"
 SOURCE = "carla-0.9.14 / carla_sgg modified / adapter v0"
 REID_GAP_S = 0          # CARLA actor ids never break, so no re-identification is needed

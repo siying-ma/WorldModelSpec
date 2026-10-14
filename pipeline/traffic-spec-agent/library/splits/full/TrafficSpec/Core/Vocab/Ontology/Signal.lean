@@ -6,6 +6,27 @@
 -/
 namespace TrafficSpec
 
+/-- `sig.turn_indicator` **state** — generated from ATOMS.md; do not edit. -/
+inductive TurnIndicatorState
+  | off
+  | left
+  | right
+  deriving DecidableEq, Repr, Inhabited
+
+namespace TurnIndicatorState
+def ofString (s : String) : Option TurnIndicatorState :=
+  match s with
+  | "off" => some .off
+  | "left" => some .left
+  | "right" => some .right
+  | _ => Option.none
+def toString : TurnIndicatorState → String
+  | .off => "off"
+  | .left => "left"
+  | .right => "right"
+instance : ToString TurnIndicatorState := ⟨toString⟩
+end TurnIndicatorState
+
 /-- `sig.headlamp` **state** — generated from ATOMS.md; do not edit. -/
 inductive HeadlampState
   | off

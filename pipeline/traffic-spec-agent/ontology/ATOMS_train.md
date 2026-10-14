@@ -211,7 +211,7 @@ reports unknown.
 
 | id | contract | scope |
 |---|---|---|
-| `sig.turn_indicator` | left / right indicator lit **Not a stand-in for:** the turn or lane change itself — the indicator is the signal that precedes a manoeuvre, judged separately from it | general |
+| `sig.turn_indicator` | the turn indicator **state** ∈ {off, left, right}: neither indicator lit, or the left or the right one **Not a stand-in for:** the turn or lane change itself — the indicator is the signal that precedes a manoeuvre, judged separately from it | general |
 | `sig.brake_lamp` | brake lamps lit **Not a stand-in for:** a halt or a deceleration — a lamp is an actuation; the motion state is `kin.velocity` / `kin.accel_longitudinal` | general |
 | `sig.hazard` | both indicators flashing together | general |
 | `sig.compression_brake` | an engine compression brake sounding (audible; a source without audio declares it absent) | general |

@@ -119,7 +119,8 @@ def mps (n : Int) : Term := .lit (metresPerSecond n) .metrePerSecond
 #guard why 0 (.asm "asm.school_day") = [.assumptionMissing "asm.school_day"]
 #guard v 99 (.atom "env_darkness" [] []) = .u                            -- out of range
 #guard v 0 (.atom "dev_traffic_signal_shows" [.nat 9, .lit "circular_red"] []) = .t
-#guard v 0 (.atom "st_lane_adjacency" [.nat 7, .lit "left", .nat 8] []) = .u          -- neighbour not observed
+#guard v 0 (.atom "st_lane_adjacency" [.nat 7, .lit "left", .nat 8] []) = .f          -- first from the left: none there
+#guard v 0 (.atom "st_lane_adjacency" [.nat 7, .lit "right", .nat 8] []) = .u         -- neighbour not observed
 #guard v 0 (.cmp (.measure "st_lane_adjacency" [.nat 7, .lit "count"]) .eq (.lit (Q.ofInt 2) .count)) = .t
 #guard v 0 (.atom "ru_rider_posture" [X, .lit "on_seat"] []) = .u
 #guard why 0 (.atom "dev_traffic_signal_shows" [.nat 9, .lit "purple"] []) = [.malformed "purple"]
@@ -259,6 +260,24 @@ def cgeo : SemCtx := SemCtx.mk' ((List.range 9).map fun k => { sceneAt k with st
 #guard (eval cgeo 8 (.existsRegion (.lit "crosswalk") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .t   -- 15 → 40: 25 m
 #guard (eval cgeo 0 (.existsRegion (.lit "crosswalk") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .f   -- 0 → 40
 #guard (eval c 0 (.existsRegion (.lit "lane") "r" (.cmp (.measure "st_region_geometry_distance" [X, .var "r"]) .le (.lit (metres 30) .metre)))).v = .u       -- lane 7 has no geometry
+
+-- a quantifier over a kind the source cannot tell: unknown where such a region could decide it
+def roadway5 : Structure := { id := 5, kind := .roadway, unobservedKinds := [.highway] }
+def cunk : SemCtx := SemCtx.mk' ((List.range 9).map fun k =>
+  { sceneAt k with structures := [lane7, roadway5], occupies := [(1, 7), (2, 7), (1, 5)] }) ρ β
+#guard (eval cunk 0 (.existsRegion (.lit "highway") "h" (.atom "rel_occupies" [X, .var "h"] []))).v = .u
+#guard (eval cunk 0 (.existsRegion (.lit "highway") "h" (.atom "rel_occupies" [Y, .var "h"] []))).v = .f
+#guard (eval cunk 0 (.forallRegion (.lit "highway") "h" (.atom "rel_occupies" [Y, .var "h"] []))).v = .u
+#guard (eval cunk 0 (.existsRegion (.lit "roadway") "h" (.atom "rel_occupies" [X, .var "h"] []))).v = .t
+-- the kind atom itself is unknown on such a region, so a body that restates it stays unknown
+#guard (eval cunk 0 (.atom "st_highway" [.nat 5] [])).v = .u
+#guard (eval cunk 0 (.atom "st_highway" [.nat 7] [])).v = .f
+#guard (eval cunk 0 (.existsRegion (.lit "highway") "h"
+          (.and (.atom "st_highway" [.var "h"] []) (.atom "rel_occupies" [X, .var "h"] [])))).v = .u
+#guard v 0 (.existsRegion (.lit "highway") "h" .tt) = .f          -- no region could be one
+def cdev : SemCtx := SemCtx.mk' ((List.range 9).map fun k =>
+  { sceneAt k with devices := [{ sig9 .circularRed with unobservedKinds := [.stopSign] }] }) ρ β
+#guard (eval cdev 0 (.existsDevice (.lit "stop_sign") "d" .tt)).v = .u
 
 -- static analysis
 #guard (Formula.atoms (.and stopped (.cmp (.measure "kin_speed" [X]) .gt (mps 9)))).eraseDups = ["kin_time", "kin_speed"]
