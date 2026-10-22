@@ -21,6 +21,8 @@ class Entry:
     charged_iteration: int = 0     # the iteration whose return already counted an attempt
     charged_concepts: list[str] = field(default_factory=list)   # failed concepts whose failure already counted an attempt
     repeats: dict[str, int] = field(default_factory=dict)       # outcome key (`review:<node>:<span>:<verdict>`) ↦ times drawn, across plans and repairs
+    judge_failures: dict[str, int] = field(default_factory=dict)   # judge stage ↦ consecutive reviews it left without a valid answer
+    selection_corrections: int = 0  # times a plan of the law claimed an aggregate the selection did not admit
 
 
 class Ledger:
@@ -92,6 +94,33 @@ class Ledger:
         """The law goes back to `open` without an attempt counted: nothing judged its plan or its code."""
         e = self.entries[law]
         e.state, e.reasons = OPEN, reasons
+
+    def defer_judge(self, law: str, stage: str, reasons: list[str]) -> bool:
+        """A judge of the law's review left it without a valid answer: the law stays `planned` with
+        its node ids, no attempt counted, and the stage's consecutive count grows. Returns True when
+        this is the second consecutive failure, and the law is then closed as failed with
+        `judge_protocol_failure`."""
+        e = self.entries[law]
+        e.judge_failures[stage] = e.judge_failures.get(stage, 0) + 1
+        if e.judge_failures[stage] >= 2:
+            e.state = FAILED
+            e.reasons = [f"judge_protocol_failure: the {stage} judge left the review without a valid answer twice in a row"] + reasons
+            return True
+        e.state, e.reasons = PLANNED, reasons
+        return False
+
+    def clear_judge(self, law: str) -> None:
+        """A review of the law ended with valid judgments: no judge failure is consecutive any longer."""
+        e = self.entries.get(law)
+        if e is not None:
+            e.judge_failures = {}
+
+    def selection_correction(self, law: str) -> bool:
+        """A plan of the law claimed an aggregate the selection did not admit. Returns True when it
+        happened before: the law is then closed by the caller (`planning_protocol_failure`)."""
+        e = self.entries[law]
+        e.selection_corrections += 1
+        return e.selection_corrections > 1
 
     def hold(self, law: str, iteration: int) -> None:
         """A node of the law waits for a node it composes: the law stays `planned`, its node list
@@ -177,6 +206,7 @@ class ConceptEntry:
     used_by: list[str] = field(default_factory=list)
     iteration: int = 0
     last_task: str = ""            # the task directory of the last coding attempt, for a repair session
+    judge_failures: dict[str, int] = field(default_factory=dict)   # judge stage ↦ consecutive reviews it left without a valid answer
 
 
 class ConceptLedger:
@@ -188,7 +218,7 @@ class ConceptLedger:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if line.strip():
                     d = json.loads(line)
-                    self.entries[d["concept"]] = ConceptEntry(**d)
+                    self.entries[d["concept"]] = ConceptEntry(**{k: v for k, v in d.items() if k in ConceptEntry.__dataclass_fields__})
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -226,6 +256,24 @@ class ConceptLedger:
         """The concept is closed with these reasons, whatever its budget: its repair session withdrew it."""
         e = self.entries.setdefault(cid, ConceptEntry(cid))
         e.state, e.reasons = FAILED, reasons
+
+    def defer_judge(self, cid: str, stage: str, reasons: list[str]) -> bool:
+        """The concept's adjudication left it without a valid answer: it goes back to `planned`,
+        its users and attempts unchanged, to be coded and reviewed again. Returns True when this is
+        the second consecutive failure, and the concept is then failed (`judge_protocol_failure`)."""
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.judge_failures[stage] = e.judge_failures.get(stage, 0) + 1
+        if e.judge_failures[stage] >= 2:
+            e.state = FAILED
+            e.reasons = [f"judge_protocol_failure: the {stage} judge left the review without a valid answer twice in a row"] + reasons
+            return True
+        e.state, e.reasons = PLANNED, reasons
+        return False
+
+    def clear_judge(self, cid: str) -> None:
+        e = self.entries.get(cid)
+        if e is not None:
+            e.judge_failures = {}
 
     def repairable(self) -> list[ConceptEntry]:
         """Concepts a repair session may re-propose: returned by the gate or the review, with a
@@ -306,10 +354,4 @@ class NodeLedger:
     def failed(self, node: str, reasons: list[str]) -> None:
         e = self.entries.setdefault(node, NodeEntry(node, ""))
         e.state, e.reasons = FAILED, reasons
-
-    def counts(self) -> dict[str, int]:
-        c: dict[str, int] = {}
-        for e in self.entries.values():
-            c[e.state] = c.get(e.state, 0) + 1
-        return c
 

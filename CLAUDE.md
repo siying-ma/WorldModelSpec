@@ -32,6 +32,16 @@ Before changing anything, in this order:
    with it — a Core change drags the generated tables, the prompts, the doctor and the tests.
 4. **Only then edit**, and report what landed against the plan.
 
+**Reporting a finding.** A defect found by a check, an audit or a run is reported to the operator
+under three headings, in this order:
+
+1. **Is it sound, and does it matter for the library's quality?** Whether the defect is real
+   (verified on the code or the recorded run, not inferred), and what it costs the accepted rules:
+   wrong rules accepted, sound rules lost, or only run cost.
+2. **A simple example.** The smallest concrete case that shows the cause and its result.
+3. **The recommended solution.** The change and where it lies (frozen or not), why it removes
+   the cause for every law, and how it is checked offline before a run depends on it.
+
 ## Who does what
 
 Each agent of the loop has one responsibility, and a defect is routed back to the role that owns
@@ -42,19 +52,45 @@ feature is not better for being there, and one whose use cannot be stated is rem
   decides everything a rule or a concept means: the segmentation, which atoms, concepts and
   operators each span maps to, the readings of open words, the occasion of an act, the parameters
   it proposes, and every concept's contract. Only a planning session changes a mapping or a
-  contract.
+  contract. It decides law-local readings, and derives aggregate membership from posted
+  definitions: an aggregate denotes an extensional set of tracked road-user classes, not a
+  relational role such as who controls a vehicle; for an aggregate it classifies every road-user
+  class of the active ontology split as included, excluded or unresolved, quoting the controlling
+  definition words, and marks a class unresolved where those words do not decide it. Only a
+  planning session proposes that mapping.
 - **The coder** (a node or a concept coding session) writes the Lean the record states. Where the
   record leaves the writing open it may choose only among meanings the words already allow, and
   discloses each choice as a `reading`. A span it cannot write with the planned atoms and operators
   it reports (`no_atom`, `no_operator`) and stops; it never approximates, re-maps or plans.
 - **The reviewer** (a second vendor's model) shows, as executable traces, situations in which the
   code and the words it formalizes (the law for a node, the contract for a concept) decide
-  differently. It never proposes a fix or a mapping.
-- **The adjudicator** rules on each divergence execution confirmed, by the words alone. It never
-  judges the code or re-plans.
+  differently. It supplies certified cases that challenge a rule or a disclosed reading. It
+  proposes neither a fix nor a replacement mapping.
+- **The judges.**
+  - **Stage A** determines the law's verdict on the canonical case without seeing the rule, the
+    record, the reviewer's prose or any proposed repair. It is shown the posted definitions that
+    apply, never an aggregate mapping.
+  - **Stage B** decides whether a confirmed mismatch:
+    - is a formalization defect;
+    - is permitted by a disclosed law-local reading;
+    - follows an aggregate mapping admitted by the independent aggregate gate;
+    - depends on an operator-owned parameter value;
+    - or is structural.
+
+    It never chooses a reading, an aggregate member or a parameter value, and never judges the
+    code or re-plans.
 - **The harness** validates, gates, executes and routes each outcome to the role that owns it; it
-  decides nothing a role above decides.
-- **The operator** decides gaps, the values of parameters and the membership of aggregate words.
+  decides nothing a role above decides. Before any node may use an aggregate, it validates the
+  aggregate's provenance, completeness and representation and obtains an independent semantic
+  verification of every decided classification. It decides no membership itself: a classification
+  the gate cannot verify is downgraded to `unresolved`, never changed to included or excluded. An
+  unrepresentable member is filed as a gap for the operator.
+- **The operator** decides gaps, the values of parameters, and the corpus's definition precedence
+  (which posted definition governs a law: its own section's or chapter's, then its code's general
+  chapter, then a fallback code), declared once in `pipeline/traffic-spec-agent/config/` and never
+  by the harness or the planner. An aggregate mapping that cannot
+  faithfully represent a posted definition becomes a gap for the operator; the operator does not
+  otherwise choose or override the membership of a legally defined aggregate.
 
 ## What is frozen, and what that means
 
@@ -104,11 +140,55 @@ feature is not better for being there, and one whose use cannot be stated is rem
   only by the rule in `laws/README.md` (Scope), recorded in
   `pipeline/ontology_provenance/nrs_tools/tiers.py` (`EXCLUDED`);
   the corpus before the scope is that of commit `300f115`.
-- Legal aggregate words ("vehicle", "traffic") are the atom `ru.aggregate` with the word as its
-  argument; the reading declares membership. A rule never expands a word into classes.
+- Legal aggregate words ("vehicle", "traffic") are the atom `ru.aggregate`. Its argument is a
+  definition-scoped aggregate id, `<definition id>::<term>`, or `<law id>:<span>::<term>` for a
+  genuinely law-local definition. A rule never expands a word into classes.
+  - **Membership is derived from the posted corpus definition** that applies to the law, resolved
+    from the posted corpus by the operator's declared definition precedence, never from the audit
+    sidecars under `laws/audit_and_scripts/`.
+    It is never invented by a rule, never freely overridden in the reading, and never chosen by the
+    planner among competing definitions.
+    A defined term used inside that definition is resolved mechanically by the same precedence
+    from the definition's own place; its posted definition joins the mapping evidence and digest.
+  - **Every class is classified.** Every road-user class of the active ontology split is included,
+    excluded or unresolved, quoting the deciding definition words.
+  - **Digests.** The accepted mapping records its definition and ontology digests. A change to
+    either invalidates the mapping and every affected review, including the witnesses of accepted
+    nodes that reference it.
+  - **Context is not membership.** A contextual condition that a class list cannot express is not
+    discarded: it becomes a predicate the rule or a concept carries, an unresolved classification,
+    or a gap.
 - A node is two files, `Rules/<Body>/<NodeId>.lean` and `TrafficSpecWitness/<Body>/<NodeId>.lean`,
   with the node id derived from the law id. Acceptance is the harness's own gate call, never an
   agent's claim.
+
+## Development runs
+
+To save budget, a restart between full runs reruns only a subset, until the pipeline issues it
+exposes are fixed:
+- **Which laws.** The laws the previous run did not accept (failed, blocked, returned or still
+  planned), plus every accepted law whose node an audit found defective. The review missed those
+  defects, so they are how a change to the review is measured.
+- **When the subset is most of the corpus.** When the laws to rerun, with the nodes that compose a
+  defective accepted node, cover most of the corpus, the restart is a fresh full run.
+- **How.** Launch the run with `--base_run <previous run>`: its accepted nodes and concepts are
+  reused read-only, and the library keeps that run's files, so there is no `init --fresh`. A new
+  run id also starts a new `rulings.jsonl`, so no ruling carries over from the previous run.
+- **The subset files.** Its `laws.jsonl`, with the `definitions.jsonl` beside it, is written by a
+  script from the corpus file into `results/<run>/laws/`, never by hand and never under `laws/`.
+- **After a change to Core or the ontology.** `python -m harness verify` must pass on the base
+  run's nodes; a node that no longer builds or passes its witnesses joins the subset.
+- **Full runs.** Acceptance counts of subset runs are not comparable between runs. A full fresh
+  run is made before any figure is reported and before the test split is run.
+- **Before a bigger corpus, minimize the returns to fix the pipeline.** Moving from a smoke to the
+  demo or the training split multiplies the cost of every pipeline defect. A defect found mid-run
+  that needs a change to Core, a prompt or the harness means relaunching the whole corpus. Every
+  fix made before such a run:
+  - removes the cause for every law, not only for the case that exposed it;
+  - is checked offline on the sessions already recorded (saved reviewer answers re-certified,
+    saved prompts replayed against a new model) before a run depends on it.
+
+  A smoke is run on the changed pipeline before the larger run is launched.
 
 ## Editing Lean files
 

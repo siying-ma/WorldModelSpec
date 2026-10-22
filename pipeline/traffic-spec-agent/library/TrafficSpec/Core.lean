@@ -6,7 +6,8 @@
   Vocab: the ontology enumerations, the world, the atoms, assumptions, parameters, primitives.
   Language: formulas and their semantics, rules, concepts, the static check, export.
   Runtime: grounding, manifests, the monitor, decoding.
-  Evidence: builders and adequacy for the witnesses.
+  Evidence: builders and adequacy for the witnesses; the lint of a written trace and the
+    certificate of a reviewer's case.
 -/
 import TrafficSpec.Core.Foundations.Tri
 import TrafficSpec.Core.Foundations.Units
@@ -19,6 +20,7 @@ import TrafficSpec.Core.Vocab.Ontology.RoadUser
 import TrafficSpec.Core.Vocab.Ontology.Structure
 import TrafficSpec.Core.Vocab.Ontology.Device
 import TrafficSpec.Core.Vocab.Ontology.Signal
+import TrafficSpec.Core.Vocab.Ontology.Dimensions
 import TrafficSpec.Core.Vocab.World
 import TrafficSpec.Core.Vocab.Assumptions
 import TrafficSpec.Core.Vocab.Params
@@ -36,3 +38,5 @@ import TrafficSpec.Core.Runtime.Monitor
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Evidence.Builders
 import TrafficSpec.Core.Evidence.Adequacy
+import TrafficSpec.Core.Evidence.TraceLint
+import TrafficSpec.Core.Evidence.Certificate

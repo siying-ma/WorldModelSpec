@@ -135,7 +135,10 @@ class Cli:
              workers: int = 1, plan_turns: int = 40, restart: bool = False,
              concept_attempts: int = 3, node_attempts: int = 2, repeat_limit: int = 3,
              reviewer_model: str | None = None, review_effort: str = "high",
-             allow_same_vendor: bool = False) -> int:
+             allow_same_vendor: bool = False, definition_precedence: str = "config/definition_precedence.json",
+             openai_budget_usd: float | None = None, reviewer_max_output_tokens: int = 64000, max_divergences: int = 3,
+             model_prices: str = "config/model_prices.json", stall_stop: bool = True,
+             review_checks: int = 8, review_submissions: int = 3, review_passes: int = 2) -> int:
         """`mode` is `train` (concepts may supersede) or `test` (add-only over `base_run`, whose accepted
         nodes and concepts are loaded read-only). `plan_batch` is the most laws one plan session is given;
         `workers` the coding sessions run at once;
@@ -144,7 +147,14 @@ class Cli:
         the coding attempts a concept gets (the first and its repairs), separate from the laws' `plan_attempts`;
         `node_attempts` the coding attempts a node gets (the first and one after a node repair session); `repeat_limit`
         the number of times the same upheld divergence on the same words of a node, across the law's plans and repairs,
-        blocks the law for the operator."""
+        blocks the law for the operator; `definition_precedence` the operator's declared definition precedence;
+        `openai_budget_usd` the run-wide limit on the second vendor's calls (reached, the run pauses and resumes under the
+        same run id once raised), `reviewer_max_output_tokens` each such call's output limit, `max_divergences` the most
+        divergences one review answer may carry, `model_prices` the operator's price table; `review_checks` and
+        `review_submissions` the checks and the submissions of one reviewer session, `review_passes` the independent
+        reviewer sessions of one rule review (their challenges joined); `stall_stop` ends the run
+        after any iteration from the second on that accepts nothing and leaves no remedy awaiting its first try. Returns 0 only when the run
+        ends `complete` (every law accepted, blocked or failed)."""
         from .loop import run_loop
         if mode not in ("train", "test"):
             raise SystemExit("mode must be `train` or `test`")
@@ -159,18 +169,23 @@ class Cli:
                        workers=max(1, int(workers)), plan_turns=max(4, int(plan_turns)), restart=restart,
                        concept_attempts=max(1, int(concept_attempts)), node_attempts=max(1, int(node_attempts)),
                        repeat_limit=max(1, int(repeat_limit)), reviewer_model=reviewer_model, review_effort=review_effort or None,
-                       allow_same_vendor=allow_same_vendor)
-        print(json.dumps(run_loop(opts), indent=1))
-        return 0
+                       allow_same_vendor=allow_same_vendor, definition_precedence=_p(definition_precedence),
+                       openai_budget_usd=float(openai_budget_usd) if openai_budget_usd is not None else None,
+                       reviewer_max_output_tokens=max(1, int(reviewer_max_output_tokens)), max_divergences=max(1, int(max_divergences)),
+                       model_prices=_p(model_prices), stall_stop=bool(stall_stop),
+                       review_checks=max(0, int(review_checks)), review_submissions=max(1, int(review_submissions)),
+                       review_passes=max(1, int(review_passes)))
+        result = run_loop(opts)
+        print(json.dumps(result, indent=1))
+        return 0 if result.get("status") == "complete" else 1
 
     def validate(self, blueprint_file: str = "", run_id: str = "", laws: str = DEFAULT_LAWS,
                  ontology_file: str = DEFAULT_ONTOLOGY, reading: str = DEFAULT_READING) -> int:
         """Validator A over a blueprint file, no sessions. With `--run_id` it is the check the loop
-        runs: the run's accepted nodes and concepts, mapping index and reading (with the draft's
-        `aggregates.jsonl` applied). Without a run it
-        is context-free: no accepted node, concept or mapping is known, so a composition of an
-        accepted node or a call of a catalogued concept is reported as unknown."""
-        from .checks import aggregates
+        runs: the run's accepted nodes and concepts, mapping index and reading with its admitted
+        aggregates (a claim of a definition-scoped aggregate the selection has not admitted is left
+        to the loop, which asks the selection role). Without a run it is context-free: no accepted
+        node, concept, aggregate or mapping is known."""
         from .phases import validate as validate_phase
         from .store.state import Run
         if run_id:
@@ -180,8 +195,7 @@ class Cli:
             law_list = corpus.load_laws(run.opts.laws)
             defs = corpus.load_definitions(run.opts.laws)
             onto = ontology.load(run.opts.ontology)
-            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(run.opts.reading))
-            reading_obj = Reading(run.reading_file).with_aggregates(agg_ok)
+            reading_obj = Reading(run.reading_file)
         else:
             if not blueprint_file:
                 raise SystemExit("give --blueprint_file, or --run_id for a run's latest plan")
@@ -189,14 +203,10 @@ class Cli:
             law_list = corpus.load_laws(_p(laws))
             defs = corpus.load_definitions(_p(laws))
             onto = ontology.load(_p(ontology_file))
-            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(_p(reading)))
-            reading_obj = Reading(_p(reading)).with_aggregates(agg_ok)
+            reading_obj = Reading(_p(reading))
             run = None
+        reading_obj.pending_aggregates = True
         bad = 0
-        for e in agg_errs:
-            print(f"reject  aggregate: {e}"); bad += 1
-        for r in agg_ok:
-            print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
         by_id = {l.id: l for l in law_list}
         # the other plan batches of the same iteration that already exist: their nodes may be composed and their
         # concepts called, as the loop's merged validation will see them

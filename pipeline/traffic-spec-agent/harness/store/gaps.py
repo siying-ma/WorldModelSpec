@@ -6,10 +6,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-KINDS = {"atom", "operator"}
-STATES = {"proposed", "accepted", "rejected", "retired"}
-
-
 class GapLedger:
     def __init__(self, path: Path):
         self.path = path
@@ -49,9 +45,6 @@ class GapLedger:
                "state": "proposed", "decision": "", "retired_by": "", "proposed_in": f"{run}/iter-{iteration:03d}"}
         self.rows.append(row)
         return gid
-
-    def retired(self) -> set[str]:
-        return {r["id"] for r in self.rows if r.get("state") == "retired"}
 
     def decided(self) -> dict[str, tuple[str, str]]:
         """Gaps the operator has closed, retired or rejected, with the decision's words."""

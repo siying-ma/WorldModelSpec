@@ -1,25 +1,25 @@
 /-
   Witnesses for NRS_484B_307_6a.
 
-  The scene is one signalised crossroads, built once and shared by every witness.
+  One junction serves every scene. The approach is a single lane running east, 60 m long, from
+  x = -60 m to x = 0 m and 3.6 m wide (region 1); its end runs into the junction, region 2, the
+  square where the two roadways meet, x from 0 m to 20 m and y from -8 m to 12 m. One traffic
+  signal head, device 1, governs the approach; what it displays is the only thing that differs
+  between the signal scenes.
 
-  Geometry (metres, +x east, +y north; the carriageway runs east):
-  - region 10, a highway, the rectangle x ∈ [-200, 200], y ∈ [-14, 14];
-  - region 11, a lane of it, x ∈ [-200, 0], y ∈ [-3, 3], running east, entering region 12;
-  - region 12, the intersection, x ∈ [0, 14], y ∈ [-14, 14];
-  - device 20, a traffic signal head governing region 11, its indications stated per instant;
-  - track 1, a motor vehicle 5 m long and 1.8 m wide, heading east along y = 0.
+  The subject is track 1, a motor vehicle 4 m long and 1.8 m wide, in the middle of the approach
+  lane (y = 1.8 m) and heading east; it is the only road user in every scene. Its occupancy is
+  stated rather than taken from its reference point, because the duty is about a footprint coming
+  to overlap a region: the car overlaps the approach while its rear (x - 2 m) is still west of the
+  junction's edge, and overlaps the junction once its front (x + 2 m) has passed that edge and
+  while its rear is still west of the junction's far side. Every position below stands clear of
+  both edges by at least a metre, so no scene turns on a boundary case.
 
-  Occupancy is stated and not derived, because a body astride the stop line overlaps its lane and
-  the intersection at once while its reference point lies in one of them: on the approach the
-  vehicle occupies the highway and the lane, and at the instant of entry the highway, the lane and
-  the intersection.
-
-  Instants: eight observations one second apart, from t = 20 s to t = 27 s, padded with ten
-  seconds of the first scene and three of the last, so that the six-second look-back of the rule
-  is covered at every instant each witness speaks about. Every witness names that range
-  (20 s … 27 s) as its window: outside it the padding's first instant has no previous observation
-  and its earliest look-backs are truncated.
+  Every trace is a run of one-second observations starting at t = 0; the car's velocity is carried
+  along the lane (negative where it backs up, its body keeping its eastward heading). Nothing in
+  the rule looks back, so no scenario names a window; every trace that must end decided ends with
+  the head on something other than the steady yellow or the steady red, which closes the display
+  the duty runs over.
 
   Every figure here is the witness's own and appears nowhere in the rule.
 -/
@@ -32,96 +32,145 @@ open TrafficSpec
 
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
+def mps (n : Int) : Q := Units.metresPerSecond n
 
 -- Binders ↦ tracks: v ↦ 1
-def carT : TrackId := 1
-def hwyR : RegionId := 10
-def laneR : RegionId := 11
-def ixR : RegionId := 12
-def headD : DeviceId := 20
 
-/-- The highway, the approach lane that runs into the intersection, and the intersection. -/
-def highway : Structure := Build.rect hwyR .highway (m (-200)) (m (-14)) (m 200) (m 14)
+def carId : TrackId := 1
+def approachId : RegionId := 1
+def junctionId : RegionId := 2
+def headId : DeviceId := 1
+
+/-- The approach: one lane running east, ending at the junction's west edge and entering it. -/
 def approach : Structure :=
-  Build.lane laneR [(m (-200), m (-3)), (m 0, m (-3)), (m 0, m 3), (m (-200), m 3)]
-    Build.east (enters := some ixR)
-def junction : Structure := Build.rect ixR .intersection (m 0) (m (-14)) (m 14) (m 14)
+  Build.lane approachId
+    [(m (-60), m 0), (m 0, m 0), (m 0, cm 360), (m (-60), cm 360)]
+    Build.east (ordinal := some 1) (count := some 1)
+    (leadsTo := some [junctionId]) (enters := some junctionId)
 
-def structures : List Structure := [highway, approach, junction]
+/-- The junction: the region where the two roadways meet. -/
+def junction : Structure := Build.rect junctionId .intersection (m 0) (m (-8)) (m 20) (m 12)
 
-/-- The one head, governing the approach lane; what it displays is the witness's business. -/
-def signalHead (indications : List SignalIndication) : Device :=
-  Build.signal headD [laneR] indications
+/-- Half-length, half-width, half-height of an ordinary car. -/
+def halfExtent : Q × Q × Q := (m 2, cm 90, cm 75)
 
-/-- Half-length, half-width, half-height of the vehicle. -/
-def halfExtent : Q × Q × Q := (cm 250, cm 90, cm 75)
+/-- The middle of the approach lane. -/
+def lateral : Q := cm 180
 
-def car (x : Q) (speed : Q) : RoadUser :=
-  Build.user carT [.motorVehicle] (x, m 0) Build.east speed halfExtent
+/-- The car at `x`, running at `v` along the lane: `v` negative is a reversing car, which keeps
+    its eastward heading while its velocity points west. -/
+def carAt (x v : Q) : RoadUser :=
+  Build.withKin (Build.user carId [.motorVehicle] (x, lateral) Build.east (Q.abs v) halfExtent)
+    (fun k => { k with velocity := some (Build.scale Build.east v) })
 
-/-- On the approach: the body overlaps the highway and its lane. -/
-def onApproach : List (TrackId × RegionId) := [(carT, hwyR), (carT, laneR)]
-/-- Astride the stop line: the body overlaps the highway, its lane and the intersection. -/
-def acrossTheLine : List (TrackId × RegionId) := [(carT, hwyR), (carT, laneR), (carT, ixR)]
+/-- The regions the car's footprint overlaps at `x`: the approach while its rear is still west of
+    the junction's edge, the junction while its front has passed that edge and its rear has not
+    passed the far side. -/
+def occupiesAt (x : Q) : List (TrackId × RegionId) :=
+  (if Q.lt (Q.sub x (m 2)) (m 0) then [(carId, approachId)] else []) ++
+  (if Q.lt (m 0) (Q.add x (m 2)) && Q.lt (Q.sub x (m 2)) (m 20) then [(carId, junctionId)] else [])
 
-def sceneAt (t : Timestamp) (x : Q) (speed : Q) (indications : List SignalIndication)
-    (occupies : List (TrackId × RegionId)) : Scene :=
-  Build.scene t (some carT) [car x speed] structures [signalHead indications] (some occupies)
+/-- One observation: where the car is, how it is moving, and what the head facing the approach
+    displays. -/
+def sceneAt (t : Timestamp) (x v : Q) (shows : List SignalIndication) : Scene :=
+  Build.scene t (some carId)
+    [ carAt x v ]
+    [ approach, junction ]
+    [ Build.signal headId [approachId] shows ]
+    (some (occupiesAt x))
 
-/-- Ten seconds of the first scene before, three of the last after, one second apart. -/
-def padded (τ : Trace) : Trace := Build.pad τ (Units.seconds 10) (Units.seconds 3) (Units.seconds 1)
+/-- A trace of one-second observations from a list of (position, velocity, indications). -/
+def traceOf (steps : List (Q × Q × List SignalIndication)) : Trace :=
+  Build.trace steps.length 0 (Units.seconds 1) fun k t =>
+    match steps[k]? with
+    | some (x, v, shows) => sceneAt t x v shows
+    | none => sceneAt t (m (-60)) Q.zero []
 
-/-- The approach that does not stop: 8 m/s, from x = -55 m to x = 1 m, where the body is astride
-    the stop line and overlaps the intersection. -/
-def rollingX (k : Nat) : Q := m (8 * (k : Int) - 55)
+def yellowAlone : List SignalIndication := [.circularYellow]
+def redAlone : List SignalIndication := [.circularRed]
+def greenAlone : List SignalIndication := [.circularGreen]
+/-- A circular yellow displayed together with a protected left arrow: the yellow is not alone. -/
+def yellowWithArrow : List SignalIndication := [.circularYellow, .greenArrow .left]
 
-/-- `forbid` (violated): A single vehicle approaches a signalised crossroads on a lane that one signal head governs; no other road user is anywhere in the scene. The trace begins well before the window behind, so no window is truncated, and every atom the rule reads is observed. The head displays circular yellow alone at each observation of the approach, then circular red; at the first observation after the red appears, the vehicle's footprint, which did not overlap the intersection region at the previous observation, overlaps it. -/
-def forbidTrace : Trace :=
-  padded <| Build.trace 8 20000 (Units.seconds 1) fun k t =>
-    sceneAt t (rollingX k) (Units.metresPerSecond 8)
-      (if k ≤ 5 then [.circularYellow] else [.circularRed])
-      (if k ≤ 6 then onApproach else acrossTheLine)
+/-- `forbid` (violated): A car runs up to a signalised crossroads with the head facing its lane showing a steady circular yellow and nothing else. The car keeps its speed; the head turns to steady circular red while the car is still short of the junction, and the car's front then crosses into the intersection region. No other road user is in the scene. -/
+def forbidTrace : Trace := traceOf
+  [ (m (-40), mps 10, yellowAlone)
+  , (m (-30), mps 10, yellowAlone)
+  , (m (-20), mps 10, redAlone)
+  , (m (-10), mps 10, redAlone)
+  , (m 0,     mps 10, redAlone)
+  , (m 10,    mps 10, redAlone) ]
 
-/-- The approach that stops: braking from 8 m/s to rest at x = -26 m, clear of the intersection. -/
-def brakingX (k : Nat) : Q :=
-  m (match k with
-     | 0 => -55
-     | 1 => -47
-     | 2 => -40
-     | 3 => -34
-     | 4 => -30
-     | 5 => -27
-     | _ => -26)
+/-- `permit` (compliant): The same junction and the same car, alone in the scene: facing the steady yellow it slows and stops short of the intersection region, and it is still standing there when the head shows steady circular red; the head later shows steady circular green with the car still standing. -/
+def permitTrace : Trace := traceOf
+  [ (m (-40), mps 10, yellowAlone)
+  , (m (-32), mps 6,  yellowAlone)
+  , (m (-28), mps 2,  redAlone)
+  , (m (-28), Q.zero, redAlone)
+  , (m (-28), Q.zero, redAlone)
+  , (m (-28), Q.zero, greenAlone) ]
 
-def brakingSpeed (k : Nat) : Q :=
-  Units.metresPerSecond (match k with
-     | 0 => 8
-     | 1 => 8
-     | 2 => 7
-     | 3 => 6
-     | 4 => 4
-     | 5 => 2
-     | _ => 0)
+/-- `idle` (not_applicable): The same junction, but the head facing the car's lane shows a steady circular green throughout, and the car drives through the intersection without slowing. -/
+def idleTrace : Trace := traceOf
+  [ (m (-40), mps 12, greenAlone)
+  , (m (-28), mps 12, greenAlone)
+  , (m (-16), mps 12, greenAlone)
+  , (m (-4),  mps 12, greenAlone)
+  , (m 8,     mps 12, greenAlone)
+  , (m 20,    mps 12, greenAlone) ]
 
-/-- `permit` (compliant): The same vehicle, the same head and the same governed lane, every atom observed and the trace running well before the window behind. The head shows circular yellow alone, then circular red; the vehicle brakes and stands with its footprint clear of the intersection region at every observation for which the red is displayed, so it comes to overlap that region at no such observation. -/
-def permitTrace : Trace :=
-  padded <| Build.trace 8 20000 (Units.seconds 1) fun k t =>
-    sceneAt t (brakingX k) (brakingSpeed k)
-      (if k ≤ 5 then [.circularYellow] else [.circularRed])
-      onApproach
-
-/-- `idle` (not_applicable): The same vehicle on the same governed lane, every atom observed, the trace running well before the window behind so that the look-back is covered at every observation. The head displays circular green at every observation of that window and at the observation of entry, having shown no yellow anywhere in it, and the vehicle crosses into the intersection region on the green. -/
-def idleTrace : Trace :=
-  padded <| Build.trace 8 20000 (Units.seconds 1) fun k t =>
-    sceneAt t (rollingX k) (Units.metresPerSecond 8)
-      [.circularGreen]
-      (if k ≤ 6 then onApproach else acrossTheLine)
-
-/-- `blind` (unknown): The forbid scene exactly - the head mapped, its yellow and then its red read at every observation, the vehicle's footprint crossing into the intersection region - except that the source's manifest declares the device-to-lane governance relation absent. Which lane the head applies to is never read, so whether this head is the one the subject's traffic faces is never decided, and the rule neither clears nor convicts. -/
+/-- `blind` (unknown): The car of the forbid scenario at the same junction with a head standing beside its approach, but the source does not report which traffic any device faces, so whether that head faces the car's lane cannot be read. -/
 def blindTrace : Trace := forbidTrace
 
-/-- The instants every witness speaks about: the eight observations of the approach. -/
-def speaksAbout : Timestamp × Timestamp := (20000, 27000)
+/-- `branch_1` (compliant): The same junction with the head showing a steady circular yellow alone: the car is already within the intersection region when the head turns to steady circular red, and it clears the junction on the red without ever coming into it afresh; the head then shows steady circular green with the car well past. -/
+def branch_1Trace : Trace := traceOf
+  [ (m (-6), mps 8, yellowAlone)
+  , (m 1,    mps 8, yellowAlone)
+  , (m 9,    mps 8, redAlone)
+  , (m 17,   mps 8, redAlone)
+  , (m 25,   mps 8, greenAlone)
+  , (m 33,   mps 8, greenAlone) ]
+
+/-- `branch_2` (not_applicable): The same junction, with the head facing the car's lane showing a circular yellow together with a green left arrow at the same observation, so the yellow is not displayed alone; the car enters the junction as the circular red appears. -/
+def branch_2Trace : Trace := traceOf
+  [ (m (-30), mps 10, yellowWithArrow)
+  , (m (-20), mps 10, yellowWithArrow)
+  , (m (-10), mps 10, yellowWithArrow)
+  , (m 0,     mps 10, redAlone)
+  , (m 10,    mps 10, redAlone) ]
+
+/-- `branch_3` (violated): The same junction, the head showing a steady circular yellow alone: the car's front already straddles the boundary, so its footprint overlaps both the approach lane and the intersection region at that observation. Still on the yellow it backs up until its footprint is wholly out of the intersection region and on the approach lane only; the head then turns to steady circular red and the car drives forward, its footprint coming to overlap the intersection region again while the red is displayed. -/
+def branch_3Trace : Trace := traceOf
+  [ (m (-1), mps 2,    yellowAlone)
+  , (m (-5), mps (-4), yellowAlone)
+  , (m (-5), Q.zero,   redAlone)
+  , (m 3,    mps 8,    redAlone)
+  , (m 11,   mps 8,    redAlone) ]
+
+/-- `branch_4` (compliant): The same junction with the head showing a steady circular yellow alone: the car crosses into the intersection region while the yellow is still displayed, so no entry is made on a red; the head turns to steady circular red as the car is leaving the junction, and then to steady circular green, the car never coming into the region again. -/
+def branch_4Trace : Trace := traceOf
+  [ (m (-20), mps 10, yellowAlone)
+  , (m (-10), mps 10, yellowAlone)
+  , (m 0,     mps 10, yellowAlone)
+  , (m 10,    mps 10, redAlone)
+  , (m 20,    mps 10, redAlone)
+  , (m 30,    mps 10, greenAlone) ]
+
+/-- `branch_5` (compliant): the car stops short of the junction on the steady yellow and is still
+    standing when the head shows the steady red; the head then shows steady circular green, which
+    closes that display, and the car still does not move. Only at the next circular red — the
+    yellow before it displayed together with a green left arrow, so no fresh warning was given
+    alone — does the car drive into the junction. The entry is made on a red the warning this
+    yellow opened does not reach. -/
+def branch_5Trace : Trace := traceOf
+  [ (m (-45), mps 10, yellowAlone)
+  , (m (-36), mps 5,  redAlone)
+  , (m (-34), Q.zero, greenAlone)
+  , (m (-34), Q.zero, yellowWithArrow)
+  , (m (-29), mps 10, redAlone)
+  , (m (-19), mps 12, redAlone)
+  , (m (-7),  mps 12, redAlone)
+  , (m 5,     mps 12, redAlone) ]
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=
@@ -131,13 +180,17 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     reading := {}          -- ignored by the gate: the run's reading is substituted
     manifest := Build.manifest absent
     grounding := [("v", 1)]
-    expected := expected
-    window := some speaksAbout }
+    expected := expected }
 
 def scenarios : List Scenario :=
   [ witness "forbid" forbidTrace .violated
   , witness "permit" permitTrace .compliant
   , witness "idle" idleTrace .notApplicable
-  , witness "blind" blindTrace (.unknown []) ["dev.governs"] ]
+  , witness "blind" blindTrace (.unknown []) ["dev.governs"]
+  , witness "branch_1" branch_1Trace .compliant
+  , witness "branch_2" branch_2Trace .notApplicable
+  , witness "branch_3" branch_3Trace .violated
+  , witness "branch_4" branch_4Trace .compliant
+  , witness "branch_5" branch_5Trace .compliant ]
 
 end TrafficSpecWitness.NRS_484B_307_6a

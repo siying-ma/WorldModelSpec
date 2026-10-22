@@ -156,6 +156,7 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }
   | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
   | "sig.compression_brake" => { u with sig := { u.sig with compressionBrake := none } }
+  | "st.sight_along_way" => { u with sightAlongWay := none }
   | _ =>
     -- a class atom: the source cannot tell this class, so no user is known to have or lack it
     match RoadUserClass.ofString ((id.drop 3).toString) with
@@ -174,6 +175,7 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.curvature" => some { st with curvature := none }
   | "st.grade" => some { st with grade := none }
   | "st.sight_distance" => some { st with sightDistance := none }
+  | "st.on_way" => some { st with ways := none }
   | "st.region_geometry" => some { st with position := none, boundary := none }
   | _ =>
     -- a kind atom: the source cannot tell this kind, so no region is known to be or not be one

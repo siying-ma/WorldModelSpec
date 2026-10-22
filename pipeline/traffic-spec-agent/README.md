@@ -30,11 +30,11 @@ removed, not kept.
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo,carla_smoke}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` and `carla_smoke/` are reference-closed subsets of the training set (a first run; lines with standards of judgement, scored on simulator captures), made with `python -m nrs_tools.subset`, older subsets in git history; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
-| `prompts/*.md` | nine templates: `plan`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code` and `review_concept`, and `adjudicate` and `adjudicate_concept` | yes, law-free |
+| `prompts/*.md` | twelve templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code`, `review_concept` and `verify_aggregate`, and the judges `judge_case`, `adjudicate` and `adjudicate_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `scripts/gen_ontology.py`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
 | `library/TrafficSpec/Gaps/ledger.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
-| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `deferred_nodes.jsonl`, `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` with `progress.json` | run output |
+| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `deferred_nodes.jsonl`, `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` with `progress.json` | run output |
 
 ## Harness structure
 
@@ -44,11 +44,11 @@ modules the stages share sit in one folder each.
 | folder | modules | what it holds |
 |---|---|---|
 | `harness/` | `__main__.py`, `loop.py` | the CLI (`python -m harness …`) and the iteration driver: ledger transitions, dependency order, deferral, stop conditions |
-| `harness/phases/` | `plan.py`, `validate.py`, `review.py`, `code.py`, `integrate.py`, `feedback.py` | one module per stage of the loop (`plan.py` also runs the concept and node repair sessions; `validate.py` also a concept's judge; `review.py` is the second vendor's behaviour review and the adjudicator) |
-| `harness/model/` | `blueprint.py`, `corpus.py`, `mapping.py`, `nodeid.py`, `ontology.py`, `reading.py`, `units.py` | the pipeline's data: blueprint records, the corpus, the mapping index, derived ids and paths, the closed set, the reading, unit factors |
+| `harness/phases/` | `plan.py`, `aggregate.py`, `validate.py`, `review.py`, `code.py`, `integrate.py`, `feedback.py` | one module per stage of the loop (`plan.py` also runs the concept and node repair sessions; `validate.py` also a concept's judge; `review.py` is the second vendor's behaviour review and the adjudicator) |
+| `harness/model/` | `blueprint.py`, `corpus.py`, `definitions.py`, `mapping.py`, `nodeid.py`, `ontology.py`, `reading.py`, `units.py` | the pipeline's data: blueprint records, the corpus and its mechanically resolved definition graph, the mapping index, derived ids and paths, the closed set, the reading, unit factors |
 | `harness/store/` | `paths.py`, `state.py`, `ledger.py`, `gaps.py` | where things live and the run's state: options and run directories, the law, concept and node ledgers, the gap ledger |
 | `harness/lean/` | `lean.py`, `index_sync.py`, `skeleton.py`, `surface.py`, `render_formula.py` | everything that reads or writes `library/`: lake calls, the registries, the skeletons, the Core surface, the formula renderer |
-| `harness/agents/` | `runner.py`, `session.py`, `render.py`, `openai_runner.py` | agent sessions (launch, relaunch on refusal, jail and allow-list), prompt filling and JSON extraction; `openai_runner.py` makes one OpenAI Responses API call per tool-less session, in JSON mode |
+| `harness/agents/` | `runner.py`, `session.py`, `render.py`, `openai_runner.py` | agent sessions (launch, relaunch on refusal, jail and allow-list), prompt filling and JSON extraction; `openai_runner.py` makes one OpenAI Responses API call per tool-less session, in JSON mode, and one request at a time of a reviewer's tool session (`session.run_tools`) |
 | `harness/checks/` | `validate_a.py`, `gate.py`, `aggregates.py` | the deterministic acceptance checks: validator A, the gate, the aggregate validator |
 | `harness/tools/` | `split.py`, `score_split.py` | operator commands: the train/full Core swap and the test-run scorer |
 
@@ -83,6 +83,7 @@ Run from this directory (`lake` is run inside `library/`, where `lean-toolchain`
 bash setup.sh                         # elan + toolchain + Python deps
 source .venv/bin/activate
 
+python -m unittest discover scripts/tests # the harness's own tests: the certificate protocol, review routing, definition resolver, aggregate gate and run-budget integrity
 bash scripts/setup_reviewer.sh            # once: the openai package, the API key in ~/.config/traffic-spec/openai.env (mode 600), a test call
 source ~/.config/traffic-spec/openai.env  # in the shell that runs a loop with --reviewer_model
 
@@ -148,29 +149,82 @@ sibling never enters its build; the scope check tolerates the files of the sessi
 beside it. `--plan_turns` caps a plan or
 repair session.
 
-**The behaviour review and the adjudicator.** `--reviewer_model <model>` is required (a model of
+**The behaviour review and its two judges.** `--reviewer_model <model>` is required (a model of
 another vendor than the agents', such as an OpenAI model; `--allow_same_vendor` overrides the check;
 `OPENAI_API_KEY` must be set in the loop's shell, and no Claude session is launched with it; only
 `--dry_run` runs without it). The *behaviour review*, one per node the gate accepts, writes each
-divergence between the rule and the law as a trace in the decoder's format with the law's verdict,
-and is shown every atom the rule reads with the trace key that writes it; the harness runs the rule
-on every trace. A trace that is incomplete (an atom left out, occupancy not observed, a look-back
-not covered or sampled), or on which the rule gives the very verdict the reviewer claims for the
-law, is asked for once more and otherwise recorded as unconfirmed; a quote may be elided with `…`
-and may leave out the rendering's glosses; gap
-candidates (a factor the law names that no contract carries) go to `TO_USER.md`. Execution
-confirms what the rule does, never the reviewer's verdict for the law: every confirmed divergence,
-from either of the review's answers, goes to the *adjudicator* (`prompts/adjudicate.md`, a tool-less
-session of the agents' vendor), which upholds it, dismisses it (a reasonable reading gives the
-rule's verdict, or an open magnitude, a disclosed narrowing or a surrogate's open standard makes it
-an advisory), or sends it to the operator as a question about an aggregate word's membership. Only
-an upheld divergence returns the node; a ruling the adjudicator leaves defective stands as upheld.
-Every ruling is kept in `results/<run>/rulings.jsonl`, and the adjudicator sees the earlier rulings
-on the same law: a situation decided once is decided alike unless the record changed on the point
-the ruling turned on. A trace on which the rule and the law differ only between compliant and not
-applicable confirms nothing: neither is a violation.
-The reviews of a coding wave run in parallel, and their outcomes are applied once all have finished.
-`--review_effort` (high) sets the reviewer's reasoning effort.
+divergence between the rule and the law as a trace in the decoder's format, a grounding of the
+rule's binders, and a *case*: a formula of the specification language (`{case_language}`, generated
+from `Core/Language/Export.lean`) over the catalogue of atoms and primitives a case may name
+(`{case_vocabulary}`, generated from the active Core and the run's ontology), true at one
+observation `at`, that states the facts the law's verdict turns on. A case names concrete classes,
+never an aggregate, a parameter, an assumption, a rule or a concept; its units must agree
+(`Dimensions.lean`, generated from ATOMS.md §10–§11). A Lean program
+(`Certificate.record`, one `CERT` line per divergence it is given, run on each check and on each
+submitted divergence) decodes the trace and the case strictly,
+runs the trace check (`Core/Evidence/TraceLint.lean`: identity, a static map, valid geometry,
+path length, heading against yaw rate — exact, no tolerance; the occupancy of an observed track
+is not written by the reviewer but derived from its footprint and the boundaries, over closed
+sets, before the check), the witness check, the case check and the case at `at`, and then the rule's verdict at
+`at` with each referenced aggregate's membership forced true and false; when the case is not true at
+`at`, it names the conjunct that is not, and within a conjunct over every road user the fact and
+the user. The reviewer runs this program itself before it answers. Its session has two function
+tools and no other:
+- `check_divergence` runs one divergence, in a directory of its own under `review/checks/`, and
+  returns what the harness would make of it, with the messages. No judge is asked.
+- `submit_review` runs the schema checks and the same program on the exact answer. An answer with
+  a schema defect, or a divergence that cannot be evaluated, comes back while submissions remain;
+  the last submission stands.
+
+A rule is reviewed by `--review_passes` (2) such sessions at once, independent of each other: the
+same prompt, each its own checks, submissions and evidence (`review/pass<k>/`). Their challenges
+are joined, and one whose certified case repeats an earlier one is judged once. A pass that
+submitted no usable answer is dropped when the other did, and the review defers only when none
+did. A single session misses a real defect about one time in five, whatever its effort, so a
+second sample is what lowers the miss rate. A concept is reviewed by one session.
+
+`--review_checks` (8) and `--review_submissions` (3) are counted apart, so a submission is always
+possible once the checks are spent; a session may make up to four requests more than its checks and
+submissions, for answers that call no tool. A divergence is run once per session (a divergence with
+a schema defect is not run at all): the rule, the concepts and the reading do not change while the
+session runs. Each launch keeps its evidence in its own directories (`review/checks/L<launch>/`,
+`review/submissions/L<launch>/`). Each request is reserved and recorded on its own
+(`<label>:<subject>:L<launch>.r<n>` in `usage.jsonl`; the judges' rows also carry the node), and the
+session has one deadline, `--session_timeout`. A request the API refuses or fails relaunches the
+whole session, as for any session, with no retry inside the request; the API's reason, sanitized,
+is kept in the session's stream. A certificate program that does not run defers at stage
+`certificate`, for a rule or a concept; the diagnosis of a case that is not true is an aid only,
+and when it does not run the certificate stands without it. A case whose execution refutes the
+reviewer (the rule already gives the verdict claimed for the law) is an advisory; a challenge that
+is still defective leaves the review undecided, and unless another case is upheld it defers the law at stage
+`reviewer`, as an invalid judge does below. Before the reviewer is asked, the harness computes the
+history the rule's verdict at an observation reads (nested windows added up, one observation more
+per `rises`, a window ahead counted ahead, a concept read with its call's values) and states it with
+the parameters; a truncated look-back's message repeats it. A message on a sparsely sampled
+look-back names the rule's time and distance parameters with their values. Every advisory or divergence
+situation of the reviewer that names a proposed parameter of the rule by its id is copied to
+`TO_USER.md` under that parameter's review line, labelled with what became of it (information
+only; it routes nothing). An admitted divergence goes to *stage A*
+(`prompts/judge_case.md`, a tool-less session of the agents' vendor), which decides the law's
+verdict on the rendered case from the law, the posted definitions that apply to it and the case's
+contracts — never seeing the rule, the record, the reviewer's prose or any mapping. Where the
+rule's verdict at `at` differs (compliant and not applicable count alike), *stage B*
+(`prompts/adjudicate.md`) decides whether the mismatch is a defect (`upheld`, the only outcome that
+returns the node), a disclosed reading the words permit, a size-dependent mismatch on a reviewed
+parameter (dismissed) or an unreviewed one (`parameter_question`, a question in `TO_USER.md`; the
+node proceeds), or a membership the aggregate gate admitted (`verified_aggregate`, available only
+when the forced memberships mechanically show it). A rule unknown only because an admitted
+aggregate leaves a class unresolved is an advisory before either judge. A judge whose answer stays
+invalid after one re-ask defers the law (its node is coded again next iteration, no attempt
+counted); a second consecutive deferral closes it (`judge_protocol_failure`). Each digest hashes
+the exact request a judge was sent. Every certified case is kept in `results/<run>/rulings.jsonl`
+(append-only; a re-judgment appends a row that supersedes the case's previous one); before the
+reviewer is asked about a later rule of the same node id, every upheld case of that node is
+certified and judged again where a judge's input changed, and one still upheld returns the node
+without a review. The plan and node repair sessions are shown these cases as regression
+obligations, never as mapping instructions. An operator who finds a ruling wrongly upheld sets its
+`ruling` to `retired`. The reviews of a coding wave run in parallel, and their outcomes are applied
+once all have finished. `--review_effort` (high) sets the reviewer's reasoning effort.
 
 **The concept review.** A concept the gate accepts is reviewed the way a rule is: the second vendor
 (`prompts/review_concept.md`) reads the contract, the record with the coder's readings, and the body
@@ -178,14 +232,23 @@ rendered as prose, and writes every situation in which the body decides differen
 contract as a trace with an instance (a spelling for each literal formal, a value for each
 parameter, a track for each track formal); the harness runs the concept on it as a rule
 (`Concept.asRule`), so a divergence counts only where the body's executed verdict differs from the
-contract's. A trace that does not show what it claims is asked for once more. Each confirmed
+contract's. The reviewer runs each divergence first with `run_instance`, and submits with
+`submit_review`, under the same counts as the rule review. One on which the body gives the
+contract's verdict is an advisory, and a challenge that still cannot be run
+(a schema defect, a trace that does not decode, an incomplete trace) defers the concept at stage
+`reviewer` unless an item is upheld. The record shown names the literal formals the instance fills
+(none: `instance.literals` is `{}`). A concept of kind `quantity` returns a value: its divergence
+states the interval the contract's words put the value in (`contract_value`, `lo` and `hi` with
+their units, of the value's dimension as inferred from the body), which the harness passes as the
+instance's `bounds`, so the value outside the interval confirms it, as a quantity's witnesses are
+checked. A parameter value outside the domain its meaning states is an advisory. Each confirmed
 divergence, and each `not_general` item (words of the contract or the body tuned to one use), goes
 to the concept adjudicator (`prompts/adjudicate_concept.md`), which rules by the contract's words and
 by its own earlier rulings on the concept; an upheld item returns the concept to concept repair. The
 dismissed items and the reviewer's advisories are recorded on the accepted concept and shown in the
 catalogue beside its contract. The reviews of a concept wave run in parallel. A concept that has
 failed in a run stays failed: a plan that names it again is returned
-and charged, and only `reopen` of the laws that used it clears it. Validator A returns a concept
+and charged, and only `reopen` of the laws that used it clears it. Plan validation returns a node or concept record that claims a region's property (an atom of regions only, other than a region kind) without claiming `rel.occupies` and a region kind: the place where the road user reads it. Validator A returns a concept
 whose contract states a figure its `literals` do not declare, and one with a literal formal whose
 values are region or device kinds that does not claim the kind atom of each (the body reads them all).
 
@@ -203,9 +266,17 @@ whole-tree digest sit underneath, so a change anywhere outside the node's two fi
 `SCOPE_VIOLATION`, the node is rolled back and the stray files are named in `results/<run>/TO_USER.md`.
 
 **One library per run.** `library/` holds the rules and concepts of exactly one run (and its base
-run), because `index_sync` registers every file on disk. `loop` refuses to start
-(`loop.check_library_isolation`) when the library holds a node or concept that neither the run
-nor its `--base_run` accepted, or lacks one that they did, and names the fix.
+run), because `index_sync` registers every file on disk. At start (`loop.check_library_isolation`)
+a node or concept on disk that neither the run nor its `--base_run` accepted is moved into the
+snapshot of the run that accepted it, the base run tried first, never over an archived copy (else
+into a dated `results/library_strays_*`); one they accepted that is missing is restored from the
+run's snapshot, and the run refuses to start only when it cannot be.
+
+**Subset runs.** A development run that reruns part of a corpus (see `CLAUDE.md`, Development
+runs) takes its laws from `python -m scripts.subset_laws <run> <corpus laws.jsonl> <law id>…`,
+which writes `results/<run>/laws/laws.jsonl` and the `definitions.jsonl` beside it, and is launched
+with `--base_run <previous run>`. A base node whose law the subset lists is not reused: the law is
+planned again. A base node that composes such a node stops the run until its law is listed too.
 `python -m harness init --fresh --snapshot <run>` moves every rule, concept and witness file,
 tree layout kept, into `results/<run>/library_snapshot/` (a timestamped name when `--snapshot`
 is omitted) and rebuilds the empty library. Resuming a run with the same `--run_id` needs no
@@ -242,9 +313,12 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    iteration while it has budget): a concept repair sees the record, the verdict, the coder's result
    note and files, the ontology and the catalogue, no law; a node repair also sees its law and
    segmentation. Each writes a revised record or a withdrawal naming the missing atom or operator;
-   a concept repair may also split the concept into new records under new ids. A withdrawn or split
-   concept returns every law whose nodes use it to the planner (a withdrawal files a gap for the
-   operator to see, which blocks nothing); a node repair's withdrawn span files a gap. Laws whose
+   a concept repair may also split the concept into new records under new ids. A concept is
+   repaired only while a held node claims it, or a returned concept repaired for its own users calls
+   it, directly or through others; one nothing uses
+   waits, returned, until a plan claims it again. A withdrawn or split concept returns every law
+   whose held nodes claim it now to the planner (a withdrawal files a gap for the operator to see,
+   which blocks nothing); a node repair's withdrawn span files a gap. Laws whose
    nodes wait on a repair stay `planned` on hold, uncharged. A repair that keeps a defect returns the
    law with the reasons that sent the node to repair ahead of the repair's own, and the law's held
    nodes go back with it. The sessions run in parallel (`--workers`); a law's own node repairs run
@@ -264,7 +338,7 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    verdicts), and proposes a gap where no contract carries a span, still mapping the span to its
    nearest atoms. It is shown the ontology, the catalogue and the formula language: an atom gap may
    not propose an atom the ontology has, nor an operator gap an operator the language has. Writes
-   `blueprint.jsonl`, `PLAN.md`, `proposed_gaps.jsonl`, `aggregates.jsonl`.
+   `blueprint.jsonl`, `PLAN.md`, `aggregates.jsonl`.
 2. **Validate**: A, deterministic (segmentation is a partition; total accounting; closed set;
    standards have parameters in the reading or proposed; no zero literal declared; plan narrowings
    only on carried obligation or standard spans, except an `observable_reading` — a word with no
@@ -302,8 +376,8 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 **The gate** (`harness/checks/gate.py`), in order: `SCOPE_VIOLATION`, `BUILD_FAIL`, `UNSOUND` (sorry,
 axioms, unsafe constructs — scanned in code only, never in the header comment or the
 operationalization strings that carry the law's words), `CHECK_FAIL` (`Rule.check`, which also
-rejects a number in an entity position, `Rule.checkReading`, which holds every aggregate word
-a rule names to the reading, and no division by a term that reads a measurement, which can be
+rejects a number in an entity position, `Rule.checkReading`, which holds every aggregate id
+a rule names to the run's admitted aggregates, and no division by a term that reads a measurement, which can be
 zero — a comparison is written with products), the claim checks (a formula's atoms are what the evaluator reads: its
 leaves, the clock or path length of every window, and the kind of every quantifier with a literal
 kind, so a claimed `kin.time` is used by a time window and a claimed `st.lane` by
@@ -333,15 +407,39 @@ The witnesses are the node's tests, written by the same session as the rule from
 narratives; they show the formulas are executable and reach every verdict, and never stand as
 evidence that the rule says what the law says — that is the review's job.
 
-**Aggregates.** "Vehicle", "motor vehicle", "traffic" are one atom, `ru.aggregate`, with the word
-as its literal argument. Which `ru.*` classes (or other words, expanded transitively) a word
-covers is **derived by the run** from the corpus definitions: the plan session writes
-`aggregates.jsonl` (word, definition id, classes, justification, unresolved kinds), the harness
-validates it (`harness/checks/aggregates.py`: definition given, classes in the ontology, members
-resolvable, one record per word in an iteration — a second record with other classes is rejected) and merges the accepted records into the run's reading `results/<run>/reading.json`,
-which every later phase uses. The run's `TO_USER.md` lists each derived aggregate for review; an operator
-entry in the base reading's `aggregates` overrides the derived one. The repository declares no
-membership. The planner claims `ru.aggregate=<word>` and never expands it.
+**Budget and run status.** Every session of either vendor appends a row to `results/<run>/usage.jsonl`
+(tokens, reasoning tokens, cost; OpenAI costs from the operator's `config/model_prices.json`).
+`--openai_budget_usd` limits the second vendor's calls run-wide: each call's worst case is reserved
+before it is launched, and a call that does not fit pauses the run (`paused_budget`), resumed under
+the same run id once the limit is raised. A reviewer's tool session makes several requests, each
+reserved at its whole input (the prompt and everything sent back) and the output limit, and settled
+as it returns. `--reviewer_max_output_tokens` (64000) bounds each OpenAI request, reasoning
+included; `--max_divergences` (3) bounds each review answer. `--stall_stop` (on) ends
+the run after any iteration from the second on that accepts neither a node nor a concept and leaves no remedy
+awaiting its first try — a law or a node or a concept returned once, or a law or a concept deferred once
+(`incomplete`, stalled). A run ends `complete`,
+`incomplete`, `infrastructure_failure`, `paused_budget`, `stale_aggregate` (an aggregate's inputs
+changed under nodes that claim it: start a new run) or `data_integrity_failure` (an audit file —
+`rulings.jsonl`, the aggregate selection or certificates — cannot be read as written; it is named and
+left as it is); `summary.json` records it, and the command exits non-zero unless `complete`.
+
+**Definitions and aggregates.** Which posted definition applies to a law's words is resolved
+mechanically (`harness/model/definitions.py`) from the run's `laws.jsonl` and the `definitions.jsonl`
+beside it, by the operator's declared precedence (`config/definition_precedence.json`, option
+`--definition_precedence`): a definition the law cites inline or a section-only one of its section,
+then its own chapter, then its code's general chapter, then the general chapter of the code it falls
+back to; the table is `results/<run>/definition_resolution.json`, and the doctor reports the
+training laws' unresolved and ambiguous terms. The same precedence resolves defined terms used
+inside each reached definition from that definition's own place; this finite dependency closure is
+shown to planning and judgment and is part of every aggregate's invalidation digest. Before any law is planned, one planner session
+(`prompts/plan_aggregates.md`) marks each (definition, term) `aggregate`, `not_aggregate` or `gap`
+(`aggregate_selection.jsonl`) and classifies every road-user class under each aggregate as included,
+excluded or unresolved, with quotes; one second-vendor session per aggregate
+(`prompts/verify_aggregate.md`) checks each class (supported, contradicted, underdetermined), a
+contradiction goes back to the planner once, and what it cannot support is admitted as unresolved
+(`aggregate_certificates.jsonl`). The admitted aggregate enters the run's reading under its id,
+`<definition id>::<term>`; a plan claims `ru.aggregate=<id>` and never expands it, and writes a
+law-local aggregate (`<law id>:<span>::<term>`) only where its clause defines its own members.
 
 **Standards and proposed parameters.** Every operationalization names at least one parameter; the
 validator returns a node whose standard is bounded by a structural test with no magnitude behind

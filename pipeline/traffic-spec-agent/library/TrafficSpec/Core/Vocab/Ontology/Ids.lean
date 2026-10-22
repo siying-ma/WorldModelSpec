@@ -52,6 +52,7 @@ def atomIds : List String := [
   "st.lane_adjacency",
   "st.lane_connectivity",
   "st.lane_enters",
+  "st.on_way",
   "st.lane_marking",
   "st.centre_line",
   "st.road_edge",
@@ -68,6 +69,7 @@ def atomIds : List String := [
   "st.grade",
   "st.crest",
   "st.sight_distance",
+  "st.sight_along_way",
   "st.railway_crossing",
   "st.controlled_access",
   "st.elevated_structure",
@@ -133,7 +135,8 @@ def primitiveIds : List String := [
   "prim.closest_approach_within",
   "prim.closest_approach_time",
   "prim.closest_approach_distance",
-  "prim.conditions_hold"
+  "prim.conditions_hold",
+  "prim.region_lateral_offset"
 ]
 
 end TrafficSpec

@@ -166,26 +166,31 @@ def primitives_table() -> str:
 
 def enumerations() -> str:
     out = ["### Enumeration spellings (`Vocab/Ontology/*.lean`): `Arg.lit` spelling → Lean constructor (the spelling for `existsRegion (.lit \"kind\")` and literal arguments, the constructor for `Build.*` and class lists)"]
-    for f in sorted((paths.CORE / "Vocab" / "Ontology").glob("*.lean")):
-        if f.name == "Ids.lean":
-            continue
-        t = f.read_text(encoding="utf-8")
-        for name, body in re.findall(r"namespace (\w+)\ndef ofString[^\n]*\n(.*?)\n  \| _ =>", t, re.S):
-            pairs = re.findall(r'\| "([^"]+)" => some \.(\w+)', body)
-            out.append(f"- `{name}`: " + ", ".join(f"`{s}`→`.{c}`" for s, c in pairs))
+    for name, pairs in _codecs().items():
+        out.append(f"- `{name}`: " + ", ".join(f"`{s}`→`.{c}`" for s, c in pairs))
     return "\n".join(out) + "\n"
 
 
-def enumeration_spellings() -> dict[str, set[str]]:
-    """Enumeration name → the `Arg.lit` spellings its `ofString` accepts (`Vocab/Ontology/*.lean`)."""
-    out: dict[str, set[str]] = {}
+def _codecs() -> dict[str, list[tuple[str, str]]]:
+    """Enumeration name → [(spelling, constructor)] its `ofString` accepts (`Vocab/Ontology/*.lean`);
+    a parametrized constructor is spelt `ctor(<value of its parameter's enumeration>)`."""
+    out: dict[str, list[tuple[str, str]]] = {}
     for f in sorted((paths.CORE / "Vocab" / "Ontology").glob("*.lean")):
-        if f.name == "Ids.lean":
+        if f.name in ("Ids.lean", "Dimensions.lean"):
             continue
         t = f.read_text(encoding="utf-8")
-        for name, body in re.findall(r"namespace (\w+)\ndef ofString[^\n]*\n(.*?)\n  \| _ =>", t, re.S):
-            out[name] = {s for s, _ in re.findall(r'\| "([^"]+)" => some \.(\w+)', body)}
+        for name, body in re.findall(r"namespace (\w+)\ndef ofString[^\n]*\n(.*?)\ndef toString", t, re.S):
+            pairs = re.findall(r'\| "([^"]+)" => some \.(\w+)', body)
+            pairs += [(f"{ctor}(<{ptype}>)", re.sub(r"_(\w)", lambda m: m.group(1).upper(), ctor))
+                      for ctor, ptype in re.findall(r'if s\.startsWith "(\w+)\(".*?\n\s*\((\w+)\.ofString', body, re.S)]
+            out[name] = pairs
     return out
+
+
+def enumeration_spellings() -> dict[str, set[str]]:
+    """Enumeration name → the `Arg.lit` spellings its `ofString` accepts (`Vocab/Ontology/*.lean`);
+    a parametrized one is spelt `ctor(<Enumeration>)`, its parameter one of that enumeration's spellings."""
+    return {name: {s for s, _ in pairs} for name, pairs in _codecs().items()}
 
 
 def units_table() -> str:
@@ -323,3 +328,317 @@ def atom_id_of(lean_name: str, atom_ids: set[str]) -> str | None:
 def core_atom_ids() -> list[str]:
     """The atom ids of the active Core (`Vocab/Ontology/Ids.lean`)."""
     return re.findall(r'^\s*"([a-z]+\.[a-z_]+)"', _read("Vocab/Ontology/Ids.lean").split("primitiveIds")[0], re.M)
+
+
+# ---------------------------------------------------------------------------------------------
+# What a reviewer is taught: the case language, the catalogue a case may use, the lint's contract
+# ---------------------------------------------------------------------------------------------
+#: JSON shape of each Lean type a constructor argument can have.
+_JSON_OF_TYPE = {"Formula": "formula", "Term": "term", "Arg": "argument", "List Arg": "[argument, …]",
+                 "List Term": "[term, …]", "String": "string", "Nat": "natural number", "Measure": '"time" | "path"',
+                 "CmpOp": '"lt" | "le" | "eq" | "ge" | "gt"', "AggOp": '"min" | "max" | "median" | "count"',
+                 "Q": '{"num": integer, "den": positive integer}', "PUnit'": "a unit spelling below", "ParamName": "string",
+                 "AsmId": "string"}
+#: Constructors a case may not use; `derived` and `quantity` are admitted for primitives only.
+CASE_BANNED = {"param", "asm", "rule", "ruleApplies"}
+
+
+def _ctor_signatures(text: str, inductive: str) -> dict[str, list[str]]:
+    """Constructor → argument types, from an inductive's declaration in Formula.lean."""
+    start = text.index(f"inductive {inductive}")
+    body = text[start:]
+    body = body[:re.search(r"\n  (?:/--|inductive )|\nend\b", body[1:]).start() + 1]
+    out = {}
+    for m in re.finditer(r"^\s+\| (\w+)((?: \([^)]*\))*)", body, re.M):
+        types = []
+        for group in re.findall(r"\(([^)]*)\)", m.group(2)):
+            names, t = group.split(":", 1)
+            types += [t.strip()] * len(names.split())
+        out[m.group(1)] = types
+    return out
+
+
+def _top_level(text: str, sep: str = ",") -> list[str]:
+    """`text` split at `sep` outside parentheses and brackets."""
+    out, depth, cur = [], 0, ""
+    for ch in text:
+        if ch in "([":
+            depth += 1
+        elif ch in ")]":
+            depth -= 1
+        if ch == sep and depth == 0:
+            out.append(cur.strip()); cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        out.append(cur.strip())
+    return out
+
+
+def _encoder_arms(text: str, fn: str) -> dict[str, list[tuple[str, str]]]:
+    """Constructor → [(JSON key, value shape)] from Export.lean's encoder `fn`, the shapes taken
+    from the constructor's argument types in Formula.lean."""
+    block = _block(text, f"partial def {fn}", r"^  partial def |^end\b")
+    sigs = _ctor_signatures(_read("Language/Formula.lean"), fn.split(".")[0])
+    out = {}
+    for m in re.finditer(r"^\s+\| \.(\w+)((?: [\wφψ']+)*) =>[ \t]*\n?\s*Json\.mkObj \[(.*)\]\s*$", block, re.M):
+        ctor, vars_, items = m.group(1), m.group(2).split(), m.group(3)
+        types = dict(zip(vars_, sigs.get(ctor, [])))
+        keys = []
+        for item in _top_level(items):
+            km = re.match(r'\("(\w+)", (.*)\)$', item)
+            if not km:
+                continue
+            key, expr = km.group(1), km.group(2)
+            if expr.startswith("Json.arr #["):
+                vs = re.findall(r"([\wφψ']+)\.toJson", expr)
+                shape = "[" + ", ".join(_JSON_OF_TYPE.get(types.get(v, ""), "value") for v in vs) + "]"
+            elif expr.startswith("args "):
+                shape = _JSON_OF_TYPE["List Arg"]
+            elif expr.startswith("Json.arr (ps.map"):
+                shape = _JSON_OF_TYPE["List Term"]
+            elif expr.startswith("Json.mkObj (map"):
+                shape = "object of strings"
+            else:
+                call = re.match(r"\w+\.toJson ([\wφψ']+)$", expr)        # `Formula.toJson φ`
+                v = call.group(1) if call else re.match(r"([\wφψ'.]+)", expr).group(1).split(".")[0]
+                t = types.get(v, "")
+                shape = _JSON_OF_TYPE.get(t, "value")
+            keys.append((key, shape))
+        out[ctor] = keys
+    return out
+
+
+def _units_spelled() -> list[str]:
+    return re.findall(r'=> "(\w+)"', _block(_read("Language/Export.lean"), "def PUnit'.toJson", r"^def Q\.toJson"))
+
+
+def constructor_meanings() -> dict[str, dict[str, str]]:
+    """What each term and formula constructor means, as the comment on its line in `Formula.lean`
+    states it: {"term": {ctor: meaning}, "formula": {ctor: meaning}}."""
+    t = _read("Language/Formula.lean")
+    out = {}
+    for what, start, stop in (("term", "inductive Term", "inductive Formula"), ("formula", "inductive Formula", "\nend")):
+        i = t.index(start); j = t.index(stop, i + len(start))
+        out[what] = {}
+        for m in re.finditer(r"(?m)^\s*\| (\w+)\b([^\n]*?)--\s*([^\n]+)$", t[i:j]):
+            greek = [g for grp in re.findall(r"\(([^():]*):\s*Formula\)", m.group(2)) for g in grp.split()]
+            out[what][m.group(1)] = (m.group(3).strip(), greek)
+    return out
+
+
+def case_language() -> str:
+    """Every JSON form a case may use, with its exact keys and what it means, generated from
+    Export.lean's encoders and Formula.lean's constructors and their comments; how a case states a
+    fact at an earlier observation; the units a literal may carry; the divergence fields that hold a
+    case."""
+    exp = _read("Language/Export.lean")
+    meanings = constructor_meanings()
+    forms = []
+    for fn, what in (("Formula.toJson", "formula"), ("Term.toJson", "term")):
+        for ctor, keys in _encoder_arms(exp, fn).items():
+            if ctor in CASE_BANNED:
+                continue
+            if what == "formula" and ctor in ("and", "or"):                # `Decode.formula` joins two or more to the right
+                keys = [(k, "[formula, formula, …]") for k, _s in keys]
+            obj = "{" + ", ".join(f'"{k}": {s}' for k, s in keys) + "}"
+            note = " — only a primitive (`prim_…`), never a concept" if ctor in ("derived", "quantity") else ""
+            if ctor in ("existsRegion", "forallRegion", "existsDevice", "forallDevice"):
+                note = (f" — the value of `{keys[0][0]}` is the kind (`{{\"lit\": \"<kind>\"}}`), and `var` names the "
+                        "variable the body reads")
+            meaning, greek = meanings.get(what, {}).get(ctor, (None, []))
+            fkeys = [k for k, shape in keys if shape == "formula"]
+            names = ", ".join(f"{g} is `{k}`" for g, k in zip(greek, fkeys) if g in (meaning or ""))
+            forms.append(f"- {what} `{keys[0][0] if keys else ctor}`: `{obj}`" + (f" — {meaning}" if meaning else "")
+                         + (f" ({names})" if names else "") + note)
+    return ("### The case language (`Core/Language/Export.lean`, read back strictly by `Decode.formula`)\n\n"
+            "A case is one formula in this JSON. Every object carries exactly the keys of one form below: a key missing or\n"
+            "added, a null, an array of the wrong length, a fractional `num` or a zero `den` is rejected. The constant formulas are\n"
+            "the bare strings `\"tt\"` and `\"ff\"`, never objects. `and` and `or` take a list of two or more\n"
+            "(`{\"and\": [a, b, c]}` is read as `{\"and\": [a, {\"and\": [b, c]}]}`); every other form whose value is a list\n"
+            "(`implies`, `until`, `since`, `same`, `add`, `sub`, `mul`, `div`) takes exactly two: nest it for more.\n\n" + "\n".join(forms) + "\n\n"
+            "A case is read at `at`. A window behind reads the scenes before `at`, a window ahead the scenes after it. A fact at\n"
+            "an earlier observation is stated through a window behind, never one ahead:\n"
+            "- φ held at some observation in the N s behind `at` (the subject a binder):\n"
+            "  `{\"not\": {\"holds_for\": \"time\", \"length\": {\"lit\": {\"num\": N, \"den\": 1}, \"unit\": \"second\"}, \"subject\": \"<binder>\", \"body\": {\"not\": φ}}}`;\n"
+            "- φ held at the earlier observation whose timestamp is t seconds (`kin_time` reads a scene's timestamp in seconds;\n"
+            "  a scene's `t` and `at` are in milliseconds): the same, N reaching back to it, with φ replaced by\n"
+            "  `{\"and\": [{\"cmp\": \"eq\", \"lhs\": {\"measure\": \"kin_time\", \"args\": []}, \"rhs\": {\"lit\": {\"num\": t, \"den\": 1}, \"unit\": \"second\"}}, φ]}`.\n\n"
+            "- argument: `{\"var\": string}` (a binder of the grounding, an entity, or a quantifier's variable), `{\"lit\": string}`\n"
+            "  (an enumeration spelling or a selector), or `{\"nat\": natural number}` (a count, never an entity id)\n"
+            f"- a literal's `unit`: {', '.join(f'`{u}`' for u in _units_spelled())}; `{{\"num\": 27, \"den\": 2}}` is 13.5\n\n"
+            "Not admitted in a case: a reading parameter (`param`), an assumption (`asm`), another rule (`rule`, `rule_applies`),\n"
+            "a concept (a `derived` or `quantity` whose name is not `prim_…`), a division except by a non-zero literal, and\n"
+            "`ru_aggregate`: a case names a road user's concrete classes.\n\n"
+            "A divergence that carries a case adds three fields:\n"
+            "- `case`: the formula, true at `at` on the trace, that states the facts the law's verdict turns on;\n"
+            "- `entities`: `{\"<name>\": {\"kind\": \"track\" | \"region\" | \"device\", \"id\": natural number}}`, the regions,\n"
+            "  devices and further tracks the case names, each present in the scene at `at` with that kind; entity names\n"
+            "  differ from each other and from the binders, and no quantifier of the case reuses one;\n"
+            "- `at`: the timestamp (milliseconds) of the scene at which the case is stated and the rule's verdict is read.\n"
+            "A situation the vocabulary cannot state gives `unstatable` (the words of the situation the catalogue cannot\n"
+            "state) instead of `case`, `entities` and `at`.\n")
+
+
+def _dimensions() -> tuple[dict[str, tuple[int, int, int]], dict[str, tuple]]:
+    """(measure → dimension, primitive → (result dimension or None, [parameter dimensions])) from
+    the generated `Vocab/Ontology/Dimensions.lean`."""
+    t = _read("Vocab/Ontology/Dimensions.lean")
+    d = lambda s: tuple(int(x) for x in s.split(","))
+    measures = {n: d(v) for n, v in re.findall(r'\("(\w+)", ⟨([-\d, ]+)⟩\)', t.split("def ofPrimitive")[0])}
+    prims = {}
+    for n, r, ps in re.findall(r'\("(\w+)", (none|some ⟨[-\d, ]+⟩), \[([^\]]*)\]\)', t.split("def ofPrimitive")[1]):
+        prims[n] = (None if r == "none" else d(r[6:-1]), [d(p) for p in re.findall(r"⟨([-\d, ]+)⟩", ps)])
+    return measures, prims
+
+
+def render_dim(dim: tuple[int, int, int] | None) -> str:
+    if dim is None:
+        return "true / false"
+    parts = [u if e == 1 else f"{u}^{e}" for u, e in zip(("m", "s", "deg"), dim) if e]
+    return "·".join(parts) or "1 (no unit)"
+
+
+def _dispatch_arms(fn_text: str) -> dict[str, list[tuple[list[str], str]]]:
+    """name → [(argument variables, arm text)] for every `| "name", [args] =>` arm of a dispatcher."""
+    out: dict[str, list[tuple[list[str], str]]] = {}
+    arms = re.split(r"(?m)^  \| ", fn_text)
+    for a in arms[1:]:
+        m = re.match(r'"(\w+)", \[([^\]]*)\] =>', a)
+        if m:
+            out.setdefault(m.group(1), []).append(([v.strip() for v in m.group(2).split(",") if v.strip()], a))
+    return out
+
+
+def _atom_params(name: str, arm: str) -> list[str]:
+    """The parameters an atom's arm of `evalAtomE` matches (`match ps with | [tol] => …`), named by
+    its `parameterMissing` message: what a case must pass in `params`, each without a unit, as
+    `Case.check` requires of an atom's parameters."""
+    m = re.search(r"match ps with\s*\|\s*\[([^\]]*)\]\s*=>", arm)
+    if not m:
+        return []
+    names = [v.strip() for v in m.group(1).split(",") if v.strip()]
+    label = re.search(r'parameterMissing "([^"]*)"', arm)
+    what = label.group(1).removeprefix(name).strip() if label else ""
+    return [what or v for v in names] if len(names) == 1 else names
+
+
+def _arg_sorts(sem: str) -> tuple[dict[str, list[str | None]], str]:
+    block = _block(sem, "def atomArgSorts", r"^/--|^def defName")
+    explicit = {}
+    for names, sorts in re.findall(r'\| ((?:"\w+"\s*(?:\|\s*)?)+)=> some \[([^\]]*)\]', block.replace("\n  |", " |")):
+        kinds = [{"t": "track", "r": "region", "d": "device"}.get(s.strip()) for s in sorts.split(",") if s.strip()]
+        for n in re.findall(r'"(\w+)"', names):
+            explicit[n] = kinds
+    return explicit, block
+
+
+def _sorts_of(name: str, explicit: dict) -> list[str | None]:
+    if name in explicit:
+        return explicit[name]
+    if name.startswith("env_") or name == "kin_time":
+        return []
+    if name.startswith(("ru_", "kin_", "sig_")):
+        return ["track", None, None]
+    if name.startswith("st_"):
+        return ["region", None, None]
+    if name.startswith("dev_"):
+        return ["device", None, None]
+    return []
+
+
+def _literal_spellings(arm: str, var: str, spell: dict[str, set[str]]) -> str:
+    m = re.search(rf"enumLit (\w+)\.ofString {re.escape(var)}\b", arm)
+    if m and m.group(1) in spell:
+        return " | ".join(f"'{s}'" for s in sorted(spell[m.group(1)]))
+    if re.search(rf"comp \(.*\) {re.escape(var)} name", arm):
+        return "'x' | 'y'"
+    lits = re.findall(r'\| \.s "(\w+)"', arm)
+    if re.search(rf"match {re.escape(var)} with", arm) and lits:
+        return " | ".join(f"'{s}'" for s in lits)
+    return "literal"
+
+
+def case_catalogue(onto) -> list[dict]:
+    """Every atom and primitive a case may name, with its arguments, unit, contract and where a
+    trace writes it: exactly what `Case.check` admits on the active Core (the dispatch tables of
+    Semantics.lean, the class atoms of the generated codecs, the measures and primitives with a
+    dimension), each with a contract from the run's ontology."""
+    from ..phases.review import trace_place
+    sem = _read("Language/Semantics.lean")
+    bools = re.findall(r'"(\w+)"', re.search(r"boolAtomNames : List String := \[(.*?)\]", sem, re.S).group(1))
+    measures_listed = re.findall(r'"(\w+)"', re.search(r"measureNames : List String := \[(.*?)\]", sem, re.S).group(1))
+    dims, prims = _dimensions()
+    spell = enumeration_spellings()
+    classes = [f"ru_{k}" for k in sorted(spell.get("RoadUserClass", ()))] + [f"st_{k}" for k in sorted(spell.get("StructureKind", ()))] \
+        + [f"dev_{k}" for k in sorted(spell.get("DeviceKind", ()))]
+    explicit, _ = _arg_sorts(sem)
+    atom_arms = _dispatch_arms(_block(sem, "def evalAtomE", r"^where"))
+    measure_arms = _dispatch_arms(_block(sem, "def evalMeasure", r"^where"))
+    prim_sorts = {}
+    pblock = _block(_read("Vocab/Primitives.lean"), "def argSorts", r"^private def tid")
+    for names, sorts in re.findall(r'\| ((?:"\w+"\s*(?:\|\s*)?)+)=> some \[([^\]]*)\]', pblock):
+        kinds = ["device" if "device" in s else "region" if "region" in s else "track" for s in sorts.split(",") if s.strip()]
+        for n in re.findall(r'"(\w+)"', names):
+            prim_sorts[n] = kinds
+    atom_ids = set(core_atom_ids())
+    rows = []
+
+    def entry(name: str, kind: str, signatures: list[str], dim) -> None:
+        aid = atom_id_of(name, atom_ids) if not name.startswith("prim_") else name.replace("_", ".", 1)
+        rows.append({"name": name, "kind": kind, "signatures": signatures, "unit": render_dim(dim), "dim": dim,
+                     "contract": onto.contract(aid) if aid else "", "atom": aid,
+                     "place": trace_place(name) if not name.startswith("prim_") else "computed by Core from the atoms it reads"})
+
+    def sigs(name: str, arms: dict, sorts: list) -> list[str]:
+        out = []
+        for vars_, arm in arms.get(name, [([], "")]) if name in arms else [([f"a{i}" for i in range(len([s for s in sorts if s]))], "")]:
+            parts = []
+            for i, v in enumerate(vars_):
+                s = sorts[i] if i < len(sorts) else None
+                parts.append(s if s else _literal_spellings(arm, v, spell))
+            out.append(f"{name}({', '.join(parts)})")
+        return out
+    for n in sorted(set(bools) - {"ru_aggregate"}):
+        ps = [p for _vars, arm in atom_arms.get(n, []) for p in _atom_params(n, arm)]
+        tail = f" params [{', '.join(f'{p}: {render_dim((0, 0, 0))}' for p in ps)}]" if ps else ""
+        entry(n, "boolean atom", [s + tail for s in sigs(n, atom_arms, _sorts_of(n, explicit))], None)
+    for n in classes:
+        if n not in bools:
+            entry(n, "boolean atom (class)", [f"{n}({_sorts_of(n, explicit)[0]})"], None)
+    for n in measures_listed:
+        if n in dims:
+            entry(n, "measured atom", sigs(n, measure_arms, _sorts_of(n, explicit)), dims[n])
+    for n, (res, ps) in sorted(prims.items()):
+        arg = ", ".join(prim_sorts.get(n, []))
+        par = ", ".join(render_dim(p) for p in ps)
+        entry(n, "boolean primitive" if res is None else "quantity primitive",
+              [f"{n}({arg})" + (f" params [{par}]" if ps else "")], res)
+    return rows
+
+
+def case_vocabulary(onto) -> str:
+    rows = case_catalogue(onto)
+    groups: dict[str, list[dict]] = {}
+    for r in rows:
+        groups.setdefault(r["atom"] or r["name"], []).append(r)
+    out = ["### The case vocabulary (every atom and primitive a case may name; generated from the active Core and the run's ontology)", "",
+           "A true/false atom is `{\"atom\": name, \"args\": [...], \"params\": [...]}`, its `params` the ones its row lists (`[]` where it lists none); an atom with a unit is",
+           "`{\"measure\": name, \"args\": [...]}`; a Boolean primitive is `{\"derived\": name, …}`, a quantity primitive",
+           "`{\"quantity\": name, …}`, its `params` literals in the units listed. Track, region and device positions take a",
+           "variable (a binder or an entity). `<Enumeration>` in a spelling is one of that enumeration's spellings.", "",
+           "| id | names a formula uses (arguments) → value | contract | in the trace |", "|---|---|---|---|"]
+    for aid, rs in groups.items():
+        names = "<br>".join(f"`{sig}` → {r['unit']}" for r in rs for sig in r["signatures"])
+        places = "; ".join(dict.fromkeys(r["place"] for r in rs))
+        out.append(f"| `{aid}` | {names} | {' '.join(str(rs[0]['contract']).split())} | {places} |")
+    return "\n".join(out) + "\n"
+
+
+def lint_contract() -> str:
+    """The trace check's contract as `Core/Evidence/TraceLint.lean` states it in its module comment:
+    what a written trace must satisfy, word for word."""
+    t = _read("Evidence/TraceLint.lean")
+    body = t[t.index("/-") + 2:t.index("-/")]
+    lines = body.splitlines()[2:]                       # past the module name
+    return "\n".join(l[2:] if l.startswith("  ") else l for l in lines).strip() + "\n"

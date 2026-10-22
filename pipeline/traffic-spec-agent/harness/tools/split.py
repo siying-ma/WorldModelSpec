@@ -31,7 +31,6 @@ FIELDS_OF_ATOM: dict[str, list[tuple[str, str]]] = {
     "sig.position_lamp": [("positionLamp", "position_lamp")],
     "sig.reverse_lamp": [("reverseLamp", "reverse_lamp")],
     "sig.door_open": [("doorsOpen", "doors_open")],
-    "sig.compression_brake": [("compressionBrake", "compression_brake")],
     "dev.school_bus_signal": [("onTrack", "on_track"), ("redFlashing", "red_flashing"), ("amberFlashing", "amber_flashing"), ("stopArm", "stop_arm")],
 }
 
@@ -83,9 +82,9 @@ def generate_train(full_dir: Path, out: Path) -> None:
         n = m.group(1)
         return any(n == d or n.startswith(d + "_") for d in defs) or n in derived
 
-    # World: the fields
+    # World: the fields, and every line of a projection that names one (by its field or its JSON key)
     w = (full_dir / WORLD).read_text(encoding="utf-8")
-    w = _drop_lines(w, lambda l: any(re.match(rf"\s+{f}\s*:", l) for f, _ in fields))
+    w = _drop_lines(w, lambda l: any(re.search(rf"\b{f}\b", l) or f'"{k}"' in l for f, k in fields))
     (out / WORLD).write_text(banner + w, encoding="utf-8")
     # Decode: the keys (a dropped last field keeps the structure's closing brace)
     d = (full_dir / DECODE).read_text(encoding="utf-8")

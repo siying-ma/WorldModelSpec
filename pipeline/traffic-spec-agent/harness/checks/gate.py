@@ -45,6 +45,11 @@ GENERATED = {"library/TrafficSpec/Index.lean", "library/TrafficSpecWitness.lean"
 FREE_USES = {"kin_time"}
 
 
+
+def narrowing_key(n: dict) -> tuple[str, str, str]:
+    """A narrowing by its span, kind and words, whitespace aside: two declarations of one reading are one."""
+    return (" ".join(str(n.get("span", "")).split()), str(n.get("kind", "reading")), " ".join(str(n.get("why", "")).split()))
+
 def reads_of_used(used: set[str], accepted_concepts: dict[str, dict] | None) -> set[str]:
     """Lean names a body reads through the primitives and accepted concepts it uses: a claim among
     them is used, although no leaf of the body names it."""
@@ -62,11 +67,15 @@ def reads_of_used(used: set[str], accepted_concepts: dict[str, dict] | None) -> 
 #: Directories the repository digest does not enter: version control, build outputs, caches, and
 #: the per-iteration task directories (a running session writes its own stream there).
 DIGEST_SKIP_DIRS = {".git", ".lake", "__pycache__", ".venv", "node_modules", ".mypy_cache", ".pytest_cache"}
+#: Offline verification and archived scratch files are outside every coding session's jail.
+DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 #: Files the harness itself writes while sessions run, and operator logs: a run's ledgers and
 #: records (saved after every transition, so a session coding beside another would otherwise see
 #: them change), and any log or pid file. The jail denies a session these paths already.
-DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
-                         "deferred_nodes.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md", "review_compare.jsonl"}
+DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
+                         "deferred_nodes.jsonl", "deferred_concepts.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md",
+                         "rulings.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
+                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
 
@@ -74,7 +83,6 @@ DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 class Verdict:
     verdict: str
     details: list[str] = field(default_factory=list)
-    report: str = ""
     extras: dict = field(default_factory=dict)    # what an OK carries back: residues the coder added
 
     def to_dict(self) -> dict:
@@ -90,13 +98,15 @@ def repo_digest(root: Path | None = None) -> dict[str, str]:
     out: dict[str, str] = {}
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = sorted(d for d in dirnames if d not in DIGEST_SKIP_DIRS and not d.startswith("iter-"))
+        if Path(dirpath) == root / "results":
+            dirnames[:] = [d for d in dirnames if d not in DIGEST_SKIP_RESULTS_DIRS]
         for f in filenames:
             p = Path(dirpath) / f
             rel = p.relative_to(root).as_posix()
             if rel in GENERATED or p.is_symlink() or f.endswith(DIGEST_SKIP_SUFFIXES):
                 continue
-            if rel.startswith("results/") and rel.count("/") == 2 and f in DIGEST_SKIP_RUN_FILES:
-                continue
+            if rel.startswith("results/") and rel.count("/") == 2 and (f in DIGEST_SKIP_RUN_FILES or (f.startswith(".") and ".tmp-" in f)):
+                continue                                   # a harness file, or the temporary file of its crash-safe write
             try:
                 out[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
             except OSError:
@@ -172,6 +182,7 @@ def _harness_source(node_id: str, reading_json_path: Path) -> str:
 import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Language.Export
+import TrafficSpec.Core.Evidence.TraceLint
 import {nodeid.rule_module(node_id)}
 import {nodeid.witness_module(node_id)}
 open TrafficSpec Lean
@@ -198,6 +209,7 @@ def main : IO Unit := do
   (← IO.getStdout).flush
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
+  IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (r.formulas.flatMap Formula.aggregateIds).eraseDups}}"
   for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
   for g in (r.binders.flatMap fun b => occF b.cls) ++ occF r.applicability ++ occF r.obligation do
     IO.println s!"OCC\\t{{String.intercalate "," g}}"
@@ -205,6 +217,8 @@ def main : IO Unit := do
   let rulesX := rules.map (Concept.expandRule allConcepts)
   for e in Rule.check rulesX (Concept.expandRule allConcepts r) do IO.println s!"CHECK\\t{{e}}"
   for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
+  for sc in scs do
+    for e in TraceLint.checkReferences sc.trace do IO.println s!"REF\\t{{sc.name}}\\t{{e}}"
   for sc in scs do
     let sc' : Scenario := {{ sc with reading := ρ }}
     match sc'.run rules allConcepts with
@@ -330,6 +344,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if bool(decl["surrogate"]) != exp_surrogate: mism.append(f"surrogate {decl['surrogate']} ≠ {exp_surrogate}")
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
+    # the record's own narrowings are the plan's: what is left is what the coder added
+    on_record = {narrowing_key(x) for x in node.get("narrowings", []) if isinstance(x, dict)}
+    narrowings = [n for n in narrowings if narrowing_key(n) not in on_record]
     # an observable reading the plan declared on a span is the plan's own reading of it, not a narrowing of its scope
     planned_obs = {n.get("span") for n in node.get("narrowings", []) if isinstance(n, dict) and n.get("kind") == "observable_reading"}
     narrowed_scope = [f"narrowing on {n['span']} ({spans[n['span']].get('role')}): {str(n.get('why', ''))[:160]}" for n in narrowings
@@ -358,6 +375,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     unused = sorted(c for c in claimed if not any(canon(n) == c for n in used) and c not in used_via)
     if unused:
         return Verdict("UNUSED_CLAIM", unused)
+    # an aggregate the rule reads is one its record claims, by id (`ru.aggregate=<id>`)
+    agg_used = {a for row in col("AGGREGATES") for a in row if a}
+    agg_claimed = {c.split("=", 1)[1] for c in node.claimed_atoms() if c.startswith("ru.aggregate=")}
+    if agg_used - agg_claimed:
+        return Verdict("UNCLAIMED_ATOM", [f"ru_aggregate \"{a}\" (the record claims {sorted(agg_claimed) or 'no aggregate'})" for a in sorted(agg_used - agg_claimed)])
     from fractions import Fraction
     from ..model import units
     used_lits = sorted((Fraction(q), u.split(".")[-1].strip()) for q, u in col("LITERAL"))
@@ -386,8 +408,13 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     for name, absent in col("MANIFEST"):
         if name == "blind" and set(a for a in absent.split(",") if a) != masked:
             fails.append(f"blind: the manifest masks {sorted(a for a in absent.split(',') if a)}, the node masks {sorted(masked)}")
+    refs = {}
+    for name, msg in col("REF"):
+        refs.setdefault(name, []).append(msg)
     for name, expected, got, status in scen:
-        if status != "ok":
+        if name in refs:                  # a trace no adapter can write: its verdict is not considered
+            fails.append(f"{name}: its trace is not one the adapter can produce: {'; '.join(refs[name][:3])}")
+        elif status != "ok":
             fails.append(f"{name}: {status}")
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")
@@ -573,7 +600,7 @@ CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND",
                     "GATE_TIMEOUT", "OK"]
 ALLOWED_CONCEPT_IMPORTS = {"TrafficSpec.Core.Language.Concept"}
 PUNIT_JSON = {"metre": "metre", "second": "second", "metrePerSecond": "metre_per_second", "metrePerSecondSq": "metre_per_second_sq",
-              "degree": "degree", "degreePerSecond": "degree_per_second", "ratio": "ratio", "count": "count"}
+              "degree": "degree", "degreePerSecond": "degree_per_second", "perMetre": "per_metre", "ratio": "ratio", "count": "count"}
 
 
 def _concept_harness_source(cid: str, reading_json_path: Path) -> str:
@@ -582,6 +609,7 @@ def _concept_harness_source(cid: str, reading_json_path: Path) -> str:
 import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Language.Export
+import TrafficSpec.Core.Evidence.TraceLint
 import {nodeid.concept_module(cid)}
 import {nodeid.concept_witness_module(cid)}
 open TrafficSpec Lean
@@ -618,6 +646,8 @@ def main : IO Unit := do
       IO.println s!"INST\\t{{i.name}}\\tok"
       for e in Rule.check (rules.map (Concept.expandRule cs)) (Concept.expandRule cs r) do IO.println s!"CHECK\\t{{e}}"
   let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  for sc in scs' do
+    for e in TraceLint.checkReferences sc.trace do IO.println s!"REF\\t{{sc.name}}\\t{{sc.rule}}\\t{{e}}"
   for sc in scs' do
     match sc.run rules cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
@@ -759,6 +789,8 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         if not ws(n.get("span")) or ws(n.get("span")) not in contract_ws: mism.append(f"narrowing on `{str(n.get('span', ''))[:60]}`, which is not a run of the contract's words")
         elif not str(n.get("why", "")).strip(): mism.append(f"narrowing on `{str(n.get('span'))[:60]}` states no why")
     if (decl.get("supersedes") or None) != (rec.get("supersedes") or None): mism.append("supersedes differs from the record")
+    on_record = {narrowing_key(x) for x in rec.get("narrowings", []) if isinstance(x, dict)}
+    narrowings = [n for n in narrowings if narrowing_key(n) not in on_record]
     if mism:
         return Verdict("DECLARATION_MISMATCH", mism)
     unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]
@@ -807,8 +839,13 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     wanted = dict(CONCEPT_SCENARIOS)
     if rec.get("supersedes"):
         wanted["counterexample"] = normalize_verdict((rec.get("counterexample") or {}).get("expected", "violated"))
+    refs = {}
+    for name, rule, msg in col("REF"):
+        refs.setdefault((name, rule), []).append(msg)
     for name, _rule, expected, got, status in scen:
-        if status != "ok":
+        if (name, _rule) in refs:         # a trace no adapter can write: its verdict is not considered
+            fails.append(f"{name} ({_rule}): its trace is not one the adapter can produce: {'; '.join(refs[(name, _rule)][:3])}")
+        elif status != "ok":
             fails.append(f"{name}: {status}")
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")

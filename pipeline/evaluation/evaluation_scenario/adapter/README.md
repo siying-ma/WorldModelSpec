@@ -191,6 +191,7 @@ What to drop:
 | `posture` | {`on_seat`, `hands_on_controls`, `standing_on_deck`, `holding_another_vehicle`, `stunt`} | rider posture; booleans except `hands_on_controls` (a count) |
 | `kin` | Kin | §4.3 |
 | `sig` | Signals | §4.4 |
+| `sight_along_way` | [[way id, m], …] | per `highway` region: the distance along that way, in each direction from its point nearest this user, within which a vehicle on it could be seen from this user's eye; the smaller of the two directions (`st.sight_along_way`). Write it only where the adapter casts rays along the ways meeting the junction ahead; otherwise omit it and mark the atom absent |
 
 ### 4.3 Kin (kinematics)
 
@@ -228,7 +229,8 @@ reading them for another vehicle reports unknown.
 | `reverse_lamp` | bool | `Reverse` (full split only) |
 | `siren` | bool | `Special1` / `Special2` |
 | `warning_lamps` | [{`colour`, `mode`, `facing`}] | |
-| `horn`, `hand_signal`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
+| `hand_signal` | `no_signal` / `left` / `right` / `stop_or_slow` / `re_enter` | CARLA renders no arm signals: write `no_signal` on every road user |
+| `horn`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
 
 Write `turn_indicator` from the light state of every frame, `off` included: a rule that requires a
 signal can come out `violated` only where the source says the indicator was off. Where the light
@@ -246,7 +248,8 @@ lamps also need the modified generator.
 | `position` | [x, y] | reference point of a point-like structure |
 | `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | lanes only |
 | `unobserved_kinds` | [kind] | kinds the source cannot tell for this region |
-| others | `paved`, `opening`, `marked`, `curvature` (1/m), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
+| `ways` | [highway region ids] | the public ways (`highway` regions) this region lies on (`st.on_way`): a lane, roadway, shoulder, crosswalk, stop line or median its road's; a junction every highway whose road connects there |
+| others | `paved`, `opening`, `marked`, `curvature` (1/m; Core reads its magnitude, so either sign is accepted), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
 
 CARLA mapping:
 - **Lanes.** Group waypoints by (road id, section id, lane id) and take the union of their polygons

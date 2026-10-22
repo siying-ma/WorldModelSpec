@@ -3,66 +3,54 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from ..checks import aggregates
-from ..model import corpus, ontology
+from ..model import corpus, definitions as definitions_mod, ontology
 from ..agents import render, session
 from ..store import paths
 from ..store.gaps import GapLedger
 from ..model.mapping import MappingIndex
 from ..model.reading import Reading
 from ..lean import surface
+from . import review as review_phase
 from ..model.blueprint import ConceptRecord
 from ..store.state import Run
 
 
 def parameter_catalogue(reading: Reading) -> str:
     if not reading.params:
-        return ("(the catalogue is empty: every parameter a node needs is proposed in its `param_proposals` with unit, provisional value, convention and source)\n"
-                "\nLegal aggregates the run's reading declares so far — a span using one of these words claims the atom "
-                f"`{ontology.AGGREGATE}=<word>` and nothing else; a word not listed is derived by you from its definition "
-                "(`aggregates.jsonl`) before any node claims it:\n\n" + aggregates.render(reading))
+        return "(the catalogue is empty: every parameter a node needs is proposed in its `param_proposals` with unit, provisional value, convention and source)\n"
     out = ["| parameter | unit | convention |", "|---|---|---|"]
     for name, p in sorted(reading.params.items()):
         out.append(f"| `{name}` | {p.get('unit', '')} | {p.get('convention', '')} |")
-    out += ["", "Legal aggregates the run's reading declares so far — a span using one of these words claims the atom "
-            f"`{ontology.AGGREGATE}=<word>` and nothing else; a word not listed is derived by you from its definition "
-            "(`aggregates.jsonl`) before any node claims it:", "", aggregates.render(reading)]
     return "\n".join(out) + "\n"
 
-PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "library_summary", "concepts", "mapping_index", "parameters", "gaps",
-                "feedback", "user_hints", "anchors", "aggregate_atom")
-PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concepts", "definition", "users")
-PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language", "concepts",
-                            "parameters", "anchors", "aggregate_atom")
+PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_language", "library_summary", "concepts", "mapping_index",
+                "parameters", "gaps", "feedback", "upheld", "user_hints", "anchors", "aggregate_atom")
+PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
+                       "definition", "users")
+PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
+                            "concept_language", "concepts", "parameters", "anchors", "aggregate_atom")
 
 
-def defined_term(d: dict) -> list[str]:
-    """The term a posted definition defines: the first quoted phrase of its text, and the title's
-    subject when the title reads "<term> defined"."""
-    import re
-    out = []
-    m = re.search(r"“([^”]+)”|\"([^\"]+)\"", d.get("text", ""))
-    if m:
-        out.append((m.group(1) or m.group(2)).strip().lower())
-    t = d.get("title", "").strip()
-    if t.lower().endswith(" defined"):
-        out.append(t[:-8].strip().lower())
-    return sorted(set(out))
+def definitions_for(run: Run, laws: list[corpus.Law]) -> list[dict]:
+    """The posted definitions that apply to a batch's laws, by the run's resolution table: every
+    record a resolved term reaches through its cross-references, and every candidate of an
+    ambiguous term."""
+    out, seen = [], set()
+    for law in laws:
+        for d in definitions_mod.applicable(run, law.id):
+            if d.get("id") not in seen:
+                seen.add(d.get("id")); out.append(d)
+    return out
 
 
-def definitions_for(laws: list[corpus.Law], defs: list[dict]) -> list[dict]:
-    """The definitions a batch needs: every definition a batch law cites by its bracketed id,
-    every definition whose defined term occurs in a batch law's text or title (the aggregate
-    words come this way), and, one step further, every definition whose term occurs in a
-    definition already selected. The rest of the folder is size and distraction."""
-    import re
-    text = " ".join((l.text + " " + l.title).lower() for l in laws)
-    cited = {r for l in laws for r in corpus.LAW_REF.findall(l.text) if r.startswith("DEF-")}
-    def occurs(terms: list[str], where: str) -> bool:
-        return any(re.search(r"\b" + re.escape(t) + r"s?\b", where) for t in terms)
-    chosen = [d for d in defs if d.get("id") in cited or occurs(defined_term(d), text)]
-    ctext = " ".join(d.get("text", "").lower() for d in chosen)
-    chosen += [d for d in defs if d not in chosen and occurs(defined_term(d), ctext)]
-    return chosen
+def definitions_block(run: Run, laws: list[corpus.Law]) -> str:
+    """The definitions table (term → applicable definition → representation → admitted aggregate),
+    read-only, then the texts of the definitions that apply."""
+    from . import aggregate as aggregate_phase
+    rows = {law.id: definitions_mod.rows_for(run, law.id) for law in laws}
+    return ("### The defined terms of these laws (read-only: resolved by the operator's declared precedence; aggregates "
+            "selected and admitted by the run)\n\n" + aggregates.render(Reading(run.reading_file), rows, aggregate_phase.load_selection(run))
+            + "\n### The definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, laws)))
 
 
 def concept_catalogue(run: Run) -> str:
@@ -157,23 +145,25 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
     onto = ontology.load(run.opts.ontology)
     values = {
         "laws": corpus.render_laws(laws),
-        "definitions": corpus.render_definitions(definitions_for(laws, defs)),
+        "definitions": definitions_block(run, laws),
         "ontology": onto.text,
         "formula_language": surface.formula_language(),
+        "concept_language": surface.concept_language(),
         "library_summary": library_summary(run, [n for n in pending or [] if "node_id" in n]),
         "concepts": concept_catalogue(run) + pending_concepts_table(pending),
         "mapping_index": MappingIndex(run.mapping_file).render() + pending_mappings_table(pending),
         "parameters": parameter_catalogue(Reading(run.reading_file)) + pending_proposals_table(pending),
         "gaps": GapLedger(paths.GAP_LEDGER).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
+        "upheld": review_phase.upheld_block(run, {l.id for l in laws}),
         "user_hints": run.read_hints(),
         "anchors": ontology.anchors_text(onto),
         "aggregate_atom": ontology.AGGREGATE,
     }
     prompt = render.render("plan.md", values)
     validate_cmd = f"python -m harness validate --run_id {run.opts.run_id} --blueprint_file {(plan_dir / 'blueprint.jsonl').resolve()}"
-    prompt += (f"\n\n## Where to write\n\nWorking directory: `{plan_dir.resolve()}`. Write `aggregates.jsonl`, `blueprint.jsonl`, `PLAN.md` and "
-               "`proposed_gaps.jsonl` there with the Write tool, as files, by hand. Everything you need is in this prompt: you read no "
+    prompt += (f"\n\n## Where to write\n\nWorking directory: `{plan_dir.resolve()}`. Write `aggregates.jsonl`, `blueprint.jsonl` and "
+               "`PLAN.md` there with the Write tool, as files, by hand. Everything you need is in this prompt: you read no "
                "other file, and the shell runs exactly one command, the validator below — any other command is denied.\n\n"
                "## Checking a draft\n\nThe deterministic validator the harness will run, with the run's accepted nodes, concepts, "
                "mapping index, reading and your `aggregates.jsonl`, is available to you on a draft:\n\n"
@@ -190,7 +180,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
     return plan_dir
 
 
-PLAN_OUTPUTS = ("blueprint.jsonl", "aggregates.jsonl", "proposed_gaps.jsonl", "PLAN.md")
+PLAN_OUTPUTS = ("blueprint.jsonl", "aggregates.jsonl", "PLAN.md")
 
 
 def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path, defs: list[dict],
@@ -216,8 +206,8 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         "concept": json.dumps(rec.raw, ensure_ascii=False, indent=1),
         "verdict": "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)",
         "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
-        "definition": definition,
+        "ontology": onto.text, "formula_language": surface.formula_language(), "concept_language": surface.concept_language(),
+        "concepts": surface.concepts_table(run.all_concepts()), "definition": definition,
         "users": ", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)"})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object per line — the revised concept record with the same `concept_id`; or a split, `{\"concept_id\": \"<id>\", "
@@ -286,8 +276,9 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n",
-        "verdict": verdict, "coder_narrowings": coder_block, "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
+        "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
+        "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
+        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
@@ -300,6 +291,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         return d
     laws = {law.id: law}
     index = MappingIndex(run.mapping_file)
+    reading.pending_aggregates = True            # an aggregate the selection did not admit is the loop's to correct, not this session's
     accepted = {k: Node(v) for k, v in run.all_nodes().items()}
     ask = prompt
     for attempt in ("", "_again"):
@@ -352,7 +344,7 @@ def load_node_repair(d: Path):
     pf = d / "planned.json"
     if pf.exists():
         planned = json.loads(pf.read_text(encoding="utf-8"))
-        r = {**r, **{k: planned[k] for k in FIXED_NODE_KEYS if k in planned}}
+        r = {**{k: planned[k] for k in FIXED_NODE_KEYS if k in planned}, **{k: v for k, v in r.items() if k not in FIXED_NODE_KEYS}}
     if "node_id" not in r:
         return None
     return Node(r)
@@ -411,7 +403,7 @@ def merge_batches(run: Run, batch_dirs: list[Path]) -> Path:
     """The batches' outputs concatenated under `iter/plan/`, which validation reads. A concept two
     batches proposed under one id is kept once, as the first batch's record (the root law's) with
     the union of its users; a later batch's differing contract is dropped and the drop is noted in
-    the merged `PLAN.md`, so the feedback names it."""
+    the merged `PLAN.md` for the operator to inspect."""
     plan_dir = run.iter / "plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
     concepts: dict[str, dict] = {}
@@ -448,8 +440,7 @@ def merge_batches(run: Run, batch_dirs: list[Path]) -> Path:
     for line in lines["blueprint.jsonl"]:
         out.append(json.dumps(next(it), ensure_ascii=False) if line is None else line)
     (plan_dir / "blueprint.jsonl").write_text("".join(l + "\n" for l in out), encoding="utf-8")
-    for name in ("aggregates.jsonl", "proposed_gaps.jsonl"):
-        (plan_dir / name).write_text("".join(l + "\n" for l in lines[name]), encoding="utf-8")
+    (plan_dir / "aggregates.jsonl").write_text("".join(l + "\n" for l in lines["aggregates.jsonl"]), encoding="utf-8")
     if conflicts:
         lines["PLAN.md"].append("<!-- merge -->\n## Concepts proposed by more than one batch\n\n" + "\n".join(f"- {c}" for c in conflicts) + "\n")
     (plan_dir / "PLAN.md").write_text("\n".join(lines["PLAN.md"]), encoding="utf-8")

@@ -16,7 +16,8 @@ FACTORS: dict[str, tuple[str, Fraction]] = {
     "km/h": ("metrePerSecond", Fraction(1000, 3600)), "kph": ("metrePerSecond", Fraction(1000, 3600)),
     "m/s2": ("metrePerSecondSq", Fraction(1)), "m/s^2": ("metrePerSecondSq", Fraction(1)),
     "deg": ("degree", Fraction(1)), "degree": ("degree", Fraction(1)), "degrees": ("degree", Fraction(1)),
-    "deg/s": ("degreePerSecond", Fraction(1)), "ratio": ("ratio", Fraction(1)), "count": ("count", Fraction(1)),
+    "deg/s": ("degreePerSecond", Fraction(1)), "1/m": ("perMetre", Fraction(1)), "per_metre": ("perMetre", Fraction(1)),
+    "ratio": ("ratio", Fraction(1)), "count": ("count", Fraction(1)),
 }
 
 

@@ -27,8 +27,6 @@ class NodeVerdict:
     node: Node
     kind: str                     # accept | return | fail
     reasons: list[str] = field(default_factory=list)
-    gaps: list[dict] = field(default_factory=list)
-    proposals: list[dict] = field(default_factory=list)   # parameter proposals the loop enters in the reading when the node is accepted
 
 
 # ---------------------------------------------------------------------------------------------
@@ -76,8 +74,8 @@ def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading:
     _nodes, _concepts, outcomes, concept_outcomes = validate_a_for_run(run, plan_dir, laws, reading, defs or [],
                                                                        extra_concepts=extra_concepts, extra_nodes=extra_nodes,
                                                                        extra_validate_nodes=extra_validate_nodes)
-    verdicts = [NodeVerdict(o.node, o.kind, o.reasons, o.gaps, o.proposals) for o in outcomes]
-    (out_dir / "verdicts.jsonl").write_text("".join(json.dumps({"node_id": v.node.id, "kind": v.kind, "reasons": v.reasons, "gaps": v.gaps, "proposals": v.proposals}, ensure_ascii=False) + "\n" for v in verdicts), encoding="utf-8")
+    verdicts = [NodeVerdict(o.node, o.kind, o.reasons) for o in outcomes]
+    (out_dir / "verdicts.jsonl").write_text("".join(json.dumps({"node_id": o.node.id, "kind": o.kind, "reasons": o.reasons, "gaps": o.gaps, "proposals": o.proposals}, ensure_ascii=False) + "\n" for o in outcomes), encoding="utf-8")
     (out_dir / "concept_verdicts.jsonl").write_text("".join(json.dumps({"concept_id": o.concept.id, "kind": o.kind, "reasons": o.reasons}, ensure_ascii=False) + "\n" for o in concept_outcomes), encoding="utf-8")
     return verdicts, concept_outcomes
 
@@ -86,13 +84,14 @@ def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading:
 # Sessions
 # ---------------------------------------------------------------------------------------------
 def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model: str | None = None,
-             effort: str | None = None) -> tuple[dict | None, list[str]]:
+             effort: str | None = None, usage_label: str | None = None) -> tuple[dict | None, list[str]]:
     """One tool-less session: its JSON and the schema defects that remain. `check(parsed)` names the
     defects of an answer; an answer with defects is asked for once more with the defects appended,
     and the second answer stands whole, with whatever defects it keeps (the caller decides what
     they mean). A session
     that ran and wrote no JSON is asked once more; a second silence returns no answer with that
-    defect, which the caller counts against the node. In a dry run `(None, [])`."""
+    defect, which the caller counts against the node. `usage_label` names the session's rows in
+    `usage.jsonl` (its subject included), `label` its files. In a dry run `(None, [])`."""
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
@@ -102,7 +101,8 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     for attempt in ("", "_again"):
         record = session.run(ask, cwd=out_dir, out_dir=out_dir, opts=run.opts, max_turns=6,
                              effort=effort or run.opts.judge_effort, label=label + attempt, timeout=900,
-                             allow=[], disallowed_tools=session.NO_TOOLS, model=model or run.opts.model)
+                             allow=[], disallowed_tools=session.NO_TOOLS, model=model or run.opts.model,
+                             usage_label=(usage_label + attempt) if usage_label else None)
         text = ((record.get("result") or {}).get("result", "") or "")
         (out_dir / f"{label}{attempt}_result.txt").write_text(text, encoding="utf-8")
         parsed = render.extract_json(text)
@@ -121,37 +121,48 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
 # ---------------------------------------------------------------------------------------------
 # What a reviewer is told the names mean
 # ---------------------------------------------------------------------------------------------
-def glosses_for(node: Node, onto: ontology.Ontology, run: Run) -> dict[str, str]:
-    """Contracts of every id the node claims: atoms and primitives from the ontology, concepts
-    from the run's catalogue, and every atom a claimed concept or primitive reads."""
+def glosses_of(names, onto: ontology.Ontology, run: Run | None = None) -> dict[str, str]:
+    """The contract of each id or Lean name: an accessor resolves to its atom as the gate's
+    canonical form does (`st_region_geometry_distance` → `st.region_geometry`), a primitive to its
+    `prim.*` row, a concept id to the run's catalogue. The one path every contract a reviewer or a
+    judge is shown goes through."""
+    from ..lean import surface
+    atom_ids = set(onto.atom_ids)
+    concepts = run.all_concepts() if run is not None else {}
     out: dict[str, str] = {}
-    for aid in claimed_closure(node, onto):
-        c = onto.contract(aid.split("=")[0])
-        if c:
-            out[aid.split("=")[0]] = c
+    for name in names:
+        name = str(name).split("=")[0]
+        if name in concepts:
+            out[name] = " ".join(str(concepts[name].get("contract", "")).split())
+            continue
+        if name.startswith("drv_"):
+            cid = next((c for c in concepts if c.replace(".", "_") == name), None)
+            if cid:
+                out[cid] = " ".join(str(concepts[cid].get("contract", "")).split())
+            continue
+        aid = name if "." in name else (name.replace("_", ".", 1) if name.startswith("prim_") else surface.atom_id_of(name, atom_ids))
+        if aid and onto.contract(aid):
+            out[aid] = onto.contract(aid)
+    return out
+
+
+def glosses_for(node: Node, onto: ontology.Ontology, run: Run) -> dict[str, str]:
+    """Contracts of every id the node claims, what its claimed concepts and primitives read, and
+    its compositions."""
+    ids = set(claimed_closure(node, onto))
     for cid, rec in run.all_concepts().items():
         if cid in node.claimed_atoms():
-            out[cid] = " ".join(str(rec.get("contract", "")).split())
-            for aid in rec.get("reads", []):
-                c = onto.contract(aid)
-                if c:
-                    out[aid] = c
+            ids.add(cid)
+            ids |= set(rec.get("reads", []))
+    out = glosses_of(sorted(ids), onto, run)
     for c in node.compositions():
         out[c.get("rule", "")] = "another rule of the library; its verdict, or whether it applies, is read here"
     return out
 
 
-def aggregates_for(node: Node, reading: Reading) -> dict[str, list[str]]:
-    """The classes each aggregate word the node claims covers, as the run's reading declares them."""
-    words = sorted({c.split("=", 1)[1] for c in node.claimed_atoms() if c.startswith("ru.aggregate=")})
-    return {w: reading.expand(w) for w in words}
-
-
-def contracts_table(glosses: dict[str, str], aggregates: dict[str, list[str]]) -> str:
+def contracts_table(glosses: dict[str, str]) -> str:
     lines = ["| id | contract |", "|---|---|"]
     lines += [f"| `{k}` | {v} |" for k, v in sorted(glosses.items()) if v]
-    for w, classes in sorted(aggregates.items()):
-        lines.append(f"| `ru.aggregate={w}` | the legal aggregate '{w}', which the reading declares to cover: {', '.join(classes) or '(no class declared)'} |")
     return "\n".join(lines) + "\n"
 
 
@@ -166,8 +177,3 @@ def claimed_closure(n: Node, onto: ontology.Ontology) -> set[str]:
             if aid:
                 out.add(aid)
     return out
-
-
-# ---------------------------------------------------------------------------------------------
-# The review of a coded concept
-# ---------------------------------------------------------------------------------------------

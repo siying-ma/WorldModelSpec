@@ -11,7 +11,6 @@ WITNESS_DIR = LIBRARY / "TrafficSpecWitness"
 CONCEPT_WITNESS_DIR = WITNESS_DIR / "Concepts"
 INDEX_FILE = LIBRARY / "TrafficSpec" / "Index.lean"
 WITNESS_ROOT_FILE = LIBRARY / "TrafficSpecWitness.lean"
-ONTOLOGY_DIR = REPO / "ontology"
 PROMPTS = REPO / "prompts"
 RESULTS = REPO / "results"
 READINGS = LIBRARY / "TrafficSpec" / "Readings"     # the parameter catalogues: written by the operator and the harness, beside the rules that name them

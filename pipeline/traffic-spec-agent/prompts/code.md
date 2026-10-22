@@ -97,13 +97,14 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed: it is carried as the node maps it, or the node is
    wrong and you report it. The review judges the rule with your narrowings in view; a choice
-   written only in prose is lost.
+   written only in prose is lost. `narrowings` holds only the readings you chose: the record's own
+   narrowings, its observable readings included, are the plan's and are never restated there.
 3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
    binder classes and `obligation` is claimed by an element or operationalization of the node,
    and every claimed name is used. Arguments are the node's binders, quantifier variables, or
-   enumeration spellings from the Core surface. A claim of an aggregate word is written as the
-   atom `{aggregate_atom}` with the binder and the word as its literal argument: the word, never
-   the classes it covers.
+   enumeration spellings from the Core surface. A claim of an aggregate is written as the
+   atom `{aggregate_atom}` with the binder and the aggregate's id (what follows `=` in the claim)
+   as its literal argument: the id, never the classes it covers.
 3b. **Every quantified variable is anchored.** A region, device or user the rule quantifies over
    must be related to a binder through the formula — an anchoring relation ({anchors}) between a
    binder and the variable, a relation to a variable that is itself anchored, a relation to a
@@ -128,8 +129,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    binder the node has no variable for is bound by `.existsUser "<var>" (…)` around the
    composition. You never inline another rule's content.
 6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
-   in its narrowings) is written from its element's atoms as any span is. If you account for it
-   among the rule's narrowings, use the same span and kind; you never declare one the node does not.
+   in its narrowings) is written from its element's atoms as any span is. It is the plan's
+   narrowing, already on record: you do not restate it, and you never declare one the node does not.
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
@@ -138,7 +139,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    which the act is under way, never only where it is recognized and never before the act began.
    Spans the applicability joins by `.and` and reads at the same occasion go inside one window
    together (`.and U (.and φ ψ)`), so they hold at the same moment. The `occasion_<span>_outside`
-   witness is the scene in which the span holds only outside the act.
+   witness is the scene in which the span holds only outside the act. An act concept holds from
+   the observation at which the act is recognized until its window has passed: where the node
+   reads the act as an event (the occasion, or a span placed before or after it), the act is
+   `.rises (<act>)`, so each act is judged once, at its recognition.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario

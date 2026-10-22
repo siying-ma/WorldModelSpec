@@ -24,6 +24,8 @@ You are a one-shot session. Nothing waits for a reply.
   closed set.
 - **The formula language** — every operator a formula is written with. A span or a notion none of
   them writes is an `operator` gap; one they write is not.
+- **The concept language** — what a concept record can declare (the formal sorts, where a literal
+  formal may appear) and how a call fills its formals.
 - **The concept catalogue** — accepted concepts a body may call.
 - **The definition** — when the contract quotes a corpus definition, its text; the quote stays.
 - **Users** — the nodes that claim this concept and wait for it.
@@ -46,6 +48,8 @@ You are a one-shot session. Nothing waits for a reply.
 
 {formula_language}
 
+{concept_language}
+
 {concepts}
 
 Definition: {definition}
@@ -63,7 +67,10 @@ Users: {users}
    notion as the atoms observe it and name every tolerance and window as a parameter; they may be
    reworded as rule 3 allows.
 3. **A planner's contract may be reworded** only to say what the notion is in neutral, general
-   terms; never to fit one law, and never to name a figure, a place or a device.
+   terms; never to fit one law, and never to name a figure, a place or a device. A reworded
+   contract states what the concept denotes before how it is recognized, bounds an overshoot that
+   stops denoting it, and keeps every boundary the concept needs: one the vocabulary cannot tell
+   apart is a split, a withdrawal or a gap, never a deletion.
 4. **The three scenarios stay**: `holds` → `compliant`, `fails` → `violated`, `blind` → `unknown`
    with `masked` naming atoms the body reads and whose absence leaves the body undecided.
 5. **Split** when the notion is two notions the vocabulary carries apart — one per side, one per

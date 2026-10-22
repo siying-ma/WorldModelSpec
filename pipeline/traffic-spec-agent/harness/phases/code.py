@@ -103,10 +103,12 @@ def reading_table(node: Node, reading: Reading) -> str:
             out.append(f"| `{name}` | (absent from the reading: the gate reports CHECK_FAIL until the operator adds it) | | |")
         else:
             out.append(f"| `{name}` | {p.get('value')} | {p.get('unit', '')} | {p.get('convention', '')} |")
-    aggs = reading.data.get("aggregates", [])
+    claimed = {c.split("=", 1)[1] for c in node.claimed_atoms() if c.startswith("ru.aggregate=")}
+    aggs = [a for a in reading.data.get("aggregates", []) if a.get("id") in claimed]
     if aggs:
-        out += ["", "Aggregates (which `ru.*` classes a word of the corpus covers):", ""]
-        out += [f"- `{a['word']}`: {', '.join(a.get('classes', []))}" for a in aggs]
+        out += ["", "Admitted aggregates the node claims (a witness's road user is a member when it carries an included class; "
+                "one carrying only an unresolved class makes the atom unknown):", ""]
+        out += [f"- `{a['id']}`: included {', '.join(a.get('included', [])) or '(none)'}; unresolved {', '.join(a.get('unresolved', [])) or '(none)'}" for a in aggs]
     out += ["", f"The catalogue is `{reading.path.relative_to(paths.REPO) if reading.path.is_relative_to(paths.REPO) else reading.path}` (read-only). "
             "Values enter a witness's geometry only: a `forbid` scene breaks the bound by a clear margin, a `permit` scene keeps it by one."]
     return "\n".join(out) + "\n"

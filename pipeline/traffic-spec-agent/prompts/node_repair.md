@@ -21,7 +21,15 @@ You are a one-shot session. Nothing waits for a reply.
 - **The node** — the record as it was planned, without the parts that are not yours (its id, its
   law and the segmentation).
 - **The verdict** — what the gate or the review returned: the gate's details, or the behaviour
-  review's divergences, each executed on its trace and upheld by the adjudicator.
+  review's certified cases, each holding on its trace, its law's verdict decided by a judge blind
+  to the rule, and upheld by the excuse judge.
+- **Situations decided against earlier records** — every certified case upheld against an earlier
+  rule of this law's nodes, this one's included, rendered as the judges saw it, with the law's
+  verdict and the reason. The harness runs the next rule on every one of them before any review,
+  and one still decided otherwise returns the node. Treat each certified case as a regression
+  obligation: the repaired rule must give the law's verdict on it. It is not a mapping instruction.
+  Do not copy an atom from the case into a record merely because the case used it. Every changed
+  mapping is justified by the law's span and the chosen atom's or concept's contract.
 - **What the coder narrowed** — the readings the coding session declared on spans the record
   carries, each with its span.
 - **The coder's note** — the coding session's own account of what it could not satisfy and why.
@@ -31,6 +39,7 @@ You are a one-shot session. Nothing waits for a reply.
   closed set.
 - **The formula language** — every operator a formula is written with. A span or a notion none of
   them writes is an `operator` gap; one they write is not.
+- **The concept language** — what a concept record can declare and how a call fills its formals.
 - **The concept catalogue** — accepted concepts a rule may call.
 - **The parameters** — the reading's catalogue so far, with the conventions values come from.
 
@@ -41,6 +50,8 @@ You are a one-shot session. Nothing waits for a reply.
 ## The verdict
 
 {verdict}
+
+{upheld}
 
 {coder_narrowings}
 
@@ -55,6 +66,8 @@ You are a one-shot session. Nothing waits for a reply.
 {ontology}
 
 {formula_language}
+
+{concept_language}
 
 {concepts}
 
@@ -84,8 +97,8 @@ You are a one-shot session. Nothing waits for a reply.
    what the words require is not adopted but re-mapped.
 4. **A feature the subject is on is anchored, and named**: a span that places the subject on, at
    or under a feature of the scene claims the feature's own kind atom (the kind a quantifier in
-   the rule ranges over) and an anchoring relation — {anchors} — and an aggregate word is claimed
-   as `{aggregate_atom}=<word>` and never expanded.
+   the rule ranges over) and an anchoring relation — {anchors} — and an aggregate is claimed
+   as `{aggregate_atom}=<admitted id>` and never expanded.
 4b. **A binder is a party the duty cannot exist without.** A road user the duty refers to only
    when one is present is quantified inside the applicability or the obligation; a record that
    binds it is re-cast so, since a binder no scene supplies leaves the subject's duty unjudged when

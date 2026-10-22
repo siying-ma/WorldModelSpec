@@ -108,7 +108,7 @@ ontology change request.
 | `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user). A source that observes a change in it — a person arriving at or leaving a vehicle — but not a total, declares the count absent: what it observes then is the arrival or the departure, which is not this atom | general |
 | `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars). The fields are independent: a source declares each on its own, and one that renders a rider as part of the machine, so that no field can vary, declares all of them absent. **hands_on_controls** is a count and is the field a source is least likely to carry **Not a stand-in for:** a manoeuvre, or an arm signal, which is `sig.hand_signal` | general |
 | `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
-| `ru.aggregate` | membership of a legal aggregate the reading declares — the word the text uses ("vehicle", "motor vehicle", "traffic") is the atom's literal argument, and the reading lists the classes the jurisdiction counts under it, by their `ru.*` ids or by another aggregate word; true when the user carries a member class, unknown when no member holds and a member class is unobserved, false otherwise **Not a stand-in for:** a class the text names on its own (a bus, a taxicab) — a named class is its own atom; nor for a role the text describes (responding, overtaking) — a role is a derived concept | general |
+| `ru.aggregate` | membership of a legal aggregate: the atom's literal argument is an aggregate id, `<definition id>::<term>` for the posted definition that applies, or `<law id>:<span>::<term>` for a definition the law itself makes, and the run's reading classifies every road-user class under that id as included, excluded or unresolved by the definition's words; true when the user carries an included class, unknown when no included class holds and the user carries an unresolved class or a class it might carry is unobserved, false otherwise **Not a stand-in for:** a class the text names on its own (a bus, a taxicab) — a named class is its own atom; nor for a role the text describes (responding, overtaking) — a role is a derived concept | general |
 
 "Vehicle", "traffic" and "driver" as legal aggregates are carried by `ru.aggregate` with the word
 as its argument: which classes a jurisdiction counts under each is declared by the reading, never
@@ -125,8 +125,8 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `kin.velocity` | velocity vector | m/s, world frame | general |
 | `kin.speed` | magnitude of velocity | m/s | general |
 | `kin.accel_longitudinal` | acceleration along heading, signed **Not a stand-in for:** speed | m/s² | general |
-| `kin.yaw_rate` | rate of change of heading **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres | deg/s | general |
-| `kin.extent` | body half-length, half-width, half-height about the reference point, along the body axes | m | general |
+| `kin.yaw_rate` | rate of change of heading, positive when the heading turns to the left (counter-clockwise) **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres | deg/s | general |
+| `kin.extent` | the body's size along its axes about the reference point: a trace writes the half-length, half-width and half-height; a formula reads the full length, width and height, twice each | m | general |
 | `kin.steer_angle` | front-wheel steering angle. A source often carries it for the road user whose conduct is judged and not for the others; the capability is declared for the atom, not per road user, so a source that supplies it for the subject alone declares `subject` and one that cannot supply it at all declares it absent **Not a stand-in for:** road geometry, a turn, a lane change or any other manoeuvre — a steering input is not a path and not a road | deg | general |
 | `kin.path_length` | distance travelled along the body's path since the start of the trace, monotone | m | general |
 | `kin.engine_running` | the vehicle's engine or motor is running, so that propulsion is available **Not a stand-in for:** motion or a halt — a vehicle stands with its engine running and rolls with it stopped | — | general |
@@ -148,9 +148,10 @@ reports unknown.
 | `st.roadway` | the part of a highway improved for vehicular traffic, excluding shoulder; separate roadways of a divided highway are separate **Not a stand-in for:** the sidewalk — 'not on the roadway' includes shoulder, verge and parking bays | general |
 | `st.lane` | a longitudinal strip of roadway for one line of vehicles **Not a stand-in for:** a half of the roadway or a lateral position within a lane — lane membership is not an offset from the edge, and lane ordinal equals roadway half only on a two-lane road | general |
 | `st.lane_direction` | direction of travel a lane is designated for | general |
-| `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction **Not a stand-in for:** the marking between two lanes | general |
+| `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane, looking along the lane's direction **Not a stand-in for:** the marking between two lanes | general |
 | `st.lane_connectivity` | which lane a lane leads into | general |
 | `st.lane_enters` | relation: the intersection region a lane runs into at its end — the lane is an approach to that intersection **Not a stand-in for:** the lane a lane leads into (`st.lane_connectivity`), the subject's presence in the intersection (`rel.occupies`), or the region a device governs (`dev.governs`) — a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both | general |
+| `st.on_way` | relation: the public way (a `highway` region) a structure region lies on — a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it; an intersection lies on every way that meets there **Not a stand-in for:** nearness to a way (`st.region_geometry`), or the lane a lane leads into (`st.lane_connectivity`) | general |
 | `st.lane_marking` | per side of a lane: **type** ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, **colour** ∈ {white, yellow, other} | general |
 | `st.centre_line` | the marking, or the geometric centre, dividing the two directions of a two-way roadway | general |
 | `st.road_edge` | curb or edge of the roadway; **paved** attribute for the surface beyond it | general |
@@ -163,10 +164,11 @@ reports unknown.
 | `st.stop_line` | the transverse line marking where vehicles halt for a device | general |
 | `st.driveway_or_alley_entrance` | private road, alley or driveway meeting the highway | general |
 | `st.alley` | a narrow way within a block serving the rear of properties | general |
-| `st.curvature` | horizontal curvature of the roadway at a point | general |
+| `st.curvature` | horizontal curvature of the roadway at a point, as a magnitude (1/m, never negative): a bend to either hand has the same value | general |
 | `st.grade` | longitudinal slope of the roadway at a point **Not a stand-in for:** the place of a crest (`st.crest`) — the slope where a road user is says nothing of a crest ahead of it | general |
 | `st.crest` | the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel, carried as a region with a reference point and a boundary, so the ground distance from a road user to it is read through `st.region_geometry` **Not a stand-in for:** the slope at a point (`st.grade`), the view a crest restricts (`st.sight_distance`), or a horizontal bend (`st.curvature`) | general |
 | `st.sight_distance` | the distance along the road within which a vehicle at a point and another vehicle on the road could see each other, from the eye of either driver to the body of the other vehicle at the height convention the source declares: both the view of approaching traffic from that point and its being seen by drivers approaching it, whether or not any road user is there **Not a stand-in for:** whether an actual road user saw, or could see, another at an observation (`rel.visible`), or the clarity of the air (`env.visibility`) | general |
+| `st.sight_along_way` | the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation, at the height convention the source declares; the smaller of the two directions; m **Not a stand-in for:** the sight distance of the place the road user is at (`st.sight_distance`), or whether an actual road user is seen (`rel.visible`) | general |
 | `st.railway_crossing` | level crossing of a railway with the roadway, and its nearest rail | general |
 | `st.controlled_access` | a highway with access only at designated points, and its entrance and exit lanes | general |
 | `st.elevated_structure` | bridge, viaduct or tunnel carrying the roadway | general |
@@ -223,7 +225,7 @@ reports unknown.
 | `sig.warning_lamp` | a warning lamp lit; **colour** ∈ {red, blue, amber, white}, **mode** ∈ {flashing, rotating, steady}, **facing** ∈ {front, rear, side} **Not a stand-in for:** an audible warning | general (steady blue rear lamps and amber-lamp roles: local) |
 | `sig.siren` | a siren, whistle or bell sounding (audible; a source without audio declares it absent, and does not read a warning lamp as the sound — the two are separable and a road user may show one without the other) | general |
 | `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding (audible; a source without audio declares it absent, and no visible state stands in for it) **Not a stand-in for:** a siren | general |
-| `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {left, right, stop_or_slow, re_enter} | general |
+| `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {no_signal, left, right, stop_or_slow, re_enter}: no arm signal given, or the meaning of the one given | general |
 | `sig.door_open` | a door open; **side** ∈ {traffic, curb} | general |
 
 ## 6. Environment (`env`)
@@ -346,10 +348,58 @@ A primitive is a geometric computation over atoms with no legal word in it, defi
 with its parameters exposed. A concept or a rule calls it by id; the set is closed, and a need
 for another is a gap for the operator, never a definition written during a run.
 
-| id | contract | parameters |
+| id | contract | parameters | result unit | parameter units |
+|---|---|---|---|---|
+| `prim.heading_change` | the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from `kin.yaw_rate`; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing | the window length (time) | deg | s |
+| `prim.closest_approach_within` | under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon | the horizon (time) | boolean | s |
+| `prim.closest_approach_time` | the time from the observation at which the two centres are closest, under constant velocities; undefined when they do not approach within the horizon | the horizon (time) | s | s |
+| `prim.closest_approach_distance` | the centre distance at that closest approach; undefined when they do not approach within the horizon | the horizon (time) | m | s |
+| `prim.conditions_hold` | the structured conditions of a device (`dev.zone_sign`, `dev.regulatory_sign`) hold at the observation for a road user: `env.civil_time` falls in one of its time windows on one of its days (a calendar class is an assumption), and any occupancy or class condition is met | — | boolean | — |
+| `prim.region_lateral_offset` | the signed lateral offset (m, left positive) of a structure region from a road user: the component, perpendicular to the road user's heading, of the vector from its reference point to the point of the region's boundary nearest that reference point; zero where the reference point lies inside the region; unknown where the position, the heading or the boundary is absent | — | m | — |
+
+## 11. Units of the measured atoms
+
+The unit of the value a formula reads from a measured atom, by the name a formula uses
+(`Term.measure`); a vector atom's components share its unit. `1` marks a count, a ratio, a
+direction or an ordinal, which carry no unit; `1/m` is a reciprocal length. A primitive's units are
+the last two columns of §10. These units type a comparison: two sides of a comparison, of a sum
+or of the branches of a selection have the same unit.
+
+| id | measure | unit |
 |---|---|---|
-| `prim.heading_change` | the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from `kin.yaw_rate`; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing | the window length (time) |
-| `prim.closest_approach_within` | under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon | the horizon (time) |
-| `prim.closest_approach_time` | the time from the observation at which the two centres are closest, under constant velocities; undefined when they do not approach within the horizon | the horizon (time) |
-| `prim.closest_approach_distance` | the centre distance at that closest approach; undefined when they do not approach within the horizon | the horizon (time) |
-| `prim.conditions_hold` | the structured conditions of a device (`dev.zone_sign`, `dev.regulatory_sign`) hold at the observation for a road user: `env.civil_time` falls in one of its time windows on one of its days (a calendar class is an assumption), and any occupancy or class condition is met | — |
+| `kin.time` | `kin_time` | s |
+| `kin.position` | `kin_position` | m |
+| `kin.heading` | `kin_heading` | 1 |
+| `kin.velocity` | `kin_velocity` | m/s |
+| `kin.speed` | `kin_speed` | m/s |
+| `kin.accel_longitudinal` | `kin_accel_longitudinal` | m/s² |
+| `kin.yaw_rate` | `kin_yaw_rate` | deg/s |
+| `kin.extent` | `kin_extent` | m |
+| `kin.steer_angle` | `kin_steer_angle` | deg |
+| `kin.path_length` | `kin_path_length` | m |
+| `kin.gear` | `kin_gear` | 1 |
+| `kin.throttle` | `kin_throttle` | 1 |
+| `kin.service_brake` | `kin_service_brake` | 1 |
+| `ru.occupant_count` | `ru_occupant_count` | 1 |
+| `ru.rider_posture` | `ru_rider_posture_hands_on_controls` | 1 |
+| `ru.electric_bicycle` | `ru_electric_bicycle_class` | 1 |
+| `st.lane_direction` | `st_lane_direction` | 1 |
+| `st.lane_adjacency` | `st_lane_adjacency` | 1 |
+| `st.lane_adjacency` | `st_lane_adjacency_ordinal` | 1 |
+| `st.lane_adjacency` | `st_lane_adjacency_count` | 1 |
+| `st.lane_width` | `st_lane_width` | m |
+| `st.curvature` | `st_curvature` | 1/m |
+| `st.grade` | `st_grade` | 1 |
+| `st.sight_distance` | `st_sight_distance` | m |
+| `st.sight_along_way` | `st_sight_along_way` | m |
+| `st.parking_space` | `st_parking_space_angle` | deg |
+| `st.region_geometry` | `st_region_geometry` | m |
+| `st.region_geometry` | `st_region_geometry_distance` | m |
+| `dev.position` | `dev_position` | m |
+| `dev.speed_limit_sign` | `dev_speed_limit_sign_value` | m/s |
+| `env.visibility` | `env_visibility` | m |
+| `env.civil_time` | `env_civil_time` | 1 |
+| `rel.centre_distance` | `rel_centre_distance` | m |
+| `rel.surface_gap` | `rel_surface_gap` | m |
+| `rel.longitudinal_overlap` | `rel_longitudinal_overlap` | m |
+| `rel.bearing` | `rel_bearing` | m |

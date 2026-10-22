@@ -1,5 +1,5 @@
 /-
-  drv.motion.u_turn — The road user turns its body about so as to end up travelling the way it came: the magnitude of the signed heading change over the window behind the observation is, either way, within the tolerance the caller sets of a half turn. This is the observation, over sampled measurements, of a turning “so as to proceed in the opposite direction”, “whether accomplished by one continuous movement or not”: the window is what lets a turning made in several movements be read as one turning, and the tolerance is the observer's, since no body comes to exactly the reciprocal of the heading it started from. Units: the window in seconds, the tolerance in degrees. The verdict is unknown where the window reaches past the start of the trace or the heading change cannot be formed. Not a stand-in for: a turn to the left through a quarter turn, which does not reverse the direction of travel; backing, which reverses the direction of travel without turning the body about; the place upon the road at which the turning happens, which the caller reads; or a turning the road user signals but does not make.
+  drv.motion.u_turn — The road user has turned so as to proceed in the direction opposite to the one it was proceeding in: the magnitude of its signed heading change over the window behind the observation lies within the band the caller sets about a half turn. The contract follows the definition's words, "the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not": the window is the observer's and is long enough to cover a turning made in several movements, and the band is the observer's too - a sampled heading never reverses exactly, so the lower edge names how near a half turn counts as opposite, and the upper edge keeps a road user that goes on turning, round a roundabout or round a block, from counting as having reversed. The concept is a manoeuvre read from the body's own turning: it is not the indicator given for one, not an intention to reverse direction, not a left turn at a junction, and it carries no judgement that the manoeuvre is lawful or of where on the road it was made. It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning. Where the window reaches past the start of the trace, or a yaw rate within it is missing, it is unknown.
 
   The contract is the definition `DEF-NRS-484B-077`, verbatim.
 
@@ -7,40 +7,43 @@
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    the magnitude of the signed heading change over the window behind the observation: atoms ['prim.heading_change'], concepts []
+    the magnitude of its signed heading change over the window behind the observation: atoms ['prim.heading_change'], concepts []
 
-  How the words are written:
-  - "the signed heading change over the window behind the observation" is the primitive
-    `prim_heading_change` of the user over `window`: "the signed heading change (degrees, left
-    positive) of a road user over the window behind the observation, integrated from
-    `kin.yaw_rate`", whose one parameter is "the window length (time)" and so is this concept's
-    `window`. The integration, the sampling and the look-back are the primitive's: the concept
-    reads no kinematic atom of its own, and the unknowns the contract names — the window reaching
-    past the start of the trace, a heading change that cannot be formed — are the ones the
-    primitive already reports (`windowTruncated`, `samplingGap`, `absentAtom kin_yaw_rate`).
-    Because the window is the primitive's parameter, the body needs no `holdsFor` of its own:
-    the primitive answers at every instant about the window behind that instant.
-  - "the magnitude … either way" is `.abs` of that signed change: a turning about made to the
-    right integrates negative, one made to the left positive, and the contract reads either as the
-    turning about. Nothing of the sign survives into the comparison.
-  - "within the tolerance the caller sets of a half turn" is one comparison,
-    `| |Δψ| − 180° | ≤ reversal_tolerance`: the distance of the magnitude from a half turn,
-    either side of it, at or below the tolerance. Declared as a narrowing: the parameter's meaning
-    names only the shortfall ("may fall short of a half turn"), and a one-sided floor
-    `|Δψ| ≥ 180° − tolerance` would read a three-quarter turn, or a body spun twice about, as a
-    u-turn, though neither "end[s] up travelling the way it came"; the two-sided bound is the one
-    reading of "within … of a half turn" that the contract's own first clause allows. It is
-    written as a single comparison over `.abs (.sub (.abs Δψ) 180°)` rather than as two bounds,
-    so that there is one place where the tolerance is spent and both sides of it are the same
-    quantity.
-  - the half turn is the record's declared literal, 180 degrees, written through `Units.degrees`;
-    it is the geometric content of "proceed in the opposite direction" and not a figure of the
-    observer's. Every other magnitude — the window, the tolerance — is a formal the caller fills.
-  - the place of the turning ("upon a highway") is the record's residue: the body decides the
-    motion alone and reads no region.
+  How the single element is written:
 
-  Literals the contract states (declared; written through a `Units` constructor):
-    180 deg — a half turn: the heading change of a body that ends travelling the way it came, which is the geometric content of “proceed in the opposite direction” and not a magnitude the observer sets
+    "the magnitude of its signed heading change over the window behind the observation" —
+    `prim.heading_change`, read of the track formal `u` with this concept's own window formal
+    `u_turn_window` as its parameter, wrapped in `Term.abs`. The primitive is the signed heading
+    change (degrees, left positive) over the back window, integrated from the yaw rate, so three
+    things the contract states come from the primitive itself rather than from any operator of
+    this body: the window is the window behind the observation and is the caller's length;
+    "whether accomplished by one continuous movement or not" is carried by integrating the yaw
+    rate over the whole window, so a turning made in three movements with pauses between them is
+    one turning of the integrated magnitude and no unbroken swing is demanded; and where the
+    window reaches past the start of the trace (`windowTruncated`) or a yaw rate inside it is
+    missing (`absentAtom "kin_yaw_rate"`) the quantity is unknown, so both comparisons and hence
+    the body are unknown, exactly as the contract's last sentence says.
+
+    "lies within the band the caller sets about a half turn" — two comparisons of that magnitude
+    against the two edge formals, conjoined: at or above `u_turn_min_heading_change`, at or below
+    `u_turn_max_heading_change`. The lower edge is what the contract calls "how near a half turn
+    counts as opposite"; the upper edge is what keeps a road user that goes on turning, round a
+    roundabout or round a block, from counting as having reversed. No figure of the band lives
+    here: both edges are formal parameters the caller fills, and the band is written about a half
+    turn only in the sense that the caller's values straddle one.
+
+    "It holds from the observation at which the heading change first enters the band until the
+    window behind has passed" — nothing is written for this sentence: it is a consequence of
+    reading the magnitude over the window behind, not a further demand. Once the turning has been
+    made, every observation whose window still covers it reads the same magnitude and the body
+    goes on holding; when the window has slid past the turning the magnitude falls back and the
+    body stops holding of its own accord.
+
+  Nothing about the indicator given for the manoeuvre (`sig.turn_indicator`), about an intention
+  to reverse direction, about a junction or a hand, and nothing about where on the road or
+  whether lawfully the turning was made is written: the contract excludes all of them, and the
+  place the definition names ("upon a highway") is the record's residue, carried by the law that
+  calls this concept.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -49,39 +52,48 @@ import TrafficSpec.Core.Language.Concept
 namespace TrafficSpec.Concepts.motion.u_turn
 
 /-- The formal arguments, as `Arg`s (a literal formal is written `.var` and filled by the caller). -/
-def aUser : Arg := .var "user"
+def aU : Arg := .var "u"
 
 /-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/
-def pWindow : Term := .param "window"
-def pReversalTolerance : Term := .param "reversal_tolerance"
+def pUTurnWindow : Term := .param "u_turn_window"
+def pUTurnMinHeadingChange : Term := .param "u_turn_min_heading_change"
+def pUTurnMaxHeadingChange : Term := .param "u_turn_max_heading_change"
 
-/-- A half turn: the record's declared literal, the heading change of a body that ends up
-    travelling the way it came. -/
-def halfTurn : Term := .lit (Units.degrees 180) .degree
+/-- The signed heading change (degrees, left positive) of the road user over the window behind the
+    observation, integrated from its yaw rate; unknown where the window reaches past the start of
+    the trace or a yaw rate inside it is missing. -/
+def headingChange : Term := .quantity "prim_heading_change" [aU] [pUTurnWindow]
 
-/-- The signed heading change (degrees, left positive) of the user over the window behind the
-    observation, integrated from the yaw rate by the primitive. -/
-def headingChange : Term := .quantity "prim_heading_change" [aUser] [pWindow]
+/-- Its magnitude: how far round the road user has turned over the window, whichever way. -/
+def headingChangeMagnitude : Term := .abs headingChange
 
-/-- How far the magnitude of that change — the turning about, taken either way — stands from a
-    half turn. -/
-def shortOfHalfTurn : Term := .abs (.sub (.abs headingChange) halfTurn)
+/-- The turning has come near enough to a half turn to count as proceeding in the opposite
+    direction: the lower edge of the caller's band. -/
+def reachesOppositeDirection : Formula :=
+  .cmp headingChangeMagnitude .ge pUTurnMinHeadingChange
 
-/-- The body turned about so as to end up travelling the way it came: the magnitude of the heading
-    change over the window behind is within the caller's tolerance of a half turn. -/
-def body : Formula := .cmp shortOfHalfTurn .le pReversalTolerance
+/-- The turning has not gone on past a half turn into circling: the upper edge of the band. -/
+def notCircling : Formula :=
+  .cmp headingChangeMagnitude .le pUTurnMaxHeadingChange
+
+/-- The magnitude of the heading change over the window behind lies within the caller's band
+    about a half turn. -/
+def body : Formula := .and reachesOppositeDirection notCircling
 
 def concept : Concept :=
   { id := "drv.motion.u_turn"
-    contract := "The road user turns its body about so as to end up travelling the way it came: the magnitude of the signed heading change over the window behind the observation is, either way, within the tolerance the caller sets of a half turn. This is the observation, over sampled measurements, of a turning “so as to proceed in the opposite direction”, “whether accomplished by one continuous movement or not”: the window is what lets a turning made in several movements be read as one turning, and the tolerance is the observer's, since no body comes to exactly the reciprocal of the heading it started from. Units: the window in seconds, the tolerance in degrees. The verdict is unknown where the window reaches past the start of the trace or the heading change cannot be formed. Not a stand-in for: a turn to the left through a quarter turn, which does not reverse the direction of travel; backing, which reverses the direction of travel without turning the body about; the place upon the road at which the turning happens, which the caller reads; or a turning the road user signals but does not make."
+    contract := "The road user has turned so as to proceed in the direction opposite to the one it was proceeding in: the magnitude of its signed heading change over the window behind the observation lies within the band the caller sets about a half turn. The contract follows the definition's words, \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\": the window is the observer's and is long enough to cover a turning made in several movements, and the band is the observer's too - a sampled heading never reverses exactly, so the lower edge names how near a half turn counts as opposite, and the upper edge keeps a road user that goes on turning, round a roundabout or round a block, from counting as having reversed. The concept is a manoeuvre read from the body's own turning: it is not the indicator given for one, not an intention to reverse direction, not a left turn at a junction, and it carries no judgement that the manoeuvre is lawful or of where on the road it was made. It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning. Where the window reaches past the start of the trace, or a yaw rate within it is missing, it is unknown."
     definition := some "DEF-NRS-484B-077"
-    args := [("user", .track)]
-    params := [⟨"window", .second⟩, ⟨"reversal_tolerance", .degree⟩]
+    args := [("u", .track)]
+    params := [⟨"u_turn_window", .second⟩, ⟨"u_turn_min_heading_change", .degree⟩, ⟨"u_turn_max_heading_change", .degree⟩]
     body := .formula body
-    residues := ["the definition places the turning upon a highway; the concept decides the motion alone and leaves the place to the caller, which reads it with `rel.occupies` and `st.highway`"]  -- the record's, verbatim; not yours to change
+    residues := ["the definition places the turning upon a highway; the concept is the manoeuvre read from the body's own turning wherever it is made, and the law that calls it carries the place - in this plan the trigger span of NRS 484B.227(1) puts the vehicle on a divided highway."]  -- the record's, verbatim; not yours to change
     narrowings :=
-      [ { span := "within the tolerance the caller sets of a half turn"
-          why := "written as a two-sided bound on the distance of the magnitude from a half turn, |(|heading change| − 180 deg)| ≤ reversal_tolerance, in one comparison; the parameter's meaning names only the shortfall, but a one-sided floor would read a three-quarter turn or a body spun twice about as a u-turn, though neither ends up travelling the way it came, which is what the contract's first clause asks of the turning"
+      [ { span := "the magnitude of its signed heading change over the window behind the observation"
+          why := "Written as `Term.abs` of `prim.heading_change`, read of the track formal with this concept's own window formal as the primitive's window. Taking the magnitude discards the primitive's sign (left positive), so a reversal made by swinging to the right counts exactly as one made by swinging to the left: the contract says 'magnitude' and names no hand, and the definition's 'so as to proceed in the opposite direction' is indifferent to which way the body came round. 'Whether accomplished by one continuous movement or not' is carried by the primitive's integration of the yaw rate over the whole window rather than by any demand on the shape of the swing, so a turning made in several movements, with pauses or with a reversing manoeuvre between them, reads as one turning of the integrated magnitude; the price of that reading is that a turning one way followed by a turning back the other cancels, which is right for the direction the body ends up proceeding in and is what a signed change over a window means."
+          kind := "reading" }
+      , { span := "lies within the band the caller sets about a half turn"
+          why := "Read as a closed band: at or above the lower edge and at or below the upper edge, so a magnitude exactly on either edge counts as within. The contract names the edges as 'how near a half turn counts as opposite' and the magnitude 'above which the road user is circling', which places the boundary values inside the band at the lower edge and leaves the upper edge's own value undecided; both are written closed so that a caller's figures are the band's limits themselves and no gap is opened between the two concepts a pair of callers might set. 'Within the band' is written as the conjunction of the two comparisons on the one magnitude, with no third demand of any kind."
           kind := "reading" } ]
     supersedes := none }
 

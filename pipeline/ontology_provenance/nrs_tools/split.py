@@ -157,7 +157,7 @@ def held_out_rows(atoms: list[str]) -> dict[str, dict[str, str]]:
     rows = {}
     for line in ATOMS_MD.read_text(encoding="utf-8").splitlines():
         m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
-        if m and m.group(1) in atoms:
+        if m and m.group(1) in atoms and m.group(1) not in rows:     # its contract row, not its unit row (§11)
             rows[m.group(1)] = {"row": line, "sha256": hashlib.sha256(line.encode("utf-8")).hexdigest()}
     missing = [a for a in atoms if a not in rows]
     if missing:

@@ -116,12 +116,12 @@ mutual
     | or (φ ψ : Formula)
     | implies (φ ψ : Formula)
     | always (φ : Formula)                                    -- from now to the end of the trace
-    | eventually (φ : Formula)
+    | eventually (φ : Formula)                                -- φ here or at some later observation, to the end of the trace
     | until (φ ψ : Formula)                                   -- strong until, future
     | since (φ ψ : Formula)                                   -- past mirror of until
     | holdsFor (m : Measure) (d : Term) (subject : String) (φ : Formula)   -- φ at every observation in the window behind
     | within (m : Measure) (d : Term) (subject : String) (φ : Formula)     -- φ at some observation in the window ahead
-    | untilWithin (m : Measure) (d : Term) (subject : String) (φ ψ : Formula)
+    | untilWithin (m : Measure) (d : Term) (subject : String) (φ ψ : Formula)   -- ψ at some observation in the window ahead, φ at every one before it
     | atLast (m : Measure) (d : Term) (subject : String) (ψ φ : Formula)   -- φ at the last observation in the window behind at which ψ held
     | count (edge : Formula) (sinceφ : Formula) (op : CmpOp) (n : Nat)   -- rising edges of `edge` since `sinceφ` became true (start of its latest run)
     | rises (φ : Formula)                                     -- φ here and not at the previous observation
@@ -327,17 +327,17 @@ partial def assumptions : Formula → List AsmId
   | .existsUser _ φ | .forallUser _ φ => assumptions φ
   | _ => []
 
-/-- The aggregate words a formula names (`ru_aggregate x "vehicle"`), for the reading check. -/
-partial def aggregateWords : Formula → List String
+/-- The aggregate ids a formula names (`ru_aggregate x "<definition id>::<term>"`), for the reading check. -/
+partial def aggregateIds : Formula → List String
   | .atom "ru_aggregate" [_, .lit w] _ => [w]
-  | .not φ | .always φ | .eventually φ | .rises φ => aggregateWords φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => aggregateWords φ ++ aggregateWords ψ
-  | .holdsFor _ _ _ φ | .within _ _ _ φ => aggregateWords φ
-  | .untilWithin _ _ _ φ ψ => aggregateWords φ ++ aggregateWords ψ
-  | .atLast _ _ _ ψ φ => aggregateWords ψ ++ aggregateWords φ
-  | .count e s _ _ => aggregateWords e ++ aggregateWords s
+  | .not φ | .always φ | .eventually φ | .rises φ => aggregateIds φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => aggregateIds φ ++ aggregateIds ψ
+  | .holdsFor _ _ _ φ | .within _ _ _ φ => aggregateIds φ
+  | .untilWithin _ _ _ φ ψ => aggregateIds φ ++ aggregateIds ψ
+  | .atLast _ _ _ ψ φ => aggregateIds ψ ++ aggregateIds φ
+  | .count e s _ _ => aggregateIds e ++ aggregateIds s
   | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
-  | .existsUser _ φ | .forallUser _ φ => aggregateWords φ
+  | .existsUser _ φ | .forallUser _ φ => aggregateIds φ
   | _ => []
 
 /-- The first `cond` of a term reachable through arithmetic (not inside an aggregate or a window,

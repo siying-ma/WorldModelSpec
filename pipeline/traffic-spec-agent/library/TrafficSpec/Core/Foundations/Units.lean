@@ -118,6 +118,9 @@ def micrometresPerSecond (n : Int) : Q := Q.mk' n 1000000
 def kmh (n : Int) : Q := Q.mk' (n * 1000) 3600              -- exactly 5/18 m/s per km/h
 def mph (n : Int) : Q := Q.mk' (n * 44704) 100000           -- 0.44704 m/s exactly
 
+-- Curvatures (per metre).
+def perMetre (n : Int) : Q := Q.ofInt n
+
 -- Accelerations (metres per second squared).
 def metresPerSecondSq (n : Int) : Q := Q.ofInt n
 def micrometresPerSecondSq (n : Int) : Q := Q.mk' n 1000000

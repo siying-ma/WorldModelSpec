@@ -3,100 +3,356 @@
  "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
  "params": [
   {
-   "name": "p.backing_window",
-   "value": 1.0,
-   "unit": "s",
-   "convention": "The length of the window behind over which rearward travel is recognized as backing rather than as sampling noise or a momentary roll-back on a grade, and the window over which the heading swing of a corner is integrated. It bounds the recognition of the act, not how far a vehicle may reverse.",
-   "source": "manoeuvre-recognition windows over trajectory datasets sampled at their usual rate.",
-   "proposed": "demo10/iter-001 NRS_484B_113_2"
-  },
-  {
-   "name": "p.speed_zero_tolerance",
-   "value": 0.1,
+   "name": "p.halt_speed_tolerance",
+   "value": 0.2,
    "unit": "m/s",
-   "convention": "The speed at or below which a tracked body's displacement between observations is indistinguishable from standing on the source's own position resolution; here it is the floor below which rearward travel counts as no motion at all.",
-   "source": "position-noise and resting-speed figures of road-user tracking datasets and perception benchmarks.",
-   "proposed": "demo10/iter-001 NRS_484B_113_2"
+   "convention": "halt-detection convention: a sampled speed is never exactly zero, and a speed at or below the resolution of ordinary speed measurement counts as no movement; the value bounds the measurement noise, not the duration of the halt",
+   "source": "stopped-vehicle detection practice in traffic-engineering field measurement (speed-sensor resolution class)",
+   "proposed": "demo12/iter-001 NRS_484A_450_2"
   },
   {
-   "name": "p.corner_heading_change",
+   "name": "p.stop_place_tolerance",
+   "value": 1.5,
+   "unit": "m",
+   "convention": "stop-line placement tolerance: the distance within which a halted vehicle counts as halted at a marked place, covering the vehicle's reference-point offset and the survey tolerance of the marking",
+   "source": "MUTCD stop-line placement practice and survey tolerance for pavement markings",
+   "proposed": "demo12/iter-001 NRS_484A_450_2"
+  },
+  {
+   "name": "p.intersection_view_distance",
    "value": 60.0,
-   "unit": "deg",
-   "convention": "The heading swing through which a body passes in going from one street into an intersecting one. DEF-NRS-484A-105 has the two highways “join one another at, or approximately at, right angles”, and the bound is set inside that angle so that skewed junctions and a reversing path that is still completing its swing are covered, while a vehicle reversing straight back is not.",
-   "source": "turning-path templates for intersection design (passenger-car turning envelopes).",
-   "proposed": "demo10/iter-001 NRS_484B_113_2"
+   "unit": "m",
+   "convention": "intersection (approach) sight distance: the along-way view needed to see traffic approaching on the intersecting way at its design speed, from the place at which a driver may proceed",
+   "source": "AASHTO Green Book intersection sight distance, case B (stop-controlled approach)",
+   "proposed": "demo12/iter-001 NRS_484A_450_2"
   },
   {
-   "name": "p.corner_reach",
+   "name": "p.stop_approach_lookback",
+   "value": 60.0,
+   "unit": "m",
+   "convention": "approach look-back: the distance travelled before entering the intersection within which the required halt must be found; it bounds the stretch of the approach the rule searches and is measured in path travelled, as the words measure the halt by place on the approach",
+   "source": "stop-sign compliance measurement practice (approach-zone length used in field studies)",
+   "proposed": "demo12/iter-001 NRS_484A_450_2"
+  },
+  {
+   "name": "p.speed_resolution",
+   "value": 0.2,
+   "unit": "m/s",
+   "convention": "source resolution: the speed below which a measured speed does not stand clear of zero; it names only the source's resolution and states no legal threshold",
+   "source": "speed-sensor resolution class of ordinary trace sources",
+   "proposed": "demo12/iter-001 NRS_484A_450_2"
+  },
+  {
+   "name": "p.following_reach",
+   "value": 100.0,
+   "unit": "m",
+   "convention": "following reach: the longitudinal distance within which a leading road user is the one being followed, taken from the span over which a car-following interaction is identified at highway speeds; it relates two road users and states no adequacy",
+   "source": "car-following and platoon-identification practice in traffic-flow measurement",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_alignment_tolerance",
+   "value": 15.0,
+   "unit": "deg",
+   "convention": "heading-alignment tolerance: the angle within which two headings count as aligned, absorbing lane curvature and heading noise over a sampled trajectory",
+   "source": "same-direction classification practice in trajectory processing",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.headway_dry",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "time-headway convention (the two-second rule): the gap is the distance the follower covers at its own speed during a headway time that absorbs the driver's perception-reaction time and a braking margin; dry surface",
+   "source": "driver-handbook two-second rule; AASHTO perception-reaction time of 2.5 s for braking",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.headway_wet",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "the same time-headway convention with the wet-surface braking factor, which lengthens the braking share of the headway",
+   "source": "driver-handbook wet-surface following advice; wet-pavement friction factors of the stopping-distance model",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.headway_ice",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "the same time-headway convention with the icy or snow-covered braking factor",
+   "source": "winter-driving following advice; ice and packed-snow friction factors of the stopping-distance model",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.closing_time",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "closing-speed allowance: the time over which the speed difference between follower and leader is allowed to close the gap, so that a faster follower owes more space than a matched one",
+   "source": "time-to-collision surrogate-safety practice in car-following analysis",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.traffic_gap_increment",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "density increment: the additional space owed for each road user of the traffic on the highway within the reach about the subject, so that the bound rises as the traffic thickens",
+   "source": "headway-density relations of the Highway Capacity Manual's level-of-service bands",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.traffic_reach",
+   "value": 50.0,
+   "unit": "m",
+   "convention": "reach of the traffic about the subject: the centre distance within which another road user counts as part of the traffic upon the highway the subject is on; it relates road users and states no adequacy",
+   "source": "local-density window used in traffic-flow measurement",
+   "proposed": "demo12/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.lane_change_window",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "manoeuvre-recognition window: the stretch of time behind the observation within which the lane the road user came from is looked for, taken from the observed duration of a lane change from the first steering input to settling in the new lane. It names only how far back the earlier lane membership is sought and sets no standard of conduct.",
+   "source": "lane-change duration studies of naturalistic driving (median about 4 s, from first steering input to settling)",
+   "proposed": "demo12/iter-001 NRS_484B_223_1b"
+  },
+  {
+   "name": "p.lane_change_horizon",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "gap-acceptance horizon: the time ahead over which the closest approach of the subject and another road user is computed under constant velocities, taken as the time a lane change occupies the space between the two lanes.",
+   "source": "lane-change duration studies; the same source as the recognition window, taken at its crossing phase",
+   "proposed": "demo12/iter-001 NRS_484B_223_1b"
+  },
+  {
+   "name": "p.lane_change_clearance",
+   "value": 5.0,
+   "unit": "m",
+   "convention": "gap-acceptance clearance: the distance between two bodies below which a lane change cannot be made with safety, taken as a passenger-car design vehicle's length so that the entering body does not come within a vehicle length of another.",
+   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets, passenger car design vehicle length",
+   "proposed": "demo12/iter-001 NRS_484B_223_1b"
+  },
+  {
+   "name": "p.lane_change_yaw_rate",
+   "value": 1.0,
+   "unit": "deg/s",
+   "convention": "manoeuvre-detection tolerance: the magnitude of yaw rate above which the body counts as steering rather than holding its course, set above the yaw of following an ordinary highway bend and above heading noise, and naming only the resolution at which turning is told from running straight.",
+   "source": "the yaw rate of a vehicle on a highway curve at the design radius, below which steering is not distinguishable from course keeping",
+   "proposed": "demo12/iter-001 NRS_484B_223_1b"
+  },
+  {
+   "name": "p.lateral_offset_resolution",
+   "value": 0.3,
+   "unit": "m",
+   "convention": "source resolution: the magnitude of signed lateral offset below which a region does not stand clear of the road user's own axis, naming only the positional resolution of the source and the half-width of a painted or kerbed boundary; it sets no standard of conduct and no required separation.",
+   "source": "the lateral positional accuracy of ordinary mapped road geometry and vehicle positioning (decimetre class)",
+   "proposed": "demo12/iter-001 NRS_484B_227_1_o1"
+  },
+  {
+   "name": "p.opening_reach",
    "value": 15.0,
    "unit": "m",
-   "convention": "The ground distance from the intersection region within which a reversing turn counts as taken around that junction's corner, so that a swing made far down the block is not. It is a corner-geometry figure, the reach of the turning envelope off the junction.",
-   "source": "turning-path templates for intersection design: corner radii and turning-envelope offsets.",
-   "proposed": "demo10/iter-001 NRS_484B_113_2"
+   "convention": "reach of an opening: the distance from a road user's body outline to an opening or crossover in a dividing structure within which the crossing counts as made through that opening rather than elsewhere on the highway. It is taken from the length of a median crossover, so a vehicle standing in or immediately at the opening is covered and one crossing the barrier well away from it is not.",
+   "source": "the typical length of a median crossover or emergency crossing on a divided highway",
+   "proposed": "demo12/iter-001 NRS_484B_227_1_o1"
+  },
+  {
+   "name": "p.yield_approach_speed",
+   "value": 4.0,
+   "unit": "m/s",
+   "convention": "yield-controlled approach convention: the speed at or below which a vehicle approaching a yield sign can give way to traffic on the intersecting way and halt before entering it within the view the approach affords",
+   "source": "AASHTO Green Book yield-controlled approach speeds; MUTCD application of the yield sign",
+   "proposed": "demo12/iter-001 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.cautious_speed",
+   "value": 7.0,
+   "unit": "m/s",
+   "convention": "stopping-sight-distance model: the speed from which a vehicle can halt within the view an intersection approach affords",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.yield_clearance",
+   "value": 6.0,
+   "unit": "m",
+   "convention": "gap-acceptance clearance: the centre-to-centre distance at closest approach below which the two vehicles' paths conflict and the one owing the duty has taken the precedence",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.yield_horizon",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "conflict horizon for gap acceptance: the time ahead over which the closest approach of two bodies is computed under constant velocities",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.hazard_horizon",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "immediate-hazard horizon: the time ahead within which an approaching vehicle's arrival makes it an immediate hazard to a vehicle crossing the junction",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_253_o1",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.hazard_clearance",
+   "value": 8.0,
+   "unit": "m",
+   "convention": "immediate-hazard clearance: the centre-to-centre distance at closest approach at or below which an approaching vehicle counts as so close as to be an immediate hazard",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_253_o1",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.approach_lane_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "approach look-back: the stretch of time behind the observation within which the approach lane a road user came to the junction on is looked for",
+   "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_1",
+   "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+  },
+  {
+   "name": "p.speed_dry",
+   "value": 25.0,
+   "unit": "m/s",
+   "convention": "surface-braking convention, baseline: the free-flow speed that is reasonable on a dry surface in daylight on an ordinary two-lane highway, before any reduction for surface, light, sight, width or traffic",
+   "source": "design speeds of rural two-lane highways in highway design practice",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_wet",
+   "value": 20.0,
+   "unit": "m/s",
+   "convention": "the same surface-braking convention with the wet-surface braking factor, which lengthens the braking share of the stopping distance",
+   "source": "wet-pavement friction factors of the stopping-distance model",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_ice",
+   "value": 11.0,
+   "unit": "m/s",
+   "convention": "the same surface-braking convention with the icy or snow-covered braking factor",
+   "source": "icy-pavement friction factors of the stopping-distance model",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_dark",
+   "value": 20.0,
+   "unit": "m/s",
+   "convention": "night allowance: the baseline speed in darkness, at which a vehicle can stop within the length of road its own lamps show",
+   "source": "headlamp-range and night stopping-sight-distance practice",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.sight_clearance_time",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "stopping-sight-distance convention: the time within which the vehicle must be able to come to a halt inside the distance it can see, so that the bound is the visible distance divided by this time",
+   "source": "perception-reaction plus braking times of the stopping-sight-distance model",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.reference_lane_width",
+   "value": 3.6,
+   "unit": "m",
+   "convention": "lane-width reference: the standard lane width at which the baseline speed is owed in full, the deficit below it costing speed",
+   "source": "standard lane widths in highway design practice",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.width_penalty_time",
+   "value": 0.2,
+   "unit": "s",
+   "convention": "lane-width allowance: the time in which the vehicle covers the missing width, so that each metre of lane width short of the reference costs the speed covered in that time",
+   "source": "narrow-lane speed reductions in highway design practice",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.traffic_speed_decrement",
+   "value": 1.5,
+   "unit": "m/s",
+   "convention": "traffic-density allowance: the speed the bound falls by for each road user of the traffic on the same highway within the reach, so that the bound falls as the stream thickens",
+   "source": "speed-flow relations of traffic flow practice",
+   "proposed": "demo12/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.corner_turn_window",
+   "value": 8.0,
+   "unit": "s",
+   "convention": "turn-recognition window: the stretch of time behind the observation within which the heading the road user turned from is looked for, taken from the duration of a low-speed turning movement at a junction, from the first steering input to settling on the new course. It names only how far back the earlier heading is sought and sets no standard of conduct.",
+   "source": "geometric design practice for low-speed turning movements at intersections",
+   "proposed": "demo12/iter-002 NRS_484B_113_2"
+  },
+  {
+   "name": "p.corner_min_heading_change",
+   "value": 60.0,
+   "unit": "deg",
+   "convention": "corner-turn recognition: the magnitude of heading change at or above which a movement counts as having gone round a corner, taken from the angle between two ways that join, in the words of DEF-NRS-484A-105, \"at, or approximately at, right angles\", less the margin by which approximately right-angled junctions and sampled headings depart from a quarter turn. It names the resolution at which going round a corner is told from backing straight, not how sharp a corner must be to matter.",
+   "source": "the junction geometry the posted definition of an intersection describes, with the heading tolerance of sampled trajectories",
+   "proposed": "demo12/iter-002 NRS_484B_113_2"
   },
   {
    "name": "p.turn_window",
-   "value": 8.0,
-   "unit": "s",
-   "convention": "The length of the window behind over which a turning's heading change is integrated: the time an ordinary vehicle takes to carry a turn at a junction, or a reversal of direction, from the start of the swing to its end, long enough to carry a reversal made in more than one movement as DEF-NRS-484B-077 requires. It bounds the observation of the manoeuvre and is not a judgement of how long a turn may take.",
-   "source": "turning-manoeuvre durations at low speed reported in junction design guidance",
-   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
-  },
-  {
-   "name": "p.turn_reversal_tolerance",
-   "value": 30.0,
-   "unit": "deg",
-   "convention": "The angle by which an integrated heading change may fall short of a half turn and still be read as a turning “so as to proceed in the opposite direction”: the spread of headings a way holds between its two directions, which its bends and its camber give a body that has turned about. It is an observer's tolerance on an absolute of the definition, not a judgement of how complete a turn must be.",
-   "source": "lane alignment and heading tolerances in road geometry and map matching",
-   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
-  },
-  {
-   "name": "p.yaw_rate_floor",
-   "value": 2.0,
-   "unit": "deg/s",
-   "convention": "The rate of change of heading at or above which a tracked body counts as turning rather than holding its heading: the resolution of the source's yaw channel, below which a reading is indistinguishable from tracking noise. It names only the source's resolution and no degree of manoeuvre.",
-   "source": "yaw-rate noise floors of vehicle inertial units and of heading estimates on tracked road users",
-   "proposed": "demo10/iter-001 NRS_484B_227_1_o3"
-  },
-  {
-   "name": "p.yellow_phase_window",
-   "value": 6.0,
-   "unit": "s",
-   "convention": "The window behind an observation within which a steady yellow is sought when the head shows red: the length of the yellow change interval a signal is timed with, so that a red displayed within it is the red the yellow of this paragraph warned of, and a red displayed later belongs to a phase of its own. The interval is set from the approach speed and the driver's reaction and braking, and the value is taken at the upper end of the range ordinary signal timing uses.",
-   "source": "ITE Traffic Engineering Handbook and the MUTCD guidance on yellow change intervals.",
-   "proposed": "demo10/iter-001 NRS_484B_307_6a"
-  },
-  {
-   "name": "p.turn_intent_window",
-   "value": 5.0,
-   "unit": "s",
-   "convention": "The window ahead within which the turn a road user is intending must be made for the intention to be read from the act: the time between the point at which a driver has committed to a turn at a junction and the turning itself, over an ordinary approach at junction speeds.",
-   "source": "Driver-behaviour studies of turn preparation and signalling distance on junction approaches (ITE and NCHRP intersection-design literature).",
-   "proposed": "demo10/iter-001 NRS_484B_400_2a"
-  },
-  {
-   "name": "p.approach_lookback_window",
    "value": 10.0,
    "unit": "s",
-   "convention": "The window behind within which the lane by which a road user reached a junction is sought: the time an ordinary approach to a junction takes from the lane being settled to the entry, at urban approach speeds.",
-   "source": "Junction approach timing in the ITE Traffic Engineering Handbook.",
-   "proposed": "demo10/iter-001 NRS_484B_400_2a"
+   "convention": "Turn-recognition window: the stretch of time behind the observation within which the heading a road user turned from is looked for. It is taken from the time a vehicle takes to carry out a turn at a junction or a reversal of direction on a roadway, from the first steering input to settling on the new heading, and it is long enough to cover a turning accomplished in more than one movement, as the definition of a U-turn requires. It names only how far back the earlier heading is sought and sets no standard of conduct.",
+   "source": "Observed turn durations at junctions and of multi-movement turns at low speed (intersection-manoeuvre timing studies underlying junction clearance intervals).",
+   "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
   },
   {
-   "name": "p.curve_radius_floor",
-   "value": 500.0,
-   "unit": "m",
-   "convention": "The radius of the flattest horizontal alignment a road map's geometry and a fitted trajectory still tell from a tangent, with which the curvature read at a road user's position is compared by its reciprocal. The parameter names the source's resolution only, so that the condition is the presence of a bend and not a bend of some stated sharpness.",
-   "source": "Curvature estimation tolerances of road centreline geometry and map-matched trajectories.",
-   "proposed": "demo10/iter-001 NRS_484B_407"
+   "name": "p.u_turn_min_heading_change",
+   "value": 150.0,
+   "unit": "deg",
+   "convention": "Reversal-of-direction band, lower edge: a sampled heading never reverses exactly, so this names how near a half turn counts as proceeding in the opposite direction. It is set far enough below a half turn to absorb the heading noise and the sampling of a turning made at low speed, and far enough above a quarter turn that an ordinary turn at a junction does not reach it.",
+   "source": "Heading-integration tolerance over sampled trajectories, taken with the quarter-turn and half-turn geometry of road manoeuvres.",
+   "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
   },
   {
-   "name": "p.crest_reach",
-   "value": 100.0,
+   "name": "p.u_turn_max_heading_change",
+   "value": 210.0,
+   "unit": "deg",
+   "convention": "Reversal-of-direction band, upper edge: it keeps a road user that goes on turning - round a roundabout, round a block - from counting as having reversed its direction, and is set as far above a half turn as the lower edge is below it.",
+   "source": "The same heading-integration tolerance, applied symmetrically about a half turn.",
+   "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.left_turn_min_heading_change",
+   "value": 60.0,
+   "unit": "deg",
+   "convention": "Left-turn band, lower edge: the magnitude of signed heading change to the left at or above which a movement counts as a turn to the left rather than a drift, a lane change or an ordinary bend held. It is set below a quarter turn, since junctions meet at angles that are only approximately right, and well above the heading change of a lane change.",
+   "source": "The angles at which highways join (approximately, but not exactly, right angles, as the definition of an intersection allows) together with the heading change of an ordinary lane change.",
+   "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.left_turn_max_heading_change",
+   "value": 135.0,
+   "unit": "deg",
+   "convention": "Left-turn band, upper edge: it keeps a road user that goes on turning past a quarter turn towards a reversal of direction from counting as having made a left turn, and is set at the midpoint between a quarter turn and the lower edge of the reversal band, so that the two bands do not overlap and a turning falls in at most one of them.",
+   "source": "The same quarter-turn and half-turn geometry, with the reversal band's lower edge.",
+   "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+  },
+  {
+   "name": "p.crossing_entry_lookback",
+   "value": 25,
    "unit": "m",
-   "convention": "The ground distance from a crest region within which a road user is upon the approach to or near that crest: the length of approach over which the crest cuts short a driver's view of the road beyond, taken as the stopping sight distance a rural two-lane highway of ordinary design speed is laid out for, which is the length the crest's vertical curve is designed from.",
-   "source": "AASHTO Green Book stopping sight distance and crest vertical curve design.",
-   "proposed": "demo10/iter-001 NRS_484B_407"
+   "convention": "crossing look-back: the stretch of path behind a halt within which an earlier overlap of a crossing shows the halt to have been made after the vehicle entered that crossing rather than before it. It is taken from the ground between an entry into a marked crossing and a halt placed within the placement tolerance beyond it - the length of the crossing, the length of a design vehicle, the placement tolerance, and one sampling interval at an ordinary approach speed - so that the entry is found where it occurred and no earlier conduct of the approach is reached. It names only how far back the entry is sought and sets no standard of conduct.",
+   "source": "crosswalk width and passenger-car design-vehicle length of the geometric design conventions, with the stop-line placement tolerance of `p.stop_place_tolerance` and the sampling interval of an ordinary trace at an urban approach speed",
+   "proposed": "demo12/iter-003 NRS_484A_450_2"
+  },
+  {
+   "name": "p.mount_proximity",
+   "value": 2.0,
+   "unit": "m",
+   "convention": "sign-assembly mounting convention: the distance from a sign's face, taken on each world axis, within which a beacon head counts as mounted with that sign. It is taken from the dimensions of a roadside sign assembly and the offset at which a pair of beacon lamps is fixed above or beside the sign face it serves, so that a head on the same post or the same mast arm is covered and a head at the next installation along the road is not. It names how close a head must stand to belong to a sign's assembly and states no standard of conduct and no required separation.",
+   "source": "roadside sign and beacon mounting practice (MUTCD sign-assembly and beacon-mounting dimensions)",
+   "proposed": "demo12/iter-003 NRS_484B_600_1c"
+  },
+  {
+   "name": "p.signal_lookback",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "Signalling-interval convention: the stretch of time behind the observation at which a movement is recognized within which a turn signal given for that movement is looked for. It covers the interval a driver is expected to signal before beginning the movement together with the time the movement itself occupies, so that a signal duly given before the body begins to cross is still found when the movement is recognized; it names only where the signal is looked for and states no standard of conduct.",
+   "source": "Driver-licensing signalling guidance (a continuous signal over the last stretch of road before the movement, commonly 100 feet, which is some two to three seconds at ordinary highway speeds) together with observed lane-change durations from the first steering input to settling in the new lane.",
+   "proposed": "demo12/iter-004 NRS_484B_223_1b"
   }
  ],
  "aggregates": [],

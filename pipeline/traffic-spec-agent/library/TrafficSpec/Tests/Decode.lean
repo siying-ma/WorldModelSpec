@@ -10,11 +10,12 @@ def traceText : String := "{\"scenes\": [
      {\"track\": 1, \"classes\": [\"motor_vehicle\"],
       \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"velocity\": [10, 0], \"speed\": 10, \"extent\": [2.25, 0.9, 0.75],
               \"engine_running\": true, \"gear\": -1, \"throttle\": 0.2},
-      \"sig\": {\"turn_indicator\": \"left\", \"brake_lamp\": null}},
+      \"sig\": {\"turn_indicator\": \"left\", \"brake_lamp\": null, \"hand_signal\": \"no_signal\"},
+      \"sight_along_way\": [[101, 80]]},
      {\"track\": 2, \"classes\": [\"motor_vehicle\", \"truck\"], \"unobserved_classes\": [\"taxicab\"],
       \"kin\": {\"position\": [30, 0], \"heading\": [1, 0], \"velocity\": [0, 0], \"speed\": 0, \"extent\": [2.25, 0.9, 0.75]}}],
    \"structures\": [{\"id\": 7, \"kind\": \"lane\", \"lane\": {\"count\": 2, \"ordinal\": 1, \"marking_left\": [\"broken\", \"white\"], \"enters_intersection\": 20}},
-                  {\"id\": 20, \"kind\": \"intersection\"}],
+                  {\"id\": 20, \"kind\": \"intersection\", \"ways\": [100, 101]}],
    \"devices\": [{\"id\": 9, \"kind\": \"traffic_signal\", \"governs\": [7], \"indications\": [\"circular_red\", \"green_arrow(left)\"],
                   \"conditions\": {\"windows\": [{\"weekdays\": [0, 1, 2, 3, 4], \"start_minute\": 420, \"end_minute\": 600}], \"min_occupancy\": 2}}],
    \"occupancy_observed\": true, \"occupies\": [[1, 7], [2, 7]], \"relations\": [{\"a\": 1, \"b\": 2, \"visible\": true}],
@@ -31,6 +32,9 @@ def τ : Trace := decoded.toOption.getD []
 #guard (kin_speed τ[1]! 1).map (Q.eq · (Q.mk' 17 2)) = some true              -- 8.5 exactly
 #guard (kin_extent τ[0]! 1).map (fun e => Q.eq e.1 (Q.mk' 9 4)) = some true    -- 2.25 exactly
 #guard sig_turn_indicator τ[0]! 1 = some .left
+#guard sig_hand_signal τ[0]! 1 = some .noSignal
+#guard st_on_way τ[0]! 20 = some [100, 101]
+#guard (st_sight_along_way τ[0]! 1 101).map (Q.eq · (metres 80)) = some true
 #guard sig_brake_lamp τ[0]! 1 = none                                          -- null is absent
 #guard kin_speed τ[1]! 2 = none                                               -- track 2 not in scene 1
 #guard ru_taxicab τ[0]! 2 = none                                              -- unobserved class
@@ -71,14 +75,15 @@ def c : Primitives.Ctx := Primitives.Ctx.mk' τ {}
 
 -- reading and manifest
 def readingText : String := "{\"params\": [{\"name\": \"p.stop_speed\", \"value\": 0.1, \"unit\": \"m/s\"}, {\"name\": \"p.setback\", \"value\": 15, \"unit\": \"ft\"}, {\"name\": \"p.limit\", \"value\": 25, \"unit\": \"mph\"}],
-  \"aggregates\": [{\"word\": \"vehicle\", \"classes\": [\"ru.motor_vehicle\", \"ru.bicycle\"]}]}"
+  \"aggregates\": [{\"id\": \"D-1::vehicle\", \"included\": [\"ru.motor_vehicle\"], \"unresolved\": [\"ru.bicycle\"]}]}"
 def ρ : Reading := (parse reading readingText).toOption.getD {}
 #guard (ρ.param "p.stop_speed").map (Q.eq · (Q.mk' 1 10)) = some true
 #guard ρ.paramUnit "p.stop_speed" = some .metrePerSecond
 #guard (ρ.param "p.setback").map (Q.eq · (feet 15)) = some true          -- 15 ft, stored in metres
 #guard ρ.paramUnit "p.setback" = some .metre
 #guard (ρ.param "p.limit").map (Q.eq · (mph 25)) = some true
-#guard ρ.aggregate "vehicle" = some ["ru.motor_vehicle", "ru.bicycle"]
+#guard (ρ.aggregate "D-1::vehicle").map (fun a => (a.included, a.unresolved)) = some (["ru.motor_vehicle"], ["ru.bicycle"])
+#guard (ρ.aggregate "vehicle").isNone
 def manifestText : String := "{\"source\": \"video\", \"reid_gap\": 1.5, \"atoms\": {\"kin.speed\": \"estimate:coarse\", \"ru.motor_vehicle\": \"exact\", \"env.darkness\": \"absent\", \"kin.engine_running\": \"subject\"}}"
 def m : Manifest := (parse manifest manifestText).toOption.getD default
 #guard m.source = "video"

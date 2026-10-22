@@ -1,8 +1,10 @@
-"""Feedback: AUTO_NOTES.md for the next plan, the run's TO_USER.md for the operator (gap decisions, parameter and aggregate reviews, laws closed), summary."""
+"""Feedback: AUTO_NOTES.md for the next plan, the run's TO_USER.md for the operator (gap decisions, parameter reviews, questions, laws closed), and summary.json with the run's status."""
 from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from ..model import nodeid
+from ..model.blueprint import concepts_of
 from ..store import paths
 from ..store.gaps import GapLedger
 from ..store.ledger import Ledger
@@ -39,10 +41,13 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
             for e in returned_c:
                 lines.append(f"- `{e.concept}` ({e.state}, attempt {e.attempts}; used by {', '.join(e.used_by) or 'no node'}): " + "; ".join(e.reasons[:6]))
     if deferred:
-        lines += ["", "## Nodes waiting for a node they compose (coded when it is accepted; no attempt counted)", ""]
+        lines += ["", "## Nodes held for a node or concept they use, or by a pause (coded when it is accepted or the run resumes; no attempt counted)", ""]
         for d in deferred:
-            waits = sorted({c.get("rule") for c in d.get("compositions", []) if c.get("rule") not in run.all_nodes()})
-            lines.append(f"- `{d['node_id']}` waits on {', '.join(f'`{w}`' for w in waits) or '(nothing)'}")
+            rules = {c.get("rule") for c in d.get("compositions", [])} - set(run.all_nodes())
+            concepts = ({x for e in d.get("elements", []) for x in e.get("derived", [])}
+                        | {x for o in d.get("operationalizations", []) for x in concepts_of(o)})
+            waits = sorted(rules | {c for c in concepts if nodeid.is_concept_id(c) and c not in run.all_concepts()})
+            lines.append(f"- `{d['node_id']}` waits on {', '.join(f'`{w}`' for w in waits) or 'the run (paused or stopped before it was coded)'}")
     if coder_narrowings:
         lines += ["", "## Readings the coding sessions narrowed (span, and what the formulas state more narrowly than its words)", ""]
         for nid, ns in coder_narrowings.items():
@@ -54,11 +59,26 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
             lines.append(f"- {g['id']} ({g['kind']}) on `{g.get('span', '')[:80]}` — {', '.join(g.get('law_refs', []))}")
     run.auto_notes.write_text("\n".join(lines) + "\n", encoding="utf-8")
     write_to_user(run, [l for l in to_user if l])
-    summary = {"run": run.opts.run_id, "iteration": run.iteration, "laws": ledger.counts(),
-               "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
+    summary = {"run": run.opts.run_id, "iteration": run.iteration, "status": "running", "stop_reason": "",
+               "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
                "concepts": concept_ledger.counts() if concept_ledger is not None else {},
                "gaps_total": len(GapLedger(paths.GAP_LEDGER).rows)}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
+def write_status(run: Run, ledger: Ledger, status: str, reason: str) -> dict:
+    """The run's terminal status in `summary.json`: `complete` when every law is terminal,
+    `infrastructure_failure` when a session could not be launched, `paused_budget` when the second
+    vendor's budget admits no further call (resumed under the same run id once raised),
+    `stale_aggregate` when an aggregate's inputs changed under nodes that claim it (a new run is
+    needed), `data_integrity_failure` when an audit file cannot be read as written (named, and left as
+    it is), `incomplete` when the iteration bound or a stop without progress left a law open."""
+    f = run.dir / "summary.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    summary = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"run": run.opts.run_id}
+    summary.update({"status": status, "stop_reason": reason, "laws": ledger.counts(), "iteration": run.iteration})
+    f.write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
+    return summary
 
 
 def write_to_user(run: Run, lines: list[str]) -> None:
@@ -70,5 +90,5 @@ def write_to_user(run: Run, lines: list[str]) -> None:
     old = path.read_text(encoding="utf-8") if path.exists() else ""
     sections = [x for x in re.split(r"(?m)^(?=## Iteration \d+$)", old) if x.strip() and x.split("\n", 1)[0] != head]
     if lines:
-        sections.append(head + "\n\n" + "\n".join(f"- {l}" for l in lines) + "\n")
+        sections.append(head + "\n\n" + "\n".join(l if l.startswith("  - ") else f"- {l}" for l in lines) + "\n")   # a sub-item stays one
     path.write_text("\n".join(x.rstrip("\n") + "\n" for x in sections), encoding="utf-8")

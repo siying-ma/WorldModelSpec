@@ -2,8 +2,10 @@
 
 Every attribute enumeration written in an atom's contract as `**attr** ∈ {a, b(dir), …}` (or, for
 the sign catalogue, `**code**: a, b, …`) becomes one Lean inductive; the atom ids of §1–§7 and the
-primitive ids of §10 become string lists. Nothing else is generated: structured attributes (a rider's
-posture, a sign's conditions) are hand-written records in World.lean.
+primitive ids of §10 become string lists; the units of the measured atoms (§11) and of the
+primitives (§10's last two columns) become the dimension tables of `Dimensions.lean`. Nothing else
+is generated: structured attributes (a rider's posture, a sign's conditions) are hand-written
+records in World.lean.
 
     python -m scripts.gen_ontology            # write the files
     python -m scripts.gen_ontology --check    # exit 1 if the files on disk differ (the doctor's bijection check)
@@ -56,7 +58,8 @@ FILE_OF_FAMILY = {"ru": "RoadUser", "st": "Structure", "dev": "Device", "sig": "
 KIND_ENUMS = {
     "ru": ("RoadUserClass", {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}),
     "st": ("StructureKind", {"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_enters", "st.lane_marking",
-                             "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry"}),
+                             "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry",
+                             "st.on_way", "st.sight_along_way"}),
     "dev": ("DeviceKind", {"dev.governs", "dev.position", "dev.inoperative"}),
 }
 FAMILIES = ("ru", "kin", "st", "dev", "sig", "env", "rel")
@@ -66,6 +69,16 @@ ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
 DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
 
+#: A unit as ATOMS.md spells it → its exponents of metre, second and degree; `boolean` is no quantity.
+DIMS = {"m": (1, 0, 0), "s": (0, 1, 0), "m/s": (1, -1, 0), "m/s²": (1, -2, 0), "deg": (0, 0, 1),
+        "deg/s": (0, -1, 1), "1/m": (-1, 0, 0), "1": (0, 0, 0)}
+MEASURE_ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel)\.[a-z_]+)` \| `([a-z_]+)` \| ([^|]+?) \|$")
+
+def dim(unit: str, where: str) -> tuple[int, int, int]:
+    if unit not in DIMS:
+        raise SystemExit(f"{where}: unknown unit {unit!r} (known: {', '.join(DIMS)}, boolean)")
+    return DIMS[unit]
+
 def camel(v: str) -> str:
     parts = v.strip().split("_")
     return parts[0] + "".join(p.capitalize() for p in parts[1:])
@@ -74,10 +87,16 @@ def parse(atoms_path: Path = None):
     text = (atoms_path or ATOMS).read_text(encoding="utf-8")
     section = None
     atoms, primitives, enums = [], [], []   # enums: (atom, attr, [values], param_type)
+    measures, prim_units = [], []            # (lean name, dim); (lean name, result dim or None, [param dims])
     for line in text.splitlines():
         m = re.match(r"^## (\d+)\.", line)
         if m:
             section = int(m.group(1)); continue
+        if section == 11:
+            mm = MEASURE_ROW.match(line)
+            if mm:
+                measures.append((mm.group(2), dim(mm.group(3).strip(), mm.group(2))))
+            continue
         r = ROW.match(line)
         if not r:
             continue
@@ -97,7 +116,14 @@ def parse(atoms_path: Path = None):
                 enums.append((aid, "code", vals))
         elif section == 10 and fam == "prim":
             primitives.append(aid)
-    return atoms, primitives, enums
+            cells = [c.strip() for c in rest.rstrip(" |").split(" | ")]
+            if len(cells) < 4:
+                raise SystemExit(f"{aid}: §10 row lacks its result unit and parameter units columns")
+            name = aid.replace(".", "_")
+            result = None if cells[2] == "boolean" else dim(cells[2], name)
+            ps = [] if cells[3] in ("—", "-", "") else [dim(u.strip(), name) for u in cells[3].split(",")]
+            prim_units.append((name, result, ps))
+    return atoms, primitives, enums, measures, prim_units
 
 def render_codec(name, vals, param_types):
     """`ofString`/`toString` between the ATOMS.md spelling ("green_arrow(left)") and the constructor."""
@@ -145,8 +171,25 @@ def render_inductive(aid, attr, vals):
     lines.append(render_codec(name, vals, param_types))
     return name, "\n".join(lines)
 
+def render_dimensions(header: str, measures, prim_units) -> str:
+    d = lambda t: f"⟨{t[0]}, {t[1]}, {t[2]}⟩"
+    return (header.replace("{name}", "Dimensions").replace(
+                "Constructors are the attribute values the ontology lists,\n  with no meaning attached; what a value obliges is a rule's business.",
+                "The units the ontology states for its measured atoms and primitives, as\n  dimensions a case is typed with.")
+            + "/-- A physical dimension: the exponents of metre, second and degree. -/\n"
+            + "structure Dim where\n  m : Int\n  s : Int\n  deg : Int\n  deriving DecidableEq, Repr, Inhabited\n\n"
+            + "namespace Dimensions\n"
+            + "/-- The unit of each measured atom, by the name a formula reads it with. -/\n"
+            + "def ofMeasure : List (String × Dim) := [\n"
+            + ",\n".join(f'  ("{n}", {d(t)})' for n, t in measures) + "\n]\n\n"
+            + "/-- Each primitive by name: its result's unit (`none` for a Boolean one) and its parameters' units\n"
+            + "    in order. -/\n"
+            + "def ofPrimitive : List (String × Option Dim × List Dim) := [\n"
+            + ",\n".join(f'  ("{n}", {"none" if r is None else "some " + d(r)}, [{", ".join(d(p) for p in ps)}])' for n, r, ps in prim_units)
+            + "\n]\nend Dimensions\n\nend TrafficSpec\n")
+
 def generate(atoms_path: Path = None):
-    atoms, primitives, enums = parse(atoms_path)
+    atoms, primitives, enums, measures, prim_units = parse(atoms_path)
     files = {}
     source = (atoms_path or ATOMS).name
     header = ("/-\n  TrafficSpec.Core.Vocab.Ontology.{name}\n  GENERATED by scripts/gen_ontology.py from ontology/" + source + ". Do not edit: the doctor\n"
@@ -182,6 +225,7 @@ def generate(atoms_path: Path = None):
            + "/-- Every primitive id of ATOMS.md §10, in file order. -/\ndef primitiveIds : List String := [\n"
            + ",\n".join(f'  "{d}"' for d in primitives) + "\n]\n\nend TrafficSpec\n")
     files["Ids.lean"] = ids
+    files["Dimensions.lean"] = render_dimensions(header, measures, prim_units)
     return files
 
 def main(argv):

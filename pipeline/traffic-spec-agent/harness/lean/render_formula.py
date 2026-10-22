@@ -236,3 +236,154 @@ def canonical(body, arg_names: list[str], param_names: list[str]) -> str:
         return out
 
     return json.dumps(walk(body), sort_keys=True, separators=(",", ":"))
+
+
+# ---------------------------------------------------------------------------------------------
+# A case in time order: the same formula, its facts placed on the trace's time axis
+# ---------------------------------------------------------------------------------------------
+_TEMPORAL = ("holds_for", "within", "at_last", "until_within", "rises", "since", "until", "count", "always", "eventually",
+             "since_rise", "distance_while")
+
+
+def _conj(f) -> list:
+    return [g for x in f["and"] for g in _conj(x)] if isinstance(f, dict) and set(f) == {"and"} else [f]
+
+
+def _seconds(t) -> float | None:
+    """A literal's value in seconds, or None when it is not a time literal."""
+    if isinstance(t, dict) and isinstance(t.get("lit"), dict) and t.get("unit") in ("second", "s"):
+        return t["lit"].get("num", 0) / (t["lit"].get("den", 1) or 1)
+    return None
+
+
+def _time_test(f):
+    """`(op, seconds)` when the formula compares the observation's time (`kin_time`) with a literal."""
+    if isinstance(f, dict) and "cmp" in f:
+        lhs, rhs = f.get("lhs"), f.get("rhs")
+        if isinstance(lhs, dict) and lhs.get("measure") == "kin_time" and _seconds(rhs) is not None:
+            return f["cmp"], _seconds(rhs)
+        if isinstance(rhs, dict) and rhs.get("measure") == "kin_time" and _seconds(lhs) is not None:
+            return {"lt": "gt", "le": "ge", "gt": "lt", "ge": "le", "eq": "eq"}[f["cmp"]], _seconds(lhs)
+    return None
+
+
+def _narrow(lo: float, hi: float, tests: list) -> tuple[float, bool, float, bool] | None:
+    """The interval from lo to hi (both included) restricted by time tests, as `(lo, lo_open, hi,
+    hi_open)`: a strict test (`gt`, `lt`) leaves its end out. None where the interval is empty,
+    a strict end included."""
+    lo_open = hi_open = False
+    for op, c in tests:
+        if op in ("ge", "gt"):
+            if c > lo or (c == lo and op == "gt"):
+                lo, lo_open = c, op == "gt"
+        elif op in ("le", "lt"):
+            if c < hi or (c == hi and op == "lt"):
+                hi, hi_open = c, op == "lt"
+        elif op == "eq":
+            if not (lo <= c <= hi) or (c == lo and lo_open) or (c == hi and hi_open):
+                return None
+            lo, hi, lo_open, hi_open = c, c, False, False
+    if lo > hi or (lo == hi and (lo_open or hi_open)):
+        return None
+    return lo, lo_open, hi, hi_open
+
+
+def _has_time(f) -> bool:
+    if isinstance(f, dict):
+        if any(k in f for k in _TEMPORAL) or (f.get("measure") == "kin_time"):
+            return True
+        return any(_has_time(v) for v in f.values())
+    if isinstance(f, list):
+        return any(_has_time(v) for v in f)
+    return False
+
+
+def _split_tests(body) -> tuple[list, list]:
+    """A conjunction's time tests and its other facts."""
+    tests, rest = [], []
+    for g in _conj(body):
+        t = _time_test(g)
+        (tests if t else rest).append(t if t else g)
+    return tests, rest
+
+
+def timeline(case, at_ms: int, glosses: dict[str, str] | None = None, times: list[int] | None = None) -> str:
+    """The case's facts in time order, as the same formula states them: a window behind `at` is the
+    stretch from `at` less its length to `at`, a window ahead the stretch after `at`; a time test
+    (`kin_time` against a literal) inside a window narrows it; "at some observation" (`not` of a
+    window of `not`) and "at every observation" are kept apart; `rises` names the previous
+    observation. Nothing is added: a fact the case does not state is not shown, a time not listed
+    says nothing, and the trace contributes timestamps only. A time-bearing form this layout cannot
+    place stays at `at` with the section marked partial; the canonical statement stays authoritative."""
+    g = glosses or {}
+    at = at_ms / 1000
+    prev = max((t for t in (times or []) if t < at_ms), default=None)
+    placed: list[tuple[tuple, int, str]] = []               # (span, order, text); span = (from, from_open, to, to_open)
+    partial = False
+
+    def put(span, text, order=0):
+        placed.append((span, order, text))
+    closed = lambda lo, hi: (lo, False, hi, False)
+
+    def inner_time(x) -> bool:
+        """A window's fact that itself involves another time: a nested window, a `rises`, a time
+        test outside the guard. Not placed: the fact stays at `at` and the section is partial."""
+        return _has_time(x)
+
+    for f in _conj(case):
+        if isinstance(f, dict) and f.get("holds_for") == "time" and _seconds(f.get("length")) is not None \
+                and not any(inner_time(b["implies"][1]) if isinstance(b, dict) and "implies" in b and _time_test(b["implies"][0]) is not None
+                            else inner_time(b) for b in _conj(f["body"])):
+            lo = at - _seconds(f["length"])
+            for b in _conj(f["body"]):
+                if isinstance(b, dict) and "implies" in b and _time_test(b["implies"][0]) is not None:
+                    span = _narrow(lo, at, [_time_test(b["implies"][0])])
+                    if span is None:                          # the guard holds at no instant of the window: nothing stated
+                        continue
+                    word = "at that observation" if span[0] == span[2] else "at every observation"
+                    for x in _conj(b["implies"][1]):
+                        put(span, f"{word}: " + formula(x, g))
+                else:
+                    put(closed(lo, at), "at every observation: " + formula(b, g))
+            continue
+        if isinstance(f, dict) and set(f) == {"not"} and isinstance(f["not"], dict) and f["not"].get("holds_for") == "time" \
+                and _seconds(f["not"].get("length")) is not None and isinstance(f["not"].get("body"), dict) and set(f["not"]["body"]) == {"not"}:
+            tests, rest = _split_tests(f["not"]["body"]["not"])
+            span = _narrow(at - _seconds(f["not"]["length"]), at, tests)
+            if span is not None and rest and not any(inner_time(x) for x in rest):
+                word = "at that observation" if span[0] == span[2] else "at some observation of this stretch, all together"
+                put(span, f"{word}: " + "; ".join(formula(x, g) for x in rest))
+                continue
+        if isinstance(f, dict) and f.get("within") == "time" and _seconds(f.get("length")) is not None:
+            tests, rest = _split_tests(f["body"])
+            span = _narrow(at, at + _seconds(f["length"]), tests)
+            if span is not None and rest and not any(inner_time(x) for x in rest):
+                put(span, "at some observation of this stretch, all together: " + "; ".join(formula(x, g) for x in rest))
+                continue
+        if isinstance(f, dict) and "rises" in f and not _has_time(f["rises"]):
+            if prev is not None:
+                put(closed(prev / 1000, prev / 1000), f"it is not the case that ({formula(f['rises'], g)})", order=-1)
+            else:
+                put(closed(at, at), "at the observation before this one: it is not the case that (" + formula(f["rises"], g) + ")", order=-1)
+            put(closed(at, at), formula(f["rises"], g))
+            continue
+        if _has_time(f):                                      # a form with another time that this layout does not place
+            partial = True
+        put(closed(at, at), formula(f, g))
+
+    def when(span):
+        lo, lo_open, hi, hi_open = span
+        s = lambda x: f"{x:g} s"
+        if lo == hi:
+            return f"At t = {s(lo)}" + (" (the observation judged)" if lo == at else "")
+        return (f"From t = {s(lo)}" + (" (not including it)" if lo_open else "") + f" to t = {s(hi)}" + (" (not including it)" if hi_open else ""))
+    out = [f"The same facts, in time order (t in seconds on the trace's own clock, the observation time `kin_time`; the observation judged is t = {at:g} s). Only what the case "
+           "states is listed; a time or a fact not listed is not stated" + ("; some facts involve other times in a form this layout does not "
+           "place, and are listed at the observation judged — the full statement above is authoritative" if partial else "") + "."]
+    groups: dict[tuple, list[tuple[int, str]]] = {}
+    for span, order, text in placed:
+        groups.setdefault(span, []).append((order, text))
+    for span in sorted(groups, key=lambda k: (k[0], k[1], k[2], k[3])):
+        out.append(f"- {when(span)}:")
+        out += [f"  - {t}" for _o, t in sorted(groups[span], key=lambda x: x[0])]
+    return "\n".join(out)

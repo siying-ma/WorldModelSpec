@@ -94,9 +94,7 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
     for e in node.get("elements", []):
         for ident in list(e.get("atoms", [])) + list(e.get("derived", [])):
             if ident.startswith("ru.aggregate"):
-                if "=" not in ident:
-                    errs.append(f"{node.id}: `ru.aggregate` names no word on span {e.get('span')} (write `ru.aggregate=<word>`)")
-                continue          # the word itself is checked against the reading
+                continue          # its id is checked against the reading with every other claim
             if not onto.knows(ident) and ident not in concept_ids:
                 if e.get("span") in proposed:
                     errs.append(f"{node.id}: span {e.get('span')} carries a gap and maps to `{ident}`, which does not exist: map the span "
@@ -234,10 +232,19 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
                 errs.append(f"{node.id}: parameter `{p}` is in no catalogue and the node proposes none: add it to `param_proposals` "
                             "(name, unit, value, convention, source) or name a catalogued parameter")
     for ident in sorted(node.claimed_atoms()):
+        if ident == "ru.aggregate":
+            errs.append(f"{node.id}: a bare `ru.aggregate` is claimed: claim `ru.aggregate=<aggregate id>` wherever the record "
+                        "names it (an element, an operationalization's concepts, the occasion), with the id the definitions table admits")
         if ident.startswith("ru.aggregate="):
-            w = ident.split("=", 1)[1]
-            if w not in reading.aggregate_words():
-                errs.append(f"{node.id}: aggregate word `{w}` is not declared by the reading (its `aggregates`)")
+            aid = ident.split("=", 1)[1]
+            if "::" not in aid:
+                errs.append(f"{node.id}: `{ident}` names no aggregate id: claim `ru.aggregate=<definition id>::<term>` as the definitions "
+                            "table admits it, or a law-local `<law id>:<span>::<term>`")
+            elif not aid.startswith("DEF-") and not aid.startswith(node.law + ":"):
+                errs.append(f"{node.id}: the law-local aggregate `{aid}` belongs to another law")
+            elif aid not in reading.aggregate_ids() and not (getattr(reading, "pending_aggregates", False) and aid.startswith("DEF-")):
+                errs.append(f"{node.id}: aggregate `{aid}` is not admitted: claim an id the definitions table admits, or write the "
+                            "law-local aggregate in `aggregates.jsonl`")
     return errs, proposals
 
 
@@ -688,7 +695,9 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs = [f"{n.id}: missing field `{k}`" for k in REQUIRED if k not in n.raw]
         errs += shape_errors(n.id, n.raw, ("segmentation", "elements", "operationalizations", "assumptions", "compositions", "param_proposals", "narrowings",
                                            "residues", "binders", "scenarios", "literals", "gaps"))
-        law = laws.get(n.get("law_refs", ["?"])[0])
+        errs += field_type_errors(n.id, n.raw, NODE_FIELD_TYPES)
+        refs = n.get("law_refs", ["?"])
+        law = laws.get(refs[0]) if isinstance(refs, list) and refs and isinstance(refs[0], str) else None
         if law is None:
             errs.append(f"{n.id}: law {n.get('law_refs')} is not in the corpus given to this run")
         if errs:
@@ -716,6 +725,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps)
         errs += check_reemission(n, accepted)
+        errs += check_region_places(n.id, n.claimed_atoms(), onto)
         errs += [c for c in cycle_errs if n.id in c]
         obligation_residue = any(n.spans().get(r.get("span"), {}).get("role") == "obligation" for r in n.get("residues", []))
         # the obligation itself in a residue closes the law: the vocabulary cannot carry the duty, and
@@ -786,6 +796,59 @@ def shape_errors(ident: str, raw: dict, list_fields: tuple[str, ...]) -> list[st
     return errs
 
 
+#: The record fields the code generator (`harness/lean/skeleton.py`) writes into Lean text, with the
+#: type each must have: a field of another type would pass `shape_errors` and stop the run while
+#: its skeleton is written. `x[].y` is field `y` of every entry of list `x`; a field left out is not
+#: checked here (its presence is another check's).
+NODE_FIELD_TYPES = (("law_refs", "list[str]"), ("params", "list[str]"), ("subject.binder", "str"), ("subject.class_elements", "list[str]"),
+                    ("binders[].name", "str"), ("binders[].class_elements", "list[str]"), ("assumptions[].id", "str"),
+                    ("operationalizations[].standard", "str"), ("operationalizations[].convention", "str"),
+                    ("operationalizations[].params", "list[str]"), ("residues[].why", "str"),
+                    ("segmentation[].id", "str"), ("segmentation[].text", "str"), ("segmentation[].role", "str"),
+                    ("scenarios[].name", "str"), ("scenarios[].expected", "str"), ("scenarios[].narrative", "str"))
+CONCEPT_FIELD_TYPES = (("contract", "str"), ("definition", "str"), ("args[].name", "str"), ("args[].sort", "str"),
+                       ("args[].values", "list[str]"), ("params[].name", "str"), ("params[].unit", "unit"),
+                       ("scenarios[].name", "str"), ("scenarios[].expected", "str"), ("scenarios[].narrative", "str"))
+_TYPE_WORDS = {"str": "a string", "list[str]": "a list of strings", "unit": "a unit the harness knows"}
+
+
+def field_type_errors(ident: str, raw: dict, spec: tuple[tuple[str, str], ...]) -> list[str]:
+    """Each field of `spec` present in the record whose value is not of its declared type, named by
+    its path (`binders[0].class_elements`), with the type found and the type wanted."""
+    errs = []
+
+    def found(v) -> str:
+        if isinstance(v, list):
+            bad = sorted({type(x).__name__ for x in v if not isinstance(x, str)})
+            return f"a list holding {', '.join(bad)}" if bad else "a list"
+        return type(v).__name__
+
+    def ok(v, want: str) -> bool:
+        if want == "str":
+            return isinstance(v, str)
+        if want == "list[str]":
+            return isinstance(v, list) and all(isinstance(x, str) for x in v)
+        return isinstance(v, str) and v in FACTORS
+
+    def walk(obj, parts: list[str], path: str, want: str) -> None:
+        head, rest = parts[0], parts[1:]
+        if head.endswith("[]"):
+            seq = obj.get(head[:-2]) if isinstance(obj, dict) else None
+            for i, x in enumerate(seq if isinstance(seq, list) else []):
+                walk(x, rest, f"{path}{head[:-2]}[{i}].", want)
+            return
+        if not isinstance(obj, dict) or head not in obj or obj[head] is None:
+            return
+        if rest:
+            walk(obj[head], rest, f"{path}{head}.", want)
+        elif not ok(obj[head], want):
+            errs.append(f"{ident}: `{path}{head}` must be {_TYPE_WORDS[want]}, not {found(obj[head])}")
+
+    for field, want in spec:
+        walk(raw, field.split("."), "", want)
+    return errs
+
+
 QUOTE_WORDS = 3
 _QUOTED = re.compile(r'[\"\u201c]([^\"\u201c\u201d]+)[\"\u201d]')
 
@@ -833,10 +896,51 @@ def kind_claim_errors(c: ConceptRecord, formal: str, values: list[str]) -> list[
     return []
 
 
+_REGION_ATOMS: dict[int, tuple[frozenset, frozenset]] = {}
+
+
+def region_atoms(onto: Ontology) -> tuple[frozenset, frozenset]:
+    """(the region properties, the region kinds) of the active ontology, from the atoms' signatures:
+    an atom read true or false of one region is a region kind; any other atom whose arguments are
+    all regions (with at least one) is a region property."""
+    key = id(onto)
+    if key not in _REGION_ATOMS:
+        from ..lean import surface
+        rows = [r for r in surface.case_catalogue(onto) if r.get("atom")]
+        def regions_only(sig: str) -> bool:
+            inner = sig[sig.index("(") + 1:sig.rindex(")")] if "(" in sig else ""
+            args = [a.strip() for a in inner.split(",") if a.strip()]
+            return "region" in args and all(a == "region" or a.startswith("'") for a in args)
+        sigs: dict[str, list[dict]] = {}
+        for r in rows:
+            sigs.setdefault(r["atom"], []).append(r)
+        kinds = {a for a, rs in sigs.items() if any(r["unit"] == "true / false" and re.fullmatch(r"\w+\(region\)", s)
+                                                   for r in rs for s in r["signatures"])}
+        props = {a for a, rs in sigs.items() if a not in kinds and any(regions_only(s) for r in rs for s in r["signatures"])
+                 and not any("track" in s for r in rs for s in r["signatures"]) and a != "st.region_geometry"}
+        _REGION_ATOMS[key] = (frozenset(props), frozenset(kinds))
+    return _REGION_ATOMS[key]
+
+
+def check_region_places(ident: str, claims: set[str], onto: Ontology) -> list[str]:
+    """A record that reads a region's property for a road user claims how that region is found: the
+    region the road user occupies (`rel.occupies`) and the kind of region it is read on."""
+    props, kinds = region_atoms(onto)
+    read = sorted(claims & props)
+    if not read:
+        return []
+    missing = ([] if "rel.occupies" in claims else ["`rel.occupies`"]) + ([] if claims & kinds else ["the kind of region it is read on (for example `st.roadway`)"])
+    if not missing:
+        return []
+    return [f"{ident}: {', '.join(f'`{a}`' for a in read)} {'is a property' if len(read) == 1 else 'are properties'} of a region: to read "
+            f"{'it' if len(read) == 1 else 'them'} where the road user is, claim " + " and ".join(missing) + " on the span that names the place"]
+
+
 def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accepted: dict[str, dict],
                   plan_ids: set[str], nodes: dict[str, Node], concept_atoms: dict[str, set[str]], mode: str) -> list[str]:
     errs = [f"{c.id}: missing field `{k}`" for k in CONCEPT_REQUIRED if k not in c.raw]
     errs += shape_errors(c.id, c.raw, ("args", "params", "elements", "residues", "literals", "scenarios"))
+    errs += field_type_errors(c.id, c.raw, CONCEPT_FIELD_TYPES)
     if errs:
         return errs
     cid = c.id
@@ -883,6 +987,7 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
     # elements: contract words → atoms and concepts
     if not c.elements():
         errs.append(f"{cid}: no elements: the contract's words map to nothing")
+    errs += check_region_places(cid, c.claimed_atoms(), onto)
     for e in c.elements():
         span = _ws(e.get("span"))
         if not span or span not in contract:

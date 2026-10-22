@@ -95,6 +95,7 @@ end Facing
 
 /-- `sig.hand_signal` **meaning** — generated from ATOMS.md; do not edit. -/
 inductive HandSignal
+  | noSignal
   | left
   | right
   | stopOrSlow
@@ -104,12 +105,14 @@ inductive HandSignal
 namespace HandSignal
 def ofString (s : String) : Option HandSignal :=
   match s with
+  | "no_signal" => some .noSignal
   | "left" => some .left
   | "right" => some .right
   | "stop_or_slow" => some .stopOrSlow
   | "re_enter" => some .reEnter
   | _ => Option.none
 def toString : HandSignal → String
+  | .noSignal => "no_signal"
   | .left => "left"
   | .right => "right"
   | .stopOrSlow => "stop_or_slow"

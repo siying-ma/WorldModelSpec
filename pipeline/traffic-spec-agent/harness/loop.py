@@ -15,6 +15,11 @@ from .model.blueprint import Node, ConceptRecord, concepts_of
 from .store.gaps import GapLedger
 from .store.ledger import Ledger, ConceptLedger, NodeLedger
 from .phases import plan as plan_phase, review as review_phase, validate as validate_phase, code as code_phase, integrate as integrate_phase, feedback as feedback_phase
+from .phases import aggregate as aggregate_phase
+from .model import definitions as definitions_mod
+from .store.ledger import TERMINAL
+from .store import jsonl
+from .store.budget import BudgetPaused
 from .model.reading import Reading
 from .store.state import Options, Run
 from .model.mapping import MappingIndex
@@ -64,11 +69,61 @@ def concept_order(concepts: list[ConceptRecord]) -> list[ConceptRecord]:
     return out
 
 
+def first_try_pending(ledger: Ledger, concept_ledger: ConceptLedger, node_ledger: NodeLedger) -> bool:
+    """Whether a remedy is queued that has not had its first try: a law returned once and not yet
+    planned again; a node returned once while its law is held for the repair; a concept returned
+    once while a node that uses it belongs to a law still open; or a law or concept deferred once at a stage and
+    awaiting its second review. The next iteration gives each its try, after which it no longer counts."""
+    live = {n for e in ledger.entries.values() if e.state not in TERMINAL for n in e.nodes}   # nodes of laws still open
+    laws = any((e.state == "returned" and e.attempts == 1) or (e.state == "planned" and 1 in e.judge_failures.values())
+               for e in ledger.entries.values())
+    nodes = any(e.state == "returned" and e.attempts == 1 and ledger.entries.get(e.law) is not None
+                and ledger.entries[e.law].state == "planned" for e in node_ledger.entries.values())
+    concepts = any(((e.state == "returned" and e.attempts == 1) or (e.state == "planned" and 1 in e.judge_failures.values()))
+                   and live.intersection(e.used_by) for e in concept_ledger.entries.values())
+    return laws or nodes or concepts
+
+
+def param_notes_to_user(to_user: list[str], notes: list[tuple[str, str]]) -> None:
+    """Each of the reviewer's words on a proposed parameter, placed right after that parameter's
+    review line (and the notes already there), or at the end when the line is not in this list."""
+    for name, text in notes:
+        at = next((i for i, line in enumerate(to_user) if line.startswith(f"parameter `{name}` = ")), None)
+        if at is None:
+            to_user.append(f"parameter `{name}` (proposed, under review): {text}")
+            continue
+        while at + 1 < len(to_user) and to_user[at + 1].startswith("  - "):
+            at += 1
+        to_user.insert(at + 1, f"  - {text}")
+
+
 def concept_deps(n: Node) -> set[str]:
     """The pipeline concepts a node claims (elements and operationalizations)."""
     ids = {d for e in n.get("elements", []) for d in e.get("derived", [])}
     ids |= {x for o in n.get("operationalizations", []) for x in concepts_of(o)}
     return {i for i in ids if nodeid.is_concept_id(i)}
+
+
+def aggregate_claimants(run: Run, node_ledger: NodeLedger, prog: dict) -> dict[str, list[str]]:
+    """Every node that already depends on an admitted aggregate, including nodes in a plan that
+    exists on a resumed iteration but has not yet been integrated."""
+    nodes = {n.id: n for n in [Node(v) for v in run.all_nodes().values()] +
+             [Node(d) for d in run.load_deferred()]}
+    for entry in node_ledger.entries.values():
+        task = Path(entry.last_task) if entry.last_task else None
+        if task is not None and (task / "node.json").exists():
+            n = Node(json.loads((task / "node.json").read_text(encoding="utf-8")))
+            nodes[n.id] = n
+    plan_dir = Path(prog["plan_dir"]) if prog.get("plan_dir") else None
+    if plan_dir is not None and (plan_dir / "blueprint.jsonl").exists():
+        for n in blueprint.load(plan_dir / "blueprint.jsonl"):
+            nodes[n.id] = n
+    out: dict[str, set[str]] = {}
+    for n in nodes.values():
+        for ids in aggregate_phase.claimed_ids([n]).values():
+            for aid in ids:
+                out.setdefault(aid, set()).add(n.id)
+    return {aid: sorted(ids) for aid, ids in out.items()}
 
 
 def plan_batches(plannable: list, ledger: Ledger, by_id: dict[str, corpus.Law], batch_size: int
@@ -180,7 +235,6 @@ def resumable_iteration(run: Run) -> int | None:
 def recover_interrupted(run: Run, iteration: int) -> list[str]:
     """Roll back every coding task of the iteration that has no verdict: the session was killed
     with its files on disk. Returns the ids rolled back."""
-    from .phases import code as code_phase
     out = []
     code_dir = paths.iter_dir(run.opts.run_id, iteration) / "code"
     if not code_dir.exists():
@@ -229,10 +283,11 @@ def _concept_id_of_dirname(dirname: str) -> str:
     return f"drv.{fam}.{name}"
 
 
-def _owner_run(ident: str) -> str:
-    """The run whose accepted records name a node or concept, else a dated strays folder."""
+def _owner_run(ident: str, first: str | None = None) -> str:
+    """The run whose accepted records name a node or concept, `first` (the base run) tried before
+    the others, else a dated strays folder."""
     import datetime
-    for d in sorted(paths.RESULTS.glob("*")):
+    for d in ([paths.run_dir(first)] if first else []) + sorted(paths.RESULTS.glob("*")):
         for name, key in (("accepted_nodes.jsonl", "node_id"), ("accepted_concepts.jsonl", "concept_id")):
             f = d / name
             if f.exists() and any(json.loads(l).get(key) == ident for l in f.read_text(encoding="utf-8").splitlines() if l.strip()):
@@ -244,7 +299,8 @@ def check_library_isolation(run: Run) -> None:
     """The library holds exactly the nodes and concepts this run (or its base run) accepted. A node
     or concept on disk that no accepted record names would be registered and built into this
     run's library without ever passing through its plan: its files are moved into the snapshot
-    of the run whose accepted records name it (else a dated strays folder under `results/`). An
+    of the run whose accepted records name it, the base run tried first (else, or where that
+    snapshot already holds the file, a dated strays folder under `results/`). An
     accepted record whose files are gone cannot be composed or called: its files are restored from
     this run's snapshot. The run refuses to start only for a file that can be neither moved nor
     restored."""
@@ -255,14 +311,16 @@ def check_library_isolation(run: Run) -> None:
     moved, restored, lost = [], [], []
     for ident in stray:
         kind = "concept" if ident in on_disk_concepts else "node"
-        dest = paths.RESULTS / _owner_run(ident) / "library_snapshot"
-        for rel in _files_of(kind, ident):
+        dest = paths.RESULTS / _owner_run(ident, run.opts.base_run) / "library_snapshot"
+        for rel in _lib_files(kind, ident):
             src = paths.LIBRARY / rel
+            if src.exists() and (dest / rel).exists():                # an archived copy is never overwritten
+                dest = paths.RESULTS / _owner_run("", None) / "library_snapshot"   # no record names "": the strays folder
             if src.exists():
                 (dest / rel).parent.mkdir(parents=True, exist_ok=True); shutil.move(str(src), str(dest / rel)); moved.append(rel)
     for ident in missing:
         kind = "concept" if ident in run.all_concepts() else "node"
-        for rel in _files_of(kind, ident):
+        for rel in _lib_files(kind, ident):
             src = run.dir / "library_snapshot" / rel
             if src.exists():
                 (paths.LIBRARY / rel).parent.mkdir(parents=True, exist_ok=True); shutil.copy2(str(src), str(paths.LIBRARY / rel)); restored.append(rel)
@@ -300,29 +358,58 @@ def _wave(items, key_deps, accepted: set[str]):
     return [x for x in items if all(d in accepted for d in key_deps(x))]
 
 
-def _files_of(kind: str, ident: str) -> list[str]:
+def _lib_files(kind: str, ident: str) -> list[str]:
+    """A node's or a concept's two files, relative to the library (the layout of a snapshot)."""
     if kind == "concept":
-        return [gate.lib_rel(nodeid.concept_path(ident)), gate.lib_rel(nodeid.concept_witness_path(ident))]
-    return [gate.lib_rel(nodeid.rule_path(ident)), gate.lib_rel(nodeid.witness_path(ident))]
+        return [nodeid.concept_path(ident), nodeid.concept_witness_path(ident)]
+    return [nodeid.rule_path(ident), nodeid.witness_path(ident)]
+
+
+def _files_of(kind: str, ident: str) -> list[str]:
+    """The same files as the repository digest keys them."""
+    return [gate.lib_rel(r) for r in _lib_files(kind, ident)]
 
 
 def run_loop(opts: Options) -> dict:
+    """The loop, with its two run-level stops: a damaged audit file (`data_integrity_failure`: the
+    file is named and left as it is) and an exhausted budget for the second vendor's calls
+    (`paused_budget`: resumed under the same run id once the operator raises the limit)."""
+    try:
+        return _run_loop(opts)
+    except (jsonl.DataIntegrityError, BudgetPaused) as e:
+        status = "data_integrity_failure" if isinstance(e, jsonl.DataIntegrityError) else "paused_budget"
+        run = Run(opts)
+        ledger = Ledger(run.ledger_file, [], opts.plan_attempts)
+        run.iteration = max([int(p.name.split("-")[1]) for p in run.dir.glob("iter-*") if p.is_dir()] or [0])
+        feedback_phase.write_status(run, ledger, status, str(e))
+        print(f"[loop] status: {status} — {e}")
+        return {"status": status, "stop_reason": str(e), "iterations": run.iteration, "laws": ledger.counts()}
+
+
+def _run_loop(opts: Options) -> dict:
     from concurrent.futures import ThreadPoolExecutor, as_completed
     import threading
     run = Run(opts)
     run.dir.mkdir(parents=True, exist_ok=True)
     if not run.reading_file.exists():
-        shutil.copy2(opts.reading, run.reading_file)      # the operator's base reading; the run adds derived aggregates
+        if json.loads(Path(opts.reading).read_text(encoding="utf-8")).get("aggregates"):
+            raise SystemExit(f"{opts.reading} declares aggregates: aggregates are admitted per run by the aggregate gate, never declared")
+        shutil.copy2(opts.reading, run.reading_file)      # the operator's base reading; the run admits its aggregates
+    precedence = Path(opts.definition_precedence or definitions_mod.DEFAULT_PRECEDENCE)
     (run.dir / "options.json").write_text(json.dumps({**asdict(opts), "laws": str(opts.laws), "ontology": str(opts.ontology),
-                                                      "base_reading": str(opts.reading), "reading": str(run.reading_file)}, indent=1), encoding="utf-8")
+                                                      "base_reading": str(opts.reading), "reading": str(run.reading_file),
+                                                      "definition_precedence": str(precedence),
+                                                      "model_prices": str(opts.model_prices) if opts.model_prices else None,
+                                                      "definition_precedence_sha256": definitions_mod.precedence_digest(precedence)}, indent=1), encoding="utf-8")
     doctor_ok()
     run.load_accepted()
     laws = corpus.load_laws(opts.laws)
     defs = corpus.load_definitions(opts.laws)
     by_id = {l.id: l for l in laws}
     onto = ontology.load(opts.ontology)
+    definitions_mod.write_table(run, laws, defs)          # which posted definition applies to each law's words, once per run
     reading = Reading(run.reading_file)
-    ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts, getattr(opts, "repeat_limit", 3))
+    ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts, opts.repeat_limit)
     concept_ledger = ConceptLedger(run.concept_ledger_file, opts.concept_attempts)
     node_ledger = NodeLedger(run.node_ledger_file, opts.node_attempts)
     gap_ledger = GapLedger(paths.GAP_LEDGER)
@@ -353,17 +440,25 @@ def run_loop(opts: Options) -> dict:
         if session.vendor_of(opts.reviewer_model) == "openai" and not openai_runner.available():
             raise SystemExit("the reviewer is an OpenAI model and OPENAI_API_KEY is not set in the harness's environment")
     reopened = ledger.reopen_for_gaps(gap_ledger.decided())
+    status, stop_reason = "", ""
+
+    def settle(reason_if_open: str) -> tuple[str, str]:
+        if all(e.state in TERMINAL for e in ledger.entries.values()):
+            return "complete", "every law is accepted, blocked or failed"
+        return "incomplete", reason_if_open
     for it in range(opts.max_iterations):
         if resume_n is not None:
             run.iteration = resume_n; run.iter.mkdir(parents=True, exist_ok=True)
             prog = load_progress(run, resume_n); resume_n = None
         else:
             plannable = ledger.plannable()
-            repairs = concept_ledger.repairable()
+            held = [Node(d) for d in run.load_deferred()]
+            repairs = [e for e in concept_ledger.repairable() if any(e.concept in concept_deps(n) for n in held)]
             node_repairs = node_ledger.repairable({e.law for e in ledger.entries.values() if e.state == "planned"})
-            carried_any = bool(run.load_deferred())
-            if not plannable and not repairs and not node_repairs and not carried_any:
-                print("[loop] nothing plannable, nothing to repair, nothing held: every law is accepted, blocked or failed"); break
+            carried_any = bool(held)
+            if not plannable and not repairs and not node_repairs and not carried_any and not run.load_deferred_concepts():
+                print("[loop] nothing plannable, nothing to repair, nothing held: every law is accepted, blocked or failed")
+                status, stop_reason = settle("nothing plannable, to repair or held, yet a law is open"); break
             run.next_iteration()
             prog = load_progress(run, run.iteration)
         plannable = ledger.plannable()
@@ -382,6 +477,32 @@ def run_loop(opts: Options) -> dict:
         reopened = []
         carried = [Node(d) for d in run.load_deferred() if d["node_id"] not in run.all_nodes()]
 
+        # --- aggregates: reconcile admissions before any repair, plan, validation or coding work.
+        # Planned nodes are claimants too: resuming after planning must not silently replace the
+        # meaning under the plan that is about to be validated and coded.
+        claimants = aggregate_claimants(run, node_ledger, prog)
+        c_notes, stale = aggregate_phase.check_admissions(run, by_id, defs, onto, claimants)
+        notes += c_notes
+        if stale:
+            print("[loop] stale aggregate(s) under existing nodes: " + "; ".join(stale))
+            feedback_phase.write_feedback(run, ledger, notes + [f"run stopped: {x}" for x in stale],
+                                          ["an aggregate's inputs changed after nodes claimed it: start a new run"], [], concept_ledger)
+            status, stop_reason = "stale_aggregate", "; ".join(stale)
+            persist(); break
+        try:
+            a_notes, a_user, a_close = aggregate_phase.prepare(run, laws, defs, onto, run.iter / "aggregates")
+        except session.SessionUnavailable as ex:
+            print(f"[loop] an aggregate session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
+            feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: an aggregate session never ran — {ex}"],
+                                          ["sessions unavailable (account limit or API error); rerun the loop later"], [], concept_ledger)
+            status, stop_reason = "infrastructure_failure", f"an aggregate session could not be launched: {ex}"
+            persist(); break
+        notes += a_notes; to_user += a_user
+        for law, why in a_close.items():
+            if law in ledger.entries and ledger.entries[law].state not in TERMINAL:
+                ledger.fail(law, [why]); notes.append(f"`{law}`: closed — {why}")
+        save_progress(run, prog)
+
         # --- repair: a concept the gate or the review returned is re-proposed from the coder's evidence,
         # before any law is planned; its users stay held and uncharged
         repaired: list[ConceptRecord] = []
@@ -394,16 +515,31 @@ def run_loop(opts: Options) -> dict:
                 with prog_lock:
                     prog.setdefault(key, {})[ident] = str(rdir); save_progress(run, prog)
             try:
-                jobs = []
+                candidates = []
                 for e in concept_ledger.repairable():
                     rec_raw = None
                     for cand in sorted(run.dir.glob("iter-*/code/concept__*/concept.json"), reverse=True):
                         d = json.loads(cand.read_text(encoding="utf-8"))
                         if d.get("concept_id") == e.concept:
                             rec_raw = d; break
-                    if rec_raw is None:
+                    if rec_raw is not None:
+                        candidates.append((e, ConceptRecord(rec_raw)))
+                # a concept is repaired for the nodes that claim it now, or because a returned concept repaired
+                # for its own users calls it, directly or through others; one nothing uses waits, returned,
+                # until a plan claims it again
+                users_of = {e.concept: [n.raw for n in carried if e.concept in concept_deps(n)] for e, _rec in candidates}
+                refs_of = {e.concept: set(rec.refs()) for e, rec in candidates}
+                needed = {cid for cid, us in users_of.items() if us}
+                frontier = set(needed)
+                while frontier:
+                    frontier = {r for cid in frontier for r in refs_of.get(cid, set()) if r in refs_of} - needed
+                    needed |= frontier
+                jobs = []
+                for e, rec in candidates:
+                    if e.concept not in needed:
+                        notes.append(f"concept `{e.concept}`: not repaired, no node uses it")
                         continue
-                    jobs.append((e.concept, ConceptRecord(rec_raw), e.reasons, Path(e.last_task), [n.raw for n in carried if e.concept in concept_deps(n)]))
+                    jobs.append((e.concept, rec, e.reasons, Path(e.last_task), users_of[e.concept]))
                 with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as pool:
                     futures = {pool.submit(plan_phase.run_repair, run, rec, reasons, last, defs, users): cid for cid, rec, reasons, last, users in jobs}
                     for f in as_completed(futures):
@@ -412,6 +548,7 @@ def run_loop(opts: Options) -> dict:
                 print(f"[loop] a repair session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
                 feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: a repair session never ran — {ex}"],
                                               ["sessions unavailable (account limit or API error); rerun the loop later"], [], concept_ledger)
+                status, stop_reason = "infrastructure_failure", f"a repair session could not be launched: {ex}"
                 persist(); break
             try:
                 planned_laws = {e.law for e in ledger.entries.values() if e.state == "planned"}
@@ -447,6 +584,7 @@ def run_loop(opts: Options) -> dict:
                 print(f"[loop] a node repair session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
                 feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: a node repair session never ran — {ex}"],
                                               ["sessions unavailable (account limit or API error); rerun the loop later"], [], concept_ledger)
+                status, stop_reason = "infrastructure_failure", f"a node repair session could not be launched: {ex}"
                 persist(); break
             prog["stage"] = "repaired"; save_progress(run, prog)
         repaired_nodes: list[Node] = []
@@ -497,9 +635,7 @@ def run_loop(opts: Options) -> dict:
                 # repair split it); a gap is filed for the operator to see, and blocks nothing
                 why = str(wd["missing"])
                 replacements = plan_phase.load_replacements(Path(rdir))
-                e_c = concept_ledger.entries.get(cid)
-                laws = sorted({n.law for n in carried if cid in concept_deps(n)}
-                              | {nodeid.law_of(u)[0] for u in (e_c.used_by if e_c else []) if not nodeid.is_concept_id(u)})
+                laws = sorted({n.law for n in carried if cid in concept_deps(n)})   # the laws whose nodes claim it now
                 concept_ledger.fail(cid, [f"withdrawn by its repair session — {why}"])
                 if replacements:
                     new_ids = [r.id for r in replacements]
@@ -527,6 +663,11 @@ def run_loop(opts: Options) -> dict:
             else:
                 repaired.append(rec)
                 notes.append(f"concept `{cid}`: re-proposed by a repair session")
+        # a concept whose review a judge left without a valid answer is coded and reviewed again, unrepaired
+        for d in run.load_deferred_concepts():
+            if d.get("concept_id") not in run.all_concepts() and d.get("concept_id") not in {r.id for r in repaired}:
+                repaired.append(ConceptRecord(d))
+                notes.append(f"concept `{d.get('concept_id')}`: coded again, its last review was deferred")
         # a law a repair above returned or blocked takes its held nodes with it: judged without their
         # siblings they would fail for the missing sibling, and those reasons would bury the law's own
         carried = [n for n in carried if n.law not in ledger.entries or ledger.entries[n.law].state == "planned"]
@@ -578,20 +719,44 @@ def run_loop(opts: Options) -> dict:
                 print(f"[loop] a plan session never ran ({e}); iteration {run.iteration} abandoned, ledger unchanged")
                 feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: a plan session never ran — {e}"],
                                               ["sessions unavailable (account limit or API error); rerun the loop later"], [], concept_ledger)
+                status, stop_reason = "infrastructure_failure", f"a plan session could not be launched: {e}"
                 persist(); break
             prog["plan_dir"] = str(plan_dir); prog["stage"] = "planned"; save_progress(run, prog)
         plan_dir = Path(prog["plan_dir"])
-        # aggregates the planner derived from the definitions: validated, merged into the run's reading (once)
+        # law-local aggregates the plans wrote are admitted by the same gate; a claim of an aggregate the
+        # selection did not admit goes back to the selection role once (once per law)
+        kept_claims: dict[str, str] = prog.get("kept_claims", {})
         if not prog.get("aggregates_merged"):
-            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(opts.reading))
-            if agg_ok:
-                aggregates.merge(run.reading_file, agg_ok, opts.run_id, run.iteration)
-                to_user.append("aggregates derived from the definitions this iteration, for review in results/"
-                               f"{opts.run_id}/reading.json: " + ", ".join(f"`{r['word']}` ← {r['definition']}" for r in agg_ok))
-                notes.append("aggregates accepted: " + ", ".join(f"`{r['word']}` ({len(r['classes'])} members)" for r in agg_ok))
-            for e in agg_errs:
-                notes.append(f"aggregate rejected — {e}")
-            prog["aggregates_merged"] = True; save_progress(run, prog)
+            try:
+                local = []
+                for r in aggregates.load(plan_dir / "aggregates.jsonl"):
+                    aid = str(r.get("aggregate_id", "")) if isinstance(r, dict) else ""
+                    law_id = aid.split(":", 1)[0]
+                    if not aggregates.law_local(aid) or law_id not in by_id:
+                        notes.append(f"aggregate record `{aid}` rejected: a plan writes only law-local aggregates `<law id>:<span>::<term>`"); continue
+                    errs = aggregates.record_defects(r, onto, {law_id: " ".join(by_id[law_id].text.split())})
+                    if errs:
+                        notes.append(f"aggregate `{aid}` rejected — " + "; ".join(errs[:4])); continue
+                    local.append(r)
+                _entries, a_notes, a_user = aggregate_phase.admit(run, local, definitions_mod.load_table(run), defs, onto,
+                                                                  run.iter / "aggregates", laws=by_id)
+                notes += a_notes; to_user += a_user
+                claims = aggregate_phase.claimed_ids(blueprint.load(plan_dir / "blueprint.jsonl") + carried)
+                c_notes, c_close = aggregate_phase.correct_claims(run, claims, defs, onto, ledger, run.iter / "aggregates")
+                notes += c_notes
+                for law, why in c_close.items():
+                    if law in ledger.entries and ledger.entries[law].state not in TERMINAL:
+                        ledger.fail(law, [why]); notes.append(f"`{law}`: closed — {why}")
+                admitted_now = Reading(run.reading_file).aggregate_ids()
+                kept_claims = {law: f"the selection kept its representation of {sorted(i for i in ids if i not in admitted_now)}: map the words without the aggregate"
+                               for law, ids in claims.items() if any(not aggregates.law_local(i) and i not in admitted_now for i in ids)}
+            except session.SessionUnavailable as ex:
+                print(f"[loop] an aggregate session never ran ({ex}); iteration {run.iteration} abandoned, ledger unchanged")
+                feedback_phase.write_feedback(run, ledger, notes + [f"iteration abandoned: an aggregate session never ran — {ex}"],
+                                              ["sessions unavailable (account limit or API error); rerun the loop later"], [], concept_ledger)
+                status, stop_reason = "infrastructure_failure", f"an aggregate session could not be launched: {ex}"
+                persist(); break
+            prog["aggregates_merged"] = True; prog["kept_claims"] = kept_claims; save_progress(run, prog)
         reading = Reading(run.reading_file)
         nodes = blueprint.load(plan_dir / "blueprint.jsonl")
         planned_laws: dict[str, list[str]] = {}
@@ -600,6 +765,9 @@ def run_loop(opts: Options) -> dict:
         for law, ids in planned_laws.items():
             if law in ledger.entries:
                 ledger.mark_planned(law, ids, run.iteration); node_ledger.drop_law(law)
+                upheld_subjects = {r.get("subject") for r in review_phase.upheld_rows(run, {law})}
+                for gone in sorted(upheld_subjects - set(ids)):
+                    notes.append(f"`{law}`: the plan has no node `{gone}`, so the situations upheld on it are not replayed")
         for e in plannable:
             if e.law not in planned_laws and e.law not in waiting and e.law not in dead and e.state in ("open", "returned"):
                 ledger.return_law(e.law, ["the plan session produced no node for this law"], run.iteration)
@@ -652,7 +820,11 @@ def run_loop(opts: Options) -> dict:
                 notes.append(f"`{law}`: closed as failed — " + "; ".join(r for v in vs for r in v.reasons[:2]))
             elif any(v.kind == "return" for v in vs):
                 carried_ids = {c.id for c in carried}
-                if all(v.node.id in carried_ids for v in vs if v.kind == "return"):
+                if law in kept_claims:
+                    # the plan claimed an aggregate the selection role, asked once, did not admit: no attempt is spent
+                    ledger.return_uncharged(law, [kept_claims[law]] + [r for v in vs for r in v.reasons])
+                    notes.append(f"`{law}`: {kept_claims[law]}; returned to the planner, no attempt counted")
+                elif all(v.node.id in carried_ids for v in vs if v.kind == "return"):
                     # a node held from an earlier iteration no longer validates beside the current plan (a node it
                     # composes was re-planned): the planner sees it again, and the law is not charged for it
                     ledger.return_uncharged(law, [r for v in vs for r in v.reasons])
@@ -665,7 +837,6 @@ def run_loop(opts: Options) -> dict:
                         notes.append(f"`{v.node.id}`: re-emitted unchanged; already accepted, not coded again")
                     else:
                         to_code.append(v.node)
-        gap_ledger.save()
         prog["stage"] = "validated" if not stage_at_least("validated") else prog["stage"]; persist()
 
         # --- concepts: coded in dependency waves (`workers` at once), each gated, then reviewed
@@ -675,23 +846,21 @@ def run_loop(opts: Options) -> dict:
             bfile = code_phase.concept_dir(run, c) / "baseline.json"
             if bfile.exists():
                 concept_baselines[c] = json.loads(bfile.read_text())
-        failed_concepts: set[str] = set()
+        deferred_concepts_now: list[dict] = []
         sessions_down = False
+        budget_paused = ""
         remaining = [c for c in concept_order(to_code_concepts) if c.id not in prog["concepts"]]
-        for c in to_code_concepts:
-            if c.id in prog["concepts"] and prog["concepts"][c.id] != "OK":
-                failed_concepts.add(c.id)
-        while remaining and not sessions_down:
+        while remaining and not sessions_down and not budget_paused:
             accepted_c = set(run.all_concepts())
             wave = _wave(remaining, lambda c: sorted(c.refs() - set(onto.primitive_ids)), accepted_c)
             if not wave:
                 for c in remaining:
                     unmet = sorted(r for r in c.refs() if r not in accepted_c and r not in onto.primitive_ids)
-                    concept_ledger.noted(c.id, [f"references {unmet}, not accepted"]); failed_concepts.add(c.id)
+                    concept_ledger.noted(c.id, [f"references {unmet}, not accepted"])
                     notes.append(f"concept `{c.id}`: not coded, references {unmet} which is not accepted")
                     prog["concepts"][c.id] = "UNMET"
                 persist(); break
-            wave = wave[:max(1, opts.workers)] if opts.workers > 1 else wave[:1]
+            wave = wave[:max(1, opts.workers)]
             registry = {"nodes": sorted(run.all_nodes()), "concepts": sorted(accepted_c)}
             wave_files = {c.id: _files_of("concept", c.id) for c in wave}
             with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
@@ -712,7 +881,7 @@ def run_loop(opts: Options) -> dict:
                     to_user.append(f"the coding session for concept `{c.id}` changed files outside its concept: {'; '.join(v.details[:2])} — "
                                    "the concept was rolled back; inspect and restore those files (git) before the next iteration")
                 if v.verdict != "OK":
-                    concept_ledger.returned(c.id, [f"gate {v.verdict}"] + v.details[:6], last_task=str(cdir)); failed_concepts.add(c.id)
+                    concept_ledger.returned(c.id, [f"gate {v.verdict}"] + v.details[:6], last_task=str(cdir))
                     prog["concepts"][c.id] = v.verdict; persist(); continue
                 to_review_c.append((c, v, cdir))
 
@@ -720,34 +889,54 @@ def run_loop(opts: Options) -> dict:
                 c, v, cdir = item
                 try:
                     return review_phase.review_concept(run, c, v.extras, cdir / "review"), None
-                except session.SessionUnavailable as e:
+                except (session.SessionUnavailable, BudgetPaused) as e:
                     return None, e
             # the wave's concept reviews are independent: they run together, and their outcomes are applied
             # once all have finished, since a rollback rewrites files a running review reads
             with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
                 reviewed_c = list(ex.map(review_one_concept, to_review_c))
             for (c, v, cdir), (out, e) in zip(to_review_c, reviewed_c):
+                if isinstance(e, BudgetPaused):
+                    code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
+                    budget_paused = str(e); deferred_concepts_now.append(c.raw); prog["concepts"][c.id] = "PAUSED"
+                    concept_ledger.planned(c.id, concept_ledger.entries[c.id].used_by if c.id in concept_ledger.entries else [], run.iteration)
+                    continue
                 if e is not None:
                     code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
                     sessions_down = True
                     to_user.append(f"the review session for concept `{c.id}` never ran ({e}); rerun the loop later")
                     continue
-                ok, reasons, review_notes = out
-                if not ok:
+                if out.status == "deferred":
+                    # a judge left the review without a valid answer: coded and reviewed again next iteration, no
+                    # repair and no attempt; a second consecutive deferral fails the concept
                     code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
-                    concept_ledger.returned(c.id, ["review: " + "; ".join(reasons)], last_task=str(cdir)); failed_concepts.add(c.id)
-                    notes.append(f"concept `{c.id}`: review failed — " + "; ".join(reasons[:3]))
+                    prog["concepts"][c.id] = "DEFERRED"
+                    if concept_ledger.defer_judge(c.id, out.defer_stage or "concept_adjudication", out.reasons):
+                        notes.append(f"concept `{c.id}`: closed, judge_protocol_failure — " + "; ".join(out.reasons[:2]))
+                        to_user.append(f"concept `{c.id}` failed: its review was left without a valid judgment twice in a row "
+                                       "(a diagnostic; the laws that use it are closed by the dependency route)")
+                    else:
+                        deferred_concepts_now.append(c.raw)
+                        notes.append(f"concept `{c.id}`: review deferred ({out.defer_stage}) — " + "; ".join(out.reasons[:2]) + "; coded again next iteration")
+                    persist(); continue
+                concept_ledger.clear_judge(c.id)
+                review_notes = out.advisories
+                if out.status == "returned":
+                    code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
+                    concept_ledger.returned(c.id, ["review: " + "; ".join(out.reasons)], last_task=str(cdir))
+                    notes.append(f"concept `{c.id}`: review failed — " + "; ".join(out.reasons[:3]))
                     prog["concepts"][c.id] = "REVIEW"; persist(); continue
                 record = {**c.raw, "reads": v.extras.get("reads", []), "refs": v.extras.get("refs", sorted(c.refs())),
                           "canonical_body": v.extras.get("canonical_body"), "body_json": v.extras.get("body_json"),
                           "accepted_in": f"{opts.run_id}/iter-{run.iteration:03d}"}
-                record["narrowings"] = list(v.extras.get("narrowings_added", []))
+                added = list(v.extras.get("narrowings_added", []))
+                record["narrowings"] = list(c.raw.get("narrowings", [])) + added
                 approx = [x for x in review_notes if x != "reviewer off"]   # what it computes as built, for every later plan
                 if approx:
                     record["approximations"] = approx
                     notes.append(f"concept `{c.id}`: accepted; the review's notes are recorded on it — " + "; ".join(a[:200] for a in approx[:3]))
-                if record["narrowings"]:
-                    coder_narrowings[c.id] = record["narrowings"]
+                if added:
+                    coder_narrowings[c.id] = added
                 run.accepted_concepts[c.id] = record
                 concepts_now.append(c.id)
                 concept_ledger.accepted(c.id)
@@ -758,6 +947,8 @@ def run_loop(opts: Options) -> dict:
             remaining = [c for c in remaining if c.id not in {w.id for w in wave}]
         if prog["stage"] in ("validated",):
             prog["stage"] = "concepts"
+        run.save_deferred_concepts(deferred_concepts_now + ([d for d in run.load_deferred_concepts() if d.get("concept_id") not in prog["concepts"]]
+                                                            if sessions_down or budget_paused else []))
         persist()
         with lean.library_lock(paths.LIBRARY):
             index_sync.write_index()
@@ -789,6 +980,10 @@ def run_loop(opts: Options) -> dict:
                 notes.append(f"`{n.id}`: not coded, its law is `{ledger.entries[n.law].state}` after a sibling was returned this iteration")
             remaining_nodes = [n for n in remaining_nodes if n.id not in {c.id for c in closed}]
             if not remaining_nodes:
+                persist(); break
+            if budget_paused:
+                for n in remaining_nodes:                         # the run pauses: the node waits, its law keeps its plan
+                    deferred_now.append(n.raw); ledger.hold(n.law, run.iteration); prog["nodes"][n.id] = "PAUSED"
                 persist(); break
             if sessions_down:
                 for n in remaining_nodes:
@@ -910,26 +1105,47 @@ def run_loop(opts: Options) -> dict:
                 n, v, ndir, added = item
                 try:
                     return review_phase.review_behaviour(run, n, by_id[n.law], onto, reading, v.extras.get("rule_json"), added, ndir / "review"), None
-                except session.SessionUnavailable as e:
+                except (session.SessionUnavailable, BudgetPaused) as e:
                     return None, e
             # the wave's reviews are independent and take no lock: they run together, and their outcomes are
             # applied only once all have finished, since a rollback rewrites files a running review reads
             with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
                 reviewed = list(ex.map(review_one, to_review))
             for (n, v, ndir, added), (out, e) in zip(to_review, reviewed):
+                if isinstance(e, BudgetPaused):
+                    code_phase.rollback(n.id, baselines[n.id], ndir)
+                    budget_paused = str(e); deferred_now.append(n.raw); ledger.hold(n.law, run.iteration)
+                    failed_ids.add(n.id); prog["nodes"][n.id] = "PAUSED"; persist(); continue
                 if e is not None:
                     code_phase.rollback(n.id, baselines[n.id], ndir)
                     sessions_down = True
                     to_user.append(f"the behaviour review for `{n.id}` never ran ({e}); the law keeps its attempt budget — rerun the loop later")
                     ledger.defer(n.law, [f"behaviour review never ran: {e}"]); continue
-                ok_b, reasons_b, adv_b, keys_b = out
-                for a in adv_b:
+                param_notes_to_user(to_user, out.param_notes)
+                for a in out.advisories:
                     if a != "reviewer off":
                         notes.append(f"behaviour review of `{n.id}`, advisory: {a}")
+                    if a.startswith("obligation invalidated:"):
+                        to_user.append(f"`{n.law}` ({n.id}), {a} — retire the ruling (`ruling: retired`) if the case was wrong; "
+                                       "otherwise it is information only")
                     if a.startswith("gap candidate:"):
                         to_user.append(f"`{n.law}` ({n.id}), {a} — file it in the gap ledger, or decide the rule may stand without it")
-                    elif a.startswith("aggregate question:"):
-                        to_user.append(f"`{n.law}` ({n.id}), {a} — review the aggregate's classes in {run.reading_file}")
+                if out.status == "deferred":
+                    # a judge whose answer stayed invalid, or a harness that did not run: the node is coded and
+                    # reviewed again next iteration from the same record; a second consecutive deferral closes the law
+                    code_phase.rollback(n.id, baselines[n.id], ndir)
+                    failed_ids.add(n.id); prog["nodes"][n.id] = "DEFERRED"
+                    if ledger.defer_judge(n.law, out.defer_stage or "review", [f"review of `{n.id}` deferred: {r}" for r in out.reasons]):
+                        node_ledger.failed(n.id, ledger.entries[n.law].reasons)
+                        notes.append(f"`{n.law}`: closed, judge_protocol_failure ({out.defer_stage}) — " + "; ".join(out.reasons[:2]))
+                    else:
+                        deferred_now.append(n.raw)
+                        notes.append(f"`{n.id}`: review deferred ({out.defer_stage}) — " + "; ".join(out.reasons[:2]) + "; coded again next iteration, no attempt counted")
+                    persist(); continue
+                ledger.clear_judge(n.law)
+                ok_b, reasons_b, keys_b = out.status != "returned", out.reasons, out.keys
+                if out.status == "proceed_with_question":
+                    to_user += out.questions
                 if not ok_b:
                     code_phase.rollback(n.id, baselines[n.id], ndir)
                     failed_ids.add(n.id); prog["nodes"][n.id] = "BEHAVIOUR"
@@ -951,7 +1167,7 @@ def run_loop(opts: Options) -> dict:
                 accepted_now.append(n); prog["nodes"][n.id] = "OK"; persist()
             remaining_nodes = [n for n in remaining_nodes if n.id not in {w.id for w in wave}]
         run.save_deferred(deferred_now + [d for d in run.load_deferred() if d["node_id"] in prog["nodes"] and prog["nodes"][d["node_id"]] == "HELD" and d["node_id"] not in {x["node_id"] for x in deferred_now}]
-                          if sessions_down else deferred_now)
+                          if sessions_down or budget_paused else deferred_now)
         prog["stage"] = "nodes"; persist()
 
         # --- integrate
@@ -968,6 +1184,10 @@ def run_loop(opts: Options) -> dict:
         for n in accepted_now:
             if n.id in kept:
                 run.accepted_nodes[n.id] = {**n.raw, "narrowings": list(n.get("narrowings", [])) + coder_narrowings.get(n.id, [])}
+                for cd in concept_deps(n):                     # an accepted concept lists the accepted nodes that call it
+                    uses = run.accepted_concepts[cd].setdefault("used_by", []) if cd in run.accepted_concepts else None
+                    if uses is not None and n.id not in uses:
+                        uses.append(n.id)
                 for g in n.gaps():                             # the plan doubted the vocabulary; the coder wrote the span with it
                     to_user.append(f"`{n.law}` ({n.id}): the plan proposed a {g.get('kind')} gap on span {g.get('span')}, but the coding "
                                    "session wrote the span with the mapped atoms and the rule was accepted; no gap is filed")
@@ -982,7 +1202,7 @@ def run_loop(opts: Options) -> dict:
                     t = n.spans().get(e.get("span"), {}).get("text", "")
                     index.record(t, set(e.get("atoms", [])) | set(e.get("derived", [])), n.id, n.spans().get(e.get("span"), {}).get("role"))
         index.save()
-        prog["kept"] = kept; prog["stage"] = "integrated"; persist()
+        prog["stage"] = "integrated"; persist()
         # a law is accepted when every node it was planned with is accepted, whichever iteration coded it
         for e in ledger.entries.values():
             if e.state == "planned" and e.nodes and all(i in run.all_nodes() for i in e.nodes):
@@ -991,12 +1211,28 @@ def run_loop(opts: Options) -> dict:
         feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, deferred_now, coder_narrowings)
         prog["stage"] = "done"; persist()
         print(f"[loop] iteration {run.iteration}: accepted {len(kept)} node(s), {len(concepts_now)} concept(s); laws {ledger.counts()}")
+        if budget_paused:
+            print(f"[loop] the OpenAI budget is reached: pausing — {budget_paused}")
+            status, stop_reason = "paused_budget", budget_paused; break
         if sessions_down:
-            print("[loop] sessions or toolchain unavailable: stopping after this iteration"); break
+            print("[loop] sessions or toolchain unavailable: stopping after this iteration")
+            status, stop_reason = "infrastructure_failure", "a session or the toolchain could not be launched"; break
+        if opts.stall_stop and run.iteration >= 2 and not kept and not concepts_now \
+                and not first_try_pending(ledger, concept_ledger, node_ledger):
+            # an iteration that accepted nothing and queued no remedy for its first try is a stall:
+            # what is still open went round once more for nothing
+            print(f"[loop] iteration {run.iteration} accepted no node and no concept, and queued no first remedy: stopping (stalled)")
+            status, stop_reason = settle(f"stalled: iteration {run.iteration} accepted no node and no concept, and queued no first remedy"); break
         if not kept and not concepts_now and not gaps_filed and not concept_ledger.repairable() and not deferred_now \
+                and not deferred_concepts_now \
                 and not node_ledger.repairable({e.law for e in ledger.entries.values() if e.state == "planned"}) \
                 and all(e.state != "returned" for e in ledger.entries.values()):
-            print("[loop] no progress and nothing returned: stopping"); break
+            print("[loop] no progress and nothing returned: stopping")
+            status, stop_reason = settle("no progress and nothing returned"); break
+    if not status:
+        status, stop_reason = settle(f"the iteration bound ({opts.max_iterations}) was reached")
     ledger.save(); concept_ledger.save(); node_ledger.save()
-    return {"iterations": run.iteration, "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes),
-            "accepted_concepts": len(run.accepted_concepts), "concepts": concept_ledger.counts()}
+    feedback_phase.write_status(run, ledger, status, stop_reason)
+    print(f"[loop] status: {status} — {stop_reason}")
+    return {"status": status, "stop_reason": stop_reason, "iterations": run.iteration, "laws": ledger.counts(),
+            "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts), "concepts": concept_ledger.counts()}

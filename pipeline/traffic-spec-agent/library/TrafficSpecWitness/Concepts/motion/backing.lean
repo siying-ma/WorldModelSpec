@@ -1,31 +1,37 @@
 /-
   Witnesses for drv.motion.backing.
 
-  The geometry, built once for all three scenes. One body, track 1, a delivery van 4 m long, 2 m
-  wide and 1.8 m high (half-extents 2 m, 1 m, 90 cm), classed motor vehicle and truck. Its heading
-  is the unit vector (3/5, 4/5) — three parts east to four parts north, out of the bay — and it
-  never turns: the heading is the same at every observation of every scene, so the only thing the
-  three scenes differ in is the velocity.
+  One suburban street carries all three scenarios. Every figure below is the witness's own,
+  including the 0.05 m/s the instance gives the formal parameter `backing_speed_tolerance` —
+  5 cm/s, the magnitude of rearward motion below which this source's sampled velocity does not
+  stand clear of none.
 
-  No structures and no devices: the body reads kinematics alone.
+  The street (+x east, +y north):
 
-  The instants. Each scene is three observations one second apart, at 10.0 s, 11.0 s and 12.0 s,
-  padded three seconds before (7.0 s, 8.0 s, 9.0 s, the first observation repeated) so that the
-  two-second window behind 10.0 s is covered rather than truncated; the witnesses speak about
-  10.0 s to 12.0 s, which is what `window` names. One second between observations is exactly half
-  the window, which is the adequacy the lookback asks for.
+    - region 11, the roadway: x = -100 m to 100 m, 10 m wide (y = -5 m to 5 m);
+    - region 12, the driveway entrance: x = -14 m to -6 m, y = 5 m to 15 m, meeting the roadway
+      at its north edge.
 
-  The figures, all the witness's own: the window 2 s and the floor 1 m/s (the instance's values for
-  the formal parameters), the van's speed 2 m/s. 2 m/s is above the 1 m/s floor, so `holds` turns
-  on the direction of travel and not on the magnitude; the van covers 2 m between observations.
+  Neither region is read by the body — the concept says nothing about where on the road the road
+  user is — they are the scene the narratives describe.
 
-  `holds`: the velocity is the heading scaled by −2 m/s, so the component along the heading is
-  −2 m/s at every observation — negative, magnitude 2 m/s ≥ the floor.
-  `fails`: the velocity is the heading scaled by +2 m/s, so the component is +2 m/s, not negative,
-  at every observation of the window.
-  `blind`: the source reports the position, the heading and the extent, and no velocity at all
-  (`kin.velocity` is `none` in the scene and absent from the manifest); the position is the same at
-  every observation, so there is no displacement to read a direction of travel from either.
+  The subject is a van, 5 m long and 2 m wide (half-extents 2.5 m, 1 m, 1 m), track 1, the formal
+  `u`. Three instants 1 s apart from t = 0. Nothing in the body looks behind or ahead, so no
+  padding and no window are needed.
+
+  holds:  the van reverses out of the driveway. Its body points north, up the driveway, and it
+          moves south at 1 m/s: the velocity vector is (0, -1) m/s against a heading of (0, 1),
+          so the component of the velocity along the heading is -1 m/s, which is at or below
+          -0.05 m/s. It stands at y = 10 m, 9 m and 8 m. The body is true at every instant.
+  fails:  the van rolls forward along the roadway, east at 10 m/s at x = 0 m, 10 m and 20 m, with
+          reverse the gear selected (kin.gear = -1). The velocity vector is (10, 0) m/s and the
+          heading (1, 0), so the component along the heading is +10 m/s, far above -0.05 m/s.
+          The body is false at every instant: what the gear says is not read, and the ontology
+          carries no reversing lamp at all (sig.brake_lamp is not one and carries nothing about
+          direction), so the lit lamps of the narrative are no part of the scene either.
+  blind:  the holds scene on a source whose manifest declares kin.heading absent: the velocity
+          vector is observed, the direction the body points is not, so each product in the
+          component is unknown and the comparison is unknown for that atom alone.
 -/
 import TrafficSpec.Concepts.motion.backing
 import TrafficSpec.Core.Evidence.Builders
@@ -36,72 +42,58 @@ open TrafficSpec
 
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
+def mps (n : Int) : Q := Units.metresPerSecond n
 
--- Formals ↦ tracks: user ↦ 1
+-- Formals ↦ tracks: u ↦ 1
 
-/-- The van's heading: the unit vector three parts east to four parts north. -/
-def hdg : Vec := (Units.ratio 3 5, Units.ratio 4 5)
-
-/-- Half-length, half-width, half-height of the van. -/
-def vanExtent : Q × Q × Q := (m 2, m 1, cm 90)
-
-/-- The bay the van starts from. -/
-def bay : Vec := (m 0, m 0)
-
-/-- The van's speed over the ground. -/
-def vanSpeed : Q := Units.metresPerSecond 2
-
-/-- The first and the last observation the witnesses speak about (milliseconds). -/
-def tFirst : Timestamp := 10000
-def tLast : Timestamp := 12000
-
-/-- One second between observations, three seconds of padding behind the first. -/
-def dt : Q := Units.seconds 1
-def padBehind : Q := Units.seconds 3
-
-/-- The van at a position, with the velocity the scene reports (`none` where the source has none)
-    and its speed field alongside; the heading is `hdg` at every observation. -/
-def van (pos : Vec) (vel : Option Vec) (spd : Option Q) : RoadUser :=
-  Build.withKin (Build.user 1 [.motorVehicle, .truck] pos hdg vanSpeed vanExtent)
-    fun k => { k with velocity := vel, speed := spd }
-
-/-- A scene of one van and nothing else. -/
-def vanScene (t : Timestamp) (u : RoadUser) : Scene :=
-  Build.scene t (some 1) [u] [] []
-
-/-- The instance every scenario speaks about: the window 2 s, the floor 1 m/s. -/
+/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a
+    value through a `Units` constructor, a quantity concept given its expected bounds. The
+    magnitude of rearward motion below which this source's velocity does not stand clear of none
+    is 0.05 m/s — 50 000 µm/s, 5 cm/s — the witness's own figure. -/
 def inst : Concept.Instance :=
   { name := "drv.motion.backing@w"
     concept := "drv.motion.backing"
     literals := []
     nats := []
-    params := [("window", .lit (Units.seconds 2) .second),
-               ("speed_floor", .lit (Units.metresPerSecond 1) .metrePerSecond)]
-    bounds := none }
+    params := [("backing_speed_tolerance", .lit (Units.micrometresPerSecond 50000) .metrePerSecond)]
+    bounds := none
+  }
 
 def instances : List Concept.Instance := [inst]
 
-/-- `holds` (compliant): A delivery van reverses steadily out of a bay: over the whole window its velocity points opposite to its heading, at a magnitude above the floor. -/
+/-- The roadway of the street: 200 m of improved way, 10 m wide. -/
+def roadway : Structure := Build.rect 11 .roadway (m (-100)) (m (-5)) (m 100) (m 5)
+
+/-- The driveway entrance, meeting the roadway at its north edge. -/
+def driveway : Structure := Build.rect 12 .drivewayOrAlleyEntrance (m (-14)) (m 5) (m (-6)) (m 15)
+
+/-- The street, in every scene. -/
+def street : List Structure := [roadway, driveway]
+
+/-- A van of the witness: 5 m long and 2 m wide, its body pointing `heading`. -/
+def van (track : TrackId) (pos : Vec) (heading : Vec) (speed : Q) : RoadUser :=
+  Build.user track [.motorVehicle] pos heading speed (cm 250, m 1, m 1)
+
+/-- `holds` (compliant): A van reverses out of a driveway: its velocity vector points opposite to its heading, so the component of the velocity along the heading is negative and its magnitude stands clear of the tolerance the caller sets. -/
 def holdsTrace : Trace :=
-  Build.pad
-    (Build.trace 3 tFirst dt fun k t =>
-      vanScene t (van (Build.scale hdg (Units.metres (-(2 * Int.ofNat k))))
-                      (some (Build.scale hdg (Units.metresPerSecond (-2)))) (some vanSpeed)))
-    padBehind Q.zero dt
+  Build.trace 3 0 (Units.seconds 1) fun k t =>
+    Build.scene t (some 1)
+      [ Build.withKin (van 1 (m (-10), m (10 - (k : Int))) Build.north (mps 1))
+          (fun kin => { kin with velocity := some (Build.scale Build.south (mps 1)) }) ]
+      street
+      []
 
-/-- `fails` (violated): The van creeps forward out of the bay; its velocity points along its heading at every observation of the window. -/
+/-- `fails` (violated): A van rolls forward along the roadway: the component of its velocity along its heading is positive and well above the tolerance, although reverse is the gear selected and its reversing lamps are lit. -/
 def failsTrace : Trace :=
-  Build.pad
-    (Build.trace 3 tFirst dt fun k t =>
-      vanScene t (van (Build.scale hdg (Units.metres (2 * Int.ofNat k)))
-                      (some (Build.scale hdg vanSpeed)) (some vanSpeed)))
-    padBehind Q.zero dt
+  Build.trace 3 0 (Units.seconds 1) fun k t =>
+    Build.scene t (some 1)
+      [ Build.withKin (van 1 (m (10 * (k : Int)), m (-2)) Build.east (mps 10))
+          (fun kin => { kin with gear := some (-1) }) ]
+      street
+      []
 
-/-- `blind` (unknown): The source tracks the van's footprint and heading on the map but declares kin.velocity absent, reporting no velocity and no displacement between observations, so the direction of travel cannot be decided. -/
-def blindTrace : Trace :=
-  Build.pad
-    (Build.trace 3 tFirst dt fun _k t => vanScene t (van bay none none))
-    padBehind Q.zero dt
+/-- `blind` (unknown): The holds situation, except that the source declares the heading absent: the velocity vector is observed, but the direction the body points is not, so the component of the velocity along the heading is not determined. -/
+def blindTrace : Trace := holdsTrace
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=
@@ -110,13 +102,12 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     trace := τ
     reading := {}          -- ignored by the gate: the run's reading is substituted
     manifest := Build.manifest absent
-    grounding := [("user", 1)]
-    expected := expected
-    window := some (tFirst, tLast) }
+    grounding := [("u", 1)]
+    expected := expected }
 
 def scenarios : List Scenario :=
   [ witness "holds" holdsTrace .compliant
   , witness "fails" failsTrace .violated
-  , witness "blind" blindTrace (.unknown []) ["kin.velocity"] ]
+  , witness "blind" blindTrace (.unknown []) ["kin.heading"] ]
 
 end TrafficSpecWitness.Concepts.motion.backing

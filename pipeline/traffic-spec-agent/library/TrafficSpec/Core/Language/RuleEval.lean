@@ -88,7 +88,7 @@ private def isMalformed : UnknownReason → Option String
   | _ => none
 
 private def emptyScene : Scene := { t := 0 }
-private def emptyCtx : Primitives.Ctx := ⟨#[], #[], {}⟩
+private def emptyCtx : Primitives.Ctx := { scenes := #[], times := #[], ρ := {} }
 
 /-- A quantifier's kind: a spelling the codec decodes. A variable is a concept's literal formal
     that reached the check unfilled. -/
@@ -203,11 +203,11 @@ where
 def checkReading (rules : List Rule) (r : Rule) (ρ : Reading) : List String :=
   (Rule.closure rules r).flatMap fun x =>
     (x.params.filter (!ρ.has ·) |>.map fun p => s!"{x.id}: parameter `{p}` is not in the reading")
-    ++ (x.formulas.flatMap Formula.aggregateWords).eraseDups.flatMap fun w =>
+    ++ (x.formulas.flatMap Formula.aggregateIds).eraseDups.flatMap fun w =>
       match ρ.aggregate w with
       | none => [s!"{x.id}: aggregate `{w}` is not declared by the reading"]
-      | some ids => ids.filter (fun id => (RoadUserClass.ofString (id.drop 3).toString).isNone)
-          |>.map fun id => s!"{x.id}: aggregate `{w}` names `{id}`, which is neither a class nor a declared word"
+      | some a => (a.included ++ a.unresolved).filter (fun id => !id.startsWith "ru." || (RoadUserClass.ofString (id.drop 3).toString).isNone)
+          |>.map fun id => s!"{x.id}: aggregate `{w}` lists `{id}`, which is not a road-user class"
 
 end Rule
 

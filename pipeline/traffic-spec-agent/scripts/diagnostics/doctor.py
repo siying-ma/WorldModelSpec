@@ -11,7 +11,7 @@ The frozen artifacts (Core, the ontology, the prompts) are fixed BEFORE the
 pipeline sees any law corpus or records any capture, and two checks hold them to
 that: no statute, no rule named by its subject, no figure from a capture.
 
-Run it as `python -m scripts.run_spec doctor`. Exit status is 1 if any check
+Run it as `python -m harness doctor`. Exit status is 1 if any check
 fails, so it belongs in CI. No model, no Lean, no simulator.
 """
 
@@ -38,20 +38,22 @@ def _read_opt(path: Path) -> str:
 
 
 
-def _format_kwargs(src: str, marker: str = "template.format(") -> set[str]:
-    """Keyword names passed to a `template.format(...)` call."""
-    if marker not in src:
-        return set()
-    body, depth, out = src.split(marker, 1)[1], 1, []
-    for ch in body:
-        if ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-            if depth == 0:
-                break
-        out.append(ch)
-    return set(re.findall(r"(\w+)\s*=", "".join(out)))
+def rule_matches(rule: str, tool: str, path: Path) -> bool:
+    """Whether a permission rule `Tool(//abs/pattern)` covers `path` for `tool`: `**` spans
+    directories, `*` one path segment, a pattern without a wildcard is exact."""
+    import re
+    if not rule.startswith(tool + "(//") or not rule.endswith(")"):
+        return False
+    pat = rule[len(tool) + 3:-1]
+    rx = re.escape(pat).replace(r"\*\*", "\x00").replace(r"\*", "[^/]*").replace("\x00", ".*")
+    return re.fullmatch(rx, str(Path(path).resolve()).lstrip("/")) is not None
+
+
+def permitted(allow: list[str], deny: list[str], tool: str, path: Path) -> bool:
+    """The allow-list model: a deny rule that matches refuses; else an allow rule must match."""
+    if any(rule_matches(r, tool, path) for r in deny):
+        return False
+    return any(rule_matches(r, tool, path) for r in allow)
 
 
 # Vocabulary that only appears in a file written with a particular law, rule, or
@@ -100,9 +102,7 @@ LAW_FREE_PATTERNS = {
                                r"|the Python side)\b",
 }
 
-# Numbers that can only come from having run a capture. A prompt that quotes one
-# goes on asserting it after a re-measurement, and the calibration it quotes
-# belongs to `tools/check_spec.py`, which renders it into the prompt at run time.
+# Capture measurements belong to evaluation inputs, never to frozen prompt templates.
 CAPTURE_FIGURE_PATTERNS = {
     "capture length": r"\b\d+[- ]frames?\b(?![^.]*\bat least\b)",
     "entity census": r"\b\d+\s+(?:vehicles|lanes|roads|junctions|traffic lights"
@@ -166,7 +166,10 @@ class Doctor:
                   "review_code.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CODE"),
                   "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE"),
                   "review_concept.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CONCEPT"),
-                  "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT")}
+                  "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT"),
+                  "judge_case.md": ("harness.phases.review", "PLACEHOLDERS_JUDGE_CASE"),
+                  "plan_aggregates.md": ("harness.phases.aggregate", "PLACEHOLDERS_PLAN_AGGREGATES"),
+                  "verify_aggregate.md": ("harness.phases.aggregate", "PLACEHOLDERS_VERIFY_AGGREGATE")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
         bad, n = [], 0
         for tmpl, (mod, attr) in owners.items():
@@ -230,6 +233,9 @@ class Doctor:
         bad = [f"{f}: {n}" for f, needles in phases.items() for n in needles if n not in _read(self.repo / "harness" / "phases" / f)]
         if bad:
             return Result("session isolation", FAIL, f"phases launch sessions outside the allow-list model: {bad}", src)
+        oai = _read(self.repo / "harness" / "agents" / "openai_runner.py")
+        if 'any(t.get("type") != "function" for t in tools)' not in oai:
+            return Result("session isolation", FAIL, "a reviewer's tool session may carry tools other than the harness's functions", src)
         sess = importlib.import_module("harness.agents.session")
         wild = [r for r in sess.code_allow([Path("/x/a.lean")], Path("/x/t"), "python -m harness gate --run_id r --node_id n")
                 if r.startswith("Bash(") and "*" in r]
@@ -248,11 +254,11 @@ class Doctor:
         must_refuse = [(p_allow, p_deny, self.repo / "results" / "r" / "ledger.jsonl"), (p_allow, p_deny, self.repo / "results" / "r" / "reading.json"),
                        (c_allow, c_deny, self.repo / "results" / "r" / "accepted_nodes.jsonl"), (c_allow, c_deny, self.repo / "harness" / "loop.py"),
                        (c_allow, c_deny, self.repo / "results" / "r" / "iter-001" / "plan" / "blueprint.jsonl")]
-        wrong = [str(p.relative_to(self.repo)) for a, d, p in must_permit if not sess.permitted(a, d, "Write", p)] + \
-                [str(p.relative_to(self.repo)) for a, d, p in must_refuse if sess.permitted(a, d, "Write", p)]
+        wrong = [str(p.relative_to(self.repo)) for a, d, p in must_permit if not permitted(a, d, "Write", p)] + \
+                [str(p.relative_to(self.repo)) for a, d, p in must_refuse if permitted(a, d, "Write", p)]
         if wrong:
             return Result("session isolation", FAIL, f"the write rules admit or refuse the wrong paths: {wrong}", src)
-        return Result("session isolation", OK, f"{len(need)} isolation flags; allow-list permissions; plan and code sessions jailed to their task directory with one exact shell command; readers and judges have no tool", src)
+        return Result("session isolation", OK, f"{len(need)} isolation flags; allow-list permissions; plan and code sessions jailed to their task directory with one exact shell command; readers and judges have no tool; reviewers have only the harness's checks and submission", src)
 
     def prompts_are_law_free(self) -> Result:
         """The templates carry no law, no rule named by its subject, no figure."""
@@ -280,7 +286,6 @@ class Doctor:
         import itertools
         sys.path.insert(0, str(self.repo))
         from harness.model import ontology as onto_mod
-        from harness.phases.plan import defined_term
         src = ("prompts/*.md", "ontology/ATOMS.md ids; laws/full_list/definitions.jsonl terms")
         onto = onto_mod.load(self.repo / "ontology" / "ATOMS.md")
         ids = sorted(set(onto.atoms) | set(onto.primitives), key=len, reverse=True)
@@ -292,6 +297,17 @@ class Doctor:
             "reading parameter": r"\bp\.[a-z_]+\b",
             "enumeration literal": r'\.lit "[a-z_]+"',
         }
+        def defined_term(d: dict) -> list[str]:
+            """The term a record names: its text's first quoted phrase, and the title's subject when the
+            title reads "<term> defined"."""
+            out = []
+            m = re.search(r"“([^”]+)”|\"([^\"]+)\"", d.get("text", ""))
+            if m:
+                out.append((m.group(1) or m.group(2)).strip().lower())
+            t = d.get("title", "").strip()
+            if t.lower().endswith(" defined"):
+                out.append(t[:-8].strip().lower())
+            return sorted(set(out))
         terms = set()
         defs_file = self.repo / "laws" / "full_list" / "definitions.jsonl"
         if defs_file.exists():
@@ -450,7 +466,7 @@ class Doctor:
         rows = {}
         for line in _read(atoms_md).splitlines():
             m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
-            if m and m.group(1) in frozen:
+            if m and m.group(1) in frozen and m.group(1) not in rows:     # its contract row, not its unit row (§11)
                 rows[m.group(1)] = hashlib.sha256(line.encode("utf-8")).hexdigest()
         bad = [a for a, f in frozen.items() if rows.get(a) != f.get("sha256")]
         if bad:
@@ -516,8 +532,90 @@ class Doctor:
             return Result("reading proposals", REVIEW, f"{len(rows)} proposed parameter(s) await the operator's review", tuple(rows) + src)
         return Result("reading proposals", OK, f"{n} parameter(s), none proposed and unreviewed", src)
 
+    def case_blocks_cover(self) -> Result:
+        """The two blocks a reviewer is taught a case from are generated and cover what `Case.check`
+        admits: every Boolean atom of the dispatch tables (`ru_aggregate` aside), every class atom of
+        the codecs, every measured atom with a unit (`Dimensions.ofMeasure`) and every primitive, each
+        with a contract; every measured atom the dispatch knows has a unit; every admitted JSON form
+        of the case language has its keys."""
+        sys.path.insert(0, str(self.repo))
+        from harness.lean import surface
+        from harness.model import ontology as onto_mod
+        src = ("library/TrafficSpec/Core/** (Semantics, Vocab/Ontology/Dimensions, Export)", "harness/lean/surface.py")
+        onto = onto_mod.load(self.repo / ("ontology/ATOMS_train.md" if self._active() == "train" else "ontology/ATOMS.md"))
+        rows = surface.case_catalogue(onto)
+        bad = [f"`{r['name']}` has no contract" for r in rows if not str(r.get("contract", "")).strip()]
+        sem = (self.lib / "TrafficSpec" / "Core" / "Language" / "Semantics.lean").read_text(encoding="utf-8")
+        listed = re.findall(r'"(\w+)"', re.search(r"measureNames : List String := \[(.*?)\]", sem, re.S).group(1))
+        dims, prims = surface._dimensions()
+        bad += [f"measured atom `{m}` has no unit in Dimensions.lean (ATOMS.md §11)" for m in listed if m not in dims]
+        names = {r["name"] for r in rows}
+        bad += [f"primitive `{p}` is missing from the catalogue" for p in prims if p not in names]
+        lang = surface.case_language()
+        bad += [f"the case language lacks the `{k}` form" for k in ("atom", "cmp", "holds_for", "measure", "lit") if f'"{k}"' not in lang]
+        if bad:
+            return Result("case blocks cover", FAIL, "; ".join(bad[:6]), src)
+        return Result("case blocks cover", OK, f"{len(rows)} catalogue entries with contracts; {len(dims)} measured atoms with units", src)
+
+    def _active(self) -> str:
+        f = self.lib / "splits" / "ACTIVE"
+        return f.read_text().strip() if f.exists() else "full"
+
+    def held_out_absent_from_training_tables(self) -> Result:
+        """No atom the test split holds out appears in the training `Dimensions.lean` or, under the
+        training split, in the case vocabulary a reviewer is shown."""
+        sys.path.insert(0, str(self.repo))
+        src = ("laws/audit_and_scripts/split_atoms.json → test_only_atoms", "library/splits/train/**/Dimensions.lean; harness/lean/surface.py")
+        split = self.repo / "laws" / "audit_and_scripts" / "split_atoms.json"
+        if not split.exists():
+            return Result("held-out atoms stay out", SKIP, "no split", src)
+        held = json.loads(_read(split)).get("test_only_atoms", [])
+        names = [h.replace(".", "_") for h in held]
+        bad = []
+        train_dims = self.lib / "splits" / "train" / "TrafficSpec" / "Core" / "Vocab" / "Ontology" / "Dimensions.lean"
+        if train_dims.exists():
+            t = _read(train_dims)
+            bad += [f"training Dimensions.lean names `{n}`" for n in names if re.search(rf'"{re.escape(n)}(?:_\w+)?"', t)]
+        if self._active() == "train":
+            from harness.lean import surface
+            from harness.model import ontology as onto_mod
+            vocab = surface.case_vocabulary(onto_mod.load(self.repo / "ontology" / "ATOMS_train.md"))
+            bad += [f"the case vocabulary names `{h}`" for h, n in zip(held, names) if re.search(rf"`{re.escape(h)}`|`{re.escape(n)}[(`_]", vocab)]
+        if bad:
+            return Result("held-out atoms stay out", FAIL, "; ".join(bad[:6]), src)
+        return Result("held-out atoms stay out", OK, f"none of {len(held)} held-out atoms in the training tables", src)
+
+    def definition_resolution_report(self) -> Result:
+        """Which defined terms of the training laws the operator's declared precedence leaves without
+        an applicable definition, or with several: a report, read from the posted training files and
+        the configuration only."""
+        sys.path.insert(0, str(self.repo))
+        from harness.model import corpus, definitions as definitions_mod
+        src = ("laws/example/train/{laws,definitions}.jsonl", "config/definition_precedence.json")
+        laws_file = self.repo / "laws" / "example" / "train" / "laws.jsonl"
+        if not laws_file.exists():
+            return Result("definition resolution", SKIP, "no training corpus", src)
+        table = definitions_mod.resolve_table(corpus.load_laws(laws_file), corpus.load_definitions(laws_file), definitions_mod.load_precedence())
+        rows = [(law, r) for law, rs in table["laws"].items() for r in rs]
+        open_ = [f"{law}: \"{r['term']}\" {r['status']}" + (f" ({', '.join(r['candidates'])})" if r.get("candidates") else "") + (f" — {r['why']}" if r.get("why") else "")
+                 for law, r in rows if r["status"] != "resolved"]
+        nested_open = [f"definition `{definition}` uses \"{d['term']}\" {d['status']}"
+                       + (f" ({', '.join(d['candidates'])})" if d.get("candidates") else "")
+                       + (f" — {d['why']}" if d.get("why") else "")
+                       for definition, dependencies in table["dependencies"].items() for d in dependencies
+                       if d["status"] != "resolved"]
+        open_ += nested_open
+        nested = sum(len(dependencies) for dependencies in table["dependencies"].values())
+        summary = (f"{sum(1 for _l, r in rows if r['status'] == 'resolved')} of {len(rows)} defined-term uses resolved; "
+                   f"{nested - len(nested_open)} of {nested} nested uses resolved")
+        if open_:
+            return Result("definition resolution", REVIEW, f"{summary}; {len(open_)} unresolved or ambiguous", tuple(open_) + src)
+        return Result("definition resolution", OK, summary, src)
+
     def checks(self) -> list[Callable[[], Result]]:
-        return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.placeholders_supplied, self.skeleton_tokens,
+        return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.case_blocks_cover,
+                                   self.held_out_absent_from_training_tables, self.definition_resolution_report,
+                                   self.placeholders_supplied, self.skeleton_tokens,
                                    self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
                                    self.rule_files_carry_only_posted_law_ids,

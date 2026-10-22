@@ -128,7 +128,7 @@ def rule_skeleton(node: Node) -> str:
         out.append("    operationalizations := []")
     out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in residues])}"
                "  -- the node's, verbatim; not yours to change")
-    out.append("    narrowings := []  -- one { span := \"<span id>\", why := \"<why>\", kind := \"reading\" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header")
+    out.append("    narrowings := []  -- one { span := \"<span id>\", why := \"<why>\", kind := \"reading\" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header; the record's own narrowings are not restated")
     out.append(f"    surrogate := {'true' if surrogate else 'false'} }}")
     out.append("")
     out.append(f"end {ns}")
@@ -191,10 +191,10 @@ def witness_skeleton(node: Node) -> str:
 # ---------------------------------------------------------------------------------------------
 PUNIT_OF_CORE = {"metre": ".metre", "second": ".second", "metrePerSecond": ".metrePerSecond",
                  "metrePerSecondSq": ".metrePerSecondSq", "degree": ".degree", "degreePerSecond": ".degreePerSecond",
-                 "ratio": ".ratio", "count": ".count"}
+                 "perMetre": ".perMetre", "ratio": ".ratio", "count": ".count"}
 UNITS_CTOR_OF_CORE = {"metre": "Units.metres", "second": "Units.seconds", "metrePerSecond": "Units.metresPerSecond",
                       "metrePerSecondSq": "Units.metresPerSecondSq", "degree": "Units.degrees",
-                      "degreePerSecond": "Units.degrees", "ratio": "Units.ratio", "count": "Q.ofInt"}
+                      "degreePerSecond": "Units.degrees", "perMetre": "Units.perMetre", "ratio": "Units.ratio", "count": "Q.ofInt"}
 
 
 def _punit(unit: str) -> str:
@@ -286,7 +286,8 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
            "    literals := " + _lean_list([f"({_s(a['name'])}, {_s((a.get('values') or [''])[0])})" for a in lits]) + ("  -- TODO choose" if lits else ""),
            "    nats := " + _lean_list([f"({_s(a['name'])}, 0)" for a in nats]) + ("  -- TODO choose" if nats else ""),
            "    params := " + _lean_list([f"({_s(pr['name'])}, .lit ({UNITS_CTOR_OF_CORE[FACTORS[pr['unit']][0]]} 0) {_punit(pr['unit'])})" for pr in c.params()]) + ("  -- TODO values" if c.params() else ""),
-           "    bounds := " + ("some (.lit Q.zero .count, .lit Q.zero .count)  -- TODO the expected interval" if c.get("kind") == "quantity" else "none") + " }",
+           "    bounds := " + ("some (.lit Q.zero .count, .lit Q.zero .count)  -- TODO the expected interval" if c.get("kind") == "quantity" else "none"),
+           "  }",                                    # its own line: a comment above must never swallow the brace
            "",
            "def instances : List Concept.Instance := [inst]", ""]
     names = list(CONCEPT_SCENARIOS) + (["counterexample"] if c.get("supersedes") else [])

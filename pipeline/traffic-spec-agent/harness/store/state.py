@@ -4,7 +4,8 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
-from . import paths
+from . import jsonl, paths
+from ..model import corpus
 
 
 @dataclass
@@ -38,6 +39,14 @@ class Options:
     allow_same_vendor: bool = False        # permit a reviewer from the planner's own vendor
     mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
+    definition_precedence: Optional[Path] = None   # the operator's declared definition precedence (default config/definition_precedence.json)
+    openai_budget_usd: Optional[float] = None      # the run-wide limit on the second vendor's calls; reached, the run pauses (`paused_budget`)
+    reviewer_max_output_tokens: int = 64000        # the output-token limit of every OpenAI call, reasoning included
+    max_divergences: int = 3                       # the most divergences one reviewer answer may carry
+    model_prices: Optional[Path] = None            # the operator's price table (default config/model_prices.json)
+    review_checks: int = 8                         # check calls of one reviewer session (each runs one divergence through Core)
+    review_submissions: int = 3                    # submissions of one reviewer session; the last one stands
+    review_passes: int = 2                         # independent reviewer sessions per rule review, their challenges joined
 
 
 @dataclass
@@ -48,6 +57,8 @@ class Run:
     accepted_concepts: dict[str, dict] = field(default_factory=dict)
     base_nodes: dict[str, dict] = field(default_factory=dict)      # from `base_run`, read-only
     base_concepts: dict[str, dict] = field(default_factory=dict)
+    deferred_nodes: list[dict] = field(default_factory=list)       # validated nodes held for a later iteration (a composed node, a concept under repair, a pause)
+    deferred_concepts: list[dict] = field(default_factory=list)    # concepts coded and reviewed again next iteration (a deferred review, a pause)
 
     @classmethod
     def load(cls, run_id: str) -> "Run":
@@ -60,8 +71,12 @@ class Run:
         fields = {k for k in Options.__dataclass_fields__}
         kw = {k: v for k, v in d.items() if k in fields}
         kw["laws"], kw["ontology"] = Path(d["laws"]), Path(d["ontology"])
+        for k in ("definition_precedence", "model_prices"):
+            if kw.get(k):
+                kw[k] = Path(kw[k])
         kw["reading"] = Path(d.get("base_reading") or d["reading"])
         run = cls(Options(**kw))
+        run.restore_state()
         run.load_accepted()
         return run
 
@@ -84,17 +99,30 @@ class Run:
         return self.dir / "node_ledger.jsonl"
 
     @property
-    def deferred_file(self) -> Path:
-        """Validated nodes waiting for a composed node to be accepted; coded in a later iteration without re-planning."""
-        return self.dir / "deferred_nodes.jsonl"
+    def state_file(self) -> Path:
+        """The run's authoritative state: one snapshot, replaced atomically at every commit. The
+        ledgers and the accepted records on disk are projections written from it after it."""
+        return self.dir / "state.json"
 
-    def load_deferred(self) -> list[dict]:
-        if not self.deferred_file.exists():
-            return []
-        return [json.loads(l) for l in self.deferred_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+    def load_state(self) -> dict | None:
+        return jsonl.read_json(self.state_file, None)
 
-    def save_deferred(self, nodes: list[dict]) -> None:
-        self.deferred_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in nodes), encoding="utf-8")
+    def restore_state(self) -> dict | None:
+        """Rewrite the projections from the snapshot, so a commit cut short between the snapshot
+        and its projections is completed before anything reads them; returns the snapshot."""
+        snap = self.load_state()
+        if snap is None:
+            return None
+        rows = lambda xs: "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in xs)
+        jsonl.write_atomic(self.ledger_file, rows(snap.get("ledger", [])))
+        jsonl.write_atomic(self.concept_ledger_file, rows(snap.get("concept_ledger", [])))
+        jsonl.write_atomic(self.node_ledger_file, rows(snap.get("node_ledger", [])))
+        jsonl.write_atomic(self.accepted_file, rows(snap.get("accepted_nodes", {}).values()))
+        jsonl.write_atomic(self.accepted_concepts_file, rows(snap.get("accepted_concepts", {}).values()))
+        self.deferred_nodes = list(snap.get("deferred_nodes", []))
+        self.deferred_concepts = list(snap.get("deferred_concepts", []))
+        self.iteration = int(snap.get("iteration", 0))
+        return snap
 
     @property
     def ledger_file(self) -> Path:
@@ -130,11 +158,21 @@ class Run:
         return out
 
     def load_accepted(self) -> None:
+        """This run's accepted nodes and concepts, and its base run's. A base node of a law this run
+        lists is not taken: the law is planned again. A base node that composes one not taken stops
+        the run, since its law is not planned here."""
         self.accepted_nodes = self._load_jsonl(self.accepted_file, "node_id")
         self.accepted_concepts = self._load_jsonl(self.accepted_concepts_file, "concept_id")
         if self.opts.base_run:
             base = paths.run_dir(self.opts.base_run)
-            self.base_nodes = self._load_jsonl(base / "accepted_nodes.jsonl", "node_id")
+            listed = {l.id for l in corpus.load_laws(self.opts.laws)} if Path(self.opts.laws).exists() else set()
+            nodes = self._load_jsonl(base / "accepted_nodes.jsonl", "node_id")
+            self.base_nodes = {k: d for k, d in nodes.items() if d["law_refs"][0] not in listed}
+            dropped = set(nodes) - set(self.base_nodes)
+            broken = sorted(k for k, d in self.base_nodes.items() if {c.get("rule") for c in d.get("compositions", [])} & dropped)
+            if broken:
+                raise SystemExit(f"base run `{self.opts.base_run}`: node(s) {broken} compose a node of a law this run plans again "
+                                 f"({sorted(dropped)}); list their laws too")
             self.base_concepts = self._load_jsonl(base / "accepted_concepts.jsonl", "concept_id")
 
     def all_nodes(self) -> dict[str, dict]:
@@ -146,8 +184,8 @@ class Run:
         return {**self.base_concepts, **self.accepted_concepts}
 
     def save_accepted(self) -> None:
-        self.accepted_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_nodes.values()), encoding="utf-8")
-        self.accepted_concepts_file.write_text("".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_concepts.values()), encoding="utf-8")
+        jsonl.write_atomic(self.accepted_file, "".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_nodes.values()))
+        jsonl.write_atomic(self.accepted_concepts_file, "".join(json.dumps(d, ensure_ascii=False) + "\n" for d in self.accepted_concepts.values()))
 
     def next_iteration(self) -> int:
         existing = [int(p.name.split("-")[1]) for p in self.dir.glob("iter-*") if p.is_dir()]
