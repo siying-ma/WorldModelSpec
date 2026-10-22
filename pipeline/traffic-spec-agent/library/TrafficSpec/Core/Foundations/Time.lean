@@ -3,10 +3,10 @@
   Metric windows without a frame rate.
 
   Every observation carries a timestamp; a body also carries the path length it has travelled.
-  A window is measured in one of the two ("remain stopped until …" is time; "during the last
-  hundred feet traveled" is path). Semantics are defined on the OBSERVED instants only; the one
-  interpolation-free precondition is adequacy: a window of length d over a span is adequate when
-  consecutive observations in the span are at most d/2 apart. An inadequate span yields `unknown`
+  A window is measured in one of the two: a duration of time, or a length of path travelled.
+  Semantics are defined on the OBSERVED instants only; the one interpolation-free precondition is
+  adequacy: a window of length d over a span is adequate when consecutive observations in the
+  span are at most d/2 apart. An inadequate span yields `unknown`
   with the reason `samplingGap`, never a verdict invented between frames.
 
   Windows are computed for every instant of a trace at once: positions are monotone, so the

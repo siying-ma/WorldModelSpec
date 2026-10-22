@@ -100,6 +100,31 @@ def errs (φ : Formula) (entities : List (String × Val) := [("lane", .region 7)
 #guard has (errs (.cmp (.aggregate .count "v" .tt speed) .gt (lit 0 .count))) "a quantifier binds `v`"
 
 -- ---------------------------------------------------------------------------------------------
+-- DimCheck: the units of rules and concept bodies, apart from a case's prohibitions
+-- ---------------------------------------------------------------------------------------------
+def ρDim : Reading := { params := [{ name := "p.limit", value := Q.ofInt 15, unit := .metrePerSecond },
+                                   { name := "p.horizon", value := Q.ofInt 3, unit := .second }] }
+def qConcept : Concept := { id := "drv.motion.reach", contract := "c", args := [("u", .track)],
+                            params := [⟨"t", .second⟩], body := .quantity (.mul speed (.param "t")) }
+def envR : DimEnv := DimCheck.envOf ρDim [qConcept]
+def dimErrs (φ : Formula) : List DimError := DimCheck.errors envR φ
+-- what a case may not state is no unit defect in a rule
+#guard dimErrs (.and (.asm "asm.a") (.atom "ru_aggregate" [.var "v", .lit "D-1::vehicle"] [])) = []
+#guard dimErrs (.and (.rule "r/x" [("a", "v")]) (.cmp speed .lt (.param "p.limit"))) = []
+#guard dimErrs (.cmp (.quantity "drv_motion_reach" [.var "v"] [.param "p.horizon"]) .lt (lit 40 .metre)) = []
+#guard DimCheck.concept (DimCheck.envOf ρDim [qConcept] qConcept.params) qConcept = []
+-- units only
+#guard (dimErrs (.cmp speed .gt (lit 12 .metre))).map DimError.tag = ["mismatch"]
+#guard (dimErrs (.holdsFor .time (lit 5 .metre) "v" .tt)).map DimError.tag = ["mismatch"]
+#guard (dimErrs (.cmp (.quantity "drv_motion_reach" [.var "v"] [.param "p.horizon"]) .lt (lit 40 .second))).map DimError.tag = ["mismatch"]
+#guard (dimErrs (.cmp (.quantity "drv_motion_reach" [.var "v"] [.param "p.limit"]) .lt (lit 40 .metre))).map DimError.tag = ["mismatch"]
+#guard (dimErrs (.cmp speed .lt (.param "p.unknown"))).map DimError.tag = ["unknown"]
+-- a valid zero and an illegal division
+#guard dimErrs (.cmp speed .gt (lit 0 .metrePerSecond)) = []
+#guard (dimErrs (.cmp (.div speed (lit 0 .ratio)) .gt (lit 1 .metrePerSecond))).map DimError.tag = ["zero_division"]
+#guard dimErrs (.cmp (.div speed (.param "p.limit")) .gt (lit 1 .ratio)) = []
+
+-- ---------------------------------------------------------------------------------------------
 -- Case.eval: holds, fails, undecided at the instant
 -- ---------------------------------------------------------------------------------------------
 def τ : Trace :=

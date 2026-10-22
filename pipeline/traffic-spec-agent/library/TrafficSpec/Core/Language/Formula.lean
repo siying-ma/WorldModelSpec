@@ -4,7 +4,7 @@
 
   A rule is an AST, not a Lean proposition, for three downstream reasons: the gate inspects it
   (which atoms, which operators, which parameters, any bare literal), the export serializes it for
-  program synthesis, and the review phase mutates it. Variables are strings bound by the grounding
+  the tooling outside Lean, and the evaluator computes a three-valued verdict from it on a trace. Variables are strings bound by the grounding
   to tracks, and by the bounded quantifiers below to regions and devices of a kind.
 
   Atoms, primitives and concepts are referenced BY NAME (the Lean definition names of Atoms.lean

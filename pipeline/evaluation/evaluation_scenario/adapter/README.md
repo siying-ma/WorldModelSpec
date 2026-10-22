@@ -281,7 +281,8 @@ CARLA mapping:
 | `governs` | [region ids] | the lanes the device controls (`controlsTrafficOf` edges, or the landmark's affected waypoints) |
 | `indications` | [indication] | what a signal shows now. CARLA `TrafficLightState`: Red → `circular_red`, Yellow → `circular_yellow`, Green → `circular_green`, Off → `dark`, Unknown → `unknown`. |
 | `speed_value`, `speed_kind` | m/s, `maximum`/`minimum`/`structure_maximum`/`zone` | speed-limit landmarks: the value converted from the landmark unit to m/s |
-| `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `code`, `zone_kind`, `is_end`, `conditions`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks |
+| `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `code`, `zone_kind`, `is_end`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks |
+| `conditions` | {windows, min_occupancy, …} | a sign's legend as read: `{}` for a sign known to state no restriction (the regulation holds at every time and for every road user); omitted only when the legend is not read, which leaves every condition on the sign unknown. Never omit it for a sign known to be unconditional. |
 | `on_track`, `red_flashing`, `amber_flashing`, `stop_arm` | | full split only (school-bus signal) |
 
 CARLA mapping:

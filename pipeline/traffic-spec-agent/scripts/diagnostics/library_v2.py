@@ -59,7 +59,7 @@ class LibraryV2Checks:
         return Result("ontology generated", OK, f"{len(files)} files match the generator", src)
 
     def training_split_in_sync(self) -> Result:
-        """The training-only ontology (a split of the corpus) is what its sources generate.
+        """The training-only ontology and Core files (a split of the corpus) are what their sources generate.
 
         `laws/audit_and_scripts/split_atoms.json` names the atoms only the test lines support; `ATOMS_train.md`
         must be ATOMS.md minus exactly those, `splits/train/…/Ontology` must be generated from it, and
@@ -96,8 +96,29 @@ class LibraryV2Checks:
             return Result("training split", FAIL,
                           f"ontology drift {drift}; defs removed that are no test-only atom {wrong}; "
                           f"test-only defs still present {kept}", src)
+        # the training contents are exactly what their sources give: ATOMS_train.md and the training
+        # Atoms.lean from the full files by the split's tool, the other split files by the harness's
+        import sys, tempfile
+        sys.path.insert(0, str(self.repo.parent / "ontology_provenance"))
+        from nrs_tools import atoms_train
+        from harness.tools import split as split_tool
+        stale = []
+        want_md = atoms_train.filter_atoms_md((self.repo / "ontology" / "ATOMS.md").read_text(encoding="utf-8"), split["test_only_atoms"],
+                                              split["test_only_values"], split.get("test_only_primitives", []))
+        if want_md != train_md.read_text(encoding="utf-8"):
+            stale.append("ontology/ATOMS_train.md")
+        want_atoms = atoms_train.filter_atoms_lean((full_core / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"), split["test_only_atoms"])
+        if want_atoms != (train_root / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"):
+            stale.append("splits/train/…/Vocab/Atoms.lean")
+        with tempfile.TemporaryDirectory() as t:
+            split_tool.generate_train(full_core, Path(t))
+            stale += [f"splits/train/…/{rel}" for rel in split_tool.DEPENDENT
+                      if (Path(t) / rel).read_text(encoding="utf-8") != (train_root / rel).read_text(encoding="utf-8")]
+        if stale:
+            return Result("training split", FAIL, f"training contents differ from what their sources give: {stale} "
+                          "(regenerate: nrs_tools.atoms_train, then python -m harness split --use train)", src)
         return Result("training split", OK,
-                      f"{len(expected_gone)} ids and {len(gone)} defs omitted, ontology regenerates identically", src)
+                      f"{len(expected_gone)} ids and {len(gone)} defs omitted; the training contents are what their sources give", src)
 
     def atoms_bijection(self) -> Result:
         src = ("library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → atomIds",

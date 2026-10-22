@@ -15,7 +15,6 @@ PROMPTS = REPO / "prompts"
 RESULTS = REPO / "results"
 READINGS = LIBRARY / "TrafficSpec" / "Readings"     # the parameter catalogues: written by the operator and the harness, beside the rules that name them
 GAPS_DIR = LIBRARY / "TrafficSpec" / "Gaps"            # the harness's ledger of what the vocabulary cannot carry, beside the rules and concepts it concerns
-GAP_LEDGER = GAPS_DIR / "ledger.jsonl"
 USER_HINTS = REPO / "USER_HINTS.md"
 
 

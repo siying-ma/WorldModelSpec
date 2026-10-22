@@ -57,7 +57,7 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
         index, accepted, accepted_concepts, mode = MappingIndex(plan_dir / "mapping.json"), {}, {}, "train"
     concept_outcomes = validate_a.validate_concepts(concepts, defs, onto, accepted_concepts, users, mode)
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
-    rejected = {r["id"]: set(r.get("law_refs", [])) for r in GapLedger(paths.GAP_LEDGER).rows if r.get("state") == "rejected"}
+    rejected = {r["id"]: set(r.get("law_refs", [])) for r in GapLedger(paths.GAPS_DIR).rows if r.get("state") == "rejected"}
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
                                    known_nodes=known_nodes, rejected_gaps=rejected)
     return nodes, concepts, outcomes, concept_outcomes
@@ -101,7 +101,7 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     for attempt in ("", "_again"):
         record = session.run(ask, cwd=out_dir, out_dir=out_dir, opts=run.opts, max_turns=6,
                              effort=effort or run.opts.judge_effort, label=label + attempt, timeout=900,
-                             allow=[], disallowed_tools=session.NO_TOOLS, model=model or run.opts.model,
+                             allow=[], tools=[], model=model or run.opts.model,
                              usage_label=(usage_label + attempt) if usage_label else None)
         text = ((record.get("result") or {}).get("result", "") or "")
         (out_dir / f"{label}{attempt}_result.txt").write_text(text, encoding="utf-8")

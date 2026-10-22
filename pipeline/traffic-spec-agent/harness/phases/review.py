@@ -40,15 +40,16 @@ from pathlib import Path
 
 from ..agents import render, session
 from ..lean import lean, render_formula, surface
+from ..lean.surface import _decode_source, decoder_fields, decoder_keys, read_part, trace_schema, unread_keys
 from ..model import corpus, nodeid, ontology
-from ..model.blueprint import Node
+from ..model.blueprint import Node, span_offsets
 from ..model.reading import Reading
 from ..store import jsonl, paths
 from ..store.state import Run
 from . import validate as validate_phase
 
 PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
-                            "case_language", "case_vocabulary", "max_divergences", "review_checks", "review_submissions")
+                            "case_language", "case_vocabulary", "obligations", "max_divergences", "review_checks", "review_submissions")
 PLACEHOLDERS_JUDGE_CASE = ("law", "definitions", "case", "contracts")
 PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "definitions", "record", "rendered", "contracts", "parameters", "aggregates",
                            "item", "precedents")
@@ -58,7 +59,8 @@ KINDS = {"rule_permits_unlawful", "rule_forbids_lawful", "rule_undecided"}
 #: The verdicts a reviewer may claim for the law, spelt as `Verdict.tag`.
 LAWFUL = {"violated", "compliant", "not_applicable"}
 ANSWER_KEYS = {"verdict", "divergences", "advisories", "gap_candidates"}
-DIVERGENCE_KEYS = {"kind", "situation", "law_words", "rule_reads", "lawful_verdict", "grounding", "trace", "case", "entities", "at", "unstatable"}
+DIVERGENCE_KEYS = {"kind", "situation", "law_words", "rule_reads", "lawful_verdict", "grounding", "trace", "case", "entities", "at", "unstatable",
+                   "extends"}
 STAGE_A_KEYS = {"verdict", "decisive", "law_words", "reason"}
 STAGE_A_VERDICTS = {"violated", "compliant", "not_applicable", "undetermined"}
 STAGE_B_KEYS = {"outcome", "law_words", "reason"}
@@ -168,6 +170,11 @@ class ReviewTools:
         if name == "submit_review":
             self.used_submissions += 1
             answer = args.get("answer")
+            if isinstance(answer, str):                    # an answer sent as a JSON string is the same answer
+                try:
+                    answer = json.loads(answer)
+                except json.JSONDecodeError:
+                    pass
             defects = self._submit(answer, self.used_submissions) if isinstance(answer, dict) else ["`answer` must be the answer's JSON object"]
             last = self.used_submissions >= self.submissions
             if defects and not last:
@@ -183,9 +190,9 @@ class ReviewTools:
 
 class BehaviourTools(ReviewTools):
     def __init__(self, run: Run, n: Node, law: corpus.Law, reading: Reading, binders: list[str], windows: str, history: str,
-                 out_dir: Path, checks: int, submissions: int):
+                 out_dir: Path, checks: int, submissions: int, need: "_Need | None" = None):
         self.run, self.n, self.law, self.reading, self.binders = run, n, law, reading, binders
-        self.windows, self.history = windows, history
+        self.windows, self.history, self.need = windows, history, need
         self.specs = [
             _fn("check_divergence", "Run one divergence through the harness's checks and Core: the trace check, the case check, "
                 "the case's value at `at` (and, when it is not true, which of its facts are not), and the rule's verdict at `at`. "
@@ -207,7 +214,7 @@ class BehaviourTools(ReviewTools):
     def judgeable(self, k: int, d: dict, c: dict | None) -> list[str]:
         if c is None:
             return [f"divergence {k}: not certified"]
-        bad = cert_unusable(k, d, c, self.windows, self.history)
+        bad = cert_unusable(k, d, c, self.windows, self.history, self.need)
         return bad if bad or c.get("rule_result") is not None else [f"divergence {k}: the certificate printed no verdict of the rule"]
 
     def _check(self, d, where: Path) -> dict:
@@ -258,6 +265,7 @@ class ReviewOutcome:
     keys: list[str] = field(default_factory=list)
     questions: list[str] = field(default_factory=list)
     defer_stage: str | None = None
+    satisfied: list[str] = field(default_factory=list)                 # keys of obligations the rule now meets: their streaks reset
     param_notes: list[tuple[str, str]] = field(default_factory=list)   # (proposed parameter, the reviewer's words on it)
 
 
@@ -275,7 +283,8 @@ class Deferred(Exception):
 TRACE_CONVENTIONS = """### Trace format
 
 The keys below are generated from the decoder the harness runs your traces through, so every atom
-can be written. A trace is `{"scenes": [scene, ...]}` with `t` strictly increasing (milliseconds).
+can be written. They are the only keys a trace holds: Core never reads any other, so a trace that
+holds one is refused, the key named. A trace is `{"scenes": [scene, ...]}` with `t` strictly increasing (milliseconds).
 Every key is optional unless marked required, and a key left out is unobserved (an atom that reads
 it is unknown), never false: write every key the rule and your case read. Numbers are in Core
 units: metres, seconds, m/s, m/s², degrees and degrees per second.
@@ -290,8 +299,10 @@ Occupancy is decided only for the tracks `occupancy_observed` lists (`true` list
 them a pair in `occupies` is occupied and any other pair is not; for any other track every
 occupancy is unknown, whatever `occupies` says. For an observed track you do not write `occupies`:
 the harness derives it from the track's footprint and the structures' boundaries, as the check below
-states, and replaces whatever the trace lists for it. Relations are computed from the users'
-kinematics when `relations` leaves them out, except `visible`. A look-back of length d needs scenes
+states, and replaces whatever the trace lists for it. Core computes the relations between users
+from their kinematics: a relation it computes from the scene is never supplied in `relations`, and a
+trace that supplies one fails the check; supply only one it cannot compute (`visible`, or a pair
+whose geometry the scene leaves out). A look-back of length d needs scenes
 reaching d before the observation judged, no two consecutive scenes more than d/2 apart; otherwise
 the look-back is unknown.
 
@@ -299,70 +310,13 @@ The harness checks every trace you write before it runs anything on it, exactly 
 tolerance; a trace that fails is returned to you with the messages. The check, as Core states it:
 
 """
-#: The decoder functions of the trace document, and the name each record goes by in the format.
-_RECORDS = {"scene": "scene", "roadUser": "user (scene.users[])", "kin": "kin (user.kin)", "signals": "sig (user.sig)",
-            "posture": "posture (user.posture)", "warningLamp": "warning lamp (sig.warning_lamps[])",
-            "structure'": "structure (scene.structures[])", "laneInfo": "lane (structure.lane)",
-            "device": "device (scene.devices[])", "conditions": "conditions (device.conditions)",
-            "timeWindow": "time window (conditions.windows[])", "env": "env (scene.env)",
-            "civilTime": "civil time (env.civil_time)", "relation": "relation (scene.relations[])"}
-_SUB = {"roadUser": "user", "kin": "kin", "signals": "sig", "posture": "posture", "warningLamp": "warning lamp",
-        "structure'": "structure", "laneInfo": "lane", "device": "device", "conditions": "conditions",
-        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation",
-        "marking": "[marking type, marking colour]"}
-_PRIM = {"vec": "[x, y]", "num": "number", "bool": "bool", "nat": "nat", "int": "int", "str": "string"}
-
-
-def _decoder_type(tok: str, key: str) -> str:
-    if key == "extent":
-        return "[half_length, half_width, half_height]"
-    if tok in _PRIM:
-        return _PRIM[tok]
-    if tok in _SUB:
-        return _SUB[tok]
-    m = re.match(r"\(enum (\w+)\.ofString\)", tok)
-    if m:
-        return f"a {m.group(1)} spelling"
-    m = re.match(r"\(pair (\w+) (\w+)\)", tok)
-    if m:
-        return f"[{_PRIM.get(m.group(1), m.group(1))}, {_PRIM.get(m.group(2), m.group(2))}]"
-    return "value"
-
-
-def _decode_source() -> str:
-    return (paths.CORE / "Runtime" / "Decode.lean").read_text(encoding="utf-8")
-
-
-def decoder_keys(decode_source: str) -> dict[str, list[str]]:
-    """Every key the trace decoder reads, per record, with its type and whether it is required: read
-    from the decoder's source, so the format a reviewer writes in is the format that decodes."""
-    out: dict[str, list[str]] = {}
-    for m in re.finditer(r"^def (\w+'?) \(path : String\) \(j : Json\) : D \w+ := do\n(.*?)(?=^def |\Z)", decode_source, re.S | re.M):
-        name, body = m.group(1), m.group(2)
-        if name not in _RECORDS:
-            continue
-        rows = []
-        for km in re.finditer(r"\b(opt|req|list|optList) j path \"([a-z_]+)\" (\([^)]*\)|[\w']+)", body):
-            how, key, tok = km.groups()
-            t = _decoder_type(tok, key)
-            rows.append(f"`{key}` {('[' + t + ', ...]') if how in ('list', 'optList') else t}{' (required)' if how == 'req' else ''}")
-        if name == "scene":
-            rows.append("`occupancy_observed` true | [track, ...]")
-        out[_RECORDS[name]] = rows
-    return out
-
-
-def decoder_fields(decode_source: str) -> dict[str, dict[str, tuple[str, str]]]:
-    """Per decoder of a record: the World field it fills → (the JSON key it reads, the decoder of
-    a nested record or '')."""
-    out: dict[str, dict[str, tuple[str, str]]] = {}
-    for m in re.finditer(r"^def (\w+'?) \(path : String\) \(j : Json\) : D \w+ := do\n(.*?)(?=^def |\Z)", decode_source, re.S | re.M):
-        fields = {}
-        for fm in re.finditer(r"(\w+) := \(?← (?:opt|req|list|optList) j path \"([a-z_]+)\" (\([^)]*\)|[\w']+)", m.group(2)):
-            sub = fm.group(3) if fm.group(3) in _SUB else ""
-            fields[fm.group(1)] = (fm.group(2), sub)
-        out[m.group(1)] = fields
-    return out
+def unread_key_defects(k: int, trace) -> list[str]:
+    """A fresh written trace holding keys the decoder does not read: refused, the keys named. What
+    Core does not execute is no evidence, and a judge must never take it for a fact."""
+    bad = unread_keys(trace)
+    return [f"divergence {k}: the trace holds key(s) the decoder does not read, so Core never executes them: "
+            + ", ".join(f"`{p}`" for p in bad[:8]) + (f" and {len(bad) - 8} more" if len(bad) > 8 else "")
+            + " — remove them; only the keys of the trace format are evidence"] if bad else []
 
 
 #: Where the scene keeps each kind of entity, and the decoder of its record.
@@ -431,7 +385,7 @@ def trace_place(atom: str, keys: dict[str, list[str]] | None = None) -> str:
     atoms_src = (paths.CORE / "Vocab" / "Atoms.lean").read_text(encoding="utf-8")
     p = _field_path(atoms_src, atom, decoder_fields(_decode_source()))
     if p:
-        return f"`{p}`" + (", or computed from the users' kinematics when `relations` leaves it out" if prefix == "rel" else "")
+        return f"`{p}`" + (", which Core computes from the users' kinematics where the scene has them: then it is never supplied" if prefix == "rel" else "")
     if prefix == "rel":
         return "computed from the users' kinematics"
     if prefix == "st":
@@ -504,7 +458,7 @@ def behaviour_defects(answer: dict, law_text: str, binders: list[str], max_diver
     extra = sorted(set(answer) - ANSWER_KEYS)
     if extra:
         errs.append(f"the answer carries keys outside the schema: {extra}")
-    if answer.get("verdict") not in VERDICTS:
+    if not _member(answer.get("verdict"), VERDICTS):
         errs.append("`verdict` must be `accept` or `return`")
     divs = answer.get("divergences", [])
     if not isinstance(divs, list):
@@ -545,6 +499,8 @@ def divergence_schema_defects(k: int, d, law_text: str, binders: list[str]) -> l
     tr = d.get("trace")
     if not isinstance(tr, dict) or not isinstance(tr.get("scenes"), list) or not tr["scenes"]:
         errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
+    else:
+        errs += unread_key_defects(k, tr)
     if not _in(d.get("law_words", ""), law_text):
         errs.append(f"divergence {k}: law_words is not verbatim from the law")
     if "unstatable" in d:
@@ -586,14 +542,17 @@ class HarnessFailure(RuntimeError):
 def _cert_source(node_id: str, reading_json: Path, items: list[tuple[int, Path, Path, dict[str, int]]]) -> str:
     """A Lean program that prints, for each divergence, `CERT\\t<json>`: `Certificate.record` of its
     trace and case for the node's rule among the library's rules (concepts expanded), under the run's
-    reading. A reading that does not decode stops the program."""
+    reading, after the check that the trace supplies no relation Core computes from the scene
+    (`RELCHECK`, `harness/lean/relations.py`). A reading that does not decode stops the program."""
     rns = nodeid.rule_namespace(node_id)
     rows = ", ".join(
         f'({k}, {json.dumps(str(t.resolve()))}, {json.dumps(str(c.resolve()))}, [{", ".join(f"({json.dumps(b)}, {g})" for b, g in gr.items())}])'
         for k, t, c, gr in items)
+    from ..lean import relations
     return f'''import TrafficSpec
 import {nodeid.rule_module(node_id)}
 open TrafficSpec Lean
+{relations.lean_defs()}
 def main : IO UInt32 := do
   let r := {rns}.rule
   let rules := ((allRules.filter (·.id != r.id)) ++ [r]).map (Concept.expandRule allConcepts)
@@ -606,6 +565,9 @@ def main : IO UInt32 := do
     for (k, tpath, cpath, grounding) in items do
       let tt ← IO.FS.readFile tpath
       let ct ← IO.FS.readFile cpath
+      match Decode.parse Decode.trace tt with
+      | .ok τ => RelCheck.run (toString k) τ
+      | .error _ => pure ()
       IO.println s!"CERT\\t{{(Certificate.record rules r' ρ k tt ct grounding).compress}}"
     return 0
 '''
@@ -633,11 +595,43 @@ def parse_cert(output: str, expected: set[int]) -> dict[int, dict]:
     missing = sorted(expected - set(got))
     if missing:
         raise HarnessFailure(f"no CERT line for divergence(s) {missing}")
+    for line in output.splitlines():                     # a supplied relation Core computes is a defect of a hand-written trace
+        parts = line.split("\t")
+        if parts[0] == "RELCHECK" and len(parts) >= 5 and parts[1].isdigit() and int(parts[1]) in got:
+            c = got[int(parts[1])]
+            c.setdefault("relation_errors", []).append(f"t={parts[2]} ({parts[3]}): {parts[4]}")
+            c.setdefault("relation_fields", []).append([parts[2], parts[3], parts[4].split(":", 1)[0]])
     return got
 
 
-def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir: Path) -> dict[int, dict]:
-    """Run the certificate program on every certifiable divergence; their records by number."""
+def strip_computed_relations(trace: dict, fields: list) -> dict:
+    """A saved trace without the supplied relation fields Core computes (`relation_fields`: the
+    instant, the pair `a-b` and the atom of each `RELCHECK`): Core computes them from the scene
+    instead. A relation entry left with only its pair is removed."""
+    from ..lean.relations import atom_keys
+    keys = atom_keys()
+    drop = {(str(t), pair, keys[atom]) for t, pair, atom in fields if atom in keys}
+    out = json.loads(json.dumps(trace))
+    for sc in out.get("scenes") or []:
+        if not isinstance(sc, dict) or not isinstance(sc.get("relations"), list):
+            continue
+        kept = []
+        for m in sc["relations"]:
+            if isinstance(m, dict):
+                pair = f"{m.get('a')}-{m.get('b')}"
+                m = {k: v for k, v in m.items() if (str(sc.get("t")), pair, k) not in drop}
+                if set(m) <= {"a", "b"}:
+                    continue
+            kept.append(m)
+        sc["relations"] = kept
+    return out
+
+
+def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir: Path, saved: bool = False) -> dict[int, dict]:
+    """Run the certificate program on every certifiable divergence; their records by number. With
+    `saved` (a recorded obligation's trace, replayed), the supplied relations Core computes are not
+    a defect of the submission: they are stripped, Core computes them, and the case is certified
+    again; the record keeps what was stripped (`relations_stripped`)."""
     if not divs:
         return {}
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -653,13 +647,21 @@ def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir:
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
     prog = out_dir / "certificate.lean"
     prog.write_text(_cert_source(n.id, reading_json, items), encoding="utf-8")
-    ok, out = lean.lean_run(paths.LIBRARY, prog)
+    code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
     (out_dir / "certificate.out").write_text(out, encoding="utf-8")
     if not ok:
         raise HarnessFailure(f"the certificate program did not run: {out[-600:]}")
     recs = parse_cert(out, set(divs))
+    if saved:
+        strip = {k: c for k, c in recs.items() if c.get("relation_fields")}
+        if strip:
+            again = certify(run, n, {k: {**divs[k], "trace": strip_computed_relations(divs[k]["trace"], c["relation_fields"])}
+                                     for k, c in strip.items()}, reading, out_dir / "stripped")
+            for k, c in strip.items():
+                recs[k] = {**again[k], "relations_stripped": c["relation_errors"]}
+            divs = {k: d for k, d in divs.items() if k not in strip}     # the stripped ones were diagnosed on their own run
     try:
-        _diagnose(n, divs, recs, reading_json, out_dir / "diagnosis")
+        _diagnose(n, divs, {k: recs[k] for k in divs}, reading_json, out_dir / "diagnosis")
     except HarnessFailure as e:                              # an aid only: the certificate stands without it
         for c in recs.values():
             if (c.get("case_value") or {}).get("value") not in (None, "true"):
@@ -708,7 +710,7 @@ def _diagnose(n: Node, divs: dict[int, dict], recs: dict[int, dict], reading_jso
         items.append((idx + 1, t, cf, {b: int(x) for b, x in divs[k]["grounding"].items()}))
     prog = out_dir / "certificate.lean"
     prog.write_text(_cert_source(n.id, reading_json, items), encoding="utf-8")
-    ok, out = lean.lean_run(paths.LIBRARY, prog)
+    code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
     (out_dir / "certificate.out").write_text(out, encoding="utf-8")
     if not ok:
         raise HarnessFailure(f"the certificate program did not run on the case's parts: {out[-600:]}")
@@ -725,14 +727,14 @@ def _diagnose(n: Node, divs: dict[int, dict], recs: dict[int, dict], reading_jso
             f"{label} is {v.get('value', 'not evaluated')}" + (f" ({why})" if why else "") + f": {json.dumps(doc['case'], ensure_ascii=False)[:300]}")
 
 
-#: Unknown reasons that are the trace's, not the rule's: an atom left out, a look-back sampled too
-#: sparsely, a look-back the scenes do not cover, an identity gap. A longer or denser trace removes
-#: each. For a divergence claiming the rule undecided, a look-back that no trace of ordinary length
-#: covers is the claim itself, so there the truncated window stays the rule's.
-def _trace_defect(reason: str, kind: str | None) -> bool:
+def _trace_defect(reason: str, kind: str | None, bounded_history: bool = True) -> bool:
+    """Whether an unknown reason is missing evidence a trace can supply. A window behind `at` the
+    trace does not cover is missing evidence when the history is bounded (a covering trace exists);
+    when it is unbounded no finite trace covers it, and for a claim that the rule is undecided it is
+    the claim itself."""
     if reason.startswith(("absent_atom:", "sampling_gap:", "identity_gap:")):
         return True
-    return kind != "rule_undecided" and reason.startswith("window_truncated:")
+    return reason.startswith("window_truncated:") and (bounded_history or kind != "rule_undecided")
 
 
 def _aggregate_unresolved_only(reasons: list[str]) -> bool:
@@ -833,7 +835,7 @@ def history_of(formulas: list, concepts: dict, reading: Reading) -> _Need:
             out = _Need()
             dims = (prims.get(name) or (None, []))[1]
             for t, dim in zip(ps, dims):
-                if dim == UNIT_DIMS["second"]:                 # a primitive's time parameter is a window behind
+                if dim == _dims()["second"]:                 # a primitive's time parameter is a window behind
                     d = length(t, env)
                     out = out.join(_Need(back=d) if d is not None else _Need(unknown=True))
             return out
@@ -895,19 +897,21 @@ def _trace_remedy(reason: str, windows: str = "", history: str = "") -> str:
             f"most half the window's length apart{sizes}")
 
 
-def cert_defects(k: int, d: dict, c: dict, windows: str = "", history: str = "") -> list[str]:
-    """Why a certified divergence is not admitted, as the reviewer is told: what kept it from being
-    evaluated, then what its execution refuted."""
-    return cert_unusable(k, d, c, windows, history) + cert_refutations(k, d, c)
-
-
-def cert_unusable(k: int, d: dict, c: dict, windows: str = "", history: str = "") -> list[str]:
-    """What kept a certified divergence from being evaluated; empty when the case holds and the
-    rule's verdict at `at` is decided or undecided for a reason no trace removes."""
+def cert_unusable(k: int, d: dict, c: dict, windows: str = "", history: str = "", need: "_Need | None" = None) -> list[str]:
+    """What keeps a certified divergence from being judged, as the reviewer is told it, by the
+    standard replayed evidence meets (`admission`, with the rule's history `need`): empty when it is
+    judged. An invalid case names its defects; insufficient evidence names what the trace must add."""
+    cls, reasons = admission(d, c, need or _Need())
     head = f"divergence {k}"
+    if cls == "judge":
+        return []
+    if cls == "insufficient":
+        return [f"{head}: the rule's verdict at `at` is unknown only because the trace is incomplete: "
+                + "; ".join(sorted({_trace_remedy(r, windows, history) for r in reasons}))]
     out = [f"{head}: the trace does not decode: {e}" for e in c.get("trace_decode_errors") or []]
     out += [f"{head}: the case does not decode: {e}" for e in c.get("case_decode_errors") or []]
     out += [f"{head}: trace check: {e}" for e in c.get("lint_errors") or []]
+    out += [f"{head}: trace check: a supplied relation at {e}" for e in c.get("relation_errors") or []]
     out += [f"{head}: witness: {e}" for e in c.get("witness_errors") or []]
     out += [f"{head}: case: {e}" for e in c.get("case_check_errors") or []]
     cv = c.get("case_value")
@@ -919,12 +923,6 @@ def cert_unusable(k: int, d: dict, c: dict, windows: str = "", history: str = ""
         out.append(f"{head}: the case is {cv.get('value')} at `at`" + (f" ({why})" if why else "")
                    + (": " + "; ".join(where[:6]) if where else "")
                    + " — state the facts that hold on the trace at that instant, or change the trace")
-    rr = c.get("rule_result")
-    if isinstance(rr, dict) and rr.get("verdict") == "unknown":
-        reasons = rr.get("unknown_reasons") or []
-        if reasons and not _aggregate_unresolved_only(reasons) and all(_trace_defect(r, d.get("kind")) for r in reasons):
-            out.append(f"{head}: the rule's verdict at `at` is unknown only because the trace is incomplete: "
-                       + "; ".join(sorted({_trace_remedy(r, windows, history) for r in reasons})))
     return out
 
 
@@ -960,8 +958,212 @@ def _case_glosses(onto: ontology.Ontology, case_atoms: list[str]) -> dict[str, s
     return validate_phase.glosses_of(case_atoms, onto)
 
 
-def case_id(law: str, d: dict, canonical) -> str:
-    return _digest({"law": law, "trace": d.get("trace"), "case": canonical, "entities": d.get("entities"), "at": d.get("at")})
+# ---------------------------------------------------------------------------------------------
+# A duty as an occurrence in the posted law, and a case's identity
+# ---------------------------------------------------------------------------------------------
+_SENTENCE_BREAK = re.compile(r"(?<=[.?!])\s+(?=[A-Z(\[\u201c\"])")
+
+
+def law_digest(text: str) -> str:
+    return _digest(text)[:16]
+
+
+def sentence_around(text: str, start: int, end: int) -> str:
+    """The sentence of the law's text that contains the characters `start`..`end`."""
+    breaks = [0] + [m.end() for m in _SENTENCE_BREAK.finditer(text)] + [len(text)]
+    a = max(b for b in breaks if b <= start)
+    z = min((b for b in breaks if b >= end), default=len(text))
+    return text[a:z].strip()
+
+
+def _occurrence(law: corpus.Law, ranges: list[tuple[int, int]]) -> dict:
+    dig = law_digest(law.text)
+    ranges = sorted(tuple(r) for r in ranges)
+    return {"id": f"{law.id}@{dig}:" + ",".join(f"{a}-{z}" for a, z in ranges), "law": law.id, "law_digest": dig,
+            "ranges": [list(r) for r in ranges], "words": [law.text[a:z] for a, z in ranges],
+            "context": sentence_around(law.text, ranges[0][0], ranges[-1][1]) if ranges else ""}
+
+
+def duty_of(n: Node, law: corpus.Law) -> dict:
+    """The duty a node formalizes, identified by its occurrence in the posted law: the character
+    offsets of its obligation spans and the law's content digest; the sentence that contains it is
+    its qualifying context. Two duties in identical words are two occurrences."""
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    return _occurrence(law, [offs[str(s["id"])] for s in n.get("segmentation", []) if s.get("role") == "obligation" and str(s.get("id")) in offs])
+
+
+def sibling_duties(n: Node, law: corpus.Law) -> list[dict]:
+    """The law's other duties, as this node's segmentation marks them (`sibling` spans)."""
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    return [_occurrence(law, [offs[str(s["id"])]]) for s in n.get("segmentation", []) if s.get("role") == "sibling" and str(s.get("id")) in offs]
+
+
+def overlaps(a: list, b: list) -> bool:
+    return any(x0 < y1 and y0 < x1 for x0, x1 in a for y0, y1 in b)
+
+
+def duty_block(n: Node, law: corpus.Law) -> str:
+    """For a law of several duties: which one is judged, with its qualifying sentence, and which are
+    judged separately; empty for a law of one duty."""
+    others = sibling_duties(n, law)
+    if not others:
+        return ""
+    d = duty_of(n, law)
+    out = ["### The duty judged here", "", *[f"> {w}" for w in d["words"]], "", f"in the sentence: \u201c{_ws(d['context'])}\u201d", "",
+           "### Judged separately", "", "These duties of the law are judged on their own cases; every other word of the law applies by its meaning.", ""]
+    out += [f"- \u201c{_ws(' '.join(o['words']))}\u201d (in the sentence: \u201c{_ws(o['context'])}\u201d)" for o in others]
+    return "\n".join(out) + "\n"
+
+
+_USER_QUANTIFIERS = ("forall_user", "exists_user")
+_SORTED_QUANTIFIERS = ("forall_region", "exists_region", "forall_device", "exists_device")
+_WINDOWS = ("holds_for", "within", "until_within", "at_last")
+
+
+def rename_case(x, env: dict[str, str], bound) -> object:
+    """A case formula with every name it uses renamed, in scope: a free name through `env` (a name
+    `env` lacks is kept), a name a quantifier or an aggregate binds to `bound(name)`, which renames
+    its occurrences in that binder's scope only. The names a formula holds: `var` fields, the
+    variable of a user quantifier (`forall_user`, `exists_user`), the vehicle of a window
+    (`subject`) and of `distance_while`, and the caller's names a rule reference maps to (the
+    values of `map`; its keys name the referenced rule's binders)."""
+    if isinstance(x, list):
+        return [rename_case(v, env, bound) for v in x]
+    if not isinstance(x, dict):
+        return x
+    q = next((k for k in _USER_QUANTIFIERS if isinstance(x.get(k), str)), None)
+    if q:
+        b = bound(x[q])
+        return {**{k: rename_case(v, env, bound) for k, v in x.items() if k not in (q, "body")},
+                q: b, "body": rename_case(x.get("body"), {**env, x[q]: b}, bound)}
+    if (any(k in x for k in _SORTED_QUANTIFIERS) or "aggregate" in x) and isinstance(x.get("var"), str):
+        b = bound(x["var"])
+        scoped = {**env, x["var"]: b}
+        return {k: (b if k == "var" else rename_case(v, scoped if k in ("body", "where", "of") else env, bound)) for k, v in x.items()}
+    out = {}
+    for k, v in x.items():
+        if isinstance(v, str) and (k == "var" or k == "distance_while" or (k == "subject" and any(w in x for w in _WINDOWS))):
+            out[k] = env.get(v, v)
+        elif k == "map" and isinstance(v, dict) and ("rule" in x or "rule_applies" in x):
+            out[k] = {i: env.get(o, o) if isinstance(o, str) else o for i, o in v.items()}
+        else:
+            out[k] = rename_case(v, env, bound)
+    return out
+
+
+def case_names(x, scope: frozenset = frozenset(), free: list | None = None, bound: list | None = None) -> tuple[list, list]:
+    """The names a case formula uses free and the names its binders declare, each in order of
+    first appearance (the traversal of `rename_case`)."""
+    free = [] if free is None else free
+    bound = [] if bound is None else bound
+    rename_case(x, {}, lambda b: (bound.append(b), b)[1])
+    def walk(y, sc):
+        if isinstance(y, list):
+            for v in y:
+                walk(v, sc)
+            return
+        if not isinstance(y, dict):
+            return
+        q = next((k for k in _USER_QUANTIFIERS if isinstance(y.get(k), str)), None)
+        if q:
+            walk(y.get("body"), sc | {y[q]}); return
+        if (any(k in y for k in _SORTED_QUANTIFIERS) or "aggregate" in y) and isinstance(y.get("var"), str):
+            for k, v in y.items():
+                if k != "var":
+                    walk(v, sc | {y["var"]} if k in ("body", "where", "of") else sc)
+            return
+        for k, v in y.items():
+            if isinstance(v, str) and (k == "var" or k == "distance_while" or (k == "subject" and any(w in y for w in _WINDOWS))):
+                if v not in sc and v not in free:
+                    free.append(v)
+            elif k == "map" and isinstance(v, dict) and ("rule" in y or "rule_applies" in y):
+                for o in v.values():
+                    if isinstance(o, str) and o not in sc and o not in free:
+                        free.append(o)
+            else:
+                walk(v, sc)
+    walk(x, set(scope))
+    return free, bound
+
+
+def canonical_names(case, entities: dict, grounding: dict, binders: list[str]) -> dict[str, str]:
+    """The canonical name of each free name of a case: the node's binders by position (`user1`, …),
+    the named entities by kind and trace id (`region1`, `device1`, …), any other free name by its
+    first appearance (`x1`, …). A name a binder of the case declares is named apart, by
+    `canonical_case`."""
+    names: dict[str, str] = {}
+    for b in [b for b in binders if b in grounding] + sorted(b for b in grounding if b not in binders):
+        names[b] = f"user{len(names) + 1}"
+    count: dict[str, int] = {}
+    for e, v in sorted((entities or {}).items(), key=lambda kv: (str((kv[1] or {}).get("kind")), str((kv[1] or {}).get("id")))):
+        kind = str((v or {}).get("kind") or "entity")
+        count[kind] = count.get(kind, 0) + 1
+        names.setdefault(e, f"{kind}{count[kind]}")
+    for v in case_names(case)[0]:
+        if v not in names:
+            names[v] = f"x{sum(1 for x in names.values() if x.startswith('x')) + 1}"
+    return names
+
+
+def canonical_case(d: dict, canonical, binders: list[str]) -> dict:
+    """The case in canonical names: `case`, `entities`, `grounding`, and `names` (canonical → as
+    written). Each binder of the case is named `xK` after the free names, in order of appearance,
+    so a renaming of the case, of its binders included, changes none of it."""
+    names = canonical_names(canonical, d.get("entities") or {}, d.get("grounding") or {}, binders)
+    back = {v: k for k, v in names.items()}
+    def local(b):
+        c = f"x{sum(1 for x in back if x.startswith('x')) + 1}"
+        back[c] = b
+        return c
+    return {"case": rename_case(canonical, names, local), "entities": {names.get(e, e): v for e, v in (d.get("entities") or {}).items()},
+            "grounding": {names.get(b, b): t for b, t in (d.get("grounding") or {}).items()}, "names": back}
+
+
+def repair_case_names(r: dict) -> tuple[dict, bool]:
+    """A recorded case whose binders' declarations, window vehicles, `distance_while` vehicles or rule
+    maps kept the names as written while its `var` fields were renamed (rows recorded before every
+    name of a case was renamed), with each such name restored to its canonical one from the row's
+    `names`. A name is restored only where it is out of scope and `names` gives its canonical
+    name, so a consistent row is returned unchanged and a repaired one is not repaired again.
+    Returns (row, whether it changed)."""
+    case, names = r.get("case"), r.get("names")
+    if not isinstance(case, dict) or not isinstance(names, dict):
+        return r, False
+    canon = {w: c for c, w in names.items() if isinstance(w, str)}
+    known = set(r.get("grounding") or {}) | set(r.get("entities") or {})
+    def fix(y, sc):
+        if isinstance(y, list):
+            return [fix(v, sc) for v in y]
+        if not isinstance(y, dict):
+            return y
+        q = next((k for k in _USER_QUANTIFIERS if isinstance(y.get(k), str)), None)
+        if q:
+            b = y[q]
+            free_b = case_names(y.get("body"))[0]
+            if b not in free_b and canon.get(b) in free_b:
+                b = canon[b]
+            return {**y, q: b, "body": fix(y.get("body"), sc | {b})}
+        if (any(k in y for k in _SORTED_QUANTIFIERS) or "aggregate" in y) and isinstance(y.get("var"), str):
+            return {k: (fix(v, sc | {y["var"]}) if k in ("body", "where", "of") else (v if k == "var" else fix(v, sc))) for k, v in y.items()}
+        out = {}
+        for k, v in y.items():
+            name_site = isinstance(v, str) and (k == "distance_while" or (k == "subject" and any(w in y for w in _WINDOWS)))
+            if name_site and v not in sc and v not in known and v in canon:
+                out[k] = canon[v]
+            elif k == "map" and isinstance(v, dict) and ("rule" in y or "rule_applies" in y):
+                out[k] = {i: (canon[o] if isinstance(o, str) and o not in sc and o not in known and o in canon else o) for i, o in v.items()}
+            else:
+                out[k] = fix(v, sc)
+        return out
+    fixed = fix(case, frozenset())
+    return ({**r, "case": fixed}, True) if fixed != case else (r, False)
+
+
+def case_id(law: corpus.Law, d: dict, canon: dict) -> str:
+    """A case's factual identity: the law's content, the trace, the case, its entities, the instant
+    and its grounding, all in canonical names. The verdict claimed is not part of it."""
+    return _digest({"law": law.id, "law_digest": law_digest(law.text), "trace": d.get("trace"), "case": canon["case"],
+                    "entities": canon["entities"], "at": d.get("at"), "grounding": canon["grounding"]})
 
 
 # ---------------------------------------------------------------------------------------------
@@ -979,6 +1181,9 @@ class Context:
     params: list[dict]
     aggregates: list[dict]
     precedence_hash: str
+    duty: dict = field(default_factory=dict)              # the duty occurrence the node formalizes (`duty_of`)
+    duty_block: str = ""                                  # what stage A is shown of it (`duty_block`)
+    precedents: list[dict] = field(default_factory=list)  # the effective rulings on this duty, as they stood when the review began
 
 
 def definitions_block(defs: list[dict]) -> str:
@@ -1028,7 +1233,7 @@ def stage_a_defects(a: dict, haystack: str) -> list[str]:
 
 def stage_a_prompt(ctx: Context, rendered_case: str, case_glosses: dict[str, str]) -> str:
     return render.render("judge_case.md", {
-        "law": f"### The law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n",
+        "law": f"### The law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n" + (f"\n{ctx.duty_block}" if ctx.duty_block else ""),
         "definitions": definitions_block(ctx.definitions),
         "case": "### The case\n\n" + rendered_case + "\n",
         "contracts": validate_phase.contracts_table(case_glosses)})
@@ -1087,7 +1292,7 @@ def stage_b_item(rendered_case: str, stage_a: dict, rule_verdict: dict, sensitiv
 
 
 def word_level_item(item: dict) -> str:
-    return ("### The item (word-level: no trace can show it)\n\n"
+    return ("### The item (structural evidence: a word-level claim no trace can show)\n\n"
             f"The reviewer claims that the words \"{_ws(item.get('words'))}\" of span {item.get('span')} exclude "
             f"{_ws(item.get('factor'))}, which the contract the record carries for them admits ({_ws(item.get('nearest'))}). "
             "Uphold it when the contract's own words admit what the law's words exclude and the difference changes where the "
@@ -1095,7 +1300,7 @@ def word_level_item(item: dict) -> str:
             f"- outcomes available for this item: {', '.join(f'`{o}`' for o in sorted(WORD_LEVEL_OUTCOMES))}\n")
 
 
-def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str]) -> str:
+def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str], lineage: str = "") -> str:
     return render.render("adjudicate.md", {
         "law_and_segmentation": f"### Law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n\nSpans:\n{ctx.seg}\n",
         "definitions": definitions_block(ctx.definitions),
@@ -1105,7 +1310,7 @@ def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str])
         "parameters": params_block(ctx.params),
         "aggregates": aggregates_block(ctx.aggregates),
         "item": item,
-        "precedents": precedents_block(run, f"law:{ctx.law.id}")})
+        "precedents": precedents_block([r for r in ctx.precedents if not lineage or r.get("lineage") != lineage])})
 
 
 def stage_b_digest(run: Run, prompt: str) -> str:
@@ -1152,8 +1357,70 @@ def _rulings_file(run: Run) -> Path:
 
 
 def _all_rows(run: Run) -> list[dict]:
-    """Every row, read strictly: a line that does not parse stops the run (`DataIntegrityError`)."""
-    return jsonl.read_strict(_rulings_file(run))
+    """Every row, read strictly: a line that does not parse stops the run (`DataIntegrityError`).
+    The run's own rows follow the rows it inherits (`inherited_rows`)."""
+    return inherited_rows(run) + _named(jsonl.read_strict(_rulings_file(run)))
+
+
+_UNBOUND = re.compile(r"is not bound|is not a bound track")
+
+
+def _named(rows: list[dict]) -> list[dict]:
+    """The rows of one rulings file with each case's names made consistent (`repair_case_names`).
+    An invalidation that only those names caused (its case changed by the repair, and its reason a
+    name the case left unbound) decided nothing: it is left out, and a row that superseded it
+    supersedes what it superseded, so the case it took out is judged again. The file is never
+    rewritten."""
+    out, void = [], {}
+    for r in rows:
+        r, changed = repair_case_names(r)
+        if changed and r.get("route") == "invalidated" and r.get("supersedes") and _UNBOUND.search(str(r.get("reason", ""))):
+            void[r.get("ruling_id")] = r["supersedes"]
+            continue
+        out.append(r)
+    def target(s):
+        while s in void:
+            s = void[s]
+        return s
+    return [{**r, "supersedes": target(r["supersedes"])} if r.get("supersedes") in void else r for r in out]
+
+
+_INHERITED_CACHE: dict[tuple, list[dict]] = {}
+
+
+def inherited_rows(run: Run) -> list[dict]:
+    """The upheld obligations of the records a run inherits from its base chain, read-only from
+    every run of the chain that wrote one: a ruling a later generation made on a record an earlier
+    one accepted (a reported defect adjudicated there) counts as much as the accepting run's. The
+    chain's rulings are folded in generation order, each under an id qualified by its run
+    (`<run>/<id>`, its supersessions qualified alike), so supersession across generations holds and
+    no two runs' ids collide; a generation that plans a law again drops the earlier generations'
+    rulings on that law's nodes. Of the folded effective rows, those on a record the run inherits are
+    returned (`inherited_from` naming the run that wrote each), and a ruling of this run on the same
+    identity supersedes one once. Rows of a law this run plans again are not read: its records are
+    not inherited."""
+    from ..store.state import listed_laws
+    prov = getattr(run, "provenance", None) or {}
+    chain = list(getattr(run, "base_chain", None) or [])
+    if not prov or not chain:
+        return []
+    folded: list[dict] = []
+    for rid in chain:
+        listed = listed_laws((jsonl.read_json(paths.run_dir(rid) / "options.json", None) or {}).get("laws"))
+        if listed:
+            folded = [r for r in folded if str(r.get("subject", "")).startswith("drv.")
+                      or nodeid.law_of(str(r.get("subject", "")))[0] not in listed]
+        f = paths.run_dir(rid) / "rulings.jsonl"
+        if not f.exists():
+            continue
+        st = f.stat()
+        key = (str(f), st.st_mtime_ns, st.st_size)
+        if key not in _INHERITED_CACHE:
+            _INHERITED_CACHE[key] = _named(jsonl.read_strict(f))
+        q = lambda x: x if not x or "/" in x else f"{rid}/{x}"
+        folded += [{**r, "ruling_id": q(r.get("ruling_id")), "supersedes": q(r.get("supersedes")), "inherited_from": rid}
+                   for r in _INHERITED_CACHE[key]]
+    return [{**r, "supersedes": None} for r in effective_rows(folded) if r.get("subject") in prov and r.get("ruling") == "upheld"]
 
 
 def effective_rows(rows: list[dict]) -> list[dict]:
@@ -1164,6 +1431,8 @@ def effective_rows(rows: list[dict]) -> list[dict]:
     for r in rows:
         s = r.get("supersedes")
         if s:
+            if s not in by_id and "/" in s:                 # an inherited ruling, read from the run that holds it
+                continue
             if s not in by_id:
                 raise RulingsError(f"ruling {r.get('ruling_id')} supersedes {s}, which does not exist")
             children.setdefault(s, []).append(r.get("ruling_id"))
@@ -1177,25 +1446,82 @@ def effective_rows(rows: list[dict]) -> list[dict]:
                 raise RulingsError(f"a supersession cycle through {cur.get('ruling_id')}")
             seen.add(cur.get("ruling_id"))
             cur = by_id.get(cur["supersedes"])
-    return [r for r in rows if not (r.get("ruling_id") and r["ruling_id"] in children) and r.get("ruling") != "retired"]
+    heads = [r for r in rows if not (r.get("ruling_id") and r["ruling_id"] in children)]
+    return [r for r in _one_state_each(heads, by_id) if r.get("ruling") != "retired"]
+
+
+def _one_state_each(heads: list[dict], by_id: dict[str, dict]) -> list[dict]:
+    """Of unsuperseded rows that are states of one obligation — a case of one law on one duty, of
+    one lineage, on the same trace, instant and grounding, stating the same facts whatever their
+    names — only the last stands (rows recorded before a replay kept the identity it replayed),
+    keeping the earlier duty it was carried from. A retirement counts as the state of the case it
+    retires. A case carried to another duty, an extension stating more facts, and any other row
+    stand as they are."""
+    def obligation(r):
+        x, seen = r, set()
+        while x is not None and x.get("ruling") == "retired" and x.get("ruling_id") not in seen:
+            seen.add(x.get("ruling_id"))
+            x = by_id.get(x.get("supersedes"))
+        if x is None or x.get("schema") != CASE_SCHEMA or not str(x.get("key", "")).startswith("law:") or not x.get("case_id") \
+                or not isinstance(x.get("case"), dict):
+            return None
+        return (x.get("key"), x.get("duty"), x.get("lineage") or x.get("case_id"),
+                _digest({"trace": x.get("trace"), "at": x.get("at"), "grounding": sorted((x.get("grounding") or {}).values()),
+                         "facts": sorted(_grounded_conjuncts(x.get("case"), x.get("entities") or {}, x.get("grounding") or {}))}))
+    keys = [obligation(r) for r in heads]
+    last = {k: i for i, k in enumerate(keys) if k is not None}
+    came_from = {}                                       # the duty an obligation was carried from, kept by its later states
+    for r, k in zip(heads, keys):
+        if k is not None and r.get("lineage_from"):
+            came_from.setdefault(k, r["lineage_from"])
+    return [({**r, "lineage_from": came_from[k]} if k in came_from and not r.get("lineage_from") else r)
+            for i, (r, k) in enumerate(zip(heads, keys)) if k is None or last[k] == i]
+
+
+def ruling_identity(row: dict) -> tuple | None:
+    """What a ruling decides: a case judged on one duty occurrence (`case_id`, `duty`), or a
+    structural finding on one occurrence of the law's words (`finding_id`). A concept's challenge is
+    its case alone, whichever version of the lineage judged it, so a successor's ruling on a carried
+    challenge supersedes its predecessor's."""
+    if row.get("case_id") and str(row.get("key", "")).startswith("concept:"):
+        return ("concept_case", row["case_id"])
+    if row.get("finding_id") and str(row.get("key", "")).startswith("concept:"):
+        if row.get("finding_root"):
+            return ("concept_finding", row["finding_id"])
+        return ("concept_finding_unrooted", row.get("subject"), row["finding_id"])   # written before findings had a root
+    if row.get("case_id"):
+        return ("case", row["case_id"], row.get("duty") or row.get("subject"))
+    if row.get("finding_id"):
+        return ("finding", row["finding_id"])
+    return None
 
 
 def append_ruling(run: Run, row: dict) -> dict:
-    """Append a row with a fresh `ruling_id`; a case already ruled is superseded by it."""
+    """Append a row with a fresh `ruling_id`; an earlier ruling of the same identity is superseded by it."""
     with _RULINGS_LOCK:
         row = dict(row)
         row["ruling_id"] = _digest({"row": row, "n": len(_all_rows(run))})[:20]
-        if row.get("case_id"):
-            prev = next((r for r in effective_rows(_all_rows(run)) if r.get("case_id") == row["case_id"]), None)
+        ident = ruling_identity(row)
+        if ident is not None:
+            prev = next((r for r in effective_rows(_all_rows(run)) if ruling_identity(r) == ident), None)
             row["supersedes"] = prev.get("ruling_id") if prev else None
         jsonl.append_atomic(_rulings_file(run), row)
         return row
 
 
-def precedents_block(run: Run, key: str) -> str:
-    """The effective rulings under `key` (a law, or a concept), most recent first: what was decided
-    before, and why, so a situation decided once is decided alike."""
+def precedent_rows(run: Run, key: str, duty: dict | None = None) -> list[dict]:
+    """The effective rulings under `key` (a law, or a concept), and for a law those on the duty
+    occurrence judged (or one overlapping it): what was decided before. Taken once when a review
+    begins, so the review's own rulings never change what its judges are shown."""
     rows = [r for r in effective_rows(_all_rows(run)) if r.get("key") == key and r.get("ruling") != "advisory"]
+    if duty:
+        rows = [r for r in rows if r.get("duty") == duty.get("id")
+                or (r.get("law_digest") == duty.get("law_digest") and overlaps(r.get("duty_ranges") or [], duty.get("ranges") or []))]
+    return rows
+
+
+def precedents_block(rows: list[dict]) -> str:
+    """Earlier rulings, most recent first, so a situation decided once is decided alike."""
     if not rows:
         return "### Earlier rulings\n\n(none)\n"
     out = ["### Earlier rulings (most recent first)", ""]
@@ -1209,21 +1535,42 @@ def precedents_block(run: Run, key: str) -> str:
 OBLIGATIONS = {None, "open", "satisfied"}
 
 
-def upheld_rows(run: Run, laws: set[str]) -> list[dict]:
-    """The obligations on these laws' nodes: effective rulings upheld on a certified case, open or
-    satisfied, oldest first. A case leaves only when it is invalidated (it can no longer be
-    evaluated), re-adjudicated (a judge's changed input no longer upholds it) or retired."""
+def upheld_rows(run: Run, laws: set[str], structural: bool = False) -> list[dict]:
+    """The obligations on these laws' duties: effective rulings upheld on a certified case, open or
+    satisfied, oldest first (with `structural`, the upheld word-level findings, open). A case leaves
+    only when it is invalidated (it can no longer be evaluated), re-adjudicated (a judge's changed
+    input no longer upholds it) or retired; a finding when it is re-adjudicated or retired."""
     keys = {f"law:{law}" for law in laws}
+    schema = WORD_LEVEL_SCHEMA if structural else CASE_SCHEMA
     return [r for r in effective_rows(_all_rows(run))
-            if r.get("key") in keys and r.get("ruling") == "upheld" and r.get("schema") == CASE_SCHEMA
-            and r.get("obligation") in OBLIGATIONS]
+            if r.get("key") in keys and r.get("ruling") == "upheld" and r.get("schema") == schema
+            and r.get("obligation") in (OBLIGATIONS - {"satisfied"} if structural else OBLIGATIONS)]
+
+
+def obligations_of(run: Run, n: Node, law: corpus.Law, structural: bool = False) -> list[tuple[dict, bool]]:
+    """The obligations this node answers for, each with whether it is the node's own duty (True) or a
+    candidate correspondence (False: an earlier duty whose occurrence overlaps this node's, after a
+    merge, a split or a changed qualifying context; judged for this duty and kept only if upheld).
+    A candidate already carried to this duty by an earlier review is not taken again."""
+    duty = duty_of(n, law)
+    rows = upheld_rows(run, {law.id}, structural)
+    carried = {(r.get("lineage_from") or "") for r in rows if r.get("duty") == duty["id"]}
+    out = []
+    for r in rows:
+        if r.get("duty") == duty["id"] or (not r.get("duty") and r.get("subject") == n.id):
+            out.append((r, True))
+        elif r.get("law_digest") == duty["law_digest"] and overlaps(r.get("duty_ranges") or [], duty["ranges"]) \
+                and f"{r.get('case_id') or r.get('finding_id')}|{r.get('duty')}" not in carried:
+            out.append((r, False))
+    return out
 
 
 def upheld_block(run: Run, laws: set[str]) -> str:
-    """The certified cases earlier reviews upheld against these laws' nodes, for a planning
-    session, rendered as the judges saw them."""
+    """The certified cases earlier reviews upheld against these laws' nodes, and the structural
+    evidence upheld and still open, for a planning session, rendered as the judges saw them."""
     rows = upheld_rows(run, laws)
-    if not rows:
+    structural = upheld_rows(run, laws, structural=True)
+    if not rows and not structural:
         return "## Situations decided against earlier records\n\n(none)\n"
     out = ["## Situations decided against earlier records", "",
            "Each is a certified case: its facts hold on a trace at the instant named, the law's verdict on it was decided by a "
@@ -1239,28 +1586,13 @@ def upheld_block(run: Run, laws: set[str]) -> str:
                    + f"\n\n  the law: **{a.get('verdict')}** (\"{_ws(a.get('law_words'))[:200]}\"); the rule then: "
                    f"{(r.get('rule_result') or {}).get('verdict')}; upheld because: {_ws(b.get('reason'))[:300]}\n"
                    f"  reviewer's note (not verified): {_ws(r.get('situation'))[:240]}")
+    if structural:
+        out += ["", "Structural evidence (no trace can show it; decided by a judge on the law's words and the contracts alone, "
+                "and decided again on every later record of the node; it stays open while it is still upheld):", ""]
+        for r in structural:
+            out.append(f"- `{r.get('subject')}` (iteration {r.get('iteration')}, open): {_ws(r.get('item'))[:400]}; "
+                       f"upheld because: {_ws((r.get('stage_b') or {}).get('reason'))[:300]}")
     return "\n".join(out) + "\n"
-
-
-def quoted_spans(n: Node, law_text: str, quote: str) -> str:
-    """The substantive spans of the node whose words the quote covers, as `s1,s4` (`-` when the
-    quote is not found): what a divergence objects to, so a repeat is the same objection to the
-    same words."""
-    lt = _norm(law_text)
-    frags = [f for f in (_norm(x).strip(" .,;:") for x in re.split(r"\[\s*(?:…|\.\.\.)\s*\]|…|\.\.\.", str(quote or ""))) if f]
-    covered, pos = [], 0
-    for f in frags:
-        a = lt.find(f, pos)
-        if a < 0:
-            return "-"
-        covered.append((a, a + len(f))); pos = a + len(f)
-    ids = []
-    for s in n.get("segmentation", []):
-        t = _norm(s.get("text"))
-        i = lt.find(t) if t and s.get("role") != "boilerplate" else -1
-        if i >= 0 and any(i < b and i + len(t) > a for a, b in covered):
-            ids.append(str(s.get("id")))
-    return ",".join(ids) or "-"
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1278,20 +1610,25 @@ class Judged:
 
 
 def judge_divergence(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, d: dict, c: dict, out_dir: Path, label: str,
-                     previous: dict | None = None) -> Judged:
-    """Stage A, the comparison, the sensitivity and stage B for one admitted divergence. A previous
-    ruling's judge outputs are reused when that judge's digest is unchanged. Raises `Deferred` when
-    a judge's answer stays invalid."""
-    canonical = c.get("canonical_case")
+                     previous: dict | None = None, lineage: str = "") -> Judged:
+    """Stage A, the comparison, the sensitivity and stage B for one admitted divergence, in
+    canonical names. A previous ruling's judge outputs are reused when that judge's digest is
+    unchanged. `lineage` is the case's lineage when it continues an earlier case (a replay, an
+    extended trace); a new case starts its own. Raises `Deferred` when a judge's answer stays invalid."""
+    binders = [b["name"] for b in n.get("binders", [])]
+    canon = canonical_case(d, c.get("canonical_case"), binders)
     glosses_case = _case_glosses(onto, c.get("case_atoms") or [])
     times = [sc.get("t") for sc in ((d.get("trace") or {}).get("scenes") or []) if isinstance(sc, dict) and isinstance(sc.get("t"), int)]
-    rendered = render_case(canonical, d.get("entities") or {}, d.get("at"), d.get("grounding") or {}, glosses_case, times)
-    cid = case_id(n.law, d, canonical)
+    rendered = render_case(canon["case"], canon["entities"], d.get("at"), canon["grounding"], glosses_case, times)
+    cid = case_id(ctx.law, d, canon)
+    lineage = lineage or (previous or {}).get("lineage") or cid
     rule = c.get("rule_result") or {}
-    base = {"schema": CASE_SCHEMA, "key": f"law:{n.law}", "subject": n.id, "iteration": run.iteration, "case_id": cid,
+    base = {"schema": CASE_SCHEMA, "key": f"law:{n.law}", "subject": n.id, "iteration": run.iteration, "case_id": cid, "lineage": lineage,
+            "duty": ctx.duty.get("id"), "duty_ranges": ctx.duty.get("ranges"), "law_digest": ctx.duty.get("law_digest"),
             "kind": d.get("kind"), "situation": _ws(d.get("situation"))[:600], "law_words": d.get("law_words"),
-            "lawful_verdict": d.get("lawful_verdict"), "grounding": d.get("grounding"), "trace": d.get("trace"),
-            "case": canonical, "entities": d.get("entities"), "at": d.get("at"), "case_rendered": rendered, "rule_result": rule}
+            "lawful_verdict": d.get("lawful_verdict"), "grounding": canon["grounding"], "trace": d.get("trace"),
+            "case": canon["case"], "entities": canon["entities"], "names": canon["names"], "at": d.get("at"),
+            "case_rendered": rendered, "rule_result": rule}
     head = f"case on `{n.id}` at t={d.get('at')} — rule: {rule.get('verdict')}"
     if rule.get("verdict") == "unknown" and _aggregate_unresolved_only(rule.get("unknown_reasons") or []):
         row = {**base, "route": "aggregate_unresolved", "ruling": "advisory", "reason": "the rule is unknown only for an unresolved aggregate membership",
@@ -1304,7 +1641,8 @@ def judge_divergence(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, d
         stage_a = previous["stage_a"]
     else:
         stage_a = run_stage_a(run, ctx, a_prompt, out_dir, f"{label}_stage_a")
-    base = {**base, "stage_a": stage_a, "stageA_digest": a_dig}
+    base = {**base, "stage_a": stage_a, "stageA_digest": a_dig,
+            "sibling_quote": bool(ctx.duty_block) and quote_in_siblings(n, ctx.law, stage_a.get("law_words"))}
     line = f"{head}; the law (stage A): {stage_a.get('verdict')} — \"{_ws(stage_a.get('law_words'))[:160]}\""
     if stage_a.get("verdict") == "undetermined" or not stage_a.get("decisive"):
         row = {**base, "route": "stage_a_undetermined", "ruling": "advisory", "reason": _ws(stage_a.get("reason")), "item": line,
@@ -1317,14 +1655,14 @@ def judge_divergence(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, d
     sensitive = aggregate_sensitive(c, stage_a.get("verdict", ""), ctx)
     allowed = available_outcomes(ctx, sensitive)
     contracts = {**ctx.rule_glosses, **glosses_case}
-    b_prompt = stage_b_prompt(run, ctx, stage_b_item(rendered, stage_a, rule, sensitive, allowed), contracts)
+    b_prompt = stage_b_prompt(run, ctx, stage_b_item(rendered, stage_a, rule, sensitive, allowed), contracts, lineage)
     b_dig = stage_b_digest(run, b_prompt)
     if previous and previous.get("stageB_digest") == b_dig and previous.get("stage_b"):
         stage_b = previous["stage_b"]
     else:
         stage_b = run_stage_b(run, ctx, b_prompt, allowed, out_dir, f"{label}_stage_b")
     outcome = stage_b["outcome"]
-    key = f"{d.get('kind')}:{quoted_spans(n, ctx.law.text, stage_a.get('law_words'))}"
+    key = f"case:{lineage[:16]}"
     row = {**base, "route": outcome, "ruling": outcome, "sensitive": sensitive, "stage_b": stage_b, "stageB_digest": b_dig,
            "reason": _ws(stage_b.get("reason")), "item": line, "outcome": key,
            "certificate_digests": [a.get("certificate_digest") for a in ctx.aggregates if a.get("certificate_digest")] if outcome == "verified_aggregate" else []}
@@ -1336,132 +1674,522 @@ def judge_divergence(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, d
     return Judged(outcome, row, f"{line}; stage B: {outcome} — {_ws(stage_b.get('reason'))[:200]}", key=key, question=question)
 
 
-def judge_word_level(run: Run, n: Node, ctx: Context, item: dict, out_dir: Path, label: str) -> Judged:
-    prompt = stage_b_prompt(run, ctx, word_level_item(item), ctx.rule_glosses)
-    b = run_stage_b(run, ctx, prompt, WORD_LEVEL_OUTCOMES, out_dir, label)
-    line = (f"word-level: span {item.get('span')} — \"{_ws(item.get('words'))}\" is carried by a broader contract "
+def quote_in_siblings(n: Node, law: corpus.Law, quote) -> bool:
+    """Whether stage A's quote lies only in the law's other duties: recorded as a measurement, never a route."""
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    sib = [offs[str(s["id"])] for s in n.get("segmentation", []) if s.get("role") == "sibling" and str(s.get("id")) in offs]
+    own = [offs[str(s["id"])] for s in n.get("segmentation", []) if s.get("role") not in ("sibling", "boilerplate") and str(s.get("id")) in offs]
+    i = law.text.find(_ws(quote)) if _ws(quote) else -1
+    if i < 0 or not sib:
+        return False
+    q = [(i, i + len(_ws(quote)))]
+    return overlaps(q, sib) and not overlaps(q, own)
+
+
+def word_level_defects(n: Node, law: corpus.Law, item: dict) -> list[str]:
+    """Why a word-level item cannot be judged: its span is not one of the node's, or its words are
+    not verbatim within that span."""
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    r = offs.get(str(item.get("span")))
+    if r is None:
+        return [f"word-level item: span {item.get('span')!r} is not a span of `{n.id}`"]
+    if not _ws(item.get("words")) or _ws(item.get("words")) not in _ws(law.text[r[0]:r[1]]):
+        return [f"word-level item: \"{_ws(item.get('words'))[:120]}\" is not verbatim in span {item.get('span')}"]
+    return []
+
+
+def words_at(n: Node, law: corpus.Law, item: dict) -> list[int]:
+    """Where a word-level item's words occur in the law: within its span, else the span itself."""
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    r = offs.get(str(item.get("span")), (0, 0))
+    i = law.text.find(_ws(item.get("words")), r[0]) if _ws(item.get("words")) else -1
+    return [i, i + len(_ws(item.get("words")))] if i >= 0 else list(r)
+
+
+def finding_id(n: Node, law: corpus.Law, item: dict) -> str:
+    """A structural finding's identity: the occurrence of its words in the law, the contract clause it
+    names, and the record's mapping of that span when it was found."""
+    where = words_at(n, law, item)
+    mapping = sorted({a for e in n.get("elements", []) if str(e.get("span")) == str(item.get("span"))
+                      for a in list(e.get("atoms") or []) + list(e.get("derived") or [])})
+    return _digest({"law": law.id, "law_digest": law_digest(law.text), "words_at": where, "clause": _ws(item.get("nearest")), "mapping": mapping})
+
+
+def judge_word_level(run: Run, n: Node, ctx: Context, item: dict, out_dir: Path, label: str, previous: dict | None = None) -> Judged:
+    """Stage B on a structural finding (no trace can show it), against the current record. Its row
+    carries the finding's identity, so an upheld finding is an obligation re-adjudicated before
+    every later acceptance."""
+    fid = (previous or {}).get("finding_id") or finding_id(n, ctx.law, item)
+    prompt = stage_b_prompt(run, ctx, word_level_item(item), ctx.rule_glosses, lineage=fid)
+    dig = stage_b_digest(run, prompt)
+    b = previous["stage_b"] if previous and previous.get("stageB_digest") == dig and previous.get("stage_b") else \
+        run_stage_b(run, ctx, prompt, WORD_LEVEL_OUTCOMES, out_dir, label)
+    line = (f"structural evidence: span {item.get('span')} — \"{_ws(item.get('words'))}\" is carried by a broader contract "
             f"({_ws(item.get('nearest'))[:160]}); the words exclude {_ws(item.get('factor'))[:160]}: file a gap on this span")
-    key = f"broader_contract:{item.get('span')}"
-    row = {"schema": WORD_LEVEL_SCHEMA, "label": "word_level", "key": f"law:{n.law}", "subject": n.id, "iteration": run.iteration,
-           "item": line, "ruling": b["outcome"], "reason": _ws(b.get("reason")), "stage_b": b, "stageB_digest": stage_b_digest(run, prompt),
-           "outcome": key}
+    key = f"finding:{fid[:16]}"
+    row = {"schema": WORD_LEVEL_SCHEMA, "label": "word_level", "evidence": "structural", "key": f"law:{n.law}", "subject": n.id, "iteration": run.iteration,
+           "finding_id": fid, "lineage": fid, "words_at": (previous or {}).get("words_at") or words_at(n, ctx.law, item), "duty": ctx.duty.get("id"), "duty_ranges": ctx.duty.get("ranges"),
+           "law_digest": ctx.duty.get("law_digest"), "item_data": {k: item.get(k) for k in ("kind", "span", "words", "factor", "nearest")},
+           "item": line, "ruling": b["outcome"], "reason": _ws(b.get("reason")), "stage_b": b, "stageB_digest": dig,
+           "obligation": "open" if b["outcome"] == "upheld" else None, "outcome": key}
     return Judged(b["outcome"], row, f"{line} — stage B: {b['outcome']}: {_ws(b.get('reason'))[:200]}", key=key)
 
 
 # ---------------------------------------------------------------------------------------------
-# Replay: the upheld cases of this node, re-judged against the current rule
+# Admission: one standard for fresh and replayed evidence
 # ---------------------------------------------------------------------------------------------
-def replay_upheld(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, reading: Reading,
-                  out_dir: Path, pending: list | None = None, questions: list | None = None) -> tuple[list[str], list[str], list[str]]:
-    """(reasons and keys of the cases still decided otherwise, notes). Each obligation of this node
-    id (an upheld case, open or satisfied) is certified again under the current Core, rule and
-    reading, and judged again where a judge's input changed. Validity is kept apart from
-    satisfaction:
-    - a case that can no longer be evaluated, for a trace or case reason, is `invalidated`: it leaves
-      the obligations, and a note starting "obligation invalidated" goes to the operator;
-    - a case still upheld against the rule stays `open` (the node is returned), whether the law's
-      verdict is the one recorded or a newly judged one;
-    - a case on which the rule gives the recorded law's verdict stays an obligation, `satisfied`;
-    - any other judgment (the law's verdict changed and the rule now agrees with it, stage A
-      undetermined, stage B no longer upholding it) is `re-adjudicated`: it leaves the obligations.
-    A row is appended only when the state or a judge's digest changes, so a replay of an unchanged
-    rule, and a resumed run, add none. Only a reason in the case or its trace invalidates (it does
-    not decode, fails the trace or witness check, or the case is not true): a rule whose verdict is
-    unknown on the trace is judged like any other mismatch. A case that stage B now rules a
-    parameter question keeps its state, and its question is added to `questions`, as a fresh
-    review asks it. With `pending`, the rows are collected there instead of appended: the caller
-    records them only when the review reaches its outcome, so a review that defers, pauses or never
-    runs (and whose rule is rolled back) changes no obligation. Raises `Deferred` when a judge's
-    answer stays invalid or the certificate program fails."""
-    rows = [r for r in upheld_rows(run, {n.law}) if r.get("subject") == n.id]
-    if not rows:
-        return [], [], []
+def bounded(need: "_Need") -> bool:
+    """Whether the history a verdict reads has a finite length at the parameter values: then a trace
+    that covers it always exists. One that reaches the trace's start or end, or whose length the
+    reading does not fix, is unbounded."""
+    return not (need.to_start or need.to_end or need.unknown)
+
+
+def admission(d: dict, c: dict, need: "_Need") -> tuple[str, list[str]]:
+    """What a certified divergence is, fresh or replayed: `invalid` (it does not decode, fails the
+    trace or witness check, or the case is not true at `at`), `insufficient` (the rule's verdict is
+    unknown only for missing evidence a longer, denser or fuller trace supplies: an absent
+    observation, a sampling gap, an identity gap, or a window behind `at` the trace does not cover
+    when the history is bounded), or `judge` (a decided verdict, or an unknown one that is the
+    rule's: a window no finite trace covers, a reason no trace removes). The reasons come with it.
+    No class erases an obligation."""
+    head = "the case"
+    bad = [f"the trace does not decode: {e}" for e in c.get("trace_decode_errors") or []]
+    bad += [f"the case does not decode: {e}" for e in c.get("case_decode_errors") or []]
+    bad += [f"trace check: {e}" for e in c.get("lint_errors") or []] + [f"witness: {e}" for e in c.get("witness_errors") or []]
+    bad += [f"trace check: a supplied relation at {e}" for e in c.get("relation_errors") or []]
+    bad += [f"case: {e}" for e in c.get("case_check_errors") or []]
+    cv = c.get("case_value")
+    if isinstance(cv, dict) and cv.get("value") != "true":
+        why = ", ".join(cv.get("unknown_reasons") or [])
+        bad.append(f"{head} is {cv.get('value')} at `at`" + (f" ({why})" if why else "")
+                   + (" once the supplied relations Core computes were left to Core: it rested on a contradiction of the scene ("
+                      + "; ".join(c["relations_stripped"])[:300] + ")" if c.get("relations_stripped") else ""))
+    if bad:
+        return "invalid", bad
+    rr = c.get("rule_result") or {}
+    if rr.get("verdict") == "unknown":
+        reasons = rr.get("unknown_reasons") or []
+        if reasons and not _aggregate_unresolved_only(reasons) and all(_trace_defect(r, d.get("kind"), bounded(need)) for r in reasons):
+            return "insufficient", reasons
+    return "judge", []
+
+
+# ---------------------------------------------------------------------------------------------
+# Replay: the obligations of this node's duty, judged again against the current rule
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
+# Continuity: when a new submission continues a recorded obligation's evidence
+# ---------------------------------------------------------------------------------------------
+_ID_KEYS = ("track", "id")
+
+
+def _keyed(xs: list):
+    """A list of scene entities by identity (a user by `track`, a structure or device by `id`, a
+    relation by its pair), or None for a list of anything else."""
+    if not xs or not all(isinstance(x, dict) for x in xs):
+        return None
+    for k in _ID_KEYS:
+        if all(k in x for x in xs):
+            return {json.dumps(x[k]): x for x in xs}
+    if all("a" in x and "b" in x for x in xs):
+        return {f"{x['a']}-{x['b']}": x for x in xs}
+    return None
+
+
+def _kept(old, new, path: str) -> list[str]:
+    """Where `new` does not keep a value `old` states: every key `old` states is in `new` with the
+    same value, recursively; a list of entities keeps each entity by identity; `new` may add keys,
+    entities and scenes."""
+    if isinstance(old, dict):
+        if not isinstance(new, dict):
+            return [f"{path} is no longer an object"]
+        out = []
+        for k, v in old.items():
+            if k not in new:
+                out.append(f"{path}.{k} is left out")
+            else:
+                out += _kept(v, new[k], f"{path}.{k}")
+        return out
+    if isinstance(old, list) and _keyed(old) is not None:
+        o, nw = _keyed(old), _keyed(new) if isinstance(new, list) else None
+        if nw is None:
+            return [f"{path} is no longer a list of the same entities"]
+        out = []
+        for k, v in o.items():
+            out += [f"{path}[{k}] is left out"] if k not in nw else _kept(v, nw[k], f"{path}[{k}]")
+        return out
+    return [] if old == new else [f"{path} changed from {json.dumps(old)[:60]} to {json.dumps(new)[:60]}"]
+
+
+_COMPUTED_CACHE: dict[str, list] = {}
+
+
+def computed_relation_fields(traces: list) -> list[list]:
+    """For each written trace, the supplied relation fields Core computes from its own scene, as
+    Lean's relation check finds them (`[t, a-b, atom]`, the `RELCHECK` lines): the fields a
+    normalized trace leaves to Core. A trace that supplies no relation, or does not decode, has
+    none. Raises `HarnessFailure` when the check does not run."""
+    import tempfile
+    from ..lean import relations
+    out: list = [None] * len(traces)
+    todo = {}
+    for i, tr in enumerate(traces):
+        scenes = tr.get("scenes") if isinstance(tr, dict) else None
+        if not isinstance(scenes, list) or not any(isinstance(sc, dict) and sc.get("relations") for sc in scenes):
+            out[i] = []
+            continue
+        key = _digest(tr)
+        if key in _COMPUTED_CACHE:
+            out[i] = _COMPUTED_CACHE[key]
+        else:
+            todo[i] = key
+    if todo:
+        with tempfile.TemporaryDirectory() as t:
+            rows = []
+            for i in todo:
+                f = Path(t) / f"trace_{i}.json"
+                f.write_text(json.dumps(traces[i], ensure_ascii=False), encoding="utf-8")
+                rows.append(f"({i}, {json.dumps(str(f))})")
+            prog = Path(t) / "computed.lean"
+            prog.write_text("import TrafficSpec\nopen TrafficSpec Lean\n" + relations.lean_defs() + f"""
+def main : IO Unit := do
+  for (k, p) in ([{", ".join(rows)}] : List (Nat × String)) do
+    match Decode.parse Decode.trace (← IO.FS.readFile p) with
+    | .ok τ => RelCheck.run (toString k) τ
+    | .error _ => pure ()
+""", encoding="utf-8")
+            code, text = lean.lean_run(paths.LIBRARY, prog)
+            if code != 0:
+                raise HarnessFailure(f"the relation check did not run: {text[-400:]}")
+        found: dict[int, list] = {i: [] for i in todo}
+        for line in text.splitlines():
+            parts = line.split("\t")
+            if parts[0] == "RELCHECK" and len(parts) >= 5 and parts[1].isdigit() and int(parts[1]) in found:
+                found[int(parts[1])].append([parts[2], parts[3], parts[4].split(":", 1)[0]])
+        for i, key in todo.items():
+            _COMPUTED_CACHE[key] = out[i] = found[i]
+    return out
+
+
+def normalized_trace(trace: dict, fields: list) -> dict:
+    """The evidence a written trace states: its decoder-read keys, without the supplied relation
+    fields Core computes from that scene and pair (`fields`, from `computed_relation_fields`). A
+    relation Core cannot compute there (no geometry for it, or `visible`) stays evidence. Replay and
+    continuity compare traces in this one form."""
+    out = strip_computed_relations(read_part(trace), fields)
+    for sc in out.get("scenes") or []:
+        if isinstance(sc, dict) and sc.get("relations") == []:
+            del sc["relations"]
+    return out
+
+
+def trace_extension_defects(old: dict, new: dict) -> list[str]:
+    """Why a trace does not extend a recorded one: a scene of the recorded trace is missing at its
+    instant, or a field it states changed. Scenes may be added and unobserved fields filled. Both
+    traces are compared normalized: only the relation fields Core computes from that scene and pair
+    are left to Core; every other supplied value, a measured relation Core cannot compute among
+    them, must be kept."""
+    if not isinstance(new, dict):
+        return ["the trace is not an object"]
+    if not isinstance(old, dict):
+        return []
+    fo, fn = computed_relation_fields([old, new])
+    o, n = normalized_trace(old, fo), normalized_trace(new, fn)
+    by_t = {sc.get("t"): sc for sc in n.get("scenes") or [] if isinstance(sc, dict)}
+    out = []
+    for sc in o.get("scenes") or []:
+        if not isinstance(sc, dict):
+            continue
+        if sc.get("t") not in by_t:
+            out.append(f"the scene at t={sc.get('t')} is left out")
+        else:
+            out += _kept(sc, by_t[sc["t"]], f"t={sc.get('t')}")
+    return out
+
+
+def _grounded_conjuncts(case, entities: dict, grounding: dict) -> set[str]:
+    """The facts a case states, each conjunct with its named entities and binders replaced by what
+    they denote in the trace (`track:1`, `region:10`), and its own bound variables numbered by first
+    appearance in it: the same facts compare equal whatever the names, and adding a conjunct
+    changes none of the others."""
+    labels = {b: f"track:{t}" for b, t in (grounding or {}).items()}
+    labels.update({e: f"{(v or {}).get('kind')}:{(v or {}).get('id')}" for e, v in (entities or {}).items()})
+    out = set()
+    for c in _conjuncts(case):
+        n = iter(range(1 << 30))
+        env = {**labels, **{v: f"b{next(n)}" for v in case_names(c)[0] if v not in labels}}
+        out.add(json.dumps(rename_case(c, env, lambda _b: f"b{next(n)}"), sort_keys=True))
+    return out
+
+
+def node_extension_defects(prior: dict, d: dict, c: dict, binders: list[str]) -> list[str]:
+    """Why a divergence that `extends` a recorded case does not continue it: its trace does not
+    extend the recorded trace, its binders are grounded to other tracks, it is read at another
+    instant, or its case leaves out a fact the recorded case states (facts may be added)."""
+    canon = canonical_case(d, c.get("canonical_case"), binders)
+    out = trace_extension_defects(prior.get("trace") or {}, d.get("trace") or {})
+    if canon["grounding"] != (prior.get("grounding") or {}):
+        out.append(f"the binders are grounded to {canon['grounding']}, the recorded case to {prior.get('grounding')}")
+    if d.get("at") != prior.get("at"):
+        out.append(f"it is read at t={d.get('at')}, the recorded case at t={prior.get('at')}")
+    lost = _grounded_conjuncts(prior.get("case"), prior.get("entities") or {}, prior.get("grounding") or {}) \
+        - _grounded_conjuncts(canon["case"], canon["entities"], canon["grounding"])
+    if lost:
+        out.append(f"its case leaves out {len(lost)} fact(s) the recorded case states")
+    return out
+
+
+def concept_extension_defects(old: dict, d: dict, rec) -> list[str]:
+    """Why a concept divergence that `extends` a recorded challenge does not continue it: its trace
+    does not extend the recorded trace; a recorded formal (a track, a literal, a nat, a parameter)
+    keeps no value under a formal of the same sort — the same name, or one formal the successor
+    renamed it to, holding the same value; or its instant, its contract words or its claimed
+    verdict or interval changed. Only a formal the recorded challenge did not have is new."""
+    out = trace_extension_defects(old.get("trace") or {}, d.get("trace") or {})
+    sorts = {a["name"]: a.get("sort") for a in rec.args()} | {p["name"]: "param" for p in rec.params()}
+    oi, ni = old.get("instance") or {}, d.get("instance") or {}
+    def values(inst: dict, g: dict) -> dict[str, tuple[str, str]]:
+        v = {f: ("track", json.dumps(t)) for f, t in (g or {}).items()}
+        v |= {f: ("literal", json.dumps(x)) for f, x in (inst.get("literals") or {}).items()}
+        v |= {f: ("nat", json.dumps(x)) for f, x in (inst.get("nats") or {}).items()}
+        v |= {f: ("param", json.dumps(x)) for f, x in (inst.get("params") or {}).items()}
+        return v
+    was, now = values(oi, old.get("grounding") or {}), values(ni, d.get("grounding") or {})
+    taken = set()
+    for f, (sort, val) in was.items():
+        if f in now and sorts.get(f) == sort:
+            if now[f] != (sort, val):
+                out.append(f"formal `{f}` holds {now[f][1]}, the recorded challenge {val}")
+            taken.add(f)
+            continue
+        same = [g for g, sv in now.items() if sv == (sort, val) and g not in was and g not in taken]
+        if len(same) != 1:
+            out.append(f"recorded formal `{f}` ({sort} {val}) corresponds to " + ("no formal" if not same else f"several formals {same}")
+                       + " of the same sort holding its value")
+        else:
+            taken.add(same[0])
+    if d.get("at") != old.get("at"):
+        out.append(f"it is read at t={d.get('at')}, the recorded challenge at t={old.get('at')}")
+    if _ws(d.get("contract_words")) != _ws(old.get("contract_words")):
+        out.append("its contract words are not the recorded ones")
+    if d.get("contract_verdict") != old.get("contract_verdict") or d.get("contract_value") != old.get("contract_value"):
+        out.append("its claimed verdict or interval is not the recorded one")
+    return out
+
+
+#: The fields of a recorded case: what a replay certifies again.
+CASE_FACTS =("kind", "situation", "law_words", "lawful_verdict", "grounding", "trace", "case", "entities", "names", "at", "case_rendered")
+
+
+@dataclass
+class Replayed:
+    """What a replay found: `reasons` and `keys` of the obligations still decided otherwise (open),
+    `satisfied` keys (the rule now gives the law's verdict), `notes`, and `evidence`: the obligations
+    whose evidence the reviewer must extend before they can be judged (each with `case_id`, the
+    rendered case, its trace, the reasons and what to add)."""
+    reasons: list[str] = field(default_factory=list)
+    keys: list[str] = field(default_factory=list)
+    satisfied: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
+    evidence: list[dict] = field(default_factory=list)
+
+
+def _to_node(r: dict, binders: list[str]) -> tuple[dict | None, str]:
+    """A recorded case in the node's own names: `userK` is the node's K-th binder. A case recorded
+    before names were canonical grounds the binders under the node's own names, and is taken as it
+    is. None, with why, when the case names road users the node's binders do not correspond to."""
+    g = r.get("grounding") or {}
+    if g and set(g) == set(binders):
+        return {"kind": r.get("kind"), "situation": r.get("situation"), "law_words": r.get("law_words"), "lawful_verdict": r.get("lawful_verdict"),
+                "grounding": dict(g), "trace": r.get("trace"), "case": r.get("case"), "entities": r.get("entities") or {}, "at": r.get("at")}, ""
+    users = sorted((k for k in (r.get("grounding") or {}) if re.fullmatch(r"user\d+", k)), key=lambda k: int(k[4:]))
+    if len(users) != len(binders) or len(users) != len(r.get("grounding") or {}):
+        return None, (f"the case grounds {len(r.get('grounding') or {})} road user(s), the node has the binders {binders}: "
+                      "supply the grounding of each binder")
+    names = {u: b for u, b in zip(users, binders)}
+    case, entities = r.get("case"), r.get("entities") or {}
+    free, declared = case_names(case)
+    used = set(free) | set(declared) | set(entities) | set(binders)
+    def fresh(base: str) -> str:                       # a name none of the case's or the node's names takes
+        k = 1
+        while f"{base}_{k}" in used:
+            k += 1
+        used.add(f"{base}_{k}")
+        return f"{base}_{k}"
+    env = dict(names)
+    for v in list(entities) + [v for v in free if v not in names and v not in entities]:
+        if v in binders:                               # an entity or other free name the node's binders take
+            env[v] = fresh(v)
+    return {"kind": r.get("kind"), "situation": r.get("situation"), "law_words": r.get("law_words"), "lawful_verdict": r.get("lawful_verdict"),
+            "grounding": {names[u]: t for u, t in r["grounding"].items()}, "trace": r.get("trace"),
+            "case": rename_case(case, env, lambda b: fresh(b) if b in binders else b),
+            "entities": {env.get(e, e): v for e, v in entities.items()}, "at": r.get("at")}, ""
+
+
+def _words_span(n: Node, law: corpus.Law, item: dict, words_at: list | None) -> dict:
+    """A recorded word-level item with its span renamed to the node's span holding the same words."""
+    if not words_at:
+        return item
+    offs = span_offsets(n.get("segmentation", []), law.text)
+    sid = next((k for k, (a, z) in offs.items() if a <= words_at[0] and words_at[1] <= z), None)
+    return {**item, "span": sid} if sid else item
+
+
+def replay_obligations(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, reading: Reading, need: "_Need",
+                       out_dir: Path, pending: list | None = None, questions: list | None = None) -> Replayed:
+    """Each obligation of the node's duty (an upheld case, open or satisfied; an open structural
+    finding), and each candidate correspondence from an earlier duty whose occurrence overlaps it,
+    is judged again under the current Core, rule and reading, by the admission standard fresh
+    evidence meets (`admission`):
+    - a case that is `invalid` (it does not decode, fails a check, or is not true) is `invalidated`:
+      it leaves the obligations, and a note starting "obligation invalidated" goes to the operator;
+    - a case whose evidence is `insufficient` (a window it does not cover when the history is
+      bounded, a sampling gap, an absent observation, or road users the node's binders do not
+      correspond to) stays an obligation, and its owner is the reviewer: it is listed in `evidence`;
+    - a case still upheld stays `open` (the node is returned); one on which the rule gives the
+      recorded law's verdict stays an obligation, `satisfied`; any other judgment is
+      `re-adjudicated` and leaves;
+    - an open structural finding is re-adjudicated by stage B against the current record: still
+      upheld, it stays open; otherwise it leaves.
+    A candidate correspondence is kept, under this duty and with its lineage, only when it is
+    upheld or satisfied here; otherwise a note says so. A row is appended only when the state or a
+    judge's digest changes, so a replay of an unchanged rule adds none. With `pending`, the rows
+    are collected there, and recorded only when the review reaches its outcome. A case that stage B
+    now rules a parameter question keeps its state, and its question goes to `questions`. Raises
+    `Deferred` when a judge's answer stays invalid or the certificate program fails."""
+    out = Replayed()
+    record = pending.append if pending is not None else (lambda row: append_ruling(run, row))
     binders = [b["name"] for b in n.get("binders", [])]
-    notes, divs, by_k = [], {}, {}
-    for r in rows:
-        g = r.get("grounding") if isinstance(r.get("grounding"), dict) else {}
-        if set(g) != set(binders) and len(g) == 1 and len(binders) == 1:
-            g = {binders[0]: next(iter(g.values()))}
-        if set(g) != set(binders):
-            notes.append(f"upheld case of iteration {r.get('iteration')} not replayed on `{n.id}`: its grounding names {sorted(g)}, "
-                         f"the node's binders are {binders}")
+    divs, by_k = {}, {}
+    for r, own in obligations_of(run, n, ctx.law):
+        d, why = _to_node(r, binders)
+        if d is None:
+            if own:
+                out.evidence.append({"case_id": r.get("case_id"), "case_rendered": r.get("case_rendered"), "trace": r.get("trace"),
+                                     "at": r.get("at"), "grounding": r.get("grounding"), "reasons": [why], "remedy": why})
+                out.notes.append(f"obligation of iteration {r.get('iteration')} on `{n.id}` needs its evidence extended: {why}")
+            else:
+                out.notes.append(f"case {str(r.get('case_id'))[:12]} of the earlier duty overlapping `{n.id}` is not carried over: {why}")
             continue
         k = len(divs) + 1
-        divs[k] = {"kind": r.get("kind"), "situation": r.get("situation"), "law_words": r.get("law_words"),
-                   "lawful_verdict": r.get("lawful_verdict"), "grounding": g, "trace": r.get("trace"),
-                   "case": r.get("case"), "entities": r.get("entities") or {}, "at": r.get("at")}
-        by_k[k] = r
-    if not divs:
-        return [], [], notes
-    try:
-        certs = certify(run, n, divs, reading, out_dir / "replay")
-    except HarnessFailure as e:
-        raise Deferred("certificate", f"replay: {e}")
-    reasons, keys = [], []
-    record = pending.append if pending is not None else (lambda row: append_ruling(run, row))
-    case_fields = ("schema", "key", "subject", "case_id", "kind", "situation", "law_words", "lawful_verdict",
-                   "grounding", "trace", "case", "entities", "at", "case_rendered", "item", "outcome")
+        divs[k], by_k[k] = d, (r, own)
+    certs = {}
+    if divs:
+        try:
+            certs = certify(run, n, divs, reading, out_dir / "replay", saved=True)
+        except HarnessFailure as e:
+            raise Deferred("certificate", f"replay: {e}")
+    carry = lambda r: {"lineage_from": f"{r.get('case_id') or r.get('finding_id')}|{r.get('duty')}"}
+    # the next state of the node's own obligation keeps the identity it was recorded under (its case
+    # id, however the case's names hash today, and the earlier duty it was carried from), so it
+    # supersedes that obligation; a case carried to this duty from an overlapping one starts its own
+    same = lambda r, own: ({"case_id": r.get("case_id"), **({"lineage_from": r["lineage_from"]} if r.get("lineage_from") else {})}
+                           if own else carry(r))
+    facts = lambda r: {k: r.get(k) for k in CASE_FACTS}       # the recorded case, kept under every later state
     for k, d in divs.items():
-        r, c = by_k[k], certs[k]
-        cv = c.get("case_value") or {}
-        unusable = ([f"the trace does not decode: {e}" for e in c.get("trace_decode_errors") or []]
-                    + [f"the case does not decode: {e}" for e in c.get("case_decode_errors") or []]
-                    + [f"trace check: {e}" for e in c.get("lint_errors") or []] + [f"witness: {e}" for e in c.get("witness_errors") or []]
-                    + [f"case: {e}" for e in c.get("case_check_errors") or []]
-                    + ([f"the case is {cv.get('value')} on its trace at `at`"] if cv and cv.get("value") != "true" else []))
-        if unusable:
-            row = {**{x: r.get(x) for x in case_fields}, "iteration": run.iteration, "route": "invalidated", "ruling": "advisory",
-                   "obligation": "invalidated", "rule_result": c.get("rule_result"), "reason": "; ".join(unusable)[:600],
-                   "stage_a": r.get("stage_a"), "stageA_digest": r.get("stageA_digest"), "stage_b": r.get("stage_b"),
-                   "stageB_digest": r.get("stageB_digest")}
-            record(row)
-            notes.append(f"obligation invalidated: the upheld case of iteration {r.get('iteration')} on `{n.id}` can no longer be "
-                         f"evaluated — {row['reason'][:240]}")
+        (r, own), c = by_k[k], certs.get(k) or {}
+        cls, why = admission(d, c, need) if c else ("invalid", ["the certificate printed nothing for the case"])
+        if cls == "invalid":
+            if own:
+                record({**r, "iteration": run.iteration, "route": "invalidated", "ruling": "advisory", "obligation": "invalidated",
+                        "rule_result": c.get("rule_result"), "reason": "; ".join(why)[:600]})
+                out.notes.append(f"obligation invalidated: the upheld case of iteration {r.get('iteration')} on `{n.id}` can no longer be "
+                                 f"evaluated — {'; '.join(why)[:240]}")
             continue
-        j = judge_divergence(run, n, ctx, onto, d, c, out_dir / "replay", f"replay_{k}", previous=r)
+        if cls == "insufficient":
+            remedy = "; ".join(sorted({_trace_remedy(x, "", history_text(need)) for x in why}))
+            if own:
+                out.evidence.append({"case_id": r.get("case_id"), "case_rendered": r.get("case_rendered"), "trace": r.get("trace"),
+                                     "at": r.get("at"), "grounding": r.get("grounding"), "reasons": why, "remedy": remedy})
+                out.notes.append(f"obligation of iteration {r.get('iteration')} on `{n.id}` needs its evidence extended: {remedy[:240]}")
+            continue
+        j = judge_divergence(run, n, ctx, onto, d, c, out_dir / "replay", f"replay_{k}", previous=r if own else None,
+                             lineage=r.get("lineage") or r.get("case_id"))
         law_then = (r.get("stage_a") or {}).get("verdict")
         law_now = (j.row.get("stage_a") or {}).get("verdict")
         same_law = law_now is not None and law_then is not None and _equivalent(law_now, law_then) \
             and j.route not in ("stage_a_undetermined", "aggregate_unresolved")
+        key = r.get("outcome") or j.key
         if same_law and j.route == "rule_agrees":
-            row = {**{x: r.get(x) for x in case_fields}, "iteration": run.iteration, "route": "upheld", "ruling": "upheld",
-                   "obligation": "satisfied", "rule_result": c.get("rule_result"), "reason": r.get("reason"),
-                   "stage_a": j.row.get("stage_a"), "stageA_digest": j.row.get("stageA_digest"), "stage_b": r.get("stage_b"),
-                   "stageB_digest": r.get("stageB_digest")}
-            if r.get("obligation") != "satisfied" or row["stageA_digest"] != r.get("stageA_digest"):
+            row = {**facts(r), **j.row, "route": "upheld", "ruling": "upheld", "obligation": "satisfied", "reason": r.get("reason"),
+                   "stage_b": r.get("stage_b"), "stageB_digest": r.get("stageB_digest"), "outcome": key, **same(r, own)}
+            if not own or r.get("obligation") != "satisfied" or row["stageA_digest"] != r.get("stageA_digest"):
                 record(row)
-            notes.append(f"upheld case of iteration {r.get('iteration')} is satisfied by this rule of `{n.id}`; it stays an obligation")
-        elif j.route == "upheld":                         # still decided otherwise: by the same law's verdict, or a newly judged one
-            row = {**j.row, "case_id": r.get("case_id"), "obligation": "open"}
-            if (r.get("obligation") or "open") != "open" or row.get("stageA_digest") != r.get("stageA_digest") \
+            out.satisfied.append(key)
+            out.notes.append(f"upheld case of iteration {r.get('iteration')} is satisfied by this rule of `{n.id}`; it stays an obligation")
+        elif j.route == "upheld":
+            row = {**facts(r), **j.row, "obligation": "open", "outcome": key, **same(r, own)}
+            if not own or (r.get("obligation") or "open") != "open" or row.get("stageA_digest") != r.get("stageA_digest") \
                     or row.get("stageB_digest") != r.get("stageB_digest"):
                 record(row)
-            reasons.append(f"upheld at iteration {r.get('iteration')} and still decided otherwise by this rule: {j.line}")
-            keys.append(r.get("outcome") or j.key)
-        elif j.route == "parameter_question":            # the operator's question: the case keeps its state until it is answered
+            out.reasons.append(f"upheld at iteration {r.get('iteration')} and still decided otherwise by this rule: {j.line}")
+            out.keys.append(key)
+        elif j.route == "parameter_question":
             if questions is not None and j.question:
                 questions.append(j.question)
-            notes.append(f"upheld case of iteration {r.get('iteration')} on `{n.id}` now turns on an unreviewed parameter: "
-                         f"it stays an obligation, and the question is put to the operator — {j.line[:240]}")
+            out.notes.append(f"upheld case of iteration {r.get('iteration')} on `{n.id}` now turns on an unreviewed parameter: "
+                             f"it stays an obligation, and the question is put to the operator — {j.line[:240]}")
+        elif own:
+            record({**facts(r), **j.row, "obligation": "re-adjudicated", **same(r, own)})
+            out.notes.append(f"upheld case of iteration {r.get('iteration')} re-adjudicated on `{n.id}` ({j.route}): it is no longer an "
+                             f"obligation — {j.line[:240]}")
         else:
-            record({**j.row, "case_id": r.get("case_id"), "obligation": "re-adjudicated"})
-            notes.append(f"upheld case of iteration {r.get('iteration')} re-adjudicated on `{n.id}` ({j.route}): it is no longer an "
-                         f"obligation — {j.line[:240]}")
-    return reasons, keys, notes
+            out.notes.append(f"case {str(r.get('case_id'))[:12]} of the earlier duty overlapping `{n.id}` is not upheld for this duty "
+                             f"({j.route}); it is not carried over — {j.line[:200]}")
+    for i, (r, own) in enumerate(obligations_of(run, n, ctx.law, structural=True), 1):
+        item = _words_span(n, ctx.law, r.get("item_data") or {}, r.get("words_at"))
+        bad = word_level_defects(n, ctx.law, item)
+        if bad:
+            if own:
+                out.reasons.append(f"an open structural finding of iteration {r.get('iteration')} cannot be re-adjudicated on `{n.id}`: "
+                                   + "; ".join(bad) + " — the record must carry those words")
+                out.keys.append(r.get("outcome") or f"finding:{str(r.get('finding_id'))[:16]}")
+            continue
+        j = judge_word_level(run, n, ctx, item, out_dir / "replay", f"replay_word_level_{i}", previous=r if own else None)
+        key = r.get("outcome") or j.key
+        if j.route == "upheld":
+            row = {**j.row, "finding_id": r.get("finding_id"), "lineage": r.get("lineage") or r.get("finding_id"), "words_at": r.get("words_at"),
+                   "obligation": "open", "outcome": key, **({} if own else carry(r))}
+            if not own or row.get("stageB_digest") != r.get("stageB_digest"):
+                record(row)
+            out.reasons.append(f"a structural finding of iteration {r.get('iteration')} still stands against this record: {j.line}")
+            out.keys.append(key)
+        elif own:
+            record({**j.row, "finding_id": r.get("finding_id"), "words_at": r.get("words_at"), "obligation": "re-adjudicated"})
+            out.notes.append(f"structural finding of iteration {r.get('iteration')} re-adjudicated on `{n.id}`: {j.line[:240]}")
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
 # The review of a node
 # ---------------------------------------------------------------------------------------------
-def rule_aggregate_ids(rule_json: dict | None) -> list[str]:
+def rule_aggregate_ids(rule_json: dict | None, concepts: dict[str, dict] | None = None, nodes: dict[str, dict] | None = None) -> list[str]:
+    """The admitted aggregates a rule reads: in its own formulas, in the bodies of the concepts it
+    calls (as far as they call others), and in the rules it composes (their claims)."""
     out: list[str] = []
+    by_lean = {cid.replace(".", "_"): rec for cid, rec in (concepts or {}).items()}
+    seen: set[str] = set()
+
+    def add(a: str) -> None:
+        if a not in out:
+            out.append(a)
 
     def walk(x) -> None:
         if isinstance(x, dict):
             if x.get("atom") == "ru_aggregate" and isinstance(x.get("args"), list) and len(x["args"]) == 2 and isinstance(x["args"][1], dict):
                 lit = x["args"][1].get("lit")
-                if isinstance(lit, str) and lit not in out:
-                    out.append(lit)
+                if isinstance(lit, str):
+                    add(lit)
+            name = x.get("derived") or x.get("quantity")
+            if isinstance(name, str) and name in by_lean and name not in seen:
+                seen.add(name); walk(by_lean[name].get("body_json"))
+            rid = x.get("rule")
+            if isinstance(rid, str) and rid in (nodes or {}) and rid not in seen:
+                seen.add(rid)
+                for c in Node(nodes[rid]).claimed_atoms():
+                    if c.startswith("ru.aggregate="):
+                        add(c.split("=", 1)[1])
             for v in x.values():
                 walk(v)
         elif isinstance(x, list):
@@ -1483,23 +2211,44 @@ def build_context(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, r
     params = [p for p in reading.data.get("params", []) if p["name"] in set(n.params())]
     certs = aggregate_phase.certificate_digests(run)
     aggs = []
-    for aid in rule_aggregate_ids(rule_json):
+    for aid in rule_aggregate_ids(rule_json, run.all_concepts(), run.all_nodes()):
         a = reading.aggregate(aid)
         if a is not None:
             aggs.append({**a, "certificate_digest": certs.get(aid)})
+    duty = duty_of(n, law)
     return Context(law, seg, definitions_mod.applicable(run, law.id), record, rendering, glosses, params, aggs,
-                   definitions_mod.precedence_hash(run))
+                   definitions_mod.precedence_hash(run), duty=duty, duty_block=duty_block(n, law),
+                   precedents=precedent_rows(run, f"law:{law.id}", duty))
+
+
+def evidence_block(items: list[dict]) -> str:
+    """The obligations whose evidence the reviewer must extend before they can be judged."""
+    if not items:
+        return ""
+    out = ["## Cases to extend", "",
+           "Each case below was upheld against an earlier rule of this duty and stays an obligation, but its evidence no longer "
+           "suffices to judge this rule. For each, submit a divergence with `\"extends\": \"<case id>\"` whose trace extends this "
+           "one (earlier scenes, denser scenes, the missing observations) and whose case states the same facts, grounding the "
+           "node's binders. The law's verdict is judged again on what you submit; nothing is assumed.", ""]
+    for x in items:
+        out += [f"### Case `{x['case_id']}`", "", _ws(x.get("case_rendered")), "", f"What it lacks: {x.get('remedy')}", "",
+                "Its trace: ```json " + json.dumps(x.get("trace"), ensure_ascii=False)[:6000] + "```", ""]
+    return "\n".join(out) + "\n"
 
 
 def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, reading: Reading, rule_json: dict | None,
                      coder_narrowings: list[dict], out_dir: Path) -> ReviewOutcome:
-    """The review of a coded node. The judgment context is built first; the node's upheld cases are
-    replayed under it (a case still upheld returns the node without a reviewer; a judge that stays
-    invalid defers the law); then the reviewer is asked, its divergences certified, and the
-    admitted ones judged. `returned` when an item is upheld; else `deferred` (stage `reviewer`) when
-    a challenge could not be evaluated; else `proceed_with_question` or `accepted`. A case whose
-    execution refutes the reviewer is an advisory. Raises `SessionUnavailable` when a session could
-    not be launched."""
+    """The review of a coded node. The judgment context is built first (with the duty the node
+    formalizes and the rulings on it as they stand); the duty's obligations are replayed under it
+    (one still upheld returns the node without a reviewer; a judge that stays invalid defers the
+    law); then the reviewer is asked, given the obligations whose evidence it must extend, its
+    divergences certified, and the admitted ones judged. An upheld item returns the rule whatever
+    else happened (a later judge's failure keeps its own pending state). Otherwise `deferred`
+    (stage `reviewer`) when a challenge could not be evaluated or a pass gave no usable answer,
+    (stage `evidence`) when an obligation's evidence was not extended; else
+    `proceed_with_question` or `accepted`. Operator questions are carried on every outcome. A case
+    whose execution refutes the reviewer is an advisory. Raises `SessionUnavailable` when a session
+    could not be launched."""
     if not enabled(run):
         if run.opts.dry_run:
             return ReviewOutcome("accepted", advisories=["dry run"])
@@ -1512,23 +2261,25 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "rendered_rule.md").write_text(ctx.rendering, encoding="utf-8")
+    rj = rule_json or {}
+    need = history_of([b.get("cls") for b in rj.get("binders", [])] + [rj.get("applicability"), rj.get("obligation")],
+                      run.all_concepts(), reading)
+    history = history_text(need)
+    pending, replay_questions = [], []
     try:
-        pending, replay_questions = [], []
-        replayed, replay_keys, replay_notes = replay_upheld(run, n, ctx, onto, reading, out_dir, pending, replay_questions)
+        rep = replay_obligations(run, n, ctx, onto, reading, need, out_dir, pending, replay_questions)
     except Deferred as e:
-        return ReviewOutcome("deferred", reasons=[f"replay of the upheld cases: {e}"], defer_stage=e.stage)
+        return ReviewOutcome("deferred", reasons=[f"replay of the obligations: {e}"], defer_stage=e.stage, questions=replay_questions)
+
     def commit() -> None:                                 # the replay's states, recorded only with a final outcome
         for row in pending:
             append_ruling(run, row)
-    if replayed:
+    if rep.reasons:
         commit()
-        _write_outcome(out_dir, {"replayed": replayed, "notes": replay_notes})
-        return ReviewOutcome("returned", reasons=replayed, advisories=replay_notes + [f"question: {q}" for q in replay_questions],
-                             keys=sorted(set(replay_keys)))
+        _write_outcome(out_dir, {"replayed": rep.reasons, "notes": rep.notes})
+        return ReviewOutcome("returned", reasons=rep.reasons, advisories=rep.notes, keys=sorted(set(rep.keys)),
+                             questions=replay_questions, satisfied=sorted(set(rep.satisfied)))
     binders = [b["name"] for b in n.get("binders", [])]
-    rj = rule_json or {}
-    history = history_text(history_of([b.get("cls") for b in rj.get("binders", [])] + [rj.get("applicability"), rj.get("obligation")],
-                                      run.all_concepts(), reading))
     blocks = {
         "law_and_segmentation": f"### Law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans:\n{ctx.seg}\n",
         "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n",
@@ -1539,6 +2290,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         "trace_format": trace_format_block(),
         "case_language": surface.case_language(),
         "case_vocabulary": surface.case_vocabulary(onto),
+        "obligations": evidence_block(rep.evidence),
         "max_divergences": str(run.opts.max_divergences),
         "review_checks": str(run.opts.review_checks),
         "review_submissions": str(run.opts.review_submissions),
@@ -1548,29 +2300,33 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     cap = run.opts.max_divergences
     n_passes = max(1, int(run.opts.review_passes or 1))
     passes = [BehaviourTools(run, n, law, reading, binders, windows, history, out_dir / f"pass{k}",
-                             run.opts.review_checks, run.opts.review_submissions)
+                             run.opts.review_checks, run.opts.review_submissions, need)
               for k in range(1, n_passes + 1)]
     (out_dir / "review_behaviour_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])
     try:
         run_passes(run, n, prompt, out_dir, passes)
-        answer, certs, pass_notes, pass_summary, errs = join_passes(passes, law, binders, cap)
+        answer, certs, pass_notes, pass_summary, errs, unusable_passes = join_passes(passes, law, binders, cap)
     except HarnessFailure as e:
-        return ReviewOutcome("deferred", reasons=[f"the certificate harness: {e}"], defer_stage="certificate")
+        return ReviewOutcome("deferred", reasons=[f"the certificate harness: {e}"], defer_stage="certificate", questions=replay_questions)
     attempts = [a for t in passes for a in t.attempts]
     if answer is None:
         return ReviewOutcome("deferred", reasons=["behaviour review: no pass submitted a usable answer — " + "; ".join(pass_notes)[:600]],
-                             defer_stage="reviewer")
+                             defer_stage="reviewer", questions=replay_questions)
     divs = answer.get("divergences") or []
-    advisories = list(replay_notes) + [f"behaviour review, {x}" for x in pass_notes] + [str(x) for x in answer.get("advisories", [])]
+    advisories = list(rep.notes) + [f"behaviour review, {x}" for x in pass_notes] + [str(x) for x in answer.get("advisories", [])]
     for g in gap_candidate_lines(answer.get("gap_candidates", [])):
         advisories.append(g)
     # a challenge the harness could not evaluate (its schema, its certificate, no rule verdict)
     # leaves the review undecided: without an upheld item it defers the law, never accepts it
     upheld, keys, questions, judged_rows, unusable, status_of = [], [], list(replay_questions), [], [], {}
+    unusable += [f"pass {k}: {why}" for k, why in unusable_passes]
+    extended: dict[str, dict] = {x["case_id"]: x for x in rep.evidence}
+    by_case = {r.get("case_id"): r for r, _own in obligations_of(run, n, law)}
     if answer.get("verdict") == "return" and not divs:
         unusable.append("the reviewer returned the rule with no divergence")
+    deferred: Deferred | None = None
     try:
         for k, d in enumerate(divs, 1):
             status_of[k] = "not evaluated, unverified"
@@ -1580,19 +2336,38 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
                                   f"(law: \"{_ws(d.get('law_words'))[:160]}\")")
                 continue
             c = certs.get(k)
-            bad = schema or (cert_unusable(k, d, c, windows, history) if c is not None else [f"divergence {k}: not certified"])
+            bad = schema or (cert_unusable(k, d, c, windows, history, need) if c is not None else [f"divergence {k}: not certified"])
             if not bad and c.get("rule_result") is None:
                 bad = [f"divergence {k}: the certificate printed no verdict of the rule"]
             if bad:
                 unusable.append("; ".join(bad)[:600])
                 continue
+            prior = by_case.get(d.get("extends")) if isinstance(d.get("extends"), str) and d.get("extends") in extended else None
+            if prior is not None:                         # an extension counts only where it continues the recorded evidence
+                broken = node_extension_defects(prior, d, c, binders)
+                if broken:
+                    unusable.append(f"divergence {k} extends case {d['extends'][:12]} but does not continue it: " + "; ".join(broken)[:500])
+                    continue
             refuted = cert_refutations(k, d, c)
-            if refuted:
+            if refuted and prior is None:
                 status_of[k] = "refuted by execution"
                 advisories.append(f"divergence {k}: refuted by execution — " + "; ".join(refuted)[:400])
                 continue
-            j = judge_divergence(run, n, ctx, onto, d, c, out_dir, f"divergence_{k}")
+            j = judge_divergence(run, n, ctx, onto, d, c, out_dir, f"divergence_{k}",
+                                 lineage=(prior.get("lineage") or prior.get("case_id")) if prior else "")
             status_of[k] = f"certified, judged {j.route}"
+            if prior is not None:                         # an obligation's evidence, extended: its lineage goes on
+                extended.pop(d.get("extends"), None)
+                law_then = (prior.get("stage_a") or {}).get("verdict")
+                same = law_then is not None and _equivalent((j.row.get("stage_a") or {}).get("verdict") or "", law_then)
+                state = "open" if j.route == "upheld" else "satisfied" if same and j.route == "rule_agrees" else "re-adjudicated"
+                j.row.update({"predecessor": prior.get("case_id"), "obligation": state, "outcome": prior.get("outcome") or j.key,
+                              **({"route": "upheld", "ruling": "upheld"} if state == "satisfied" else {})})
+                j.key = j.row["outcome"]
+                pending.append({**prior, "iteration": run.iteration, "obligation": "extended", "route": "extended",
+                                "reason": f"its evidence was extended as case {j.row['case_id'][:12]}"})
+                if state == "satisfied":
+                    rep.satisfied.append(j.key)
             judged_rows.append(j)
             if j.route == "upheld":
                 upheld.append(j.line); keys.append(j.key)
@@ -1601,6 +2376,10 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
             else:
                 advisories.append(j.line)
         for i, item in enumerate(_broader_contract_items(answer.get("gap_candidates", [])), 1):
+            bad = word_level_defects(n, law, item)
+            if bad:                                       # an item that is not the law's words never reaches stage B
+                advisories.append("structural evidence not judged: " + "; ".join(bad))
+                continue
             j = judge_word_level(run, n, ctx, item, out_dir, f"word_level_{i}")
             judged_rows.append(j)
             if j.route == "upheld":
@@ -1608,25 +2387,35 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
             else:
                 advisories.append(j.line)
     except Deferred as e:
-        for j in judged_rows:                                # what was decided before the failure stands
-            append_ruling(run, j.row)
-        return ReviewOutcome("deferred", reasons=[str(e.why)], advisories=advisories, defer_stage=e.stage)
-    for j in judged_rows:
+        deferred = e
+    for j in judged_rows:                                 # what was decided stands, whatever failed after it
         append_ruling(run, j.row)
     notes = param_notes(n, reading, answer, status_of, run.iteration)
+    missing = [f"case {cid[:12]}: its evidence was not extended ({_ws(x.get('remedy'))[:200]})" for cid, x in extended.items()]
     _write_outcome(out_dir, {"reviewer_verdict": answer.get("verdict"), "upheld": upheld, "questions": questions,
-                             "unusable": unusable, "advisories": advisories, "schema_defects": errs, "attempts": attempts,
-                             "param_notes": notes, "passes": pass_summary})
-    if not unusable or upheld:
-        commit()
+                             "unusable": unusable, "evidence_missing": missing, "advisories": advisories, "schema_defects": errs,
+                             "attempts": attempts, "param_notes": notes, "passes": pass_summary,
+                             "deferred": deferred.why if deferred else None})
     if upheld:
-        return ReviewOutcome("returned", reasons=upheld, advisories=advisories, keys=sorted(set(keys)), param_notes=notes)
+        commit()
+        return ReviewOutcome("returned", reasons=upheld, advisories=advisories + ([f"pending: {deferred.why}"] if deferred else []),
+                             keys=sorted(set(keys)), questions=questions, param_notes=notes, satisfied=sorted(set(rep.satisfied)))
+    if deferred is not None:
+        return ReviewOutcome("deferred", reasons=[str(deferred.why)], advisories=advisories, defer_stage=deferred.stage,
+                             questions=questions, param_notes=notes)
+    if not unusable:
+        commit()
     if unusable:
         return ReviewOutcome("deferred", reasons=[f"behaviour review: {len(unusable)} challenge(s) could not be evaluated: " + " | ".join(unusable)[:900]],
-                             advisories=advisories, defer_stage="reviewer", param_notes=notes)
+                             advisories=advisories, defer_stage="reviewer", questions=questions, param_notes=notes)
+    if missing:
+        return ReviewOutcome("deferred", reasons=["obligations whose evidence the reviewer did not extend: " + " | ".join(missing)[:900]],
+                             advisories=advisories, defer_stage="evidence", questions=questions, param_notes=notes,
+                             satisfied=sorted(set(rep.satisfied)))
     if questions:
-        return ReviewOutcome("proceed_with_question", advisories=advisories, questions=questions, param_notes=notes)
-    return ReviewOutcome("accepted", advisories=advisories, param_notes=notes)
+        return ReviewOutcome("proceed_with_question", advisories=advisories, questions=questions, param_notes=notes,
+                             satisfied=sorted(set(rep.satisfied)))
+    return ReviewOutcome("accepted", advisories=advisories, param_notes=notes, satisfied=sorted(set(rep.satisfied)))
 
 
 def run_passes(run: Run, n: Node, prompt: str, out_dir: Path, passes: list) -> None:
@@ -1655,34 +2444,50 @@ def run_passes(run: Run, n: Node, prompt: str, out_dir: Path, passes: list) -> N
         raise errors[0]
 
 
+def _answer_of(t) -> dict | None:
+    """A pass's final answer, an answer sent as a JSON string parsed."""
+    a = t.answer
+    if isinstance(a, str):
+        try:
+            a = json.loads(a)
+        except json.JSONDecodeError:
+            return None
+    return a if isinstance(a, dict) else None
+
+
 def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | None) -> tuple:
     """The review's answer, joined from its passes: `(answer, certificates by number, notes on the
-    passes, a summary per pass, the schema defects of the usable answers)`. A pass whose final
-    answer is missing, is not a review, returns the rule with no divergence or exceeds the cap is
-    dropped, with a note; with no usable pass the answer is None. The usable passes' divergences
-    are joined in pass order. Only a divergence that can be judged (certified, its case true, the
-    rule's verdict decided) is ever merged, and only with one from another pass whose canonical
-    case, entities, `at`, grounding and rule verdict are the same: it is judged once. Every other
-    divergence is kept as submitted, so a challenge that cannot be evaluated is never lost to a
-    copy. Advisories and gap candidates are joined, exact repeats dropped; the verdict is `return`
-    when any usable pass returned."""
-    usable, notes, summary, errs = [], [], [], []
+    passes, a summary per pass, the schema defects of the usable answers, the passes whose answer
+    is unusable with why)`. A pass that submitted nothing, or an answer that is not a review, is
+    noted; one that returned the rule with no divergence, or whose final answer still exceeds the
+    cap, makes the review unusable, every item kept as evidence: an answer is never truncated. The
+    usable passes' divergences are joined in pass order. Only a divergence that can be judged
+    (certified, its case true, the rule's verdict decided) is ever merged, and only with one from
+    another pass whose canonical case, entities, `at`, grounding, rule verdict and claimed lawful
+    verdict are the same: it is judged once. Every other divergence is kept as submitted.
+    Advisories and gap candidates are joined, exact repeats dropped; the verdict is `return` when
+    any usable pass returned. With no usable pass the answer is None."""
+    usable, notes, summary, errs, unusable = [], [], [], [], []
     for k, t in enumerate(passes, 1):
-        a = t.answer
+        a = _answer_of(t)
         divs = a.get("divergences") if isinstance(a, dict) else None
-        why = ("submitted no answer" if a is None else
-               "submitted an answer that is not a review" if a.get("verdict") not in VERDICTS or not isinstance(divs, list) else
-               "returned the rule with no divergence" if a.get("verdict") == "return" and not divs else
-               divergence_limit_defect(divs, cap))
-        summary.append({"pass": k, "submitted": a is not None, "verdict": (a or {}).get("verdict") if isinstance(a, dict) else None,
-                        "divergences": len(divs) if isinstance(divs, list) else None, "attempts": t.attempts, "dropped": why})
+        why = ("submitted no answer" if t.answer is None else
+               "submitted an answer that is not a review" if a is None or not _member(a.get("verdict"), VERDICTS) or not isinstance(divs, list) else None)
+        broken = None if why else ("returned the rule with no divergence" if a.get("verdict") == "return" and not divs else
+                                   divergence_limit_defect(divs, cap))
+        summary.append({"pass": k, "submitted": t.answer is not None, "verdict": (a or {}).get("verdict") if isinstance(a, dict) else None,
+                        "divergences": len(divs) if isinstance(divs, list) else None, "attempts": t.attempts, "unusable": why or broken})
         if why:
-            notes.append(f"pass {k} {why}" if not why.startswith("the answer") else f"pass {k}: {why}")
+            notes.append(f"pass {k} {why}"); unusable.append((k, why))
+            continue
+        if broken:                                         # never truncated, never judged: kept as evidence
+            unusable.append((k, broken)); summary[-1]["items"] = divs
+            notes.append(f"pass {k}: {broken}")
             continue
         usable.append((k, t, a))
         errs += behaviour_defects(a, law.text, binders, cap)
     if not usable:
-        return None, {}, notes, summary, errs
+        return None, {}, notes, summary, errs, unusable
     joined, certs, seen = [], {}, {}                     # seen: merge key → the pass that contributed it
     advisories, gaps, seen_text = [], [], set()
     as_list = lambda x: x if isinstance(x, list) else []
@@ -1694,7 +2499,8 @@ def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | No
             if isinstance(d, dict) and c is not None and not divergence_schema_defects(local, d, law.text, binders) \
                     and not t.judgeable(local, d, c):
                 key = _canon({"case": c.get("canonical_case"), "entities": d.get("entities"), "at": d.get("at"),
-                              "grounding": d.get("grounding"), "rule": (c.get("rule_result") or {}).get("verdict")})
+                              "grounding": d.get("grounding"), "rule": (c.get("rule_result") or {}).get("verdict"),
+                              "lawful": d.get("lawful_verdict"), "extends": d.get("extends")})
                 if key in seen and seen[key] != k:              # the same judgeable challenge from another pass: judged once
                     continue
                 seen.setdefault(key, k)
@@ -1709,7 +2515,8 @@ def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | No
             if gk not in seen_text:
                 seen_text.add(gk); gaps.append(g)
     verdict = "return" if any(a.get("verdict") == "return" for _k, _t, a in usable) else "accept"
-    return {"verdict": verdict, "divergences": joined, "advisories": advisories, "gap_candidates": gaps}, certs, notes, summary, errs
+    return ({"verdict": verdict, "divergences": joined, "advisories": advisories, "gap_candidates": gaps}, certs, notes, summary, errs,
+            unusable)
 
 
 def param_notes(n: Node, reading: Reading, answer: dict, status_of: dict[int, str], iteration: int) -> list[tuple[str, str]]:
@@ -1762,23 +2569,61 @@ def _broader_contract_items(gaps: list) -> list[dict]:
 # ---------------------------------------------------------------------------------------------
 # Review of a concept: claims about the body against the contract, as traces, executed
 # ---------------------------------------------------------------------------------------------
-PLACEHOLDERS_REVIEW_CONCEPT = ("contract", "record", "rendered", "atoms_read", "contracts", "trace_format", "review_checks", "review_submissions")
+PLACEHOLDERS_REVIEW_CONCEPT = ("contract", "record", "rendered", "atoms_read", "contracts", "trace_format", "carry_over", "review_checks",
+                               "review_submissions")
 PLACEHOLDERS_ADJUDICATE_CONCEPT = ("contract", "record", "rendered", "contracts", "items", "precedents")
 CONCEPT_KINDS = {"holds_wrongly", "fails_wrongly", "undecided"}
 #: The kinds of a divergence of a quantity concept, whose contract gives an interval, not a verdict.
 QUANTITY_KINDS = {"value_wrongly", "undecided"}
-#: The dimension of each Core unit, as exponents of (metre, second, degree).
-UNIT_DIMS = {"metre": (1, 0, 0), "second": (0, 1, 0), "degree": (0, 0, 1), "metrePerSecond": (1, -1, 0),
-             "metrePerSecondSq": (1, -2, 0), "degreePerSecond": (0, -1, 1), "perMetre": (-1, 0, 0), "ratio": (0, 0, 0),
-             "count": (0, 0, 0)}
 #: The contract's verdict, as the episode verdict the concept's instance gives when the body agrees.
 CONTRACT_VERDICTS = {"holds": "compliant", "fails": "violated"}
+CONCEPT_CASE_SCHEMA = "concept_case/1"
+#: What a concept ruling keeps to be replayed: the immutable trace, the instance, the grounding, `at` and the claim.
+CONCEPT_CASE_FIELDS = ("kind", "situation", "contract_words", "contract_verdict", "contract_value", "instance", "grounding", "trace", "at")
 CONCEPT_RULINGS = {"upheld", "dismissed"}
 CONCEPT_AGREES = " (the body agrees with the contract on this trace)"
 
 
+def _dims() -> dict[str, tuple[int, int, int]]:
+    """Each Core unit's dimension, as Core states it."""
+    from ..model import units
+    return units.DIMS
+
+
 def _track_formals(rec) -> list[str]:
     return [a["name"] for a in rec.args() if a.get("sort") == "track"]
+
+
+# The types of the values a concept review or a dependency report states, each tested before any
+# membership, index, lookup or conversion: a malformed value is a schema defect, never a crash.
+def _is_str(x) -> bool:
+    return isinstance(x, str)
+
+
+def _is_num(x) -> bool:
+    """A finite number that is not a boolean."""
+    import math
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
+
+
+def _is_nat(x) -> bool:
+    return isinstance(x, int) and not isinstance(x, bool) and x >= 0
+
+
+def _is_id(x) -> bool:
+    """A track, region or device id, or a timestamp: an integer that is not a boolean."""
+    return isinstance(x, int) and not isinstance(x, bool)
+
+
+def _member(x, allowed) -> bool:
+    """`x` is a string and one of `allowed`."""
+    return isinstance(x, str) and x in allowed
+
+
+def _is_quantity(v) -> bool:
+    """[value, unit]: a finite number and one of Core's unit spellings."""
+    from ..model import units
+    return isinstance(v, list) and len(v) == 2 and _is_num(v[0]) and _member(v[1], units.FACTORS)
 
 
 def concept_review_defects(answer: dict, rec, contract: str, rendering: str, result_dim: tuple | None = None) -> list[str]:
@@ -1787,7 +2632,7 @@ def concept_review_defects(answer: dict, rec, contract: str, rendering: str, res
     with an admissible spelling and every parameter with a value in its unit, a grounding of every
     track formal, and a trace with scenes; each `not_general` item's words, verbatim."""
     errs = []
-    if answer.get("verdict") not in VERDICTS:
+    if not _member(answer.get("verdict"), VERDICTS):
         errs.append("`verdict` must be `accept` or `return`")
     divs, tuned = answer.get("divergences", []), answer.get("not_general", [])
     if not isinstance(divs, list) or not isinstance(tuned, list):
@@ -1797,18 +2642,26 @@ def concept_review_defects(answer: dict, rec, contract: str, rendering: str, res
     for k, d in enumerate(divs, 1):
         errs += concept_divergence_defects(k, d, rec, contract, result_dim)
     for k, t in enumerate(tuned, 1):
-        if not isinstance(t, dict) or not _ws(t.get("why")) or not _quoted(t.get("words", ""), contract + "\n" + rendering):
-            errs.append(f"not_general {k}: `words` must be verbatim from the contract or the rendering, with a `why`")
+        errs += structural_item_defects(k, t, contract, rendering)
     return errs
+
+
+def structural_item_defects(k: int, t, contract: str, rendering: str) -> list[str]:
+    """Why a `not_general` item cannot be judged: its `words` are not a verbatim string of the
+    contract or the rendering, or it states no `why`."""
+    if not isinstance(t, dict) or not _is_str(t.get("why")) or not _ws(t.get("why")) or not _is_str(t.get("words")) \
+            or not _ws(t.get("words")) or not _quoted(t["words"], contract + "\n" + rendering):
+        return [f"not_general {k}: `words` must be verbatim from the contract or the rendering, with a `why`"]
+    return []
 
 
 def _unit_dim(spelling) -> tuple | None:
     """The dimension of a unit as a reviewer or the export spells it (`m/s^2`, `metre_per_second_sq`)."""
     from ..model import units
     if spelling in units.FACTORS:
-        return UNIT_DIMS.get(units.FACTORS[spelling][0])
+        return _dims().get(units.FACTORS[spelling][0])
     camel = re.sub(r"_(\w)", lambda m: m.group(1).upper(), str(spelling))
-    return UNIT_DIMS.get(camel)
+    return _dims().get(camel)
 
 
 def body_dim(rec, body: dict | None) -> tuple | None:
@@ -1831,11 +2684,11 @@ def body_dim(rec, body: dict | None) -> tuple | None:
         if "quantity" in t:
             return (prims.get(t["quantity"]) or (None,))[0]
         if "distance_while" in t:
-            return UNIT_DIMS["metre"]
+            return _dims()["metre"]
         if "since_rise" in t:
-            return UNIT_DIMS["second"]
+            return _dims()["second"]
         if "aggregate" in t:
-            return UNIT_DIMS["count"] if t["aggregate"] == "count" else dim(t.get("of"))
+            return _dims()["count"] if t["aggregate"] == "count" else dim(t.get("of"))
         if "neg" in t or "abs" in t:
             return dim(t.get("neg", t.get("abs")))
         if "cond" in t:
@@ -1861,7 +2714,7 @@ def _interval_defects(k: int, cv, result_dim: tuple | None) -> list[str]:
     if not isinstance(cv, dict) or set(cv) != {"lo", "hi"}:
         return [f"{head} must be {{\"lo\": [value, unit], \"hi\": [value, unit]}}, the interval the contract's words put the value in"]
     ends = [cv["lo"], cv["hi"]]
-    if not all(isinstance(e, list) and len(e) == 2 and isinstance(e[0], (int, float)) and e[1] in units.FACTORS for e in ends):
+    if not all(_is_quantity(e) for e in ends):
         return [f"{head}: `lo` and `hi` are each [value, unit] with a unit of {sorted(units.FACTORS)}"]
     dims = {_unit_dim(e[1]) for e in ends}
     if len(dims) != 1:
@@ -1874,10 +2727,14 @@ def _interval_defects(k: int, cv, result_dim: tuple | None) -> list[str]:
     return []
 
 
-def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple | None = None) -> list[str]:
+def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple | None = None, saved: bool = False) -> list[str]:
     """The defects of one divergence of a concept review; one without defects can be run. A
     divergence of a quantity concept states `contract_value`, the interval the contract's words put
-    the value in, where a formula concept's states `contract_verdict`."""
+    the value in, where a formula concept's states `contract_verdict`. Every container has its
+    shape: `instance` (absent means `{}`) and its `literals`, `nats` and `params` are objects,
+    `grounding` an object, `trace` an object with a list of scenes; a value of the wrong shape is a
+    defect, never read as empty. A fresh trace holding keys the decoder does not read is refused;
+    a `saved` one (a recorded challenge, replayed) keeps them as unverified annotations."""
     from ..model import units
     if not isinstance(d, dict):
         return [f"divergence {k} is not an object"]
@@ -1886,21 +2743,27 @@ def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple 
     literals = {a["name"]: set(a.get("values", [])) for a in rec.args() if a.get("sort") == "literal"}
     params = {p["name"]: str(p.get("unit", "")) for p in rec.params()}
     if rec.get("kind") == "quantity":
-        if d.get("kind") not in QUANTITY_KINDS:
+        if not _member(d.get("kind"), QUANTITY_KINDS):
             errs.append(f"divergence {k}: kind must be one of {sorted(QUANTITY_KINDS)} for a quantity")
         if "contract_verdict" in d:
             errs.append(f"divergence {k}: a quantity's divergence states `contract_value`, never `contract_verdict`")
         errs += _interval_defects(k, d.get("contract_value"), result_dim)
     else:
-        if d.get("kind") not in CONCEPT_KINDS:
+        if not _member(d.get("kind"), CONCEPT_KINDS):
             errs.append(f"divergence {k}: kind must be one of {sorted(CONCEPT_KINDS)}")
-        if d.get("contract_verdict") not in CONTRACT_VERDICTS:
+        if not _member(d.get("contract_verdict"), CONTRACT_VERDICTS):
             errs.append(f"divergence {k}: contract_verdict must be one of {sorted(CONTRACT_VERDICTS)}")
-    if not _in(d.get("contract_words", ""), contract):
+    if not _is_str(d.get("contract_words")) or not _in(d["contract_words"], contract):
         errs.append(f"divergence {k}: contract_words is not verbatim from the contract")
-    inst = d.get("instance") if isinstance(d.get("instance"), dict) else {}
+    inst = d.get("instance", {})
+    if not isinstance(inst, dict):
+        errs.append(f"divergence {k}: instance must be an object of `literals`, `nats` and `params`")
+        inst = {}
+    for part in ("literals", "nats", "params"):
+        if part in inst and not isinstance(inst[part], dict):
+            errs.append(f"divergence {k}: instance.{part} must be an object")
     lits = inst.get("literals") if isinstance(inst.get("literals"), dict) else {}
-    if set(lits) != set(literals) or any(lits[f] not in literals[f] for f in lits):
+    if set(lits) != set(literals) or any(not _member(lits[f], literals.get(f, set())) for f in lits):
         errs.append(f"divergence {k}: instance.literals maps exactly the literal formals {sorted(literals)} to one of their admissible spellings"
                     + (f"; {sorted(set(lits) - set(literals))} are not literal formals" if set(lits) - set(literals) else "")
                     + ("; with no literal formal it is `{}`" if not literals else ""))
@@ -1908,16 +2771,28 @@ def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple 
     if set(ps) != set(params):
         errs.append(f"divergence {k}: instance.params must give every parameter {sorted(params)} a [value, unit]")
     for name, v in ps.items():
-        ok = isinstance(v, list) and len(v) == 2 and isinstance(v[0], (int, float)) and v[1] in units.FACTORS \
-            and name in params and params[name] in units.FACTORS and units.FACTORS[v[1]][0] == units.FACTORS[params[name]][0]
+        ok = _is_quantity(v) and name in params and params[name] in units.FACTORS and units.FACTORS[v[1]][0] == units.FACTORS[params[name]][0]
         if not ok:
             errs.append(f"divergence {k}: parameter `{name}` must be [value, unit] in a unit of {params.get(name)!r}")
+    nats = [a["name"] for a in rec.args() if a.get("sort") == "nat"]
+    ns = inst.get("nats") if isinstance(inst.get("nats"), dict) else {}
+    if set(ns) != set(nats) or not all(_is_nat(v) for v in ns.values()):
+        errs.append(f"divergence {k}: instance.nats maps exactly the nat formals {sorted(nats)} to natural numbers"
+                    + ("; with no nat formal it is `{}` or absent" if not nats else ""))
     g = d.get("grounding")
-    if not isinstance(g, dict) or set(g) != set(tracks) or not all(isinstance(x, int) for x in g.values()):
+    if not isinstance(g, dict) or set(g) != set(tracks) or not all(_is_id(x) for x in g.values()):
         errs.append(f"divergence {k}: grounding must map exactly the track formals {tracks} to track ids")
     tr = d.get("trace")
     if not isinstance(tr, dict) or not isinstance(tr.get("scenes"), list) or not tr["scenes"]:
         errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
+    elif not all(isinstance(sc, dict) and _is_id(sc.get("t")) for sc in tr["scenes"]):
+        errs.append(f"divergence {k}: every scene is an object with an integer timestamp `t` (ms)")
+    else:
+        times = {sc["t"] for sc in tr["scenes"]}
+        if not _is_id(d.get("at")) or d.get("at") not in times:
+            errs.append(f"divergence {k}: `at` must be the timestamp (ms) of one of the trace's scenes: the observation the body is read at")
+        if not saved:
+            errs += unread_key_defects(k, tr)
     return errs
 
 
@@ -1928,31 +2803,38 @@ def _lean_q(value: float, unit: str) -> str:
     return f".lit (Q.mk' ({q.numerator}) {q.denominator}) .{core}"
 
 
-def _concept_review_harness_source(cid: str, traces: list[tuple]) -> str:
+def _concept_review_harness_source(cid: str, traces: list[tuple], reading_json: Path | None = None) -> str:
     """A Lean program that, for each divergence, prints the trace check's messages (`LINT`) and runs
-    the concept, as the instance the divergence names, on its trace (`DIS`): compliant where the
-    body holds throughout, violated where it fails, unknown where it has no value; an instant whose
-    only unknown is a window reaching past the trace's start or end is not judged, as for a rule. A
-    quantity concept runs against the interval its divergence states (`bounds`): compliant where its
-    value lies in it. The occupancy of every observed track is derived from the geometry first."""
+    the concept, as the instance the divergence names, on its trace (`DIS`): its verdict at the
+    observation `at` — compliant where the body holds there, violated where it fails, unknown where
+    it has no value, as `Certificate.verdictAt` reads a rule. A quantity concept runs against the
+    interval its divergence states (`bounds`): compliant where its value at `at` lies in it; its
+    value there is printed (`VAL`, in Core units). It runs on the run's reading (`reading_json`: its
+    admitted aggregates), as the rules that call the concept do. The occupancy of every observed track
+    is derived from the geometry first. A relation the trace supplies that Core computes from the
+    scene is printed `RELCHECK` (`harness/lean/relations.py`)."""
+    from ..lean import relations
     ns = nodeid.concept_namespace(cid)
     bound = lambda b: "none" if b is None else f"some (({_lean_q(*b[0])} : TrafficSpec.Term), ({_lean_q(*b[1])} : TrafficSpec.Term))"
     items = ", ".join(
         f'({k}, {json.dumps(str(p.resolve()))}, [{", ".join(f"({json.dumps(b)}, {t})" for b, t in g.items())}], '
         f'[{", ".join(f"({json.dumps(f)}, {json.dumps(v)})" for f, v in lits.items())}], '
-        f'[{", ".join(f"({json.dumps(n)}, ({_lean_q(v[0], v[1])} : TrafficSpec.Term))" for n, v in ps.items())}], {bound(bd)})'
-        for k, p, g, lits, ps, bd in traces)
+        f'[{", ".join(f"({json.dumps(f)}, {int(v)})" for f, v in nats.items())}], '
+        f'[{", ".join(f"({json.dumps(n)}, ({_lean_q(v[0], v[1])} : TrafficSpec.Term))" for n, v in ps.items())}], {bound(bd)}, ({int(at)} : Int))'
+        for k, p, g, lits, nats, ps, bd, at in traces)
     return f'''import TrafficSpec
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Evidence.Builders
 import {nodeid.concept_module(cid)}
 open TrafficSpec Lean
+{relations.lean_defs()}
 def main : IO Unit := do
   let c := {ns}.concept
   let cs := (allConcepts.filter (·.id != c.id)) ++ [c]
-  let items : List (Nat × String × List (String × Nat) × List (String × String) × List (String × TrafficSpec.Term) × Option (TrafficSpec.Term × TrafficSpec.Term)) := [{items}]
-  for (k, path, grounding, lits, ps, bd) in items do
-    let inst : Concept.Instance := {{ name := s!"review_{{k}}", concept := c.id, literals := lits, params := ps, bounds := bd }}
+  let ρ : Reading ← {"pure {}" if reading_json is None else f'match Decode.parse Decode.reading (← IO.FS.readFile {json.dumps(str(reading_json.resolve()))}) with | .ok v => pure v | .error e => throw (IO.userError s!"reading: {{e}}")'}
+  let items : List (Nat × String × List (String × Nat) × List (String × String) × List (String × Nat) × List (String × TrafficSpec.Term) × Option (TrafficSpec.Term × TrafficSpec.Term) × Int) := [{items}]
+  for (k, path, grounding, lits, nats, ps, bd, atT) in items do
+    let inst : Concept.Instance := {{ name := s!"review_{{k}}", concept := c.id, literals := lits, nats := nats, params := ps, bounds := bd }}
     match Concept.asRule cs inst with
     | none => IO.println s!"DIS\\t{{k}}\\tunfilled\\t"
     | some r =>
@@ -1963,33 +2845,60 @@ def main : IO Unit := do
       | .ok τ0 =>
         let τ := TraceLint.completeOccupancy τ0
         IO.println s!"LINT\\t{{k}}\\t{{(Json.arr ((TraceLint.checkTrace τ).map Json.str).toArray).compress}}"
+        RelCheck.run (toString k) τ
+        for s in τ do
+          IO.println s!"OCCD\\t{{k}}\\t{{s.t}}\\t{{String.intercalate "," (s.occupies.map fun p => s!"{{p.1}}-{{p.2}}")}}"
         let m := Manifest.full "review"
-        let S := Grounding.Setup.mk' [r'] (maskTrace m τ) ({{}} : Reading) m.reidGap
+        let S := Grounding.Setup.mk' [r'] (maskTrace m τ) ρ m.reidGap
         let g : Grounding.Grounding := ⟨grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
         let tl := Grounding.evaluate S r' g
-        let vs := tl.verdicts.toList.map (·.2)
-        let edge := fun (v : Verdict) => match v with
-          | .unknown rs => !rs.isEmpty && rs.all (fun x => match x with | .windowTruncated _ => true | _ => false)
-          | _ => false
-        let judged := vs.filter (fun v => !edge v)
-        let got := Grounding.episode (if judged.isEmpty then vs else judged)
-        IO.println s!"DIS\\t{{k}}\\t{{got.tag}}\\t{{String.intercalate "," (got.reasons.map UnknownReason.tag)}}"
+        let mut found : Option (Nat × Verdict) := none
+        for j in [0:tl.verdicts.size] do
+          if tl.verdicts[j]!.1 == atT then found := some (j, tl.verdicts[j]!.2)
+        match found with
+        | none => IO.println s!"DIS\\t{{k}}\\tat_missing\\t"
+        | some (j, v) =>
+          IO.println s!"DIS\\t{{k}}\\t{{v.tag}}\\t{{String.intercalate "," (v.reasons.map UnknownReason.tag)}}"
+          match r'.obligation with
+          | .and (.cmp _ _ value) _ =>
+            match (Semantics.evalTAll (S.ctx g.binding) value)[j]? with
+            | some (.ok q) => IO.println s!"VAL\\t{{k}}\\t{{q.num}}/{{q.den}}"
+            | some (.error e) => IO.println s!"VAL\\t{{k}}\\tunknown:{{e.tag}}"
+            | none => IO.println s!"VAL\\t{{k}}\\tmissing"
+          | _ => pure ()
 '''
 
 
-def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tuple | None = None) -> tuple[list[dict], list[str], list[str], list[str]]:
+def _core_value(raw: str | None, dim: tuple | None) -> str:
+    """A value the harness printed (`num/den` in Core units) as the adjudicator reads it."""
+    if not raw or "/" not in raw or raw.startswith("unknown"):
+        return raw or "not printed"
+    from fractions import Fraction
+    from ..lean import surface
+    num, den = raw.split("/", 1)
+    return f"{float(Fraction(int(num), int(den))):g}" + (f" {surface.render_dim(dim)}" if dim is not None else " (Core units)")
+
+
+def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tuple | None = None,
+                                reading: Reading | None = None, saved: bool = False) -> tuple[list[dict], list[str], list[str], list[str]]:
     """Run the concept on every divergence trace, as a rule's case is run. Returns (confirmed,
     unconfirmed, errors, incomplete): a trace on which the body's verdict differs from the
     contract's — or is unknown where the contract decides, for a divergence claiming the body
     undecided — confirms it; one on which they agree is the reviewer's advisory; one unknown only
     because the trace leaves an atom out or does not cover or sample a look-back, or one that fails
-    the trace check, is incomplete."""
+    the trace check (a supplied relation Core computes among them), is incomplete. With `saved` (a
+    recorded challenge's trace, replayed), the supplied relations Core computes are stripped and the
+    concept is run again on the stripped trace; the item keeps what was stripped
+    (`relations_stripped`). A divergence that fails the schema is not run and is accounted for all
+    the same, among the incomplete, with its defects: no submitted divergence disappears."""
     contract = " ".join(str(rec.get("contract", "")).split())
     listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
-    divs = {k: d for k, d in enumerate(listed, 1) if not concept_divergence_defects(k, d, rec, contract, result_dim)}
+    defects = {k: concept_divergence_defects(k, d, rec, contract, result_dim, saved) for k, d in enumerate(listed, 1)}
+    divs = {k: d for k, d in enumerate(listed, 1) if not defects[k]}
+    unrunnable = [f"divergence {k}: cannot be run as recorded — " + "; ".join(bad[:3])[:400] for k, bad in defects.items() if bad]
     quantity = rec.get("kind") == "quantity"
     if not divs:
-        return [], [], [], []
+        return [], [], [], unrunnable
     out_dir.mkdir(parents=True, exist_ok=True)
     for stale in out_dir.glob("disagreement_*.json"):
         stale.unlink()
@@ -1999,37 +2908,64 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         p.write_text(json.dumps(d.get("trace"), ensure_ascii=False, indent=1), encoding="utf-8")
         inst = d.get("instance") or {}
         bd = (tuple(d["contract_value"]["lo"]), tuple(d["contract_value"]["hi"])) if quantity else None
-        traces.append((k, p, {b: int(t) for b, t in d["grounding"].items()}, dict(inst.get("literals") or {}), dict(inst.get("params") or {}), bd))
+        traces.append((k, p, {b: int(t) for b, t in d["grounding"].items()}, dict(inst.get("literals") or {}), dict(inst.get("nats") or {}),
+                       dict(inst.get("params") or {}), bd, d["at"]))
     harness = out_dir / "review_harness.lean"
-    harness.write_text(_concept_review_harness_source(rec.id, traces), encoding="utf-8")
-    ok, hout = lean.lean_run(paths.LIBRARY, harness)
-    (out_dir / "review_harness.out").write_text(hout, encoding="utf-8")
-    if not ok:
-        raise HarnessFailure(f"the concept review harness did not run: {hout[-600:]}")
-    got, lint = {}, {}
-    for line in hout.splitlines():
-        parts = line.split("\t")
-        if parts[0] == "DIS" and len(parts) >= 3:
-            got[int(parts[1])] = (parts[2], parts[3] if len(parts) > 3 else "")
-        elif parts[0] == "LINT" and len(parts) >= 3:
-            try:
-                lint[int(parts[1])] = json.loads(parts[2])
-            except json.JSONDecodeError:
-                raise HarnessFailure(f"an unparseable LINT line: {line[:200]}")
+    rj = None
+    if reading is not None:
+        rj = out_dir / "reading.json"; rj.write_text(reading.lean_json(), encoding="utf-8")
+    stripped: dict[int, list[str]] = {}
+    for _pass in (1, 2):                                   # a second pass only for saved traces whose supplied relations were stripped
+        harness.write_text(_concept_review_harness_source(rec.id, traces, rj), encoding="utf-8")
+        code, hout = lean.lean_run(paths.LIBRARY, harness); ok = code == 0
+        (out_dir / "review_harness.out").write_text(hout, encoding="utf-8")
+        if not ok:
+            raise HarnessFailure(f"the concept review harness did not run: {hout[-600:]}")
+        got, lint, value, rel, occd = {}, {}, {}, {}, {}
+        for line in hout.splitlines():
+            parts = line.split("\t")
+            if parts[0] == "DIS" and len(parts) >= 3:
+                got[int(parts[1])] = (parts[2], parts[3] if len(parts) > 3 else "")
+            elif parts[0] == "VAL" and len(parts) >= 3:
+                value[int(parts[1])] = parts[2]
+            elif parts[0] == "LINT" and len(parts) >= 3:
+                try:
+                    lint[int(parts[1])] = json.loads(parts[2])
+                except json.JSONDecodeError:
+                    raise HarnessFailure(f"an unparseable LINT line: {line[:200]}")
+            elif parts[0] == "RELCHECK" and len(parts) >= 5 and parts[1].isdigit():
+                rel.setdefault(int(parts[1]), []).append([parts[2], parts[3], parts[4].split(":", 1)[0]])
+            elif parts[0] == "OCCD" and len(parts) >= 3 and parts[1].isdigit() and parts[2].lstrip("-").isdigit():
+                occd.setdefault(int(parts[1]), {})[int(parts[2])] = [x for x in (parts[3] if len(parts) > 3 else "").split(",") if x]
+        if not (saved and rel) or _pass == 2:
+            break
+        for k, fields in rel.items():
+            divs[k] = {**divs[k], "trace": strip_computed_relations(divs[k].get("trace") or {}, fields)}
+            stripped[k] = [f"t={t} ({pair}): {atom}" for t, pair, atom in fields]
+            (out_dir / f"disagreement_{k}.json").write_text(json.dumps(divs[k]["trace"], ensure_ascii=False, indent=1), encoding="utf-8")
+    for k, fields in rel.items():                          # a fresh trace's supplied relation Core computes: a defect of the submission
+        lint.setdefault(k, []).extend(f"a supplied relation at t={t} ({pair}): {atom}: supplied, but Core computes it from the scene; "
+                                      "remove it from the trace" for t, pair, atom in fields)
+    keys = decoder_keys(_decode_source())
+    read_paths = [m.group(1) for a in sorted({str(x).split("=")[0].replace(".", "_") for x in rec.claimed_atoms()})
+                  if (m := re.match(r"`([^`]+)`", trace_place(a, keys)))]
     confirmed, unconfirmed, errors, incomplete = [], [], [], []
     for k, d in divs.items():
         tag, why = got.get(k, ("missing", ""))
         claimed = "compliant" if quantity else CONTRACT_VERDICTS[d["contract_verdict"]]   # a quantity's claim: its value lies in the interval
+        observed = _core_value(value.get(k), result_dim)
         if quantity:
             lo, hi = d["contract_value"]["lo"], d["contract_value"]["hi"]
             body = {"compliant": "in the interval", "violated": "outside the interval"}.get(tag, tag)
-            head = (f"divergence {k} ({d.get('kind')}): {_ws(d.get('situation'))[:160]} — contract: from {lo[0]} {lo[1]} to {hi[0]} {hi[1]}, body: {body}")
+            head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {_ws(d.get('situation'))[:160]} — contract: from {lo[0]} {lo[1]} "
+                    f"to {hi[0]} {hi[1]}; the body's value there: {observed} ({body})")
         else:
             body = {"compliant": "holds", "violated": "fails"}.get(tag, tag)
-            head = (f"divergence {k} ({d.get('kind')}): {_ws(d.get('situation'))[:160]} — contract: {d.get('contract_verdict')}, body: {body}")
-        if tag in ("decode", "missing", "unfilled"):
+            head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {_ws(d.get('situation'))[:160]} — contract: {d.get('contract_verdict')}, body: {body}")
+        if tag in ("decode", "missing", "unfilled", "at_missing"):
             errors.append(f"divergence {k}: " + {"decode": f"the trace does not decode: {why[:200]}", "missing": "the harness printed no verdict",
-                                                  "unfilled": "the instance leaves a formal unfilled"}[tag])
+                                                  "unfilled": "the instance leaves a formal unfilled",
+                                                  "at_missing": "`at` names no observation of the trace"}[tag])
         elif lint.get(k):
             incomplete.append(f"divergence {k}: trace check: " + "; ".join(lint[k][:8]))
         elif tag == claimed:
@@ -2040,25 +2976,52 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         else:
             line = head + (f" [{why}]" if tag == "unknown" and why else "") + f'; contract: "{_ws(d.get("contract_words"))[:120]}"'
             confirmed.append({"line": line, "div": d, "rule": body + (f" ({why})" if tag == "unknown" and why else ""),
-                              "key": f"{d.get('kind')}"})
-    return confirmed, unconfirmed, errors, incomplete
+                              "key": f"{d.get('kind')}", "verdict": tag, "value": observed if quantity else None,
+                              "facts": executed_facts(d, read_paths, occd.get(k)),
+                              **({"relations_stripped": stripped[k]} if k in stripped else {})})
+    return confirmed, unconfirmed, errors, incomplete + unrunnable
 
 
-def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict], out_dir: Path) -> list[tuple[dict, str, str]]:
+def _item_facts(i: dict) -> str:
+    """The executed facts of an adjudicated item: those its execution rendered (with the occupancy
+    the harness derived), else rendered from the item's own trace; none for a structural item."""
+    if i.get("facts"):
+        return i["facts"]
+    d = i.get("div") or {}
+    if d.get("kind") == "not_general" or not isinstance(d.get("trace"), dict):
+        return ""
+    return executed_facts(d)
+
+
+def executed_facts(d: dict, read_paths: list[str] | None = None, occupancy: dict | None = None) -> str:
+    """The executed facts of a divergence: what the decoder reads of its trace, and only that; the
+    keys it does not read listed apart as the reviewer's unverified annotations."""
+    return render_formula.trace_facts(d.get("trace") if isinstance(d.get("trace"), dict) else {}, d.get("grounding") or {}, d.get("at"),
+                                      d.get("instance") if isinstance(d.get("instance"), dict) else {}, read_paths, occupancy)
+
+
+def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict], out_dir: Path, body_digest: str = "",
+                       label: str = "adjudicate") -> list[tuple[dict, str, str]]:
     """Each confirmed divergence and `not_general` item of a concept with its ruling. An item left
     unruled, or ruled with a defect the adjudicator keeps after the re-ask, is never upheld by
     default: the adjudication raises `Deferred` (`concept_adjudication`)."""
     listing = "\n\n".join(
-        (f"{k}. ({i['div'].get('kind')}) {_ws(i['div'].get('situation'))}\n"
+        (f"{k}. ({i['div'].get('kind')}) {_ws(i['div'].get('situation'))}" + (" [an item upheld before, run again]" if i.get("replay_of") else "") + "\n"
          f"   the contract's words, per the reviewer: \"{_ws(i['div'].get('contract_words'))}\"\n"
-         f"   the reviewer's verdict for the contract: {i['div'].get('contract_verdict')}\n"
-         f"   the body's executed verdict: {i['rule']}")
+         + (f"   the interval the contract's words put the value in, per the reviewer: from {i['div']['contract_value']['lo'][0]} "
+            f"{i['div']['contract_value']['lo'][1]} to {i['div']['contract_value']['hi'][0]} {i['div']['contract_value']['hi'][1]}\n"
+            f"   the body's value at t={i['div'].get('at')} ms: {i.get('value')}; executed verdict: {i['rule']}"
+            if isinstance(i['div'].get('contract_value'), dict) else
+            f"   the reviewer's verdict for the contract: {i['div'].get('contract_verdict')}\n"
+            f"   the body's executed verdict at t={i['div'].get('at')} ms: {i['rule']}")
+         + ("\n\n" + _item_facts(i) if _item_facts(i) else ""))
         if i["div"].get("kind") != "not_general" else
-        (f"{k}. (not_general) the words \"{_ws(i['div'].get('words'))}\": {_ws(i['div'].get('why'))}")
+        (f"{k}. (not_general) the words \"{_ws(i['div'].get('words'))}\": {_ws(i['div'].get('why'))}"
+         + (" [a finding upheld before, decided again on this body]" if i.get("replay_of") or i.get("legacy_of") else ""))
         for k, i in enumerate(items, 1))
     key = f"concept:{rec.id}"
     prompt = render.render("adjudicate_concept.md", {**{k: blocks[k] for k in ("contract", "record", "rendered", "contracts")},
-                                                      "items": "### Items\n\n" + listing + "\n", "precedents": precedents_block(run, key)})
+                                                      "items": "### Items\n\n" + listing + "\n", "precedents": precedents_block(precedent_rows(run, key))})
     hay = "\n".join(blocks[k] for k in ("contract", "record", "rendered", "contracts")) + "\n" + "\n".join(_strings(rec.raw))
 
     def defects(a: dict) -> list[str]:
@@ -2074,7 +3037,7 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
             if k in seen:
                 errs.append(f"item {k} is ruled twice")
             seen.append(k)
-            if r.get("ruling") not in CONCEPT_RULINGS:
+            if not _member(r.get("ruling"), CONCEPT_RULINGS):
                 errs.append(f"item {k}: ruling must be one of {sorted(CONCEPT_RULINGS)}")
             if not _ws(r.get("reason")):
                 errs.append(f"item {k}: a ruling needs a reason")
@@ -2082,7 +3045,7 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
                 errs.append(f"item {k}: the quote is not verbatim from the contract, the record or the rendering")
         errs += [f"item {k} has no ruling" for k in range(1, len(items) + 1) if k not in seen]
         return errs
-    answer, errs = validate_phase._session(run, out_dir, "adjudicate", prompt, check=defects, usage_label=f"adjudicate:{rec.id}")
+    answer, errs = validate_phase._session(run, out_dir, label, prompt, check=defects, usage_label=f"{label}:{rec.id}")
     if answer is None and not errs:
         raise Deferred("concept_adjudication", "dry run: the concept's items were not adjudicated")
     if errs:
@@ -2090,8 +3053,24 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
     rows = {r.get("item"): r for r in answer.get("rulings", []) if isinstance(r, dict)}
     out = [(i, rows[k]["ruling"], f"{_ws(rows[k].get('reason'))} — \"{_ws(rows[k].get('quote'))[:160]}\"") for k, i in enumerate(items, 1)]
     for i, ruling, why in out:
+        d = i["div"]
+        if d.get("kind") == "not_general":                # a structural finding: an obligation by its identity, re-adjudicated later
+            root = i.get("finding_root") or concept_lineage(run, rec)[-1]
+            replay = {"schema": CONCEPT_STRUCTURAL_SCHEMA, "finding_root": root,
+                      "finding_id": i.get("replay_of") or concept_finding_id(root, rec, d.get("words"), blocks.get("rendered", "")),
+                      "words": d.get("words"), "why": d.get("why"), "contract_digest": _digest(_ws(rec.get("contract"))),
+                      "body_digest": body_digest, "obligation": "open" if ruling == "upheld" else None,
+                      **({"legacy_of": i["legacy_of"]} if i.get("legacy_of") else {})}
+        else:
+            replay = {
+                "schema": CONCEPT_CASE_SCHEMA, "case_id": _digest({"concept": rec.id, **{x: d.get(x) for x in CONCEPT_CASE_FIELDS}}),
+                **{x: d.get(x) for x in CONCEPT_CASE_FIELDS}, "verdict": i.get("verdict"), "value": i.get("value"),
+                "contract_digest": _digest(_ws(rec.get("contract"))), "body_digest": body_digest,
+                "obligation": "open" if ruling == "upheld" else None}
+            if i.get("replay_of"):
+                replay["case_id"] = i["replay_of"]
         append_ruling(run, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
-                            "ruling": ruling, "reason": _ws(why)[:600]})
+                            "ruling": ruling, "reason": _ws(why)[:600], **replay})
     return out
 
 
@@ -2102,8 +3081,10 @@ class ConceptTools(ReviewTools):
     trace on which the body agrees with the contract keeps its route, an advisory."""
     check_name = "run_instance"
 
-    def __init__(self, rec, contract: str, rendering: str, result_dim, out_dir: Path, checks: int, submissions: int):
-        self.rec, self.contract, self.rendering, self.result_dim = rec, contract, rendering, result_dim
+    def __init__(self, rec, contract: str, rendering: str, result_dim, out_dir: Path, checks: int, submissions: int,
+                 reading: Reading | None = None, carry: dict[str, dict] | None = None):
+        self.rec, self.contract, self.rendering, self.result_dim, self.reading = rec, contract, rendering, result_dim, reading
+        self.carry = carry or {}
         self.specs = [
             _fn("run_instance", "Run one divergence: the trace check, then the concept's body, as the instance names it, on the "
                 "trace. Returns whether the body confirms the divergence (`confirmed`), agrees with the contract (`agrees`), or "
@@ -2118,11 +3099,25 @@ class ConceptTools(ReviewTools):
     def run_answer(self, a: dict, where: Path) -> tuple:
         key = _canon(a)
         if key not in self.cache:
-            self.cache[key] = execute_concept_divergences(self.rec, a, where, self.result_dim)
+            self.cache[key] = execute_concept_divergences(self.rec, a, where, self.result_dim, self.reading)
         return self.cache[key]
+
+    def extension_defects(self, k: int, d) -> list[str]:
+        """Why divergence `k`'s `extends` is not an extension: it names no challenge to carry over, or
+        it does not continue that challenge's evidence. Continuity is judged only on a divergence
+        whose own schema holds; one that does not has its schema defects instead."""
+        if not isinstance(d, dict) or "extends" not in d:
+            return []
+        if concept_divergence_defects(k, d, self.rec, self.contract, self.result_dim):
+            return []
+        old = self.carry.get(d["extends"]) if isinstance(d["extends"], str) else None
+        if old is None:
+            return [f"divergence {k}: `extends` names no challenge to carry over (they are {sorted(self.carry) or 'none'})"]
+        return [f"divergence {k} extends {d['extends'][:12]} but does not continue it: {e}" for e in concept_extension_defects(old, d, self.rec)]
 
     def _check(self, d, where: Path) -> dict:
         schema = concept_divergence_defects(1, d, self.rec, self.contract, self.result_dim)
+        schema = schema or self.extension_defects(1, d)
         if schema:
             return {"status": "schema defects", "messages": schema}
         confirmed, unconfirmed, errors, incomplete = self.run_answer({"divergences": [d]}, where)
@@ -2131,6 +3126,8 @@ class ConceptTools(ReviewTools):
 
     def _submit(self, a: dict, number: int) -> list[str]:
         errs = concept_review_defects(a, self.rec, self.contract, self.rendering, self.result_dim)
+        divs = a.get("divergences") if isinstance(a.get("divergences"), list) else []
+        errs += [e for k, d in enumerate(divs, 1) for e in self.extension_defects(k, d)]
         res = self.run_answer(a, self.out_dir / "submissions" / f"L{self.launch}" / f"{number:03d}")
         self.final = res
         divs = a.get("divergences") if isinstance(a.get("divergences"), list) else []
@@ -2149,31 +3146,159 @@ def literal_formals_line(rec) -> str:
         f"`{a['name']}` ({', '.join(f'`{v}`' for v in a.get('values', []))})" for a in lits) + "."
 
 
-def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
-    """The concept's body, rendered from its code, is reviewed by a second vendor against its
-    contract: each divergence comes as a trace (which passes the trace check) and an instance, the
-    harness runs the body on it, and every divergence execution confirms, and every `not_general`
-    item, goes to the adjudicator, which rules by the contract's words. `returned` with the upheld
-    items; else `deferred` when a challenge could not be evaluated (stage `reviewer`), the
-    adjudication stays invalid or the harness does not run; else `accepted`, its advisories recorded
-    on the concept as what it computes as built. Raises `SessionUnavailable` when a session could
-    not be launched."""
-    if not enabled(run):
-        if run.opts.dry_run:
-            return ReviewOutcome("accepted", advisories=["dry run"])
-        raise RuntimeError("a reviewer_model is required for a concept review")
+CONCEPT_STRUCTURAL_SCHEMA = "concept_structural/1"
+#: An older upheld concept row of a structural item, as its `item` was written before it had a schema.
+_LEGACY_ITEM = re.compile(r'^not general: "(.*)" — (.*)$', re.S)
+
+
+def concept_lineage(run: Run, rec) -> list[str]:
+    """The concept and every version it supersedes, newest first: through the accepted records (the
+    run's and its base chain's) and, where a version is not among them, through the rulings that
+    name its predecessor. A cycle stops the walk."""
+    try:
+        records = run.all_concepts()
+    except AttributeError:
+        records = {}
+    preds = {r.get("subject"): r.get("predecessor") for r in _all_rows(run) if r.get("predecessor") and r.get("subject")}
+    out, cur = [rec.id], rec.get("supersedes")
+    while isinstance(cur, str) and cur and cur not in out:
+        out.append(cur)
+        cur = (records.get(cur) or {}).get("supersedes") or preds.get(cur)
+    return out
+
+
+def concept_finding_id(root: str, rec, words: str, rendering: str = "") -> str:
+    """A structural finding's identity on a concept: the lineage's root (the first version), and
+    the occurrence of the quoted words, where they first stand in the contract (else in the
+    rendering): an unrelated concept with the same wording has another root, and other words of the
+    same contract another occurrence. A successor carries the identity of the findings it inherits."""
+    w, contract, shown = _ws(words), _ws(rec.get("contract")), _ws(rendering)
+    at = ("contract", contract.find(w)) if w and w in contract else ("rendering", shown.find(w)) if w and w in shown else ("none", -1)
+    return _digest({"concept_finding": root, "words": w, "source": at[0], "offset": at[1]})
+
+
+@dataclass
+class ConceptReplay:
+    """What a concept's replay found: `items` for the adjudicator (executed challenges the body still
+    confirms, and open structural findings), `notes`, and `carry` (upheld challenges that cannot be
+    run on this body, each `{case_id, row, why}`): obligations the reviewer must carry over."""
+    items: list = field(default_factory=list)
+    notes: list = field(default_factory=list)
+    carry: list = field(default_factory=list)
+
+
+def satisfied_on(run: Run, rec, old: dict, evidence: dict, body_digest: str) -> dict:
+    """The row recording that this concept's body meets an upheld challenge: on this concept's
+    identity (its key and subject), with the evidence it was met on (the grounding, instance and
+    trace that continue the challenge), the case's identity and lineage, and the version it came
+    from. Its rows of an earlier version are superseded by it; a later version finds it through the
+    lineage."""
+    row = {k: v for k, v in old.items() if k not in ("ruling_id", "supersedes", "inherited_from")}
+    row.update(evidence)
+    row.update({"key": f"concept:{rec.id}", "subject": rec.id, "iteration": run.iteration, "obligation": "satisfied",
+                "ruling": "upheld", "body_digest": body_digest, "lineage": old.get("lineage") or old.get("case_id"),
+                "predecessor": old.get("subject") if old.get("subject") != rec.id else old.get("predecessor")})
+    return row
+
+
+def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_digest: str) -> ConceptReplay:
+    """The upheld challenges and structural findings of this concept, and of the concept it
+    supersedes, before any reviewer:
+    - a challenge whose formals correspond (the same names and sorts) runs again on the current body,
+      its saved trace with the supplied relations Core computes left to Core: one the body still
+      confirms goes to the adjudicator (`replay_of`); one it meets stays an obligation, `satisfied`;
+    - a challenge that cannot be run on this body (its formals do not correspond, its record fails
+      today's schema, its trace or its contract words no longer serve) is an obligation of
+      insufficient evidence, carried over to the reviewer with what does not correspond: never
+      dropped, never discharged by default;
+    - an open structural finding, and an older upheld structural row without a schema, goes back to
+      the adjudicator against the current contract and rendering."""
+    keys = {f"concept:{c}" for c in concept_lineage(run, rec)}
+    rows = [r for r in effective_rows(_all_rows(run)) if r.get("key") in keys and r.get("ruling") == "upheld"]
+    out = ConceptReplay()
+    contract = " ".join(str(rec.get("contract", "")).split())
+    formals = {a["name"]: a.get("sort") for a in rec.args()}
+    divs, by_k = {}, {}
+    for r in [r for r in rows if r.get("schema") == CONCEPT_CASE_SCHEMA and r.get("obligation") in ("open", "satisfied", None)]:
+        d = {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}
+        inst, g = r.get("instance") or {}, r.get("grounding") or {}
+        named = {**{f: "literal" for f in inst.get("literals") or {}}, **{f: "nat" for f in inst.get("nats") or {}}, **{f: "track" for f in g}}
+        if any(formals.get(f) != sort for f, sort in named.items()) or set(named) != set(formals):
+            out.carry.append({"case_id": r.get("case_id"), "row": r,
+                              "why": f"its formals {sorted(named)} do not correspond to {sorted(formals)}"})
+            continue
+        bad = concept_divergence_defects(1, d, rec, contract, result_dim, saved=True)
+        if bad:
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "why": "its record fails today's schema: " + "; ".join(bad)[:300]})
+            continue
+        k = len(divs) + 1
+        divs[k], by_k[k] = d, r
+    confirmed, unconfirmed, errors, incomplete = execute_concept_divergences(
+        rec, {"divergences": list(divs.values())}, out_dir, result_dim, Reading(run.reading_file), saved=True) if divs else ([], [], [], [])
+    k_of = lambda line: int(m.group(1)) if (m := re.match(r"divergence (\d+)", line)) else None
+    for c in confirmed:
+        out.items.append({**c, "replay_of": by_k[k_of(c["line"])].get("case_id")})
+    for line in unconfirmed:
+        r = by_k.get(k_of(line))
+        if r is not None and (r.get("obligation") != "satisfied" or r.get("subject") != rec.id):
+            append_ruling(run, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
+        out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {line[:240]}")
+    for line in errors + incomplete:
+        r = by_k.get(k_of(line))
+        if r is not None:
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "why": f"it cannot be run on this body: {line[:300]}"})
+    # structural findings: typed rows, and older rows written before they had a schema
+    migrated = {r.get("legacy_of") for r in _all_rows(run) if r.get("legacy_of")}     # any row that ever took an older row over
+    typed = [r for r in rows if r.get("schema") == CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)
+             and r.get("ruling_id") not in migrated]
+    for r in typed:
+        item = {"line": f"not general: \"{_ws(r.get('words'))}\" — {_ws(r.get('why'))}", "rule": "not executed", "key": "not_general",
+                "div": {"kind": "not_general", "words": r.get("words"), "why": r.get("why")}}
+        if r.get("finding_root"):                         # carried under its own identity
+            item.update({"replay_of": r.get("finding_id"), "finding_root": r["finding_root"]})
+        else:                                             # written before findings had a root: decided again under a rooted identity
+            item["legacy_of"] = r.get("ruling_id")
+        out.items.append(item)
+    for r in rows:
+        if r.get("schema") or r.get("case_id") or r.get("finding_id") or r.get("ruling_id") in migrated:
+            continue
+        m = _LEGACY_ITEM.match(_ws(r.get("item")))
+        words, why = (m.group(1), m.group(2)) if m else ("", "")
+        out.items.append({"line": _ws(r.get("item")) if m else f"an earlier upheld finding, as recorded: {_ws(r.get('item'))[:300]}",
+                          "rule": "not executed", "key": "not_general", "legacy_of": r.get("ruling_id"),
+                          "div": {"kind": "not_general", "words": words or _ws(r.get("item")), "why": why or _ws(r.get("reason"))}})
+    return out
+
+
+def carry_over_block(carry: list[dict]) -> str:
+    """The upheld challenges the reviewer must carry over to this body: each with its recorded
+    instance, grounding, trace, instant and claim, and what does not correspond."""
+    if not carry:
+        return ""
+    out = ["### Challenges to carry over", "",
+           "Each challenge below was upheld against an earlier body of this concept and stays an obligation, but it cannot be run "
+           "on this body as recorded. For each, submit a divergence with `\"extends\": \"<case id>\"` that continues it: every scene "
+           "of its trace, with every field it states, and the same instant, contract words and claimed verdict or interval; every "
+           "recorded formal keeps its value, under the same name or the one formal it became; only a formal the challenge did not "
+           "have takes a value of yours. A challenge left without such a divergence keeps the review open.", ""]
+    for c in carry:
+        r = c.get("row") or {}
+        out += [f"#### Challenge `{c.get('case_id')}`", "", _ws(r.get("item"))[:400], "", f"What does not correspond: {c.get('why')}", "",
+                "Its record: ```json " + json.dumps({k: r.get(k) for k in CONCEPT_CASE_FIELDS if r.get(k) is not None}, ensure_ascii=False)[:6000] + "```", ""]
+    return "\n".join(out) + "\n"
+
+
+def concept_blocks(run: Run, rec, extras: dict) -> tuple[dict[str, str], str, str]:
+    """What a concept's reviewer and adjudicator are shown: (the prompt blocks, the rendering of the
+    body, the contract). `extras` carries the body (`body_json`), the atoms it reads and the
+    readings its coder chose. Raises `render_formula.Unrendered`."""
     onto = ontology.load(run.opts.ontology)
     glosses = {aid: onto.contract(aid) for aid in extras.get("reads", [])}
     for cid, crec in run.all_concepts().items():
         glosses[cid] = " ".join(str(crec.get("contract", "")).split())
-    try:
-        rendering = render_formula.render_concept({"args": [{"name": a["name"], "sort": {"sort": a["sort"], "values": a.get("values", [])}} for a in rec.args()],
-                                                   "params": [{"name": p["name"], "unit": p["unit"]} for p in rec.params()],
-                                                   "kind": rec.get("kind"), "body": extras.get("body_json")}, glosses)
-    except render_formula.Unrendered as e:
-        raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "rendered_body.md").write_text(rendering, encoding="utf-8")
+    rendering = render_formula.render_concept({"args": [{"name": a["name"], "sort": {"sort": a["sort"], "values": a.get("values", [])}} for a in rec.args()],
+                                               "params": [{"name": p["name"], "unit": p["unit"]} for p in rec.params()],
+                                               "kind": rec.get("kind"), "body": extras.get("body_json")}, glosses)
     contract = " ".join(str(rec.get("contract", "")).split())
     record = {k: v for k, v in rec.raw.items() if k not in ("scenarios", "used_by")}
     record["narrowings_by_the_coder"] = [n for n in extras.get("narrowings_added", []) if isinstance(n, dict)]
@@ -2188,10 +3313,104 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
         "review_checks": str(run.opts.review_checks),
         "review_submissions": str(run.opts.review_submissions),
     }
-    prompt = render.render("review_concept.md", blocks)
+    return blocks, rendering, contract
+
+
+# ---------------------------------------------------------------------------------------------
+# A reported defect of a concept a task reaches: adjudicated before anyone is charged
+# ---------------------------------------------------------------------------------------------
+@dataclass
+class DependencyReport:
+    """What became of a task's `dependency_defect.json`: `none` (no report), `protocol` (malformed,
+    an unknown or unreached concept, a trace that does not run, or no disagreement on it: the
+    session's defect, uncharged), `upheld` or `dismissed` (by the concept adjudication)."""
+    status: str
+    concept: str = ""
+    reasons: list[str] = field(default_factory=list)
+    line: str = ""
+
+
+def report_form(run: Run, task_dir: Path, reached: set[str]) -> tuple[dict, list[str]]:
+    """A task's `dependency_defect.json` and what is wrong with its form: not JSON, a concept the
+    task does not reach (or not accepted), or a divergence that does not meet the concept's schema."""
+    from ..model.blueprint import ConceptRecord
+    try:
+        d = json.loads((task_dir / "dependency_defect.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        return {}, [f"dependency_defect.json cannot be read: {e}"]
+    cid = d.get("concept_id") if isinstance(d, dict) else None
+    acc = run.all_concepts().get(cid) if isinstance(cid, str) else None
+    if acc is None or cid not in reached:
+        return d if isinstance(d, dict) else {}, [f"the report names `{cid}`, which is not an accepted concept this task reaches"]
+    rec = ConceptRecord(acc)
+    result_dim = body_dim(rec, acc.get("body_json")) if rec.get("kind") == "quantity" else None
+    return d, concept_divergence_defects(1, d, rec, " ".join(str(rec.get("contract", "")).split()), result_dim)
+
+
+def dependency_report(run: Run, task_dir: Path, reached: set[str]) -> DependencyReport:
+    """Read and judge a task's report that a concept it reaches computes what its contract
+    excludes. The report is a concept divergence (the concept's id, the contract's words, the
+    instance with its `nats`, the grounding, a trace, `at`, and the claimed contract verdict or, for
+    a quantity, interval). The harness checks its form, that the task reaches the concept, and runs
+    the concept on the trace; a disagreement goes to the existing concept adjudication. Its ruling is
+    recorded like a concept review's."""
+    from ..model.blueprint import ConceptRecord
+    if not (task_dir / "dependency_defect.json").exists():
+        return DependencyReport("none")
+    d, bad = report_form(run, task_dir, reached)
+    cid = d.get("concept_id") if isinstance(d, dict) else ""
+    if bad:
+        return DependencyReport("protocol", str(cid or ""), bad)
+    acc = run.all_concepts()[cid]
+    rec = ConceptRecord(acc)
+    result_dim = body_dim(rec, acc.get("body_json")) if rec.get("kind") == "quantity" else None
+    out = task_dir / "dependency_defect"
+    confirmed, agrees, errors, incomplete = execute_concept_divergences(rec, {"divergences": [d]}, out, result_dim, Reading(run.reading_file))
+    if not confirmed:
+        return DependencyReport("protocol", cid, errors + incomplete + [f"the concept gives the verdict the report claims for its contract: {x}" for x in agrees])
+    blocks, _rendering, _contract = concept_blocks(run, rec, acc)
+    ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report")
+    item, ruling, why = ruled[0]
+    return DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"])
+
+
+def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
+    """The concept's body, rendered from its code, is reviewed by a second vendor against its
+    contract: each divergence comes as a trace (which passes the trace check) and an instance, the
+    harness runs the body on it, and every divergence execution confirms, and every `not_general`
+    item, goes to the adjudicator, which rules by the contract's words. `returned` with the upheld
+    items; else `deferred` when a challenge could not be evaluated (stage `reviewer`), the
+    adjudication stays invalid or the harness does not run; else `accepted`, its advisories recorded
+    on the concept as what it computes as built. Raises `SessionUnavailable` when a session could
+    not be launched."""
+    if not enabled(run):
+        if run.opts.dry_run:
+            return ReviewOutcome("accepted", advisories=["dry run"])
+        raise RuntimeError("a reviewer_model is required for a concept review")
+    try:
+        blocks, rendering, contract = concept_blocks(run, rec, extras)
+    except render_formula.Unrendered as e:
+        raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "rendered_body.md").write_text(rendering, encoding="utf-8")
     result_dim = body_dim(rec, extras.get("body_json")) if rec.get("kind") == "quantity" else None
+    body_digest = _digest(extras.get("body_json"))
+    replay_notes: list[str] = []
+    try:
+        rep = replay_concept(run, rec, out_dir / "replay", result_dim, body_digest)
+        replay_notes = rep.notes
+        replayed = adjudicate_concept(run, rec, blocks, rep.items, out_dir, body_digest, "adjudicate_replay") if rep.items else []
+    except HarnessFailure as e:
+        return ReviewOutcome("deferred", reasons=[f"replay: {e}"], defer_stage="certificate")
+    except Deferred as e:
+        return ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage, advisories=replay_notes)
+    still = [f"{i['line']} — upheld again: {w}" for i, r, w in replayed if r == "upheld"]
+    if still:
+        return ReviewOutcome("returned", reasons=still, advisories=replay_notes)
+    carry = {c["case_id"]: c["row"] for c in rep.carry if c.get("case_id")}
+    prompt = render.render("review_concept.md", {**blocks, "carry_over": carry_over_block(rep.carry)})
     tools = ConceptTools(rec, contract, rendering, result_dim, out_dir, run.opts.review_checks,
-                         run.opts.review_submissions)
+                         run.opts.review_submissions, Reading(run.reading_file), carry)
     (out_dir / "review_concept_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])
@@ -2205,22 +3424,39 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
         return ReviewOutcome("deferred", reasons=[f"concept review: the reviewer submitted no answer in {tools.max_requests} requests"],
                              defer_stage="reviewer")
     errs = concept_review_defects(answer, rec, contract, rendering, result_dim)
-    if answer.get("verdict") not in VERDICTS:
+    if not _member(answer.get("verdict"), VERDICTS):
         return ReviewOutcome("deferred", reasons=["concept review: the answer is not a review: " + "; ".join(errs)], defer_stage="reviewer")
     confirmed, unconfirmed, errors, incomplete = tools.final         # the submitted answer's divergences, as run
+    listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
+    extension = {k: d["extends"] for k, d in enumerate(listed, 1)
+                 if isinstance(d, dict) and isinstance(d.get("extends"), str) and d["extends"] in carry
+                 and not concept_divergence_defects(k, d, rec, contract, result_dim) and not tools.extension_defects(k, d)}
+    k_of = lambda line: int(m.group(1)) if (m := re.match(r"divergence (\d+)", line)) else None
+    for c in confirmed:                                   # an extension continues its challenge's lineage
+        if k_of(c["line"]) in extension:
+            c["replay_of"] = extension[k_of(c["line"])]
+    for line in unconfirmed:                              # an extension the body meets: the challenge stays an obligation, satisfied
+        old = carry.get(extension.get(k_of(line)))
+        if old is not None:
+            d = listed[k_of(line) - 1]
+            append_ruling(run, satisfied_on(run, rec, old, {x: d.get(x) for x in CONCEPT_CASE_FIELDS if d.get(x) is not None}, body_digest))
+    ran = {k_of(x["line"]) for x in confirmed} | {k_of(x) for x in unconfirmed}
+    unextended = sorted(cid for cid in carry if cid not in {extension[k] for k in extension if k in ran})
+    tuned_all = answer.get("not_general") if isinstance(answer.get("not_general"), list) else []
     tuned = [{"line": f"not general: \"{_ws(t.get('words'))}\" — {_ws(t.get('why'))}", "div": {"kind": "not_general", **t}, "rule": "not executed",
-              "key": "not_general"} for t in answer.get("not_general", []) if isinstance(t, dict)]
+              "key": "not_general"} for k, t in enumerate(tuned_all, 1) if not structural_item_defects(k, t, contract, rendering)]
     items = confirmed + tuned
     try:
-        rulings = adjudicate_concept(run, rec, blocks, items, out_dir) if items else []
+        rulings = adjudicate_concept(run, rec, blocks, items, out_dir, body_digest) if items else []
     except Deferred as e:
         return ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage)
     upheld = [f"{i['line']} — upheld: {w}" for i, r, w in rulings if r == "upheld"]
-    notes = [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in rulings if r == "dismissed"]
+    notes = replay_notes + [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in rulings if r == "dismissed"]
     # a challenge the harness could not evaluate (a schema defect of the final answer, a trace that
     # does not decode or run, an incomplete trace) leaves the review undecided: without an upheld
     # item it defers the concept; a trace on which the body gives the contract's verdict is advisory
-    unusable = concept_review_defects(answer, rec, contract, rendering, result_dim) + errors + incomplete
+    unusable = concept_review_defects(answer, rec, contract, rendering, result_dim) + errors + incomplete \
+        + [e for k, d in enumerate(listed, 1) for e in tools.extension_defects(k, d)]
     _write_outcome(out_dir, {"reviewer_verdict": answer.get("verdict"), "rulings": [{"item": i["line"], "ruling": r, "why": w} for i, r, w in rulings],
                              "unconfirmed": unconfirmed, "unusable": unusable, "schema_defects": errs})
     if upheld:
@@ -2228,4 +3464,8 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     if unusable:
         return ReviewOutcome("deferred", reasons=[f"concept review: {len(unusable)} challenge(s) could not be evaluated: " + " | ".join(unusable)[:900]],
                              advisories=notes, defer_stage="reviewer")
+    if unextended:
+        why = {c["case_id"]: c["why"] for c in rep.carry}
+        return ReviewOutcome("deferred", reasons=["challenges carried over but not extended: " + " | ".join(f"{cid[:12]}: {why.get(cid, '')}" for cid in unextended)[:900]],
+                             advisories=notes, defer_stage="evidence")
     return ReviewOutcome("accepted", advisories=notes + [f"refuted by execution: {x}" for x in unconfirmed])

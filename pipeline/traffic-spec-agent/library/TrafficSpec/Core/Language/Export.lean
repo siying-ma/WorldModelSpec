@@ -1,7 +1,7 @@
 /-
   TrafficSpec.Core.Language.Export
   The specification language as JSON, for the tooling that renders a formula in prose, compares
-  bodies structurally, or hands a rule to program synthesis. One encoder per constructor;
+  bodies structurally, or checks a rule outside Lean. One encoder per constructor;
   `Decode.formula` reads this JSON back strictly, so a decoded formula exported again is canonical.
 -/
 import Lean.Data.Json

@@ -5,16 +5,19 @@ admission by one independent semantic gate, before any node may claim one.
    definition, term) the resolution table resolves, a representation — `aggregate` (the definition
    denotes an extensional set of tracked road-user classes), `not_aggregate`, or `gap` — and, for each aggregate,
    a mapping that classifies every road-user class of the ontology with quotes. The answer is
-   checked structurally (`checks/aggregates.py`) and asked for once more with its defects; rows
-   still defective close the laws that use them (`planning_protocol_failure`).
+   checked structurally (`checks/aggregates.py`) and asked for once more with its defects. A pair
+   still defective holds the laws that use it for the iteration, uncharged, and is asked again in
+   the next; a second such failure of the same pair stops the run (`protocol_failure`). The counts
+   are the run's state (`Run.aggregate_failures`), so they survive a resume.
 2. Verify (one second-vendor session per aggregate, `prompts/verify_aggregate.md`, the reviewer's
    model and effort): `supported`, `contradicted` or `underdetermined` per class, never a
    replacement. Supported classes are admitted as proposed; underdetermined ones become
    `unresolved`. A contradiction returns the whole mapping once to the planner with the gate's
    feedback; the new mapping is checked and verified again, and a class still contradicted becomes
-   `unresolved` (`gate_contradiction`). A verifier answer malformed twice admits every class as
-   `unresolved` (`gate_protocol_invalid`); a verifier session that cannot be launched raises
-   `SessionUnavailable`, and nothing is admitted.
+   `unresolved` (`gate_contradiction`). A verifier answer malformed after its re-ask, like a verifier
+   session that cannot be launched, raises `SessionUnavailable`: nothing is admitted, and the
+   resume verifies again under the session's retry budget. No admission is ever made from a
+   transport or protocol failure.
 3. Persist: `aggregate_certificates.jsonl` keeps the proposal, any retry, the admitted record, the
    exact verifier requests and responses, the model and effort and every input digest; only the
    admitted record enters the run's reading, and `aggregate_input_manifest.json` records, per
@@ -34,7 +37,8 @@ existing nodes requires a new run. A run on a base run takes the base's admissio
 are unchanged.
 
 A law-local aggregate (`<law id>:<span>::<term>`) comes from a law's own plan and is admitted the
-same way, its quotes verbatim in the law. A plan that claims a definition-scoped id the selection
+same way, its quotes verbatim in the law; its admission is bound to the record's content, so a
+re-plan that writes the same id with another mapping is gated again and replaces it. A plan that claims a definition-scoped id the selection
 did not make an aggregate goes back to the selection role once (`correct_claims`); a second such
 claim closes the law.
 """
@@ -44,6 +48,7 @@ import json
 from pathlib import Path
 
 from ..agents import render
+from ..agents.session import SessionUnavailable
 from ..checks import aggregates as checks
 from ..model import corpus, definitions as definitions_mod
 from ..model.ontology import Ontology
@@ -378,9 +383,7 @@ def gate(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: 
     cert["exchanges"].append(ex)
     current = rec
     if verdicts is None:
-        statuses = {c: "unresolved" for c in _statuses(rec)}
-        cert["downgrades"] = [{"class": c, "why": "gate_protocol_invalid"} for c in statuses]
-        return _finish(cert, current, statuses, digests)
+        raise SessionUnavailable(f"the aggregate gate's answer for `{aid}` stayed malformed; nothing is admitted")
     contradicted = [c for c, v in verdicts.items() if v["verdict"] == "contradicted"]
     if contradicted:
         feedback = "\n".join(f"- `{aid}` class `{c}`: proposed {_statuses(rec)[c]}; the gate found the posted words support the "
@@ -392,9 +395,7 @@ def gate(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: 
             verdicts, ex = verify(run, new, sources, onto, out_dir, f"verify_{checks.slug(aid)}_retry")
             cert["exchanges"].append(ex)
             if verdicts is None:
-                statuses = {c: "unresolved" for c in _statuses(new)}
-                cert["downgrades"] = [{"class": c, "why": "gate_protocol_invalid"} for c in statuses]
-                return _finish(cert, current, statuses, digests)
+                raise SessionUnavailable(f"the aggregate gate's answer for `{aid}` stayed malformed; nothing is admitted")
     statuses = {}
     for c, s in _statuses(current).items():
         v = verdicts.get(c, {}).get("verdict")
@@ -424,10 +425,13 @@ def admit(run: Run, recs: list[dict], table: dict, defs: list[dict], onto: Ontol
     selection = load_selection(run)
     precedence_digest = definitions_mod.precedence_hash(run)
     entries, notes, to_user = [], [], []
+    certs = _effective_certificates(jsonl.read_strict(certificates_file(run)))
     for rec in recs:
         aid = rec["aggregate_id"]
         if Reading(run.reading_file).aggregate(aid) is not None:
-            continue
+            if not checks.law_local(aid) or checks.digest((certs.get(aid) or {}).get("proposal")) == checks.digest(rec):
+                continue                                  # admitted from this very record
+            notes.append(f"law-local aggregate `{aid}`: the plan wrote another mapping under its id; gated again")
         if checks.law_local(aid):
             law_id = aid.split(":", 1)[0]
             sources = {law_id: _ws(laws[law_id].text)} if laws and law_id in laws else {}
@@ -451,42 +455,47 @@ def admit(run: Run, recs: list[dict], table: dict, defs: list[dict], onto: Ontol
         down = cert["downgrades"]
         notes.append(f"aggregate `{aid}` admitted: included {len(entry['included'])}, unresolved {len(entry['unresolved'])}"
                      + (f"; downgraded to unresolved: {', '.join(d['class'] + ' (' + d['why'] + ')' for d in down)}" if down else ""))
-        if any(d["why"] == "gate_protocol_invalid" for d in down):
-            to_user.append(f"aggregate `{aid}`: the gate's answer stayed malformed, so every class was admitted as unresolved "
-                           "(a diagnostic: no decision is needed; rules that read it are unknown for every class, and their witnesses can fail as unknown)")
     return entries, notes, to_user
 
 
-def prepare(run: Run, laws: list[corpus.Law], defs: list[dict], onto: Ontology, out_dir: Path) -> tuple[list[str], list[str], dict[str, str]]:
+def prepare(run: Run, laws: list[corpus.Law], defs: list[dict], onto: Ontology, out_dir: Path) -> tuple[list[str], list[str], dict[str, str], str]:
     """Before any plan batch: select and derive for every resolved pair not yet selected, gate the
     aggregates, merge the admitted ones. A selected aggregate with no effective certificate is an
     interrupted admission and is selected and derived again. Returns (notes, lines for the operator,
-    laws to close with why: a pair whose selection stayed defective)."""
+    laws held this iteration with why: a pair whose selection stayed defective, the reason the run
+    stops, or ""): a pair that stays defective a second time stops the run."""
     table = definitions_mod.load_table(run)
     selected = load_selection(run)
     _drop_orphan_selections(run, selected)
     want = set(checks.missing_pairs(selected, table))
     if not want:
-        return [], [], {}
+        return [], [], {}, ""
     out_dir.mkdir(parents=True, exist_ok=True)
     sel, recs, errs = select_and_derive(run, table, defs, onto, want, out_dir)
     if run.opts.dry_run:
-        return [f"dry run: the selection prompt for {len(want)} defined term(s) is in {out_dir}"], [], {}
+        return [f"dry run: the selection prompt for {len(want)} defined term(s) is in {out_dir}"], [], {}, ""
     selected.update(sel)
     save_selection(run, selected)
-    close = {}
+    hold, stop = {}, []
     pairs = checks.pairs_of(table)
     derived = {r.get("aggregate_id") for r in recs}
     underived = {key for key, row in sel.items() if row.get("representation") == "aggregate" and row.get("target") not in derived}
     for p in sorted((want - set(sel)) | underived):
         what = "the mapping of" if p in underived else "the representation of"
+        key = f"select:{p[0]}::{p[1]}"
+        run.aggregate_failures[key] = run.aggregate_failures.get(key, 0) + 1
+        why = f"{what} `{p[0]}` / \"{p[1]}\" stayed defective: " + "; ".join(errs)[:300]
+        if run.aggregate_failures[key] >= 2:
+            stop.append(why + f" (iteration after iteration, {run.aggregate_failures[key]} times)")
         for law in pairs.get(p, []):
-            close[law] = f"planning_protocol_failure: {what} `{p[0]}` / \"{p[1]}\" stayed defective: " + "; ".join(errs)[:300]
+            hold[law] = why + "; held, uncharged, and asked again next iteration"
+    for p in set(sel) - underived:
+        run.aggregate_failures.pop(f"select:{p[0]}::{p[1]}", None)
     notes = [f"selection: {sum(1 for r in sel.values() if r['representation'] == 'aggregate')} aggregate, "
              f"{sum(1 for r in sel.values() if r['representation'] == 'not_aggregate')} not an aggregate, "
              f"{sum(1 for r in sel.values() if r['representation'] == 'gap')} gap, of {len(want)} defined term(s)"]
     entries, n2, to_user = admit(run, recs, table, defs, onto, out_dir)
-    return notes + n2, to_user, close
+    return notes + n2, to_user, hold, "; ".join(stop)
 
 
 def claimed_ids(nodes) -> dict[str, set[str]]:

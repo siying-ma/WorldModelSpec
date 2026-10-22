@@ -25,6 +25,9 @@ class FakeRun:
         self.iteration = 1
         self.opts = Options(run_id="t", laws=d / "laws.jsonl", ontology=ONTO.path, reading=d / "reading.json",
                             model="m", reviewer_model="gpt-x", review_passes=1)
+        self.reading_file = d / "reading.json"
+        if not self.reading_file.exists():
+            self.reading_file.write_text(json.dumps({"params": [], "aggregates": []}))
 
 
 def node() -> Node:
@@ -146,7 +149,7 @@ class JudgeRouting(unittest.TestCase):
     def test_mismatch_upheld(self):
         j, _ = self.judge({"a": A_VIOLATED, "b": B("upheld")}, cert("compliant"))
         self.assertEqual(j.route, "upheld")
-        self.assertTrue(j.key.startswith("rule_permits_unlawful:"))
+        self.assertTrue(j.key.startswith("case:"))                          # a repeat is the same case (its lineage)
 
     def test_parameter_question_needs_a_proposed_parameter(self):
         j, _ = self.judge({"a": A_VIOLATED, "b": B("parameter_question")}, cert(),
@@ -188,18 +191,18 @@ class JudgeRouting(unittest.TestCase):
         self.assertIn("at most 1", defect)
 
         answer = {"verdict": "return", "divergences": [div(), div()], "advisories": [], "gap_candidates": []}
-        saved_build, saved_replay = review.build_context, review.replay_upheld
+        saved_build, saved_replay = review.build_context, review.replay_obligations
         saved_judge, saved_session = review.judge_divergence, review.session.run_tools
         self.run.opts.max_divergences = 1
         self.run.all_concepts = lambda: {}
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         review.judge_divergence = lambda *_a, **_kw: self.fail("an over-limit answer reached a judge")
         review.session.run_tools = scripted_reviewer([submit(answer)] * 3)
         try:
             outcome = review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
         finally:
-            review.build_context, review.replay_upheld = saved_build, saved_replay
+            review.build_context, review.replay_obligations = saved_build, saved_replay
             review.judge_divergence, review.session.run_tools = saved_judge, saved_session
         self.assertEqual((outcome.status, outcome.defer_stage), ("deferred", "reviewer"))
         self.assertIn("at most 1", outcome.reasons[0])
@@ -258,22 +261,28 @@ class Deferral(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_law_deferral_is_bounded_and_keeps_the_plan(self):
-        led = Ledger(self.d / "l.jsonl", ["L-1"], 2)
-        led.mark_planned("L-1", ["L_1_o1"], 1)
-        self.assertFalse(led.defer_judge("L-1", "stage_b", ["x"]))
-        e = led.entries["L-1"]
-        self.assertEqual((e.state, e.nodes, e.attempts), ("planned", ["L_1_o1"], 0))
-        self.assertTrue(led.defer_judge("L-1", "stage_b", ["x"]))
-        self.assertEqual(led.entries["L-1"].state, "failed")
-        self.assertIn("judge_protocol_failure", led.entries["L-1"].reasons[0])
+    def test_node_deferral_is_counted_per_node_and_stage(self):
+        from harness.store.ledger import NodeLedger
+        nl = NodeLedger(self.d / "n.jsonl", 2)
+        self.assertFalse(nl.defer_judge("L_1_o1", "L-1", "stage_b", ["x"]))
+        self.assertFalse(nl.defer_judge("L_1_o2", "L-1", "stage_b", ["x"]))    # a sibling's deferral counts for the sibling
+        self.assertTrue(nl.defer_judge("L_1_o1", "L-1", "stage_b", ["x"]))
+        self.assertEqual(nl.entries["L_1_o1"].law, "L-1")
 
-    def test_a_valid_judgment_clears_the_count(self):
-        led = Ledger(self.d / "l.jsonl", ["L-1"], 2)
-        led.mark_planned("L-1", ["L_1_o1"], 1)
-        led.defer_judge("L-1", "stage_a", [])
-        led.clear_judge("L-1")
-        self.assertFalse(led.defer_judge("L-1", "stage_a", []))
+    def test_a_valid_judgment_clears_only_its_node(self):
+        from harness.store.ledger import NodeLedger
+        nl = NodeLedger(self.d / "n.jsonl", 2)
+        nl.defer_judge("L_1_o1", "L-1", "stage_a", [])
+        nl.defer_judge("L_1_o2", "L-1", "stage_a", [])
+        nl.clear_judge("L_1_o2")
+        self.assertTrue(nl.defer_judge("L_1_o1", "L-1", "stage_a", []))
+        self.assertFalse(nl.defer_judge("L_1_o2", "L-1", "stage_a", []))
+
+    def test_another_stage_answering_resets_the_count(self):
+        from harness.store.ledger import NodeLedger
+        nl = NodeLedger(self.d / "n.jsonl", 2)
+        nl.defer_judge("L_1_o1", "L-1", "stage_a", [])
+        self.assertFalse(nl.defer_judge("L_1_o1", "L-1", "stage_b", []))     # stage A answered this time
 
     def test_concept_deferral(self):
         cl = ConceptLedger(self.d / "c.jsonl", 3)
@@ -349,15 +358,15 @@ class DivergenceCap(unittest.TestCase):
         self.run = FakeRun(Path(self.tmp.name))
         self.run.opts.max_divergences = 3
         self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.session.run_tools)
+        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.session.run_tools)
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         self.certified, self.judged = [], []
-        review.certify = lambda _run, _n, divs, _reading, _out: self.certified.append(len(divs)) or {}
+        review.certify = lambda _run, _n, divs, _reading, _out, **_k: self.certified.append(len(divs)) or {}
         review.judge_divergence = lambda *_a, **_kw: self.judged.append(1)
 
     def tearDown(self):
-        (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.session.run_tools) = self.saved
+        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.session.run_tools) = self.saved
         self.tmp.cleanup()
 
     def answer(self, n):
@@ -389,13 +398,13 @@ class FailClosed(unittest.TestCase):
         self.run = FakeRun(Path(self.tmp.name))
         self.run.opts.max_divergences = 3
         self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
                       review.session.run_tools)
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         review.append_ruling = lambda *_a, **_kw: None
         self.certs, self.route, self.judged = {}, "upheld", []          # records by situation
-        review.certify = lambda _run, _n, divs, _reading, _out: {k: self.certs[d["situation"]] for k, d in divs.items() if d["situation"] in self.certs}
+        review.certify = lambda _run, _n, divs, _reading, _out, **_k: {k: self.certs[d["situation"]] for k, d in divs.items() if d["situation"] in self.certs}
 
         def judge(*_a, **_kw):
             self.judged.append(1)
@@ -403,7 +412,7 @@ class FailClosed(unittest.TestCase):
         review.judge_divergence = judge
 
     def tearDown(self):
-        (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
          review.session.run_tools) = self.saved
         self.tmp.cleanup()
 
@@ -453,7 +462,7 @@ class ConceptFailClosed(unittest.TestCase):
         self.saved = (render_formula.render_concept, review.session.run_tools, review.execute_concept_divergences, review.adjudicate_concept)
         render_formula.render_concept = lambda *_a, **_kw: "the rendering"
         self.result, self.rulings = ([], [], [], []), []
-        review.execute_concept_divergences = lambda _rec, _a, _out, *_r: self.result
+        review.execute_concept_divergences = lambda _rec, _a, _out, *_r, **_k: self.result
         review.adjudicate_concept = lambda *_a, **_kw: self.rulings
 
     def tearDown(self):
@@ -467,7 +476,7 @@ class ConceptFailClosed(unittest.TestCase):
 
     def good(self):
         return {"kind": "holds_wrongly", "contract_verdict": "fails", "contract_words": "c holds", "situation": "s",
-                "instance": {"literals": {}, "params": {}}, "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}}
+                "instance": {"literals": {}, "params": {}}, "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}, "at": 0}
 
     def test_a_malformed_return_defers(self):
         bad = {**self.good(), "instance": {"literals": {"2": "2"}, "params": {}}}
@@ -498,7 +507,7 @@ class QuantityDivergence(unittest.TestCase):
     def div(self, **kw):
         d = {"kind": "value_wrongly", "situation": "s", "contract_words": "the distance it covers",
              "contract_value": {"lo": [10, "m"], "hi": [12, "m"]}, "instance": {"literals": {}, "params": {"t": [1, "s"]}},
-             "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}}
+             "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}, "at": 0}
         d.update(kw)
         return d
 
@@ -604,16 +613,17 @@ class CaseLanguageMeanings(unittest.TestCase):
 
 
 class RegionPlaces(unittest.TestCase):
-    """A record that reads a region's property claims the place: the region the road user occupies
-    and the kind of region it is read on."""
-    def test_a_property_without_its_place_returns(self):
+    """A record that reads a region's property claims the kind of region it is read on; how the region
+    is tied to the road user is the formula's, which the gate checks."""
+    def test_a_property_without_its_kind_returns(self):
         from harness.checks import validate_a
-        errs = validate_a.check_region_places("N", {"st.curvature", "st.sight_distance", "st.crest", "st.region_geometry"}, ONTO)
-        self.assertTrue(errs and "`rel.occupies`" in errs[0] and "st.curvature" in errs[0])
+        self.assertIn("st.crest", validate_a.region_atoms(ONTO)[1])                # a kind: claiming it names the place
+        errs = validate_a.check_region_places("N", {"st.curvature", "st.sight_distance", "st.region_geometry"}, ONTO)
+        self.assertTrue(errs and "kind of region" in errs[0] and "st.curvature" in errs[0])
 
-    def test_a_property_with_its_place_passes(self):
+    def test_a_property_with_its_kind_passes_without_occupancy(self):
         from harness.checks import validate_a
-        self.assertEqual(validate_a.check_region_places("N", {"st.curvature", "st.roadway", "rel.occupies", "st.sight_distance"}, ONTO), [])
+        self.assertEqual(validate_a.check_region_places("N", {"st.curvature", "st.roadway", "st.sight_distance"}, ONTO), [])
 
     def test_no_property_no_demand(self):
         from harness.checks import validate_a
@@ -678,47 +688,6 @@ class ConceptLiteralsMessage(unittest.TestCase):
         from harness.model.blueprint import ConceptRecord
         line = review.literal_formals_line(ConceptRecord({"concept_id": "drv.test.c", "args": [{"name": "u", "sort": "track"}]}))
         self.assertIn("`instance.literals` is `{}`", line)
-
-
-class StallStop(unittest.TestCase):
-    """An iteration is a stall only when no remedy waits for its first try."""
-
-    def ledgers(self, d: Path):
-        from harness.store.ledger import NodeLedger
-        led = Ledger(d / "l.jsonl", ["L-1", "L-2"], 3)
-        led.mark_planned("L-1", ["L_1"], 1); led.mark_planned("L-2", ["L_2"], 1)
-        return led, ConceptLedger(d / "c.jsonl", 2), NodeLedger(d / "n.jsonl", 2)
-
-    def test_pending_first_tries(self):
-        from harness.loop import first_try_pending
-        with tempfile.TemporaryDirectory() as t:
-            d = Path(t)
-            led, con, nod = self.ledgers(d)
-            self.assertFalse(first_try_pending(led, con, nod))
-            led.return_law("L-1", ["r"], 2)
-            self.assertTrue(first_try_pending(led, con, nod))                  # a law returned once
-            led.mark_planned("L-1", ["L_1"], 3)
-            self.assertFalse(first_try_pending(led, con, nod))                 # planned again: tried
-            led.defer_judge("L-2", "reviewer", ["no answer"])
-            self.assertTrue(first_try_pending(led, con, nod))                  # deferred once
-            led.clear_judge("L-2")
-            nod.returned("L_2", "L-2", ["gate"], "task", 3)
-            self.assertTrue(first_try_pending(led, con, nod))                  # a node returned once, its law held
-            nod.repaired("L_2")
-            self.assertFalse(first_try_pending(led, con, nod))
-            con.planned("drv.x", ["L_2"], 3); con.returned("drv.x", ["review"], "task")
-            self.assertTrue(first_try_pending(led, con, nod))                  # a concept returned once, its user open
-
-    def test_spent_or_orphaned_remedies_do_not_count(self):
-        from harness.loop import first_try_pending
-        with tempfile.TemporaryDirectory() as t:
-            d = Path(t)
-            led, con, nod = self.ledgers(d)
-            led.return_law("L-1", ["r"], 2); led.mark_planned("L-1", ["L_1"], 3); led.return_law("L-1", ["r"], 3)
-            self.assertFalse(first_try_pending(led, con, nod))                 # a second return
-            nod.returned("L_2", "L-2", ["gate"], "task", 3); led.fail("L-2", ["x"])
-            con.planned("drv.x", ["L_2"], 3); con.returned("drv.x", ["review"], "task")
-            self.assertFalse(first_try_pending(led, con, nod))                 # its law closed
 
 
 class SubsetRun(unittest.TestCase):
@@ -810,21 +779,21 @@ class ReviewToolLoop(unittest.TestCase):
         self.run = FakeRun(Path(self.tmp.name))
         self.run.opts.max_divergences = 3
         self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
                       review.session.run_tools)
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         review.append_ruling = lambda *_a, **_kw: None
         self.certs, self.runs = {"s": cert(rule="compliant")}, []
 
-        def certify(_run, _n, divs, _reading, out):
+        def certify(_run, _n, divs, _reading, out, **_k):
             self.runs.append(Path(out).relative_to(self.tmp.name).as_posix())
             return {k: self.certs[d["situation"]] for k, d in divs.items() if d["situation"] in self.certs}
         review.certify = certify
         review.judge_divergence = lambda *_a, **_kw: SimpleNamespace(route="upheld", line="the case", key="k", question="q", row={})
 
     def tearDown(self):
-        (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
          review.session.run_tools) = self.saved
         self.tmp.cleanup()
 
@@ -945,8 +914,9 @@ class ToolSession(unittest.TestCase):
                    "usage": {"input_tokens": 10, "output_tokens": 5}, "status": "completed"}, False
 
     def usage(self):
+        """The settled rows: one per request that returned."""
         f = self.d / "t" / "usage.jsonl"
-        return [json.loads(l) for l in f.read_text().splitlines()] if f.exists() else []
+        return [r for r in (json.loads(l) for l in f.read_text().splitlines()) if r.get("state") == "settled"] if f.exists() else []
 
     def test_each_request_is_recorded_and_the_conversation_sent_back(self):
         script = ["check_divergence", "submit_review"]
@@ -1015,7 +985,7 @@ class CaseDiagnosis(unittest.TestCase):
                 bad = "kin_extent" in Path(cpath).read_text()
                 lines.append("CERT\t" + json.dumps({"schema": review.CERT_SCHEMA, "divergence": int(k),
                                                     "case_value": {"value": "false" if bad else "true", "unknown_reasons": []}}))
-            return True, "\n".join(lines)
+            return 0, "\n".join(lines)
         review.lean.lean_run = lean_run
         fact = lambda m: {"cmp": "eq", "lhs": {"measure": m, "args": [{"var": "u"}]}, "rhs": {"lit": {"num": 1, "den": 1}, "unit": "metre"}}
         d = div(case={"and": [{"atom": "ru_car", "args": [{"var": "v"}], "params": []},
@@ -1041,10 +1011,10 @@ class Obligations(unittest.TestCase):
         self.run = FakeRun(Path(self.tmp.name))
         self.saved = (review.certify, review.judge_divergence)
         self.rule, self.law, self.lint = "violated", "compliant", []
-        review.certify = lambda _run, _n, divs, _rd, _out: {k: {**cert(rule=self.rule), "case_value": {"value": "true"},
+        review.certify = lambda _run, _n, divs, _rd, _out, **_k: {k: {**cert(rule=self.rule), "case_value": {"value": "true"},
                                                                  "lint_errors": list(self.lint)} for k in divs}
 
-        def judge(_run, _n, _ctx, _onto, d, c, _out, _label, previous=None):
+        def judge(_run, _n, _ctx, _onto, d, c, _out, _label, previous=None, lineage=""):
             verdict = c["rule_result"]["verdict"]
             sa = {"verdict": self.law, "decisive": True, "law_words": "shall stop"}
             agrees = review._equivalent(verdict, self.law)
@@ -1054,7 +1024,7 @@ class Obligations(unittest.TestCase):
             return SimpleNamespace(route=row["route"], row=row, line="the case", key="k")
         review.judge_divergence = judge
         review.append_ruling(self.run, {"schema": review.CASE_SCHEMA, "key": "law:L-1", "subject": "L_1_o1", "case_id": "c1",
-                                        "ruling": "upheld", "lawful_verdict": "violated", "grounding": {"v": 1},
+                                        "ruling": "upheld", "lawful_verdict": "violated", "grounding": {"user1": 1},
                                         "trace": {"scenes": [{"t": 0}]}, "case": "tt", "entities": {}, "at": 0,
                                         "stage_a": {"verdict": "compliant"}, "stageA_digest": "A", "stage_b": {"outcome": "upheld"},
                                         "stageB_digest": "B", "iteration": 1})
@@ -1063,9 +1033,12 @@ class Obligations(unittest.TestCase):
         review.certify, review.judge_divergence = self.saved
         self.tmp.cleanup()
 
-    def replay(self, run=None):
+    CTX = SimpleNamespace(law=LAW)
+
+    def replay(self, run=None, pending=None, questions=None):
         n = Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}]})
-        return review.replay_upheld(run or self.run, n, None, ONTO, None, Path(self.tmp.name))
+        out = review.replay_obligations(run or self.run, n, self.CTX, ONTO, None, review._Need(), Path(self.tmp.name), pending, questions)
+        return out.reasons, out.keys, out.notes
 
     def states(self, run=None):
         return [r.get("obligation") for r in review.upheld_rows(run or self.run, {"L-1"})]
@@ -1108,7 +1081,7 @@ class Obligations(unittest.TestCase):
 
 
 class EvidenceIntegrity(unittest.TestCase):
-    """Revision 28, part 2: each launch keeps its evidence; a malformed divergence is never run; a
+    """Each launch keeps its evidence; a malformed divergence is never run; a
     diagnosis belongs to its own certificate run and never defers the review; a concept harness
     failure defers at `certificate`."""
     def setUp(self):
@@ -1118,7 +1091,7 @@ class EvidenceIntegrity(unittest.TestCase):
         self.run.opts.max_divergences = 3
         self.saved = (review.certify, review.lean.lean_run)
         self.dirs = []
-        review.certify = lambda _r, _n, divs, _rd, out: self.dirs.append(Path(out).relative_to(self.d).as_posix()) or \
+        review.certify = lambda _r, _n, divs, _rd, out, **_k: self.dirs.append(Path(out).relative_to(self.d).as_posix()) or \
             {k: cert(rule="compliant") for k in divs}
 
     def tearDown(self):
@@ -1151,10 +1124,10 @@ class EvidenceIntegrity(unittest.TestCase):
             if "diagnosis" in str(prog):
                 seen_traces.extend(Path(t).read_text() for _k, t, _c in items)
                 if not diagnosis_ok:
-                    return False, "error: boom"
-                return True, "\n".join("CERT\t" + json.dumps({"schema": review.CERT_SCHEMA, "divergence": int(k),
+                    return 1, "error: boom"
+                return 0, "\n".join("CERT\t" + json.dumps({"schema": review.CERT_SCHEMA, "divergence": int(k),
                                                                  "case_value": {"value": "false", "unknown_reasons": []}}) for k, _t, _c in items)
-            return True, "\n".join("CERT\t" + json.dumps({"schema": review.CERT_SCHEMA, "divergence": int(k), "rule_result": {"verdict": "violated"},
+            return 0, "\n".join("CERT\t" + json.dumps({"schema": review.CERT_SCHEMA, "divergence": int(k), "rule_result": {"verdict": "violated"},
                                                              "case_value": {"value": "false", "unknown_reasons": []}}) for k, _t, _c in items)
         return lean_run
 
@@ -1190,7 +1163,7 @@ class EvidenceIntegrity(unittest.TestCase):
             raise review.HarnessFailure("the concept review harness did not run")
         review.execute_concept_divergences = broken
         good = {"kind": "holds_wrongly", "contract_verdict": "fails", "contract_words": "c holds", "situation": "s",
-                "instance": {"literals": {}, "params": {}}, "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}}
+                "instance": {"literals": {}, "params": {}}, "grounding": {"u": 1}, "trace": {"scenes": [{"t": 0}]}, "at": 0}
         review.session.run_tools = scripted_reviewer([submit({"verdict": "return", "divergences": [good], "not_general": [], "advisories": []})])
         try:
             out = review.review_concept(self.run, rec, {"reads": [], "body_json": {}}, self.d)
@@ -1231,7 +1204,7 @@ class SessionRecords(ToolSession):
 
 
 class CaseTimeline(unittest.TestCase):
-    """Revision 28, part 3: the same case in time order, with nothing added."""
+    """The same case in time order, with nothing added."""
     @staticmethod
     def atom(name, *args):
         return {"atom": name, "args": [{"var": a} for a in args], "params": []}
@@ -1291,32 +1264,45 @@ class CaseTimeline(unittest.TestCase):
         self.assertEqual(t.count("`v`, `lane`"), 2)
 
     def test_nothing_is_added(self):
+        """Every name the timeline shows is a name of the case: a fixed set of cases over each form the
+        timeline places (windows behind and ahead, a time test, `rises`, `since`, nested windows, the
+        connectives), each with its observation times."""
         import json as _json, re as _re
-        rows = [_json.loads(l) for l in (paths.REPO / "results" / "smoke18" / "rulings.jsonl").read_text().splitlines()] \
-            if (paths.REPO / "results" / "smoke18" / "rulings.jsonl").exists() else []
-        cases = [r for r in rows if r.get("case") not in (None, "tt", "ff")]
-        for r in cases:
-            t = self.render(r["case"], r["at"], [s["t"] for s in r["trace"]["scenes"]])
+        a, sec = self.atom, self.sec
+        cases = [
+            ({"and": [{"holds_for": "time", "length": sec(10), "subject": "v", "body": a("stopped", "v")},
+                      {"within": "time", "length": sec(5), "subject": "v", "body": a("occupies", "v", "lane")}]}, 22000, [12000, 17000, 22000, 27000]),
+            ({"holds_for": "time", "length": sec(15), "subject": "v",
+              "body": {"implies": [self.time_is("ge", 15), {"or": [a("on_straight", "v"), {"not": a("signals", "v")}]}]}}, 22000, [7000, 15000, 22000]),
+            ({"rises": a("enters", "v", "crossing")}, 22000, [21000, 21500, 22000]),
+            ({"since": [a("yields", "v", "w"), a("approaches", "w", "crossing")]}, 22000, [20000, 21000, 22000]),
+            ({"holds_for": "time", "length": sec(10), "subject": "v",
+              "body": {"holds_for": "time", "length": sec(2), "subject": "v", "body": a("slows", "v")}}, 22000, [10000, 16000, 22000]),
+        ]
+        for case, at, times in cases:
+            t = self.render(case, at, times)
             t = "\n".join(t.splitlines()[1:])                               # the facts, not the heading
-            names = set(_re.findall(r"`([^`]+)`", t)) - {"v"}
-            self.assertTrue(names <= set(_re.findall(r'"([A-Za-z_][\w.]*)"', _json.dumps(r["case"]))) | {"u", "c"},
-                            names - set(_re.findall(r'"([A-Za-z_][\w.]*)"', _json.dumps(r["case"]))))
+            names = set(_re.findall(r"`([^`]+)`", t))
+            known = set(_re.findall(r'"([A-Za-z_][\w.]*)"', _json.dumps(case)))
+            shown = {x.strip() for n in names for x in n.split(",")}
+            self.assertTrue(shown, case)
+            self.assertTrue(shown <= known, shown - known)
 
 
 class TwoPasses(unittest.TestCase):
-    """Revision 29: two independent reviewer sessions per rule review, their challenges joined."""
+    """Two independent reviewer sessions per rule review, their challenges joined."""
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.run = FakeRun(Path(self.tmp.name))
         self.run.opts.max_divergences, self.run.opts.review_passes = 3, 2
         self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
                       review.session.run_tools)
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         review.append_ruling = lambda *_a, **_kw: None
         self.certs, self.judged = {"s": cert(rule="compliant")}, []
-        review.certify = lambda _r, _n, divs, _rd, _o: {k: {**self.certs[d["situation"]], "canonical_case": d["situation"]}
+        review.certify = lambda _r, _n, divs, _rd, _o, **_k: {k: {**self.certs[d["situation"]], "canonical_case": d["situation"]}
                                                          for k, d in divs.items() if d["situation"] in self.certs}
 
         def judge(_run, _n, _ctx, _onto, d, c, *_a, **_kw):
@@ -1325,7 +1311,7 @@ class TwoPasses(unittest.TestCase):
         review.judge_divergence = judge
 
     def tearDown(self):
-        (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
          review.session.run_tools) = self.saved
         self.tmp.cleanup()
 
@@ -1399,7 +1385,7 @@ class TwoPasses(unittest.TestCase):
 
     def test_each_pass_keeps_its_own_evidence(self):
         runs = []
-        review.certify = lambda _r, _n, divs, _rd, out: runs.append(Path(out).relative_to(self.tmp.name).as_posix()) or \
+        review.certify = lambda _r, _n, divs, _rd, out, **_k: runs.append(Path(out).relative_to(self.tmp.name).as_posix()) or \
             {k: {**cert(rule="compliant"), "canonical_case": "x"} for k in divs}
         self.review({1: [("check_divergence", {"divergence": div()}), submit(self.answer(div()))],
                      2: [("check_divergence", {"divergence": div()}), submit(self.answer(div()))]})
@@ -1413,13 +1399,13 @@ class CodeReviewFixes(unittest.TestCase):
         self.run = FakeRun(Path(self.tmp.name))
         self.run.opts.max_divergences = 3
         self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
                       review.session.run_tools)
         review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_upheld = lambda *_a, **_kw: ([], [], [])
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
         review.append_ruling = lambda *_a, **_kw: None
         self.certs, self.judged = {"s": cert(rule="compliant")}, []
-        review.certify = lambda _r, _n, divs, _rd, _o: {k: {**self.certs[d["situation"]], "canonical_case": "same"}
+        review.certify = lambda _r, _n, divs, _rd, _o, **_k: {k: {**self.certs[d["situation"]], "canonical_case": "same"}
                                                          for k, d in divs.items() if d["situation"] in self.certs}
 
         def judge(_run, _n, _ctx, _onto, d, c, *_a, **_kw):
@@ -1428,7 +1414,7 @@ class CodeReviewFixes(unittest.TestCase):
         review.judge_divergence = judge
 
     def tearDown(self):
-        (review.build_context, review.replay_upheld, review.judge_divergence, review.certify, review.append_ruling,
+        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
          review.session.run_tools) = self.saved
         self.tmp.cleanup()
 
@@ -1458,7 +1444,7 @@ class CodeReviewFixes(unittest.TestCase):
 
     def test_an_unusable_copy_never_hides_a_usable_challenge(self):
         self.certs["bad"] = {**cert(), "case_value": {"value": "false"}}
-        out = self.review({1: [submit(self.answer(div(situation="bad")))] * 3, 2: [submit(self.answer(div()))]})
+        self.review({1: [submit(self.answer(div(situation="bad")))] * 3, 2: [submit(self.answer(div()))]})
         self.assertIn("s", self.judged)                                       # pass 2's usable challenge is judged
 
     def test_null_lists_do_not_crash(self):
@@ -1473,7 +1459,7 @@ class CodeReviewFixes(unittest.TestCase):
 
 
 class ReplayFixes(Obligations):
-    """The replay: only a case or trace reason invalidates; a rule unknown on the trace is judged;
+    """The replay: only a case or trace reason invalidates; a rule unknown for missing evidence goes to the reviewer;
     rows wait for the review's outcome; a parameter question keeps the case and reaches the operator."""
     test_wrong_repaired_regressed_and_resumed = None
     test_satisfaction_is_measured_against_stage_a = None
@@ -1483,20 +1469,21 @@ class ReplayFixes(Obligations):
     def test_a_rule_unknown_on_the_trace_does_not_invalidate(self):
         self.rule = "unknown"
         saved = review.certify
-        review.certify = lambda _run, _n, divs, _rd, _out: {k: {**cert(rule="unknown", reasons=["absent_atom:st_sight_distance"]),
+        review.certify = lambda _run, _n, divs, _rd, _out, **_k: {k: {**cert(rule="unknown", reasons=["absent_atom:st_sight_distance"]),
                                                                  "case_value": {"value": "true"}} for k in divs}
         try:
             reasons, _keys, notes = self.replay()
         finally:
             review.certify = saved
         self.assertFalse(any(x.startswith("obligation invalidated:") for x in notes))
-        self.assertTrue(reasons)                                              # judged as a mismatch: still open
+        self.assertEqual(reasons, [])                                         # missing evidence: the reviewer extends it
+        self.assertTrue(any("needs its evidence extended" in x for x in notes))
+        self.assertEqual(self.states(), [None])                               # the obligation stands
 
     def test_rows_wait_for_the_outcome(self):
         self.rule = "compliant"
         pending = []
-        n = Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}]})
-        review.replay_upheld(self.run, n, None, ONTO, None, Path(self.tmp.name), pending, [])
+        self.replay(pending=pending, questions=[])
         self.assertEqual(len(review._all_rows(self.run)), 1)                   # nothing recorded yet
         self.assertEqual([r.get("obligation") for r in pending], ["satisfied"])
 
@@ -1506,8 +1493,7 @@ class ReplayFixes(Obligations):
                                                                      row={"stage_a": {"verdict": "compliant"}})
         questions = []
         try:
-            n = Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}]})
-            reasons, _keys, _notes = review.replay_upheld(self.run, n, None, ONTO, None, Path(self.tmp.name), None, questions)
+            reasons, _keys, _notes = self.replay(questions=questions)
         finally:
             review.judge_divergence = saved
         self.assertEqual((reasons, questions, self.states()), ([], ["q?"], [None]))
@@ -1533,15 +1519,28 @@ class StrictTimeBounds(CaseTimeline):
 
 
 class UnitTables(unittest.TestCase):
-    """Every Core unit has an entry in every harness table that lists Core units (revision 31)."""
-    def test_every_core_unit_is_in_every_table(self):
-        from harness.model.units import FACTORS
-        from harness.lean import skeleton
-        from harness.checks import gate
-        core = {v[0] for v in FACTORS.values()}
-        for name, table in (("skeleton.PUNIT_OF_CORE", skeleton.PUNIT_OF_CORE), ("skeleton.UNITS_CTOR_OF_CORE", skeleton.UNITS_CTOR_OF_CORE),
-                            ("gate.PUNIT_JSON", gate.PUNIT_JSON), ("review.UNIT_DIMS", review.UNIT_DIMS)):
-            self.assertEqual(sorted(core - set(table)), [], name)
+    """The pipeline's units are Core's: every spelling decodes in Lean to exactly the unit and factor
+    the harness reads from Core, every unit's exported tag decodes back to it, and every unit's
+    skeleton literal elaborates."""
+    def test_the_harness_reads_what_lean_decodes(self):
+        import shutil, subprocess
+        from harness.model import units
+        from harness.store import paths
+        if not shutil.which("lake"):
+            self.skipTest("the Lean toolchain is not installed")
+        lines = ["import TrafficSpec", "open TrafficSpec Lean"]
+        for spelling, (core, k) in sorted(units.FACTORS.items()):
+            lines.append(f'#guard ((Decode.unit "u" (Json.str {json.dumps(spelling)})).toOption.map fun (u, q) => '
+                         f"decide (u = {units.lean_unit(core)}) && Q.eq q (Q.mk' {k.numerator} {k.denominator})) == some true")
+        for core in units.CORE_UNITS:
+            lines.append(f"example : TrafficSpec.Term := .lit (Q.ofInt 0) {units.lean_unit(core)}")
+            lines.append(f'#guard (Decode.literalUnit "u" (Json.str {json.dumps(units.json_tag(core))})).toOption == some {units.lean_unit(core)}')
+        with tempfile.TemporaryDirectory() as t:
+            f = Path(t) / "units_drift.lean"
+            f.write_text("\n".join(lines) + "\n")
+            out = subprocess.run(["lake", "env", "lean", str(f)], cwd=paths.LIBRARY, capture_output=True, text=True, timeout=600)
+        self.assertEqual(out.returncode, 0, out.stdout[-2000:] + out.stderr[-2000:])
+        self.assertEqual(sorted(units.DIMS), sorted(units.CORE_UNITS))
 
     def test_a_concept_with_a_per_metre_formal_gets_a_skeleton(self):
         from harness.lean import skeleton
@@ -1549,11 +1548,11 @@ class UnitTables(unittest.TestCase):
         rec = ConceptRecord({"concept_id": "drv.road.test_curve", "contract": "c", "kind": "formula", "args": [{"name": "u", "sort": "track"}],
                              "params": [{"name": "tol", "unit": "1/m"}], "elements": []})
         self.assertIn(".perMetre", skeleton.concept_skeleton(rec))
-        self.assertIn("Units.perMetre", skeleton.concept_witness_skeleton(rec))
+        self.assertIn(".lit (Q.ofInt 0) .perMetre", skeleton.concept_witness_skeleton(rec))
 
 
 class FieldTypes(unittest.TestCase):
-    """Revision 32: every record field the code generator writes into Lean is type-checked by the
+    """Every record field the code generator writes into Lean is type-checked by the
     validator, so a planner's wrong type is returned with a message instead of stopping the run."""
     NODE = {"node_id": "L_1_o1", "law_refs": ["L-1"], "subject": {"binder": "v", "class_elements": ["ru.motor_vehicle"]},
             "binders": [{"name": "v", "class_elements": ["ru.motor_vehicle"]}],
@@ -1593,9 +1592,10 @@ class FieldTypes(unittest.TestCase):
     def test_the_class_elements_case_is_returned_with_its_path(self):
         from harness.checks import validate_a
         bad = self.mutate(self.NODE, ("binders", 0, "class_elements", 0))
-        errs = validate_a.field_type_errors("L_1_o1", bad, validate_a.NODE_FIELD_TYPES)
-        self.assertEqual(errs, ["L_1_o1: `binders[0].class_elements` must be a list of strings, not a list holding dict"])
-        self.assertEqual(validate_a.field_type_errors("L_1_o1", self.NODE, validate_a.NODE_FIELD_TYPES), [])
+        errs = validate_a.schema_errors("L_1_o1", bad, validate_a.NODE_SCHEMA)
+        self.assertEqual(errs, ["L_1_o1: `binders[0].class_elements[0]` must be a string, not dict"])
+        import copy
+        self.assertEqual(validate_a.schema_errors("L_1_o1", copy.deepcopy(self.NODE), validate_a.NODE_SCHEMA), [])
 
     def test_no_unchecked_field_can_stop_the_rule_generator(self):
         from harness.checks import validate_a
@@ -1604,9 +1604,7 @@ class FieldTypes(unittest.TestCase):
             if path[0] == "node_id":
                 continue                                                     # the identity, checked when the id is derived
             bad = self.mutate(self.NODE, path)
-            if validate_a.field_type_errors("L_1_o1", bad, validate_a.NODE_FIELD_TYPES) or \
-                    validate_a.shape_errors("L_1_o1", bad, ("segmentation", "elements", "operationalizations", "assumptions", "compositions",
-                                                             "narrowings", "residues", "binders", "scenarios")):
+            if validate_a.schema_errors("L_1_o1", bad, validate_a.NODE_SCHEMA):
                 continue
             try:
                 skeleton.rule_skeleton(Node(bad)); skeleton.witness_skeleton(Node(bad))
@@ -1621,8 +1619,7 @@ class FieldTypes(unittest.TestCase):
             if path[0] in ("concept_id", "kind"):
                 continue                                                     # the identity and the kind, checked before
             bad = self.mutate(self.CONCEPT, path)
-            if validate_a.field_type_errors("c", bad, validate_a.CONCEPT_FIELD_TYPES) or \
-                    validate_a.shape_errors("c", bad, ("args", "params", "elements", "residues", "literals", "scenarios")):
+            if validate_a.schema_errors("c", bad, validate_a.CONCEPT_SCHEMA):
                 continue
             try:
                 skeleton.concept_skeleton(ConceptRecord(bad)); skeleton.concept_witness_skeleton(ConceptRecord(bad))

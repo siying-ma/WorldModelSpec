@@ -30,7 +30,8 @@
     scenes (parallel and not opposed, whatever the vectors' lengths), the yaw rate integrated
     between them, ω (t₁ − t₀) with the later sample's rate held over the interval before it, is a
     whole number of turns (a multiple of 360°).
-  `checkReferences` is the identity part alone, the part a witness trace is also held to.
+  `checkReferences` is the identity part alone. A witness trace is held to the whole check, after
+  `completeOccupancy`, as a reviewer's trace is.
   `checkWitness` requires that `at` is the timestamp of a scene, and that every grounded track and
   every entity of the case, with its declared kind, is present in that scene.
 

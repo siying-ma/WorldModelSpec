@@ -1,5 +1,6 @@
-"""The gate (design §5): the only acceptance authority for a node, run by the harness itself."""
+"""The gate: the only acceptance authority for a node, run by the harness itself."""
 from __future__ import annotations
+import functools
 import hashlib
 import json
 import os
@@ -8,34 +9,34 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from ..store import paths
 from ..model import nodeid
-from ..lean import lean, index_sync
-from ..model.blueprint import Node, SCENARIOS, normalize_verdict
+from ..lean import lean, index_sync, relations
+from ..model.blueprint import Node, SCENARIOS, normalize_verdict, NARROWING_KINDS, CONCEPT_NARROWING_KINDS
 from ..model.reading import Reading
 
 VERDICTS = ["SCOPE_VIOLATION", "BUILD_FAIL", "UNSOUND", "CHECK_FAIL", "UNANCHORED_VARIABLE", "DECLARATION_MISMATCH",
             "SCOPE_NARROWED", "UNEXPRESSED", "UNCLAIMED_ATOM", "UNUSED_CLAIM", "BARE_LITERAL", "WITNESS_FAIL", "VACUOUS",
             "PARAM_MISMATCH", "GATE_TIMEOUT", "OK"]
-#: What a coder's narrowing may be: a reading the words leave open, a declaration that the vocabulary
-#: (`no_atom`) or the language (`no_operator`) cannot state the span — returned as `UNEXPRESSED` —, or
-#: the coder's account of an `observable_reading` the plan declared on the same span.
-NARROWING_KINDS = {"reading", "no_atom", "no_operator", "observable_reading"}
 #: Roles whose span decides when a rule applies: a coder may not narrow one (the rule would apply
 #: where the law does not), and a plan may not carry one as a residue.
 SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
 #: Roles a narrowing may be declared on: the duty and its standards, which the plan carries by an
 #: element or an operationalization.
 NARROWABLE_ROLES = {"obligation", "standard"}
-#: Not a verdict on the node: the toolchain did not run (a missing `lake`, a build that timed out, a
-#: harness that stopped with no error). The loop defers the law without counting an attempt and
-#: stops after the iteration.
+#: Not a verdict on the node: the toolchain did not run or was stopped (a missing `lake`, a build or a
+#: harness stopped before evaluation, a failure located outside the candidate, a resource failure the
+#: isolated run did not reproduce). The loop holds the node without counting an attempt and stops
+#: after the iteration.
 INFRA = "INFRA"
-#: A verdict on the node: its harness ran out of time, its formulas being too costly to evaluate on
-#: its witnesses. The loop returns the law to the planner with the rule's nesting.
+#: A verdict on the node: its harness ran out of time while evaluating its scenarios, its formulas
+#: being too costly to evaluate on its witnesses, or a resource failure or a panic reproduced in
+#: isolation. The loop returns a node's law to the planner with the rule's nesting, a concept to its
+#: repair.
 GATE_TIMEOUT = "GATE_TIMEOUT"
 #: Keywords and attributes that make a declaration something other than a closed, total value.
 #: Scanned in the code only (`lean.code_only`): a law's words in a header comment or in the
 #: `standard` string of an operationalization are not Lean.
-FORBIDDEN_TOKENS = ["sorry", "admit", "axiom", "unsafe", "partial", "opaque", "implemented_by", "extern", "native_decide", "panic!"]
+FORBIDDEN_TOKENS = ["sorry", "admit", "axiom", "unsafe", "partial", "opaque", "implemented_by", "extern", "native_decide", "panic!",
+                    "#eval", "run_cmd", "initialize", "elab"]
 STANDARD_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
 ALLOWED_RULE_IMPORTS = {"TrafficSpec.Core.Language.Rule"}
 ALLOWED_WITNESS_IMPORTS_EXTRA = {"TrafficSpec.Core.Evidence.Builders"}
@@ -73,7 +74,7 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 #: records (saved after every transition, so a session coding beside another would otherwise see
 #: them change), and any log or pid file. The jail denies a session these paths already.
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
-                         "deferred_nodes.jsonl", "deferred_concepts.jsonl", "mapping.json", "summary.json", "AUTO_NOTES.md",
+                         "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
                          "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
@@ -93,8 +94,14 @@ def repo_digest(root: Path | None = None) -> dict[str, str]:
     """A digest of every file of the pipeline a session could touch, keyed by path relative to
     the pipeline root: the library, the harness, the prompts, the ontology, the corpus, the
     readings, the gap ledger, the run records. Build outputs, caches, version control and the
-    per-iteration task directories are left out. The scope check compares two of these."""
+    per-iteration task directories are left out, and so are the harness's own files in the library
+    (the owner's record and the inactive records, with their crash-safe writes' temporary files),
+    by name: the owner rewrites them while sessions run, and no session may write them. The scope
+    check compares two of these."""
+    from ..store import owner
     root = (root or paths.REPO).resolve()
+    harness_own = {f"library/{n}" for n in owner.HARNESS_FILES}
+    harness_tmp = tuple(f"library/.{n}.tmp-" for n in owner.HARNESS_FILES)
     out: dict[str, str] = {}
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = sorted(d for d in dirnames if d not in DIGEST_SKIP_DIRS and not d.startswith("iter-"))
@@ -103,7 +110,7 @@ def repo_digest(root: Path | None = None) -> dict[str, str]:
         for f in filenames:
             p = Path(dirpath) / f
             rel = p.relative_to(root).as_posix()
-            if rel in GENERATED or p.is_symlink() or f.endswith(DIGEST_SKIP_SUFFIXES):
+            if rel in GENERATED or p.is_symlink() or f.endswith(DIGEST_SKIP_SUFFIXES) or rel in harness_own or rel.startswith(harness_tmp):
                 continue
             if rel.startswith("results/") and rel.count("/") == 2 and (f in DIGEST_SKIP_RUN_FILES or (f.startswith(".") and ".tmp-" in f)):
                 continue                                   # a harness file, or the temporary file of its crash-safe write
@@ -127,6 +134,13 @@ def task_registry(work: Path) -> tuple[list[str] | None, list[str] | None]:
         return None, None
     d = json.loads(f.read_text(encoding="utf-8"))
     return d.get("nodes"), d.get("concepts")
+
+
+def task_keep(work: Path) -> set[str]:
+    """Inactive records a gate run from this task directory registers all the same (`registry.json`,
+    `keep`): a fenced record checked again, and what it calls."""
+    f = work / "registry.json"
+    return set(json.loads(f.read_text(encoding="utf-8")).get("keep", [])) if f.exists() else set()
 
 
 def task_concurrent(work: Path) -> set[str]:
@@ -189,6 +203,7 @@ open TrafficSpec Lean
 #print axioms {rns}.rule
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
+{relations.lean_defs()}
 def main : IO Unit := do
   let r := {rns}.rule
   let scs := {wns}.scenarios
@@ -217,8 +232,13 @@ def main : IO Unit := do
   let rulesX := rules.map (Concept.expandRule allConcepts)
   for e in Rule.check rulesX (Concept.expandRule allConcepts r) do IO.println s!"CHECK\\t{{e}}"
   for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
+  for e in DimCheck.rule (DimCheck.envOf ρ allConcepts) r do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
   for sc in scs do
-    for e in TraceLint.checkReferences sc.trace do IO.println s!"REF\\t{{sc.name}}\\t{{e}}"
+    let τ := TraceLint.completeOccupancy sc.trace
+    for e in TraceLint.checkTrace τ do IO.println s!"REF\\t{{sc.name}}\\t{{e}}"
+    RelCheck.run sc.name τ
+    if let some (a, b) := sc.window then
+      if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
   for sc in scs do
     let sc' : Scenario := {{ sc with reading := ρ }}
     match sc'.run rules allConcepts with
@@ -228,6 +248,110 @@ def main : IO Unit := do
   for u in Adequacy.unexercised rules r scs' allConcepts do IO.println s!"ADEQ\\t{{u}}"
   IO.println "DONE"
 '''
+
+
+#: Signals that end a toolchain run for a reason the run itself may cause (memory, stack, a fault):
+#: unresolved until reproduced in isolation.
+RESOURCE_SIGNALS = {6: "SIGABRT", 7: "SIGBUS", 9: "SIGKILL", 11: "SIGSEGV"}
+#: Signals that stop a run deliberately: never the candidate's.
+STOP_SIGNALS = {1: "SIGHUP", 2: "SIGINT", 15: "SIGTERM"}
+GENERATED_LIB = {"TrafficSpec/Index.lean", "TrafficSpecWitness.lean"}
+
+
+def _record(work: Path, phase: str, code: int, out: str) -> dict:
+    """One toolchain run of the gate, appended to the task's `toolchain.jsonl`: the phase, the exit
+    code and signal, the origin of a stop (the gate's own deadline, the run's stop event, a stopping
+    signal, a resource failure), any panic, and the first lines it printed."""
+    from ..store import owner
+    sig = -code if code < 0 else None
+    stop = ("deadline" if lean.timed_out(out) else "run_stop" if owner.STOP.is_set()
+            else "stop_signal" if sig in STOP_SIGNALS else "resource" if sig in RESOURCE_SIGNALS or lean.STACK_OVERFLOW.search(out) else None)
+    row = {"phase": phase, "exit": code, "signal": sig, "stop": stop, "panic": lean.panicked(out), "head": out.splitlines()[:3]}
+    with open(work / "toolchain.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return row
+
+
+def _located(out: str, own: set[str], namespaces: tuple[str, ...], generated: dict[str, Path]) -> tuple[list[str], list[str], list[str]]:
+    """The located errors of a failed build or harness: (in the candidate's own files, on a line of a
+    generated file that names the candidate — its interface —, elsewhere)."""
+    lib = paths.LIBRARY.resolve()
+    mine, iface, other = [], [], []
+    for f, line, msg in lean.error_sites(out):
+        rel = f
+        while rel.startswith("./"):
+            rel = rel[2:]
+        if Path(rel).is_absolute() and Path(rel).is_relative_to(lib):
+            rel = Path(rel).relative_to(lib).as_posix()
+        where = f"{rel}:{line}: {msg}"
+        if rel in own:
+            mine.append(where); continue
+        src = generated.get(rel) or generated.get(f)
+        try:
+            text = src.read_text(encoding="utf-8").splitlines()[line - 1] if src else ""
+        except (OSError, IndexError):
+            text = ""
+        (iface if any(ns in text for ns in namespaces) else other).append(where)
+    return mine, iface, other
+
+
+def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[str, ...], harness: Path) -> "Verdict | tuple[str, str]":
+    """Build the candidate and run its harness, under the library lock the caller holds. Returns the
+    (build, harness) outputs, or the verdict a failure is attributed to:
+    - a located error in the candidate's files, or on a line of a generated file (the registry, the
+      harness) that names the candidate's declarations, is the candidate's (`BUILD_FAIL`);
+    - a located error elsewhere, a failure with no located error, the toolchain's absence, a deadline
+      before evaluation, the run's stop or a stopping signal is `INFRA`, never the candidate's;
+    - the harness's deadline during the evaluation of the candidate's scenarios goes to
+      `harness_failure` (`GATE_TIMEOUT`);
+    - a resource failure (a signal the gate did not send, a stack overflow) or a panic is reproduced
+      once in isolation: reproduced, it is the candidate's (`GATE_TIMEOUT`, a panic also in
+      `extras`, a possible Core defect); not reproduced, the isolated run's outputs stand."""
+    lib = paths.LIBRARY
+    generated = {**{g: lib / g for g in GENERATED_LIB}, str(harness.resolve()): harness}
+    first: dict | None = None
+    for trial in (1, 2):
+        try:
+            bcode, out = lean.lake_build(lib, targets)
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
+        (work / "build.log").write_text(out, encoding="utf-8")
+        b = _record(work, "build", bcode, out)
+        if bcode != 0:
+            if b["stop"] in ("deadline", "run_stop", "stop_signal"):
+                return Verdict(INFRA, [f"the build was stopped ({b['stop']}) before evaluation"] + out.splitlines()[:1])
+            if b["stop"] == "resource":
+                if trial == 1:
+                    first = b; continue
+                return Verdict(GATE_TIMEOUT, [f"the build failed twice on a resource limit ({RESOURCE_SIGNALS.get(b['signal'], 'stack overflow')})"])
+            mine, iface, other = _located(out, own, namespaces, generated)
+            if mine or iface:
+                return Verdict("BUILD_FAIL", (mine + [f"the registry does not accept the candidate's declaration: {x}" for x in iface])[:8])
+            return Verdict(INFRA, ["the build failed outside the candidate's files"] + (other or out.splitlines()[-3:])[:6])
+        try:
+            hcode, hout = lean.lean_run(lib, harness)
+        except lean.LeanUnavailable as e:
+            return Verdict(INFRA, [str(e)])
+        h = _record(work, "harness", hcode, hout)
+        evaluated = bool(re.search(r"^[A-Z_]+\t", hout, re.M))
+        if h["stop"] in ("run_stop", "stop_signal") or (h["stop"] == "deadline" and not evaluated):
+            return Verdict(INFRA, [f"the gate harness was stopped ({h['stop']}) before it evaluated the candidate"])
+        if h["stop"] == "resource" or h["panic"]:
+            if trial == 1:
+                first = h; continue
+            why = (f"the evaluation panicked twice (a possible Core defect): {h['panic'][0]}" if h["panic"]
+                   else f"the evaluation failed twice on a resource limit ({RESOURCE_SIGNALS.get(h['signal'], 'stack overflow')})")
+            return Verdict(GATE_TIMEOUT, [why], extras={"panic": h["panic"]} if h["panic"] else {})
+        if hcode != 0 and h["stop"] != "deadline":
+            mine, iface, other = _located(hout, own, namespaces, generated)
+            if mine or iface:
+                return Verdict("BUILD_FAIL", (mine + [f"the gate harness does not accept the candidate's declaration: {x}" for x in iface])[:8])
+            if "DONE" not in hout:
+                return Verdict(INFRA, ["gate harness did not run"] + (other or hout.splitlines()[:3])[:6])
+        if first is not None:
+            print(f"[gate] the first run failed ({first['phase']}: {first['stop'] or first['panic']}); the isolated run did not reproduce it")
+        return out, hout
+    raise AssertionError("unreachable")
 
 
 def _imports(text: str) -> set[str]:
@@ -246,6 +370,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
 
     if budget_used >= budget:
         return Verdict("BUDGET_EXHAUSTED", [f"{budget} gate runs used"])
+    bad_reading = reading_input_defects(reading)
+    if bad_reading:
+        return bad_reading
 
     # 1. scope: nothing in the pipeline changed but the node's two files (and the files of the
     # sessions coding beside it); the registries carry the accepted nodes and this one
@@ -267,35 +394,31 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     # registries this gate writes are the ones its build and its run see
     only_nodes, only_concepts = task_registry(work)
     with lean.library_lock(lib):
-        index_sync.write_index(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts)
-        try:
-            ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)])
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
-        (work / "build.log").write_text(out, encoding="utf-8")
-        if lean.timed_out(out):
-            return Verdict(INFRA, [out.splitlines()[0]])
-        if not ok:
-            return Verdict("BUILD_FAIL", lean.errors(out)[:8])
-        details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
-        if lean.sorry_warnings(out):
-            details.append("build reports a declaration that uses sorry")
+        index_sync.write_index(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts,
+                               keep=task_keep(work) | {node.id})
         harness = work / "gate_harness.lean"
         reading_json = work / "reading.json"
         reading_json.write_text(reading.lean_json(), encoding="utf-8")
         harness.write_text(_harness_source(node.id, reading_json), encoding="utf-8")
-        try:
-            ok, hout = lean.lean_run(lib, harness)
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
+        ran = _toolchain(work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)], {rule_rel, wit_rel},
+                         (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness)
+        if isinstance(ran, Verdict):
+            return ran
+        out, hout = ran
+        details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
+        if lean.sorry_warnings(out):
+            details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
+    decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
+    if decode:
+        return Verdict(INFRA, ["the reading does not decode (an input error, not the candidate's): " + decode[0]])
     for m in re.finditer(r"depends on axioms: \[([^\]]*)\]", hout):
         axioms = {a.strip() for a in m.group(1).split(",") if a.strip()}
         if axioms - STANDARD_AXIOMS:
             details.append(f"non-standard axioms: {sorted(axioms - STANDARD_AXIOMS)}")
     if details:
         return Verdict("UNSOUND", details)
-    if not ok or "DONE" not in hout:
+    if "DONE" not in hout:
         return harness_failure(hout)
 
     rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
@@ -303,8 +426,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
         return [r[1:] for r in rows if r[0] == tag]
 
     # 4. static check
-    checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")]
+    checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
     checks += divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else []
+    checks += slot_range_defects(json.loads(col("RULEJSON")[0][0]), reading, accepted_concepts) if col("RULEJSON") else []
     if checks:
         return Verdict("CHECK_FAIL", checks)
 
@@ -312,24 +436,29 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     binders = [b["name"] for b in node.get("binders", [])]
     unanchored = unanchored_variables([row[0].split(",") if row and row[0] else [] for row in col("OCC")], binders)
     if unanchored:
-        return Verdict("UNANCHORED_VARIABLE", [f"`{v}` is related to no binder: the region, device or user it ranges over is any in the scene, not the subject's — tie it through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a relation to a binder" for v in unanchored])
+        return Verdict("UNANCHORED_VARIABLE", [f"in the formula, the quantified variable `{v}` shares no atom with a binder, nor with a variable "
+                                               "that does: the region, device or user it ranges over is any in the scene, not the subject's — "
+                                               "tie it in the formula through `rel_occupies`, `st_region_geometry_distance`, `dev_governs` or a "
+                                               "relation to a binder (the record's claims are already checked)" for v in unanchored])
 
     # 5. declarations
     decl = json.loads(col("DECL")[0][0])
     exp_binders = [b["name"] for b in node.get("binders", [])]
     from ..model.blueprint import concepts_of
-    exp_ops = sorted((o.get("standard", ""), tuple(sorted(concepts_of(o)))) for o in node.get("operationalizations", []))
-    got_ops = sorted((o.get("standard", ""), tuple(sorted(o.get("concepts", [])))) for o in decl["operationalizations"])
+    ws = lambda t: " ".join(str(t or "").split())          # prose: whitespace carries no meaning; ids compare exactly
+    exp_ops = sorted((ws(o.get("standard", "")), tuple(sorted(concepts_of(o)))) for o in node.get("operationalizations", []))
+    got_ops = sorted((ws(o.get("standard", "")), tuple(sorted(o.get("concepts", [])))) for o in decl["operationalizations"])
     mism = []
     if decl["id"] != node.id: mism.append(f"id {decl['id']} ≠ {node.id}")
     if sorted(decl["laws"]) != sorted(node["law_refs"]): mism.append(f"laws {decl['laws']} ≠ {node['law_refs']}")
     if decl["binders"] != exp_binders: mism.append(f"binders {decl['binders']} ≠ {exp_binders}")
     if sorted(decl["assumptions"]) != sorted(a.get("id") for a in node.get("assumptions", [])): mism.append("assumptions differ")
     if got_ops != exp_ops: mism.append(f"operationalizations {got_ops} ≠ {exp_ops}")
-    node_residues = [r.get("why", "") for r in node.get("residues", [])]
-    missing_res = [w for w in node_residues if w not in decl["residues"]]
+    node_residues = [ws(r.get("why", "")) for r in node.get("residues", [])]
+    decl_residues = [ws(w) for w in decl["residues"]]
+    missing_res = [w for w in node_residues if w not in decl_residues]
     if missing_res: mism.append(f"residues of the node missing from the rule: {missing_res[:3]}")
-    added_res = [w for w in decl["residues"] if w not in node_residues]
+    added_res = [w for w in decl_residues if w not in node_residues]
     if added_res: mism.append(f"residues added to the rule: {added_res[:3]}; a residue is the plan's — a reading you chose on a carried span is a narrowing ⟨span, why⟩")
     spans = node.spans()
     narrowings = [n for n in decl.get("narrowings", []) if isinstance(n, dict)]
@@ -363,11 +492,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     # 6. claims and literals
     used = {a for a in col("ATOMS")[0][0].split(",") if a}
     claimed = node.claimed_names()
-    def canon(n: str) -> str:   # accessor → its atom's Lean name, so `dev_traffic_signal_shows` matches the claim `dev.traffic_signal`
-        for c in sorted(claimed, key=len, reverse=True):
-            if n == c or n.startswith(c + "_"):
-                return c
-        return n
+    canon = owner_name
     unclaimed = sorted({n for n in used if canon(n) not in claimed and n not in FREE_USES})
     if unclaimed:
         return Verdict("UNCLAIMED_ATOM", unclaimed)
@@ -394,8 +519,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     used_lits = sorted(set(used_lits))                # a figure counts once, however often a formula writes it
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"formula literals {[(str(q), u) for q, u in used_lits]} ≠ the node's declared literals {[(str(q), u) for q, u in declared]}; a figure the law states is declared on its span, any other magnitude belongs in the reading"])
-    mism = param_mismatches(json.loads(col("RULEJSON")[0][0]), accepted_concepts,
-                            {n: str(p.get("unit", "")) for n, p in reading.params.items()}, node.literals())
+    mism = param_mismatches(json.loads(col("RULEJSON")[0][0]), accepted_concepts, node.literals())
     if mism:
         return Verdict("PARAM_MISMATCH", mism)
 
@@ -423,6 +547,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     for name in list(SCENARIOS) + [p for p in planned if p not in SCENARIOS]:   # every planned scenario is a test
         if name not in {s[0] for s in scen}:
             fails.append(f"{name}: no witness of that name")
+    fails += witness_trace_defects(col)
     if fails:
         return Verdict("WITNESS_FAIL", fails)
 
@@ -434,6 +559,86 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
                    + ([f"narrowings declared by the coder: {len(narrowings)}"] if narrowings else []),
                    extras={"rule_json": json.loads(col("RULEJSON")[0][0]),
                            **({"narrowings_added": narrowings} if narrowings else {})})
+
+
+def owner_name(n: str) -> str:
+    """The Lean name of the atom a name read in a formula belongs to: an accessor resolves to its
+    owning atom (`dev_traffic_signal_shows` to `dev_traffic_signal`), the longest atom id of the
+    active Core whose name it extends, so a claim never covers another atom that merely shares its
+    prefix; a concept's or a primitive's name is itself."""
+    from ..lean import surface
+    if n.startswith(("drv_", "prim_")):
+        return n
+    a = surface.atom_id_of(n, _atom_ids())
+    return a.replace(".", "_") if a else n
+
+
+@functools.lru_cache(maxsize=1)
+def _atom_ids() -> frozenset:
+    from ..lean import surface
+    return frozenset(surface.core_atom_ids())
+
+
+def reading_input_defects(reading: Reading) -> Verdict | None:
+    """A reading that cannot be read whole stops the gate before anything is judged: an input error,
+    never the candidate's, and never evaluated as an empty reading."""
+    from ..model.reading import reading_defects
+    bad = reading_defects(reading.data)
+    return Verdict(INFRA, ["the reading cannot be read whole (an input error, not the candidate's): " + "; ".join(bad[:6])]) if bad else None
+
+
+def slot_range_defects(tree, reading: Reading, concepts: dict[str, dict] | None = None) -> list[str]:
+    """The values a formula passes to a cosine slot (the tolerance of a relation Core reads as the
+    cosine of an angle: the relations that take a parameter, `harness/lean/relations.py`) that lie
+    outside [-1, 1]: a literal, a reading parameter, or a concept's formal through the reading
+    parameter the call passes for it. A dimensionless value is not therefore a valid one."""
+    from fractions import Fraction
+    from ..model import units
+    slots = {a for a, n, _k, _f in relations.computable() if n}
+    by_lean = {cid.replace(".", "_"): rec for cid, rec in (concepts or {}).items()}
+    out: list[str] = []
+
+    def value(t, env):
+        if isinstance(t, dict) and isinstance(t.get("lit"), dict):
+            return Fraction(int(t["lit"]["num"]), int(t["lit"]["den"])), "a literal"
+        if isinstance(t, dict) and "param" in t:
+            if t["param"] in env:
+                return env[t["param"]]
+            prm = reading.params.get(t["param"])
+            if prm is not None and prm.get("unit") in units.FACTORS:
+                return units.to_core(prm["value"], prm["unit"])[1], f"`{t['param']}`"
+        return None
+
+    def walk(x, env, depth=0) -> None:
+        if depth > 30:
+            return
+        if isinstance(x, dict):
+            if x.get("atom") in slots:
+                for t in x.get("params") or []:
+                    v = value(t, env)
+                    if v is not None and not (-1 <= v[0] <= 1):
+                        out.append(f"`{x['atom']}` reads its tolerance as a cosine, between -1 and 1; {v[1]} gives {float(v[0]):g}")
+            name = x.get("derived") or x.get("quantity")
+            if isinstance(name, str) and name in by_lean:
+                rec = by_lean[name]
+                formals = [f.get("name") for f in rec.get("params", [])]
+                inner = {f: v for f, t in zip(formals, x.get("params") or []) if (v := value(t, env)) is not None}
+                walk(rec.get("body_json"), inner, depth + 1)
+            for v in x.values():
+                walk(v, env, depth + 1)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v, env, depth + 1)
+    walk(tree, {})
+    return sorted(set(out))
+
+
+def witness_trace_defects(col) -> list[str]:
+    """What fails a witness's trace beyond its verdict: a measured relation it supplies that Core
+    computes from the scene (`RELCHECK`: a hand-written trace supplies only what Core cannot compute),
+    and a window holding no observation to judge (`NOWINDOW`)."""
+    return ([f"{r[0]} at t={r[1]} ({r[2]}): {r[3]}" for r in col("RELCHECK")]
+            + [f"{r[0]}: its window holds no observation of the trace, so it judges nothing" for r in col("NOWINDOW")])
 
 
 def divisions_by_measure(tree) -> list[str]:
@@ -495,10 +700,10 @@ def nesting(j, quants: int = 0, windows: int = 0) -> tuple[int, int]:
 
 
 def harness_failure(hout: str) -> Verdict:
-    """A gate harness that did not reach `DONE`. A harness that ran out of time is the node's:
-    its formulas take longer to evaluate on its witnesses than the gate allows, and the details
-    give the deepest nesting of quantifiers the exported rule shows. One that reported no error is
-    the toolchain's; one whose error line names what it elaborated is the node's."""
+    """A gate harness that evaluated the candidate and did not reach `DONE`. One that ran out of time
+    is the candidate's: its formulas take longer to evaluate on its witnesses than the gate allows,
+    and the details give the deepest nesting of quantifiers the exported rule shows. Every other
+    failure `_toolchain` has attributed already; what is left is the toolchain's."""
     if lean.timed_out(hout):
         lines = hout.splitlines()
         shape = []
@@ -512,21 +717,16 @@ def harness_failure(hout: str) -> Verdict:
             except json.JSONDecodeError:
                 pass
         return Verdict(GATE_TIMEOUT, [lines[0]] + shape)
-    if not lean.errors(hout):
-        return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
-    return Verdict("BUILD_FAIL", ["gate harness did not run"] + lean.errors(hout)[:8])
+    return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
 
 
-def param_mismatches(formula_json, concepts: dict[str, dict] | None, sources: dict[str, str], literals: list[dict]) -> list[str]:
-    """What a concept call passes for a parameter the concept declares: a named parameter whose unit
-    (`sources`, name → unit: the reading's parameters for a rule, the concept's own formals for a
-    body) is the declared one, or a figure declared in `literals` in that unit. Any other literal,
-    zero included, stands in for a magnitude the reading should hold, and a unit that differs reads
-    the reading's value as something it is not."""
+def param_mismatches(formula_json, concepts: dict[str, dict] | None, literals: list[dict]) -> list[str]:
+    """What a concept call passes for a parameter the concept declares, apart from its unit (which
+    the Core unit check holds): a named parameter, or a figure declared in `literals` in the declared
+    unit. Any other literal, zero included, stands in for a magnitude the reading should hold."""
     from fractions import Fraction
     from ..model import units
     core = lambda u: units.FACTORS[u][0] if u in units.FACTORS else None
-    from_json = {v: k for k, v in PUNIT_JSON.items()}
     declared = set()
     for lit in literals:
         try:
@@ -543,15 +743,9 @@ def param_mismatches(formula_json, concepts: dict[str, dict] | None, sources: di
             rec = by_name.get(name) if isinstance(name, str) else None
             for f, t in zip(rec.get("params", []) if rec else [], x.get("params", [])):
                 want, what = core(f.get("unit", "")), f"`{name}` parameter `{f.get('name')}` ({f.get('unit')})"
-                if isinstance(t, dict) and "param" in t:
-                    got = sources.get(t["param"])
-                    if got is None:
-                        out.append(f"{what} is passed `{t['param']}`, which has no unit here: name a parameter of the reading")
-                    elif core(got) != want:
-                        out.append(f"{what} is passed `{t['param']}` in {got}: the plan proposes a parameter in {f.get('unit')}")
-                elif isinstance(t, dict) and "lit" in t:
+                if isinstance(t, dict) and "lit" in t:
                     q = Fraction(int(t["lit"]["num"]), int(t["lit"]["den"]))
-                    u = from_json.get(t.get("unit"), t.get("unit"))
+                    u = units.core_of_tag(t.get("unit")) or t.get("unit")
                     if u != want or (q, u) not in declared:
                         out.append(f"{what} is passed the literal {q} {t.get('unit')}, which no declared figure is: "
                                    f"a magnitude the text leaves open is a parameter of the reading, in {f.get('unit')}")
@@ -591,7 +785,7 @@ def unanchored_variables(groups: list[list[str]], binders: list[str]) -> list[st
 
 
 # =============================================================================================
-# Concepts (DERIVED_CONCEPTS_PLAN §5, §6): the gate for a concept node — two files, the same
+# Concepts: the gate for a concept node — two files, the same
 # steps as a rule, plus the cycle, supersession and duplicate checks.
 # =============================================================================================
 CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND", "CONCEPT_CYCLE", "CHECK_FAIL",
@@ -599,8 +793,6 @@ CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND",
                     "WITNESS_FAIL", "SUPERSESSION_NO_DIFF", "DUPLICATE_CONCEPT", "VACUOUS", "UNEXPRESSED", "PARAM_MISMATCH",
                     "GATE_TIMEOUT", "OK"]
 ALLOWED_CONCEPT_IMPORTS = {"TrafficSpec.Core.Language.Concept"}
-PUNIT_JSON = {"metre": "metre", "second": "second", "metrePerSecond": "metre_per_second", "metrePerSecondSq": "metre_per_second_sq",
-              "degree": "degree", "degreePerSecond": "degree_per_second", "perMetre": "per_metre", "ratio": "ratio", "count": "count"}
 
 
 def _concept_harness_source(cid: str, reading_json_path: Path) -> str:
@@ -617,6 +809,7 @@ open TrafficSpec Lean
 #print axioms {wns}.instances
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
+{relations.lean_defs()}
 def main : IO Unit := do
   let c := {ns}.concept
   let cs := (allConcepts.filter (·.id != c.id)) ++ [c]
@@ -637,6 +830,7 @@ def main : IO Unit := do
   for (q, u) in Formula.literals c.bodyFormula do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   for id in Concept.onCycle cs do IO.println s!"CYCLE\\t{{id}}"
   for e in Concept.check cs c do IO.println s!"CHECK\\t{{e}}"
+  for e in DimCheck.concept (DimCheck.envOf ρ cs c.params) c do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
   let instRules := insts.filterMap (Concept.asRule cs)
   let rules := allRules ++ instRules
   for i in insts do
@@ -647,7 +841,11 @@ def main : IO Unit := do
       for e in Rule.check (rules.map (Concept.expandRule cs)) (Concept.expandRule cs r) do IO.println s!"CHECK\\t{{e}}"
   let scs' := scs.map fun sc => {{ sc with reading := ρ }}
   for sc in scs' do
-    for e in TraceLint.checkReferences sc.trace do IO.println s!"REF\\t{{sc.name}}\\t{{sc.rule}}\\t{{e}}"
+    let τ := TraceLint.completeOccupancy sc.trace
+    for e in TraceLint.checkTrace τ do IO.println s!"REF\\t{{sc.name}}\\t{{sc.rule}}\\t{{e}}"
+    RelCheck.run sc.name τ
+    if let some (a, b) := sc.window then
+      if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
   for sc in scs' do
     match sc.run rules cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
@@ -693,6 +891,9 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     details: list[str] = []
     if budget_used >= budget:
         return Verdict("BUDGET_EXHAUSTED", [f"{budget} gate runs used"])
+    bad_reading = reading_input_defects(reading)
+    if bad_reading:
+        return bad_reading
 
     # 1. scope
     now = repo_digest()
@@ -714,35 +915,31 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     # 2. build, and 3. the harness run, under the library lock
     only_nodes, only_concepts = task_registry(work)
     with lean.library_lock(lib):
-        index_sync.write_index(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}))
-        try:
-            ok, out = lean.lake_build(lib, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)])
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
-        (work / "build.log").write_text(out, encoding="utf-8")
-        if lean.timed_out(out):
-            return Verdict(INFRA, [out.splitlines()[0]])
-        if not ok:
-            return Verdict("BUILD_FAIL", lean.errors(out)[:8])
-        details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
-        if lean.sorry_warnings(out):
-            details.append("build reports a declaration that uses sorry")
+        index_sync.write_index(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}),
+                               keep=task_keep(work) | {cid})
         harness = work / "gate_harness.lean"
         reading_json = work / "reading.json"
         reading_json.write_text(reading.lean_json(), encoding="utf-8")
         harness.write_text(_concept_harness_source(cid, reading_json), encoding="utf-8")
-        try:
-            ok, hout = lean.lean_run(lib, harness)
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
+        ran = _toolchain(work, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)], {c_rel, w_rel},
+                         (nodeid.concept_namespace(cid) + ".", nodeid.concept_witness_namespace(cid) + "."), harness)
+        if isinstance(ran, Verdict):
+            return ran
+        out, hout = ran
+        details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
+        if lean.sorry_warnings(out):
+            details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
+    decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
+    if decode:
+        return Verdict(INFRA, ["the reading does not decode (an input error, not the candidate's): " + decode[0]])
     for m in re.finditer(r"depends on axioms: \[([^\]]*)\]", hout):
         axioms = {a.strip() for a in m.group(1).split(",") if a.strip()}
         if axioms - STANDARD_AXIOMS:
             details.append(f"non-standard axioms: {sorted(axioms - STANDARD_AXIOMS)}")
     if details:
         return Verdict("UNSOUND", details)
-    if not ok or "DONE" not in hout:
+    if "DONE" not in hout:
         return harness_failure(hout)
     rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
     def col(tag: str) -> list[list[str]]:
@@ -752,7 +949,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     cyc = [r[0] for r in col("CYCLE")]
     if cyc:
         return Verdict("CONCEPT_CYCLE", cyc)
-    checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")]
+    checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
     checks += divisions_by_measure(json.loads(col("BODY")[0][0])) if col("BODY") else []
     if checks:
         return Verdict("CHECK_FAIL", checks)
@@ -762,7 +959,8 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if tracks:
         unanchored = unanchored_variables([row[0].split(",") if row and row[0] else [] for row in col("OCC")], tracks)
         if unanchored:
-            return Verdict("UNANCHORED_VARIABLE", [f"`{v}` is related to no track formal of the concept" for v in unanchored])
+            return Verdict("UNANCHORED_VARIABLE", [f"in the body, the quantified variable `{v}` shares no atom with a track formal of the "
+                                                   "concept, nor with a variable that does" for v in unanchored])
 
     # 5. declarations
     decl = json.loads(col("DECL")[0][0])
@@ -775,19 +973,22 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     exp_args = [(a["name"], a["sort"], list(a.get("values", [])) if a.get("sort") == "literal" else []) for a in rec.args()]
     got_args = [(a["name"], a["sort"]["sort"], list(a["sort"].get("values", []))) for a in decl["args"]]
     if got_args != exp_args: mism.append(f"args {got_args} ≠ {exp_args}")
-    exp_params = [(p["name"], PUNIT_JSON[units.FACTORS[p["unit"]][0]]) for p in rec.params()]
+    exp_params = [(p["name"], units.json_tag(units.FACTORS[p["unit"]][0])) for p in rec.params()]
     got_params = [(p["name"], p["unit"]) for p in decl["params"]]
     if got_params != exp_params: mism.append(f"params {got_params} ≠ {exp_params}")
-    rec_res = [r.get("why", "") for r in rec.get("residues", [])]
-    missing_res = [w for w in rec_res if w not in decl["residues"]]
+    rec_res = [ws(r.get("why", "")) for r in rec.get("residues", [])]
+    decl_res = [ws(w) for w in decl["residues"]]
+    missing_res = [w for w in rec_res if w not in decl_res]
     if missing_res: mism.append(f"residues of the record missing from the concept: {missing_res[:3]}")
-    added_res = [w for w in decl["residues"] if w not in rec_res]
+    added_res = [w for w in decl_res if w not in rec_res]
     if added_res: mism.append(f"residues added to the concept: {added_res[:3]}; a residue is the record's — a reading you chose that the contract leaves open is a narrowing ⟨words of the contract, why⟩")
     contract_ws = ws(rec.get("contract"))
     narrowings = [n for n in decl.get("narrowings", []) if isinstance(n, dict)]
     for n in narrowings:
         if not ws(n.get("span")) or ws(n.get("span")) not in contract_ws: mism.append(f"narrowing on `{str(n.get('span', ''))[:60]}`, which is not a run of the contract's words")
         elif not str(n.get("why", "")).strip(): mism.append(f"narrowing on `{str(n.get('span'))[:60]}` states no why")
+        elif n.get("kind", "reading") not in CONCEPT_NARROWING_KINDS:
+            mism.append(f"narrowing on `{str(n.get('span'))[:60]}` has kind {n.get('kind')!r}; one of {sorted(CONCEPT_NARROWING_KINDS)}")
     if (decl.get("supersedes") or None) != (rec.get("supersedes") or None): mism.append("supersedes differs from the record")
     on_record = {narrowing_key(x) for x in rec.get("narrowings", []) if isinstance(x, dict)}
     narrowings = [n for n in narrowings if narrowing_key(n) not in on_record]
@@ -803,11 +1004,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     # 6. claims and literals
     used = {a for a in col("ATOMS")[0][0].split(",") if a}
     claimed = rec.claimed_names() | {r.replace(".", "_") for r in rec.refs()}
-    def canon(n: str) -> str:
-        for cl in sorted(claimed, key=len, reverse=True):
-            if n == cl or n.startswith(cl + "_"):
-                return cl
-        return n
+    canon = owner_name
     unclaimed = sorted({n for n in used if canon(n) not in claimed and n not in FREE_USES})
     if unclaimed:
         return Verdict("UNCLAIMED_ATOM", unclaimed)
@@ -828,8 +1025,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     used_lits = sorted(set(used_lits))                # a figure counts once, however often the body (or its rendering as a formula) writes it
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"body literals {[(str(q), u) for q, u in used_lits]} ≠ the record's declared literals {[(str(q), u) for q, u in declared]}; a magnitude is a formal parameter unless the record declares it"])
-    mism = param_mismatches(json.loads(col("BODY")[0][0]), accepted, {p["name"]: str(p.get("unit", "")) for p in rec.params()},
-                            rec.get("literals", []))
+    mism = param_mismatches(json.loads(col("BODY")[0][0]), accepted, rec.get("literals", []))
     if mism:
         return Verdict("PARAM_MISMATCH", mism)
 
@@ -837,7 +1033,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     fails = [f"instance {name}: a formal is unfilled" for name, status in col("INST") if status != "ok"]
     scen = col("SCEN")
     wanted = dict(CONCEPT_SCENARIOS)
-    if rec.get("supersedes"):
+    if rec.get("supersedes") and rec.get("counterexample"):
         wanted["counterexample"] = normalize_verdict((rec.get("counterexample") or {}).get("expected", "violated"))
     refs = {}
     for name, rule, msg in col("REF"):
@@ -854,11 +1050,13 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     for name in wanted:
         if name not in {s[0] for s in scen}:
             fails.append(f"{name}: no witness of that name")
+    fails += witness_trace_defects(col)
     if fails:
         return Verdict("WITNESS_FAIL", fails)
 
-    # 7b. a supersession differs from the old body on its counterexample
-    if rec.get("supersedes"):
+    # 7b. a supersession differs from the old body on its counterexample; a fenced version is
+    # superseded on its fence, whose evidence stands for a counterexample
+    if rec.get("supersedes") and not (accepted.get(rec.get("supersedes")) or {}).get("fenced"):
         diffs = col("DIFF")
         if col("OLD") or not diffs or any(d[1] != "differs" for d in diffs):
             return Verdict("SUPERSESSION_NO_DIFF", [f"the old body gives the same verdict on the counterexample ({diffs})" if diffs else "no counterexample ran against the old body"])
@@ -867,7 +1065,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     body_json = json.loads(col("BODY")[0][0])
     canonical = render_formula.canonical(body_json, [a["name"] for a in rec.args()], [p["name"] for p in rec.params()])
     for oid, orec in accepted.items():
-        if oid != rec.get("supersedes") and orec.get("canonical_body") == canonical:
+        if oid != rec.get("supersedes") and not orec.get("fenced") and orec.get("canonical_body") == canonical:
             return Verdict("DUPLICATE_CONCEPT", [f"the body is alpha-equivalent to accepted `{oid}`: call it instead"])
 
     # 9. adequacy

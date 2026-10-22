@@ -11,11 +11,16 @@ verdict at all. For every such situation you write a trace and a case — the fa
 verdict turns on, stated in the case language at one observation of the trace — and the harness
 checks the trace, checks that the case holds on it, and runs the rule at that observation. A judge
 who never sees the rule then decides the law's verdict on your case. A divergence you can show
-this way is a defect; one you can only describe is an advisory. You do not edit the rule.
+this way is a defect; one you can only describe is an advisory. The one exception is
+**structural evidence** (question 11): an item that names the law's verbatim words and the
+contract clause they contradict, where no trace can show the difference; a judge decides it on the
+words and the contracts alone. You do not edit the rule.
 
 ## Inputs (injected below)
 
-- **The law** — its verbatim text and the node's segmentation of it (span ids, texts, roles).
+- **The law** — its verbatim text and the node's segmentation of it (span ids, texts, roles). A
+  span of role `sibling` is another duty of the law, formalized and reviewed on its own node: a
+  situation only that duty decides is not a divergence of this rule.
 - **The record** — the plan's node record: which spans map to which atoms, the standards and
   their parameters, the assumptions, the compositions, the residues (words the rule does not
   capture at all) and the narrowings (readings the plan or the coder chose on spans the rule
@@ -34,6 +39,9 @@ this way is a defect; one you can only describe is an advisory. You do not edit 
 - **The case language** — the JSON forms a case is written in.
 - **The case vocabulary** — every atom and primitive a case may name, with its arguments, unit,
   contract and where a trace writes it. A case may name any of them, not only what the rule reads.
+- **Cases to extend** (when there are any) — cases upheld against earlier rules of this duty whose
+  evidence no longer suffices to judge this rule: each must come back in your answer as a divergence
+  that `extends` it, its trace extended as the case says.
 
 {law_and_segmentation}
 
@@ -52,6 +60,8 @@ this way is a defect; one you can only describe is an advisory. You do not edit 
 {case_language}
 
 {case_vocabulary}
+
+{obligations}
 
 ## Questions
 
@@ -113,8 +123,12 @@ this way is a defect; one you can only describe is an advisory. You do not edit 
 10. **Factors of an open standard.** A factor a `standard` span (or the whole duty of a
    surrogate) names in its own words, which a contract in the contracts table carries and the
    rule does not read at all, is a divergence, for a surrogate too. A named factor the rule reads
-   more narrowly than its words, as the record discloses, is an advisory. A factor only a
-   catch-all of the standard covers ("other conditions") is never a divergence. A factor the
+   more narrowly than its words, as the record discloses, is an advisory. A catch-all of the
+   standard (words that cover further factors without naming them) is held to the reading the
+   record discloses for it: a contract the record says the catch-all is read through, which the
+   rule does not read, is a divergence; a factor the disclosure leaves out is an advisory, as a
+   disclosed narrowing is; with no disclosed reading, a factor the catch-all covers that a contract
+   in the table carries and the rule does not read is a divergence. A factor the
    standard names in its own words that no contract in the table carries at all is not a
    divergence: list it under `gap_candidates` with `kind` `standard_factor`, the span, the words
    that name it (verbatim from the span), the factor and the nearest contract with the clause that
@@ -127,8 +141,8 @@ this way is a defect; one you can only describe is an advisory. You do not edit 
    that the record carries with a contract that also admits things the words exclude: the words
    name one kind within a class, the contract denotes the whole class. When no contract in the
    table makes the distinction, no trace can show the divergence, because a situation with the
-   named item and one with another member of the class are written alike. List it under
-   `gap_candidates` with `kind` `broader_contract`: the span, the words that name the item
+   named item and one with another member of the class are written alike. List it as structural
+   evidence under `gap_candidates` with `kind` `broader_contract`: the span, the words that name the item
    (verbatim from the span), what the words exclude that the contract admits (`factor`), and the
    contract the record carries with the clause that makes it broader (`nearest`). A legal
    aggregate the gate admitted, and a word read through conduct under question 8, are not such
@@ -155,7 +169,8 @@ The answer is the argument of `submit_review`, in this schema and nothing more:
                   "trace": {"scenes": [ ... ]},
                   "case": <formula in the case language>,
                   "entities": {"<name>": {"kind": "track | region | device", "id": <id>}},
-                  "at": <timestamp of a scene, ms>}],
+                  "at": <timestamp of a scene, ms>,
+                  "extends": "<the id of a case to extend, only for such a case>"}],
  "advisories": ["<observations that return nothing: an acceptable narrowing, a residue that changes no behaviour, a parameter worth review>"],
  "gap_candidates": [{"kind": "standard_factor | broader_contract", "span": "<span id>", "words": "<the words of the span that name the factor or the item, verbatim>", "factor": "<the factor of the standard no contract carries, or what the words exclude that the carried contract admits>", "nearest": "<the closest contract and the clause that excludes the factor, or the carried contract and the clause that makes it broader>"}]}
 ```
@@ -163,7 +178,8 @@ The answer is the argument of `submit_review`, in this schema and nothing more:
 At most {max_divergences} divergences: where you find more, keep those the law's words decide most
 plainly. A divergence the vocabulary cannot state carries `"unstatable": "<the words it cannot state>"`
 instead of `case`, `entities` and `at`. No other key is admitted: a divergence carries evidence,
-never a fix, a mapping or a recommended atom.
+never a fix, a mapping or a recommended atom. A `broader_contract` entry of `gap_candidates` is
+structural evidence (question 11); a `standard_factor` entry is a gap candidate for the operator.
 
 ## Finish
 

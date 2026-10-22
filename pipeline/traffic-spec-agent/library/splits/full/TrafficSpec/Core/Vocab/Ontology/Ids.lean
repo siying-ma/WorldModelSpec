@@ -6,7 +6,7 @@
 -/
 namespace TrafficSpec
 
-/-- Every atom id of ATOMS.md §1–§7, in file order. -/
+/-- Every atom id of the seven atom families of ATOMS.md, in file order. -/
 def atomIds : List String := [
   "ru.motor_vehicle",
   "ru.motorcycle",
@@ -138,7 +138,7 @@ def atomIds : List String := [
   "rel.visible"
 ]
 
-/-- Every primitive id of ATOMS.md §10, in file order. -/
+/-- Every primitive id of ATOMS.md, in file order. -/
 def primitiveIds : List String := [
   "prim.heading_change",
   "prim.closest_approach_within",

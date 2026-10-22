@@ -25,7 +25,7 @@ may name the law's words the rule ignores, but not a replacement for them.
   definition includes and leaves unresolved, as the independent gate admitted them.
 - **The item** — the certified case, the law's verdict on it and its deciding words, the rule's
   verdict, whether an aggregate membership mechanically explains the difference, and the outcomes
-  available for this item; or a word-level claim no trace can show.
+  available for this item; or structural evidence: a word-level claim no trace can show.
 - **Earlier rulings** — what was decided on this law before, and why (rule 8).
 
 {law_and_segmentation}
@@ -61,7 +61,7 @@ may name the law's words the rule ignores, but not a replacement for them.
    restriction of this clause is still `upheld`, even if changing membership would also change the
    rule's verdict.
 
-A word-level item is `upheld` or `dismissed_permitted_reading` only.
+A structural evidence item is `upheld` or `dismissed_permitted_reading` only.
 
 ## Rules
 
@@ -88,7 +88,9 @@ A word-level item is `upheld` or `dismissed_permitted_reading` only.
    out, or narrows so that the rule applies where the law does not, or not where it does, is upheld
    when the case shows the verdict change. A trigger, condition or exception read relative to the
    act the obligation names — before the act, while it is under way, or only where it is recognized
-   — is judged as a reading of that span, whichever span the record discloses it on.
+   — is judged as a reading of that span, whichever span the record discloses it on. A span of role
+   `sibling` is another duty of the law, formalized and judged on its own: leaving it unread is not
+   a word left out.
 5. **Words with no observable counterpart.** An intention, a perception or a knowledge, a purpose,
    the legal status of a feature in the scene, or who or what controls a road user's motion is read
    through the conduct or feature it refers to, and the record discloses each such reading as an
@@ -103,13 +105,15 @@ A word-level item is `upheld` or `dismissed_permitted_reading` only.
    contract carries and the rule does not read at all, on the rule returning no verdict inside the
    law's domain, or on a bound that forbids conduct no reading of the standard could call
    unreasonable.
-7. **Word-level items.** Such an item says the record carries words of a subject, trigger,
-   condition, exception or obligation span with a contract that admits things the words exclude,
-   and that no contract makes the distinction. Uphold it when the contract's own words admit what
+7. **Structural evidence.** Such an item names the law's verbatim words and the contract clause
+   they contradict: the record carries words of a subject, trigger, condition, exception or
+   obligation span with a contract that admits things the words exclude, and no contract makes the
+   distinction, so no trace can show it. Decide it on the words and the contracts alone. Uphold it
+   when the contract's own words admit what
    the law's words exclude and the difference changes where the law applies or what it requires;
    an upheld item returns the rule so that the plan files a gap on that span. Otherwise the words
    permit the carried contract (`dismissed_permitted_reading`).
-8. **Earlier rulings.** A situation an earlier ruling on this law decided is decided the same way,
+8. **Earlier rulings.** A situation an earlier ruling on this duty decided is decided the same way,
    unless the record or the rendering changed on the point that ruling turned on; a decision that
    departs from an earlier one names, in its reason, the change it turns on.
 9. Quote, verbatim, the words of the law or of a definition that decide the outcome. Do not use

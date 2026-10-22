@@ -1,12 +1,11 @@
-"""The blueprint records a plan session writes: one per node (design §2) and one per concept
-(DERIVED_CONCEPTS_PLAN §5.1), in the same file, told apart by `node_id` / `concept_id`."""
+"""The blueprint records a plan session writes: one per node and one per concept, in the
+same file, told apart by `node_id` / `concept_id`."""
 from __future__ import annotations
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-REQUIRED = ("node_id", "law_refs", "segmentation", "elements", "binders", "applicability", "obligation", "scenarios")
 ROLES = {"trigger", "subject", "obligation", "exception", "standard", "condition", "reference", "sibling", "definitional", "boilerplate"}
 SUBSTANTIVE = {"trigger", "subject", "obligation", "exception", "standard", "condition", "reference"}
 SCENARIOS = {"forbid": "violated", "permit": "compliant", "idle": "not_applicable", "blind": "unknown"}
@@ -20,12 +19,30 @@ VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates"
 #: applicability negated inside one exception or condition span of this node (unless: that span's
 #: content does not hold where the composed rule applies; `scopes` names the span).
 AS_KINDS = {"exception", "condition", "compliance", "unless"}
+#: The kinds of a narrowing, one schema at the blueprint and the gate: a plan declares `reading` (the
+#: default) or `observable_reading`; a coder adds `reading`, or `no_atom` / `no_operator` (the words
+#: cannot be stated), and accounts for a planned `observable_reading`. A concept knows no
+#: `observable_reading`: its words are a contract, not a law's.
+NARROWING_KINDS = {"reading", "observable_reading", "no_atom", "no_operator"}
+PLANNED_NARROWING_KINDS = {"reading", "observable_reading"}
+CONCEPT_NARROWING_KINDS = {"reading", "no_atom", "no_operator"}
 GAP_KINDS = {"atom", "operator"}   # the two ways the frozen vocabulary can fail a span: no atom (or enumeration value) carries it; no operator expresses it
 #: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
 CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
 CONCEPT_KINDS = {"formula", "quantity"}
 ARG_SORTS = {"track", "literal", "nat"}
-CONCEPT_REQUIRED = ("concept_id", "kind", "contract", "args", "params", "elements", "scenarios")
+
+
+def span_offsets(segmentation: list, text: str) -> dict[str, tuple[int, int]]:
+    """Where each span lies in the law's text, as character offsets: spans are verbatim substrings
+    in order, so each is found after the one before. A span not found is left out."""
+    out, pos = {}, 0
+    for s in segmentation if isinstance(segmentation, list) else []:
+        t = s.get("text") if isinstance(s, dict) else None
+        i = text.find(t, pos) if isinstance(t, str) and t else -1
+        if i >= 0:
+            out[str(s.get("id"))] = (i, i + len(t)); pos = i + len(t)
+    return out
 
 
 def concepts_of(op: dict) -> list[str]:
@@ -62,17 +79,30 @@ class Node:
         return {s["id"]: s for s in self.raw.get("segmentation", [])}
 
     def claimed_atoms(self) -> set[str]:
+        """The ids the record claims. Only string ids are collected: a record whose fields are of
+        another shape is the validator's to return, and reading it here never raises."""
         out: set[str] = set()
-        for e in self.raw.get("elements", []):
-            out.update(e.get("atoms", []))
-            out.update(e.get("derived", []))
-        for o in self.raw.get("operationalizations", []):
-            out.update(concepts_of(o))
+
+        def add(ids: Any) -> None:
+            if isinstance(ids, (list, tuple)):
+                out.update(i for i in ids if isinstance(i, str))
+        dicts = lambda xs: [x for x in xs if isinstance(x, dict)] if isinstance(xs, list) else []
+        for e in dicts(self.raw.get("elements")):
+            add(e.get("atoms"))
+            add(e.get("derived"))
+        for o in dicts(self.raw.get("operationalizations")):
+            add(concepts_of(o) if isinstance(o.get("concepts") or [], list) else [o.get("concept")])
         uw = (self.raw.get("occasion") or {}).get("under_way") if isinstance(self.raw.get("occasion"), dict) else None
         if isinstance(uw, dict):                 # what marks the act under way is read by the rule, so it is claimed
-            out.update(uw.get("atoms", []))
-            out.update(uw.get("derived", []))
+            add(uw.get("atoms"))
+            add(uw.get("derived"))
         return out
+
+    def claimed_concepts(self) -> set[str]:
+        """The pipeline concepts the record claims, wherever it claims them: its elements, its
+        operationalizations and what marks its occasion's act under way."""
+        from .nodeid import is_concept_id
+        return {c for c in self.claimed_atoms() if is_concept_id(c)}
 
     def claimed_names(self) -> set[str]:
         """Claimed ids as Lean names (`family_name`); attribute values map to their atom."""
@@ -144,9 +174,12 @@ def _records(path: Path) -> list[dict]:
         if not line.strip():
             continue
         try:
-            out.append(json.loads(line))
+            rec = json.loads(line)
         except json.JSONDecodeError as e:
             raise ValueError(f"{path}:{i + 1}: not JSON: {e}")
+        if not isinstance(rec, dict):
+            raise ValueError(f"{path}:{i + 1}: a record is a JSON object, not {type(rec).__name__}")
+        out.append(rec)
     return out
 
 
@@ -168,7 +201,8 @@ def normalize_concept(r: dict) -> dict:
             if len(texts) == 1:
                 x = {"span": x.get("span", "contract"), "why": texts[0]}
         return x
-    out["residues"] = [residue(x) for x in (r.get("residues") or [])]
+    if isinstance(r.get("residues"), list):
+        out["residues"] = [residue(x) for x in r["residues"]]
     return out
 
 

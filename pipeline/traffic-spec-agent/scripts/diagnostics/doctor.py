@@ -20,9 +20,8 @@ from __future__ import annotations
 import json
 import re
 import sys
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 from .doctor_result import Result, OK, FAIL, SKIP, REVIEW, VacuousCheck, _nonempty  # noqa: F401
 from .library_v2 import LibraryV2Checks
@@ -225,11 +224,13 @@ class Doctor:
         body = _read(self.repo / "harness" / "agents" / "runner.py")
         if "*ISOLATION_FLAGS" not in body or "*PERMISSION_FLAGS" not in body:
             return Result("session isolation", FAIL, "run_claude does not pass ISOLATION_FLAGS and PERMISSION_FLAGS", src)
+        if '"--tools"' not in body or 'env["CLAUDE_CODE_DISABLE_AUTO_MEMORY"] = "1"' not in body:
+            return Result("session isolation", FAIL, "run_claude does not fix each session's tool set or does not disable auto memory", src)
         perm = list(getattr(runner, "PERMISSION_FLAGS", []))
         if perm[:4] != ["--permission-mode", "default", "--permission-prompts", "none"]:
             return Result("session isolation", FAIL, f"sessions do not run under an allow-list: {perm}", src)
         phases = {"plan.py": ["allow=session.plan_allow(", "cwd=plan_dir"], "code.py": ["allow=session.code_allow(", "cwd=d"],
-                  "validate.py": ["allow=[]", "disallowed_tools=session.NO_TOOLS"]}
+                  "validate.py": ["allow=[]", "tools=[]"]}
         bad = [f"{f}: {n}" for f, needles in phases.items() for n in needles if n not in _read(self.repo / "harness" / "phases" / f)]
         if bad:
             return Result("session isolation", FAIL, f"phases launch sessions outside the allow-list model: {bad}", src)
@@ -393,6 +394,26 @@ class Doctor:
             return Result("harness law-free", FAIL, "; ".join(bad[:5]), src)
         return Result("harness law-free", OK, f"{len(targets)} files name no law id", src)
 
+    def code_cites_no_document(self) -> Result:
+        """A comment of the harness, the scripts or Core states its contract in its own words: it cites
+        no design document, section, revision or plan part."""
+        pat = re.compile(r"§ ?\d|\bdesign §|\b[A-Z][A-Z0-9_]*_(?:PLAN|DESIGN)(?:_[\d-]+)?(?:\.md)?\b|\b[Rr]evision[- ]\d+|\b[Pp]art \d+\b|\brev\.? ?\d+\b")
+        for sample in ("design §4", "DERIVED_CONCEPTS_PLAN §5", "Revision 33", "revision-32", "part 27", "rev 33"):
+            if not pat.search(sample):          # the pattern must recognise a citation, or the check certifies silence
+                raise VacuousCheck(f"the citation pattern misses {sample!r}")
+        targets = [p for d in ("harness", "scripts") for p in (self.repo / d).rglob("*.py")
+                   if p.resolve() != Path(__file__).resolve()]          # this file holds the samples above
+        targets += sorted((self.lib / "TrafficSpec" / "Core").rglob("*.lean"))
+        bad = []
+        for path in targets:
+            for i, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                if pat.search(line):
+                    bad.append(f"{path.relative_to(self.repo)}:{i}")
+        src = ("harness/**/*.py, scripts/**/*.py, library/TrafficSpec/Core/**/*.lean", "a comment states its contract in full")
+        if bad:
+            return Result("code cites no document", FAIL, "; ".join(bad[:8]), src)
+        return Result("code cites no document", OK, f"{len(targets)} files cite no document, section or revision", src)
+
     def captures_stay_out_of_the_rule_tree(self) -> Result:
         """No trace or capture sits under `library/TrafficSpec/`; traces are decoded at run time."""
         tree = self.lib / "TrafficSpec"
@@ -466,7 +487,7 @@ class Doctor:
         rows = {}
         for line in _read(atoms_md).splitlines():
             m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
-            if m and m.group(1) in frozen and m.group(1) not in rows:     # its contract row, not its unit row (§11)
+            if m and m.group(1) in frozen and m.group(1) not in rows:     # its contract row, not its row in the units table
                 rows[m.group(1)] = hashlib.sha256(line.encode("utf-8")).hexdigest()
         bad = [a for a, f in frozen.items() if rows.get(a) != f.get("sha256")]
         if bad:
@@ -478,27 +499,34 @@ class Doctor:
         """A reading holds the numbers no statute states. A parameter whose value is a figure some law of
         the corpus states may be that statute's figure entering every rule through the reading; each such
         parameter is listed for the operator until its entry carries a `figure_review` note saying why
-        the value is a convention and not the statute's figure."""
+        the value is a convention and not the statute's figure. A number phrase before a unit that the
+        figure parser cannot read fails the check: the validator would return every record on it."""
         sys.path.insert(0, str(self.repo))
-        from harness.model.units import stated_figures, to_core
+        from harness.model.units import stated_figures, to_core, unsupported_figures
         corpus = self.repo / "laws" / "full_list" / "laws.jsonl"
         src = [f"{corpus.relative_to(self.repo)} → stated figures", "library/TrafficSpec/Readings/*.json → params (value, unit, figure_review)"]
         stated: dict[tuple, list[tuple[str, str]]] = {}
+        unreadable: list[str] = []
         for line in _read(corpus).splitlines():
             if line.strip():
                 law = json.loads(line)
-                for core, value, words in stated_figures(law["text"]):
-                    stated.setdefault((core, value), []).append((law["id"], words))
+                for f in stated_figures(law["text"]):
+                    stated.setdefault((f.core, f.value), []).append((law["id"], f.words))
+                unreadable += [f"{law['id']}, character {u.start}" for u in unsupported_figures(law["text"])]
         _nonempty(stated, "figures stated by the corpus")
+        if unreadable:                       # located by id and offset only: the corpus file holds the test split too
+            return Result("reading figures", FAIL, f"{len(unreadable)} number phrase(s) before a unit that the figure parser "
+                          "(harness/model/units.py) cannot read; extend it", tuple(unreadable) + tuple(src))
         readings = sorted((self.lib / "TrafficSpec" / "Readings").glob("*.json"))
+        from harness.model.reading import reading_defects
+        broken = [f"{rf.name}: {e}" for rf in readings for e in reading_defects(json.loads(_read(rf)))]
+        if broken:
+            return Result("reading figures", FAIL, f"{len(broken)} defect(s) keep a reading from being read whole", tuple(broken) + tuple(src))
         flagged, reviewed, n = [], 0, 0
         for rf in readings:
             for p in json.loads(_read(rf)).get("params", []):
                 n += 1
-                try:
-                    key = to_core(p["value"], p["unit"])
-                except (KeyError, ValueError, TypeError):
-                    continue
+                key = to_core(p["value"], p["unit"])
                 if key not in stated:
                     continue
                 if str(p.get("figure_review", "")).strip():
@@ -548,7 +576,7 @@ class Doctor:
         sem = (self.lib / "TrafficSpec" / "Core" / "Language" / "Semantics.lean").read_text(encoding="utf-8")
         listed = re.findall(r'"(\w+)"', re.search(r"measureNames : List String := \[(.*?)\]", sem, re.S).group(1))
         dims, prims = surface._dimensions()
-        bad += [f"measured atom `{m}` has no unit in Dimensions.lean (ATOMS.md §11)" for m in listed if m not in dims]
+        bad += [f"measured atom `{m}` has no unit in Dimensions.lean (the units table of ATOMS.md)" for m in listed if m not in dims]
         names = {r["name"] for r in rows}
         bad += [f"primitive `{p}` is missing from the catalogue" for p in prims if p not in names]
         lang = surface.case_language()
@@ -618,7 +646,7 @@ class Doctor:
                                    self.placeholders_supplied, self.skeleton_tokens,
                                    self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,
-                                   self.rule_files_carry_only_posted_law_ids,
+                                   self.rule_files_carry_only_posted_law_ids, self.code_cites_no_document,
                                    self.captures_stay_out_of_the_rule_tree, self.repo_paths_resolve,
                                    self.reading_figures_reviewed, self.reading_proposals_reviewed]
 

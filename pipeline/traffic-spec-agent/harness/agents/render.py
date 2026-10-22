@@ -3,7 +3,6 @@
 the PLACEHOLDERS tables of the phases."""
 from __future__ import annotations
 import re
-from pathlib import Path
 from ..store import paths
 
 

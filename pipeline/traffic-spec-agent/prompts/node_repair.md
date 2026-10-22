@@ -82,7 +82,7 @@ You are a one-shot session. Nothing waits for a reply.
    the rule does read; a masked atom that cannot make the rule unknown is replaced by one that can.
 2. **Spans are referred to by the ids shown with the law.** What changes is what each span maps
    to and how the prose states the duty; a record that needs a different cut of the text is a
-   plan defect, and you withdraw naming no atom (the law goes back to the planner).
+   plan defect, and you withdraw it as one (`kind: "plan"`: the law goes back to the planner, no gap).
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
    span of those roles the vocabulary cannot carry is an assumption the trace declares, or a gap.
    A feature such a span names without a size is carried by its presence, never by a size bound
@@ -103,6 +103,12 @@ You are a one-shot session. Nothing waits for a reply.
    when one is present is quantified inside the applicability or the obligation; a record that
    binds it is re-cast so, since a binder no scene supplies leaves the subject's duty unjudged when
    the subject is alone.
+4c. **A duty covers its domain.** An obligation's elements decide the duty wherever its words
+   apply. An atom or a concept that is decided only inside a narrower domain than the words name (a
+   place, a class of road user or a state the words do not require) leaves the duty unjudged
+   elsewhere: cover the rest of the domain with another element or concept, or propose a gap.
+   Unknown is for observations a source may lack and for the limits of a finite trace, not for a
+   part of the domain no element reads.
 5. **Parameters come from the catalogue or are proposed** (`param_proposals`: name, unit, a
    provisional value, convention, source); never a value in the record or the prose. A value the
    catalogue marks proposed by a node of this law, not yet reviewed, may be proposed again with
@@ -119,15 +125,23 @@ You are a one-shot session. Nothing waits for a reply.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
    atom or an operator is missing, what it would have to carry, and the nearest existing id with
    the clause of its contract that excludes the span, so the operator can decide a gap.
-8. Decide; do not ask.
+9. Decide; do not ask.
 
 ## Output
 
 `record.jsonl`: one line, the revised node record in the schema below (the harness attaches
 `node_id`, `law_refs` and `segmentation` from the planned record), or one line
-`{"withdraw": {"span": "<span id>", "kind": "atom" | "operator", "missing": "<what the vocabulary
-lacks>", "nearest": ["<nearest id>: <the clause that excludes the span>"]}}` — the harness files
-the gap and blocks the law for the operator. The harness validates a record in its plan's context
+`{"withdraw": {"span": "<span id>", "kind": "atom" | "operator" | "plan" | "concept", "missing": "<what is
+lacking>", "nearest": ["<nearest id>: <the clause that excludes the span>"]}}`. Of the kinds: `atom` and
+`operator` say the vocabulary lacks what the span needs — the harness files the gap and blocks the
+law for the operator; `plan` says the text needs another cut — the law goes back to the planner,
+with no gap; `concept` says a concept the node calls computes what its own contract excludes — write
+then, beside `record.jsonl`, `dependency_defect.json` with the JSON object `{"concept_id": "<id>", "contract_words": "<its contract's words that decide it, verbatim>",
+"kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
+"contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
+"instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
+"trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}`, which an adjudicator judges
+by the concept's contract before anything is charged. The harness validates a record in its plan's context
 with its sibling nodes and, if it names a defect, asks you once more with the defect; a record
 that keeps a defect returns the law to the planner.
 

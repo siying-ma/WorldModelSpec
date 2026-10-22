@@ -10,7 +10,8 @@ of words to vocabulary, and you propose none: no fix, no atom, no mapping, no re
 
 ## Inputs (injected below)
 
-- **The law** — its verbatim text.
+- **The law** — its verbatim text and, for a law of several duties, the duty judged here (its
+  words and the sentence that qualifies them) and the duties judged separately.
 - **Definitions that apply** — the posted definitions the law's words resolve to, verbatim.
 - **The case** — the variables it names (the road users, regions and devices), the observation,
   and the facts that hold there, rendered mechanically from the formula.
@@ -26,10 +27,11 @@ of words to vocabulary, and you propose none: no fix, no atom, no mapping, no re
 
 ## Deciding
 
-1. The verdict is the law's, for the road user the law's duty binds in this case, at the
-   observation named: `violated` when the facts show conduct the law forbids or the omission of
-   conduct it requires; `compliant` when the law governs the situation and the facts show its duty
-   met; `not_applicable` when the law's duty does not arise in the situation the facts show;
+1. The verdict is the law's on the duty judged here (the law's duty, when it has one), for the
+   road user that duty binds in this case, at the observation named. A duty judged separately does
+   not decide this verdict; every other word of the law applies by its meaning: `violated` when the
+   facts show conduct the law forbids or the omission of conduct it requires; `compliant` when the
+   law governs the situation and the facts show its duty met; `not_applicable` when the law's duty does not arise in the situation the facts show;
    `undetermined` when the facts leave the verdict open.
 2. **Decisive.** `decisive` is true only when the case alone decides the verdict whatever else a
    situation satisfying it holds; it is false when the verdict depends on a fact the case does not

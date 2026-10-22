@@ -3,11 +3,8 @@
      omitted. Do not edit; edit ATOMS.md or the split and regenerate. -->
 # Traffic-law ontology — atoms
 
-Status: **draft for review, 2026-10-03** (fourth draft: the control state of a vehicle, the
-relation of a lane to the intersection it enters, the line of sight between two road users, and
-the `subject` capability; the third draft of 2026-09-20 aligned the set with the pipeline corpus
-and made the judgement-standard family a table of operationalizations, §8). Frozen after review;
-changed afterwards only by an explicit ontology change, never by a rule and never by an agent.
+Status: frozen. Changed only by an explicit ontology change, never by a rule and never by an
+agent.
 
 ## What an atom is
 
@@ -200,8 +197,8 @@ reports unknown.
 | `dev.stop_sign` | regulatory sign requiring a full halt | general |
 | `dev.yield_sign` | regulatory sign requiring yielding without a mandatory halt | general |
 | `dev.speed_limit_sign` | sign stating a maximum or minimum speed, with value and unit; **kind** ∈ {maximum, minimum, zone} | general |
-| `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign` where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
-| `dev.zone_sign` | a sign that begins or ends a signed zone along the road; **kind** ∈ {school, school_crossing, pedestrian_safety, temporary_traffic_control, no_passing, high_occupancy_lane, heavy_vehicle_lane, speed_zone, narrow_highway, hazardous_place, parking_restricted, trail}; **end** attribute; **conditions** attribute: a structured reading of the sign's legend — a list of time windows (a set of weekdays or a calendar class such as school days, a start and an end time of day), a minimum occupancy, a duration limit, a vehicle class, or a "when children present" flag **Not a stand-in for:** whether the condition holds now — that is `drv.condition_in_effect` | general (kinds `school_crossing`, `pedestrian_safety`, `high_occupancy_lane`: local) |
+| `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign`, read as that row says (unconditional when empty, unknown when absent), where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
+| `dev.zone_sign` | a sign that begins or ends a signed zone along the road; **kind** ∈ {school, school_crossing, pedestrian_safety, temporary_traffic_control, no_passing, high_occupancy_lane, heavy_vehicle_lane, speed_zone, narrow_highway, hazardous_place, parking_restricted, trail}; **end** attribute; **conditions** attribute: a structured reading of the sign's legend — a list of time windows (a set of weekdays or a calendar class such as school days, a start and an end time of day), a minimum occupancy, a duration limit, a vehicle class, or a "when children present" flag; a legend read with no restriction is the empty set (unconditional), a legend not read is absent (every condition unknown) **Not a stand-in for:** whether the condition holds now — that is `prim.conditions_hold` | general (kinds `school_crossing`, `pedestrian_safety`, `high_occupancy_lane`: local) |
 | `dev.railway_signal_or_gate` | the devices at a level crossing; **lights** ∈ {flashing, dark}; **gate** ∈ {up, lowering, down, raising, none}; **bell** attribute | general |
 | `dev.temporary_traffic_control` | cones, barricades, temporary signs and flashers marking works, a closure or an obstruction | general |
 | `dev.human_direction` | a person directing traffic and the direction given; **role** ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}; **indication** ∈ {stop, proceed, slow, turn(dir)} | general |
@@ -246,8 +243,8 @@ declares it absent, and every specification that reads it then reports unknown.
 | `rel.surface_gap` | distance between the nearest points of two bodies; longitudinal and lateral components in the subject's frame | general |
 | `rel.ahead_behind_in_lane` | a is ahead of / behind b in the same lane, along the lane direction | general |
 | `rel.longitudinal_overlap` | the bodies overlap along the lane axis (side by side); signed overlap length | general |
-| `rel.oncoming` | headings opposed and closing | general |
-| `rel.same_direction` | headings aligned within a tolerance | general |
+| `rel.oncoming` | headings opposed and closing: the cosine of the angle between the headings is below the negative of its tolerance, which is the cosine of the largest angle off exactly opposed allowed, a ratio between -1 and 1 | general |
+| `rel.same_direction` | headings aligned: the cosine of the angle between the headings is above its tolerance, which is the cosine of the largest angle allowed, a ratio between -1 and 1 | general |
 | `rel.bearing` | direction of b from a in a's frame (for "on the right of", "immediately to the rear") | general |
 | `rel.contact` | the bodies of two road users, or a road user and a structure, touch or overlap (a collision) **Not a stand-in for:** a near miss — that is `drv.time_to_conflict` | general |
 | `rel.visible` | b is visible from a: an unobstructed line of sight from a's reference point to b's body, as the source tests it (a ray cast, an occlusion test, an annotator's judgement) **Not a stand-in for:** a distance, the sight distance of a place (`st.sight_distance`) — what could be seen from or at a place, whether or not any road user is there, is that atom, the clarity of the air (`env.visibility`), or a lamp being lit — a visible vehicle may show no lamp and a lit lamp may be hidden | general |

@@ -5,7 +5,7 @@
 -/
 /-
   TrafficSpec.Core.Vocab.Atoms
-  The bijection with ATOMS.md §1–§7: exactly one definition per atom id, named `family_name`,
+  The bijection with the atoms of ATOMS.md: exactly one definition per atom id, named `family_name`,
   each reading one field of `World` and nothing else. Attribute accessors of an atom carry the
   atom's name plus a suffix (`dev_traffic_signal_shows`, `ru_rider_posture_on_seat`).
 
@@ -128,7 +128,7 @@ def nearestPoint (p : Vec) (poly : List Vec) : Option Vec :=
 end Geom
 
 -- ---------------------------------------------------------------------------------------------
--- §1 Road users
+-- Road users
 -- ---------------------------------------------------------------------------------------------
 private def hasClass (s : Scene) (x : TrackId) (c : RoadUserClass) : Option Bool :=
   (s.user x).bind fun u => if u.unobservedClasses.contains c then none else u.classes.map (·.contains c)
@@ -178,7 +178,7 @@ def ru_official_vehicle_kind (s : Scene) (x : TrackId) : Option OfficialKind := 
 def ru_electric_bicycle_class (s : Scene) (x : TrackId) : Option Nat := (s.user x).bind (·.eBikeClass)
 
 -- ---------------------------------------------------------------------------------------------
--- §2 Kinematics
+-- Kinematics
 -- ---------------------------------------------------------------------------------------------
 def kin_time (s : Scene) : Timestamp := s.t
 def kin_position (s : Scene) (x : TrackId) : Option Vec := (s.user x).bind (·.kin.position)
@@ -195,7 +195,7 @@ def kin_throttle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin
 def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.serviceBrake)
 
 -- ---------------------------------------------------------------------------------------------
--- §3 Road structure and occupancy
+-- Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
 /-- Whether a region is of a kind: unknown where the source cannot tell that kind. -/
 def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
@@ -330,7 +330,7 @@ def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
   if s.occupancyObserved.contains x then some ((s.occupies.filter (·.1 == x)).map (·.2)) else none
 
 -- ---------------------------------------------------------------------------------------------
--- §4 Control devices
+-- Control devices
 -- ---------------------------------------------------------------------------------------------
 /-- Whether a device is of a kind: unknown where the source cannot tell that kind. -/
 def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
@@ -385,7 +385,7 @@ def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
   (s.devices.filter fun d => d.kind == k || d.unobservedKinds.contains k).map (·.id)
 
 -- ---------------------------------------------------------------------------------------------
--- §5 Signals emitted by road users
+-- Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
 def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
@@ -402,7 +402,7 @@ def sig_hand_signal (s : Scene) (x : TrackId) : Option HandSignal := (s.user x).
 def sig_compression_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.compressionBrake)
 
 -- ---------------------------------------------------------------------------------------------
--- §6 Environment
+-- Environment
 -- ---------------------------------------------------------------------------------------------
 def env_darkness (s : Scene) : Option Bool := s.env.darkness
 def env_precipitation (s : Scene) : Option Bool := s.env.precipitation
@@ -412,7 +412,7 @@ def env_visibility (s : Scene) : Option Q := s.env.visibility
 def env_civil_time (s : Scene) : Option CivilTime := s.env.civilTime
 
 -- ---------------------------------------------------------------------------------------------
--- §7 Relations between road users. Measured where the source supplies them, otherwise computed
+-- Relations between road users. Measured where the source supplies them, otherwise computed
 -- from kinematics. `none` when a needed kinematic is missing.
 -- ---------------------------------------------------------------------------------------------
 def rel_centre_distance (s : Scene) (a b : TrackId) : Option Q :=

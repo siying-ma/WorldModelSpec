@@ -54,31 +54,31 @@ class Defects(unittest.TestCase):
     def test_trace_did_not_decode(self):
         c = self.rec(trace_decode_errors=["trace.scenes: empty"], lint_errors=None, witness_errors=None, case_value=None,
                      rule_result=None, sensitivity_overrides=None)
-        errs = review.cert_defects(1, self.d, c)
+        errs = (review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c))
         self.assertTrue(any("does not decode" in e for e in errs))
 
     def test_null_prerequisites_report_only_what_ran(self):
         c = self.rec(case_decode_errors=["case: required"], canonical_case=None, witness_errors=None, case_check_errors=None,
                      case_value=None, rule_result=None, sensitivity_overrides=None)
-        errs = review.cert_defects(1, self.d, c)
+        errs = (review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c))
         self.assertEqual(len(errs), 1)
         self.assertIn("the case does not decode", errs[0])
 
     def test_case_not_true(self):
         c = self.rec(case_value={"value": "false", "unknown_reasons": []}, rule_result=None)
-        self.assertTrue(any("the case is false" in e for e in review.cert_defects(1, self.d, c)))
+        self.assertTrue(any("the case is false" in e for e in (review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c))))
 
     def test_rule_unknown_for_the_trace(self):
         c = self.rec(rule_result={"verdict": "unknown", "unknown_reasons": ["absent_atom:kin_speed"]})
-        self.assertTrue(any("incomplete" in e for e in review.cert_defects(1, self.d, c)))
+        self.assertTrue(any("incomplete" in e for e in (review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c))))
 
     def test_unresolved_aggregate_is_not_a_trace_defect(self):
         c = self.rec(rule_result={"verdict": "unknown", "unknown_reasons": ["aggregate_unresolved:D-1::vehicle"]})
-        self.assertEqual(review.cert_defects(1, self.d, c), [])
+        self.assertEqual((review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c)), [])
 
     def test_rule_gives_the_claimed_verdict(self):
         c = self.rec(rule_result={"verdict": "violated", "unknown_reasons": []})
-        self.assertTrue(any("very verdict you claim" in e for e in review.cert_defects(1, self.d, c)))
+        self.assertTrue(any("very verdict you claim" in e for e in (review.cert_unusable(1, self.d, c) + review.cert_refutations(1, self.d, c))))
         self.assertEqual(review.cert_unusable(1, self.d, c), [])              # evaluated, and refuted
         self.assertTrue(review.cert_refutations(1, self.d, c))
 

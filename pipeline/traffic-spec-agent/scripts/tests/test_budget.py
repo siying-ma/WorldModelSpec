@@ -32,12 +32,32 @@ class Reservation(unittest.TestCase):
         b.settle(t, usage_row("r", "openai", "gpt-x", "high", usage, b.cost("gpt-x", usage)))
         self.assertAlmostEqual(b.spent, 0.011)
         b.reserve("gpt-x", 3000, 64000)                  # fits again
-        self.assertEqual(len(jsonl.read_strict(self.f)), 1)
+        self.assertEqual([r["state"] for r in jsonl.read_strict(self.f)], ["pending", "settled", "pending"])
 
     def test_spending_survives_a_restart(self):
         b = Budget(self.f, 1.0, PRICES)
         b.settle(None, usage_row("r", "openai", "gpt-x", "high", {}, 0.5))
         self.assertAlmostEqual(Budget(self.f, 1.0, PRICES).spent, 0.5)
+
+    def test_an_unsettled_request_counts_at_its_reservation(self):
+        b = Budget(self.f, 10.0, PRICES)
+        b.reserve("gpt-x", 3000, 64000)                  # the process ends during the call
+        again = Budget(self.f, 10.0, PRICES)
+        self.assertAlmostEqual(again.spent, 0.641, places=3)
+        self.assertEqual(len(again.unresolved), 1)
+
+    def test_a_failed_settlement_write_counts_nothing(self):
+        b = Budget(self.f, 10.0, PRICES)
+        t = b.reserve("gpt-x", 3000, 64000)
+        saved = jsonl.append_atomic
+        jsonl.append_atomic = lambda *a: (_ for _ in ()).throw(OSError("disk full"))
+        try:
+            with self.assertRaises(OSError):
+                b.settle(t, usage_row("r", "openai", "gpt-x", "high", {}, 0.5))
+        finally:
+            jsonl.append_atomic = saved
+        self.assertEqual(b.spent, 0)                     # and the pending row still counts it on recovery
+        self.assertAlmostEqual(Budget(self.f, 10.0, PRICES).spent, 0.641, places=3)
 
     def test_workers_cannot_all_cross_the_remainder(self):
         b = Budget(self.f, 2.0, PRICES)                  # three worst cases fit, the fourth does not

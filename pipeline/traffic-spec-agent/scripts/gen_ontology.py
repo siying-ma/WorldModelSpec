@@ -1,9 +1,10 @@
 """Generate library/TrafficSpec/Core/Vocab/Ontology/*.lean from ontology/ATOMS.md.
 
 Every attribute enumeration written in an atom's contract as `**attr** ∈ {a, b(dir), …}` (or, for
-the sign catalogue, `**code**: a, b, …`) becomes one Lean inductive; the atom ids of §1–§7 and the
-primitive ids of §10 become string lists; the units of the measured atoms (§11) and of the
-primitives (§10's last two columns) become the dimension tables of `Dimensions.lean`. Nothing else
+the sign catalogue, `**code**: a, b, …`) becomes one Lean inductive; the atom ids of the seven
+atom families and the primitive ids become string lists; the units of the measured atoms (the
+units table) and of the primitives (the last two columns of a primitive's row) become the
+dimension tables of `Dimensions.lean`. Nothing else
 is generated: structured attributes (a rider's posture, a sign's conditions) are hand-written
 records in World.lean.
 
@@ -69,15 +70,17 @@ ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
 DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
 
-#: A unit as ATOMS.md spells it → its exponents of metre, second and degree; `boolean` is no quantity.
-DIMS = {"m": (1, 0, 0), "s": (0, 1, 0), "m/s": (1, -1, 0), "m/s²": (1, -2, 0), "deg": (0, 0, 1),
-        "deg/s": (0, -1, 1), "1/m": (-1, 0, 0), "1": (0, 0, 0)}
+#: How ATOMS.md writes two units Core's decoder spells otherwise; `boolean` is no quantity.
+ONTOLOGY_SPELLING = {"m/s²": "m/s^2", "1": "ratio"}
 MEASURE_ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel)\.[a-z_]+)` \| `([a-z_]+)` \| ([^|]+?) \|$")
 
 def dim(unit: str, where: str) -> tuple[int, int, int]:
-    if unit not in DIMS:
-        raise SystemExit(f"{where}: unknown unit {unit!r} (known: {', '.join(DIMS)}, boolean)")
-    return DIMS[unit]
+    """The exponents of metre, second and degree of a unit as ATOMS.md writes it, from Core's units."""
+    from harness.model import units
+    spelled = ONTOLOGY_SPELLING.get(unit, unit)
+    if spelled not in units.FACTORS:
+        raise SystemExit(f"{where}: unknown unit {unit!r} (known: {', '.join(units.spellings())}, boolean)")
+    return units.DIMS[units.FACTORS[spelled][0]]
 
 def camel(v: str) -> str:
     parts = v.strip().split("_")
@@ -118,7 +121,7 @@ def parse(atoms_path: Path = None):
             primitives.append(aid)
             cells = [c.strip() for c in rest.rstrip(" |").split(" | ")]
             if len(cells) < 4:
-                raise SystemExit(f"{aid}: §10 row lacks its result unit and parameter units columns")
+                raise SystemExit(f"{aid}: the primitive's row lacks its result unit and parameter units columns")
             name = aid.replace(".", "_")
             result = None if cells[2] == "boolean" else dim(cells[2], name)
             ps = [] if cells[3] in ("—", "-", "") else [dim(u.strip(), name) for u in cells[3].split(",")]
@@ -220,9 +223,9 @@ def generate(atoms_path: Path = None):
         text = header.replace("{name}", fname) + "\n\n".join(bodies) + "\n\nend TrafficSpec\n"
         files[f"{fname}.lean"] = text
     ids = (header.replace("{name}", "Ids")
-           + "/-- Every atom id of ATOMS.md §1–§7, in file order. -/\ndef atomIds : List String := [\n"
+           + "/-- Every atom id of the seven atom families of ATOMS.md, in file order. -/\ndef atomIds : List String := [\n"
            + ",\n".join(f'  "{a}"' for a in atoms) + "\n]\n\n"
-           + "/-- Every primitive id of ATOMS.md §10, in file order. -/\ndef primitiveIds : List String := [\n"
+           + "/-- Every primitive id of ATOMS.md, in file order. -/\ndef primitiveIds : List String := [\n"
            + ",\n".join(f'  "{d}"' for d in primitives) + "\n]\n\nend TrafficSpec\n")
     files["Ids.lean"] = ids
     files["Dimensions.lean"] = render_dimensions(header, measures, prim_units)
@@ -233,8 +236,16 @@ def main(argv):
     # ATOMS_train.md into library/splits/train/TrafficSpec/Core/Vocab/Ontology); defaults are the full ontology.
     atoms_path = Path(argv[argv.index("--atoms") + 1]) if "--atoms" in argv else ATOMS
     out = Path(argv[argv.index("--out") + 1]) if "--out" in argv else OUT
-    files = generate(atoms_path)
     check = "--check" in argv
+    active = REPO / "library" / "splits" / "ACTIVE"
+    split = active.read_text().strip() if active.exists() else "full"
+    if not check and ("--atoms" in argv) != ("--out" in argv):
+        print("give both --atoms and --out, or neither"); return 2
+    if not check and "--atoms" not in argv and split != "full":
+        print(f"the Core directory holds the `{split}` split: the full ontology is written only while `full` is active "
+              "(python -m harness split --use full); a split's ontology is written with an explicit --atoms and --out pair")
+        return 2
+    files = generate(atoms_path)
     out.mkdir(parents=True, exist_ok=True)
     drift = []
     for fname, text in files.items():

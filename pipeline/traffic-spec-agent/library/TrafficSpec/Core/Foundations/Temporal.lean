@@ -94,8 +94,9 @@ private def atLastAt (ψ φ : Array R) (j0 i : Nat) : Option R :=
 
 /-- φ at the last observation in the window of length `d` behind each instant at which ψ held.
     Unknown where a position is missing, where ψ is unknown later than any observation at which it
-    held, and where ψ held nowhere in a window that is not covered or not adequately sampled; false
-    where ψ held nowhere in a covered, adequately sampled window. -/
+    held, where the window is not adequately sampled (an unobserved later instant could be the last
+    one at which ψ held), and where ψ held nowhere in a window that is not covered; false where ψ
+    held nowhere in a covered, adequately sampled window. -/
 def atLastAll (pos : Array (Option Q)) (d : Q) (op : String) (missing : UnknownReason) (ψ φ : Array R) : Array R :=
   let wins := Time.backWindows pos d
   (Array.range φ.size).map fun i =>
@@ -103,7 +104,7 @@ def atLastAll (pos : Array (Option Q)) (d : Q) (op : String) (missing : UnknownR
     | none => R.u missing
     | some w =>
       match atLastAt ψ φ w.j0 i with
-      | some r => r
+      | some r => if !w.adequate then R.u (.samplingGap op) else r
       | none => if !w.covered then truncated op else if !w.adequate then R.u (.samplingGap op) else R.f
 
 /-- φ at some observation in the window of length `d` ahead: true on a witness, false only when

@@ -32,25 +32,59 @@ class library_lock:
 
 
 def run(cmd: list[str], cwd: Path, timeout: float) -> tuple[int, str]:
+    """Run a toolchain command in its own process group, registered with the library's owner.
+    Returns the exit code (negative: the signal that ended it; 124: the deadline, after which the
+    whole group is ended) and what it printed."""
+    import os
+    import signal
+    from ..store import owner
     try:
-        p = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, timeout=timeout)
+        p = subprocess.Popen(cmd, cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, start_new_session=True)
     except FileNotFoundError as exc:
         raise LeanUnavailable(f"could not run {cmd[0]!r}: {exc}; install the toolchain (bash setup.sh)") from exc
-    except subprocess.TimeoutExpired as exc:              # what the process printed before it was stopped follows the first line
-        partial = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+    owner.register(p.pid)
+    try:
+        out, _ = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:                     # what the process printed before it was stopped follows the first line
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except OSError:
+            pass
+        partial, _ = p.communicate()
         return 124, f"TIMEOUT: {' '.join(cmd)} exceeded {timeout:.0f}s" + (f"\n{partial}" if partial else "")
-    return p.returncode, (p.stdout or "") + (p.stderr or "")
+    finally:
+        owner.unregister(p.pid)
+    return p.returncode, out or ""
 
 
-def lake_build(library: Path, targets: Optional[list[str]] = None, timeout: float = 1800.0) -> tuple[bool, str]:
-    code, out = run(["lake", "build"] + (targets or []), library, timeout)
-    return code == 0, out
+def lake_build(library: Path, targets: Optional[list[str]] = None, timeout: float = 1800.0) -> tuple[int, str]:
+    """`lake build`: (exit code as `run` gives it, output)."""
+    return run(["lake", "build"] + (targets or []), library, timeout)
 
 
-def lean_run(library: Path, file: Path, timeout: float = 900.0) -> tuple[bool, str]:
-    """Elaborate a standalone file and run its `main` (`lake env lean --run`)."""
-    code, out = run(["lake", "env", "lean", "--run", str(file.resolve())], library, timeout)
-    return code == 0, out
+def lean_run(library: Path, file: Path, timeout: float = 900.0) -> tuple[int, str]:
+    """Elaborate a standalone file and run its `main` (`lake env lean --run`): (exit code as `run` gives it, output)."""
+    return run(["lake", "env", "lean", "--run", str(file.resolve())], library, timeout)
+
+
+#: What a Lean program prints when it panicked and went on with a default value.
+PANIC = re.compile(r"^(PANIC at |INTERNAL PANIC|Error: index out of bounds|backtrace:$)", re.M)
+STACK_OVERFLOW = re.compile(r"Stack overflow detected", re.I)
+
+
+def panicked(output: str) -> list[str]:
+    return [l for l in output.splitlines() if PANIC.match(l)][:3]
+
+
+def error_sites(output: str) -> list[tuple[str, int, str]]:
+    """Every located error: (the file as printed, its line, the message), from `lake build`
+    (`error: <file>:<line>:<col>: …`) and from `lean` (`<file>:<line>:<col>: error: …`)."""
+    out = []
+    for l in output.splitlines():
+        m = re.match(r"^error: (\S+\.lean):(\d+):\d+: (.*)", l) or re.match(r"^(\S+\.lean):(\d+):\d+: error: (.*)", l)
+        if m:
+            out.append((m.group(1), int(m.group(2)), m.group(3)))
+    return out
 
 
 def code_only(text: str) -> str:

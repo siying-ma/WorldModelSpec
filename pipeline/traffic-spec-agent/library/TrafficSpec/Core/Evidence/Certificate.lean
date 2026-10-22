@@ -18,6 +18,8 @@
     an atom's and a primitive's parameters have their stated units;
   - its entity names are distinct and distinct from the grounding's binders, and no quantifier
     binds a binder's or an entity's name.
+  The units are checked by `DimCheck`, the traversal the gate also runs on rules and concept bodies
+  (with the reading's and the concepts' units as its environment); the prohibitions are the case's own.
   `Case.eval` decides the case at its instant with the grounding's tracks and the entities bound
   and an empty reading, which a checked case never reads.
 
@@ -63,6 +65,158 @@ structure Case where
   at_ : Timestamp
   deriving Inhabited
 
+/-- Where a formula's names get their units: a reading parameter's, and a concept's value (`none`
+    for a Boolean concept) and parameters'. Each lookup gives the unit, or why the name has none. -/
+structure DimEnv where
+  param : String → Except String Dim
+  concept : String → Except String (Option Dim × List Dim)
+
+/-- A defect of units. -/
+inductive DimError
+  | mismatch (msg : String)   -- operands, sides, branches, a window's length or a parameter in another unit
+  | unknown (msg : String)    -- a name whose unit is not known
+  | arity (msg : String)      -- a parameter list of the wrong length
+  | zeroDivision              -- a division by a zero literal
+  deriving Repr, Inhabited, BEq
+
+namespace DimError
+def tag : DimError → String
+  | .mismatch _ => "mismatch" | .unknown _ => "unknown" | .arity _ => "arity" | .zeroDivision => "zero_division"
+def render : DimError → String
+  | .mismatch m | .unknown m | .arity m => m
+  | .zeroDivision => "divides by zero"
+end DimError
+
+namespace DimCheck
+
+/-- The formulas a term carries (a window's, an aggregate's condition, a selection's guard), with
+    the variables the term itself binds. -/
+partial def inTerm : Term → List Formula × List String
+  | .distanceWhile _ φ | .sinceRise φ => ([φ], [])
+  | .aggregate _ v φ t => let (fs, vs) := inTerm t; (φ :: fs, v :: vs)
+  | .cond φ a b => let (fa, va) := inTerm a; let (fb, vb) := inTerm b; (φ :: fa ++ fb, va ++ vb)
+  | .add a b | .sub a b | .mul a b | .div a b => let (fa, va) := inTerm a; let (fb, vb) := inTerm b; (fa ++ fb, va ++ vb)
+  | .neg a | .abs a => inTerm a
+  | .quantity _ _ ps => ps.foldl (fun (fs, vs) p => let (f, v) := inTerm p; (fs ++ f, vs ++ v)) ([], [])
+  | _ => ([], [])
+
+mutual
+  /-- The unit of a term: a literal's, a parameter's or a concept's from the environment, a measure's
+      or a primitive's from the ontology, combined through the operators. -/
+  partial def termDim (env : DimEnv) : Term → Except DimError Dim
+    | .lit _ u => .ok (Dim.ofUnit u)
+    | .param p => (env.param p).mapError .unknown
+    | .measure a _ => match Dimensions.ofMeasure.lookup a with
+      | some d => .ok d
+      | none => .error (.unknown s!"measure `{a}` is not in the vocabulary")
+    | .quantity c _ ps => do
+      let (r, pds) ← match Dimensions.ofPrimitive.find? (·.1 == c) with
+        | some (_, r, pds) => pure (r, pds)
+        | none => (env.concept c).mapError .unknown
+      match r with
+      | none => .error (.mismatch s!"`{c}` is a Boolean primitive, not a quantity")
+      | some d => match paramErrors env c ps pds with
+        | e :: _ => .error e
+        | [] => .ok d
+    | .distanceWhile _ _ => .ok Dim.length
+    | .sinceRise _ => .ok Dim.time
+    | .aggregate op _ _ t => if op == .count then .ok Dim.one else termDim env t
+    | .add a b | .sub a b => do
+      let x ← termDim env a; let y ← termDim env b
+      if x == y then .ok x else .error (.mismatch s!"adds or subtracts {x.render} and {y.render}")
+    | .mul a b => do pure (Dim.mul (← termDim env a) (← termDim env b))
+    | .div a b => match b with
+      | .lit q _ => if Q.isZero q then .error .zeroDivision else do pure (Dim.div (← termDim env a) (← termDim env b))
+      | _ => do pure (Dim.div (← termDim env a) (← termDim env b))
+    | .neg a | .abs a => termDim env a
+    | .cond _ a b => do
+      let x ← termDim env a; let y ← termDim env b
+      if x == y then .ok x else .error (.mismatch s!"a selection between {x.render} and {y.render}")
+
+  /-- The parameters passed to a primitive or a concept, against the units it takes. -/
+  partial def paramErrors (env : DimEnv) (name : String) (ps : List Term) (want : List Dim) : List DimError :=
+    if ps.length != want.length then [.arity s!"`{name}` takes {want.length} parameter(s), given {ps.length}"]
+    else (ps.zip want).flatMap fun (p, d) => match termDim env p with
+      | .ok x => if x == d then [] else [.mismatch s!"`{name}`: a parameter in {x.render} where {d.render} is required"]
+      | .error e => [e]
+end
+
+/-- Every unit defect of a formula: comparisons, windows, arithmetic, selections, the parameters of
+    atoms (which carry no unit), primitives and concepts, and the formulas terms carry. Assumptions,
+    composed rules and aggregates have no unit and are not defects here. -/
+partial def errors (env : DimEnv) : Formula → List DimError
+  | .tt | .ff | .same _ _ | .asm _ | .rule _ _ | .ruleApplies _ _ => []
+  | .atom n _ ps =>
+    ps.flatMap (fun p => match termDim env p with
+      | .ok d => if d == Dim.one then [] else [.mismatch s!"atom `{n}`: a parameter in {d.render}; its parameters carry no unit"]
+      | .error e => [e])
+    ++ ps.flatMap terms
+  | .derived c _ ps =>
+    (match Dimensions.ofPrimitive.find? (·.1 == c) with
+     | some (_, none, pds) => paramErrors env c ps pds
+     | some (_, some _, _) => [.mismatch s!"`{c}` is a quantity, not a Boolean primitive"]
+     | none => match env.concept c with
+       | .ok (none, pds) => paramErrors env c ps pds
+       | .ok (some _, _) => [.mismatch s!"`{c}` is a quantity concept, not a Boolean one"]
+       | .error m => [.unknown m])
+    ++ ps.flatMap terms
+  | .cmp l _ r =>
+    (match termDim env l, termDim env r with
+     | .ok x, .ok y => if x == y then [] else [.mismatch s!"compares {x.render} with {y.render}"]
+     | .error e, .ok _ | .ok _, .error e => [e]
+     | .error e, .error e' => [e, e'])
+    ++ terms l ++ terms r
+  | .not φ | .always φ | .eventually φ | .rises φ => errors env φ
+  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => errors env φ ++ errors env ψ
+  | .holdsFor m d _ φ | .within m d _ φ => window m d ++ errors env φ
+  | .untilWithin m d _ φ ψ | .atLast m d _ φ ψ => window m d ++ errors env φ ++ errors env ψ
+  | .count e s _ _ => errors env e ++ errors env s
+  | .existsUser _ φ | .forallUser _ φ | .existsRegion _ _ φ | .forallRegion _ _ φ
+  | .existsDevice _ _ φ | .forallDevice _ _ φ => errors env φ
+where
+  terms (t : Term) : List DimError := (inTerm t).1.flatMap (errors env)
+  window (m : Measure) (d : Term) : List DimError :=
+    let want := match m with | .time => Dim.time | .path => Dim.length
+    (match termDim env d with
+     | .ok x => if x == want then [] else
+         [.mismatch s!"a window measured in {match m with | .time => "time" | .path => "path length"} has a length in {x.render}"]
+     | .error e => [e])
+    ++ terms d
+
+/-- The environment of a rule or a concept body: the parameters `formals` declares (a concept's
+    own), else the reading's; the concepts of `cs` by their Lean name, a quantity concept's value
+    unit computed from its body in its own formals' units (as deep as there are concepts: deeper is a
+    cycle). -/
+def envOf (ρ : Reading) (cs : List Concept) (formals : List ConceptParam := []) (fuel : Nat := cs.length + 1) : DimEnv :=
+  { param := fun p => match formals.find? (·.name == p) with
+      | some f => .ok (Dim.ofUnit f.unit)
+      | none => match ρ.paramUnit p with
+        | some u => .ok (Dim.ofUnit u)
+        | none => .error s!"parameter `{p}` has no unit: the reading does not declare it"
+    concept := fun n => match cs.find? (·.leanName == n) with
+      | none => .error s!"`{n}` is neither a primitive nor a concept of the library"
+      | some c =>
+        let pds := c.params.map (Dim.ofUnit ·.unit)
+        match c.body with
+        | .formula _ => .ok (none, pds)
+        | .quantity t => match fuel with
+          | 0 => .error s!"`{n}`: its body calls concepts in a cycle"
+          | k + 1 => match termDim (envOf ρ cs c.params k) t with
+            | .ok d => .ok (some d, pds)
+            | .error e => .error s!"`{n}`: its body's unit cannot be computed: {e.render}" }
+
+/-- The unit defects of a rule: its binders' classes, its applicability and its obligation. -/
+def rule (env : DimEnv) (r : Rule) : List DimError :=
+  r.binders.flatMap (fun b => errors env b.cls) ++ errors env r.applicability ++ errors env r.obligation
+
+/-- The unit defects of a concept's body, a formula or a quantity term. -/
+def concept (env : DimEnv) (c : Concept) : List DimError :=
+  match c.body with
+  | .formula φ => errors env φ
+  | .quantity t => (match termDim env t with | .ok _ => [] | .error e => [e]) ++ errors.terms env t
+
+end DimCheck
+
 namespace Case
 open Semantics
 
@@ -73,105 +227,51 @@ def notPrimitive (c : String) : String :=
     s!"`{c}` is a measure, not a primitive: write it {"{"}\"measure\": \"{c}\", \"args\": [...]{"}"}"
   else s!"`{c}` is not a primitive; a case names no concept"
 
-/-- The unit of a term, or why a case may not state it. -/
-partial def termDim : Term → Except String Dim
-  | .lit _ u => .ok (Dim.ofUnit u)
-  | .param p => .error s!"`{p}` is a reading parameter; a case states facts, never a parameter"
-  | .measure a _ => match Dimensions.ofMeasure.lookup a with
-    | some d => .ok d
-    | none => .error s!"measure `{a}` is not in the case vocabulary"
-  | .quantity c _ ps =>
-    match Dimensions.ofPrimitive.find? (·.1 == c) with
-    | some (_, some r, pds) =>
-      if ps.length != pds.length then .error s!"`{c}` takes {pds.length} parameter(s), given {ps.length}"
-      else match (ps.zip pds).findSome? (fun (p, d) => match termDim p with
-          | .ok x => if x == d then none else some s!"`{c}`: a parameter in {x.render} where {d.render} is required"
-          | .error e => some e) with
-        | some e => .error e
-        | none => .ok r
-    | some (_, none, _) => .error s!"`{c}` is a Boolean primitive, not a quantity"
-    | none => .error (notPrimitive c)
-  | .distanceWhile _ _ => .ok Dim.length
-  | .sinceRise _ => .ok Dim.time
-  | .aggregate op _ _ t => if op == .count then .ok Dim.one else termDim t
-  | .add a b | .sub a b => do
-    let x ← termDim a; let y ← termDim b
-    if x == y then .ok x else .error s!"adds or subtracts {x.render} and {y.render}"
-  | .mul a b => do pure (Dim.mul (← termDim a) (← termDim b))
-  | .div a b =>
-    match b with
-    | .lit q _ => if Q.isZero q then .error "divides by zero" else do pure (Dim.div (← termDim a) (← termDim b))
-    | _ => .error "divides by something other than a non-zero literal"
-  | .neg a | .abs a => termDim a
-  | .cond _ a b => do
-    let x ← termDim a; let y ← termDim b
-    if x == y then .ok x else .error s!"a selection between {x.render} and {y.render}"
+/-- A case's units: no reading parameter and no concept has one, since a case states neither. -/
+def env : DimEnv :=
+  { param := fun p => .error s!"`{p}` is a reading parameter; a case states facts, never a parameter"
+    concept := fun c => .error (if c.startsWith "prim_" then s!"`{c}` is not in the case vocabulary" else notPrimitive c) }
 
-private def dimErrors (t : Term) : List String :=
-  match termDim t with | .ok _ => [] | .error e => [e]
-
-private def paramErrors (name : String) (ps : List Term) (want : List Dim) : List String :=
-  if ps.length != want.length then [s!"`{name}` takes {want.length} parameter(s), given {ps.length}"]
-  else (ps.zip want).flatMap fun (p, d) => match termDim p with
-    | .ok x => if x == d then [] else [s!"`{name}`: a parameter in {x.render} where {d.render} is required"]
-    | .error e => [e]
-
-/-- The formulas a term carries (a window's, an aggregate's condition, a selection's guard), with
-    the variables the term itself binds. -/
-private partial def inTerm : Term → List Formula × List String
-  | .distanceWhile _ φ | .sinceRise φ => ([φ], [])
-  | .aggregate _ v φ t => let (fs, vs) := inTerm t; (φ :: fs, v :: vs)
-  | .cond φ a b => let (fa, va) := inTerm a; let (fb, vb) := inTerm b; (φ :: fa ++ fb, va ++ vb)
-  | .add a b | .sub a b | .mul a b | .div a b => let (fa, va) := inTerm a; let (fb, vb) := inTerm b; (fa ++ fb, va ++ vb)
-  | .neg a | .abs a => inTerm a
-  | .quantity _ _ ps => ps.foldl (fun (fs, vs) p => let (f, v) := inTerm p; (fs ++ f, vs ++ v)) ([], [])
-  | _ => ([], [])
-
-/-- The defects of a case formula other than names, arities and sorts: banned constructors,
-    units, and quantifier variables that reuse a reserved name. -/
-partial def formulaErrors (reserved : List String) : Formula → List String
+/-- A case's own prohibitions, apart from its units: no assumption, no other rule, no legal
+    aggregate, no division except by a non-zero literal, and no quantifier variable that reuses a
+    binder's or an entity's name. -/
+partial def policyErrors (reserved : List String) : Formula → List String
   | .tt | .ff | .same _ _ => []
   | .asm id => [s!"assumption `{id}`: a case states facts of the trace, never an assumption"]
   | .rule id _ | .ruleApplies id _ => [s!"rule `{id}`: a case names no other rule"]
   | .atom n _ ps =>
     (if n == "ru_aggregate" then ["`ru_aggregate`: a case names the road user's concrete classes, never a legal aggregate"] else [])
-    ++ ps.flatMap (fun p => (match termDim p with
-        | .ok d => if d == Dim.one then [] else [s!"atom `{n}`: a parameter in {d.render}; its parameters carry no unit"]
-        | .error e => [e]))
     ++ ps.flatMap terms
-  | .derived c _ ps =>
-    (if !c.startsWith "prim_" then [notPrimitive c]
-     else match Dimensions.ofPrimitive.find? (·.1 == c) with
-       | some (_, none, pds) => paramErrors c ps pds
-       | some (_, some _, _) => [s!"`{c}` is a quantity, not a Boolean primitive"]
-       | none => [s!"`{c}` is not in the case vocabulary"])
-    ++ ps.flatMap terms
-  | .cmp l _ r =>
-    (match termDim l, termDim r with
-     | .ok x, .ok y => if x == y then [] else [s!"compares {x.render} with {y.render}"]
-     | .error e, .ok _ | .ok _, .error e => [e]
-     | .error e, .error e' => [e, e'])
-    ++ terms l ++ terms r
-  | .not φ | .always φ | .eventually φ | .rises φ => formulaErrors reserved φ
+  | .derived _ _ ps => ps.flatMap terms
+  | .cmp l _ r => terms l ++ terms r
+  | .not φ | .always φ | .eventually φ | .rises φ => policyErrors reserved φ
   | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ =>
-    formulaErrors reserved φ ++ formulaErrors reserved ψ
-  | .holdsFor m d _ φ | .within m d _ φ => window m d ++ formulaErrors reserved φ
-  | .untilWithin m d _ φ ψ | .atLast m d _ φ ψ => window m d ++ formulaErrors reserved φ ++ formulaErrors reserved ψ
-  | .count e s _ _ => formulaErrors reserved e ++ formulaErrors reserved s
+    policyErrors reserved φ ++ policyErrors reserved ψ
+  | .holdsFor _ d _ φ | .within _ d _ φ => terms d ++ policyErrors reserved φ
+  | .untilWithin _ d _ φ ψ | .atLast _ d _ φ ψ => terms d ++ policyErrors reserved φ ++ policyErrors reserved ψ
+  | .count e s _ _ => policyErrors reserved e ++ policyErrors reserved s
   | .existsUser v φ | .forallUser v φ | .existsRegion _ v φ | .forallRegion _ v φ
-  | .existsDevice _ v φ | .forallDevice _ v φ => binds v ++ formulaErrors reserved φ
+  | .existsDevice _ v φ | .forallDevice _ v φ => binds v ++ policyErrors reserved φ
 where
   binds (v : String) : List String :=
     if reserved.contains v then [s!"a quantifier binds `{v}`, which names a binder or an entity"] else []
+  divisions : Term → List String
+    | .div a b => (match b with
+        | .lit _ _ => []
+        | _ => ["divides by something other than a non-zero literal"]) ++ divisions a ++ divisions b
+    | .add a b | .sub a b | .mul a b => divisions a ++ divisions b
+    | .neg a | .abs a => divisions a
+    | .cond _ a b => divisions a ++ divisions b
+    | .aggregate _ _ _ t => divisions t
+    | .quantity _ _ ps => ps.flatMap divisions
+    | _ => []
   terms (t : Term) : List String :=
-    let (fs, vs) := inTerm t
-    vs.flatMap binds ++ fs.flatMap (formulaErrors reserved)
-  window (m : Measure) (d : Term) : List String :=
-    let want := match m with | .time => Dim.time | .path => Dim.length
-    (match termDim d with
-     | .ok x => if x == want then [] else [s!"a window measured in {match m with | .time => "time" | .path => "path length"} has a length in {x.render}"]
-     | .error e => [e])
-    ++ terms d
+    let (fs, vs) := DimCheck.inTerm t
+    divisions t ++ vs.flatMap binds ++ fs.flatMap (policyErrors reserved)
+
+/-- The defects of a case formula other than names, arities and sorts: its prohibitions and its units. -/
+def formulaErrors (reserved : List String) (φ : Formula) : List String :=
+  policyErrors reserved φ ++ (DimCheck.errors env φ).map DimError.render
 
 /-- Every defect of a case, given the grounding's binder names. Empty for an admitted case. -/
 def check (c : Case) (binders : List String) : List String :=

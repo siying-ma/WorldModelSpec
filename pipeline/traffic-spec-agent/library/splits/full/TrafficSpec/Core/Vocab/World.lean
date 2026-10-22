@@ -65,7 +65,7 @@ structure WarningLamp where
   facing : Facing
   deriving Repr, DecidableEq, Inhabited
 
-/-- Signals a road user emits (ATOMS.md §5). -/
+/-- Signals a road user emits (the `sig.*` atoms). -/
 structure Signals where
   turnIndicator : Option TurnIndicatorState := none
   brakeLamp : Option Bool := none

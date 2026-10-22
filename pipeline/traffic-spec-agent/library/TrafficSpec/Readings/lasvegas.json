@@ -353,6 +353,62 @@
    "convention": "Signalling-interval convention: the stretch of time behind the observation at which a movement is recognized within which a turn signal given for that movement is looked for. It covers the interval a driver is expected to signal before beginning the movement together with the time the movement itself occupies, so that a signal duly given before the body begins to cross is still found when the movement is recognized; it names only where the signal is looked for and states no standard of conduct.",
    "source": "Driver-licensing signalling guidance (a continuous signal over the last stretch of road before the movement, commonly 100 feet, which is some two to three seconds at ordinary highway speeds) together with observed lane-change durations from the first steering input to settling in the new lane.",
    "proposed": "demo12/iter-004 NRS_484B_223_1b"
+  },
+  {
+   "name": "p.following_heading_cosine",
+   "value": 0.966,
+   "unit": "ratio",
+   "convention": "Heading-alignment convention, stated as a cosine: the cosine of the largest angle between two headings at which the two bodies still count as travelling in one line, so that the bend of a lane and the heading noise of a sampled trajectory are absorbed without admitting a body that points across the lane. The value is the cosine of the angle the catalogue states in degrees as p.following_alignment_tolerance, and it is stated as a ratio because rel.same_direction's tolerance is 'the cosine of the largest angle allowed, a ratio between -1 and 1'. It names a resolution and no standard of conduct.",
+   "source": "the heading dispersion of vehicle trajectories held within a lane on ordinary highway alignments, as car-following trajectory studies record it",
+   "proposed": "smoke20/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.junction_approach_reach",
+   "value": 10,
+   "unit": "m",
+   "convention": "Entrance-of-intersection reach: the ground distance from an intersection region within which a vehicle's body counts as standing at that intersection's entrance rather than back along its approach. It is taken from the geometry of an entrance - the setback of a clearly marked stop line from the near-side crosswalk, the width of that crosswalk between the line and the edge of the intersection, and the offset of a vehicle's body outline - so that a halt made at the line, before the near-side crosswalk, or at the point nearest the intersection is found at the junction it was made for, and a cessation made further back along the approach is not. It names where a halt counts as made for this junction and states no standard of conduct and no required separation.",
+   "source": "Stop-line and crosswalk placement at signalised junctions: the marked stop line is set back from the crosswalk, and the crosswalk from the intersection edge, by a few metres each, which with a design vehicle's body offset bounds the ground between a vehicle halted at the entrance and the intersection region.",
+   "proposed": "smoke20/iter-002 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.body_offset_resolution",
+   "value": 0.3,
+   "unit": "m",
+   "convention": "source resolution: the magnitude of an offset between two road users' reference points below which the one does not stand clear of the other along an axis of the subject's frame. It names only the positional resolution of a tracked reference point and states no standard of conduct and no required separation.",
+   "source": "the positional accuracy of ordinary vehicle tracking from a mapped scene graph or an instrumented trace, which resolves a reference point to a few tenths of a metre",
+   "proposed": "smoke20/iter-003 NRS_484B_127_1"
+  },
+  {
+   "name": "p.single_file_reach",
+   "value": 1.8,
+   "unit": "m",
+   "convention": "single-file convention: the lateral offset between the reference points of two road users within which the one travels in the line of the other rather than beside it. It is taken from the width of a passenger-car design vehicle, so that two bodies in one line of travel, whose reference points differ laterally by no more than a body width, are covered, while two bodies in neighbouring lanes a standard lane width apart are not. It names when one body is in the other's line and states no standard of conduct and no required separation.",
+   "source": "AASHTO design-vehicle dimensions for a passenger car (width 1.8 m) against a standard lane width of 3.6 m",
+   "proposed": "smoke20/iter-003 NRS_484B_127_1"
+  },
+  {
+   "name": "p.yield_block_reach",
+   "value": 8.0,
+   "unit": "m",
+   "convention": "Obstruction reach: the longitudinal distance ahead of a road user, between the two reference points and taken in that road user's own frame, within which another body standing in its line of travel is a body in its way. It is taken from the length of a passenger-car design vehicle together with the gap a vehicle leaves when it is brought to a halt short of an obstruction, so that a body stopped or crossing immediately in front is covered and one further down the road is not. It names where a body stands in another's way and states no standard of conduct and no required separation.",
+   "source": "Design-vehicle geometry: a passenger-car design vehicle of about 5.8 m with a halting gap of about 2 m between bodies, measured between reference points.",
+   "proposed": "smoke20/iter-004 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.yield_giveway_decel",
+   "value": 1.5,
+   "unit": "m/s2",
+   "convention": "Give-way deceleration: the magnitude of longitudinal deceleration at or above which a road user's slowing counts as giving way to another rather than as the ordinary adjustment of speed in a stream of traffic. It is taken from the comfortable deceleration of an unhurried driver, well below the braking deceleration of a stopping-sight-distance model, so that a vehicle braking for a body that has moved into its path is covered and a vehicle easing off is not. It names when a slowing shows that precedence was taken and states no standard of conduct.",
+   "source": "Comfortable-deceleration convention (about 1.5 m/s²), set below the 3.4 m/s² braking deceleration of the stopping-sight-distance model.",
+   "proposed": "smoke20/iter-004 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.path_conflict_reach",
+   "value": 8.0,
+   "unit": "m",
+   "convention": "Junction path-conflict convention: the distance ahead of a road user, taken along the direction its body points, within which another body standing in its line of travel obstructs its passage, so that it cannot proceed past. It is taken from the length of a passenger-car design vehicle together with the ground such a vehicle covers while its driver reacts at the speed traffic crosses a junction. It names where one body stands in another's way and states no standard of conduct and no required separation.",
+   "source": "AASHTO, A Policy on Geometric Design of Highways and Streets: passenger-car design vehicle length (about 5.8 m), with the perception-reaction allowance at a low junction crossing speed.",
+   "proposed": "smoke20/iter-004 NRS_484B_257_1_o2"
   }
  ],
  "aggregates": [],

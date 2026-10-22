@@ -137,15 +137,17 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    headway, a closest approach). The test: a concept answers the same for the same motion whatever
    law calls it; one whose answer would change with the standard of the law calling it carries a
    bound, and so does one that bundles several factors of one standard into one verdict. A reach
-   relates a region to a road user; it never stands for a relation between two regions — a
-   crossing or a line of this approach, a lane of this way, the dividing structure of this way.
-   Where no atom relates the two, the span is an `atom` gap. A concept
+   relates a region to a road user; it never stands for a relation between two regions. For words
+   that relate two regions, read the contracts of the relation atoms in the contracts table: where
+   none of them relates the two, the span is an `atom` gap. A concept
    the catalogue already carries, or one a concept repair or an earlier batch of this iteration
    proposed (listed under the catalogue), is reused by its id and never re-proposed: a second record
    under the same id is dropped, and only the first contract reaches the coder. A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
    edited: a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
    the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
-   gives the wrong verdict; a different contract is a new concept under a new name. In a `test`
+   gives the wrong verdict; a version the catalogue lists as fenced is superseded the same way
+   without a counterexample: its fence stands for it. A different contract is a new concept under
+   a new name. In a `test`
    run nothing is superseded: report the defect under `## Concept defects` in `PLAN.md`.
 1. **Segment first.** Cut the verbatim text into spans. Each span is a contiguous verbatim
    substring; the spans are disjoint and together cover the text (whitespace and punctuation
@@ -153,18 +155,19 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    `condition`, `reference` (a bracketed id or the words that name another rule), `sibling` (a
    span that belongs to another node of the same law line — that node's obligation and the words
    only it needs; the other node segments the same words under a role of its own), `definitional`,
-   `boilerplate` (connectives, lead-ins and list punctuation such as "and", "to pass:", "this
-   paragraph authorizes" — never `sibling`).
+   `boilerplate` (text that only connects spans or introduces a list; words that permit, require
+   or forbid anything are never boilerplate, nor `sibling`).
 2. **Account for every substantive span** exactly once: an element (atoms, or concepts under `derived`),
    an operationalization (a standard), an assumption (a legal region class the ontology names as
-   an assumption), a composition (another rule, see rule 5), a residue (words the vocabulary
-   cannot carry), or a gap. Two exceptions to "exactly once": a `reference` span naming several
+   an assumption), a composition (another rule, see rule 5), or a residue (words the vocabulary
+   cannot carry). A gap is not a carrier: it annotates a span an element or an operationalization
+   carries with its nearest atoms (step 6). Two exceptions to "exactly once": a `reference` span naming several
    rules carries one composition per rule; a `sibling` span carries nothing in this node.
    A residue is for words of the **obligation side** the rule does not capture. A `trigger`,
    `subject`, `condition` or `exception` span the vocabulary cannot carry is never a residue:
    dropping it makes the rule apply where the law does not. Such a span is an **assumption**
    (`asm.<name>`, with the meaning a trace must declare; an undeclared assumption leaves the
-   verdict unknown) or a gap. A word with no observable counterpart is neither: an intention, a
+   verdict unknown), or mapped to its nearest atoms with a gap. A word with no observable counterpart is neither: an intention, a
    perception or a knowledge, a purpose, the legal status of a feature in the scene, or who or what
    controls a road user's motion is read through the conduct or feature it refers to (an intention to act by the
    act that follows within a window ahead, or the signal for it; a duty to ascertain or make sure by
@@ -175,9 +178,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    the reading as a narrowing `{span, why, kind: "observable_reading", category}` with category
    `intention`, `perception`, `status`, `purpose` or `agency`, on the trigger, subject, condition, exception
    or obligation span it reads. It is only for these five kinds of word: a feature or a quantity
-   the vocabulary lacks is still a gap. The one exception is a span that imposes no observable condition
-   at all ("regardless of the weather"): carry it as a residue with `"scope": "none"` and say
-   why; the review holds it to that. A reading you choose on a span you do carry, where the words
+   the vocabulary lacks is still a gap. The one exception is a span that adds no restriction: the
+   duty is the same whether or not its words hold. Carry it as a residue with `"scope": "none"`
+   and say why; the review holds it to that. A span that restricts the duty through a word with no
+   observable counterpart is no such residue: it takes the declared reading above, or it is a gap. A reading you choose on a span you do carry, where the words
    leave it open and the atoms state it more narrowly, is a **narrowing** `{span, why}` on an
    obligation or standard span; the review holds the rule to it and returns a narrowing that drops
    what the words require.
@@ -189,6 +193,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
      `aggregates.jsonl` writes, is claimed as `{aggregate_atom}=<id>` — in `class_elements` and in
      the span's element alike. Never expand an aggregate into the classes it covers; a class the
      text names on its own is its own atom among the classes of road users.
+   - **A duty covers its domain.** An obligation's elements decide the duty wherever its words
+     apply. An atom or a concept that is decided only inside a narrower domain than the words name
+     (a place, a class of road user or a state the words do not require) leaves the duty unjudged
+     elsewhere: cover the rest of the domain with another element or concept, or propose a gap.
+     Unknown is for observations a source may lack and for the limits of a finite trace, not for a
+     part of the domain no element reads.
    - **A distance window claims what it measures.** A span whose window the words measure in
      distance travelled (a `.path` window) claims, on the element it serves, the ontology's atom for
      the distance a body has travelled along its path: the window reads it, as a `.time` window
@@ -214,8 +224,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    carries it; reading it more narrowly than its words is a narrowing, and a named factor no
    contract carries at all is a narrowing that says so (the aspects of a named factor the
    operationalization reads through a carried contract are part of that narrower reading and are
-   not listed one by one). A factor only a catch-all of the standard covers ("other conditions")
-   is read at the plan's choice. A factor is read by the degree to which it holds: a measured
+   not listed one by one). A catch-all of the standard (words that cover further factors without
+   naming them) gets an explicit reading too: the operationalization names the contracts it reads
+   for the catch-all, and a narrowing on the span discloses that the catch-all is read only
+   through them. A factor is read by the degree to which it holds: a measured
    magnitude enters the bound itself, so the bound moves as the magnitude moves, and a condition
    selects among bounds. A switch that applies one fixed bound whenever any factor holds reads no
    factor's degree and holds mild and severe conditions to one bound; reading a factor's degree is
@@ -257,7 +269,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    exception or condition span of this node where the other rule applies ("except as otherwise
    provided in …" read on the words it qualifies): `scopes` names that span, whose content then
    does not hold where the composed rule applies, and the duty as a whole is untouched. A
-   reference to a law of this corpus is a composition or a gap, never a residue; a reference to a
+   reference to a law of this corpus is a composition, never a residue; a reference to a
    law outside the corpus may be a residue. A `standard` span whose bound an accepted rule of the
    library already states as its own obligation is carried by composing that rule (`as:
    compliance`), not by an operationalization that restates it. The composed rule's every binder is mapped to one of this
@@ -302,8 +314,8 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
     checker: the harness's validator is given to you below, and it is the only command the shell
     runs; any other command is denied. Everything you may know is in this prompt: you read no
     file.
-11. **A returned law is fixed, not re-read.** Address the returned reason; a second record that
-    maps the same words differently without a dispute is rejected. An obligation span that only a
+11. **A returned law is fixed, not re-read.** Address the returned reason, and keep every mapping
+    the reason does not concern. An obligation span that only a
     residue can carry means the duty is not expressible: say so in `PLAN.md` and do not weaken it.
 12. **Decide.** No options menus, no "awaiting", no questions. Record each decision with the
     cheapest signal that would reverse it.
@@ -385,9 +397,9 @@ Run the validator on the finished file and fix what it names; then confirm by re
   `aggregates.jsonl` that classifies every class of road users with the law's own words;
 - every span text is a verbatim substring of its law, spans disjoint, union complete;
 - every non-boilerplate span appears in exactly one of elements / operationalizations /
-  assumptions / compositions / residues / gaps;
-- every atom, value and concept id you wrote exists in the ontology or the catalogue, is a
-  concept record of this plan, or is in a gap;
+  assumptions / compositions / residues, and a gap's span in an element or an operationalization;
+- every atom, value and concept id you wrote exists in the ontology or the catalogue, or is a
+  concept record of this plan;
   every node that reads a feature claims an anchor;
 - every concept record has a well-formed id, a contract, typed formals, parameters with units,
   elements over the contract's words, the three scenarios, and `used_by` naming nodes that claim

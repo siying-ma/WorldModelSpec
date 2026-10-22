@@ -138,9 +138,9 @@ taxistand designation by signs (11.60.010), the local e-scooter ordinance (11.40
 handicapped-space sign (11.52.135(A)). Lines refer to them in the text by `[DEF-...]`; each carries
 `used_by`.
 
-All records are rendered to the planner *after* the laws under their own heading by
-`format_definitions` in `scripts/phases/plan.py` (about 66 KB of text), and are never a valid law
-reference. Definitions that a rule section states for itself ("As used in this section, 'traffic
+The definitions that apply to the laws of a plan, resolved by the operator's declared
+precedence, are rendered to the planner *after* the laws under their own heading by
+`definitions_block` in `harness/phases/plan.py`, and are never a valid law reference. Definitions that a rule section states for itself ("As used in this section, 'traffic
 incident' means …") are appended to the line that needs them instead.
 
 ## The corpus and what is kept out of it

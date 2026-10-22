@@ -10,15 +10,23 @@ from __future__ import annotations
 import re
 from ..model import nodeid
 from ..model.blueprint import Node, ConceptRecord, SCENARIOS, CONCEPT_SCENARIOS, concepts_of, normalize_verdict
-from ..model.units import FACTORS
+from ..model.units import FACTORS, lean_unit
 
 VERDICT_LEAN = {"violated": ".violated", "compliant": ".compliant", "not_applicable": ".notApplicable", "unknown": "(.unknown [])"}
 
 
 def _s(text: object) -> str:
-    """A Lean string literal."""
-    t = str(text if text is not None else "").replace("\\", "\\\\").replace('"', '\\"')
-    return '"' + " ".join(t.split()) + '"'
+    """A Lean string literal of the text exactly: an id or a name is compared as written."""
+    t = str(text if text is not None else "")
+    for a, b in (("\\", "\\\\"), ('"', '\\"'), ("\n", "\\n"), ("\t", "\\t"), ("\r", "\\r")):
+        t = t.replace(a, b)
+    return '"' + t + '"'
+
+
+def _prose(text: object) -> str:
+    """A Lean string literal of prose (a standard, a convention, a residue's why, a contract), its
+    whitespace collapsed: there it carries no meaning, and the gate compares such fields so."""
+    return _s(" ".join(str(text if text is not None else "").split()))
 
 
 def _ident(name: str) -> str:
@@ -55,7 +63,7 @@ def rule_skeleton(node: Node) -> str:
     elements = node.get("elements", [])
     comps = node.compositions()
 
-    head = [f"/-", f"  {node.id} — {', '.join(node.get('law_refs', []))}", "",
+    head = ["/-", f"  {node.id} — {', '.join(node.get('law_refs', []))}", "",
             "  THE READING (the blueprint's; the coding session records here, per span, how each element,",
             "  operationalization and composition below is written, and every choice the text did not dictate).", "",
             "  Spans:"]
@@ -117,16 +125,16 @@ def rule_skeleton(node: Node) -> str:
     if ops:
         olines = []
         for o in ops:
-            olines.append("{ standard := " + _s(o.get("standard", "")) +
+            olines.append("{ standard := " + _prose(o.get("standard", "")) +
                           "\n          concepts := " + _lean_list([_s(c) for c in sorted(concepts_of(o))]) +
                           "\n          params := " + _lean_list([_s(p) for p in o.get("params", [])]) +
-                          "\n          convention := " + _s(o.get("convention", "")) +
+                          "\n          convention := " + _prose(o.get("convention", "")) +
                           f"\n          surrogate := {'true' if o.get('surrogate') else 'false'} }}")
         out.append("    operationalizations :=")
         out.append("      [ " + "\n      , ".join(olines) + " ]")
     else:
         out.append("    operationalizations := []")
-    out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in residues])}"
+    out.append(f"    residues := {_lean_list([_prose(r.get('why', '')) for r in residues])}"
                "  -- the node's, verbatim; not yours to change")
     out.append("    narrowings := []  -- one { span := \"<span id>\", why := \"<why>\", kind := \"reading\" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header; the record's own narrowings are not restated")
     out.append(f"    surrogate := {'true' if surrogate else 'false'} }}")
@@ -189,16 +197,8 @@ def witness_skeleton(node: Node) -> str:
 # Concept skeletons: the declarations the gate compares, the formals as `Arg`/`Term` values, one
 # instance and the three scenarios; the body and the scenes are left to the session.
 # ---------------------------------------------------------------------------------------------
-PUNIT_OF_CORE = {"metre": ".metre", "second": ".second", "metrePerSecond": ".metrePerSecond",
-                 "metrePerSecondSq": ".metrePerSecondSq", "degree": ".degree", "degreePerSecond": ".degreePerSecond",
-                 "perMetre": ".perMetre", "ratio": ".ratio", "count": ".count"}
-UNITS_CTOR_OF_CORE = {"metre": "Units.metres", "second": "Units.seconds", "metrePerSecond": "Units.metresPerSecond",
-                      "metrePerSecondSq": "Units.metresPerSecondSq", "degree": "Units.degrees",
-                      "degreePerSecond": "Units.degrees", "perMetre": "Units.perMetre", "ratio": "Units.ratio", "count": "Q.ofInt"}
-
-
 def _punit(unit: str) -> str:
-    return PUNIT_OF_CORE[FACTORS[unit][0]]
+    return lean_unit(FACTORS[unit][0])
 
 
 def _sort_lean(a: dict) -> str:
@@ -249,12 +249,12 @@ def concept_skeleton(c: ConceptRecord) -> str:
     out.append("")
     out.append("def concept : Concept :=")
     out.append(f"  {{ id := {_s(c.id)}")
-    out.append(f"    contract := {_s(c.get('contract', ''))}")
+    out.append(f"    contract := {_prose(c.get('contract', ''))}")
     out.append(f"    definition := {('some ' + _s(c.get('definition'))) if c.get('definition') else 'none'}")
     out.append("    args := " + _lean_list([f"({_s(a['name'])}, {_sort_lean(a)})" for a in c.args()]))
     out.append("    params := " + _lean_list([f"⟨{_s(pr['name'])}, {_punit(pr['unit'])}⟩" for pr in c.params()]))
     out.append(f"    body := {body_ctor}")
-    out.append(f"    residues := {_lean_list([_s(r.get('why', '')) for r in c.get('residues', [])])}"
+    out.append(f"    residues := {_lean_list([_prose(r.get('why', '')) for r in c.get('residues', [])])}"
                "  -- the record's, verbatim; not yours to change")
     out.append("    narrowings := []  -- one { span := \"<words of the contract>\", why := \"<why>\", kind := \"reading\" } per reading you chose that the contract leaves open, explained in the header")
     out.append(f"    supersedes := {('some ' + _s(c.get('supersedes'))) if c.get('supersedes') else 'none'} }}")
@@ -285,12 +285,12 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
            f"    concept := {_s(c.id)}",
            "    literals := " + _lean_list([f"({_s(a['name'])}, {_s((a.get('values') or [''])[0])})" for a in lits]) + ("  -- TODO choose" if lits else ""),
            "    nats := " + _lean_list([f"({_s(a['name'])}, 0)" for a in nats]) + ("  -- TODO choose" if nats else ""),
-           "    params := " + _lean_list([f"({_s(pr['name'])}, .lit ({UNITS_CTOR_OF_CORE[FACTORS[pr['unit']][0]]} 0) {_punit(pr['unit'])})" for pr in c.params()]) + ("  -- TODO values" if c.params() else ""),
+           "    params := " + _lean_list([f"({_s(pr['name'])}, .lit (Q.ofInt 0) {_punit(pr['unit'])})" for pr in c.params()]) + ("  -- TODO values" if c.params() else ""),
            "    bounds := " + ("some (.lit Q.zero .count, .lit Q.zero .count)  -- TODO the expected interval" if c.get("kind") == "quantity" else "none"),
            "  }",                                    # its own line: a comment above must never swallow the brace
            "",
            "def instances : List Concept.Instance := [inst]", ""]
-    names = list(CONCEPT_SCENARIOS) + (["counterexample"] if c.get("supersedes") else [])
+    names = list(CONCEPT_SCENARIOS) + (["counterexample"] if c.get("supersedes") and c.get("counterexample") else [])
     for name in names:
         s = scen.get(name) if name != "counterexample" else (c.get("counterexample") or {})
         s = s or {}

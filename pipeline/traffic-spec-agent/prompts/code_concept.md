@@ -105,9 +105,13 @@ Run mode: `{mode}`.
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict.
 7. **No history of your own**: no captures, no imports but `TrafficSpec.Core.Language.Concept` in the
-   concept file and the concept plus `TrafficSpec.Core.Evidence.Builders` in the witness file.
+   concept file and the concept plus `TrafficSpec.Core.Evidence.Builders` in the witness file. A
+   sign whose legend states no restriction carries `conditions := some {}`; `none` is a legend not
+   read. A relation Core computes from the scene is never supplied; supply only one it cannot
+   compute (the gate fails a witness that supplies one Core computes).
 8. **Closed, total values.** No `sorry`, `admit`, `axiom`, `unsafe`, `partial`, `opaque`,
-   `implemented_by`, `extern`, `native_decide` or `panic!` anywhere in the two files.
+   `implemented_by`, `extern`, `native_decide`, `panic!`, `#eval`, `run_cmd`, `initialize` or `elab`
+   anywhere in the two files.
 9. **The gate decides.** Run it after each edit. Its verdict is the only acceptance signal.
 
 ## Procedure
@@ -132,6 +136,16 @@ Run mode: `{mode}`.
 The two files, and `task_result.md` with: the final verdict; each gate run's verdict and what
 changed after it; every choice the record left open and what you chose; **Why I finished**. If the
 record is wrong, say which element, why, and what the plan agent must change.
+
+**A concept that is wrong.** If a concept your body calls, directly or through another concept,
+computes on a situation what its own contract excludes, write `dependency_defect.json` in your
+working directory: the JSON object `{"concept_id": "<id>", "contract_words": "<its contract's words that decide it, verbatim>",
+"kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
+"contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
+"instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
+"trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}` — and finish. The harness runs that concept on your trace and an
+adjudicator judges the report by its contract before anything is charged; a report it does not
+uphold is your session's defect, and the gate's verdict stands.
 
 ## Finish
 

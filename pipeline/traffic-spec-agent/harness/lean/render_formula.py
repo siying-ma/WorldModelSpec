@@ -204,25 +204,25 @@ def canonical(body, arg_names: list[str], param_names: list[str]) -> str:
             return x
         out = {}
         binder = next((k for k in ("exists_user", "forall_user", "exists_region", "forall_region", "exists_device", "forall_device", "aggregate") if k in x), None)
-        if binder:
+        if binder:                                  # every subexpression the binder scopes is walked inside its scope
             v = x["var"] if binder.endswith(("region", "device")) or binder == "aggregate" else x[binder]
             fresh = f"$b{counter[0]}"; counter[0] += 1
+            out = dict(x)
+            if binder.endswith(("region", "device")):
+                out[binder] = walk(x[binder])         # the kind ranged over: outside the scope
             saved = names.get(v)
             names[v] = fresh
-            body = walk(x["body"]) if "body" in x else None
+            for k in ("body", "where", "of"):
+                if k in x:
+                    out[k] = walk(x[k])
             if saved is None:
                 names.pop(v, None)
             else:
                 names[v] = saved
-            out = dict(x)
-            if binder == "aggregate":
-                out["where"] = walk(x["where"]); out["of"] = walk(x["of"]); out["var"] = fresh
+            if binder == "aggregate" or binder.endswith(("region", "device")):
+                out["var"] = fresh
             else:
-                out["body"] = body
-                if binder.endswith(("region", "device")):
-                    out["var"] = fresh; out[binder] = walk(x[binder])
-                else:
-                    out[binder] = fresh
+                out[binder] = fresh
             return out
         for k, v in x.items():
             if k == "var":
@@ -387,3 +387,95 @@ def timeline(case, at_ms: int, glosses: dict[str, str] | None = None, times: lis
         out.append(f"- {when(span)}:")
         out += [f"  - {t}" for _o, t in sorted(groups[span], key=lambda x: x[0])]
     return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------------------------
+# The executed facts of a trace: what a judge reads when no case formula states them
+# ---------------------------------------------------------------------------------------------
+def _value(v) -> str:
+    """A trace value as written: a number, a string, a list or an object, compactly."""
+    import json
+    return json.dumps(v, ensure_ascii=False, separators=(", ", ": "))
+
+
+def _fields(obj: dict, skip: tuple[str, ...] = ()) -> list[str]:
+    """Every key of a trace object and its value, nested objects flattened to dotted keys."""
+    out = []
+    for k, v in obj.items():
+        if k in skip:
+            continue
+        if isinstance(v, dict) and v:
+            out += [f"{k}.{x}" for x in _fields(v)]
+        else:
+            out.append(f"{k} {_value(v)}")
+    return out
+
+
+def _has(obj, path: list[str]) -> bool:
+    for k in path:
+        if not isinstance(obj, dict) or k not in obj:
+            return False
+        obj = obj[k]
+    return True
+
+
+def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = None, read: list[str] | None = None,
+                occupancy: dict[int, list[str]] | None = None) -> str:
+    """Every input Core reads that the trace states, scene by scene in time order: each user (its
+    classes, kinematics, posture, signals, everything written), each structure and device with
+    every attribute, the environment, the assumptions, the supplied relations, the occupancy as
+    written; then the occupancy the harness derived from the geometry before running (`occupancy`,
+    by timestamp: `track-region` pairs), apart. A field the body reads (`read`: trace paths such as
+    `users[].kin.speed`) that a user, structure or device leaves out is written "not observed",
+    never false or zero. The grounding, the instant judged and the instance head it. Numbers are in
+    Core units, as every trace writes them. Only the keys the decoder reads are facts: the keys of
+    the written trace it does not read were never executed, and are listed after the facts, by
+    path, as the reviewer's unverified annotations."""
+    from .surface import read_part, unread_keys
+    annotations, trace = unread_keys(trace), read_part(trace)
+    read = read or []
+    by_kind = {"users": [], "structures": [], "devices": []}
+    for p in read:
+        m = re.match(r"(users|structures|devices)\[\]\.(.+)$", p)
+        if m:
+            by_kind[m.group(1)].append(m.group(2).split("."))
+    inst = instance or {}
+    head = ["### The executed facts",
+            "",
+            "What the harness ran, as the trace states it (numbers in Core units: metres, seconds, m/s, m/s², degrees and degrees "
+            "per second). The reviewer's situation above is the reviewer's prose, unverified; these facts are what was executed.",
+            "",
+            "- grounding: " + (", ".join(f"`{f}` = track {t}" for f, t in (grounding or {}).items()) or "none"),
+            f"- the observation judged: t = {at} ms"]
+    for key, label in (("literals", "literal formals"), ("nats", "nat formals"), ("params", "parameters")):
+        vals = inst.get(key) or {}
+        if vals:
+            head.append(f"- {label}: " + ", ".join(f"`{f}` = " + (f"{v[0]} {v[1]}" if isinstance(v, list) and len(v) == 2 else _value(v))
+                                                   for f, v in vals.items()))
+    out = head + [""]
+    for sc in sorted(((trace or {}).get("scenes") or []), key=lambda s: s.get("t") if isinstance(s, dict) and isinstance(s.get("t"), int) else 0):
+        if not isinstance(sc, dict):
+            continue
+        out.append(f"Scene t = {sc.get('t')} ms" + (" (the observation judged)" if sc.get("t") == at else "") + ":")
+        for kind, idk, label in (("users", "track", "track"), ("structures", "id", "structure"), ("devices", "id", "device")):
+            for e in sc.get(kind) or []:
+                if not isinstance(e, dict):
+                    continue
+                facts = _fields(e, (idk,))
+                missing = [".".join(p) for p in by_kind[kind] if not _has(e, p)]
+                out.append(f"- {label} {e.get(idk)}: " + ("; ".join(facts) or "nothing stated")
+                           + (f"; not observed: {', '.join(missing)}" if missing else ""))
+        for m in sc.get("relations") or []:
+            if isinstance(m, dict):
+                out.append(f"- supplied relation {m.get('a')}-{m.get('b')}: " + "; ".join(_fields(m, ("a", "b"))))
+        rest = {k: v for k, v in sc.items() if k not in ("t", "users", "structures", "devices", "relations")}
+        for k, v in rest.items():
+            out.append(f"- {k}: " + ("; ".join(_fields(v)) if isinstance(v, dict) else _value(v)))
+        derived = (occupancy or {}).get(sc.get("t"))
+        if derived is not None:
+            out.append("- occupancy derived from the geometry before running: " + (", ".join(derived) or "none"))
+    if annotations:
+        out += ["", "Unverified annotations of the reviewer — keys the decoder does not read, so nothing above rests on them "
+                "and they are no fact of the case: " + ", ".join(f"`{a}`" for a in annotations[:20])
+                + (f" and {len(annotations) - 20} more" if len(annotations) > 20 else "")]
+    return "\n".join(out) + "\n"

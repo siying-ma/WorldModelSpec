@@ -11,8 +11,9 @@ Core file. Every section names the file it was cut from so that a session that d
 knows where it is.
 """
 from __future__ import annotations
+import json
 import re
-from pathlib import Path
+from functools import lru_cache
 from ..store import paths
 
 
@@ -194,11 +195,14 @@ def enumeration_spellings() -> dict[str, set[str]]:
 
 
 def units_table() -> str:
+    from ..model import units
     u = _read("Foundations/Units.lean")
-    lines = [l for l in u.splitlines() if re.match(r"^def (metres|centimetres|millimetres|kilometres|inches|feet|yards|miles|seconds|milliseconds|minutes|hours|metresPerSecond|kmh|mph|metresPerSecondSq|degrees|millidegrees|ratio|percent|micrometres\w*)\b", l)]
+    ctors = set(units.constructors())
+    lines = [l for l in u.splitlines() if (m := re.match(r"^def (\w+)\b", l)) and m.group(1) in ctors]
+    tags = ", ".join(f"`{units.lean_unit(c)}`" for c in units.CORE_UNITS)
     return ("### Units constructors (`Foundations/Units.lean`, namespace `Units`; every quantity in a witness or a declared literal is written through one)\n"
             "```lean\n" + "\n".join(lines) + "\n```\n`Q` is an exact rational: `Q.zero`, `Q.ofInt n`, `Q.mk' num den`, `Q.add/sub/mul/div/neg/half`; "
-            "`Vec := Q × Q`, +x east, +y north. A `Term.lit q .metre` (or `.second`, `.metrePerSecond`, `.metrePerSecondSq`, `.degree`, `.degreePerSecond`, `.ratio`, `.count`) carries a unit tag.\n")
+            f"`Vec := Q × Q`, +x east, +y north. A `Term.lit q <unit>` carries one of the unit tags {tags}.\n")
 
 
 def builders() -> str:
@@ -236,14 +240,16 @@ def concepts_table(accepted: dict[str, dict]) -> str:
     if not accepted:
         return "### Concept catalogue\n(no concept accepted yet: a manoeuvre, state or configuration a span needs is proposed as a concept record)\n"
     out = ["### Concept catalogue (accepted concepts; call by Lean name = id with `.` → `_`)",
-           "| id | kind | contract | definition | args | params | reads | used by |", "|---|---|---|---|---|---|---|---|"]
+           "| id | kind | contract | definition | args | params | reads | calls | planned users | accepted callers |",
+           "|---|---|---|---|---|---|---|---|---|---|"]
     for cid, rec in sorted(accepted.items()):
         args = ", ".join(f"{a.get('name')}:{a.get('sort')}" + (f"{a.get('values')}" if a.get("sort") == "literal" else "") for a in rec.get("args", []))
         params = ", ".join(f"{p.get('name')} ({p.get('unit')})" for p in rec.get("params", []))
         built = "; ".join(" ".join(str(a).split()) for a in rec.get("approximations", []))
         contract = " ".join(str(rec.get("contract", "")).split()) + (f" **As built, more narrowly or broadly than these words:** {built}" if built else "")
+        calls = ", ".join(f"`{r}`" for r in rec.get("refs", [])) or "no concept"
         out.append(f"| `{cid}` | {rec.get('kind')} | {contract} | {rec.get('definition') or ''} | {args} | {params} | "
-                   f"{', '.join(rec.get('reads', []))} | {len(rec.get('used_by', []))} |")
+                   f"{', '.join(rec.get('reads', []))} | {calls} | {len(rec.get('used_by', []))} | {len(rec.get('callers', []))} |")
     return "\n".join(out) + "\n"
 
 
@@ -642,3 +648,127 @@ def lint_contract() -> str:
     body = t[t.index("/-") + 2:t.index("-/")]
     lines = body.splitlines()[2:]                       # past the module name
     return "\n".join(l[2:] if l.startswith("  ") else l for l in lines).strip() + "\n"
+
+
+# ---------------------------------------------------------------------------------------------
+# The trace document: the keys the decoder reads, from `Runtime/Decode.lean`
+# ---------------------------------------------------------------------------------------------
+#: The decoder functions of the trace document, and the name each record goes by in the format.
+_RECORDS = {"scene": "scene", "roadUser": "user (scene.users[])", "kin": "kin (user.kin)", "signals": "sig (user.sig)",
+            "posture": "posture (user.posture)", "warningLamp": "warning lamp (sig.warning_lamps[])",
+            "structure'": "structure (scene.structures[])", "laneInfo": "lane (structure.lane)",
+            "device": "device (scene.devices[])", "conditions": "conditions (device.conditions)",
+            "timeWindow": "time window (conditions.windows[])", "env": "env (scene.env)",
+            "civilTime": "civil time (env.civil_time)", "relation": "relation (scene.relations[])"}
+_SUB = {"roadUser": "user", "kin": "kin", "signals": "sig", "posture": "posture", "warningLamp": "warning lamp",
+        "structure'": "structure", "laneInfo": "lane", "device": "device", "conditions": "conditions",
+        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation",
+        "marking": "[marking type, marking colour]"}
+_PRIM = {"vec": "[x, y]", "num": "number", "bool": "bool", "nat": "nat", "int": "int", "str": "string"}
+
+
+def _decoder_type(tok: str, key: str) -> str:
+    if key == "extent":
+        return "[half_length, half_width, half_height]"
+    if tok in _PRIM:
+        return _PRIM[tok]
+    if tok in _SUB:
+        return _SUB[tok]
+    m = re.match(r"\(enum (\w+)\.ofString\)", tok)
+    if m:
+        return f"a {m.group(1)} spelling"
+    m = re.match(r"\(pair (\w+) (\w+)\)", tok)
+    if m:
+        return f"[{_PRIM.get(m.group(1), m.group(1))}, {_PRIM.get(m.group(2), m.group(2))}]"
+    return "value"
+
+
+def _decode_source() -> str:
+    return (paths.CORE / "Runtime" / "Decode.lean").read_text(encoding="utf-8")
+
+
+def decoder_keys(decode_source: str) -> dict[str, list[str]]:
+    """Every key the trace decoder reads, per record, with its type and whether it is required: read
+    from the decoder's source, so the format a reviewer writes in is the format that decodes."""
+    out: dict[str, list[str]] = {}
+    for m in re.finditer(r"^def (\w+'?) \(path : String\) \(j : Json\) : D \w+ := do\n(.*?)(?=^def |\Z)", decode_source, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if name not in _RECORDS:
+            continue
+        rows = []
+        for km in re.finditer(r"\b(opt|req|list|optList) j path \"([a-z_]+)\" (\([^)]*\)|[\w']+)", body):
+            how, key, tok = km.groups()
+            t = _decoder_type(tok, key)
+            rows.append(f"`{key}` {('[' + t + ', ...]') if how in ('list', 'optList') else t}{' (required)' if how == 'req' else ''}")
+        if name == "scene":
+            rows.append("`occupancy_observed` true | [track, ...]")
+        out[_RECORDS[name]] = rows
+    return out
+
+
+@lru_cache(maxsize=1)
+def trace_schema() -> tuple[dict[str, frozenset], dict[tuple[str, str], str]]:
+    """The keys the trace decoder reads, from the same table the trace format shows: (each record's
+    keys, `(record, key)` → the record nested under that key). A trace is `{"scenes": [scene, ...]}`."""
+    keys = decoder_keys(_decode_source())
+    records = {label.split(" (")[0]: frozenset(m.group(1) for r in rows if (m := re.match(r"`([a-z_]+)`", r))) for label, rows in keys.items()}
+    nested = {}
+    for label in keys:
+        m = re.match(r"(.+?) \(([\w ]+?)\.(\w+)(?:\[\])?\)$", label)
+        if m:
+            nested[(m.group(2), m.group(3))] = m.group(1)
+    return records, nested
+
+
+def _walk_keys(obj, record: str, path: str, out: list[str], drop: bool) -> None:
+    records, nested = trace_schema()
+    if not isinstance(obj, dict) or record not in records:
+        return
+    for k in list(obj):
+        if k not in records[record]:
+            out.append(f"{path}.{k}")
+            if drop:
+                del obj[k]
+            continue
+        child = nested.get((record, k))
+        if child is None:
+            continue
+        v = obj[k]
+        for i, e in enumerate(v if isinstance(v, list) else [v]):
+            ident = (e.get("track", e.get("id", f"{e.get('a')}-{e.get('b')}" if "a" in e else i))) if isinstance(e, dict) else i
+            _walk_keys(e, child, f"{path}.{k}" + (f"[{ident}]" if isinstance(v, list) else ""), out, drop)
+
+
+def unread_keys(trace) -> list[str]:
+    """The keys of a written trace the decoder does not read, by path (`scenes[t=0].users[1].kin.x`):
+    Core never executes them, so they are no evidence of anything."""
+    out: list[str] = []
+    if not isinstance(trace, dict):
+        return out
+    out += [k for k in trace if k != "scenes"]
+    for sc in trace.get("scenes") or [] if isinstance(trace.get("scenes"), list) else []:
+        _walk_keys(sc, "scene", f"scenes[t={sc.get('t') if isinstance(sc, dict) else '?'}]", out, False)
+    return out
+
+
+def read_part(trace) -> dict:
+    """A written trace with only the keys the decoder reads: what Core executes."""
+    if not isinstance(trace, dict):
+        return {}
+    out = json.loads(json.dumps({"scenes": trace.get("scenes")} if "scenes" in trace else {}))
+    for sc in out.get("scenes") or [] if isinstance(out.get("scenes"), list) else []:
+        _walk_keys(sc, "scene", "", [], True)
+    return out
+
+
+def decoder_fields(decode_source: str) -> dict[str, dict[str, tuple[str, str]]]:
+    """Per decoder of a record: the World field it fills → (the JSON key it reads, the decoder of
+    a nested record or '')."""
+    out: dict[str, dict[str, tuple[str, str]]] = {}
+    for m in re.finditer(r"^def (\w+'?) \(path : String\) \(j : Json\) : D \w+ := do\n(.*?)(?=^def |\Z)", decode_source, re.S | re.M):
+        fields = {}
+        for fm in re.finditer(r"(\w+) := \(?← (?:opt|req|list|optList) j path \"([a-z_]+)\" (\([^)]*\)|[\w']+)", m.group(2)):
+            sub = fm.group(3) if fm.group(3) in _SUB else ""
+            fields[fm.group(1)] = (fm.group(2), sub)
+        out[m.group(1)] = fields
+    return out

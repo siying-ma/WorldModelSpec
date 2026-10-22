@@ -65,17 +65,25 @@ feature is not better for being there, and one whose use cannot be stated is rem
 - **The reviewer** (a second vendor's model) shows, as executable traces, situations in which the
   code and the words it formalizes (the law for a node, the contract for a concept) decide
   differently. It supplies certified cases that challenge a rule or a disclosed reading. It
-  proposes neither a fix nor a replacement mapping.
+  proposes neither a fix nor a replacement mapping. The one exception to traces is **structural
+  evidence**: where no trace can show a difference (a word carried by a contract broader than it,
+  with no contract that makes the distinction), the reviewer may file a word-level item naming the
+  law's verbatim words and the contract clause they contradict. Stage B judges it on the words and
+  the contracts alone; it is labelled structural evidence in the rulings and in what the planner
+  sees, its words are validated against the law, an upheld item is an obligation decided again on
+  every later record of the node, and it is identified by the occurrence of its words in the law.
 - **The judges.**
   - **Stage A** determines the law's verdict on the canonical case without seeing the rule, the
-    record, the reviewer's prose or any proposed repair. It is shown the posted definitions that
-    apply, never an aggregate mapping.
+    record, the reviewer's prose or any proposed repair. It judges the duty occurrence the node
+    formalizes, and sees which occurrence that is (its words and qualifying sentence, and the duties
+    judged separately), nothing else of the record. It is shown the posted definitions that apply,
+    never an aggregate mapping.
   - **Stage B** decides whether a confirmed mismatch:
     - is a formalization defect;
     - is permitted by a disclosed law-local reading;
     - follows an aggregate mapping admitted by the independent aggregate gate;
     - depends on an operator-owned parameter value;
-    - or is structural.
+    - or is structural: a structural mismatch is reported `upheld`.
 
     It never chooses a reading, an aggregate member or a parameter value, and never judges the
     code or re-plans.
@@ -173,7 +181,8 @@ exposes are fixed:
   defective accepted node, cover most of the corpus, the restart is a fresh full run.
 - **How.** Launch the run with `--base_run <previous run>`: its accepted nodes and concepts are
   reused read-only, and the library keeps that run's files, so there is no `init --fresh`. A new
-  run id also starts a new `rulings.jsonl`, so no ruling carries over from the previous run.
+  run id starts a new `rulings.jsonl`. No ruling of a law the subset re-plans carries over; the
+  upheld obligations of a record the run inherits are carried, read-only.
 - **The subset files.** Its `laws.jsonl`, with the `definitions.jsonl` beside it, is written by a
   script from the corpus file into `results/<run>/laws/`, never by hand and never under `laws/`.
 - **After a change to Core or the ontology.** `python -m harness verify` must pass on the base
@@ -201,6 +210,8 @@ exposes are fixed:
 
 - A header or comment in a `.lean` or `.py` file never cites a markdown file or a section of one:
   it states the contract the code implements, in full, in its own words.
+- The documents under `pipeline/DesignFile/` are local and unversioned; the history of a defect
+  and its fix goes to the commit message.
 - A design or audit document under `pipeline/DesignFile/` is written for a reviewer who reads it
   alone: every fact it relies on (what a check does, what a rule requires, what a phase is shown)
   is stated in the document, never delegated to another document or a section number. Code
@@ -220,7 +231,7 @@ exposes are fixed:
 ## Commands
 
 From `pipeline/traffic-spec-agent/`: `python -m harness init | doctor | loop | validate | gate |
-verify | index | status | score_split` (see `README.md`). Run `lake` only inside `library/`.
+surface | verify | index | status | reopen | gap | split | score_split` (see `README.md`). Run `lake` only inside `library/`.
 Regenerate the ontology's Lean files with `python -m scripts.gen_ontology`; regenerate the
 corpus and its split from `pipeline/ontology_provenance/nrs_tools/` (`make_laws`, `publish`,
 `split`, `atoms_train`), never by hand.

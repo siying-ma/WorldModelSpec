@@ -184,6 +184,13 @@ def pathGe (m : Int) : Formula := .cmp (.measure "kin_path_length" [X]) .ge (.li
 #guard v 8 (.atLast .time (sec 3) "x" fast4 (pathGe 13)) = .f
 #guard v 8 (.atLast .time (sec 2) "x" fast4 (pathGe 0)) = .f       -- the window k = 4..8 has no observation with speed ≥ 4
 #guard why 1 (.atLast .time (sec 3) "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 20)) (pathGe 0)) = [.windowTruncated "atLast"]
+-- a 900 ms window over scenes 500 ms apart is not adequately sampled: unknown even where ψ held in it
+#guard v 3 (.atLast .time (ms 900) "x" fast4 (pathGe 0)) = .u
+#guard why 3 (.atLast .time (ms 900) "x" fast4 (pathGe 0)) = [.samplingGap "atLast"]
+#guard why 8 (.atLast .time (ms 900) "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 20)) (pathGe 0)) = [.samplingGap "atLast"]
+#guard v 3 (.atLast .time (sec 1) "x" fast4 (pathGe 9)) = .t          -- the same witness in an adequately sampled window
+#guard v 8 (.atLast .path (m 3) "y" .tt .tt) = .u                    -- the window has no path length to measure
+#guard v 8 (.atLast .time (sec 3) "x" (.atom "sig_brake_lamp" [X] []) (pathGe 0)) = .u   -- ψ unknown at the last observation
 
 -- metric windows: adequacy and truncation
 def slow : Formula := .cmp (.measure "kin_speed" [X]) .le (mps 2)

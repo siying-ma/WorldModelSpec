@@ -1,6 +1,6 @@
 /-
   TrafficSpec.Core.Vocab.Assumptions
-  Legal region classes and calendar classes (ATOMS.md §9, termination clause 5).
+  Legal region classes and calendar classes: facts a rule needs that no source observes.
 
   A district, a school day, an administrative designation are facts a rule needs and no camera
   sees. They reach a rule through this one door, three-valued: supplied true or false by the

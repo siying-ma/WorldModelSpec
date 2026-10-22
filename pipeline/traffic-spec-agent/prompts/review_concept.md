@@ -22,6 +22,9 @@ advisory. You do not edit the concept and you do not propose another.
 - **The atoms the concept reads** — every atom the body reads, with where a trace writes it.
 - **The contracts** — what every atom, primitive and concept the body names denotes.
 - **The trace format** — how a situation is written as a trace the harness can run.
+- **Challenges to carry over** (when there are any) — challenges upheld against an earlier body of
+  this concept that cannot be run on this one as recorded, each with its record and what does not
+  correspond.
 
 {contract}
 
@@ -34,6 +37,8 @@ advisory. You do not edit the concept and you do not propose another.
 {contracts}
 
 {trace_format}
+
+{carry_over}
 
 ## Questions
 
@@ -53,12 +58,14 @@ A concept of kind `quantity` returns a value, not a verdict. For it, a divergenc
 which the contract's words put the value in an interval and the body's value falls outside it
 (`value_wrongly`), or the body has no value where the contract gives one (`undecided`). It states
 that interval as `contract_value`, `lo` and `hi`, each a value with its unit (equal for an exact
-value), holding at every observation of the trace, in place of `contract_verdict`.
+value), at the observation `at`, in place of `contract_verdict`.
 5. Each trace is minimal and complete: the fewest road users, regions and observations that
-   realize the situation, with every atom the body reads written in every scene. Give the
-   instance — a spelling for each literal formal, a value with its unit for each parameter — and
-   the track of each track formal, the contract's verdict (`holds` or `fails`), and the words of
-   the contract that decide it, verbatim. A constant the record declares under `literals` is part
+   realize the situation, with every atom the body reads written in every scene. Name in `at` the
+   timestamp of the scene at which the contract decides: the body is read at that observation, and
+   the scenes before it are its history. Give the instance — a spelling for each literal formal, a
+   natural number for each nat formal, a value with its unit for each parameter — and the track of
+   each track formal, the contract's verdict at `at` (`holds` or `fails`), and the words of the
+   contract that decide it, verbatim. A constant the record declares under `literals` is part
    of the body, never an input of the instance.
 6. **Open magnitudes.** A situation whose verdict turns only on how large a parameter should be is
    an advisory: the caller sets it. So is one in which a parameter takes a value outside the domain
@@ -77,6 +84,12 @@ value), holding at every observation of the trace, in place of `contract_verdict
     on it. A trace on which the body's verdict differs from the contract's confirms the divergence;
     one on which they agree is recorded as your advisory and returns nothing. Revise a divergence
     until it is `confirmed`, or drop it.
+11. **Carried-over challenges.** For each challenge to carry over, submit a divergence with
+    `extends` naming it that continues it: its trace keeps every scene and every field the recorded
+    trace states (you may add scenes and fill fields it left unobserved); each recorded formal keeps
+    its value, under its name or the one formal it became; the instant, the contract's words and the
+    claimed verdict or interval are the recorded ones. A divergence that does not continue it is
+    refused, and a challenge left without one keeps the review open.
 
 ## Output
 
@@ -89,9 +102,12 @@ The answer is the argument of `submit_review`, in this schema and nothing more:
                   "contract_words": "<verbatim words of the contract that decide it>",
                   "contract_verdict": "holds | fails",
                   "instance": {"literals": {"<literal formal>": "<spelling>"},
+                               "nats": {"<nat formal>": <natural number>},
                                "params": {"<parameter>": [<value>, "<unit>"]}},
                   "grounding": {"<track formal>": <track id>},
-                  "trace": {"scenes": [ ... ]}}],
+                  "trace": {"scenes": [ ... ]},
+                  "at": <timestamp of a scene, ms>,
+                  "extends": "<the id of a challenge to carry over, only for such a divergence>"}],
  "not_general": [{"words": "<verbatim words of the contract or the rendering>", "why": "<one sentence>"}],
  "advisories": ["<observations that return nothing>"]}
 ```

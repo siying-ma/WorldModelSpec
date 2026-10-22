@@ -102,6 +102,14 @@ def subjectOnly : Manifest :=
 #guard rel_visible (mask subjectOnly τ[0]!) 1 2 = some true
 #guard rel_visible (mask subjectOnly { τ[0]! with subject := some 2 }) 1 2 = none
 #guard !m.complete
+-- masking a class hides the attribute the class carries: neither the class nor its kind is known
+def emScene : Scene := { t := 0, users := [{ track := 1, classes := some [.emergencyVehicle], emergencyKind := some .police }] }
+def noEmergency : Manifest :=
+  { Manifest.full "sim" with entries := (Manifest.full "sim").entries.filter (·.1 != "ru.emergency_vehicle") }
+#guard ru_emergency_vehicle (mask noEmergency emScene) 1 = none
+#guard ru_emergency_vehicle_kind (mask noEmergency emScene) 1 = none
+#guard ru_emergency_vehicle (mask (Manifest.full "sim") emScene) 1 = some true
+#guard ru_emergency_vehicle_kind (mask (Manifest.full "sim") emScene) 1 = some .police
 #guard (parse manifest "{\"source\": \"x\", \"atoms\": {\"kin.speed\": \"good\"}}").isOk = false
 
 -- builders: a scenario for the test rule, padded so the stop window is covered

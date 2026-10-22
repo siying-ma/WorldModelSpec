@@ -9,7 +9,8 @@ from types import SimpleNamespace
 from harness import loop
 from harness.agents import session
 from harness.checks import aggregates as checks
-from harness.model import ontology
+from harness.model import corpus, ontology
+from harness.model.reading import Reading
 from harness.phases import aggregate
 from harness.phases import validate as validate_phase
 from harness.store import paths
@@ -35,6 +36,7 @@ def record(status="included", aid=AID):
 class FakeRun:
     def __init__(self, d: Path):
         self.dir, self.iteration = d, 1
+        self.aggregate_failures = {}
         self.opts = Options(run_id="t", laws=d / "laws.jsonl", ontology=ONTO.path, reading=d / "reading.json",
                             model="m", reviewer_model="gpt-x")
         (d / "reading.json").write_text(json.dumps({"params": [], "aggregates": []}))
@@ -166,10 +168,9 @@ class Gate(unittest.TestCase):
         entry, _cert = self.gate(Verifier({"*": "supported", CLASSES[0]: "contradicted"}, {"*": "supported"}), retry=new)
         self.assertNotIn(CLASSES[0], entry["included"] + entry["unresolved"])
 
-    def test_malformed_twice_admits_everything_unresolved(self):
-        entry, cert = self.gate(Verifier("malformed"))
-        self.assertEqual(sorted(entry["unresolved"]), CLASSES)
-        self.assertTrue(all(d["why"] == "gate_protocol_invalid" for d in cert["downgrades"]))
+    def test_a_malformed_answer_admits_nothing(self):
+        with self.assertRaises(session.SessionUnavailable):
+            self.gate(Verifier("malformed"))
 
     def test_a_launch_failure_admits_nothing(self):
         validate_phase._session = Verifier("raise")
@@ -238,7 +239,7 @@ class Preparation(unittest.TestCase):
             "node_id": "TST_900B_100_o1", "law_refs": ["TST-900B-100"],
             "elements": [{"atoms": [f"ru.aggregate={AID}"]}],
         }])
-        run = SimpleNamespace(all_nodes=lambda: {}, load_deferred=lambda: [])
+        run = SimpleNamespace(all_nodes=lambda: {}, deferred_nodes=[])
         claimants = loop.aggregate_claimants(run, SimpleNamespace(entries={}), {"plan_dir": str(plan_dir)})
         self.assertEqual(claimants, {AID: ["TST_900B_100_o1"]})
 
@@ -391,7 +392,7 @@ class ElisionAndUnderived(unittest.TestCase):
         self.assertFalse(checks._verbatim("may be carried … every device", DEF["text"]))      # out of order
         self.assertFalse(checks._verbatim("every … carried", DEF["text"]))                     # too few words
 
-    def test_a_selected_aggregate_left_underived_closes_its_laws(self):
+    def test_a_selected_aggregate_left_underived_holds_its_laws_then_stops_the_run(self):
         tmp = tempfile.TemporaryDirectory()
         run = FakeRun(Path(tmp.name))
         (run.dir / "definition_resolution.json").write_text(json.dumps(TABLE))
@@ -399,10 +400,43 @@ class ElisionAndUnderived(unittest.TestCase):
         saved = aggregate.select_and_derive
         aggregate.select_and_derive = lambda *a, **k: ({(DEF["id"], "wagon"): row}, [], ["aggregate: a quote is not verbatim"])
         try:
-            _n, _u, close = aggregate.prepare(run, [], [DEF], ONTO, run.dir / "out")
-            self.assertIn("planning_protocol_failure: the mapping of", close["TST-900B-100"])
+            _n, _u, hold, stop = aggregate.prepare(run, [], [DEF], ONTO, run.dir / "out")
+            self.assertIn("the mapping of", hold["TST-900B-100"])
+            self.assertEqual(stop, "")
+            (run.dir / "aggregate_selection.jsonl").unlink(missing_ok=True)      # asked again next iteration
+            _n, _u, hold, stop = aggregate.prepare(run, [], [DEF], ONTO, run.dir / "out")
+            self.assertIn("the mapping of", stop)
         finally:
             aggregate.select_and_derive = saved
+            tmp.cleanup()
+
+
+class LawLocalBinding(unittest.TestCase):
+    """A law-local admission is bound to its record: the same id with another mapping is gated again."""
+    def test_another_mapping_under_the_same_id_is_gated_again(self):
+        tmp = tempfile.TemporaryDirectory()
+        run = FakeRun(Path(tmp.name))
+        (run.dir / "definition_resolution.json").write_text(json.dumps(TABLE))
+        aid = "TST-900B-100:s1::wagon"
+        calls = []
+
+        def gate(run_, rec, sources, onto, out_dir, retry, digests):
+            calls.append(rec)
+            return aggregate._finish({"aggregate_id": aid, "proposal": rec, "retry": None, "exchanges": [], "downgrades": [], **digests},
+                                     rec, {c["class"]: c["status"] for c in rec["classifications"]}, digests)
+        saved = aggregate.gate
+        aggregate.gate = gate
+        try:
+            law = corpus.Law("TST-900B-100", "", "every device upon which a person may be carried", "")
+            one, two = record(aid=aid), record(status="unresolved", aid=aid)
+            aggregate.admit(run, [one], TABLE, [DEF], ONTO, run.dir / "out", laws={law.id: law})
+            aggregate.admit(run, [one], TABLE, [DEF], ONTO, run.dir / "out", laws={law.id: law})
+            self.assertEqual(len(calls), 1)                                    # the same record: reused
+            aggregate.admit(run, [two], TABLE, [DEF], ONTO, run.dir / "out", laws={law.id: law})
+            self.assertEqual(len(calls), 2)
+            self.assertEqual(Reading(run.reading_file).aggregate(aid)["included"], [])
+        finally:
+            aggregate.gate = saved
             tmp.cleanup()
 
 

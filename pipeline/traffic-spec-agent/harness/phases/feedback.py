@@ -2,7 +2,6 @@
 from __future__ import annotations
 import json
 import re
-from pathlib import Path
 from ..model import nodeid
 from ..model.blueprint import concepts_of
 from ..store import paths
@@ -26,11 +25,13 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
             done = [i for i in e.nodes if i in run.all_nodes()]
             lines.append(f"- `{e.law}` (attempt {e.attempts}): " + "; ".join(e.reasons[:6])
                          + (f" — accepted already and not to be re-planned: {', '.join(done)}" if done else ""))
-    failed = [e for e in ledger.entries.values() if e.state == "failed" and e.iteration == run.iteration]
+    failed = [e for e in ledger.entries.values() if e.state == "failed" and e.outcome_iteration == run.iteration]   # its terminal transition
     if failed:
         lines += ["", "## Laws closed as failed this iteration (reopen with `python -m harness reopen`)", ""]
         for e in failed:
             lines.append(f"- `{e.law}`: " + "; ".join(e.reasons[:6]))
+        to_user = list(to_user) + [f"`{e.law}` closed as failed: " + "; ".join(e.reasons[:3])[:400]
+                                   + f" (python -m harness reopen {run.opts.run_id} --laws {e.law})" for e in failed]
     if concept_ledger is not None and concept_ledger.entries:
         lines += ["", "## Concepts by state", ""]
         for state, count in sorted(concept_ledger.counts().items()):
@@ -58,11 +59,12 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         for g in gaps_filed:
             lines.append(f"- {g['id']} ({g['kind']}) on `{g.get('span', '')[:80]}` — {', '.join(g.get('law_refs', []))}")
     run.auto_notes.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    write_to_user(run, [l for l in to_user if l])
+    write_to_user(run, list(dict.fromkeys(l for l in to_user if l)))      # one line per decision, however often it was raised
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "status": "running", "stop_reason": "",
                "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
                "concepts": concept_ledger.counts() if concept_ledger is not None else {},
-               "gaps_total": len(GapLedger(paths.GAP_LEDGER).rows)}
+               "gaps_total": len(gap_rows := GapLedger(paths.GAPS_DIR).rows),
+               "gaps_created_by_this_run": sum(1 for g in gap_rows if str(g.get("proposed_in", "")).startswith(run.opts.run_id + "/"))}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
@@ -71,7 +73,7 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str) -> dict:
     `infrastructure_failure` when a session could not be launched, `paused_budget` when the second
     vendor's budget admits no further call (resumed under the same run id once raised),
     `stale_aggregate` when an aggregate's inputs changed under nodes that claim it (a new run is
-    needed), `data_integrity_failure` when an audit file cannot be read as written (named, and left as
+    needed), `protocol_failure` when the aggregate selection stayed defective twice, `data_integrity_failure` when an audit file cannot be read as written (named, and left as
     it is), `incomplete` when the iteration bound or a stop without progress left a law open."""
     f = run.dir / "summary.json"
     f.parent.mkdir(parents=True, exist_ok=True)
