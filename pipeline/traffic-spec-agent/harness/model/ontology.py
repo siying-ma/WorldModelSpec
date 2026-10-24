@@ -7,9 +7,7 @@ from pathlib import Path
 
 ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)` \| (.*)$")
 ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
-DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
-ASSUMPTION_RE = re.compile(r"\basm\.[a-z_]+\b")
 ANCHORS = {"rel.occupies", "st.region_geometry"}   # the relations that tie a feature of the scene to the subject
 AGGREGATE = "ru.aggregate"                          # the atom a legal aggregate word is claimed as
 
@@ -37,15 +35,6 @@ class Ontology:
 
     def contract(self, ident: str) -> str:
         return self.atoms.get(ident) or (self.primitives.get(ident, ("", ""))[0])
-
-    def subset_text(self, ids: set[str]) -> str:
-        """The contracts of the named ids only, for the blind reader."""
-        lines = ["| id | contract |", "|---|---|"]
-        for i in sorted(ids):
-            c = self.contract(i)
-            if c:
-                lines.append(f"| `{i}` | {c} |")
-        return "\n".join(lines) + "\n"
 
 
 def anchors_text(onto: "Ontology", lean: bool = False) -> str:
@@ -78,7 +67,8 @@ def load(path: Path) -> Ontology:
                 for v in e.group(2).split(","):
                     v = v.strip()
                     if v:
-                        o.values.add(f"{aid}={re.sub(r'\(.*\)', '', v)}")
+                        value = re.sub(r'\(.*\)', '', v)
+                        o.values.add(f"{aid}={value}")
             c = CODES.search(rest)
             if c:
                 for v in (c.group(1) or c.group(2)).split(","):

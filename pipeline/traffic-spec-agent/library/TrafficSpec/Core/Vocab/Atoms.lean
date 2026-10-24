@@ -5,7 +5,7 @@
 -/
 /-
   TrafficSpec.Core.Vocab.Atoms
-  The bijection with ATOMS.md §1–§7: exactly one definition per atom id, named `family_name`,
+  The bijection with the atoms of ATOMS.md: exactly one definition per atom id, named `family_name`,
   each reading one field of `World` and nothing else. Attribute accessors of an atom carry the
   atom's name plus a suffix (`dev_traffic_signal_shows`, `ru_rider_posture_on_seat`).
 
@@ -47,6 +47,10 @@ def inFrame (h v : Vec) : Option (Q × Q) :=
   let n := norm h
   if Q.isZero n then none
   else some (Q.div (dot h v) n, Q.div (cross h v) n)
+/-- The unit vector along `a`; `none` for the zero vector. -/
+def unit (a : Vec) : Option Vec :=
+  let n := norm a
+  if Q.isZero n then none else some (Q.div a.1 n, Q.div a.2 n)
 /-- Distance from a point to a segment. -/
 def segmentDistance (p a b : Vec) : Q :=
   let ab := vsub b a
@@ -70,6 +74,27 @@ def inPolygon (p : Vec) (poly : List Vec) : Bool :=
          !Q.isZero dy &&
          Q.lt p.1 (Q.add ax (Q.div (Q.mul (Q.sub p.2 ay) (Q.sub bx ax)) dy)))
     crossings.length % 2 == 1
+/-- The sign of `(b − a) × (c − a)`: 1 when `c` is to the left of `ab`, −1 to its right, 0 on its line. -/
+def orient (a b c : Vec) : Int :=
+  let k := (cross (vsub b a) (vsub c a)).num
+  if k > 0 then 1 else if k < 0 then -1 else 0
+/-- Whether `p` lies on the closed segment `ab`, given that it lies on its line. -/
+def withinBox (p a b : Vec) : Bool :=
+  Q.le (Q.min a.1 b.1) p.1 && Q.le p.1 (Q.max a.1 b.1) && Q.le (Q.min a.2 b.2) p.2 && Q.le p.2 (Q.max a.2 b.2)
+/-- Whether the closed segments `ab` and `cd` share a point, touching and collinear overlap included. -/
+def segmentsIntersect (a b c d : Vec) : Bool :=
+  let o1 := orient a b c; let o2 := orient a b d; let o3 := orient c d a; let o4 := orient c d b
+  (o1 * o2 < 0 && o3 * o4 < 0) || (o1 == 0 && withinBox c a b) || (o2 == 0 && withinBox d a b)
+    || (o3 == 0 && withinBox a c d) || (o4 == 0 && withinBox b c d)
+/-- The edges of a polygon, the last vertex closing to the first. -/
+def edges (poly : List Vec) : List (Vec × Vec) :=
+  let n := poly.length
+  (List.range n).map fun i => (poly[i]!, poly[(i + 1) % n]!)
+/-- Whether two polygons share a point as closed sets: an edge of one meets an edge of the other
+    (touching counts), or one lies inside the other. Exact. -/
+def polygonsOverlap (p q : List Vec) : Bool :=
+  (edges p).any (fun (a, b) => (edges q).any fun (c, d) => segmentsIntersect a b c d)
+    || p.any (inPolygon · q) || q.any (inPolygon · p)
 /-- Distance from a point to a polygon's boundary: zero inside, the nearest edge outside. -/
 def polygonDistance (p : Vec) (poly : List Vec) : Option Q :=
   match poly with
@@ -81,10 +106,29 @@ def polygonDistance (p : Vec) (poly : List Vec) : Option Q :=
       let n := poly.length
       let ds := (List.range n).map fun i => segmentDistance p poly[i]! poly[(i + 1) % n]!
       ds.foldl (fun acc d => match acc with | none => some d | some a => some (Q.min a d)) none
+/-- The point of a segment nearest a point. -/
+def segmentNearest (p a b : Vec) : Vec :=
+  let ab := vsub b a
+  let l2 := normSq ab
+  if Q.isZero l2 then a
+  else
+    let t := Q.max Q.zero (Q.min (Q.ofInt 1) (Q.div (dot (vsub p a) ab) l2))
+    vadd a (Q.mul t ab.1, Q.mul t ab.2)
+/-- The point of a polygon's boundary nearest a point. -/
+def nearestPoint (p : Vec) (poly : List Vec) : Option Vec :=
+  match poly with
+  | [] => none
+  | [a] => some a
+  | _ =>
+    let n := poly.length
+    let cs := (List.range n).map fun i => segmentNearest p poly[i]! poly[(i + 1) % n]!
+    cs.foldl (fun acc c => match acc with
+      | none => some c
+      | some b => if Q.lt (normSq (vsub p c)) (normSq (vsub p b)) then some c else some b) none
 end Geom
 
 -- ---------------------------------------------------------------------------------------------
--- §1 Road users
+-- Road users
 -- ---------------------------------------------------------------------------------------------
 private def hasClass (s : Scene) (x : TrackId) (c : RoadUserClass) : Option Bool :=
   (s.user x).bind fun u => if u.unobservedClasses.contains c then none else u.classes.map (·.contains c)
@@ -94,6 +138,7 @@ def ru_motorcycle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .motor
 def ru_moped (s : Scene) (x : TrackId) : Option Bool := hasClass s x .moped
 def ru_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .bus
 def ru_transit_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .transitBus
+def ru_school_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .schoolBus
 def ru_taxicab (s : Scene) (x : TrackId) : Option Bool := hasClass s x .taxicab
 def ru_tour_bus_or_limousine (s : Scene) (x : TrackId) : Option Bool := hasClass s x .tourBusOrLimousine
 def ru_truck (s : Scene) (x : TrackId) : Option Bool := hasClass s x .truck
@@ -111,9 +156,10 @@ def ru_official_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x 
 def ru_rail_vehicle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .railVehicle
 
 def ru_subject (s : Scene) (x : TrackId) : Option Bool := s.subject.map (· == x)
-/-- Membership of a legal aggregate ("vehicle", "traffic"): the member classes come from the
-    reading. True when the user carries a member class; unknown when none holds and a member class
-    is unobserved (or the classes were not observed at all); false otherwise. -/
+/-- Whether the road user carries one of the listed classes: true when it carries one; unknown when
+    none holds and a listed class is unobserved (or the classes were not observed at all); false
+    otherwise. A legal aggregate's membership is read through it, once for the classes its
+    definition includes and once for those it leaves unresolved. -/
 def ru_aggregate (s : Scene) (x : TrackId) (members : List RoadUserClass) : Option Bool :=
   (s.user x).bind fun u =>
     let has : List (Option Bool) := members.map fun c =>
@@ -133,7 +179,7 @@ def ru_official_vehicle_kind (s : Scene) (x : TrackId) : Option OfficialKind := 
 def ru_electric_bicycle_class (s : Scene) (x : TrackId) : Option Nat := (s.user x).bind (·.eBikeClass)
 
 -- ---------------------------------------------------------------------------------------------
--- §2 Kinematics
+-- Kinematics
 -- ---------------------------------------------------------------------------------------------
 def kin_time (s : Scene) : Timestamp := s.t
 def kin_position (s : Scene) (x : TrackId) : Option Vec := (s.user x).bind (·.kin.position)
@@ -143,14 +189,16 @@ def kin_speed (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.sp
 def kin_accel_longitudinal (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.accelLongitudinal)
 def kin_yaw_rate (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.yawRate)
 def kin_extent (s : Scene) (x : TrackId) : Option (Q × Q × Q) := (s.user x).bind (·.kin.extent)
+def kin_steer_angle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.steerAngle)
 def kin_path_length (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.pathLength)
 def kin_engine_running (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.kin.engineRunning)
+def kin_parking_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.kin.parkingBrake)
 def kin_gear (s : Scene) (x : TrackId) : Option Int := (s.user x).bind (·.kin.gear)
 def kin_throttle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.throttle)
 def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.serviceBrake)
 
 -- ---------------------------------------------------------------------------------------------
--- §3 Road structure and occupancy
+-- Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
 /-- Whether a region is of a kind: unknown where the source cannot tell that kind. -/
 def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
@@ -183,6 +231,7 @@ def st_lane_right_of (s : Scene) (r r' : RegionId) : Option Bool :=
     | _, _ => none
 def st_lane_connectivity (s : Scene) (r : RegionId) : Option (List RegionId) := (st_lane_adjacency s r).bind (·.leadsTo)
 def st_lane_enters (s : Scene) (r : RegionId) : Option RegionId := (st_lane_adjacency s r).bind (·.entersIntersection)
+def st_on_way (s : Scene) (r : RegionId) : Option (List RegionId) := (s.structure? r).bind (·.ways)
 def st_lane_marking (s : Scene) (r : RegionId) : Option ((Option (MarkingType × MarkingColour)) × (Option (MarkingType × MarkingColour))) :=
   (st_lane_adjacency s r).map fun l => (l.markingLeft, l.markingRight)
 def st_lane_marking_left (s : Scene) (r : RegionId) : Option (MarkingType × MarkingColour) := (st_lane_adjacency s r).bind (·.markingLeft)
@@ -203,10 +252,13 @@ def st_crosswalk_marked (s : Scene) (r : RegionId) : Option Bool := (s.structure
 def st_stop_line (s : Scene) (r : RegionId) : Option Bool := isKind s r .stopLine
 def st_driveway_or_alley_entrance (s : Scene) (r : RegionId) : Option Bool := isKind s r .drivewayOrAlleyEntrance
 def st_alley (s : Scene) (r : RegionId) : Option Bool := isKind s r .alley
-def st_curvature (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.curvature)
+/-- Horizontal curvature as a magnitude (1/m, never negative): a bend to either hand has the same value. -/
+def st_curvature (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.curvature) |>.map Q.abs
 def st_grade (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.grade)
 def st_crest (s : Scene) (r : RegionId) : Option Bool := isKind s r .crest
 def st_sight_distance (s : Scene) (r : RegionId) : Option Q := (s.structure? r).bind (·.sightDistance)
+def st_sight_along_way (s : Scene) (x : TrackId) (w : RegionId) : Option Q :=
+  (s.user x).bind fun u => u.sightAlongWay.bind fun ws => (ws.find? (·.1 == w)).map (·.2)
 def st_railway_crossing (s : Scene) (r : RegionId) : Option Bool := isKind s r .railwayCrossing
 def st_controlled_access (s : Scene) (r : RegionId) : Option Bool := isKind s r .controlledAccess
 def st_elevated_structure (s : Scene) (r : RegionId) : Option Bool := isKind s r .elevatedStructure
@@ -227,6 +279,7 @@ def st_safety_zone (s : Scene) (r : RegionId) : Option Bool := isKind s r .safet
 def st_pedestrian_grade_separation (s : Scene) (r : RegionId) : Option Bool := isKind s r .pedestrianGradeSeparation
 def st_fire_hydrant (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireHydrant
 def st_fire_station_entrance (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireStationEntrance
+def st_roundabout (s : Scene) (r : RegionId) : Option Bool := isKind s r .roundabout
 def st_obstruction (s : Scene) (r : RegionId) : Option Bool := isKind s r .obstruction
 def st_obstruction_kind (s : Scene) (r : RegionId) : Option ObstructionKind := (s.structure? r).bind (·.obstructionKind)
 /-- Geometry accessors every structure atom shares: the reference point and the boundary polygon. -/
@@ -256,7 +309,7 @@ def st_region_geometry_distance (s : Scene) (x : TrackId) (r : RegionId) : Optio
   let p ← kin_position s x
   match st_region_geometry_boundary s r, footprint s x with
   | some poly, some fp =>
-    if fp.any (Geom.inPolygon · poly) || poly.any (Geom.inPolygon · fp) then some Q.zero
+    if Geom.polygonsOverlap fp poly then some Q.zero
     else
       let ds := fp.filterMap (Geom.polygonDistance · poly) ++ poly.filterMap (Geom.polygonDistance · fp)
       ds.foldl (fun acc d => match acc with | none => some d | some a => some (Q.min a d)) none
@@ -281,7 +334,7 @@ def rel_occupies_regions (s : Scene) (x : TrackId) : Option (List RegionId) :=
   if s.occupancyObserved.contains x then some ((s.occupies.filter (·.1 == x)).map (·.2)) else none
 
 -- ---------------------------------------------------------------------------------------------
--- §4 Control devices
+-- Control devices
 -- ---------------------------------------------------------------------------------------------
 /-- Whether a device is of a kind: unknown where the source cannot tell that kind. -/
 def devKind (s : Scene) (d : DeviceId) (k : DeviceKind) : Option Bool :=
@@ -336,11 +389,13 @@ def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
   (s.devices.filter fun d => d.kind == k || d.unobservedKinds.contains k).map (·.id)
 
 -- ---------------------------------------------------------------------------------------------
--- §5 Signals emitted by road users
+-- Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
-def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
+def sig_headlamp (s : Scene) (x : TrackId) : Option HeadlampState := (s.user x).bind (·.sig.headlamp)
+def sig_position_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.positionLamp)
+def sig_reverse_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.reverseLamp)
 def sig_warning_lamp (s : Scene) (x : TrackId) : Option (List WarningLamp) := (s.user x).bind (·.sig.warningLamps)
 /-- A warning lamp of the given colour lit, in any mode or facing. -/
 def sig_warning_lamp_colour (s : Scene) (x : TrackId) (c : LampColour) : Option Bool :=
@@ -350,10 +405,12 @@ def sig_warning_lamp_shows (s : Scene) (x : TrackId) (c : LampColour) (m : LampM
 def sig_siren (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.siren)
 def sig_horn (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.horn)
 def sig_hand_signal (s : Scene) (x : TrackId) : Option HandSignal := (s.user x).bind (·.sig.handSignal)
+def sig_door_open (s : Scene) (x : TrackId) : Option (List DoorSide) := (s.user x).bind (·.sig.doorsOpen)
+def sig_door_open_side (s : Scene) (x : TrackId) (side : DoorSide) : Option Bool := (sig_door_open s x).map (·.contains side)
 def sig_compression_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.compressionBrake)
 
 -- ---------------------------------------------------------------------------------------------
--- §6 Environment
+-- Environment
 -- ---------------------------------------------------------------------------------------------
 def env_darkness (s : Scene) : Option Bool := s.env.darkness
 def env_precipitation (s : Scene) : Option Bool := s.env.precipitation
@@ -363,7 +420,7 @@ def env_visibility (s : Scene) : Option Q := s.env.visibility
 def env_civil_time (s : Scene) : Option CivilTime := s.env.civilTime
 
 -- ---------------------------------------------------------------------------------------------
--- §7 Relations between road users. Measured where the source supplies them, otherwise computed
+-- Relations between road users. Measured where the source supplies them, otherwise computed
 -- from kinematics. `none` when a needed kinematic is missing.
 -- ---------------------------------------------------------------------------------------------
 def rel_centre_distance (s : Scene) (a b : TrackId) : Option Q :=

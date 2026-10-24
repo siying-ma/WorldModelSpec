@@ -114,6 +114,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "ru_official_vehicle_kind", [x, k] => pure (eqEnum (ru_official_vehicle_kind s (← ent x)) (← enumLit OfficialKind.ofString k) name)
   -- control state
   | "kin_engine_running", [x] => pure (b (kin_engine_running s (← ent x)) name)
+  | "kin_parking_brake", [x] => pure (b (kin_parking_brake s (← ent x)) name)
   -- structure attributes
   | "st_road_edge_paved", [r] => pure (b (st_road_edge_paved s (← ent r)) name)
   | "st_shoulder_paved", [r] => pure (b (st_shoulder_paved s (← ent r)) name)
@@ -134,6 +135,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "st_lane_adjacency_right", [r, r'] => pure (b (st_lane_right_of s (← ent r) (← ent r')) name)
   | "st_lane_connectivity", [r, r'] => pure (b ((st_lane_connectivity s (← ent r)).map (·.contains (← ent r'))) name)
   | "st_lane_enters", [r, i] => pure (b ((st_lane_enters s (← ent r)).map (· == (← ent i))) name)
+  | "st_on_way", [r, w] => pure (b ((st_on_way s (← ent r)).map (·.contains (← ent w))) name)
   | "st_lane_marking", [r, sd, t] =>
     match sd with
     | .s "left" => pure (eqEnum ((st_lane_marking_left s (← ent r)).map (·.1)) (← enumLit MarkingType.ofString t) name)
@@ -171,11 +173,16 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   -- signals emitted
   | "sig_turn_indicator", [x, k] => pure (eqEnum (sig_turn_indicator s (← ent x)) (← enumLit TurnIndicatorState.ofString k) name)
   | "sig_hazard", [x] => pure (b (sig_hazard s (← ent x)) name)
+  | "sig_headlamp", [x, k] => pure (eqEnum (sig_headlamp s (← ent x)) (← enumLit HeadlampState.ofString k) name)
+  | "sig_position_lamp", [x] => pure (b (sig_position_lamp s (← ent x)) name)
+  | "sig_reverse_lamp", [x] => pure (b (sig_reverse_lamp s (← ent x)) name)
   | "sig_warning_lamp", [x, col] => pure (b (sig_warning_lamp_colour s (← ent x) (← enumLit LampColour.ofString col)) name)
   | "sig_warning_lamp", [x, col, m] => pure (b (sig_warning_lamp_shows s (← ent x) (← enumLit LampColour.ofString col) (← enumLit LampMode.ofString m)) name)
   | "sig_siren", [x] => pure (b (sig_siren s (← ent x)) name)
   | "sig_horn", [x] => pure (b (sig_horn s (← ent x)) name)
   | "sig_hand_signal", [x, k] => pure (eqEnum (sig_hand_signal s (← ent x)) (← enumLit HandSignal.ofString k) name)
+  | "sig_door_open", [x] => pure (b ((sig_door_open s (← ent x)).map (!·.isEmpty)) name)
+  | "sig_door_open", [x, k] => pure (b (sig_door_open_side s (← ent x) (← enumLit DoorSide.ofString k)) name)
   | "sig_compression_brake", [x] => pure (b (sig_compression_brake s (← ent x)) name)
   -- environment
   | "env_darkness", [] => pure (b (env_darkness s) name)
@@ -230,18 +237,20 @@ where
   boolAtomNames : List String := [
     "ru_subject", "ru_aggregate", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
     "ru_rider_posture_holding_another_vehicle", "ru_rider_posture_stunt", "ru_emergency_vehicle_kind",
-    "ru_official_vehicle_kind", "kin_engine_running", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
+    "ru_official_vehicle_kind", "kin_engine_running", "kin_parking_brake",
+    "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
     "st_curb_zone_kind", "st_curb_zone_colour", "st_obstruction_kind", "st_lane_adjacency", "st_lane_adjacency_left",
-    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
+    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_on_way", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
     "rel_occupies", "dev_traffic_signal_shows", "dev_traffic_signal_uncovered", "dev_pedestrian_signal_state",
     "dev_pedestrian_signal_countdown", "dev_lane_control_signal_state", "dev_speed_limit_beacon_flashing",
     "dev_crossing_warning_signal_active", "dev_speed_limit_sign_kind", "dev_regulatory_sign_code",
     "dev_zone_sign_kind", "dev_zone_sign_end", "dev_railway_signal_or_gate_lights",
     "dev_railway_signal_or_gate_gate", "dev_railway_signal_or_gate_bell", "dev_human_direction_role",
     "dev_human_direction_indication", "dev_governs", "dev_inoperative",
-    "sig_turn_indicator", "sig_hazard", "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
-    "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
+    "sig_turn_indicator", "sig_hazard", "sig_headlamp", "sig_position_lamp",
+    "sig_reverse_lamp", "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
+    "sig_door_open", "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
     "env_ice_or_snow", "rel_ahead_behind_in_lane", "rel_ahead_in_lane", "rel_behind_in_lane", "rel_oncoming",
     "rel_same_direction", "rel_bearing", "rel_contact", "rel_visible"]
 
@@ -258,7 +267,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
   match name, args with
   | "kin_time", [] => .ok (Time.ofTimestamp (kin_time s))
   | "kin_position", [x, k] => comp (kin_position s (← ent x)) k name
-  | "kin_heading", [x, k] => comp (kin_heading s (← ent x)) k name
+  | "kin_heading", [x, k] => comp ((kin_heading s (← ent x)).bind Geom.unit) k name
   | "kin_velocity", [x, k] => comp (kin_velocity s (← ent x)) k name
   | "kin_speed", [x] => q (kin_speed s (← ent x)) name
   | "kin_accel_longitudinal", [x] => q (kin_accel_longitudinal s (← ent x)) name
@@ -270,6 +279,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
     | .s "width" => q (e.map fun (_, w, _) => Q.mul (Q.ofInt 2) w) name
     | .s "height" => q (e.map fun (_, _, h) => Q.mul (Q.ofInt 2) h) name
     | _ => .error (.malformed "extent")
+  | "kin_steer_angle", [x] => q (kin_steer_angle s (← ent x)) name
   | "kin_path_length", [x] => q (kin_path_length s (← ent x)) name
   | "kin_gear", [x] => qz (kin_gear s (← ent x)) name
   | "kin_throttle", [x] => q (kin_throttle s (← ent x)) name
@@ -289,6 +299,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
   | "st_curvature", [r] => q (st_curvature s (← ent r)) name
   | "st_grade", [r] => q (st_grade s (← ent r)) name
   | "st_sight_distance", [r] => q (st_sight_distance s (← ent r)) name
+  | "st_sight_along_way", [x, w] => q (st_sight_along_way s (← ent x) (← ent w)) name
   | "st_parking_space_angle", [r] => q (st_parking_space_angle s (← ent r)) name
   | "st_region_geometry", [r, k] => comp (st_region_geometry_position s (← ent r)) k name
   | "st_region_geometry_distance", [x, r] => q (st_region_geometry_distance s (← ent x) (← ent r)) name
@@ -318,10 +329,10 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
 where
   measureNames : List String := [
     "kin_time", "kin_position", "kin_heading", "kin_velocity", "kin_speed", "kin_accel_longitudinal",
-    "kin_yaw_rate", "kin_extent", "kin_path_length", "kin_gear", "kin_throttle", "kin_service_brake", "ru_occupant_count",
+    "kin_yaw_rate", "kin_extent", "kin_steer_angle", "kin_path_length", "kin_gear", "kin_throttle", "kin_service_brake", "ru_occupant_count",
     "ru_rider_posture_hands_on_controls", "ru_electric_bicycle_class", "st_lane_direction", "st_lane_adjacency",
     "st_lane_adjacency_ordinal", "st_lane_adjacency_count", "st_lane_width", "st_curvature", "st_grade",
-    "st_sight_distance", "st_parking_space_angle", "st_region_geometry", "st_region_geometry_distance",
+    "st_sight_distance", "st_sight_along_way", "st_parking_space_angle", "st_region_geometry", "st_region_geometry_distance",
     "dev_position", "dev_speed_limit_sign_value", "env_visibility", "env_civil_time",
     "rel_centre_distance", "rel_surface_gap", "rel_longitudinal_overlap", "rel_bearing"]
 
@@ -344,9 +355,9 @@ def atomArgSorts (name : String) : Option (List (Option EntityKind)) :=
   | "rel_occupies" => some [t, r]
   | "ru_aggregate" => some [t, none]
   | "dev_governs" => some [d, r]
-  | "st_region_geometry_distance" => some [t, r]
+  | "st_region_geometry_distance" | "st_sight_along_way" => some [t, r]
   | "st_lane_adjacency" => some [r, none, r]
-  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" | "st_lane_enters" => some [r, r]
+  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" | "st_lane_enters" | "st_on_way" => some [r, r]
   | "st_lane_marking" => some [r, none, none, none]
   | "rel_oncoming" | "rel_same_direction" | "rel_ahead_behind_in_lane" | "rel_ahead_in_lane"
   | "rel_behind_in_lane" | "rel_contact" | "rel_visible" | "rel_centre_distance" | "rel_longitudinal_overlap" => some [t, t]
@@ -460,6 +471,21 @@ private def aggregateAt (op : AggOp) (xs : List (R × QR)) : QR :=
         | .max => .ok sorted[sorted.size - 1]!
         | _ => .ok sorted[sorted.size / 2]!
 
+/-- Membership of a road user in a legal aggregate at one scene: true when it carries an included
+    class; unknown, with the observation's reason, when an included or unresolved class it might
+    carry is unobserved; unknown as `aggregateUnresolved` when it carries a class the definition
+    leaves unresolved; false otherwise. -/
+def aggregateMembership (s : Scene) (t : TrackId) (a : LegalAggregate) : R :=
+  let classes := fun (ids : List String) => ids.filterMap fun i => RoadUserClass.ofString (i.drop 3).toString
+  match ru_aggregate s t (classes a.included) with
+  | some true => R.t
+  | none => R.u (.absentAtom "ru_aggregate")
+  | some false =>
+    match ru_aggregate s t (classes a.unresolved) with
+    | some true => R.u (.aggregateUnresolved a.id)
+    | some false => R.f
+    | none => R.u (.absentAtom "ru_aggregate")
+
 /-- Kleene aggregate at each instant over the evaluated members present in that scene. -/
 private def perScene (c : SemCtx) (evaluated : List (Nat × Array R))
     (presentIn : Scene → Nat → Bool) (agg : List R → R) : Array R :=
@@ -520,14 +546,14 @@ mutual
         let vs ← constParams c ps
         let ds ← resolveAll c.β args
         if name == "ru_aggregate" then
-          -- membership is the reading's: the word's classes, or unknown when the reading lacks it
           pure (match ds with
-            | [.v t, .s w] =>
-              (match c.d.ρ.aggregate w with
-                | none => const c.n (R.u (.parameterMissing s!"aggregate:{w}"))
-                | some ids =>
-                  let members := ids.filterMap fun id => RoadUserClass.ofString (id.drop 3).toString
-                  c.scenes.map fun s => R.ofOption (ru_aggregate s t members) (.absentAtom name))
+            | [.v t, .s id] =>
+              match c.d.aggregateOverrides.find? (fun (x, a, _) => x == t && a == id) with
+              | some (_, _, v) => const c.n (R.ofBool v)
+              | none =>
+                match c.d.ρ.aggregate id with
+                | none => const c.n (R.u (.parameterMissing s!"aggregate:{id}"))
+                | some a => c.scenes.map fun s => aggregateMembership s t a
             | _ => const c.n (R.u (.malformed "aggregate arguments")))
         else pure (c.scenes.map fun s => match evalAtomE s name ds vs with | .ok r => r | .error w => R.u w)
     | .cmp l op r => Array.zipWith (fun x y => match x, y with

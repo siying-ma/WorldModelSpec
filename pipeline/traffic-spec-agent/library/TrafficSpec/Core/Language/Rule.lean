@@ -11,7 +11,7 @@
 
   Applicability and obligation are two formulas because a rule whose situation never arises is
   not compliant, it is not engaged: `notApplicable` is a verdict of its own, the witness check can
-  demand a scenario for it, and the VLM stage reads the applicability as the trigger and the
+  demand a scenario for it, and a monitor reads the applicability as the trigger and the
   obligation as what to verify once triggered.
 
   A surrogate rule (the whole duty is an operationalized standard) is monitored like any other,
@@ -37,8 +37,10 @@ structure Binder where
 /-- A reading chosen on a span the record carries, declared where it is made: the span (a
     segmentation id for a rule, a run of the contract's words for a concept) and what the formulas
     state more narrowly than the words. `kind` is `reading` where the words leave the choice open,
-    `no_atom` or `no_operator` where the vocabulary or the language cannot state the words — a
-    declaration the gate returns for a gap, never a reading the rule stands on. -/
+    `observable_reading` where a word with no observable counterpart is read through the conduct
+    or the feature it refers to, `no_atom` or `no_operator` where the vocabulary or the language
+    cannot state the words — a declaration the gate returns for a gap, never a reading the rule
+    stands on. -/
 structure Narrowing where
   span : String
   why : String
@@ -46,7 +48,7 @@ structure Narrowing where
   deriving Repr, Inhabited, DecidableEq
 
 structure Rule where
-  id : String                                   -- <theme>/<slug>
+  id : String                                   -- the node id, derived from the law id
   laws : List String                            -- the corpus ids this rule formalizes
   binders : List Binder
   applicability : Formula

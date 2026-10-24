@@ -1,73 +1,70 @@
 """Plan: one session writes blueprint.jsonl and PLAN.md for the plannable laws; the gaps its records propose are filed by the harness in the gap ledger."""
 from __future__ import annotations
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
 from ..checks import aggregates
-from ..model import corpus, ontology
+from ..model import corpus, definitions as definitions_mod, ontology
 from ..agents import render, session
 from ..store import paths
 from ..store.gaps import GapLedger
 from ..model.mapping import MappingIndex
 from ..model.reading import Reading
 from ..lean import surface
+from . import review as review_phase
 from ..model.blueprint import ConceptRecord
 from ..store.state import Run
 
 
 def parameter_catalogue(reading: Reading) -> str:
     if not reading.params:
-        return ("(the catalogue is empty: every parameter a node needs is proposed in its `param_proposals` with unit, provisional value, convention and source)\n"
-                "\nLegal aggregates the run's reading declares so far — a span using one of these words claims the atom "
-                f"`{ontology.AGGREGATE}=<word>` and nothing else; a word not listed is derived by you from its definition "
-                "(`aggregates.jsonl`) before any node claims it:\n\n" + aggregates.render(reading))
+        return "(the catalogue is empty: every parameter a node needs is proposed in its `param_proposals` with unit, provisional value, convention and source)\n"
     out = ["| parameter | unit | convention |", "|---|---|---|"]
     for name, p in sorted(reading.params.items()):
         out.append(f"| `{name}` | {p.get('unit', '')} | {p.get('convention', '')} |")
-    out += ["", "Legal aggregates the run's reading declares so far — a span using one of these words claims the atom "
-            f"`{ontology.AGGREGATE}=<word>` and nothing else; a word not listed is derived by you from its definition "
-            "(`aggregates.jsonl`) before any node claims it:", "", aggregates.render(reading)]
     return "\n".join(out) + "\n"
 
-PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "library_summary", "concepts", "mapping_index", "parameters", "gaps",
-                "feedback", "user_hints", "anchors", "aggregate_atom")
-PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concepts", "definition", "users")
-PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language", "concepts",
-                            "parameters", "anchors", "aggregate_atom")
+PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_language", "library_summary", "concepts", "mapping_index",
+                "parameters", "gaps", "feedback", "upheld", "user_hints", "anchors", "aggregate_atom")
+PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
+                       "definition", "users")
+PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
+                            "concept_language", "concepts", "parameters", "anchors", "aggregate_atom")
 
 
-def defined_term(d: dict) -> list[str]:
-    """The term a posted definition defines: the first quoted phrase of its text, and the title's
-    subject when the title reads "<term> defined"."""
-    import re
-    out = []
-    m = re.search(r"“([^”]+)”|\"([^\"]+)\"", d.get("text", ""))
-    if m:
-        out.append((m.group(1) or m.group(2)).strip().lower())
-    t = d.get("title", "").strip()
-    if t.lower().endswith(" defined"):
-        out.append(t[:-8].strip().lower())
-    return sorted(set(out))
+def definitions_for(run: Run, laws: list[corpus.Law]) -> list[dict]:
+    """The posted definitions that apply to a batch's laws, by the run's resolution table: every
+    record a resolved term reaches through its cross-references, and every candidate of an
+    ambiguous term."""
+    out, seen = [], set()
+    for law in laws:
+        for d in definitions_mod.applicable(run, law.id):
+            if d.get("id") not in seen:
+                seen.add(d.get("id")); out.append(d)
+    return out
 
 
-def definitions_for(laws: list[corpus.Law], defs: list[dict]) -> list[dict]:
-    """The definitions a batch needs: every definition a batch law cites by its bracketed id,
-    every definition whose defined term occurs in a batch law's text or title (the aggregate
-    words come this way), and, one step further, every definition whose term occurs in a
-    definition already selected. The rest of the folder is size and distraction."""
-    import re
-    text = " ".join((l.text + " " + l.title).lower() for l in laws)
-    cited = {r for l in laws for r in corpus.LAW_REF.findall(l.text) if r.startswith("DEF-")}
-    def occurs(terms: list[str], where: str) -> bool:
-        return any(re.search(r"\b" + re.escape(t) + r"s?\b", where) for t in terms)
-    chosen = [d for d in defs if d.get("id") in cited or occurs(defined_term(d), text)]
-    ctext = " ".join(d.get("text", "").lower() for d in chosen)
-    chosen += [d for d in defs if d not in chosen and occurs(defined_term(d), ctext)]
-    return chosen
+def definitions_block(run: Run, laws: list[corpus.Law]) -> str:
+    """The definitions table (term → applicable definition → representation → admitted aggregate),
+    read-only, then the texts of the definitions that apply."""
+    from . import aggregate as aggregate_phase
+    rows = {law.id: definitions_mod.rows_for(run, law.id) for law in laws}
+    return ("### The defined terms of these laws (read-only: resolved by the operator's declared precedence; aggregates "
+            "selected and admitted by the run)\n\n" + aggregates.render(Reading(run.reading_file), rows, aggregate_phase.load_selection(run))
+            + "\n### The definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, laws)))
 
 
 def concept_catalogue(run: Run) -> str:
     from ..model import nodeid
-    text = surface.concepts_table(run.all_concepts())
+    concepts = run.all_concepts()
+    text = surface.concepts_table({k: v for k, v in concepts.items() if not v.get("fenced")})
+    bad = {k: v for k, v in concepts.items() if v.get("fenced")}
+    if bad:
+        from ..checks.validate_a import fence_words
+        text += ("\nFenced concept versions — never claim them. A successor `<id>_v<n+1>` with the same contract supersedes one "
+                 "(`supersedes` naming it) without a counterexample: its fence stands for it. Or map the words around it:\n" + "".join(
+                     f"- `{k}` — {fence_words(v['fenced'])}; its contract: {' '.join(str(v.get('contract', '')).split())[:400]}; "
+                     f"the evidence: {str(v['fenced'].get('evidence', ''))[:300]}\n" for k, v in bad.items()))
     if run.opts.mode == "test":
         text += "\nThis run adds concepts and supersedes none: a catalogued concept whose body contradicts its contract is reported under `## Concept defects` in `PLAN.md`, not replaced.\n"
     return text + f"\nConcept families (the fixed grammar `drv.<family>.<name>`): {', '.join(nodeid.CONCEPT_FAMILIES)}.\n"
@@ -152,28 +149,30 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
     blueprint is a finished batch: it is returned as it is, without a session."""
     plan_dir = run.iter / "plan" / tag if tag else run.iter / "plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
-    if (plan_dir / "session_result.json").exists() and (plan_dir / "blueprint.jsonl").exists():
+    if session.finished(plan_dir) and (plan_dir / "blueprint.jsonl").exists():
         return plan_dir
     onto = ontology.load(run.opts.ontology)
     values = {
         "laws": corpus.render_laws(laws),
-        "definitions": corpus.render_definitions(definitions_for(laws, defs)),
+        "definitions": definitions_block(run, laws),
         "ontology": onto.text,
         "formula_language": surface.formula_language(),
+        "concept_language": surface.concept_language(),
         "library_summary": library_summary(run, [n for n in pending or [] if "node_id" in n]),
         "concepts": concept_catalogue(run) + pending_concepts_table(pending),
         "mapping_index": MappingIndex(run.mapping_file).render() + pending_mappings_table(pending),
         "parameters": parameter_catalogue(Reading(run.reading_file)) + pending_proposals_table(pending),
-        "gaps": GapLedger(paths.GAP_LEDGER).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
+        "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
+        "upheld": review_phase.upheld_block(run, {l.id for l in laws}),
         "user_hints": run.read_hints(),
         "anchors": ontology.anchors_text(onto),
         "aggregate_atom": ontology.AGGREGATE,
     }
     prompt = render.render("plan.md", values)
     validate_cmd = f"python -m harness validate --run_id {run.opts.run_id} --blueprint_file {(plan_dir / 'blueprint.jsonl').resolve()}"
-    prompt += (f"\n\n## Where to write\n\nWorking directory: `{plan_dir.resolve()}`. Write `aggregates.jsonl`, `blueprint.jsonl`, `PLAN.md` and "
-               "`proposed_gaps.jsonl` there with the Write tool, as files, by hand. Everything you need is in this prompt: you read no "
+    prompt += (f"\n\n## Where to write\n\nWorking directory: `{plan_dir.resolve()}`. Write `aggregates.jsonl`, `blueprint.jsonl` and "
+               "`PLAN.md` there with the Write tool, as files, by hand. Everything you need is in this prompt: you read no "
                "other file, and the shell runs exactly one command, the validator below — any other command is denied.\n\n"
                "## Checking a draft\n\nThe deterministic validator the harness will run, with the run's accepted nodes, concepts, "
                "mapping index, reading and your `aggregates.jsonl`, is available to you on a draft:\n\n"
@@ -183,14 +182,17 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
     (plan_dir / "prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return plan_dir
+    clear = lambda: [(plan_dir / name).unlink(missing_ok=True) for name in PLAN_OUTPUTS]
+    if not session.finished(plan_dir) and session.last_launch(plan_dir) is not None:
+        clear()                                  # what an unfinished launch wrote is not a plan
     session.run(prompt, cwd=plan_dir, out_dir=plan_dir, opts=run.opts, max_turns=run.opts.plan_turns,
                 effort=run.opts.plan_effort, label="session", allow=session.plan_allow(plan_dir, validate_cmd),
-                deny=session.deny_rules("plan"), disallowed_tools=session.NO_SEARCH,
-                env=session.harness_env())      # raises SessionUnavailable when it never ran
+                deny=session.deny_rules("plan"), tools=session.PLAN_TOOLS,
+                env=session.harness_env(), relaunch=clear)      # raises SessionUnavailable when it never ran
     return plan_dir
 
 
-PLAN_OUTPUTS = ("blueprint.jsonl", "aggregates.jsonl", "proposed_gaps.jsonl", "PLAN.md")
+PLAN_OUTPUTS = ("blueprint.jsonl", "aggregates.jsonl", "PLAN.md")
 
 
 def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path, defs: list[dict],
@@ -216,8 +218,8 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         "concept": json.dumps(rec.raw, ensure_ascii=False, indent=1),
         "verdict": "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)",
         "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
-        "definition": definition,
+        "ontology": onto.text, "formula_language": surface.formula_language(), "concept_language": surface.concept_language(),
+        "concepts": surface.concepts_table(run.all_concepts()), "definition": definition,
         "users": ", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)"})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object per line — the revised concept record with the same `concept_id`; or a split, `{\"concept_id\": \"<id>\", "
@@ -233,13 +235,16 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
     for attempt in ("", "_again"):
         session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
                     allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan"),
-                    disallowed_tools=session.NO_SEARCH + ["Bash"], env=session.harness_env())
-        rec2 = load_repair(d)
-        recs = [rec2] if rec2 is not None else load_replacements(d)
-        if not recs:
+                    tools=session.REPAIR_TOOLS, env=session.harness_env(),
+                    relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
+        rep = read_repair(d, concept=True)
+        if rep.kind == "malformed":
+            errs = [f"record.jsonl could not be read: {rep.message}"]
+        elif rep.records:
+            outcome = validate_a.validate_concepts(rep.records, defs, onto, run.all_concepts(), [Node(u) for u in users], run.opts.mode)
+            errs = [e for o in outcome for e in o.reasons]
+        else:
             return d                                     # withdrawn, or nothing written: the loop records it
-        outcome = validate_a.validate_concepts(recs, defs, onto, run.all_concepts(), [Node(u) for u in users], run.opts.mode)
-        errs = [e for o in outcome for e in o.reasons]
         (d / "validation.txt").write_text("\n".join(errs) or "accept", encoding="utf-8")
         if not errs or attempt:
             return d
@@ -286,29 +291,47 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n",
-        "verdict": verdict, "coder_narrowings": coder_block, "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
-        "ontology": onto.text, "formula_language": surface.formula_language(), "concepts": surface.concepts_table(run.all_concepts()),
+        "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
+        "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
+        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object, the revised node record (the harness attaches `node_id`, `law_refs` and `segmentation` itself), or a withdrawal "
-               "`{\"withdraw\": {\"span\": \"<span id>\", \"kind\": \"atom\" | \"operator\", \"missing\": \"<what the vocabulary lacks>\", "
-               "\"nearest\": [\"<nearest id>: <the clause that excludes the span>\"]}}`. Everything you may know is in this prompt: you read no "
+               "`{\"withdraw\": {\"span\": \"<span id>\", \"kind\": \"atom\" | \"operator\" | \"plan\" | \"concept\", \"missing\": \"<what is lacking>\", "
+               "\"nearest\": [\"<nearest id>: <the clause that excludes the span>\"]}}` (with `concept`, also `dependency_defect.json` as the "
+               "Output says). Everything you may know is in this prompt: you read no "
                "file and the shell runs nothing.\n")
     (d / "prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return d
     laws = {law.id: law}
     index = MappingIndex(run.mapping_file)
+    reading.pending_aggregates = True            # an aggregate the selection did not admit is the loop's to correct, not this session's
     accepted = {k: Node(v) for k, v in run.all_nodes().items()}
     ask = prompt
     for attempt in ("", "_again"):
         session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
                     allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan"),
-                    disallowed_tools=session.NO_SEARCH + ["Bash"], env=session.harness_env())
-        rec2 = load_node_repair(d)
-        if rec2 is None:
+                    tools=session.REPAIR_TOOLS, env=session.harness_env(),
+                    relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
+        rep = read_repair(d, concept=False)
+        if rep.kind == "withdrawn" and (rep.withdrawal or {}).get("kind") == "concept" and not attempt:
+            from ..loop import concept_deps, reached_concepts
+            _d, bad = review_phase.report_form(run, d, reached_concepts(run, concept_deps(node)))
+            if bad:                                       # a report in the wrong form is returned once, before anything is run
+                ask = prompt + "\n\n## Defects of your report\n\nWrite `dependency_defect.json` again without these defects:\n" + "".join(f"- {e}\n" for e in bad)
+                continue
+        if rep.kind in ("withdrawn", "missing"):
             return d
+        if rep.kind == "malformed":
+            errs = [f"record.jsonl could not be read: {rep.message}"]
+            (d / "validation.txt").write_text("\n".join(errs), encoding="utf-8")
+            if attempt:
+                return d
+            ask = prompt + "\n\n## Defects of your previous record\n\nWrite `record.jsonl` again as one JSON object:\n" + "".join(f"- {e}\n" for e in errs)
+            continue
+        rec2 = rep.records[0]
         errs = []
         others = [s for s in siblings if s.id != node.id]
         outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [])
@@ -328,129 +351,189 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
 FIXED_NODE_KEYS = ("node_id", "law_refs", "segmentation")
 
 
-def _repair_line(d: Path) -> dict | None:
+@dataclass
+class Repair:
+    """What a repair session's `record.jsonl` says: `revised` (its record in `records`), `withdrawn`
+    (its `withdrawal`, `{span, kind, missing, nearest, ...}` or `{missing}`, and for a concept split the
+    replacement records in `records`), `missing` (no record written) or `malformed` (the parser's
+    `message`). `validation` is the validator's verdict on a revised record: None before it ran, []
+    when it accepted, else the defects (a record that stayed malformed after the re-ask is one)."""
+    kind: str
+    records: list = field(default_factory=list)
+    withdrawal: dict | None = None
+    message: str = ""
+    validation: list[str] | None = None
+
+    @property
+    def accepted(self) -> bool:
+        return self.kind == "revised" and self.validation == []
+
+
+def read_repair(d: Path, concept: bool) -> Repair:
+    """The one reader of a node or concept repair's `record.jsonl`, with the validator's verdict
+    from `validation.txt` beside it. A node record takes `node_id`, `law_refs` and the segmentation
+    from the planned record the harness saved (`planned.json`); a concept record's users are the
+    loop's to derive."""
+    from ..model.blueprint import Node, normalize_concept
+    vf = d / "validation.txt"
+    validation = None
+    if vf.exists():
+        v = vf.read_text(encoding="utf-8").strip()
+        validation = [] if v == "accept" else v.splitlines()
     f = d / "record.jsonl"
-    if not f.exists():
-        return None
-    for line in f.read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            try:
-                return json.loads(line)
-            except json.JSONDecodeError:
-                return None
-    return None
-
-
-def load_node_repair(d: Path):
-    """The revised node record a repair session wrote, with `node_id`, `law_refs` and the
-    segmentation taken from the planned record the harness saved beside it (`planned.json`);
-    None when the session withdrew or wrote nothing."""
-    from ..model.blueprint import Node
-    r = _repair_line(d)
-    if not isinstance(r, dict) or r.get("withdraw"):
-        return None
+    lines = [l for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
+    if not lines:
+        return Repair("missing", validation=validation)
+    rows = []
+    for i, line in enumerate(lines, 1):
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError as e:
+            return Repair("malformed", message=f"line {i} of record.jsonl is not JSON: {e}", validation=validation)
+    if not all(isinstance(r, dict) for r in rows):
+        return Repair("malformed", message="every line of record.jsonl is one JSON object", validation=validation)
+    first = rows[0]
+    if first.get("withdraw"):
+        w = first["withdraw"]
+        wd = dict(w) if isinstance(w, dict) else {"missing": str(w)}
+        named = set(first.get("replaced_by") or []) if concept and isinstance(first.get("replaced_by"), list) else set()
+        reps = [ConceptRecord(normalize_concept({**r, "used_by": []})) for r in rows[1:]
+                if r.get("concept_id") in named and r.get("concept_id") != first.get("concept_id")] if concept else []
+        return Repair("withdrawn", records=reps, withdrawal=wd, validation=validation)
+    if concept:
+        if not isinstance(first.get("concept_id"), str):
+            return Repair("malformed", message="the revised record names no `concept_id`", validation=validation)
+        return Repair("revised", records=[ConceptRecord({**normalize_concept(first), "used_by": []})], validation=validation)
     pf = d / "planned.json"
+    r = first
     if pf.exists():
         planned = json.loads(pf.read_text(encoding="utf-8"))
-        r = {**r, **{k: planned[k] for k in FIXED_NODE_KEYS if k in planned}}
-    if "node_id" not in r:
-        return None
-    return Node(r)
+        r = {**{k: planned[k] for k in FIXED_NODE_KEYS if k in planned}, **{k: v for k, v in r.items() if k not in FIXED_NODE_KEYS}}
+    if not isinstance(r.get("node_id"), str):
+        return Repair("malformed", message="the revised record has no node to revise", validation=validation)
+    return Repair("revised", records=[Node(r)], validation=validation)
 
 
-def load_node_withdrawal(d: Path) -> dict | None:
-    """The withdrawal a node or concept repair session wrote, as `{span, kind, missing, nearest}`; a
-    bare string (a concept repair's form) becomes `{missing}`; None when the session did not withdraw."""
-    r = _repair_line(d)
-    if not isinstance(r, dict) or not r.get("withdraw"):
-        return None
-    w = r["withdraw"]
-    return dict(w) if isinstance(w, dict) else {"missing": str(w)}
+def settle_identity(plan_dir: Path, taken: dict[str, str]) -> tuple[dict[str, list[str]], list[str]]:
+    """The plan's node records, made safe to key by id before anything is built from them. `taken`
+    maps the ids already in use this iteration (carried and repaired records) to what holds them; an
+    accepted node's id is not among them, since a plan may re-emit an accepted node unchanged and the
+    validator decides that. A node record that does not match the record schema,
+    or whose id another record of the plan holds with different content, or that `taken` holds, is
+    taken out of `blueprint.jsonl` and its law returned to its planner with the reason (a validator
+    defect); a node record repeated identically is kept once. A concept proposed again under one id
+    with the same contract is kept once with the users of both; with a different contract, the first
+    record (the earliest batch's: the root law's) stands and the laws of the later record's users are
+    returned. The session's file is kept as
+    `blueprint.as_written.jsonl`, and the step reads it on a resume, so it is applied once. Returns
+    ({law: reasons}, notes)."""
+    from ..checks import validate_a
+    bp, kept_file = plan_dir / "blueprint.jsonl", plan_dir / "blueprint.as_written.jsonl"
+    if not bp.exists():
+        return {}, []
+    if not kept_file.exists():
+        kept_file.write_bytes(bp.read_bytes())
+    rows = [json.loads(l) for l in kept_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+    defects: dict[str, list[str]] = {}
+    notes: list[str] = []
+    by_id: dict[str, list[dict]] = {}
+    out: list[dict] = []
+    concepts: dict[str, dict] = {}
+    contract = lambda r: " ".join(str(r.get("contract", "")).split())
+    users = lambda r: [u for u in r.get("used_by") or [] if isinstance(u, str)] if isinstance(r.get("used_by"), list) else []
+    later_users: dict[str, list[str]] = {}
+    for r in rows:
+        if "node_id" not in r:
+            cid = r.get("concept_id")
+            if not isinstance(cid, str) or cid not in concepts:
+                if isinstance(cid, str):
+                    concepts[cid] = r
+                out.append(r); continue
+            first = concepts[cid]
+            if contract(first) == contract(r):
+                first["used_by"] = sorted(set(users(first)) | set(users(r)))
+                notes.append(f"concept `{cid}`: proposed again with the same contract; kept once, with the users of both")
+            else:
+                later_users.setdefault(cid, []).extend(users(r))
+            continue
+        refs = r.get("law_refs")
+        law = refs[0] if isinstance(refs, list) and refs and isinstance(refs[0], str) else None
+        errs = validate_a.schema_errors(validate_a.record_id(r, "node_id"), json.loads(json.dumps(r)), validate_a.NODE_SCHEMA)
+        if errs:
+            if law:
+                defects.setdefault(law, []).extend(errs)
+            else:
+                notes.append("a node record names no law and is dropped: " + "; ".join(errs[:3]))
+            continue
+        by_id.setdefault(r["node_id"], []).append(r)
+    for nid, recs in by_id.items():
+        laws = sorted({r["law_refs"][0] for r in recs})
+        if nid in taken:
+            for law in laws:
+                defects.setdefault(law, []).append(f"{nid}: the id is already held by {taken[nid]}; a plan record never reuses it")
+            continue
+        distinct = {json.dumps(r, sort_keys=True) for r in recs}
+        if len(distinct) > 1:
+            for law in laws:
+                defects.setdefault(law, []).append(f"{nid}: {len(recs)} different records under one id; a node id names one record")
+            continue
+        if len(recs) > 1:
+            notes.append(f"`{nid}`: written {len(recs)} times identically; kept once")
+        out.append(recs[0])
+    law_of = {nid: recs[0]["law_refs"][0] for nid, recs in by_id.items()}
+    for cid, us in later_users.items():
+        for law in sorted({law_of[u] for u in us if u in law_of} - {law_of[u] for u in users(concepts[cid]) if u in law_of}):
+            defects.setdefault(law, []).append(f"concept `{cid}`: proposed again with a different contract; the first record of this "
+                                               "iteration stands, so reuse it by its id or propose a concept under a new id")
+    for law in defects:                         # a returned law's other nodes go back with it
+        out = [r for r in out if "node_id" not in r or r["law_refs"][0] != law]
+    bp.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in out), encoding="utf-8")
+    return defects, notes
 
 
-def load_repair(d: Path) -> ConceptRecord | None:
-    """The revised record a repair session wrote, or None when it withdrew or wrote nothing."""
-    f = d / "record.jsonl"
-    if not f.exists():
-        return None
-    for line in f.read_text(encoding="utf-8").splitlines():
-        if line.strip():
+def _record_digest(r: dict) -> str:
+    import hashlib
+    from ..model.blueprint import normalize_concept
+    body = normalize_concept(r) if "concept_id" in r and "node_id" not in r else r
+    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:24]
+
+
+def record_origins(plan_dir: Path, batches: list[tuple[Path, list[str]]]) -> None:
+    """Where each plan record came from, written before the batches are merged or their records
+    deduplicated: `origins.json` maps a record's content digest to its batch, its position in it and
+    the batch's laws. A record the validator returns goes back through it, never through an id or a
+    `used_by` it may have written malformed."""
+    from ..store import jsonl
+    out: dict[str, dict] = {}
+    for d, laws in batches:
+        f = d / "blueprint.jsonl"
+        lines = [l for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
+        for i, line in enumerate(lines, 1):
             try:
                 r = json.loads(line)
             except json.JSONDecodeError:
-                return None
-            if r.get("withdraw") or "concept_id" not in r:
-                return None
-            from ..model.blueprint import normalize_concept
-            return ConceptRecord(normalize_concept(r))
-    return None
+                continue
+            if isinstance(r, dict):
+                out.setdefault(_record_digest(r), {"batch": d.name, "position": i, "laws": list(laws)})
+    jsonl.write_atomic(plan_dir / "origins.json", json.dumps(out, indent=1))
 
 
-def load_replacements(d: Path) -> list[ConceptRecord]:
-    """The records a concept repair wrote to replace the concept it withdrew: the lines after the
-    withdrawal whose ids its `replaced_by` names, each a concept under its own id."""
-    from ..model.blueprint import normalize_concept
-    f = d / "record.jsonl"
-    if not f.exists():
-        return []
-    rows = []
-    for line in f.read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                return []
-    if not rows or not isinstance(rows[0], dict) or not rows[0].get("withdraw"):
-        return []
-    named = set(rows[0].get("replaced_by") or [])
-    return [ConceptRecord(normalize_concept({**r, "used_by": []})) for r in rows[1:]
-            if isinstance(r, dict) and r.get("concept_id") in named and r.get("concept_id") != rows[0].get("concept_id")]
+def origin_of(plan_dir: Path, raw: dict) -> dict | None:
+    """The batch a plan record came from (`record_origins`), or None."""
+    f = plan_dir / "origins.json"
+    return json.loads(f.read_text(encoding="utf-8")).get(_record_digest(raw)) if f.exists() else None
 
 
 def merge_batches(run: Run, batch_dirs: list[Path]) -> Path:
-    """The batches' outputs concatenated under `iter/plan/`, which validation reads. A concept two
-    batches proposed under one id is kept once, as the first batch's record (the root law's) with
-    the union of its users; a later batch's differing contract is dropped and the drop is noted in
-    the merged `PLAN.md`, so the feedback names it."""
+    """The batches' outputs concatenated under `iter/plan/`, in batch order, which validation reads;
+    `settle_identity` then resolves records that share an id."""
     plan_dir = run.iter / "plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
-    concepts: dict[str, dict] = {}
-    conflicts: list[str] = []
-    lines: dict[str, list[str]] = {name: [] for name in PLAN_OUTPUTS}
-    for d in batch_dirs:
-        for name in PLAN_OUTPUTS:
-            f = d / name
-            if not f.exists():
-                continue
-            text = f.read_text(encoding="utf-8")
-            if name == "PLAN.md":
-                lines[name].append(f"<!-- {d.name} -->\n{text.rstrip()}\n"); continue
-            for line in text.splitlines():
-                if not line.strip():
-                    continue
-                if name == "blueprint.jsonl":
-                    try:
-                        rec = json.loads(line)
-                    except json.JSONDecodeError:
-                        lines[name].append(line); continue
-                    cid = rec.get("concept_id") if "node_id" not in rec else None
-                    if cid and cid in concepts:
-                        concepts[cid]["used_by"] = sorted(set(concepts[cid].get("used_by", [])) | set(rec.get("used_by", [])))
-                        if " ".join(str(concepts[cid].get("contract", "")).split()) != " ".join(str(rec.get("contract", "")).split()):
-                            conflicts.append(f"`{cid}`: {d.name} proposed it again with a different contract; the earlier batch's record is kept and {d.name}'s users are added to it")
-                        continue
-                    if cid:
-                        concepts[cid] = rec
-                        lines[name].append(None); continue      # placeholder, filled below with the merged record
-                lines[name].append(line)
-    out = []
-    it = iter(concepts.values())
-    for line in lines["blueprint.jsonl"]:
-        out.append(json.dumps(next(it), ensure_ascii=False) if line is None else line)
-    (plan_dir / "blueprint.jsonl").write_text("".join(l + "\n" for l in out), encoding="utf-8")
-    for name in ("aggregates.jsonl", "proposed_gaps.jsonl"):
-        (plan_dir / name).write_text("".join(l + "\n" for l in lines[name]), encoding="utf-8")
-    if conflicts:
-        lines["PLAN.md"].append("<!-- merge -->\n## Concepts proposed by more than one batch\n\n" + "\n".join(f"- {c}" for c in conflicts) + "\n")
-    (plan_dir / "PLAN.md").write_text("\n".join(lines["PLAN.md"]), encoding="utf-8")
+    for name in PLAN_OUTPUTS:
+        parts = [(d, (d / name).read_text(encoding="utf-8")) for d in batch_dirs if (d / name).exists()]
+        if name == "PLAN.md":
+            text = "\n".join(f"<!-- {d.name} -->\n{t.rstrip()}\n" for d, t in parts)
+        else:
+            text = "".join(l + "\n" for _d, t in parts for l in t.splitlines() if l.strip())
+        (plan_dir / name).write_text(text, encoding="utf-8")
     return plan_dir

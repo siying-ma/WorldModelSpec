@@ -128,9 +128,6 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "ru.subject" => u
   | "ru.occupant_count" => { u with occupants := none }
   | "ru.rider_posture" => { u with posture := {} }
-  | "ru.emergency_vehicle_kind" => { u with emergencyKind := none }
-  | "ru.official_vehicle_kind" => { u with officialKind := none }
-  | "ru.electric_bicycle_class" => { u with eBikeClass := none }
   | "kin.position" => { u with kin := { u.kin with position := none } }
   | "kin.heading" => { u with kin := { u.kin with heading := none } }
   | "kin.velocity" => { u with kin := { u.kin with velocity := none } }
@@ -158,10 +155,18 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
   | "sig.door_open" => { u with sig := { u.sig with doorsOpen := none } }
   | "sig.compression_brake" => { u with sig := { u.sig with compressionBrake := none } }
+  | "st.sight_along_way" => { u with sightAlongWay := none }
   | _ =>
-    -- a class atom: the source cannot tell this class, so no user is known to have or lack it
+    -- a class atom: the source cannot tell this class, so no user is known to have or lack it,
+    -- nor the attribute the class carries
     match RoadUserClass.ofString ((id.drop 3).toString) with
-    | some k => { u with classes := u.classes.map (·.filter (· != k)), unobservedClasses := k :: u.unobservedClasses }
+    | some k =>
+      let u := { u with classes := u.classes.map (·.filter (· != k)), unobservedClasses := k :: u.unobservedClasses }
+      match k with
+      | .emergencyVehicle => { u with emergencyKind := none }
+      | .officialVehicle => { u with officialKind := none }
+      | .electricBicycle => { u with eBikeClass := none }
+      | _ => u
     | none => u
 
 def structure' (id : String) (st : Structure) : Option Structure :=
@@ -176,6 +181,7 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.curvature" => some { st with curvature := none }
   | "st.grade" => some { st with grade := none }
   | "st.sight_distance" => some { st with sightDistance := none }
+  | "st.on_way" => some { st with ways := none }
   | "st.region_geometry" => some { st with position := none, boundary := none }
   | _ =>
     -- a kind atom: the source cannot tell this kind, so no region is known to be or not be one

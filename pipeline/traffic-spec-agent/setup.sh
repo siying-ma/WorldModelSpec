@@ -73,8 +73,8 @@ else
 
       cd library && lake build
 
-    Core/Decimal.lean contains `#guard` assertions, so a build failure there
-    means the decimal parser is wrong, not that the toolchain is broken.
+    TrafficSpec/Tests/ contains `#guard` assertions; a failed assertion
+    reports a library regression after the toolchain starts successfully.
 EOF
   exit 1
 fi

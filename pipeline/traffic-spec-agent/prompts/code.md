@@ -41,7 +41,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 ## Access
 
 - You **edit** `{rule_path}` and `{witness_path}` with the Edit and Write tools, and write
-  `task_result.md` in your working directory. Nothing else is writable.
+  `task_result.md` (and, when you report a concept, `dependency_defect.json`) in your working
+  directory. Nothing else is writable.
 - You **may read**, with the Read tool and by absolute path, the Core files under `{core_dir}`
   when a question is not answered by the surface above (a primitive's exact reading of a field, a
   tolerance's sense). Read the one file that answers it; do not page through Core to re-derive
@@ -68,9 +69,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   devices or users of the kind named. A region that must exist for a leaf to speak is built.
 - `holdsFor`/`since`/`once`-shaped lookbacks are truncated at the trace start and report unknown
   there: pad the trace (`Build.pad`) or set `window` to the instants the witness speaks about.
-- The episode verdict aggregates the instants: violated if any instant is violated, else compliant
-  if any is compliant, else not applicable, else unknown. A `permit` witness with one violated
-  instant fails.
+- The episode verdict aggregates the instants: violated if any instant is violated, else unknown
+  if any is unknown, else compliant if any is compliant, else not applicable. A `permit` witness
+  with one violated instant fails, and one with an unknown instant reports unknown.
 - The rule's `manifest` in a witness is `Build.manifest` (all observed) or
   `Build.manifest ["<atom id>", …]` (those absent) — the `blind` witness masks the node's
   `masked` ids and nothing else.
@@ -83,10 +84,11 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    part of a rule or a witness stays reachable to the tools that inspect it.
 2. **The rule declares what the node declares.** `laws`, `binders` (names, order), `assumptions`,
    `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
-   plan's: words nothing carries. Where you choose a reading the words leave open on a span the
-   node does carry — the formulas state the span more narrowly, or shift what they capture — you
-   declare a **narrowing** `{ span := "<span id>", why := "<why>", kind := "reading" }` in
-   `narrowings`, and the header comment explains it. Where the span's words cannot be stated at
+   plan's: words nothing carries. Where the record leaves the writing of a span the node carries
+   open, you choose only among meanings its words already allow, and you declare each such choice
+   — the formulas state the span more narrowly than its words — as a **narrowing**
+   `{ span := "<span id>", why := "<why>", kind := "reading" }` in `narrowings`, and the header
+   comment explains it. Where the span's words cannot be stated at
    all — no atom denotes them (`kind := "no_atom"`) or the language has no operator for them
    (`kind := "no_operator"`) — you declare that instead of a reading: the gate returns the node
    as `UNEXPRESSED` for the repair session to withdraw the span as a gap or re-map it, and a
@@ -97,13 +99,14 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed: it is carried as the node maps it, or the node is
    wrong and you report it. The review judges the rule with your narrowings in view; a choice
-   written only in prose is lost.
+   written only in prose is lost. `narrowings` holds only the readings you chose: the record's own
+   narrowings, its observable readings included, are the plan's and are never restated there.
 3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
    binder classes and `obligation` is claimed by an element or operationalization of the node,
    and every claimed name is used. Arguments are the node's binders, quantifier variables, or
-   enumeration spellings from the Core surface. A claim of an aggregate word is written as the
-   atom `{aggregate_atom}` with the binder and the word as its literal argument: the word, never
-   the classes it covers.
+   enumeration spellings from the Core surface. A claim of an aggregate is written as the
+   atom `{aggregate_atom}` with the binder and the aggregate's id (what follows `=` in the claim)
+   as its literal argument: the id, never the classes it covers.
 3b. **Every quantified variable is anchored.** A region, device or user the rule quantifies over
    must be related to a binder through the formula — an anchoring relation ({anchors}) between a
    binder and the variable, a relation to a variable that is itself anchored, a relation to a
@@ -112,7 +115,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    anchoring atom, the node is wrong: report it.
 4. **Parameters, not values.** A quantity enters as `.param "<name>"` from the node's `params`.
    The only literals are zero, enumeration spellings, and the node's declared `literals`, each
-   written through the `Units` constructor of its unit (`Units.feet 15`, `Units.mph 25`). Never divide by a term that reads a measurement:
+   written through the `Units` constructor of its unit (`Units.<unit> <figure>`). Never divide by a term that reads a measurement:
    a measured quantity can be zero (a curvature where the way runs straight, a speed at rest), and
    a division by zero is unknown, not a verdict; write the comparison with products (a ratio
    below a bound is the dividend below the bound times the divisor). The gate returns
@@ -128,8 +131,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    binder the node has no variable for is bound by `.existsUser "<var>" (…)` around the
    composition. You never inline another rule's content.
 6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
-   in its narrowings) is written from its element's atoms as any span is. If you account for it
-   among the rule's narrowings, use the same span and kind; you never declare one the node does not.
+   in its narrowings) is written from its element's atoms as any span is. It is the plan's
+   narrowing, already on record: you do not restate it, and you never declare one the node does not.
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
@@ -138,7 +141,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    which the act is under way, never only where it is recognized and never before the act began.
    Spans the applicability joins by `.and` and reads at the same occasion go inside one window
    together (`.and U (.and φ ψ)`), so they hold at the same moment. The `occasion_<span>_outside`
-   witness is the scene in which the span holds only outside the act.
+   witness is the scene in which the span holds only outside the act. An act concept holds from
+   the observation at which the act is recognized until its window has passed: where the node
+   reads the act as an event (the occasion, or a span placed before or after it), the act is
+   `.rises (<act>)`, so each act is judged once, at its recognition.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario
@@ -152,9 +158,13 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    atom's enumeration tested in separate disjuncts count as one leaf: one scene exercises them.
 8. **No history of your own.** The trace is a list of built scenes; you do not read captures,
    and you do not import anything but `TrafficSpec.Core.Language.Rule` in the rule file and the rule plus
-   `TrafficSpec.Core.Evidence.Builders` in the witness file.
+   `TrafficSpec.Core.Evidence.Builders` in the witness file. A sign whose legend states no
+   restriction carries `conditions := some {}`; `none` is a legend not read, on which every
+   condition is unknown. A relation Core computes from the scene is never supplied; supply only one
+   it cannot compute (the gate fails a witness that supplies one Core computes).
 9. **Closed, total values.** No `sorry`, `admit`, `axiom`, `unsafe`, `partial`, `opaque`,
-   `implemented_by`, `extern`, `native_decide` or `panic!` anywhere in the two files; the rule is
+   `implemented_by`, `extern`, `native_decide`, `panic!`, `#eval`, `run_cmd`, `initialize` or `elab`
+   anywhere in the two files; the rule is
    data and the gate checks its axioms.
 10. **The gate decides.** Run it after each edit. Its verdict is the only acceptance signal; your
    own reading of your code is not.
@@ -185,6 +195,16 @@ Decide from the surface, then write; the surface is the API, the example is the 
 The two files, and `task_result.md` with: the final verdict; each gate run's verdict and what
 changed after it; every choice the node left open and what you chose; **Why I finished**. If the
 node is wrong, say which span, why, and what the plan agent must change.
+
+**A concept that is wrong.** If a concept the node calls, directly or through another concept,
+computes on a situation what its own contract excludes, write `dependency_defect.json`: the JSON object `{"concept_id": "<id>", "contract_words": "<its contract's words that decide it, verbatim>",
+"kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
+"contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
+"instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
+"trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}`
+— and finish. The harness runs the concept on your trace and an adjudicator judges the report by
+the concept's contract before anything is charged; a report it does not uphold is your session's
+defect, and the gate's verdict stands.
 
 ## Finish
 

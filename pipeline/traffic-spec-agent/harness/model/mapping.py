@@ -18,10 +18,6 @@ class MappingIndex:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(self.index, indent=1, ensure_ascii=False, sort_keys=True), encoding="utf-8")
 
-    def lookup(self, span_text: str) -> set[str] | None:
-        e = self.index.get(normalize(span_text))
-        return set(e["atoms"]) if e else None
-
     def record(self, span_text: str, atoms: set[str], node_id: str, role: str | None = None) -> None:
         self.index[normalize(span_text)] = {"atoms": sorted(atoms), "node": node_id, **({"role": role} if role else {})}
 

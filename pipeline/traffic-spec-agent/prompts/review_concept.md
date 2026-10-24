@@ -22,6 +22,9 @@ advisory. You do not edit the concept and you do not propose another.
 - **The atoms the concept reads** — every atom the body reads, with where a trace writes it.
 - **The contracts** — what every atom, primitive and concept the body names denotes.
 - **The trace format** — how a situation is written as a trace the harness can run.
+- **Challenges to carry over** (when there are any) — challenges upheld against an earlier body of
+  this concept that cannot be run on this one as recorded, each with its record and what does not
+  correspond.
 
 {contract}
 
@@ -34,6 +37,8 @@ advisory. You do not edit the concept and you do not propose another.
 {contracts}
 
 {trace_format}
+
+{carry_over}
 
 ## Questions
 
@@ -48,13 +53,24 @@ advisory. You do not edit the concept and you do not propose another.
 4. **Off its domain.** What does the contract say where the thing it is about is absent — no region
    of the kind it reads, no other road user? If the body decides there where the contract does
    not, or decides the other way, that is a situation under question 1 or 2.
+
+A concept of kind `quantity` returns a value, not a verdict. For it, a divergence is a situation in
+which the contract's words put the value in an interval and the body's value falls outside it
+(`value_wrongly`), or the body has no value where the contract gives one (`undecided`). It states
+that interval as `contract_value`, `lo` and `hi`, each a value with its unit (equal for an exact
+value), at the observation `at`, in place of `contract_verdict`.
 5. Each trace is minimal and complete: the fewest road users, regions and observations that
-   realize the situation, with every atom the body reads written in every scene. Give the
-   instance — a spelling for each literal formal, a value with its unit for each parameter — and
-   the track of each track formal, the contract's verdict (`holds` or `fails`), and the words of
-   the contract that decide it, verbatim.
+   realize the situation, with every atom the body reads written in every scene. Name in `at` the
+   timestamp of the scene at which the contract decides: the body is read at that observation, and
+   the scenes before it are its history. Give the instance — a spelling for each literal formal, a
+   natural number for each nat formal, a value with its unit for each parameter — and the track of
+   each track formal, the contract's verdict at `at` (`holds` or `fails`), and the words of the
+   contract that decide it, verbatim. A constant the record declares under `literals` is part
+   of the body, never an input of the instance.
 6. **Open magnitudes.** A situation whose verdict turns only on how large a parameter should be is
-   an advisory: the caller sets it.
+   an advisory: the caller sets it. So is one in which a parameter takes a value outside the domain
+   its meaning states (a negative magnitude, a zero divisor): there the contract gives no value or
+   verdict, so nothing diverges from it.
 7. **Readings.** A reading the coder disclosed that chooses among meanings the contract's words
    allow is an advisory. A reading that changes what the contract denotes — narrows it to what the
    formula language could write, or widens it — is a divergence: show it on a trace.
@@ -63,13 +79,21 @@ advisory. You do not edit the concept and you do not propose another.
    `not_general` with the words, verbatim. No trace is needed.
 9. Use the contracts for what an atom asserts. Do not use knowledge of any law or jurisdiction.
 10. `accept` when you find no situation under questions 1 to 4 and nothing under question 8;
-    `return` otherwise. The harness runs every trace: a trace on which the body's verdict differs
-    from the contract's confirms the divergence; one on which they agree is recorded as your
-    advisory and returns nothing.
+    `return` otherwise. Before you answer, run each divergence through `run_instance`, at most
+    {review_checks} calls in all: it checks the trace and runs the body, as the instance names it,
+    on it. A trace on which the body's verdict differs from the contract's confirms the divergence;
+    one on which they agree is recorded as your advisory and returns nothing. Revise a divergence
+    until it is `confirmed`, or drop it.
+11. **Carried-over challenges.** For each challenge to carry over, submit a divergence with
+    `extends` naming it that continues it: its trace keeps every scene and every field the recorded
+    trace states (you may add scenes and fill fields it left unobserved); each recorded formal keeps
+    its value, under its name or the one formal it became; the instant, the contract's words and the
+    claimed verdict or interval are the recorded ones. A divergence that does not continue it is
+    refused, and a challenge left without one keeps the review open.
 
 ## Output
 
-JSON, this schema and nothing more:
+The answer is the argument of `submit_review`, in this schema and nothing more:
 
 ```
 {"verdict": "accept | return",
@@ -78,13 +102,23 @@ JSON, this schema and nothing more:
                   "contract_words": "<verbatim words of the contract that decide it>",
                   "contract_verdict": "holds | fails",
                   "instance": {"literals": {"<literal formal>": "<spelling>"},
+                               "nats": {"<nat formal>": <natural number>},
                                "params": {"<parameter>": [<value>, "<unit>"]}},
                   "grounding": {"<track formal>": <track id>},
-                  "trace": {"scenes": [ ... ]}}],
+                  "trace": {"scenes": [ ... ]},
+                  "at": <timestamp of a scene, ms>,
+                  "extends": "<the id of a challenge to carry over, only for such a divergence>"}],
  "not_general": [{"words": "<verbatim words of the contract or the rendering>", "why": "<one sentence>"}],
  "advisories": ["<observations that return nothing>"]}
 ```
 
+For a concept of kind `quantity`, a divergence has the same keys, except that `kind` is
+`value_wrongly | undecided` and `contract_verdict` is replaced by
+`"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`.
+
 ## Finish
 
-Finish when the JSON is written. No commentary outside it.
+Submit with `submit_review`. The harness runs every divergence of the answer the same way: an
+answer with a schema defect or a divergence that cannot be evaluated comes back with the messages,
+at most {review_submissions} submissions in all, and the last one stands. Finish when a submission
+is accepted.

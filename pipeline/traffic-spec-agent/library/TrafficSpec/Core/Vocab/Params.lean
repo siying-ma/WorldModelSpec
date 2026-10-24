@@ -5,8 +5,8 @@
   A rule NAMES a parameter; it never owns the value. The value lives in the run's reading, which
   the rule and the label both cite, so a standard is quantified exactly once and can be swept for
   sensitivity. A reading holds the parameter values and the legal aggregates; a rule holds its own
-  `Operationalization`s, the records that give a judgement standard its concrete meaning (ATOMS.md
-  §8): the standard's words, the atoms or concepts that bound it, the parameters, the convention
+  `Operationalization`s, the records that give a judgement standard its concrete meaning: the
+  standard's words, the atoms or concepts that bound it, the parameters, the convention
   the values come from, and whether the rule is a surrogate (the standard is the whole duty)
   rather than the law's own rule.
 
@@ -19,7 +19,7 @@ namespace TrafficSpec
 abbrev ParamName := String
 
 inductive PUnit'
-  | metre | second | metrePerSecond | metrePerSecondSq | degree | degreePerSecond | ratio | count
+  | metre | second | metrePerSecond | metrePerSecondSq | degree | degreePerSecond | perMetre | ratio | count
   deriving DecidableEq, Repr, Inhabited
 
 structure ParamValue where
@@ -30,16 +30,19 @@ structure ParamValue where
 
 structure Operationalization where
   standard : String            -- the clause's words for the standard
-  concepts : List String       -- the `drv.*` and atom ids that bound it (ATOMS.md §8 pairs several)
+  concepts : List String       -- the `drv.*` and atom ids that bound it (one standard may pair several)
   params : List ParamName      -- the parameters the bound uses
   convention : String          -- where the values come from
   surrogate : Bool := false    -- true when the standard is the whole duty
   deriving Repr, Inhabited
 
-/-- Which observable classes a legal aggregate word ("vehicle", "traffic") covers. -/
+/-- A legal aggregate, keyed by its legal source (`<definition id>::<term>`, or `<law id>:<span>::<term>`
+    for a law-local definition): the road-user classes (`ru.*` ids) its definition includes, and those
+    it leaves unresolved. Every other class is excluded. An aggregate never lists another aggregate. -/
 structure LegalAggregate where
-  word : String
-  classes : List String        -- `ru.*` ids
+  id : String
+  included : List String := []
+  unresolved : List String := []
   deriving Repr, Inhabited
 
 structure Reading where
@@ -53,15 +56,8 @@ def param (ρ : Reading) (n : ParamName) : Option Q :=
 def paramUnit (ρ : Reading) (n : ParamName) : Option PUnit' :=
   (ρ.params.find? (·.name == n)).map (·.unit)
 def has (ρ : Reading) (n : ParamName) : Bool := (ρ.param n).isSome
-/-- The `ru.*` ids an aggregate word covers; a member that is another declared word is expanded
-    (fuel bounds the nesting), a member that is neither is kept as written so the check can name it. -/
-def aggregate (ρ : Reading) (w : String) : Option (List String) :=
-  let rec go (fuel : Nat) (w : String) : Option (List String) :=
-    match fuel, ρ.aggregates.find? (·.word == w) with
-    | 0, _ | _, none => none
-    | fuel + 1, some a => some (a.classes.flatMap fun m =>
-        if m.startsWith "ru." then [m] else (go fuel m).getD [m])
-  go (ρ.aggregates.length + 1) w
+/-- The aggregate with this id. -/
+def aggregate (ρ : Reading) (id : String) : Option LegalAggregate := ρ.aggregates.find? (·.id == id)
 end Reading
 
 end TrafficSpec

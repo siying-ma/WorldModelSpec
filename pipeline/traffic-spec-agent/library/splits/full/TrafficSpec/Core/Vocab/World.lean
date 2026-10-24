@@ -65,7 +65,7 @@ structure WarningLamp where
   facing : Facing
   deriving Repr, DecidableEq, Inhabited
 
-/-- Signals a road user emits (ATOMS.md §5). -/
+/-- Signals a road user emits (the `sig.*` atoms). -/
 structure Signals where
   turnIndicator : Option TurnIndicatorState := none
   brakeLamp : Option Bool := none
@@ -93,6 +93,7 @@ structure RoadUser where
   posture : Posture := {}
   kin : Kin := {}
   sig : Signals := {}
+  sightAlongWay : Option (List (RegionId × Q)) := none   -- per way, m
   deriving Repr, Inhabited
 
 /-- Lane attributes (ATOMS.md `st.lane_*`). -/
@@ -125,6 +126,7 @@ structure Structure where
   curvature : Option Q := none              -- 1/m
   grade : Option Q := none                  -- ratio
   sightDistance : Option Q := none          -- m
+  ways : Option (List RegionId) := none     -- the highway regions it lies on
   reservedClass : Option ReservedClass := none
   turnSide : Option TurnSide := none
   parkingAngle : Option Q := none           -- deg
@@ -247,6 +249,93 @@ def relation (s : Scene) (a b : TrackId) : Option MeasuredRelation :=
   s.relations.find? (fun m => m.a == a && m.b == b)
 def tracks (s : Scene) : List TrackId := s.users.map (·.track)
 end Scene
+
+-- ---------------------------------------------------------------------------------------------
+-- Projections a trace check reads, so that it names no field of these records itself. A field a
+-- split may omit is named on a line of its own.
+-- ---------------------------------------------------------------------------------------------
+/-- A reference a scene makes to an entity: where it is written, the kind of entity it names, the
+    id, and the structure kind that entity must have when the field requires one. -/
+structure Reference where
+  place : String
+  kind : EntityKind
+  id : Nat
+  structureKind : Option StructureKind := none
+  deriving Repr, Inhabited
+
+namespace Structure
+/-- The regions a structure's own fields name: its lane's neighbours, successors and intersection,
+    and the ways it lies on. -/
+def references (st : Structure) : List Reference :=
+  let at_ := fun (f : String) => s!"structure {st.id} {f}"
+  (st.lane.bind (·.leftNeighbour)).toList.map (fun r => { place := at_ "lane.left", kind := .region, id := r })
+  ++ (st.lane.bind (·.rightNeighbour)).toList.map (fun r => { place := at_ "lane.right", kind := .region, id := r })
+  ++ ((st.lane.bind (·.leadsTo)).getD []).map (fun r => { place := at_ "lane.leads_to", kind := .region, id := r })
+  ++ (st.lane.bind (·.entersIntersection)).toList.map (fun r => { place := at_ "lane.enters_intersection", kind := .region, id := r })
+  ++ (st.ways.getD []).map (fun r => { place := at_ "ways", kind := .region, id := r })
+end Structure
+
+namespace Scene
+/-- Every reference the scene makes to an entity, each of which must be present in the scene. -/
+def references (s : Scene) : List Reference :=
+  (s.subject.toList.map fun t => { place := "subject", kind := .track, id := t })
+  ++ (s.occupies.flatMap fun (t, r) => [{ place := "occupies", kind := .track, id := t }, { place := "occupies", kind := .region, id := r }])
+  ++ (s.occupancyObserved.map fun t => { place := "occupancy_observed", kind := .track, id := t })
+  ++ (s.relations.flatMap fun m => [{ place := "relations[].a", kind := .track, id := m.a }, { place := "relations[].b", kind := .track, id := m.b }])
+  ++ (s.devices.flatMap fun d => d.governs.map fun r => { place := s!"device {d.id} governs", kind := .region, id := r })
+  ++ (s.devices.flatMap fun d => d.onTrack.toList.map fun t => { place := s!"device {d.id} on_track", kind := .track, id := t })
+  ++ (s.structures.flatMap Structure.references)
+  ++ (s.users.flatMap fun u => (u.sightAlongWay.getD []).map fun (w, _) =>
+       { place := s!"user {u.track} sight_along_way", kind := .region, id := w, structureKind := some .highway })
+end Scene
+
+namespace Device
+/-- The fields of a device that may change between scenes: the state it displays or senses (JSON keys). -/
+def stateFields : List String := [
+  "indications",
+  "uncovered",
+  "inoperative",
+  "ped_state",
+  "countdown",
+  "lane_control",
+  "flashing",
+  "active",
+  "rail_lights",
+  "gate",
+  "bell",
+  "human_indication",
+  "red_flashing",
+  "amber_flashing",
+  "stop_arm"
+  ]
+
+/-- A device that moves: one carried by a road user, or a person directing traffic. Its position is
+    state too. -/
+def mobile (d : Device) : Bool :=
+  d.kind == .humanDirection
+  || d.onTrack.isSome
+
+/-- The device without its state: what is the same at every appearance of the device. -/
+def staticPart (d : Device) : Device :=
+  { d with
+    position := if d.mobile then none else d.position
+    indications := none
+    uncovered := none
+    inoperative := none
+    pedState := none
+    countdown := none
+    laneControl := none
+    flashing := none
+    active := none
+    railLights := none
+    gate := none
+    bell := none
+    humanIndication := none
+    redFlashing := none
+    amberFlashing := none
+    stopArm := none
+    }
+end Device
 
 namespace Trace
 def timestamps (τ : Trace) : List Timestamp := τ.map (·.t)

@@ -5,68 +5,64 @@
   operationalization and composition below is written, and every choice the text did not dictate).
 
   Spans:
-    s1 (trigger): Where the signal is a steady yellow signal alone:
-    s2 (subject): Vehicular traffic facing the signal
-    s3 (definitional): is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter,
-    s4 (boilerplate): and
-    s5 (obligation): such vehicular traffic must not enter the intersection
-    s6 (condition): when the red signal is exhibited.
+    y1 (trigger): Where the signal is a steady yellow signal alone:
+    y2 (subject): Vehicular traffic facing the signal
+    y3 (definitional): is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter,
+    y4 (obligation): and such vehicular traffic must not enter the intersection
+    y5 (condition): when the red signal is exhibited.
 
   Elements (span → atoms, derived):
-    s1: atoms ['dev.traffic_signal'], derived []
-    s2: atoms ['ru.aggregate=vehicle', 'rel.occupies', 'st.lane', 'st.highway', 'dev.traffic_signal', 'dev.governs'], derived []
-    s5: atoms ['ru.aggregate=vehicle', 'rel.occupies', 'st.intersection', 'st.lane', 'st.lane_enters'], derived []
-    s6: atoms ['dev.traffic_signal', 'dev.governs'], derived []
+    y1: atoms ['dev.traffic_signal', 'dev.governs', 'st.lane', 'st.lane_enters', 'st.intersection', 'rel.occupies'], derived []
+    y2: atoms ['ru.aggregate=DEF-NRS-484A-285::traffic', 'ru.aggregate=DEF-NRS-484A-320::vehicle', 'dev.traffic_signal', 'dev.governs', 'st.lane', 'st.lane_enters', 'st.intersection', 'rel.occupies'], derived []
+    y4: atoms ['rel.occupies', 'st.intersection', 'st.lane', 'st.lane_enters'], derived []
+    y5: atoms ['dev.traffic_signal', 'dev.governs'], derived []
 
-  How each span is written:
+  y2 is the binder's class and, with y1, the applicability. "traffic" and "vehicular" are the two
+  aggregates the run admitted, claimed whole and conjoined: `ru_aggregate v
+  "DEF-NRS-484A-285::traffic"` and `ru_aggregate v "DEF-NRS-484A-320::vehicle"`, each the id and
+  never the classes it covers. "facing the signal" is the device's own relation, `dev_governs d l`
+  on the lane `l` the subject's footprint overlaps (`rel_occupies v l`, which is also what anchors
+  `l`), and that lane is an approach to the junction: `st_lane_enters l i` anchors the
+  intersection `i`. `rel_bearing` is not read: which traffic a head faces is a property of the
+  device, not a direction between two road users.
 
-  s2 (subject, in `clsV` and `occupiesLaneOfHighway`). 'Vehicular traffic' is the aggregate word
-  of the run's reading, written as the atom `ru_aggregate` with the binder and the literal word
-  `vehicle`: the word, never the classes the reading gives it. 'using any highway for purposes of
-  travel' of the definition the plan cites is the subject's footprint overlapping a lane of a
-  highway: `rel_occupies` of a region the scene calls a lane (`st_lane`) and of a region it calls
-  a highway (`st_highway`). The lane is the quantified `ln`, and every later span reads that same
-  lane, so the rule reads the subject's own lane and not any lane of the scene. 'facing the
-  signal' is `dev_governs` from the head `g` to that lane: the traffic a head faces is the traffic
-  on the lane the device applies to. The head is reached by a quantifier over the scene's devices
-  of kind `traffic_signal`, which is how `dev.traffic_signal` enters the subject span.
+  y1 is the state of that head at the observation. "a steady yellow signal" is the enumeration
+  value `circular_yellow`, which the ontology keeps apart from `flashing_yellow` and from
+  `yellow_arrow(dir)`, so "steady" and "signal rather than arrow" are both carried by the value.
+  "alone" is that no other state of that head is displayed at the same observation, and the
+  contract's "several states may be displayed at once" is what makes that readable: it is written
+  as the negation of `dev_traffic_signal_shows` at every other value of the enumeration — the
+  three circular colours left, the two flashing ones, `dark`, `unknown`, and each of the four
+  arrow families at each of the four directions (one leaf: the values of one atom's enumeration).
+  A head that displays `unknown` beside the yellow is therefore not displaying the yellow alone,
+  and the rule does not engage on it.
 
-  s1 (trigger, in `steadyYellowAlone`). A steady yellow is the enumeration value
-  `circular_yellow` on that head, which the enumeration keeps distinct from `flashing_yellow`;
-  'alone' is that no other indication of the enumeration is displayed at the same observation,
-  written as the negation of each of the other indications a signal head displays
-  (`circular_green`, `circular_red`, `flashing_yellow`, `flashing_red`, `dark`). The value
-  `unknown` of the same enumeration is not negated: it is the source saying it could not tell
-  what was displayed, not a second indication the head displays, and a scene that carries it
-  decides nothing either way. The trigger is sought at some observation in the window behind the
-  instant judged (see the narrowing on s5), written `not (holdsFor .time p (not …))`: the yellow
-  held at some observation of the window, which is unknown wherever the window is not covered.
+  y4 is the obligation. "enter the intersection" is the edge at which the subject's footprint
+  comes to overlap the junction region — `rises (rel_occupies v i)` — and not the first overlap of
+  some longer run: `rel_occupies` carries the overlap and the language's own edge operator reads
+  the change, so no further atom is claimed. A vehicle that stays inside the region does not enter
+  it afresh; one that withdraws and crosses in again does.
 
-  s6 (condition, in `steadyRed`). 'the red signal is exhibited' is the value `circular_red` on a
-  head, which the enumeration keeps distinct from `flashing_red` and leaves the definite article
-  to the governance relation: the head read is one that governs the lane the subject occupies, the
-  same tie span s2 makes, so `dev_governs` is read once more here and no position atom is read.
-  The node's `obligation` reads this condition at the instant of the entry ('at no observation at
-  which that head displays a steady circular red'), so it is written into the obligation and not
-  into the applicability: a subject that was warned by a yellow and never meets a red is engaged
-  and compliant, not unengaged.
+  y5 is the condition on that entry, not on the observation that engages the rule: the head shows
+  `circular_red` at the entry. The enumeration keeps `circular_red` apart from `flashing_red` and
+  `red_arrow(dir)`, so neither of those is this state; `dev.inoperative` is not read, a head
+  showing a valid red being operative.
 
-  s5 (obligation, in `noEntryWhileRed`). To enter the intersection is `rises` of
-  `rel_occupies` between the subject and the intersection region: the footprint comes to overlap
-  it, having not overlapped it at the previous observation. The region is the one the subject's
-  own lane runs into, `st_lane_enters` from that lane to a region the scene calls an intersection
-  (`st_intersection`); no crossing and no stop line is read.
+  The two are tied by the display this yellow opened, as the record's narrowing on y4 directs:
+  from the engaging observation the duty runs while the head still shows a steady circular yellow
+  or a steady circular red (`display`), and it is broken where, at an observation of that run, the
+  head shows the red and the subject's footprint comes to overlap the junction. Written with the
+  language's strong until: `not (until display (display ∧ red ∧ rises occupies))` — an entry after
+  the head has shown any other state in between lies outside the run, and the until's φ is what
+  carries "immediately thereafter". The obligation re-quantifies the head, the approach and the
+  junction and repeats y1+y2 as the antecedent of an implication, so that the duty is the duty of
+  the head that gave the warning and of the junction that head's approach runs into, and not of
+  any other head in the scene.
 
-  Choices the text left open, beyond the two declared narrowings:
-  - the lane, the head and the intersection are quantified again in the obligation rather than
-    carried from the applicability, because the two formulas bind nothing in common: the
-    obligation quantifies universally over every lane the subject occupies, every head that
-    governs such a lane and every intersection such a lane runs into, so a subject that enters on
-    any of them is violated and the reading does not depend on which witness the applicability
-    happened to find;
-  - the subject's footprint must overlap a lane at the instant of the entry too (the obligation
-    reads the lane it is still in while its body comes to overlap the intersection it runs into),
-    which is how a body astride a stop line is read.
+  y3 is the record's residue: what a road user is warned of is a state of mind no trace carries.
+
+  Every reading above is the record's own (its narrowings on y1, y2 and y4 included); this file
+  chose none beyond them, so `narrowings` is empty.
 
   No magnitude below is this file's own: parameters name the reading, literals are the text's.
 -/
@@ -77,71 +73,105 @@ namespace TrafficSpec.Rules.NRS_484B_307_6a
 /-- The binders, as arguments (order and names are the node's). -/
 def vV : Arg := .var "v"
 
-/-- The reading's parameters; no value of any of them lives in this file. -/
-def pYellowPhaseWindow : Term := .param "p.yellow_phase_window"
+/-- The quantified entities: the head, the approach lane, the junction it runs into. -/
+def dD : Arg := .var "d"
+def lL : Arg := .var "l"
+def iI : Arg := .var "i"
 
-def zeroMetres : Term := .lit Q.zero .metre
+/-- Class of `v`: ru.aggregate=DEF-NRS-484A-285::traffic, ru.aggregate=DEF-NRS-484A-320::vehicle -/
+def clsV : Formula :=
+  .and (.atom "ru_aggregate" [vV, .lit "DEF-NRS-484A-285::traffic"] [])
+       (.atom "ru_aggregate" [vV, .lit "DEF-NRS-484A-320::vehicle"] [])
 
-/-- The quantified entities: the subject's lane, the highway it is a lane of, the head that
-    governs that lane, and the intersection the lane runs into. -/
-def lnV : Arg := .var "ln"
-def hwV : Arg := .var "hw"
-def gV : Arg := .var "g"
-def ixV : Arg := .var "ix"
+/-- y1/y5: a state the head `d` displays at this observation. -/
+def showsD (state : String) : Formula := .atom "dev_traffic_signal_shows" [dD, .lit state] []
 
-/-- An indication displayed on the head `g`. -/
-def shows (indication : String) : Formula :=
-  .atom "dev_traffic_signal_shows" [gV, .lit indication] []
+/-- y1/y5: a state the head `d` does not display at this observation. -/
+def notShowingD (state : String) : Formula := .not (showsD state)
 
-/-- s1: a steady yellow and no other indication displayed on `g`. -/
-def steadyYellowAlone : Formula :=
-  .and (shows "circular_yellow")
-    (.and (.not (shows "circular_green"))
-      (.and (.not (shows "circular_red"))
-        (.and (.not (shows "flashing_yellow"))
-          (.and (.not (shows "flashing_red"))
-                (.not (shows "dark"))))))
+/-- y1: "a steady yellow signal" — the circular yellow, not the flashing one and not an arrow. -/
+def steadyYellow : Formula := showsD "circular_yellow"
 
-/-- s6: a steady red displayed on `g`. -/
-def steadyRed : Formula := shows "circular_red"
+/-- y5: "the red signal" — the circular red, not the flashing one and not an arrow. -/
+def steadyRed : Formula := showsD "circular_red"
 
-/-- s2: the head `g` applies to the lane `ln` — the traffic on `ln` is the traffic facing `g`. -/
-def governsThisLane : Formula := .atom "dev_governs" [gV, lnV] []
+/-- y1 ("alone"): no other circular or flashing state of the head is displayed. -/
+def noOtherCircular : Formula :=
+  .and (notShowingD "circular_green")
+    (.and (notShowingD "circular_red")
+      (.and (notShowingD "flashing_red")
+        (.and (notShowingD "flashing_yellow")
+          (.and (notShowingD "dark") (notShowingD "unknown")))))
 
-/-- s2: `v`'s footprint overlaps the lane `ln`, and a highway. -/
-def occupiesLaneOfHighway : Formula :=
-  .and (.atom "st_lane" [lnV] [])
-    (.and (.atom "rel_occupies" [vV, lnV] [])
-      (.existsRegion (.lit "highway") "hw"
-        (.and (.atom "st_highway" [hwV] [])
-              (.atom "rel_occupies" [vV, hwV] []))))
+/-- y1 ("alone"): no green arrow of the head is displayed, in any direction. -/
+def noGreenArrow : Formula :=
+  .and (notShowingD "green_arrow(left)")
+    (.and (notShowingD "green_arrow(right)")
+      (.and (notShowingD "green_arrow(straight)") (notShowingD "green_arrow(u_turn)")))
 
-/-- s1: a steady yellow alone on `g` at some observation in the window behind. -/
-def yellowAloneInWindow : Formula :=
-  .not (.holdsFor .time pYellowPhaseWindow "v" (.not steadyYellowAlone))
+/-- y1 ("alone"): no yellow arrow of the head is displayed, in any direction. -/
+def noYellowArrow : Formula :=
+  .and (notShowingD "yellow_arrow(left)")
+    (.and (notShowingD "yellow_arrow(right)")
+      (.and (notShowingD "yellow_arrow(straight)") (notShowingD "yellow_arrow(u_turn)")))
 
-/-- Class of `v`: ru.aggregate=vehicle -/
-def clsV : Formula := .atom "ru_aggregate" [vV, .lit "vehicle"] []
+/-- y1 ("alone"): no red arrow of the head is displayed, in any direction. -/
+def noRedArrow : Formula :=
+  .and (notShowingD "red_arrow(left)")
+    (.and (notShowingD "red_arrow(right)")
+      (.and (notShowingD "red_arrow(straight)") (notShowingD "red_arrow(u_turn)")))
 
-/-- Applicability: s1 (trigger): Where the signal is a steady yellow signal alone:; s6 (condition): when the red signal is exhibited. -/
+/-- y1 ("alone"): no flashing yellow arrow of the head is displayed, in any direction. -/
+def noFlashingYellowArrow : Formula :=
+  .and (notShowingD "flashing_yellow_arrow(left)")
+    (.and (notShowingD "flashing_yellow_arrow(right)")
+      (.and (notShowingD "flashing_yellow_arrow(straight)")
+        (notShowingD "flashing_yellow_arrow(u_turn)")))
+
+/-- y1 ("alone"): no state of the head other than the steady yellow is displayed. -/
+def noOtherIndication : Formula :=
+  .and noOtherCircular
+    (.and noGreenArrow (.and noYellowArrow (.and noRedArrow noFlashingYellowArrow)))
+
+/-- y1: the head displays a steady circular yellow and nothing else. -/
+def yellowAlone : Formula := .and steadyYellow noOtherIndication
+
+/-- y2: the head `d` faces the lane `l` whose end runs into the junction `i`, and `v`'s footprint
+    overlaps that lane — the traffic facing the signal, on the approach the signal governs. -/
+def facesApproach : Formula :=
+  .and (.atom "rel_occupies" [vV, lL] [])
+    (.and (.atom "st_lane_enters" [lL, iI] [])
+      (.atom "dev_governs" [dD, lL] []))
+
+/-- y1 + y2: the warning this head gives to `v` at this observation. -/
+def warned : Formula := .and facesApproach yellowAlone
+
+/-- Applicability: y1 (trigger): Where the signal is a steady yellow signal alone:; y2 (subject): Vehicular traffic facing the signal -/
 def applicability : Formula :=
-  .existsRegion (.lit "lane") "ln"
-    (.and occupiesLaneOfHighway
-      (.existsDevice (.lit "traffic_signal") "g"
-        (.and governsThisLane yellowAloneInWindow)))
+  .existsRegion (.lit "lane") "l"
+    (.existsRegion (.lit "intersection") "i"
+      (.existsDevice (.lit "traffic_signal") "d" warned))
 
-/-- Obligation: s5 (obligation): such vehicular traffic must not enter the intersection -/
-def noEntryWhileRed : Formula :=
-  .forallRegion (.lit "lane") "ln"
-    (.implies (.and (.atom "st_lane" [lnV] []) (.atom "rel_occupies" [vV, lnV] []))
-      (.forallDevice (.lit "traffic_signal") "g"
-        (.implies (.and governsThisLane steadyRed)
-          (.forallRegion (.lit "intersection") "ix"
-            (.implies (.and (.atom "st_intersection" [ixV] [])
-                            (.atom "st_lane_enters" [lnV, ixV] []))
-              (.not (.rises (.atom "rel_occupies" [vV, ixV] []))))))))
+/-- y4: `v` enters the junction — its footprint overlaps that region now and did not at the
+    observation before. -/
+def entersJunction : Formula := .rises (.atom "rel_occupies" [vV, iI] [])
 
-def obligation : Formula := noEntryWhileRed
+/-- y1 + y5: the display this yellow opened — the head still shows the steady yellow or the
+    steady red it warned of. -/
+def display : Formula := .or steadyYellow steadyRed
+
+/-- y4 + y5: at an observation of that display the head shows the red and `v` enters. -/
+def entryOnRed : Formula := .and display (.and steadyRed entersJunction)
+
+/-- y4 + y5: no such entry is made while the display runs. -/
+def noEntryOnRed : Formula := .not (.until display entryOnRed)
+
+/-- Obligation: y4 (obligation): and such vehicular traffic must not enter the intersection; y5 (condition): when the red signal is exhibited. -/
+def obligation : Formula :=
+  .forallRegion (.lit "lane") "l"
+    (.forallRegion (.lit "intersection") "i"
+      (.forallDevice (.lit "traffic_signal") "d"
+        (.implies warned noEntryOnRed)))
 
 def rule : Rule :=
   { id := "NRS_484B_307_6a"
@@ -152,14 +182,8 @@ def rule : Rule :=
     obligation := obligation
     assumptions := []
     operationalizations := []
-    residues := ["The clause states what a steady yellow alone means to the traffic facing it - that the green movement is ending, or that a steady red will follow at once. It is the signal's meaning and not a duty: it puts no conduct on the road user, and what a road user was warned of, or understood, is a state of mind no trace carries. The conduct the warning leads to is stated by the obligation span that follows, which this rule carries in full, so the duty loses nothing with these words."]  -- the node's, verbatim; not yours to change
-    narrowings :=
-      [ { span := "s1"
-          why := "'the signal' is, in the section this paragraph belongs to, an official traffic-control device: one 'placed or erected by a public authority or railroad' [DEF-NRS-484A-145]. Nothing in a scene shows who placed a head. The head's presence on the road, with its faces uncovered and an indication displayed, is the observable evidence of that status, and the rule reads the head and presumes the status."
-          kind := "observable_reading" }
-      , { span := "s5"
-          why := "The paragraph gives the duty no horizon: on its bare words a steady yellow displayed at any earlier time would leave the traffic that saw it bound at every later red. The rule reads the yellow within a window behind the observation, so that the red the subject enters against is the red that followed the yellow this paragraph speaks of. A red exhibited longer after a yellow than the window - a head that has run through a whole phase in between - leaves the rule not applicable, which is narrower than the words."
-          kind := "reading" } ]
+    residues := ["The words state what the yellow indication tells the driver - that the green movement is ending or that red will follow immediately. What a road user is warned of, knows or is to infer is a state of mind, which no trace carries, and these words impose no condition on the scene and no duty of their own: the duty the sentence goes on to state is the obligation span, and the timing the words describe (red exhibited immediately thereafter) is read there from the head's own state. Nothing of the subsection's duty is dropped with them."]  -- the node's, verbatim; not yours to change
+    narrowings := []
     surrogate := false }
 
 end TrafficSpec.Rules.NRS_484B_307_6a

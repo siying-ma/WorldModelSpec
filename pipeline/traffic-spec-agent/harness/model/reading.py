@@ -1,30 +1,77 @@
-"""The run's reading: every number a statute did not state, named once, with its convention.
+"""The run's reading: every number a statute did not state, named once, with its convention; and the
+legal aggregates the run admitted.
 
 Format (JSON; `Decode.reading` in Core decodes the same fields):
 {"run": "<name>",
  "params": [{"name": "p.<name>", "value": 1.5, "unit": "s", "convention": "<where the value comes from>"}],
    (a param whose value equals a figure a law of the corpus states also carries "figure_review": "<why it is a
     convention, not that figure>"; the doctor lists every such param until it does)
- "operationalizations": [], "aggregates": []}
-Aggregates ("vehicle" → classes) are derived per run from the corpus definitions by the plan phase
-(`harness/checks/aggregates.py`) into results/<run>/reading.json; an operator may declare one here to override.
+ "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...], ...}]}
+An aggregate is admitted per run by the aggregate gate (`harness/phases/aggregate.py`) into
+results/<run>/reading.json, keyed by its legal source; every class it lists neither as included nor
+as unresolved is excluded. The operator's base reading declares parameters, never aggregates.
 Units: m, s, m/s, m/s2, deg, deg/s, ratio, count.
 """
 from __future__ import annotations
 import json
 from pathlib import Path
 
+def _spellings() -> list[str]:
+    from .units import spellings
+    return spellings()
+
+
 TEMPLATE = {
     "run": "<run id>",
     "params": [],
-    "operationalizations": [],
     "aggregates": [],
     "_fields": {
-        "params": "name (p.<name>), value (number), unit (m|s|m/s|m/s2|deg|deg/s|ratio|count), convention (text), "
+        "params": "name (p.<name>), value (number), unit (one of Core's spellings: " + "|".join(_spellings()) + "), convention (text), "
                   "figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
-        "aggregates": "word (a legal aggregate such as 'vehicle'), classes (ru.* ids it covers)",
+        "aggregates": "admitted by the run's aggregate gate, never written by hand: id (<definition id>::<term>), included and unresolved ru.* classes",
     },
 }
+
+
+def reading_defects(data) -> list[str]:
+    """Every defect that keeps a reading from being read whole, as Core decodes it: a parameter
+    without a non-empty name, a finite number for its value, or a unit Core knows, a name given
+    twice, and an aggregate without an id, given twice, or whose classes are not lists of ids. A
+    reading with a defect is not evaluated: nothing falls back to an empty reading."""
+    import math
+    from .units import FACTORS
+    if not isinstance(data, dict):
+        return ["the reading is not a JSON object"]
+    errs, seen = [], set()
+    params = data.get("params", [])
+    if not isinstance(params, list):
+        return ["`params` is not a list"]
+    for i, p in enumerate(params):
+        where = f"params[{i}]" + (f" `{p.get('name')}`" if isinstance(p, dict) and isinstance(p.get("name"), str) else "")
+        if not isinstance(p, dict) or not isinstance(p.get("name"), str) or not p["name"].strip():
+            errs.append(f"{where}: no name"); continue
+        v = p.get("value")
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+            errs.append(f"{where}: the value {v!r} is not a finite number")
+        if p.get("unit") not in FACTORS:
+            errs.append(f"{where}: the unit {p.get('unit')!r} is not one Core knows")
+        if p["name"] in seen:
+            errs.append(f"{where}: the name is given twice")
+        seen.add(p["name"])
+    ids = set()
+    aggs = data.get("aggregates", [])
+    if not isinstance(aggs, list):
+        return errs + ["`aggregates` is not a list"]
+    for i, a in enumerate(aggs):
+        if not isinstance(a, dict) or not isinstance(a.get("id"), str) or not a["id"]:
+            errs.append(f"aggregates[{i}]: no id"); continue
+        if a["id"] in ids:
+            errs.append(f"aggregates[{i}] `{a['id']}`: the id is given twice")
+        ids.add(a["id"])
+        for k in ("included", "unresolved"):
+            if not isinstance(a.get(k, []), list) or not all(isinstance(x, str) for x in a.get(k, [])):
+                errs.append(f"aggregates[{i}] `{a['id']}`: `{k}` is not a list of class ids")
+    return errs
 
 
 class Reading:
@@ -35,25 +82,6 @@ class Reading:
 
     def has(self, name: str) -> bool:
         return name in self.params
-
-    def proposed(self) -> list[dict]:
-        """Parameters a planner proposed and no operator has reviewed yet."""
-        return [p for p in self.data.get("params", []) if p.get("proposed")]
-
-    def names(self) -> set[str]:
-        return set(self.params)
-
-    def has_aggregate(self, word: str) -> bool:
-        return any(a.get("word") == word and not a.get("derived") for a in self.data.get("aggregates", []))
-
-    def with_aggregates(self, records: list[dict]) -> "Reading":
-        """A copy with derived records added in memory (the draft check a planner runs)."""
-        r = Reading.__new__(Reading); r.path = self.path
-        r.data = json.loads(json.dumps(self.data))
-        r.data["aggregates"] = list(r.data.get("aggregates", [])) + [
-            {"word": x.get("word"), "classes": x.get("classes", []), "source": x.get("definition"), "derived": "draft"} for x in records]
-        r.params = dict(self.params)
-        return r
 
     @staticmethod
     def own_proposal(entry: dict | None, law: str) -> bool:
@@ -87,23 +115,17 @@ class Reading:
                 old.clear(); old.update(entry); added.append(entry)
                 continue
             data.setdefault("params", []).append(entry); have[pr["name"]] = entry; added.append(entry)
-        if added:
-            path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        if added:                                     # replaced whole, so a stop midway leaves the previous reading
+            from ..store import jsonl
+            jsonl.write_atomic(path, json.dumps(data, ensure_ascii=False, indent=1) + "\n")
         return added
 
-    def aggregate_words(self) -> set[str]:
-        return {a.get("word") for a in self.data.get("aggregates", []) if a.get("word")}
+    def aggregate_ids(self) -> set[str]:
+        return {a.get("id") for a in self.data.get("aggregates", []) if a.get("id")}
 
-    def expand(self, word: str, fuel: int | None = None) -> list[str]:
-        """The `ru.*` ids a word covers, through other declared words (as `Reading.aggregate` in Core)."""
-        aggs = {a["word"]: a.get("classes", []) for a in self.data.get("aggregates", []) if a.get("word")}
-        fuel = len(aggs) + 1 if fuel is None else fuel
-        if fuel == 0 or word not in aggs:
-            return []
-        out = []
-        for m in aggs[word]:
-            out += [m] if m.startswith("ru.") else (self.expand(m, fuel - 1) or [m])
-        return out
+    def aggregate(self, aid: str) -> dict | None:
+        """The admitted aggregate with this id."""
+        return next((a for a in self.data.get("aggregates", []) if a.get("id") == aid), None)
 
     def lean_json(self) -> str:
         """The reading as the Lean decoder expects it (no private fields)."""
@@ -113,4 +135,5 @@ class Reading:
 def write_template(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists():
-        path.write_text(json.dumps(TEMPLATE, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        from ..store import jsonl
+        jsonl.write_atomic(path, json.dumps(TEMPLATE, indent=1, ensure_ascii=False) + "\n")

@@ -9,7 +9,6 @@ it, and names both on failure:
 - every `prim.*` id has one `def prim_*` in `Primitives.lean`, and `Primitives.primitiveNames` and
   `Primitives.reads` list exactly those;
 - rule files import only the whitelisted Core modules;
-- every registered manifest is complete over the atom ids.
 
 No Lean is run: the Lean tests (`TrafficSpec/Tests/*.lean`) hold the same bijections at build
 time through `#guard`; these checks make the failure legible without a build.
@@ -20,19 +19,8 @@ import json
 import re
 from pathlib import Path
 
-from .doctor_result import Result, OK, FAIL, SKIP, VacuousCheck, _nonempty
-
-#: Modules a rule file may import. A rule reads the world through the atoms and the derived
-#: concepts and declares itself through Rule; it never sees the trace, the census or the builders.
-RULE_IMPORT_WHITELIST = {
-    "TrafficSpec.Core.Language.Rule", "TrafficSpec.Core.Language.Formula", "TrafficSpec.Core.Vocab.Params",
-    "TrafficSpec.Core.Foundations.Units", "TrafficSpec.Core.Foundations.Time", "TrafficSpec.Core.Foundations.Tri",
-    "TrafficSpec.Core.Vocab.Ontology.RoadUser", "TrafficSpec.Core.Vocab.Ontology.Structure",
-    "TrafficSpec.Core.Vocab.Ontology.Device", "TrafficSpec.Core.Vocab.Ontology.Signal",
-    "TrafficSpec.Core.Vocab.Ontology.Ids",
-}
-#: Modules a concept file may import: the concept record and the language it is written in.
-CONCEPT_IMPORT_WHITELIST = {"TrafficSpec.Core.Language.Concept"}
+from .doctor_result import Result, OK, FAIL, SKIP, _nonempty
+from harness.checks.gate import ALLOWED_RULE_IMPORTS, ALLOWED_CONCEPT_IMPORTS
 
 
 def _def_name(atom_id: str) -> str:
@@ -71,7 +59,7 @@ class LibraryV2Checks:
         return Result("ontology generated", OK, f"{len(files)} files match the generator", src)
 
     def training_split_in_sync(self) -> Result:
-        """The training-only ontology (a split of the corpus) is what its sources generate.
+        """The training-only ontology and Core files (a split of the corpus) are what their sources generate.
 
         `laws/audit_and_scripts/split_atoms.json` names the atoms only the test lines support; `ATOMS_train.md`
         must be ATOMS.md minus exactly those, `splits/train/…/Ontology` must be generated from it, and
@@ -108,8 +96,29 @@ class LibraryV2Checks:
             return Result("training split", FAIL,
                           f"ontology drift {drift}; defs removed that are no test-only atom {wrong}; "
                           f"test-only defs still present {kept}", src)
+        # the training contents are exactly what their sources give: ATOMS_train.md and the training
+        # Atoms.lean from the full files by the split's tool, the other split files by the harness's
+        import sys, tempfile
+        sys.path.insert(0, str(self.repo.parent / "ontology_provenance"))
+        from nrs_tools import atoms_train
+        from harness.tools import split as split_tool
+        stale = []
+        want_md = atoms_train.filter_atoms_md((self.repo / "ontology" / "ATOMS.md").read_text(encoding="utf-8"), split["test_only_atoms"],
+                                              split["test_only_values"], split.get("test_only_primitives", []))
+        if want_md != train_md.read_text(encoding="utf-8"):
+            stale.append("ontology/ATOMS_train.md")
+        want_atoms = atoms_train.filter_atoms_lean((full_core / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"), split["test_only_atoms"])
+        if want_atoms != (train_root / "Vocab" / "Atoms.lean").read_text(encoding="utf-8"):
+            stale.append("splits/train/…/Vocab/Atoms.lean")
+        with tempfile.TemporaryDirectory() as t:
+            split_tool.generate_train(full_core, Path(t))
+            stale += [f"splits/train/…/{rel}" for rel in split_tool.DEPENDENT
+                      if (Path(t) / rel).read_text(encoding="utf-8") != (train_root / rel).read_text(encoding="utf-8")]
+        if stale:
+            return Result("training split", FAIL, f"training contents differ from what their sources give: {stale} "
+                          "(regenerate: nrs_tools.atoms_train, then python -m harness split --use train)", src)
         return Result("training split", OK,
-                      f"{len(expected_gone)} ids and {len(gone)} defs omitted, ontology regenerates identically", src)
+                      f"{len(expected_gone)} ids and {len(gone)} defs omitted; the training contents are what their sources give", src)
 
     def atoms_bijection(self) -> Result:
         src = ("library/TrafficSpec/Core/Vocab/Ontology/Ids.lean → atomIds",
@@ -165,13 +174,13 @@ class LibraryV2Checks:
 
     def rule_imports_whitelisted(self) -> Result:
         src = ("library/TrafficSpec/{Rules,Concepts}/**/*.lean → import",
-               "scripts/diagnostics/library_v2.py → RULE_IMPORT_WHITELIST, CONCEPT_IMPORT_WHITELIST")
+               "harness/checks/gate.py → ALLOWED_RULE_IMPORTS, ALLOWED_CONCEPT_IMPORTS")
         rules = sorted((self.lib / "TrafficSpec" / "Rules").rglob("*.lean"))
         concepts = sorted((self.lib / "TrafficSpec" / "Concepts").rglob("*.lean"))
         if not rules and not concepts:
             return Result("rule imports", SKIP, "no rule or concept files yet", src)
         bad = []
-        for p, allowed in [(p, RULE_IMPORT_WHITELIST) for p in rules] + [(p, CONCEPT_IMPORT_WHITELIST) for p in concepts]:
+        for p, allowed in [(p, ALLOWED_RULE_IMPORTS) for p in rules] + [(p, ALLOWED_CONCEPT_IMPORTS) for p in concepts]:
             for m in re.finditer(r"^import (\S+)", p.read_text(encoding="utf-8"), re.M):
                 if m.group(1) not in allowed:
                     bad.append(f"{p.relative_to(self.lib)} imports {m.group(1)}")
@@ -179,29 +188,6 @@ class LibraryV2Checks:
             return Result("rule imports", FAIL, "; ".join(bad[:5]), src)
         return Result("rule imports", OK, f"{len(rules)} rule and {len(concepts)} concept files import only their whitelist", src)
 
-    def manifests_complete(self) -> Result:
-        """A manifest describes a source over the full ontology, whichever split is active: the
-        monitor that reads it runs on the full split, so it is checked against the full atom ids."""
-        full_core = self.lib / "splits" / "full" / "TrafficSpec" / "Core"
-        core = full_core if (full_core / "Vocab" / "Ontology" / "Ids.lean").exists() else self.core
-        src = ("library/manifests/*.json → atoms", f"{core.relative_to(self.lib)}/Vocab/Ontology/Ids.lean → atomIds")
-        files = sorted((self.lib / "manifests").glob("*.json"))
-        if not files:
-            return Result("manifests complete", SKIP, "no manifests registered yet", src)
-        atoms, _ = self._ids(core)
-        bad = []
-        for p in files:
-            doc = json.loads(p.read_text(encoding="utf-8"))
-            entries = set(doc.get("atoms", {}))
-            missing, unknown = sorted(set(atoms) - entries), sorted(entries - set(atoms))
-            values = {v for v in doc.get("atoms", {}).values()
-                      if v not in ("exact", "absent", "subject") and not str(v).startswith("estimate:")}
-            if missing or unknown or values:
-                bad.append(f"{p.name}: missing {missing[:3]} unknown {unknown[:3]} bad values {sorted(values)[:3]}")
-        if bad:
-            return Result("manifests complete", FAIL, "; ".join(bad), src)
-        return Result("manifests complete", OK, f"{len(files)} manifests cover all {len(atoms)} atom ids", src)
-
     def checks(self):
         return [self.ontology_generated_in_sync, self.training_split_in_sync, self.atoms_bijection, self.primitive_bijection,
-                self.rule_imports_whitelisted, self.manifests_complete]
+                self.rule_imports_whitelisted]

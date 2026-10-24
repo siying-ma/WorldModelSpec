@@ -25,6 +25,7 @@ inductive UnknownReason
   | divisionByZero (what : String)
   | malformed (what : String)             -- a literal that names no enumeration value, wrong arity
   | undefined (concept : String)          -- the concept's precondition does not hold here (e.g. a multi-lane configuration)
+  | aggregateUnresolved (id : String)     -- the posted definition of the aggregate decides neither inclusion nor exclusion of the road user's class
   deriving Repr, DecidableEq, Inhabited
 
 namespace UnknownReason
@@ -42,6 +43,7 @@ def tag : UnknownReason → String
   | .divisionByZero w => s!"division_by_zero:{w}"
   | .malformed w => s!"malformed:{w}"
   | .undefined c => s!"undefined:{c}"
+  | .aggregateUnresolved id => s!"aggregate_unresolved:{id}"
 instance : ToString UnknownReason := ⟨tag⟩
 end UnknownReason
 

@@ -29,13 +29,16 @@ explicitly governs hazardous or congested places. The withheld atoms are
 
 Generated training views expose newly required door, roundabout, school-bus,
 lighting and vehicle-control declarations. Corresponding runtime-name filtering
-keeps the training codec and generic semantics compilable. Full ontology/Core
-sources are unchanged. This does not invent judgment meanings or repair preexisting
+keeps the training codec and generic semantics compilable. The full source variant
+is retained under library/splits/full; library/TrafficSpec/Core follows splits/ACTIVE. This does not invent judgment meanings or repair preexisting
 unimplemented semantic accessors by guessing their meaning.
 
 `python -m nrs_tools.split` now regenerates derived views only while the versioned
 policy is active; it cannot revert corpus membership to the historical roster.
-Use scenario_pipeline's reviewed migration command for a new corpus version.
+The command is self-contained in this repository. It derives atoms from the full
+snapshot, regenerates all dependent runtime views, and synchronizes Core when
+train is active. Scenario/cell repartitioning remains owned by scenario_pipeline's
+reviewed migration command; regeneration never changes corpus membership.
 
 ## Evidence
 

@@ -18,6 +18,11 @@
                     "relations": [...]?, "env": {...}?, "assumptions": [[id, bool]...]?,
                     "links": [[old, new]...]? } ] }
   Field names follow the structures of World.lean in snake_case; see the decoders below.
+
+  A formula, a term and an argument decode strictly from the JSON Export.lean writes: the
+  decoder is that encoder's inverse, so a decoded formula exported again is the canonical form.
+  `and` and `or` also read a list of more than two formulas, folded to the right
+  (`[a, b, c]` is `a ∧ (b ∧ c)`); every other list form takes exactly its two elements.
 -/
 import Lean.Data.Json
 import TrafficSpec.Core.Runtime.Manifest
@@ -101,7 +106,9 @@ def kin (path : String) (j : Json) : D Kin := do
            match ← arr p v with
            | [l, w, h] => pure (← num p l, ← num p w, ← num p h)
            | _ => fail p "expected [half_length, half_width, half_height]"
+         steerAngle := ← opt j path "steer_angle" num
          engineRunning := ← opt j path "engine_running" bool
+         parkingBrake := ← opt j path "parking_brake" bool
          gear := ← opt j path "gear" int
          throttle := ← opt j path "throttle" num
          serviceBrake := ← opt j path "service_brake" num
@@ -121,12 +128,15 @@ def warningLamp (path : String) (j : Json) : D WarningLamp := do
 
 def signals (path : String) (j : Json) : D Signals := do
   pure { turnIndicator := ← opt j path "turn_indicator" (enum TurnIndicatorState.ofString)
-         brakeLamp := ← opt j path "brake_lamp" bool
          hazard := ← opt j path "hazard" bool
+         headlamp := ← opt j path "headlamp" (enum HeadlampState.ofString)
+         positionLamp := ← opt j path "position_lamp" bool
+         reverseLamp := ← opt j path "reverse_lamp" bool
          warningLamps := ← optList j path "warning_lamps" warningLamp
          siren := ← opt j path "siren" bool
          horn := ← opt j path "horn" bool
          handSignal := ← opt j path "hand_signal" (enum HandSignal.ofString)
+         doorsOpen := ← optList j path "doors_open" (enum DoorSide.ofString)
          compressionBrake := ← opt j path "compression_brake" bool }
 
 def roadUser (path : String) (j : Json) : D RoadUser := do
@@ -139,7 +149,8 @@ def roadUser (path : String) (j : Json) : D RoadUser := do
          occupants := ← opt j path "occupants" nat
          posture := (← opt j path "posture" posture).getD {}
          kin := (← opt j path "kin" kin).getD {}
-         sig := (← opt j path "sig" signals).getD {} }
+         sig := (← opt j path "sig" signals).getD {}
+         sightAlongWay := ← optList j path "sight_along_way" (pair nat num) }
 
 def marking (path : String) (j : Json) : D (MarkingType × MarkingColour) :=
   pair (enum MarkingType.ofString) (enum MarkingColour.ofString) path j
@@ -169,6 +180,7 @@ def structure' (path : String) (j : Json) : D Structure := do
          curvature := ← opt j path "curvature" num
          grade := ← opt j path "grade" num
          sightDistance := ← opt j path "sight_distance" num
+         ways := ← optList j path "ways" nat
          reservedClass := ← opt j path "reserved_class" (enum ReservedClass.ofString)
          turnSide := ← opt j path "turn_side" (enum TurnSide.ofString)
          parkingAngle := ← opt j path "parking_angle" num
@@ -294,6 +306,7 @@ def unit (path : String) (j : Json) : D (PUnit' × Q) := do
   | "m/s2" | "m/s^2" | "metre_per_second_sq" => pure (.metrePerSecondSq, Q.ofInt 1)
   | "deg" | "degree" | "degrees" => pure (.degree, Q.ofInt 1)
   | "deg/s" | "degree_per_second" => pure (.degreePerSecond, Q.ofInt 1)
+  | "1/m" | "per_metre" => pure (.perMetre, Q.ofInt 1)
   | "ratio" => pure (.ratio, Q.ofInt 1)
   | "count" => pure (.count, Q.ofInt 1)
   | s => fail path s!"unknown unit {s}"
@@ -301,14 +314,10 @@ def unit (path : String) (j : Json) : D (PUnit' × Q) := do
 def paramValue (path : String) (j : Json) : D ParamValue := do
   let (u, k) ← req j path "unit" unit
   pure { name := ← req j path "name" str, value := Q.mul (← req j path "value" num) k, unit := u }
-def operationalization (path : String) (j : Json) : D Operationalization := do
-  pure { standard := ← req j path "standard" str
-         concepts := ← list j path "concepts" str
-         params := ← list j path "params" str
-         convention := ← req j path "convention" str
-         surrogate := (← opt j path "surrogate" bool).getD false }
 def aggregate (path : String) (j : Json) : D LegalAggregate := do
-  pure { word := ← req j path "word" str, classes := ← list j path "classes" str }
+  pure { id := ← req j path "id" str
+         included := ← list j path "included" str
+         unresolved := ← list j path "unresolved" str }
 def reading (j : Json) : D Reading := do
   pure { params := ← list j "reading" "params" paramValue
          aggregates := ← list j "reading" "aggregates" aggregate }
@@ -329,6 +338,202 @@ def manifest (j : Json) : D Manifest := do
   pure { source := ← req j "manifest" "source" str
          entries := atoms
          reidGap := (← opt j "manifest" "reid_gap" num).getD Q.zero }
+
+-- ---------------------------------------------------------------------------------------------
+-- Formulas: the inverse of Export's encoders, strict. An object must carry exactly the keys of one
+-- constructor; a missing or extra key, a wrong array length, a null, a malformed rational or a zero
+-- denominator is an error, never a default.
+-- ---------------------------------------------------------------------------------------------
+/-- The keys of a JSON object. -/
+def keysOf (path : String) (j : Json) : D (List String) :=
+  match j with
+  | .obj kvs => pure (kvs.toArray.toList.map (·.1))
+  | _ => fail path "expected an object"
+
+/-- The value under `k`: present and not null. -/
+def need (path : String) (j : Json) (k : String) : D Json :=
+  match j.getObjVal? k with
+  | .ok .null => fail (path ++ "." ++ k) "unexpected null"
+  | .ok v => pure v
+  | .error _ => fail (path ++ "." ++ k) "required"
+
+/-- Exactly `n` elements, each decoded. -/
+def exactly {α : Type} (n : Nat) (dec : String → Json → D α) (path : String) (j : Json) : D (List α) := do
+  let xs ← arr path j
+  if xs.length != n then fail path s!"expected {n} elements, found {xs.length}"
+  else (xs.zip (List.range xs.length)).mapM fun (x, i) => dec s!"{path}[{i}]" x
+
+def elems {α : Type} (dec : String → Json → D α) (path : String) (j : Json) : D (List α) := do
+  let xs ← arr path j
+  (xs.zip (List.range xs.length)).mapM fun (x, i) => dec s!"{path}[{i}]" x
+
+def strictNat (path : String) (j : Json) : D Nat :=
+  match j with
+  | .num n => if n.exponent == 0 && n.mantissa ≥ 0 then pure n.mantissa.toNat else fail path "expected a natural"
+  | _ => fail path "expected a natural"
+def strictInt (path : String) (j : Json) : D Int :=
+  match j with
+  | .num n => if n.exponent == 0 then pure n.mantissa else fail path "expected an integer"
+  | _ => fail path "expected an integer"
+
+def rational (path : String) (j : Json) : D Q := do
+  let ks ← keysOf path j
+  if !(ks.length == 2 && ks.contains "num" && ks.contains "den") then fail path "a rational is {\"num\", \"den\"}"
+  else
+    let n ← strictInt (path ++ ".num") (← need path j "num")
+    let d ← strictNat (path ++ ".den") (← need path j "den")
+    if d == 0 then fail (path ++ ".den") "zero denominator" else pure (Q.mk' n d)
+
+def cmpOp (path : String) (j : Json) : D CmpOp := do
+  match ← str path j with
+  | "lt" => pure .lt | "le" => pure .le | "eq" => pure .eq | "ge" => pure .ge | "gt" => pure .gt
+  | s => fail path s!"unknown comparison {s}"
+def measureOf (path : String) (j : Json) : D Measure := do
+  match ← str path j with
+  | "time" => pure .time | "path" => pure .path
+  | s => fail path s!"unknown window measure {s}"
+def literalUnit (path : String) (j : Json) : D PUnit' := do
+  match ← str path j with
+  | "metre" => pure .metre | "second" => pure .second | "metre_per_second" => pure .metrePerSecond
+  | "metre_per_second_sq" => pure .metrePerSecondSq | "degree" => pure .degree
+  | "degree_per_second" => pure .degreePerSecond | "per_metre" => pure .perMetre | "ratio" => pure .ratio
+  | "count" => pure .count
+  | s => fail path s!"unknown unit {s}"
+def aggOp (path : String) (j : Json) : D AggOp := do
+  match ← str path j with
+  | "min" => pure .min | "max" => pure .max | "median" => pure .median | "count" => pure .count
+  | s => fail path s!"unknown aggregate {s}"
+
+def arg (path : String) (j : Json) : D Arg := do
+  match ← keysOf path j with
+  | ["var"] => return .var (← need path j "var" >>= str (path ++ ".var"))
+  | ["lit"] => return .lit (← need path j "lit" >>= str (path ++ ".lit"))
+  | ["nat"] => return .nat (← need path j "nat" >>= strictNat (path ++ ".nat"))
+  | ks => fail path s!"an argument is one of var, lit, nat; found keys {ks}"
+
+/-- The key set of an object is exactly `want`. -/
+private def keyed (ks want : List String) : Bool := ks.length == want.length && want.all ks.contains
+
+/-- The two elements of a decoded pair. -/
+def pair2 {α : Type} (path : String) (xs : List α) : D (α × α) :=
+  match xs with
+  | [a, b] => pure (a, b)
+  | _ => fail path "expected two elements"
+
+/-- `x₁ ∘ (x₂ ∘ (… ∘ xₙ))`: a list of operands joined to the right by `f`. -/
+def joinRight (f : Formula → Formula → Formula) : Formula → List Formula → Formula
+  | a, [] => a
+  | a, b :: rest => f a (joinRight f b rest)
+
+/-- An object of strings, as pairs. -/
+def strMap (path : String) (j : Json) : D (List (String × String)) :=
+  match j with
+  | .obj kvs => kvs.toArray.toList.mapM fun (k, v) => do pure (k, ← str (path ++ "." ++ k) v)
+  | _ => fail path "expected an object"
+
+mutual
+  partial def term (path : String) (j : Json) : D Term := do
+    let ks ← keysOf path j
+    let at_ := fun (k : String) => path ++ "." ++ k
+    let sub := fun (k : String) => need path j k >>= term (at_ k)
+    let two := fun (k : String) => need path j k >>= exactly 2 term (at_ k) >>= fun xs => pair2 (at_ k) xs
+    if keyed ks ["lit", "unit"] then
+      return .lit (← need path j "lit" >>= rational (at_ "lit")) (← need path j "unit" >>= literalUnit (at_ "unit"))
+    if keyed ks ["param"] then return .param (← need path j "param" >>= str (at_ "param"))
+    if keyed ks ["measure", "args"] then
+      return .measure (← need path j "measure" >>= str (at_ "measure")) (← need path j "args" >>= elems arg (at_ "args"))
+    if keyed ks ["quantity", "args", "params"] then
+      return .quantity (← need path j "quantity" >>= str (at_ "quantity")) (← need path j "args" >>= elems arg (at_ "args"))
+        (← need path j "params" >>= elems term (at_ "params"))
+    if keyed ks ["distance_while", "holds"] then
+      return .distanceWhile (← need path j "distance_while" >>= str (at_ "distance_while")) (← need path j "holds" >>= formula (at_ "holds"))
+    if keyed ks ["since_rise"] then return .sinceRise (← need path j "since_rise" >>= formula (at_ "since_rise"))
+    if keyed ks ["aggregate", "var", "where", "of"] then
+      return .aggregate (← need path j "aggregate" >>= aggOp (at_ "aggregate")) (← need path j "var" >>= str (at_ "var"))
+        (← need path j "where" >>= formula (at_ "where")) (← sub "of")
+    if keyed ks ["add"] then let ab ← two "add"; return .add ab.1 ab.2
+    if keyed ks ["sub"] then let ab ← two "sub"; return .sub ab.1 ab.2
+    if keyed ks ["mul"] then let ab ← two "mul"; return .mul ab.1 ab.2
+    if keyed ks ["div"] then let ab ← two "div"; return .div ab.1 ab.2
+    if keyed ks ["neg"] then return .neg (← sub "neg")
+    if keyed ks ["abs"] then return .abs (← sub "abs")
+    if keyed ks ["cond", "then", "else"] then
+      return .cond (← need path j "cond" >>= formula (at_ "cond")) (← sub "then") (← sub "else")
+    fail path s!"no term has exactly the keys {ks}"
+
+  partial def formula (path : String) (j : Json) : D Formula := do
+    if j == Json.str "tt" then return .tt
+    if j == Json.str "ff" then return .ff
+    let ks ← keysOf path j
+    let at_ := fun (k : String) => path ++ "." ++ k
+    let sub := fun (k : String) => need path j k >>= formula (at_ k)
+    let two := fun (k : String) => need path j k >>= exactly 2 formula (at_ k) >>= fun xs => pair2 (at_ k) xs
+    let many := fun (k : String) => do
+      let xs ← need path j k >>= elems formula (at_ k)
+      match xs with
+      | a :: b :: rest => pure (a, b :: rest)
+      | _ => fail (at_ k) s!"expected at least 2 elements, found {xs.length}"
+    let s := fun (k : String) => need path j k >>= str (at_ k)
+    let len := fun (_ : Unit) => need path j "length" >>= term (at_ "length")
+    let kind := fun (k : String) => need path j k >>= arg (at_ k)
+    let args := fun (_ : Unit) => need path j "args" >>= elems arg (at_ "args")
+    let params := fun (_ : Unit) => need path j "params" >>= elems term (at_ "params")
+    let mapOf := fun (k : String) => need path j k >>= strMap (at_ k)
+    let win := fun (k : String) => need path j k >>= measureOf (at_ k)
+    if keyed ks ["atom", "args", "params"] then return .atom (← s "atom") (← args ()) (← params ())
+    if keyed ks ["cmp", "lhs", "rhs"] then
+      return .cmp (← need path j "lhs" >>= term (at_ "lhs")) (← need path j "cmp" >>= cmpOp (at_ "cmp")) (← need path j "rhs" >>= term (at_ "rhs"))
+    if keyed ks ["asm"] then return .asm (← s "asm")
+    if keyed ks ["same"] then
+      let ab ← need path j "same" >>= exactly 2 arg (at_ "same") >>= pair2 (at_ "same")
+      return .same ab.1 ab.2
+    if keyed ks ["not"] then return .not (← sub "not")
+    if keyed ks ["and"] then let xs ← many "and"; return joinRight .and xs.1 xs.2
+    if keyed ks ["or"] then let xs ← many "or"; return joinRight .or xs.1 xs.2
+    if keyed ks ["implies"] then let ab ← two "implies"; return .implies ab.1 ab.2
+    if keyed ks ["always"] then return .always (← sub "always")
+    if keyed ks ["eventually"] then return .eventually (← sub "eventually")
+    if keyed ks ["until"] then let ab ← two "until"; return .until ab.1 ab.2
+    if keyed ks ["since"] then let ab ← two "since"; return .since ab.1 ab.2
+    if keyed ks ["holds_for", "length", "subject", "body"] then
+      return .holdsFor (← win "holds_for") (← len ()) (← s "subject") (← sub "body")
+    if keyed ks ["within", "length", "subject", "body"] then
+      return .within (← win "within") (← len ()) (← s "subject") (← sub "body")
+    if keyed ks ["until_within", "length", "subject", "hold", "reach"] then
+      return .untilWithin (← win "until_within") (← len ()) (← s "subject") (← sub "hold") (← sub "reach")
+    if keyed ks ["at_last", "length", "subject", "when", "body"] then
+      return .atLast (← win "at_last") (← len ()) (← s "subject") (← sub "when") (← sub "body")
+    if keyed ks ["count", "since", "op", "n"] then
+      return .count (← sub "count") (← sub "since") (← need path j "op" >>= cmpOp (at_ "op")) (← need path j "n" >>= strictNat (at_ "n"))
+    if keyed ks ["rises"] then return .rises (← sub "rises")
+    if keyed ks ["defined_when", "body"] then return .definedWhen (← sub "defined_when") (← sub "body")
+    if keyed ks ["derived", "args", "params"] then return .derived (← s "derived") (← args ()) (← params ())
+    if keyed ks ["rule", "map"] then return .rule (← s "rule") (← mapOf "map")
+    if keyed ks ["rule_applies", "map"] then return .ruleApplies (← s "rule_applies") (← mapOf "map")
+    if keyed ks ["exists_user", "body"] then return .existsUser (← s "exists_user") (← sub "body")
+    if keyed ks ["forall_user", "body"] then return .forallUser (← s "forall_user") (← sub "body")
+    if keyed ks ["exists_region", "var", "body"] then return .existsRegion (← kind "exists_region") (← s "var") (← sub "body")
+    if keyed ks ["forall_region", "var", "body"] then return .forallRegion (← kind "forall_region") (← s "var") (← sub "body")
+    if keyed ks ["exists_device", "var", "body"] then return .existsDevice (← kind "exists_device") (← s "var") (← sub "body")
+    if keyed ks ["forall_device", "var", "body"] then return .forallDevice (← kind "forall_device") (← s "var") (← sub "body")
+    fail path s!"no formula has exactly the keys {ks}"
+end
+
+/-- A case's entities: `{name: {"kind": "track" | "region" | "device", "id": n}}`. -/
+def entities (path : String) (j : Json) : D (List (String × Val)) := do
+  match j with
+  | .obj kvs => kvs.toArray.toList.mapM fun (name, v) => do
+      let p := path ++ "." ++ name
+      let ks ← keysOf p v
+      if !keyed ks ["kind", "id"] then fail p "an entity is {\"kind\", \"id\"}"
+      else
+        let id ← strictNat (p ++ ".id") (← need p v "id")
+        match ← str (p ++ ".kind") (← need p v "kind") with
+        | "track" => pure (name, .track id)
+        | "region" => pure (name, .region id)
+        | "device" => pure (name, .device id)
+        | k => fail (p ++ ".kind") s!"unknown entity kind {k}"
+  | _ => fail path "expected an object"
 
 def parse {α : Type} (dec : Json → D α) (text : String) : D α := do
   dec (← Json.parse text)

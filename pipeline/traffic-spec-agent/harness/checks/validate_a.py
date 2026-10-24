@@ -1,13 +1,14 @@
-"""Validate A: the deterministic checks of design §4 over a blueprint."""
+"""Validate A: the deterministic checks over a blueprint, before any code is written."""
 from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from ..model import nodeid
-from ..model.blueprint import (Node, ConceptRecord, REQUIRED, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of,
-                        normalize_verdict, CONCEPT_REQUIRED, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
-from ..model.units import FACTORS, stated_figures, to_core
+from ..model.blueprint import (Node, ConceptRecord, span_offsets, PLANNED_NARROWING_KINDS, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of,
+                        normalize_verdict, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
+from ..model.units import FACTORS, stated_figures, to_core, unsupported_figures
+from ..model import corpus
 from ..model.corpus import Law
-from ..model.mapping import MappingIndex, normalize
+from ..model.mapping import MappingIndex
 from ..model.ontology import Ontology
 from ..model.reading import Reading
 
@@ -58,26 +59,35 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
     errs = []
     spans = node.spans()
     carriers: dict[str, list[str]] = {sid: [] for sid in spans}
-    for key in ("elements", "operationalizations", "assumptions", "compositions", "residues", "gaps"):
+    for key in ("elements", "operationalizations", "assumptions", "compositions", "residues"):
         for item in node.get(key, []):
             sid = item.get("span")
             if sid not in spans:
                 errs.append(f"{node.id}: {key} entry refers to unknown span {sid!r}")
             else:
                 carriers[sid].append(key)
+    for g in node.get("gaps", []):                  # a gap annotates a span its nearest atoms carry; it carries nothing
+        sid = g.get("span")
+        if sid not in spans:
+            errs.append(f"{node.id}: gaps entry refers to unknown span {sid!r}")
+        elif not {"elements", "operationalizations"} & set(carriers[sid]):
+            errs.append(f"{node.id}: gap on span {sid}, which no element or operationalization carries: map the span to its nearest "
+                        "atoms or concepts, and let the gap name what is missing")
     for sid, s in spans.items():
         role, n = s.get("role"), len(carriers[sid])
         if role == "reference":
-            # a reference names one or several rules: one composition per rule named, or one residue/gap
+            # a reference names one or several rules: one composition per rule named, or one residue
             if n == 0 or (n > 1 and set(carriers[sid]) != {"compositions"}):
-                errs.append(f"{node.id}: reference span {sid} must be carried by compositions (one per rule it names) or by one residue or gap")
+                errs.append(f"{node.id}: reference span {sid} must be carried by compositions (one per rule it names) or by one residue")
             if corpus_ids and "residues" in carriers[sid]:
-                named = [i for i in re.findall(r"\[((?:NRS|LVMC)-[A-Za-z0-9-]+)\]", s.get("text", "")) if i in corpus_ids]
+                named = [i for i in corpus.cited_law_ids(s.get("text", "")) if i in corpus_ids]
                 if named:
                     errs.append(f"{node.id}: reference span {sid} names {named}, law(s) of this corpus, and is carried by a residue; "
-                                "a reference to a law of the corpus is a composition (`as` exception, condition, compliance or unless) or a gap")
+                                "a reference to a law of the corpus is a composition (`as` exception, condition, compliance or unless)")
         elif role in SUBSTANTIVE and n != 1:
-            errs.append(f"{node.id}: span {sid} ({role}) is carried by {n} entries, must be exactly one")
+            errs.append(f"{node.id}: span {sid} ({role}) is carried by {n} entries, must be exactly one"
+                        + (" — words that need two carriers need another cut of the text: a repair withdraws the record as a plan defect "
+                           "(`kind: \"plan\"`)" if n > 1 else ""))
         elif role == "sibling" and n != 0:
             errs.append(f"{node.id}: sibling span {sid} belongs to another node of the same law and carries nothing here")
         if role == "definitional" and n == 0 and not re.search(r"\[DEF-", s.get("text", "")):
@@ -85,7 +95,22 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
     return errs
 
 
-def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = None) -> tuple[list[str], list[dict]]:
+def fence_words(ev: dict) -> str:
+    """Why a fenced version may not be used, in the words a returned record carries."""
+    reason = (ev or {}).get("reason")
+    if reason == "dependency_defect":
+        return "a version an adjudicated counterexample found defective"
+    if reason == "gate":
+        return f"a version today's gates reject ({str((ev or {}).get('evidence', ''))[:160]})"
+    if reason == "context":
+        return "a version whose dependency context changed and that no longer meets its obligations"
+    if reason == "dependency":
+        return f"a version that calls the fenced `{(ev or {}).get('provider')}`"
+    return "a fenced version"
+
+
+def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = None,
+                     fenced: dict[str, dict] | None = None) -> tuple[list[str], list[dict]]:
     """Unknown ids: a gap when the node proposes one for that span, a rejection otherwise. A concept
     id is known when it is accepted (this run's or the base run's) or proposed in this plan."""
     errs, gaps = [], []
@@ -94,9 +119,7 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
     for e in node.get("elements", []):
         for ident in list(e.get("atoms", [])) + list(e.get("derived", [])):
             if ident.startswith("ru.aggregate"):
-                if "=" not in ident:
-                    errs.append(f"{node.id}: `ru.aggregate` names no word on span {e.get('span')} (write `ru.aggregate=<word>`)")
-                continue          # the word itself is checked against the reading
+                continue          # its id is checked against the reading with every other claim
             if not onto.knows(ident) and ident not in concept_ids:
                 if e.get("span") in proposed:
                     errs.append(f"{node.id}: span {e.get('span')} carries a gap and maps to `{ident}`, which does not exist: map the span "
@@ -105,6 +128,10 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
                     errs.append(f"{node.id}: concept `{ident}` is neither accepted nor proposed in this plan (a concept record for span {e.get('span')})")
                 else:
                     errs.append(f"{node.id}: `{ident}` is not in the ontology and no gap is proposed for span {e.get('span')}")
+    claims = node.claimed_atoms()
+    fenced = fenced or {}
+    errs += [f"{node.id}: concept `{c}` is {fence_words(fenced[c])}: supersede it or map the words around it"
+             for c in sorted(claims & set(fenced))]
     for o in node.get("operationalizations", []):
         cs = concepts_of(o)
         if not cs:
@@ -197,13 +224,17 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
                 value = to_core(rp["value"], rp["unit"]) if rp else None
             except (KeyError, ValueError, TypeError):
                 value = None
-            words = next((w for core, x, w in stated if (core, x) == value), None)
+            words = next((f.words for f in stated if (f.core, f.value) == value), None)
             if words:
                 also = " as well as the declared literal" if value in declared else ""
                 errs.append(f"{node.id}: span {sid} states `{words}`, and the operationalization bounds it with `{p}`{also}, "
                             f"whose reading value is the same figure; a figure the law states is a literal on its span, never a "
                             f"reading parameter (declare it in `literals` and drop `{p}`, or name a parameter for what the text does not state)")
-    stated_all = {(core, x) for s in spans.values() for core, x, _ in stated_figures(s.get("text", ""))}
+    stated_all = {(f.core, f.value) for s in spans.values() for f in stated_figures(s.get("text", ""))}
+    for sid, sp in spans.items():
+        for u in unsupported_figures(sp.get("text", "")):
+            errs.append(f"{node.id}: span {sid} states `{u.words}`, which the harness cannot read as a figure; the operator extends the "
+                        "figure parser (`harness/model/units.py`) before this law can be checked")
     proposed = {pr.get("name"): pr for pr in node.get("param_proposals", []) if isinstance(pr, dict)}
     for name, pr in proposed.items():
         if not name or not _PARAM.match(str(name)):
@@ -234,10 +265,20 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
                 errs.append(f"{node.id}: parameter `{p}` is in no catalogue and the node proposes none: add it to `param_proposals` "
                             "(name, unit, value, convention, source) or name a catalogued parameter")
     for ident in sorted(node.claimed_atoms()):
+        if ident == "ru.aggregate":
+            errs.append(f"{node.id}: a bare `ru.aggregate` is claimed: claim `ru.aggregate=<aggregate id>` wherever the record "
+                        "names it (an element, an operationalization's concepts, the occasion), with the id the definitions table admits")
         if ident.startswith("ru.aggregate="):
-            w = ident.split("=", 1)[1]
-            if w not in reading.aggregate_words():
-                errs.append(f"{node.id}: aggregate word `{w}` is not declared by the reading (its `aggregates`)")
+            aid = ident.split("=", 1)[1]
+            if "::" not in aid:
+                errs.append(f"{node.id}: `{ident}` names no aggregate id: claim `ru.aggregate=<definition id>::<term>` as the definitions "
+                            "table admits it, or a law-local `<law id>:<span>::<term>`")
+            elif not aid.startswith("DEF-") and not aid.startswith(node.law + ":"):
+                errs.append(f"{node.id}: the law-local aggregate `{aid}` belongs to another law")
+            elif aid not in reading.aggregate_ids() and aid not in getattr(reading, "pending_ids", set()) \
+                    and not (getattr(reading, "pending_aggregates", False) and aid.startswith("DEF-")):
+                errs.append(f"{node.id}: aggregate `{aid}` is not admitted: claim an id the definitions table admits, or write the "
+                            "law-local aggregate in `aggregates.jsonl`")
     return errs, proposals
 
 
@@ -250,7 +291,9 @@ def check_anchoring(node: Node) -> list[str]:
     claimed = {c.split("=")[0] for c in node.claimed_atoms()}
     features = sorted(c for c in claimed if c.startswith("st.") or c.startswith("dev."))
     if features and not (claimed & ANCHORS):
-        return [f"{node.id}: claims {features[:4]} but no anchoring atom ({sorted(ANCHORS)}): a feature the rule reads must be the subject's, not any in the scene — claim `rel.occupies` (or `st.region_geometry`) on the span that places the subject on it"]
+        return [f"{node.id}: the record claims {features[:4]} but no anchoring atom ({sorted(ANCHORS)}) — a record-level check: the record must "
+                "claim an atom that can tie a feature to a road user (`rel.occupies`, `st.region_geometry`, …) on the span that places the "
+                "subject; whether each quantified feature is so tied is checked on the formula at the gate"]
     return []
 
 
@@ -439,12 +482,14 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     return errs
 
 
-def claimed_obligation(node: Node) -> str | None:
-    """The text of the one obligation span this node carries (element, operationalization or residue)."""
-    spans = node.spans()
+def claimed_obligation(node: Node, law_text: str) -> tuple[int, int] | None:
+    """Where in the law the one obligation span this node carries (by an element, an
+    operationalization or a residue) lies: a duty is its occurrence, so two duties in identical
+    words are two."""
+    spans, offs = node.spans(), span_offsets(node.get("segmentation", []), law_text)
     carried = [e.get("span") for key in ("elements", "operationalizations", "residues") for e in node.get(key, [])]
-    texts = {spans[sid]["text"] for sid in carried if sid in spans and spans[sid].get("role") == "obligation"}
-    return next(iter(texts)) if len(texts) == 1 else None
+    at = {offs[sid] for sid in carried if sid in spans and spans[sid].get("role") == "obligation" and sid in offs}
+    return next(iter(at)) if len(at) == 1 else None
 
 
 SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
@@ -521,13 +566,13 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = Non
     return errs
 
 
-def check_reemission(node: Node, accepted: dict[str, Node]) -> list[str]:
+def check_reemission(node: Node, accepted: dict[str, Node], law_text: str) -> list[str]:
     """A node the run already accepted is never re-planned: a record under its id must carry the
     same obligation span and the same atoms (a re-emission the harness will not code again)."""
     acc = accepted.get(node.id)
     if acc is None:
         return []
-    if claimed_obligation(node) != claimed_obligation(acc) or node.claimed_atoms() != acc.claimed_atoms():
+    if claimed_obligation(node, law_text) != claimed_obligation(acc, law_text) or node.claimed_atoms() != acc.claimed_atoms():
         return [f"{node.id}: already accepted, and this record differs from the accepted one (obligation span or atoms); "
                 f"an accepted node is not re-planned — re-emit it unchanged or leave it out, and re-plan the returned nodes only"]
     return []
@@ -540,11 +585,10 @@ def check_identity(node: Node, law_nodes: list[Node], law: Law) -> list[str]:
         return [f"{node.id}: law_refs must start with the law it segments"]
     if not any(s.get("role") == "obligation" for s in node.get("segmentation", [])):
         return [f"{node.id}: no obligation span"]
-    mine = claimed_obligation(node)
+    mine = claimed_obligation(node, law.text)
     if mine is None:
         return [f"{node.id}: a node carries exactly one obligation span (by an element, an operationalization or a residue)"]
-    texts = {claimed_obligation(n) for n in law_nodes} - {None}
-    ordered = sorted(texts, key=lambda t: law.text.find(t))
+    ordered = sorted({claimed_obligation(n, law.text) for n in law_nodes} - {None})
     total, ordinal = len(ordered), ordered.index(mine) + 1
     expected = nodeid.derive(law.id, ordinal, total)
     if node.id != expected:
@@ -553,26 +597,26 @@ def check_identity(node: Node, law_nodes: list[Node], law: Law) -> list[str]:
 
 
 def check_decomposition(nodes: list[Node], law: Law) -> list[str]:
-    """Across the nodes of one law: obligation spans (by their words) partitioned, one node each; a
-    span one node marks `sibling` is another node's obligation or claimed span."""
+    """Across the nodes of one law: obligation spans (by their occurrence in the law) partitioned, one
+    node each; a span one node marks `sibling` is another node's obligation or claimed span."""
     errs = []
-    seen: dict[str, str] = {}
-    claimed_texts: dict[str, set[str]] = {}
+    seen: dict[tuple, str] = {}
+    offs = {n.id: span_offsets(n.get("segmentation", []), law.text) for n in nodes}
     for n in nodes:
         carried = {e.get("span") for key in ("elements", "operationalizations", "residues", "compositions", "assumptions") for e in n.get(key, [])}
-        claimed_texts[n.id] = {normalize(s["text"]) for s in n.get("segmentation", []) if s["id"] in carried}
         for s in n.get("segmentation", []):
-            if s.get("role") == "obligation" and s["id"] in carried:
-                key = normalize(s["text"])
+            if s.get("role") == "obligation" and s["id"] in carried and s["id"] in offs[n.id]:
+                key = offs[n.id][s["id"]]
                 if key in seen and seen[key] != n.id:
                     errs.append(f"{law.id}: obligation `{s['text'][:60]}` is claimed by both {seen[key]} and {n.id}")
                 seen[key] = n.id
-    segmented: dict[str, set[str]] = {n.id: {normalize(s["text"]) for s in n.get("segmentation", []) if s.get("role") != "sibling"} for n in nodes}
+    segmented = {n.id: [offs[n.id][s["id"]] for s in n.get("segmentation", []) if s.get("role") != "sibling" and s["id"] in offs[n.id]]
+                 for n in nodes}
     for n in nodes:
         for s in n.get("segmentation", []):
             if s.get("role") == "sibling":
-                key = normalize(s["text"])
-                if not any(key in segmented[m.id] for m in nodes if m.id != n.id):
+                at = offs[n.id].get(s["id"])
+                if at is None or not any(a < at[1] and at[0] < z for m in nodes if m.id != n.id for a, z in segmented[m.id]):
                     errs.append(f"{n.id}: sibling span {s['id']} `{s['text'][:60]}` is no other node's span (a sibling span is one another node of the same law carries)")
     return errs
 
@@ -628,6 +672,8 @@ def check_compositions(node: Node, known: dict[str, Node]) -> list[str]:
         if target is None:
             errs.append(f"{node.id}: composes `{c.get('rule')}`, which is neither accepted nor in this plan")
             continue
+        if target.get("fenced"):
+            errs.append(f"{node.id}: composes `{target.id}`, {fence_words(target.get('fenced'))}: its law is planned again, compose its new node")
         names = {b["name"] for b in target.get("binders", [])}
         mapped = set((c.get("map") or {}).keys())
         if mapped != names:
@@ -657,6 +703,39 @@ def acyclic(nodes: dict[str, Node]) -> list[str]:
     return [f"composition cycle: {c}" for c in cycles]
 
 
+class ValidatorFault(RuntimeError):
+    """A check raised on a record that matched the schema: the validator's defect, never the
+    planner's. The run stops uncharged with the record's id and the traceback."""
+    def __init__(self, ident: str, trace: str):
+        super().__init__(f"the validator failed on `{ident}`: {trace.strip().splitlines()[-1]}")
+        self.trace = f"record: {ident}\n{trace}"
+
+
+def _guarded(ident: str, check, *args):
+    import traceback
+    try:
+        return check(*args)
+    except Exception:
+        raise ValidatorFault(ident, traceback.format_exc())
+
+
+def identifier_collisions(ident: str, groups: dict[str, list[str]]) -> list[str]:
+    """Names the code generator turns into Lean identifiers (`_ident`): two names of one group that
+    are equal, or that become the same identifier, cannot both be written."""
+    from ..lean.skeleton import _ident as lean_ident
+    errs = []
+    for what, names in groups.items():
+        seen: dict[str, str] = {}
+        for name in names:
+            key = lean_ident(name)
+            if key in seen:
+                errs.append(f"{ident}: {what} `{seen[key]}` and `{name}` " + ("repeat" if seen[key] == name else f"both become the identifier `{key}`")
+                            + "; name them apart")
+            else:
+                seen[key] = name
+    return errs
+
+
 def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: Reading,
              index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
@@ -667,40 +746,50 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
     outcomes: list[Outcome] = []
     accepted_concepts = accepted_concepts or {}
     plan_concepts = plan_concepts or []
-    proposal_conflicts = proposal_conflicts_of(nodes)
+    malformed = {id(n): schema_errors(record_id(n.raw, "node_id"), n.raw, NODE_SCHEMA) for n in nodes}
+    for n in nodes:
+        if malformed[id(n)]:
+            outcomes.append(Outcome(n, RETURN, malformed[id(n)]))
+    nodes = [n for n in nodes if not malformed[id(n)]]
+    known_nodes = [n for n in known_nodes or [] if not schema_errors("?", n.raw, NODE_SCHEMA)]
+    proposal_conflicts = _guarded("the plan's nodes", proposal_conflicts_of, list(known_nodes) + nodes)   # earlier batches first
     concept_ids = set(accepted_concepts) | {c.id for c in plan_concepts}
-    concept_atoms = concept_atom_map(onto, accepted_concepts, plan_concepts)
+    concept_atoms = _guarded("the plan's concepts", concept_atom_map, onto, accepted_concepts, plan_concepts)
     concept_params = {cid: rec.get("params", []) for cid, rec in accepted_concepts.items()}
     concept_params.update({c.id: c.params() for c in plan_concepts})
     known = dict(accepted); known.update({n.id: n for n in (known_nodes or [])}); known.update({n.id: n for n in nodes})
     for n in nodes:
-        resolve_rule_ids(n, known)
+        _guarded(n.id, resolve_rule_ids, n, known)
     by_law: dict[str, list[Node]] = {}
     for n in nodes:
         by_law.setdefault(n.get("law_refs", ["?"])[0], []).append(n)
     plan_ids = {n.id for n in nodes}
+    ids = [n.id for n in nodes]
+    repeated = {i for i in ids if ids.count(i) > 1}
     # the law's nodes, for identity and decomposition: this plan's, and the accepted ones it leaves out
     for a in accepted.values():
         if a.law in by_law and a.id not in plan_ids:
             by_law[a.law].append(a)
-    cycle_errs = acyclic(known)
-    for n in nodes:
-        errs = [f"{n.id}: missing field `{k}`" for k in REQUIRED if k not in n.raw]
-        errs += shape_errors(n.id, n.raw, ("segmentation", "elements", "operationalizations", "assumptions", "compositions", "param_proposals", "narrowings",
-                                           "residues", "binders", "scenarios", "literals", "gaps"))
-        law = laws.get(n.get("law_refs", ["?"])[0])
+    cycle_errs = _guarded("the plan's compositions", acyclic, known)
+    def one(n: Node) -> Outcome:
+        errs = []
+        refs = n.get("law_refs", ["?"])
+        law = laws.get(refs[0]) if refs else None
         if law is None:
             errs.append(f"{n.id}: law {n.get('law_refs')} is not in the corpus given to this run")
         if errs:
-            outcomes.append(Outcome(n, RETURN, errs)); continue
+            return Outcome(n, RETURN, errs)
         binders = [b.get("name") for b in n.get("binders", [])]
         if not binders:
             errs.append(f"{n.id}: no binders — the subject is always a binder")
         elif (n.get("subject") or {}).get("binder") not in (None, binders[0]):
             errs.append(f"{n.id}: the subject binder `{(n.get('subject') or {}).get('binder')}` must come first in `binders`")
+        if n.id in repeated:
+            errs.append(f"{n.id}: more than one record of this plan has this id; a node id names one record")
+        errs += identifier_collisions(n.id, {"binder": binders, "parameter": sorted(set(n.params()))})
         errs += check_segmentation(n, law)
         errs += check_accounting(n, set(laws))
-        closed_errs, gaps = check_closed_set(n, onto, concept_ids)
+        closed_errs, gaps = check_closed_set(n, onto, concept_ids, {c: r["fenced"] for c, r in accepted_concepts.items() if r.get("fenced")})
         errs += closed_errs
         foreign = {p for m in list(accepted.values()) + list(nodes) + list(known_nodes or []) if m.law != n.law for p in m.params()}
         std_errs, proposals = check_standards(n, reading, foreign)
@@ -710,12 +799,13 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_occasion(n, concept_params, onto, concept_ids, concept_atoms)
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)
-        errs += check_decomposition(by_law[law.id], law)
+        errs += [e for e in check_decomposition(by_law[law.id], law) if re.search(rf"(?<![\w]){re.escape(n.id)}(?![\w])", e)]   # law-wide, each error to the nodes it names
         errs += check_segment_roles(n, index)
         errs += check_compositions(n, known)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps)
-        errs += check_reemission(n, accepted)
+        errs += check_reemission(n, accepted, law.text)
+        errs += check_region_places(n.id, n.claimed_atoms(), onto)
         errs += [c for c in cycle_errs if n.id in c]
         obligation_residue = any(n.spans().get(r.get("span"), {}).get("role") == "obligation" for r in n.get("residues", []))
         # the obligation itself in a residue closes the law: the vocabulary cannot carry the duty, and
@@ -723,16 +813,19 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         # span mapped to its nearest atoms, and the gap is filed only when the coder confirms the words
         # cannot be written with them (the gate's `UNEXPRESSED` on that span)
         if obligation_residue and not gaps:
-            outcomes.append(Outcome(n, FAIL, [f"{n.id}: the obligation itself is a residue — not expressible"] + errs))
+            return Outcome(n, FAIL, [f"{n.id}: the obligation itself is a residue — not expressible"] + errs)
         elif errs:
-            outcomes.append(Outcome(n, RETURN, errs, gaps))
+            return Outcome(n, RETURN, errs, gaps)
         else:
-            outcomes.append(Outcome(n, ACCEPT, proposals=proposals, gaps=gaps))
+            return Outcome(n, ACCEPT, proposals=proposals, gaps=gaps)
+
+    for n in nodes:
+        outcomes.append(_guarded(n.id, one, n))
     return outcomes
 
 
 # ---------------------------------------------------------------------------------------------
-# Concepts (DERIVED_CONCEPTS_PLAN §5.1, §6, §7.4, §8)
+# Concepts: the record of a concept a plan proposes, checked like a node's
 # ---------------------------------------------------------------------------------------------
 _IDENT = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -746,6 +839,12 @@ class ConceptOutcome:
 
 def _ws(text: str) -> str:
     return " ".join(str(text or "").split())
+
+
+def record_id(raw, key: str) -> str:
+    """A record's id as an error message names it: the id when it is a string, else a placeholder."""
+    v = raw.get(key) if isinstance(raw, dict) else None
+    return v if isinstance(v, str) and v.strip() else f"(a record whose `{key}` is {_found(v)})"
 
 
 def concept_refs_acyclic(plan: list[ConceptRecord], accepted: dict[str, dict]) -> list[str]:
@@ -771,18 +870,122 @@ def concept_refs_acyclic(plan: list[ConceptRecord], accepted: dict[str, dict]) -
     return cycles
 
 
-def shape_errors(ident: str, raw: dict, list_fields: tuple[str, ...]) -> list[str]:
-    """A record whose list fields are not lists of objects is malformed, and says so instead of
-    crashing a check that reads them."""
-    errs = []
-    for k in list_fields:
-        v = raw.get(k)
-        if v is None:
-            continue
-        if not isinstance(v, list):
-            errs.append(f"{ident}: `{k}` must be a list")
-        elif any(not isinstance(x, dict) for x in v):
-            errs.append(f"{ident}: every entry of `{k}` must be an object, not {sorted({type(x).__name__ for x in v if not isinstance(x, dict)})}")
+#: The record schemas: every field the harness reads as a key, an identifier, a string or a
+#: sequence, with its type, for a node and a concept record. A key ending in `?` is optional: absent,
+#: or null (a null optional field is removed, so it reads as absent). `id` is a non-empty string,
+#: `str` a string, `unit` a unit the harness knows, `bool` and `any` as named, a set one of its words; `[t]` a list of `t`
+#: (`[t, n]`: of at least `n` entries), `{...}` an object with those fields (`*` any key), and a
+#: tuple the alternatives. A record that
+#: does not match is returned with every mismatch named by its path, before any check reads it.
+_ELEMENT = {"span": "id", "atoms?": ["id"], "derived?": ["id"], "justification?": "str"}
+_SCENARIO = {"name": "id", "expected": "str", "narrative?": "str", "masked?": ["id"]}
+NODE_SCHEMA = {
+    "node_id": "id", "law_refs": ["id", 1], "applicability": "str", "obligation": "str",
+    "subject?": {"binder": "id", "class_elements?": ["str"]},
+    "segmentation": [{"id": "id", "text": "str", "role": "str"}],
+    "elements": [_ELEMENT],
+    "operationalizations?": [{"span": "id", "standard?": "str", "concepts?": ["id"], "concept?": "id", "params?": ["id"],
+                              "convention?": "str", "surrogate?": "bool"}],
+    "assumptions?": [{"span": "id", "id": "id", "meaning?": "str"}],
+    "compositions?": [{"span": "id", "rule": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id"}],
+    "residues?": [{"span": "id", "why?": "str", "scope?": "str"}],
+    "binders": [{"name": "id", "class_elements?": ["str"]}],
+    "params?": ["id"],
+    "narrowings?": [{"span": "id", "why?": "str", "kind?": PLANNED_NARROWING_KINDS, "category?": "str", "gap?": "id"}],
+    "scenarios": [_SCENARIO],
+    "occasion?": {"act?": ("id", ["id"]), "window?": "id", "spans?": {"*": "str"},
+                  "under_way?": {"words?": "str", "atoms?": ["id"], "derived?": ["id"], "params?": ["id"], "justification?": "str"}},
+    "literals?": [{"span": "id", "text": "str", "value?": "any", "unit?": "str"}],
+    "param_proposals?": [{"name": "id", "unit?": "str", "value?": "any", "convention?": "any", "source?": "any"}],
+    "gaps?": [{"span": "id", "kind?": "str", "proposal?": "any", "nearest?": "any"}],
+}
+CONCEPT_SCHEMA = {
+    "concept_id": "id", "kind": "str", "contract": "str", "definition?": "str",
+    "args": [{"name": "id", "sort": "str", "values?": ["str"]}],
+    "params": [{"name": "id", "unit": "unit", "meaning?": "str"}],
+    "elements": [{"span?": "str", "atoms?": ["id"], "concepts?": ["id"], "justification?": "str"}],
+    "residues?": [{"span?": "str", "why?": "str"}],
+    "literals?": [{"value?": "any", "unit?": "str", "why?": "str"}],
+    "scenarios": [_SCENARIO],
+    "used_by?": ["id"], "supersedes?": "id", "counterexample?": {"narrative?": "str", "expected?": "str"},
+    "differs_from?": {"concept?": "id", "why?": "str"},
+}
+_TYPE_WORDS = {"id": "a non-empty string", "str": "a string", "unit": "a unit the harness knows", "bool": "true or false"}
+
+
+def _describe(want) -> str:
+    if isinstance(want, (set, frozenset)):
+        return "one of " + ", ".join(f"`{w}`" for w in sorted(want))
+    if isinstance(want, tuple):
+        return " or ".join(_describe(w) for w in want)
+    if isinstance(want, list):
+        least = f" (at least {want[1]})" if len(want) > 1 else ""
+        return (f"a list of {_describe(want[0]).removeprefix('a ').removeprefix('an ')}s" if isinstance(want[0], str) else "a list of objects") + least
+    if isinstance(want, dict):
+        return "an object"
+    return _TYPE_WORDS.get(want, want)
+
+
+def _found(v) -> str:
+    if isinstance(v, list):
+        inner = sorted({type(x).__name__ for x in v})
+        return f"a list holding {', '.join(inner)}" if inner else "an empty list"
+    return "null" if v is None else repr(v) if isinstance(v, str) and not v else type(v).__name__
+
+
+def schema_errors(ident: str, raw, schema: dict) -> list[str]:
+    """Every place the record departs from `schema`, by its path (`binders[0].class_elements`), with
+    what was found and what is wanted; a null optional field is removed from the record first."""
+    errs: list[str] = []
+
+    def fits(v, want) -> bool:
+        if isinstance(want, (set, frozenset)):
+            return isinstance(v, str) and v in want
+        if isinstance(want, tuple):
+            return any(fits(v, w) for w in want)
+        if isinstance(want, list):
+            return isinstance(v, list) and len(v) >= (want[1] if len(want) > 1 else 0)
+        if isinstance(want, dict):
+            return isinstance(v, dict)
+        return {"id": lambda: isinstance(v, str) and bool(v.strip()), "str": lambda: isinstance(v, str),
+                "unit": lambda: isinstance(v, str) and v in FACTORS, "bool": lambda: isinstance(v, bool),
+                "any": lambda: True}[want]()
+
+    def check(v, want, path: str) -> None:
+        if isinstance(want, tuple):
+            for w in want:
+                if fits(v, w):
+                    return check(v, w, path)
+            errs.append(f"{ident}: `{path}` must be {_describe(want)}, not {_found(v)}")
+            return
+        if not fits(v, want):
+            errs.append(f"{ident}: `{path}` must be {_describe(want)}, not "
+                        + (repr(v) if isinstance(want, (set, frozenset)) and isinstance(v, str) else _found(v)))
+            return
+        if isinstance(want, list):
+            for i, x in enumerate(v):
+                check(x, want[0], f"{path}[{i}]")
+        elif isinstance(want, dict):
+            obj(v, want, path + ".")
+
+    def obj(d: dict, spec: dict, prefix: str) -> None:
+        if "*" in spec:
+            for k, x in d.items():
+                check(x, spec["*"], f"{prefix}{k}")
+            return
+        for key, want in spec.items():
+            name, optional = key.rstrip("?"), key.endswith("?")
+            if d.get(name) is None and name in d and optional:
+                del d[name]
+            if name not in d:
+                if not optional:
+                    errs.append(f"{ident}: missing field `{prefix}{name}`")
+                continue
+            check(d[name], want, f"{prefix}{name}")
+
+    if not isinstance(raw, dict):
+        return [f"{ident}: a record must be a JSON object, not {_found(raw)}"]
+    obj(raw, schema, "")
     return errs
 
 
@@ -833,13 +1036,52 @@ def kind_claim_errors(c: ConceptRecord, formal: str, values: list[str]) -> list[
     return []
 
 
+_REGION_ATOMS: dict[int, tuple[frozenset, frozenset]] = {}
+
+
+def region_atoms(onto: Ontology) -> tuple[frozenset, frozenset]:
+    """(the region properties, the region kinds) of the active ontology, from the atoms' signatures:
+    an atom read true or false of one region is a region kind; any other atom whose arguments are
+    all regions (with at least one) is a region property."""
+    key = id(onto)
+    if key not in _REGION_ATOMS:
+        from ..lean import surface
+        rows = [r for r in surface.case_catalogue(onto) if r.get("atom")]
+        def regions_only(sig: str) -> bool:
+            inner = sig[sig.index("(") + 1:sig.rindex(")")] if "(" in sig else ""
+            args = [a.strip() for a in inner.split(",") if a.strip()]
+            return "region" in args and all(a == "region" or a.startswith("'") for a in args)
+        sigs: dict[str, list[dict]] = {}
+        for r in rows:
+            sigs.setdefault(r["atom"], []).append(r)
+        kinds = {a for a, rs in sigs.items() if any(r["unit"] == "true / false" and re.fullmatch(r"\w+\(region\)", s)
+                                                   for r in rs for s in r["signatures"])}
+        props = {a for a, rs in sigs.items() if a not in kinds and any(regions_only(s) for r in rs for s in r["signatures"])
+                 and not any("track" in s for r in rs for s in r["signatures"]) and a != "st.region_geometry"}
+        _REGION_ATOMS[key] = (frozenset(props), frozenset(kinds))
+    return _REGION_ATOMS[key]
+
+
+def check_region_places(ident: str, claims: set[str], onto: Ontology) -> list[str]:
+    """A record that reads a region's property claims the kind of region it is read on, since a
+    region quantifier names its kind. How the region is tied to the road user (occupancy, distance,
+    a device governing it) is the formula's, and the gate checks that every quantified region is
+    anchored to a binder (`UNANCHORED_VARIABLE`)."""
+    props, kinds = region_atoms(onto)
+    read = sorted(claims & props)
+    if not read or claims & kinds:
+        return []
+    return [f"{ident}: {', '.join(f'`{a}`' for a in read)} {'is a property' if len(read) == 1 else 'are properties'} of a region: claim "
+            "the kind of region it is read on (for example `st.roadway`) on the span that names the place"]
+
+
 def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accepted: dict[str, dict],
                   plan_ids: set[str], nodes: dict[str, Node], concept_atoms: dict[str, set[str]], mode: str) -> list[str]:
-    errs = [f"{c.id}: missing field `{k}`" for k in CONCEPT_REQUIRED if k not in c.raw]
-    errs += shape_errors(c.id, c.raw, ("args", "params", "elements", "residues", "literals", "scenarios"))
-    if errs:
-        return errs
+    errs: list[str] = []
     cid = c.id
+    errs += identifier_collisions(cid, {"argument": [a["name"] for a in c.args()], "parameter": [p["name"] for p in c.params()]})
+    errs += [f"{cid}: it calls `{r}`, {fence_words(accepted[r]['fenced'])}: call its successor or another concept"
+             for r in sorted(c.refs()) if (accepted.get(r) or {}).get("fenced")]
     if not nodeid.is_concept_id(cid):
         errs.append(f"{cid}: not of the form drv.<family>.<name> with family in {list(nodeid.CONCEPT_FAMILIES)} and a snake_case name (digits only in a final `_v<n>`)")
     if cid in accepted:
@@ -883,6 +1125,7 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
     # elements: contract words → atoms and concepts
     if not c.elements():
         errs.append(f"{cid}: no elements: the contract's words map to nothing")
+    errs += check_region_places(cid, c.claimed_atoms(), onto)
     for e in c.elements():
         span = _ws(e.get("span"))
         if not span or span not in contract:
@@ -916,7 +1159,9 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
             declared.add(to_core(lit.get("value"), lit.get("unit")))
         except (KeyError, TypeError, ValueError):
             pass
-    for core, v, words in stated_figures(str(c.get("contract", ""))):   # a figure the contract states is one the body writes
+    for u in unsupported_figures(str(c.get("contract", ""))):
+        errs.append(f"{cid}: the contract states \"{u.words}\", which the harness cannot read as a figure: write the figure in digits")
+    for core, v, words, _start in stated_figures(str(c.get("contract", ""))):   # a figure the contract states is one the body writes
         if (core, v) not in declared:
             errs.append(f"{cid}: the contract states \"{words}\" but `literals` does not declare it — declare it, or "
                         "name a parameter for it and say so in the contract")
@@ -942,7 +1187,7 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
         n = nodes.get(nid)
         if n is None:
             continue
-        if cid not in {d for e in n.get("elements", []) for d in e.get("derived", [])} | {x for o in n.get("operationalizations", []) for x in concepts_of(o)}:
+        if cid not in n.claimed_atoms():
             errs.append(f"{cid}: node `{nid}` does not claim it")
     # supersession
     old = c.get("supersedes")
@@ -954,13 +1199,15 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
         elif _ws(accepted[old].get("contract")) != contract:
             errs.append(f"{cid}: a supersession keeps the contract; a different contract is a new concept under a new name")
         ce = c.get("counterexample")
-        if not isinstance(ce, dict) or normalize_verdict(ce.get("expected", "")) not in ("compliant", "violated") or not _ws(ce.get("narrative")):
+        if old in accepted and accepted[old].get("fenced") and not ce:
+            pass                                          # a fenced version is superseded on its fence: the fence's evidence stands for a counterexample
+        elif not isinstance(ce, dict) or normalize_verdict(ce.get("expected", "")) not in ("compliant", "violated") or not _ws(ce.get("narrative")):
             errs.append(f"{cid}: a supersession carries a `counterexample` scenario (narrative, expected compliant|violated) on which the old body contradicts the contract")
     # near-duplicates of the catalogue: same sorts and reads, no stated difference
     sorts = sorted((a.get("sort") or "") for a in c.args())
     reads = concept_atoms.get(cid, set())
     for oid, rec in accepted.items():
-        if oid == old:
+        if oid == old or rec.get("fenced"):              # a fenced version is no catalogue entry to reuse
             continue
         if sorted(a.get("sort", "") for a in rec.get("args", [])) == sorts and set(rec.get("reads", [])) == reads and reads:
             if not _ws((c.get("differs_from") or {}).get("why")) or (c.get("differs_from") or {}).get("concept") != oid:
@@ -971,15 +1218,20 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
 def validate_concepts(plan: list[ConceptRecord], defs: list[dict], onto: Ontology, accepted: dict[str, dict],
                       nodes: list[Node], mode: str = "train") -> list[ConceptOutcome]:
     by_def = {d.get("id"): d for d in defs}
-    nodes_by_id = {n.id: n for n in nodes}
+    out = []
+    malformed = {id(c): schema_errors(record_id(c.raw, "concept_id"), c.raw, CONCEPT_SCHEMA) for c in plan}
+    for c in plan:
+        if malformed[id(c)]:
+            out.append(ConceptOutcome(c, RETURN, malformed[id(c)]))
+    plan = [c for c in plan if not malformed[id(c)]]
+    nodes_by_id = {n.raw["node_id"]: n for n in nodes if isinstance(n.raw, dict) and isinstance(n.raw.get("node_id"), str)}
     plan_ids = {c.id for c in plan}
     ids = [c.id for c in plan]
     dup = {i for i in ids if ids.count(i) > 1}
-    concept_atoms = concept_atom_map(onto, accepted, plan)
-    cycles = concept_refs_acyclic(plan, accepted)
-    out = []
+    concept_atoms = _guarded("the plan's concepts", concept_atom_map, onto, accepted, plan)
+    cycles = _guarded("the plan's concepts", concept_refs_acyclic, plan, accepted)
     for c in plan:
-        errs = check_concept(c, by_def, onto, accepted, plan_ids, nodes_by_id, concept_atoms, mode)
+        errs = _guarded(c.id, check_concept, c, by_def, onto, accepted, plan_ids, nodes_by_id, concept_atoms, mode)
         if c.id in dup:
             errs.append(f"{c.id}: proposed twice in this plan")
         errs += [f"concept cycle: {x}" for x in cycles if c.id in x]

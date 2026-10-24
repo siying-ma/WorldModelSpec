@@ -6,8 +6,11 @@
   gate          the gate for one node (what a coding session calls)
   surface       print the generated Core surface a coding session is shown
   index         regenerate Index.lean and TrafficSpecWitness.lean (rules, concepts, witnesses)
-  verify        rebuild the library and run every witness
+  verify        rebuild the library and run every witness, against a run's reading
   status        the run's ledger counts
+  reopen        put a run's failed or decision-blocked laws back to open
+  gap           list the gaps, or record the operator's decision on one
+  split         activate the train or full variant of Core
   doctor        the artifact cross-checks
   score-split   score a test run against the split's test-only atoms
 """
@@ -22,7 +25,6 @@ from .model import blueprint, corpus, ontology
 from .checks import validate_a
 from .model.reading import Reading, write_template
 from .store.state import Options
-from .model.mapping import MappingIndex
 
 DEFAULT_LAWS = "laws/example/train/laws.jsonl"
 DEFAULT_ONTOLOGY = "ontology/ATOMS_train.md"
@@ -89,8 +91,7 @@ def archive_gaps(snapshot: str) -> int:
     decided rows (`retired`, `rejected`) and the id counter stay, so a new run is shown the
     operator's decisions and never reuses an id. Returns the count moved."""
     from .store.gaps import GapLedger
-    ledger = GapLedger(paths.GAP_LEDGER)
-    gone = [r for r in ledger.rows if r.get("state") in ("proposed", "accepted")]
+    gone = GapLedger(paths.GAPS_DIR).remove_undecided()
     if not gone:
         return 0
     dest = paths.RESULTS / moved_name(snapshot) / "gaps_undecided.jsonl"
@@ -98,8 +99,6 @@ def archive_gaps(snapshot: str) -> int:
     with dest.open("a", encoding="utf-8") as f:
         for r in gone:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    ledger.rows = [r for r in ledger.rows if r not in gone]
-    ledger.save()
     return len(gone)
 
 
@@ -111,6 +110,8 @@ class Cli:
         the readings into `results/<snapshot>/reading_proposals.json`, and every undecided gap row
         into `results/<snapshot>/gaps_undecided.jsonl`, so a new run starts from an empty library, a
         reading the operator wrote or reviewed, and a gap ledger of decisions only."""
+        from .store import owner
+        owner.acquire_for_command("init")
         write_template(_p(reading))
         if fresh:
             snapshot = moved_name(snapshot)          # one name for the three archives, also when it is a timestamp
@@ -122,55 +123,73 @@ class Cli:
             gaps_gone = archive_gaps(snapshot)
             print(f"archived {gaps_gone} undecided gap row(s) → results/{snapshot}/gaps_undecided.jsonl" if gaps_gone else "the gap ledger holds no undecided row")
         index_sync.write_index()
-        ok, out = lean.lake_build(paths.LIBRARY)
+        code, out = lean.lake_build(paths.LIBRARY); ok = code == 0
         print("library builds" if ok else out[-2000:])
         return 0 if ok else 1
 
-    def loop(self, run_id: str, laws: str = DEFAULT_LAWS, ontology_file: str = DEFAULT_ONTOLOGY,
-             reading: str = DEFAULT_READING, model: str | None = None, max_iterations: int = 3,
-             plan_attempts: int = 2, gate_budget: int = 6, dry_run: bool = False,
-             max_turns: int = 80, plan_effort: str = "high", code_effort: str = "high", judge_effort: str = "medium",
-             session_budget_usd: float | None = None, session_retries: int = 2, retry_wait: float = 900.0,
-             mode: str = "train", base_run: str | None = None, plan_batch: int = 8,
-             workers: int = 1, plan_turns: int = 40, restart: bool = False,
-             concept_attempts: int = 3, node_attempts: int = 2, repeat_limit: int = 3,
-             reviewer_model: str | None = None, review_effort: str = "high",
-             allow_same_vendor: bool = False) -> int:
-        """`mode` is `train` (concepts may supersede) or `test` (add-only over `base_run`, whose accepted
-        nodes and concepts are loaded read-only). `plan_batch` is the most laws one plan session is given;
-        `workers` the coding sessions run at once;
-        `reviewer_model` the second vendor's model of the behaviour review (required); `plan_turns` the turn cap of a plan or
-        repair session; `restart` discards an interrupted iteration instead of resuming it; `concept_attempts`
-        the coding attempts a concept gets (the first and its repairs), separate from the laws' `plan_attempts`;
-        `node_attempts` the coding attempts a node gets (the first and one after a node repair session); `repeat_limit`
-        the number of times the same upheld divergence on the same words of a node, across the law's plans and repairs,
-        blocks the law for the operator."""
+    def loop(self, run_id: str, **given) -> int:
+        """Run the loop. Every option of `Options` may be given as `--<name> <value>`; an option left
+        out takes the value the run's saved `options.json` holds (a resume), else its default. An
+        option given explicitly counts as given even when it equals the default. A resume whose
+        corpus, ontology, Core, prompts, base reading or base run differ from the saved run stops
+        before any record is rewritten (the loop checks the digests).
+
+        The options: `laws`, `ontology_file`, `reading`, `model`; `mode` (`train`: concepts may
+        supersede; `test`: add-only over `base_run`, read-only); `max_iterations` (iterations, not
+        launches); `plan_attempts`, `concept_attempts`, `node_attempts` (the attempt budgets);
+        `repeat_limit` (consecutive open counts of one upheld case that block its law for the
+        operator); `gate_budget`; `plan_batch`, `workers`, `plan_turns`, `max_turns`, `session_timeout`;
+        `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `session_retries`, `retry_wait`; `reviewer_model`
+        (required), `review_effort`, `allow_same_vendor`, `review_checks`, `review_submissions`,
+        `review_passes`, `max_divergences`, `reviewer_max_output_tokens`, `openai_budget_usd`,
+        `model_prices`; `definition_precedence`; `restart` (discard an interrupted iteration);
+        `dry_run`; `force_takeover`. Returns 0 only when the run ends `complete`."""
+        from dataclasses import fields
         from .loop import run_loop
-        if mode not in ("train", "test"):
+        names = {f.name for f in fields(Options)} | {"ontology_file"}
+        unknown = sorted(set(given) - names)
+        if unknown:
+            raise SystemExit(f"unknown option(s): {', '.join(unknown)}")
+        if "ontology_file" in given:
+            given["ontology"] = given.pop("ontology_file")
+        saved_f = paths.run_dir(run_id) / "options.json"
+        saved = json.loads(saved_f.read_text(encoding="utf-8")) if saved_f.exists() else {}
+        if saved.get("base_reading"):
+            saved["reading"] = saved["base_reading"]
+        kw = {k: v for k, v in saved.items() if k in names and k not in ("run_id", "restart", "force_takeover", "dry_run")}
+        kw.update(given)
+        kw.setdefault("laws", DEFAULT_LAWS); kw.setdefault("ontology", DEFAULT_ONTOLOGY); kw.setdefault("reading", DEFAULT_READING)
+        for k in ("laws", "ontology", "reading", "definition_precedence", "model_prices"):
+            if kw.get(k):
+                kw[k] = _p(str(kw[k]))
+        kw.setdefault("definition_precedence", _p("config/definition_precedence.json"))
+        kw.setdefault("model_prices", _p("config/model_prices.json"))
+        for k in ("plan_effort", "code_effort", "judge_effort", "review_effort"):
+            if k in kw:
+                kw[k] = kw[k] or None
+        opts = Options(run_id=run_id, **kw)
+        if opts.mode not in ("train", "test"):
             raise SystemExit("mode must be `train` or `test`")
-        if mode == "test" and not base_run:
+        if opts.mode == "test" and not opts.base_run:
             raise SystemExit("a test run names the training run it starts from: --base_run <run id>")
-        opts = Options(run_id=run_id, laws=_p(laws), ontology=_p(ontology_file), reading=_p(reading), model=model,
-                       max_iterations=max_iterations, plan_attempts=plan_attempts, gate_budget=gate_budget,
-                       dry_run=dry_run, max_turns=max_turns, plan_effort=plan_effort or None,
-                       code_effort=code_effort or None, judge_effort=judge_effort or None,
-                       session_budget_usd=session_budget_usd, session_retries=session_retries, retry_wait=retry_wait,
-                       mode=mode, base_run=base_run, plan_batch=max(1, int(plan_batch)),
-                       workers=max(1, int(workers)), plan_turns=max(4, int(plan_turns)), restart=restart,
-                       concept_attempts=max(1, int(concept_attempts)), node_attempts=max(1, int(node_attempts)),
-                       repeat_limit=max(1, int(repeat_limit)), reviewer_model=reviewer_model, review_effort=review_effort or None,
-                       allow_same_vendor=allow_same_vendor)
-        print(json.dumps(run_loop(opts), indent=1))
-        return 0
+        for k, lo in (("plan_batch", 1), ("workers", 1), ("plan_turns", 4), ("concept_attempts", 1), ("node_attempts", 1),
+                      ("repeat_limit", 1), ("reviewer_max_output_tokens", 1), ("max_divergences", 1), ("review_checks", 0),
+                      ("review_submissions", 1), ("review_passes", 1)):
+            setattr(opts, k, max(lo, int(getattr(opts, k))))
+        if opts.openai_budget_usd is not None:
+            opts.openai_budget_usd = float(opts.openai_budget_usd)
+        opts.session_timeout = float(opts.session_timeout)
+        result = run_loop(opts)
+        print(json.dumps(result, indent=1))
+        return 0 if result.get("status") == "complete" else 1
 
     def validate(self, blueprint_file: str = "", run_id: str = "", laws: str = DEFAULT_LAWS,
                  ontology_file: str = DEFAULT_ONTOLOGY, reading: str = DEFAULT_READING) -> int:
         """Validator A over a blueprint file, no sessions. With `--run_id` it is the check the loop
-        runs: the run's accepted nodes and concepts, mapping index and reading (with the draft's
-        `aggregates.jsonl` applied). Without a run it
-        is context-free: no accepted node, concept or mapping is known, so a composition of an
-        accepted node or a call of a catalogued concept is reported as unknown."""
-        from .checks import aggregates
+        runs: the run's accepted nodes and concepts, mapping index and reading with its admitted
+        aggregates (a claim of a definition-scoped aggregate the selection has not admitted is left
+        to the loop, which asks the selection role). Without a run it is context-free: no accepted
+        node, concept, aggregate or mapping is known."""
         from .phases import validate as validate_phase
         from .store.state import Run
         if run_id:
@@ -180,8 +199,7 @@ class Cli:
             law_list = corpus.load_laws(run.opts.laws)
             defs = corpus.load_definitions(run.opts.laws)
             onto = ontology.load(run.opts.ontology)
-            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(run.opts.reading))
-            reading_obj = Reading(run.reading_file).with_aggregates(agg_ok)
+            reading_obj = Reading(run.reading_file)
         else:
             if not blueprint_file:
                 raise SystemExit("give --blueprint_file, or --run_id for a run's latest plan")
@@ -189,15 +207,31 @@ class Cli:
             law_list = corpus.load_laws(_p(laws))
             defs = corpus.load_definitions(_p(laws))
             onto = ontology.load(_p(ontology_file))
-            agg_ok, agg_errs = aggregates.validate(aggregates.load(plan_dir / "aggregates.jsonl"), defs, onto, Reading(_p(reading)))
-            reading_obj = Reading(_p(reading)).with_aggregates(agg_ok)
+            reading_obj = Reading(_p(reading))
             run = None
+        reading_obj.pending_aggregates = True
         bad = 0
-        for e in agg_errs:
-            print(f"reject  aggregate: {e}"); bad += 1
-        for r in agg_ok:
-            print(f"accept  aggregate `{r['word']}` ← {r['definition']} ({len(r['classes'])} members)")
         by_id = {l.id: l for l in law_list}
+        # the draft's own law-local aggregates: checked for structure and ownership, and those that pass are pending
+        from .checks import aggregates as agg_checks
+        draft_laws = {n.law for n in blueprint.load(bp) if isinstance(n.get("law_refs"), list) and n.get("law_refs")}
+        reading_obj.pending_ids = set()
+        try:
+            draft_aggs = agg_checks.load(plan_dir / "aggregates.jsonl")
+        except ValueError as e:
+            print(f"reject  aggregates.jsonl: {e}"); bad += 1; draft_aggs = []
+        for r in draft_aggs:
+            aid = str(r.get("aggregate_id", "")) if isinstance(r, dict) else ""
+            law_id = aid.split(":", 1)[0]
+            errs = ([f"`{aid}` is not a law-local id `<law id>:<span>::<term>`"] if not agg_checks.law_local(aid) else
+                    [f"`{aid}` belongs to {law_id}, which has no node in this draft"] if law_id not in draft_laws or law_id not in by_id else
+                    agg_checks.record_defects(r, onto, {law_id: " ".join(by_id[law_id].text.split())}))
+            if errs:
+                print(f"reject  aggregate {aid}")
+                for e in errs: print("        ", e)
+                bad += 1
+            else:
+                reading_obj.pending_ids.add(aid)
         # the other plan batches of the same iteration that already exist: their nodes may be composed and their
         # concepts called, as the loop's merged validation will see them
         sib_nodes, sib_concepts = [], []
@@ -222,8 +256,16 @@ class Cli:
         return 1 if bad else 0
 
     def gate(self, run_id: str, node_id: str) -> int:
-        """The gate for one node or one concept (`node_id` is either id)."""
+        """The gate for one node or one concept (`node_id` is either id). Run from a coding session,
+        it passes only while the run that started the session owns the library; run on its own, it
+        takes the library like any mutating command."""
+        import os
         from .phases.code import gate_from_cli
+        from .store import owner
+        if os.environ.get(owner.ENV):
+            owner.check_delegated()
+        else:
+            owner.acquire_for_command("gate")
         v = gate_from_cli(run_id, node_id)
         print(v.verdict)
         for d in v.details: print("  ", d)
@@ -235,41 +277,90 @@ class Cli:
         print(surface_mod.core_surface()); return 0
 
     def index(self) -> int:
+        """Regenerate the registries; it takes the library like any mutating command."""
+        from .store import owner
+        owner.acquire_for_command("index")
         index_sync.write_index(); print(f"{len(index_sync.node_ids())} rule(s) registered"); return 0
 
-    def verify(self, reading: str = DEFAULT_READING) -> int:
-        from .phases.integrate import verify_library
+    def verify(self, run_id: str) -> int:
+        """Evaluate a run's own context: every accepted record of its effective view (its base
+        chain's and its own) held to today's gates, a record the gate rejects fenced with what calls
+        it; then the active selection (every record not fenced) in the registries, every witness
+        against the run's reading, the accepted records whose files the library lacks, and those
+        whose dependency context changed (their obligations certified again). The active selection's
+        result and each fenced record's recorded failure are reported apart; exits 0 only when the
+        active selection verifies and nothing is fenced."""
+        from .phases.integrate import verify_library, recheck_contexts, admission_recheck, fence_closure, AdmissionUnavailable
+        from .store import owner
+        from .store.state import Run
+        from .loop import semantic_inputs, refresh_inactive, effective_laws, context_base
+        from .model import nodeid
+        owner.acquire_for_command("verify")
+        run = Run.load(run_id)
+        reading = Reading(run.reading_file)
+        sem = semantic_inputs(run.opts)
         work = paths.RESULTS / "_verify"; work.mkdir(parents=True, exist_ok=True)
-        ok, problems = verify_library(work, Reading(_p(reading)))
-        print("OK" if ok else "\n".join(problems)); return 0 if ok else 1
+        try:
+            admission_recheck(run, reading, {"core": sem["core"], "ontology": sem["ontology"]})
+        except AdmissionUnavailable as e:
+            print(f"infrastructure: the admission recheck did not run: {e}"); return 1
+        _ok, failing, unresolved = recheck_contexts(run, reading, context_base(run.opts, sem),
+                                                    effective_laws(run, {l.id: l for l in corpus.load_laws(run.opts.laws)}))
+        fence_closure(run)
+        refresh_inactive(run)
+        active_nodes = sorted(i for i in run.all_nodes() if i not in run.fenced)
+        active_concepts = sorted(c for c in run.all_concepts() if c not in run.fenced)
+        missing = [i for i in active_nodes if not (paths.LIBRARY / nodeid.rule_path(i)).exists()]
+        missing += [c for c in active_concepts if not (paths.LIBRARY / nodeid.concept_path(c)).exists()]
+        status, problems, _owners = verify_library(work, reading, active_nodes, active_concepts)
+        problems = problems + [f"accepted, but its files are not in the library: `{i}`" for i in missing] + failing + unresolved
+        good = status == "verified" and not missing and not failing and not unresolved
+        print(f"active selection ({len(active_nodes)} node(s), {len(active_concepts)} concept(s)): "
+              + ("OK" if good else f"{status}\n" + "\n".join(problems)))
+        if run.fenced:
+            print(f"fenced ({len(run.fenced)}), each with its recorded failure:")
+            for ident, ev in sorted(run.fenced.items()):
+                print(f"  `{ident}` ({ev.get('kind')}, {ev.get('reason')}): {str(ev.get('evidence', ''))[:400]}")
+        return 0 if good and not run.fenced else 1
 
     def reopen(self, run_id: str, laws: str = "") -> int:
         """Operator action: put a run's failed laws (or any law not accepted or blocked on a gap) back to `open`
         with a fresh attempt budget (all, or a comma list); a failed concept only those laws used is cleared."""
-        from .store.ledger import Ledger
-        ledger = Ledger(paths.run_dir(run_id) / "ledger.jsonl", [], 2)
+        from .store import owner
+        from .store.ledger import Ledger, ConceptLedger, NodeLedger
+        from .store.state import Run, commit_state
+        from .model import nodeid
+        owner.acquire_for_command("reopen")
+        run = Run.load(run_id)                    # the projections are completed from the run's snapshot first
+        ledger = Ledger(run.ledger_file, [], run.opts.plan_attempts)
+        node_ledger = NodeLedger(run.node_ledger_file, run.opts.node_attempts)
+        concept_ledger = ConceptLedger(run.concept_ledger_file, run.opts.concept_attempts)
         out = ledger.reopen([l.strip() for l in laws.split(",") if l.strip()] or None)
-        ledger.save()
-        # a reopened law is planned afresh: its held nodes and its node-repair entries are dropped
-        dfile = paths.run_dir(run_id) / "deferred_nodes.jsonl"
-        if dfile.exists():
-            kept = [l for l in dfile.read_text(encoding="utf-8").splitlines() if l.strip() and not (set(json.loads(l).get("law_refs", [])) & set(out))]
-            dfile.write_text("".join(k + "\n" for k in kept), encoding="utf-8")
-        nfile = paths.run_dir(run_id) / "node_ledger.jsonl"
-        if nfile.exists():
-            kept = [l for l in nfile.read_text(encoding="utf-8").splitlines() if l.strip() and json.loads(l).get("law") not in out]
-            nfile.write_text("".join(k + "\n" for k in kept), encoding="utf-8")
+        # a reopened law is planned afresh: its held nodes and its node entries (repairs, judge counts) are dropped
+        run.deferred_nodes = [d for d in run.deferred_nodes if not (set(d.get("law_refs", [])) & set(out))]
+        for law in out:
+            node_ledger.drop_law(law)
         # a failed concept that only the reopened laws used gets a fresh start with them
-        from .store.ledger import ConceptLedger
-        cfile = paths.run_dir(run_id) / "concept_ledger.jsonl"
-        freed: list[str] = []
-        if cfile.exists() and out:
-            from .model import nodeid
-            cl = ConceptLedger(cfile, 1)
-            freed = [cid for cid, e in cl.entries.items() if e.state == "failed" and e.used_by
-                     and all(nodeid.law_of(str(u))[0] in out for u in e.used_by)]
-            cl.forget(freed); cl.save()
+        freed = [cid for cid, e in concept_ledger.entries.items() if e.state == "failed" and e.used_by
+                 and all(nodeid.law_of(str(u))[0] in out for u in e.used_by)]
+        concept_ledger.forget(freed)
+        commit_state(run, ledger, concept_ledger, node_ledger)
         print(f"reopened {len(out)}: {', '.join(out)}" + (f"; failed concepts cleared: {', '.join(freed)}" if freed else "")); return 0
+
+    def gap(self, action: str = "list", gap_id: str = "", state: str = "", decision: str = "", retired_by: str = "") -> int:
+        """`gap list` prints every gap with its latest decision; `gap decide <id> --state
+        retired|rejected|accepted --decision "<words>"` appends the operator's decision (the only
+        writer of decisions; the harness appends proposals only)."""
+        from .store.gaps import GapLedger
+        ledger = GapLedger(paths.GAPS_DIR)
+        if action == "list":
+            print(ledger.render()); return 0
+        if action == "decide":
+            if not gap_id or not state or not decision:
+                raise SystemExit("gap decide <id> --state <retired|rejected|accepted> --decision \"<words>\"")
+            ledger.decide(gap_id, state, decision, retired_by)
+            print(f"{gap_id}: {state}"); return 0
+        raise SystemExit("gap list | gap decide <id> --state ... --decision ...")
 
     def status(self, run_id: str) -> int:
         f = paths.run_dir(run_id) / "summary.json"
@@ -285,9 +376,11 @@ class Cli:
         from .tools import split as split_mod
         if use == "status":
             print(split_mod.active()); return 0
+        from .store import owner
+        owner.acquire_for_command("split")
         copied = split_mod.activate(use)
         index_sync.write_index()
-        ok, out = lean.lake_build(paths.LIBRARY)
+        code, out = lean.lake_build(paths.LIBRARY); ok = code == 0
         print(f"{use}: {len(copied)} files swapped; " + ("library builds" if ok else "BUILD FAILED\n" + out[-3000:]))
         return 0 if ok else 1
 

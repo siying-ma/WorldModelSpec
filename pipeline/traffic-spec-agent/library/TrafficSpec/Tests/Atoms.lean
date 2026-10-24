@@ -1,5 +1,6 @@
 import TrafficSpec.Core.Vocab.Atoms
 import TrafficSpec.Core.Vocab.Params
+import TrafficSpec.Core.Vocab.Primitives
 namespace TrafficSpec.Tests
 open TrafficSpec Units
 
@@ -118,10 +119,21 @@ def sceneCrest : Scene := { scene0 with structures := [lane7, crestPatch] }
 #guard ru_aggregate scene0 4 [.bus] = some false
 #guard ru_aggregate { scene0 with users := scene0.users.map fun u => if u.track == 1 then { u with unobservedClasses := [.bus] } else u } 1 [.bus, .taxicab] = none
 #guard ru_aggregate scene0 99 [.bus] = none
--- the reading expands a word through other words, and keeps what it cannot resolve
-#guard (({ aggregates := [{ word := "vehicle", classes := ["motor vehicle", "ru.trailer_or_combination"] }, { word := "motor vehicle", classes := ["ru.bus", "ru.truck"] }] } : Reading).aggregate "vehicle") = some ["ru.bus", "ru.truck", "ru.trailer_or_combination"]
-#guard (({ aggregates := [{ word := "vehicle", classes := ["nothing"] }] } : Reading).aggregate "vehicle") = some ["nothing"]
-#guard (({ aggregates := [] } : Reading).aggregate "vehicle") = none
+-- the reading finds an aggregate by its id, and only by it
+#guard (({ aggregates := [{ id := "D-1::vehicle", included := ["ru.bus"] }] } : Reading).aggregate "D-1::vehicle").map (·.included) = some ["ru.bus"]
+#guard (({ aggregates := [{ id := "D-1::vehicle", included := ["ru.bus"] }] } : Reading).aggregate "vehicle").isNone
+-- curvature is a magnitude: a bend to either hand reads the same
+#guard st_curvature { t := 0, structures := [{ id := 1, kind := .roadway, curvature := some (Q.mk' (-1) 50) }] } 1 = some (Q.mk' 1 50)
+-- overlap is exact over closed sets: shapes that cross with no vertex inside the other overlap,
+-- shapes that only touch overlap, shapes apart do not
+def barH : List Vec := [(Q.ofInt 0, Q.ofInt 4), (Q.ofInt 10, Q.ofInt 4), (Q.ofInt 10, Q.ofInt 6), (Q.ofInt 0, Q.ofInt 6)]
+def barV : List Vec := [(Q.ofInt 4, Q.ofInt 0), (Q.ofInt 6, Q.ofInt 0), (Q.ofInt 6, Q.ofInt 10), (Q.ofInt 4, Q.ofInt 10)]
+def beside : List Vec := [(Q.ofInt 10, Q.ofInt 4), (Q.ofInt 12, Q.ofInt 4), (Q.ofInt 12, Q.ofInt 6), (Q.ofInt 10, Q.ofInt 6)]
+def apart : List Vec := [(Q.ofInt 11, Q.ofInt 4), (Q.ofInt 12, Q.ofInt 4), (Q.ofInt 12, Q.ofInt 6), (Q.ofInt 11, Q.ofInt 6)]
+#guard Geom.polygonsOverlap barH barV
+#guard !(barH.any (Geom.inPolygon · barV) || barV.any (Geom.inPolygon · barH))   -- the old vertex test missed it
+#guard Geom.polygonsOverlap barH beside
+#guard !Geom.polygonsOverlap barH apart
 #guard CurbColour.ofString "purple" = none
 -- a lane first from the left has no left neighbour, decidedly; its right one is not observed
 #guard st_lane_left_of scene0 7 8 = some false
@@ -132,4 +144,27 @@ def sceneCrest : Scene := { scene0 with structures := [lane7, crestPatch] }
 -- an indicator observed off
 #guard TurnIndicatorState.ofString "off" = some .off
 #guard sig_turn_indicator { scene0 with users := [{ ub with sig := { turnIndicator := some .off } }] } 2 = some .off
+-- an arm observed giving no signal
+#guard HandSignal.ofString "no_signal" = some .noSignal
+#guard sig_hand_signal { scene0 with users := [{ ub with sig := { handSignal := some .noSignal } }] } 2 = some .noSignal
+-- a strip region along the x axis between y0 and y1 (m), lying on way 100
+def strip (rid : Nat) (y0 y1 : Int) : Structure :=
+  { id := rid, kind := .medianOrDivider, ways := some [100]
+    boundary := some [(metres (-50), metres y0), (metres 50, metres y0), (metres 50, metres y1), (metres (-50), metres y1)] }
+-- the ways a region lies on
+#guard st_on_way { scene0 with structures := [strip 20 3 5] } 20 = some [100]
+#guard st_on_way scene0 7 = none
+-- the view along a way from a road user
+def viewer : RoadUser := { ua with sightAlongWay := some [(100, metres 80)] }
+#guard st_sight_along_way { scene0 with users := [viewer] } 1 100 = some (metres 80)
+#guard st_sight_along_way { scene0 with users := [viewer] } 1 101 = none
+#guard st_sight_along_way scene0 1 100 = none
+-- the side of a region from a road user at the origin heading +x: left positive, zero inside
+def offsetOf (sts : List Structure) (u : RoadUser := ua) : QR :=
+  (Primitives.prim_region_lateral_offset (Primitives.Ctx.mk' [{ scene0 with users := [u], structures := sts }] {}) 1 20)[0]!
+def isOffset (r : QR) (q : Q) : Bool := match r with | .ok v => Q.isZero (Q.sub v q) | .error _ => false
+#guard isOffset (offsetOf [strip 20 3 5]) (metres 3)
+#guard isOffset (offsetOf [strip 20 (-5) (-3)]) (metres (-3))
+#guard isOffset (offsetOf [strip 20 (-1) 1]) Q.zero
+#guard !(offsetOf [strip 20 3 5] { ua with kin := { ua.kin with heading := none } }).toBool
 end TrafficSpec.Tests

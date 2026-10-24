@@ -1,0 +1,502 @@
+{
+ "document": "nv-dmv-700",
+ "passages": [
+  {
+   "id": "nv-dmv-700#stopping.reaction-time",
+   "locator": {
+    "heading": "Stopping",
+    "pdf_page": 41,
+    "printed_page": 41
+   },
+   "topics": [
+    "stopping-sight-distance"
+   ],
+   "transcription": "verbatim",
+   "text": "These three things together are called “Perception and Reaction Distance.” The amount of time it takes from the time you see that you need to stop until you step on the brakes is called “reaction time.” Reaction time increases as driving decisions become more complex or when unexpected events occur. Highway safety studies show normal reaction times are 2 to 2.5 seconds.",
+   "quantity": {
+    "what": "driver reaction time",
+    "definition": "time from seeing that a stop is needed until the foot steps on the brake pedal"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "normal driving decisions; longer when decisions are complex or events unexpected"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "a plausible range for a driver's reaction time in a stopping model",
+   "does_not_support": "which point of the range to choose; a design value (no population or percentile is stated); a legal standard",
+   "value_form": "range",
+   "figures": [
+    {
+     "text": "2 to 2.5 seconds",
+     "value": [
+      2,
+      2.5
+     ],
+     "unit": "s",
+     "statistic": "range of normal values",
+     "condition_ids": [
+      "c1"
+     ]
+    }
+   ],
+   "statutory_figures": [],
+   "notes": "Cites unnamed 'highway safety studies'.",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#stopping.surface",
+   "locator": {
+    "heading": "Stopping",
+    "pdf_page": 41,
+    "printed_page": 41
+   },
+   "topics": [
+    "stopping-sight-distance"
+   ],
+   "transcription": "verbatim",
+   "text": "Stopping distances on a wet highway may be more than double those on dry pavement. Be especially careful during the first rain of a season because the mixture of oil and water on pavement is very dangerous. Stopping distances on packed snow and ice are greatly increased. For example, if you are going 30 mph, your stopping distance on ice would be 373 feet, well over the length of a football field.",
+   "quantity": {
+    "what": "stopping distance by surface",
+    "definition": "not defined in the passage; read with the table on the same page (reaction distance plus braking distance)"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "wet highway"
+    },
+    {
+     "id": "c2",
+     "text": "packed snow and ice"
+    },
+    {
+     "id": "c3",
+     "text": "30 mph, on ice (for the 373 ft example)"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "that surface multiplies stopping distance, and its order of magnitude",
+   "does_not_support": "a deceleration for any surface (the reaction time and speed basis of the 373 ft figure are not stated); a factor for wet roads ('may be more than double' is not a value)",
+   "value_form": "single example value",
+   "figures": [
+    {
+     "text": "373 feet",
+     "value": 373,
+     "unit": "ft",
+     "statistic": "example",
+     "condition_ids": [
+      "c2",
+      "c3"
+     ]
+    }
+   ],
+   "statutory_figures": [],
+   "notes": "",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#stopping.table",
+   "locator": {
+    "heading": "Stopping Distance and Time",
+    "pdf_page": 41,
+    "printed_page": 41
+   },
+   "topics": [
+    "stopping-sight-distance"
+   ],
+   "transcription": "figure",
+   "text": "STOPPING DISTANCE AND TIME For a typical passenger car with perfect 4-wheel brakes, dry pavement, level road, 2.5 second reaction time. MPH | Perception and Reaction Distance | Braking Distance | total. 25 | 92 Ft. | 35 Ft. | 127 Ft. (4.40 seconds). 35 | 128 Ft. | 68 Ft. | 196 Ft. (5.14 seconds). 45 | 165 Ft. | 113 Ft. | 278 Ft. (5.90 seconds). 55 | 202 Ft. | 168 Ft. | 370 Ft. (6.66 seconds). 65 | 238 Ft. | 256 Ft. | 494 Ft. (7.86 seconds).",
+   "quantity": {
+    "what": "stopping distance and time by speed",
+    "definition": "perception and reaction distance plus braking distance; the time in parentheses is the time to stop"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "typical passenger car"
+    },
+    {
+     "id": "c2",
+     "text": "perfect 4-wheel brakes"
+    },
+    {
+     "id": "c3",
+     "text": "dry pavement"
+    },
+    {
+     "id": "c4",
+     "text": "level road"
+    },
+    {
+     "id": "c5",
+     "text": "2.5 second reaction time"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "stopping distances under ideal conditions, by speed",
+   "does_not_support": "wet, icy or degraded conditions; a design or legal stopping distance. Its braking distances imply about 19 ft/s2 (25 mph, 35 ft), far above the 11.2 ft/s2 design assumption, so it must not be mixed with design values",
+   "value_form": "table",
+   "figures": [
+    {
+     "text": "2.5 second reaction time",
+     "value": 2.5,
+     "unit": "s",
+     "statistic": "assumption",
+     "condition_ids": [
+      "c5"
+     ]
+    },
+    {
+     "text": "25 mph: 92 / 35 / 127 ft (4.40 s)",
+     "value": null,
+     "unit": null,
+     "statistic": "table row",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5"
+     ]
+    },
+    {
+     "text": "35 mph: 128 / 68 / 196 ft (5.14 s)",
+     "value": null,
+     "unit": null,
+     "statistic": "table row",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5"
+     ]
+    },
+    {
+     "text": "45 mph: 165 / 113 / 278 ft (5.90 s)",
+     "value": null,
+     "unit": null,
+     "statistic": "table row",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5"
+     ]
+    },
+    {
+     "text": "55 mph: 202 / 168 / 370 ft (6.66 s)",
+     "value": null,
+     "unit": null,
+     "statistic": "table row",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5"
+     ]
+    },
+    {
+     "text": "65 mph: 238 / 256 / 494 ft (7.86 s)",
+     "value": null,
+     "unit": null,
+     "statistic": "table row",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4",
+      "c5"
+     ]
+    }
+   ],
+   "statutory_figures": [],
+   "notes": "The table is a figure; its cells are transcribed. The column heading of the totals is not printed; 'total' is added.",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#defensive.following-distance",
+   "locator": {
+    "heading": "Defensive Driving Tips",
+    "pdf_page": 42,
+    "printed_page": 42
+   },
+   "topics": [
+    "following-headway"
+   ],
+   "transcription": "verbatim",
+   "text": "Stay behind at least two seconds. If you are driving 40 mph or less, stay at least two seconds behind the vehicle in front of you. This is a minimum following distance. Most driving instructors recommend up to four seconds. To figure this, start counting “one thousand one” when the rear of a vehicle ahead passes a fixed point, such as a sign. If you reach the sign before you have counted “one thousand two,” you are following too closely. Remember, the two-second rule is a minimum following distance. As your speed increases, so does the time and distance required for you to stop. For example, if you are traveling at 55 mph, you would need almost seven seconds to stop with perfect brakes and ideal road conditions. So at highway speeds or at any speed when streets and roads are slippery and visibility is reduced, allow a safe distance between you and the next vehicle.",
+   "quantity": {
+    "what": "time headway",
+    "definition": "time from the rear of the vehicle ahead passing a fixed point until your vehicle reaches that point (the passage does not say which part of your vehicle)"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "driving 40 mph or less"
+    },
+    {
+     "id": "c2",
+     "text": "not at highway speeds"
+    },
+    {
+     "id": "c3",
+     "text": "streets and roads not slippery"
+    },
+    {
+     "id": "c4",
+     "text": "visibility not reduced"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "a minimum time headway of two seconds at 40 mph or less, in good conditions",
+   "does_not_support": "any value above 40 mph, at highway speed, on slippery roads or in reduced visibility (the passage asks for more, with no figure); a legal minimum",
+   "value_form": "single recommended minimum, with a recommended upper value",
+   "figures": [
+    {
+     "text": "at least two seconds",
+     "value": 2,
+     "unit": "s",
+     "statistic": "recommended minimum",
+     "condition_ids": [
+      "c1",
+      "c2",
+      "c3",
+      "c4"
+     ]
+    },
+    {
+     "text": "up to four seconds",
+     "value": 4,
+     "unit": "s",
+     "statistic": "recommended (instructors)",
+     "condition_ids": [
+      "c1"
+     ]
+    },
+    {
+     "text": "almost seven seconds to stop at 55 mph",
+     "value": 7,
+     "unit": "s",
+     "statistic": "example (time to stop, not headway)",
+     "condition_ids": []
+    }
+   ],
+   "statutory_figures": [],
+   "notes": "",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#defensive.zones-figure",
+   "locator": {
+    "heading": "Defensive Driving Tips (figure)",
+    "pdf_page": 42,
+    "printed_page": 42
+   },
+   "topics": [
+    "following-headway"
+   ],
+   "transcription": "figure",
+   "text": "SEARCH 12 seconds or more. POTENTIAL STOPPING ZONE 4-8 seconds. FOLLOWING DISTANCE 2-4 seconds or more. COMMERCIAL VEHICLES 5 seconds or more.",
+   "quantity": {
+    "what": "figure labels: search time, stopping zone, following distance in seconds",
+    "definition": "not defined beyond the labels"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "commercial vehicles (for the 5 s label)"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "the same advice as the following-distance text, as labels",
+   "does_not_support": "anything the text does not; the labels carry none of the text's conditions",
+   "value_form": "range",
+   "figures": [
+    {
+     "text": "2-4 seconds or more",
+     "value": [
+      2,
+      4
+     ],
+     "unit": "s",
+     "statistic": "recommended range",
+     "condition_ids": []
+    },
+    {
+     "text": "5 seconds or more",
+     "value": 5,
+     "unit": "s",
+     "statistic": "recommended minimum",
+     "condition_ids": [
+      "c1"
+     ]
+    }
+   ],
+   "statutory_figures": [],
+   "notes": "Figure labels beside the text; order chosen for reading.",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#signs.stop-sign",
+   "locator": {
+    "heading": "Stop signs",
+    "pdf_page": 29,
+    "printed_page": 29
+   },
+   "topics": [
+    "stop-position"
+   ],
+   "transcription": "verbatim",
+   "text": "Stop signs mean you must: • Come to a full stop behind the stop sign at the crosswalk or stop line. If the view of the cross street is blocked, slowly move forward to determine when it is safe to proceed. • If no signs or markings exist, slow down and stop, if necessary, at the point nearest the intersection where there is a view of approaching traffic on the through roadway.",
+   "quantity": {
+    "what": "where the stop is made",
+    "definition": "behind the crosswalk or stop line; without markings, the point nearest the intersection with a view of approaching traffic"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "a crosswalk or stop line is marked"
+    },
+    {
+     "id": "c2",
+     "text": "no signs or markings"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "the reference feature a halt is measured against",
+   "does_not_support": "any distance or tolerance about the line",
+   "value_form": "none",
+   "figures": [],
+   "statutory_figures": [],
+   "notes": "",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#signals.red-light",
+   "locator": {
+    "heading": "Traffic signals",
+    "pdf_page": 30,
+    "printed_page": 30
+   },
+   "topics": [
+    "stop-position"
+   ],
+   "transcription": "verbatim",
+   "text": "A red light means STOP. Drivers must come to a complete stop before they reach the intersection. Stop your vehicle behind the crosswalk or stop line. If there is no stop line or crosswalk, stop before entering the intersection. Remain stopped until the light turns green.",
+   "quantity": {
+    "what": "where the stop is made at a red light",
+    "definition": "behind the crosswalk or stop line; otherwise before entering the intersection"
+   },
+   "conditions": [
+    {
+     "id": "c1",
+     "text": "a stop line or crosswalk is marked"
+    },
+    {
+     "id": "c2",
+     "text": "no stop line or crosswalk"
+    }
+   ],
+   "kind": "driver advice",
+   "supports": "the reference feature a halt is measured against",
+   "does_not_support": "any distance or tolerance about the line",
+   "value_form": "none",
+   "figures": [],
+   "statutory_figures": [],
+   "notes": "",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#markings.stop-lines",
+   "locator": {
+    "heading": "Highway Markings",
+    "pdf_page": 32,
+    "printed_page": 32
+   },
+   "topics": [
+    "stop-position"
+   ],
+   "transcription": "verbatim",
+   "text": "Stop lines are the wide white lines painted across a traffic lane where you must stop before you enter the intersection. You should be able to see traffic coming from all directions.",
+   "quantity": {
+    "what": "stop line",
+    "definition": "a wide white line across a lane where the stop is made before entering the intersection"
+   },
+   "conditions": [],
+   "kind": "driver advice",
+   "supports": "that the stop is made at the line, before the intersection",
+   "does_not_support": "any distance or tolerance about the line",
+   "value_form": "none",
+   "figures": [],
+   "statutory_figures": [],
+   "notes": "",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  },
+  {
+   "id": "nv-dmv-700#speed.basic-rule",
+   "locator": {
+    "heading": "Controlling Speed",
+    "pdf_page": 35,
+    "printed_page": 35
+   },
+   "topics": [
+    "speed-concepts"
+   ],
+   "transcription": "verbatim",
+   "text": "Nevada has a Basic Rule for driving at a “reasonable or proper” speed. This means that in addition to any posted speed limits, drivers must consider: • The amount and type of traffic • The weather and the distance you can see • The condition of the road surface; that is, whether it is dry, wet, icy or snow-covered • The type of road: — whether it is flat and straight or steep and curvy — whether it is wide or narrow It also means that drivers are never to drive at a speed that endangers you or anyone else. Depending on conditions, the safe speed may be considerably less than the posted speed limit. Remember: Speed limits are set for normal driving conditions. When bad weather makes it hard to see or makes the road slick, drivers need to adjust their speed.",
+   "quantity": {
+    "what": "factors of a reasonable or proper speed",
+    "definition": "traffic, weather and sight distance, surface, road geometry and width"
+   },
+   "conditions": [],
+   "kind": "driver advice",
+   "supports": "the factors a reading of a reasonable speed considers",
+   "does_not_support": "any speed value; the weight of any factor",
+   "value_form": "none",
+   "figures": [],
+   "statutory_figures": [],
+   "notes": "Restates a statutory standard in plain words; it carries no figure.",
+   "curation": {
+    "status": "draft",
+    "by": "development session, 2026-10-21",
+    "operator_review": null
+   }
+  }
+ ]
+}

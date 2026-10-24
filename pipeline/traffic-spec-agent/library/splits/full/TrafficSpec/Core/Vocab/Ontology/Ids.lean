@@ -6,7 +6,7 @@
 -/
 namespace TrafficSpec
 
-/-- Every atom id of ATOMS.md §1–§7, in file order. -/
+/-- Every atom id of the seven atom families of ATOMS.md, in file order. -/
 def atomIds : List String := [
   "ru.motor_vehicle",
   "ru.motorcycle",
@@ -55,6 +55,7 @@ def atomIds : List String := [
   "st.lane_adjacency",
   "st.lane_connectivity",
   "st.lane_enters",
+  "st.on_way",
   "st.lane_marking",
   "st.centre_line",
   "st.road_edge",
@@ -71,6 +72,7 @@ def atomIds : List String := [
   "st.grade",
   "st.crest",
   "st.sight_distance",
+  "st.sight_along_way",
   "st.railway_crossing",
   "st.controlled_access",
   "st.elevated_structure",
@@ -136,13 +138,14 @@ def atomIds : List String := [
   "rel.visible"
 ]
 
-/-- Every primitive id of ATOMS.md §10, in file order. -/
+/-- Every primitive id of ATOMS.md, in file order. -/
 def primitiveIds : List String := [
   "prim.heading_change",
   "prim.closest_approach_within",
   "prim.closest_approach_time",
   "prim.closest_approach_distance",
-  "prim.conditions_hold"
+  "prim.conditions_hold",
+  "prim.region_lateral_offset"
 ]
 
 end TrafficSpec

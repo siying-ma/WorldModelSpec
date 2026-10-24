@@ -18,14 +18,17 @@ namespace TrafficSpec
 namespace Primitives
 open Temporal
 
-/-- The trace indexed for evaluation, with the run's reading. -/
+/-- The trace indexed for evaluation, with the run's reading. `aggregateOverrides` fixes the
+    membership of a track in an aggregate to a value, for the sensitivity of a verdict to that
+    membership; it is empty in every evaluation that judges a trace. -/
 structure Ctx where
   scenes : Array Scene
   times : Array Q
   ρ : Reading
+  aggregateOverrides : List (TrackId × String × Bool) := []
 
 def Ctx.mk' (τ : Trace) (ρ : Reading) : Ctx :=
-  ⟨τ.toArray, (τ.map fun s => Time.ofTimestamp s.t).toArray, ρ⟩
+  { scenes := τ.toArray, times := (τ.map fun s => Time.ofTimestamp s.t).toArray, ρ := ρ }
 def Ctx.n (c : Ctx) : Nat := c.scenes.size
 
 /-- An argument as the dispatcher receives it: a resolved entity id (tracks, regions and devices
@@ -166,6 +169,20 @@ def prim_conditions_hold (c : Ctx) (d : DeviceId) (x : TrackId) : Array R :=
         if cd.whenChildrenPresent then R.any (s.tracks.map fun y => bAtom (ru_child s y) "ru_child") else R.t
       R.and (R.and timeOk occOk) (R.and clsOk childOk)
 
+/-- The signed lateral offset of region r from road user x (m, left positive): the component,
+    perpendicular to x's heading, of the vector from x's reference point to the nearest point of
+    r's boundary; zero where the reference point lies inside r. -/
+def prim_region_lateral_offset (c : Ctx) (x : TrackId) (r : RegionId) : Array QR :=
+  eachQ c fun s => do
+    let some p := kin_position s x | throw (.absentAtom "kin_position")
+    let some h := kin_heading s x | throw (.absentAtom "kin_heading")
+    let some poly := st_region_geometry_boundary s r | throw (.absentAtom "st_region_geometry")
+    if Geom.inPolygon p poly then pure Q.zero
+    else
+      let some q := Geom.nearestPoint p poly | throw (.absentAtom "st_region_geometry")
+      let some (_, lat) := Geom.inFrame h (Geom.vsub q p) | throw (.absentAtom "kin_heading")
+      pure lat
+
 /-- Path length over which `holds` has held continuously up to each instant (`Term.distanceWhile`). -/
 def distanceWhile (c : Ctx) (x : TrackId) (holds : Array R) : Array QR :=
   Temporal.distanceWhileAll (pathPos c x) holds
@@ -176,7 +193,7 @@ def distanceWhile (c : Ctx) (x : TrackId) (holds : Array R) : Array QR :=
 /-- Every `prim_*` definition of this file. The doctor holds this against `primitiveIds`. -/
 def primitiveNames : List String :=
   ["prim_heading_change", "prim_closest_approach_within", "prim_closest_approach_time",
-   "prim_closest_approach_distance", "prim_conditions_hold"]
+   "prim_closest_approach_distance", "prim_conditions_hold", "prim_region_lateral_offset"]
 
 /-- The atoms each primitive reads (Lean names of Atoms.lean); Manifest.lean turns a primitive
     into the atoms a source must observe. -/
@@ -185,6 +202,7 @@ def reads (n : String) : List String :=
   | "prim_heading_change" => ["kin_yaw_rate"]
   | "prim_closest_approach_within" | "prim_closest_approach_time" | "prim_closest_approach_distance" => ["kin_position", "kin_velocity"]
   | "prim_conditions_hold" => ["dev_zone_sign", "dev_regulatory_sign", "env_civil_time", "ru_occupant_count", "ru_child"]
+  | "prim_region_lateral_offset" => ["kin_position", "kin_heading", "st_region_geometry"]
   | _ => []
 
 /-- The sort each entity argument of a primitive must have (`none` marks a literal or natural
@@ -195,6 +213,7 @@ def argSorts (name : String) : Option (List (Option EntityKind)) :=
   | "prim_heading_change" => some [t]
   | "prim_closest_approach_within" | "prim_closest_approach_time" | "prim_closest_approach_distance" => some [t, t]
   | "prim_conditions_hold" => some [some EntityKind.device, t]
+  | "prim_region_lateral_offset" => some [t, some EntityKind.region]
   | _ => none
 
 private def tid (a : DArg) : Except UnknownReason TrackId :=
@@ -217,6 +236,7 @@ def evalQ (name : String) (c : Ctx) (args : List DArg) (ps : List Q) : Except Un
   | "prim_heading_change", [x], [w] => do pure (prim_heading_change c (← tid x) w)
   | "prim_closest_approach_time", [a, b], [h] => do pure (prim_closest_approach_time c (← tid a) (← tid b) h)
   | "prim_closest_approach_distance", [a, b], [h] => do pure (prim_closest_approach_distance c (← tid a) (← tid b) h)
+  | "prim_region_lateral_offset", [x, r], [] => do pure (prim_region_lateral_offset c (← tid x) (← tid r))
   | n, _, _ => .error (unknownName n)
 
 end Primitives

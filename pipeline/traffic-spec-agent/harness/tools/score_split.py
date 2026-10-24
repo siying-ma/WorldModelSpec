@@ -1,4 +1,4 @@
-"""Score a test run against the split's test-only atoms (design §9). The run never sees this file."""
+"""Score a test run against the split's test-only atoms . The run never sees this file."""
 from __future__ import annotations
 import json
 import sys
@@ -13,7 +13,7 @@ def score(run_id: str, split_atoms: Path) -> dict:
     test_only = set(split["test_only_atoms"]) | set(split["test_only_values"]) | set(split.get("test_only_primitives", []))
     run_dir = paths.run_dir(run_id)
     ledger = Ledger(run_dir / "ledger.jsonl", [], 1)
-    gaps = GapLedger(paths.GAP_LEDGER)
+    gaps = GapLedger(paths.GAPS_DIR)
     proposed = [g for g in gaps.rows if g.get("proposed_in", "").startswith(run_id + "/")]
     sys.path.insert(0, str(paths.REPO.parents[0] / "ontology_provenance" / "nrs_tools"))
     try:

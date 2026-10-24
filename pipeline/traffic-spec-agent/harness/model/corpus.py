@@ -34,9 +34,14 @@ def load_laws(path: Path) -> list[Law]:
     return laws
 
 
+def cited_law_ids(text: str) -> list[str]:
+    """The law ids a text names in brackets, in order (a definition, `DEF-…`, is not a law)."""
+    return [r for r in LAW_REF.findall(text) if not r.startswith("DEF-")]
+
+
 def references(law: Law, ids: set[str]) -> set[str]:
-    """The ids of other laws of the corpus the text names in brackets (definitions are not laws)."""
-    return {r for r in LAW_REF.findall(law.text) if r in ids and r != law.id and not r.startswith("DEF-")}
+    """The ids of other laws of the corpus the text names in brackets."""
+    return {r for r in cited_law_ids(law.text) if r in ids and r != law.id}
 
 
 def load_definitions(laws_path: Path) -> list[dict]:

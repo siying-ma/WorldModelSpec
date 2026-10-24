@@ -1,8 +1,8 @@
 /-
   TrafficSpec.Core.Language.Export
   The specification language as JSON, for the tooling that renders a formula in prose, compares
-  bodies structurally, or hands a rule to program synthesis. One encoder per constructor;
-  nothing here is read back by the library.
+  bodies structurally, or checks a rule outside Lean. One encoder per constructor;
+  `Decode.formula` reads this JSON back strictly, so a decoded formula exported again is canonical.
 -/
 import Lean.Data.Json
 import TrafficSpec.Core.Language.Concept
@@ -24,6 +24,7 @@ def Measure.toJson : Measure → Json
 def PUnit'.toJson : PUnit' → Json
   | .metre => "metre" | .second => "second" | .metrePerSecond => "metre_per_second"
   | .metrePerSecondSq => "metre_per_second_sq" | .degree => "degree" | .degreePerSecond => "degree_per_second"
+  | .perMetre => "per_metre"
   | .ratio => "ratio" | .count => "count"
 
 def Q.toJson (q : Q) : Json := Json.mkObj [("num", q.num), ("den", q.den)]

@@ -58,23 +58,41 @@ def β : Binding := ({} : Binding).bind "x" (.track 1) |>.bind "y" (.track 2)
 def ρ : Reading := { params := [{ name := "p.stop_speed", value := Q.mk' 1 10, unit := .metrePerSecond }] }
 def c : SemCtx := SemCtx.mk' τ ρ β
 
--- aggregates resolve through the reading, nested words included; an undeclared word is unknown
-def ρa : Reading := { ρ with aggregates := [{ word := "vehicle", classes := ["motor vehicle", "ru.trailer_or_combination"] },
-                                            { word := "motor vehicle", classes := ["ru.motor_vehicle", "ru.bus"] },
-                                            { word := "heavy", classes := ["ru.bus"] }] }
+-- a legal aggregate by id: an included class holds; a class the definition leaves unresolved is
+-- unknown with its own reason; an included class held dominates an unresolved one; an undeclared
+-- id is unknown; an unobserved class keeps the observation's reason
+def ρa : Reading := { ρ with aggregates := [{ id := "D-1::vehicle", included := ["ru.motor_vehicle", "ru.bus"] },
+                                            { id := "D-2::heavy", included := ["ru.bus"] },
+                                            { id := "D-3::goods", included := ["ru.bus"], unresolved := ["ru.truck"] },
+                                            { id := "D-4::mixed", included := ["ru.motor_vehicle"], unresolved := ["ru.truck"] }] }
 def ca : SemCtx := SemCtx.mk' τ ρa β
-#guard (evalAll ca (.atom "ru_aggregate" [.var "x", .lit "vehicle"] [])).all (·.v == .t)
-#guard (evalAll ca (.atom "ru_aggregate" [.var "y", .lit "heavy"] [])).all (·.v == .f)
-#guard (evalAll ca (.atom "ru_aggregate" [.var "x", .lit "pedestrian"] [])).all (·.v == .u)
-#guard (evalAll c (.atom "ru_aggregate" [.var "x", .lit "vehicle"] [])).all (·.v == .u)
--- the static check admits an aggregate atom; the reading check holds its word
+def agg (v id : String) : Formula := .atom "ru_aggregate" [.var v, .lit id] []
+#guard (evalAll ca (agg "x" "D-1::vehicle")).all (·.v == .t)
+#guard (evalAll ca (agg "y" "D-2::heavy")).all (·.v == .f)
+#guard (evalAll ca (agg "y" "D-3::goods")).all fun r => r.v == .u && r.why.map UnknownReason.tag == ["aggregate_unresolved:D-3::goods"]
+#guard (evalAll ca (agg "y" "D-4::mixed")).all (·.v == .t)
+#guard (evalAll ca (agg "x" "D-9::none")).all fun r => r.v == .u && r.why.map UnknownReason.tag == ["parameter_missing:aggregate:D-9::none"]
+#guard (evalAll c (agg "x" "D-1::vehicle")).all (·.v == .u)
+def τclassless : Trace := [{ t := 0, users := [{ track := 1 }] }]
+#guard (evalAll (SemCtx.mk' τclassless ρa β) (agg "x" "D-3::goods")).all fun r => r.v == .u && r.why.map UnknownReason.tag == ["absent_atom:ru_aggregate"]
+-- the sensitivity override forces one track's membership of one aggregate, and nothing else
+def caForced : SemCtx := { ca with d := { ca.d with aggregateOverrides := [(2, "D-3::goods", true)] } }
+#guard (evalAll caForced (agg "y" "D-3::goods")).all (·.v == .t)
+#guard (evalAll caForced (agg "x" "D-2::heavy")).all (·.v == .f)
+#guard (UnknownReason.aggregateUnresolved "D-3::goods").tag = "aggregate_unresolved:D-3::goods"
+-- the static check admits an aggregate atom; the reading check holds its id and its classes
 def aggRule : Rule :=
-  { id := "t_agg", laws := [], binders := [{ name := "x", cls := .atom "ru_aggregate" [.var "x", .lit "vehicle"] [] }]
-    applicability := .tt, obligation := .atom "ru_aggregate" [.var "x", .lit "heavy"] [] }
+  { id := "t_agg", laws := [], binders := [{ name := "x", cls := agg "x" "D-1::vehicle" }]
+    applicability := .tt, obligation := agg "x" "D-2::heavy" }
 #guard Rule.check [aggRule] aggRule = []
 #guard Rule.checkReading [aggRule] aggRule ρa = []
 #guard (Rule.checkReading [aggRule] aggRule ρ).length = 2
-#guard Formula.aggregateWords (.and (.atom "ru_aggregate" [.var "x", .lit "vehicle"] []) (.existsUser "u" (.atom "ru_aggregate" [.var "u", .lit "traffic"] []))) = ["vehicle", "traffic"]
+#guard (Rule.checkReading [aggRule] aggRule { ρ with aggregates := [{ id := "D-1::vehicle", included := ["D-2::heavy"] }, { id := "D-2::heavy" }] }).length = 1
+#guard Formula.aggregateIds (.and (agg "x" "D-1::vehicle") (.existsUser "u" (agg "u" "D-2::heavy"))) = ["D-1::vehicle", "D-2::heavy"]
+-- a heading is read as a direction, whatever the length a source writes
+def τheading : Trace := [{ t := 0, users := [{ track := 1, kin := { heading := some (Q.ofInt 3, Q.ofInt 4) } }] }]
+#guard (evalTAll (SemCtx.mk' τheading ρ β) (.measure "kin_heading" [.var "x", .lit "x"])).toList.map (·.toOption.map (Q.eq · (Q.mk' 3 5))) = [some true]
+#guard (evalTAll (SemCtx.mk' τheading ρ β) (.measure "kin_heading" [.var "x", .lit "y"])).toList.map (·.toOption.map (Q.eq · (Q.mk' 4 5))) = [some true]
 
 -- `cond` selects a quantity by a guard; τ observes darkness (false) and not the wet road. Where the
 -- guard is unknown a comparison is decided by cases exactly when both selections decide it alike.
@@ -166,6 +184,13 @@ def pathGe (m : Int) : Formula := .cmp (.measure "kin_path_length" [X]) .ge (.li
 #guard v 8 (.atLast .time (sec 3) "x" fast4 (pathGe 13)) = .f
 #guard v 8 (.atLast .time (sec 2) "x" fast4 (pathGe 0)) = .f       -- the window k = 4..8 has no observation with speed ≥ 4
 #guard why 1 (.atLast .time (sec 3) "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 20)) (pathGe 0)) = [.windowTruncated "atLast"]
+-- a 900 ms window over scenes 500 ms apart is not adequately sampled: unknown even where ψ held in it
+#guard v 3 (.atLast .time (ms 900) "x" fast4 (pathGe 0)) = .u
+#guard why 3 (.atLast .time (ms 900) "x" fast4 (pathGe 0)) = [.samplingGap "atLast"]
+#guard why 8 (.atLast .time (ms 900) "x" (.cmp (.measure "kin_speed" [X]) .ge (mps 20)) (pathGe 0)) = [.samplingGap "atLast"]
+#guard v 3 (.atLast .time (sec 1) "x" fast4 (pathGe 9)) = .t          -- the same witness in an adequately sampled window
+#guard v 8 (.atLast .path (m 3) "y" .tt .tt) = .u                    -- the window has no path length to measure
+#guard v 8 (.atLast .time (sec 3) "x" (.atom "sig_brake_lamp" [X] []) (pathGe 0)) = .u   -- ψ unknown at the last observation
 
 -- metric windows: adequacy and truncation
 def slow : Formula := .cmp (.measure "kin_speed" [X]) .le (mps 2)

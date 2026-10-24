@@ -1,0 +1,176 @@
+{
+ "run": "lasvegas",
+ "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
+ "params": [
+  {
+   "name": "p.reversal_window",
+   "value": 15.0,
+   "unit": "s",
+   "convention": "the manoeuvre-recognition window of a turning study: the longest a passenger vehicle takes to carry a direction reversal through, from the first steering input to the heading it ends with, at the speeds such a turn is made at",
+   "source": "turning-path and low-speed manoeuvre timings in highway geometric design practice (AASHTO Green Book design-vehicle turning paths)",
+   "proposed": "smoke18/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.reversal_heading_tolerance",
+   "value": 45.0,
+   "unit": "deg",
+   "convention": "the band about a half turn within which an accumulated heading change counts as a reversal rather than a single turn or a full circle: half the angle between a quarter turn and a half turn, so that a right-angle turn falls outside the band and a turn that overshoots or falls short of the opposite heading by a quarter turn still counts",
+   "source": "manoeuvre classification tolerances in vehicle-trajectory annotation practice",
+   "proposed": "smoke18/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.curvature_resolution",
+   "value": 0.002,
+   "unit": "1/m",
+   "convention": "the smallest horizontal curvature a map or perception source resolves above its alignment noise; below it the roadway reads as straight. Stated as the reciprocal of the radius beyond which a rural alignment is treated as tangent",
+   "source": "alignment tolerances in highway geometric design and in map-matching practice",
+   "proposed": "smoke18/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.crest_approach_distance",
+   "value": 150.0,
+   "unit": "m",
+   "convention": "the length of the approach to a crest within which a driver is in the zone of restricted sight the crest creates, taken as the stopping sight distance of a rural design speed",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, crest vertical curve and stopping sight distance tables",
+   "proposed": "smoke18/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.yaw_rate_resolution",
+   "value": 1.0,
+   "unit": "deg/s",
+   "convention": "the smallest rate of change of heading a source resolves above its noise floor; below it the road user reads as not turning",
+   "source": "noise floors of inertial and trajectory-differentiated yaw rate in vehicle instrumentation practice",
+   "proposed": "smoke18/iter-001 NRS_484B_407"
+  },
+  {
+   "name": "p.motion_speed_resolution",
+   "value": 0.5,
+   "unit": "m/s",
+   "convention": "the smallest speed a trajectory source resolves above its position noise; below it the road user reads as at rest rather than moving",
+   "source": "speed noise floors in vehicle-trajectory and radar instrumentation practice",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.reaction_time",
+   "value": 2.5,
+   "unit": "s",
+   "convention": "the brake reaction time of the stopping-sight-distance model: the time from the driver's seeing an object in the road to the application of the brakes, during which the vehicle holds its speed",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping sight distance",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_dry",
+   "value": 3.4,
+   "unit": "m/s^2",
+   "convention": "the deceleration the stopping-sight-distance model assumes a driver achieves on a dry paved surface within the limits of the tyre-pavement friction available and of the driver's control",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping sight distance",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_wet",
+   "value": 2.5,
+   "unit": "m/s^2",
+   "convention": "the same model's deceleration on a wet paved surface, the friction class the design guide applies to wet-pavement braking",
+   "source": "AASHTO wet-pavement friction classes for stopping sight distance",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.decel_ice",
+   "value": 1.0,
+   "unit": "m/s^2",
+   "convention": "the same model's deceleration on an icy or snow-covered surface, the lowest friction class of winter-driving guidance",
+   "source": "winter-surface friction classes in highway maintenance and winter-driving guidance",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.seeing_distance_darkness",
+   "value": 60.0,
+   "unit": "m",
+   "convention": "the distance ahead a driver can see an unlit object on low-beam headlamps in darkness; it caps the distance clear ahead at night however far the road's own sight distance reaches",
+   "source": "headlamp-reach and night-visibility distances in lighting design practice",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.narrow_lane_width",
+   "value": 3.0,
+   "unit": "m",
+   "convention": "the lane width below which a design guide treats the lane as narrow and applies a reduction factor; the lower end of its lane-width standards",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, lane widths",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.narrow_lane_margin",
+   "value": 1.25,
+   "unit": "ratio",
+   "convention": "the factor by which the required clear distance is raised where the lane is below the design width, the narrow-lane adjustment of the design guide's capacity and safety factors",
+   "source": "narrow-lane adjustment factors in highway capacity and design practice",
+   "proposed": "smoke18/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.path_lateral_clearance",
+   "value": 1.0,
+   "unit": "m",
+   "convention": "the lateral clearance between the nearest points of two bodies within which a road user ahead stands in the path the subject's body sweeps; beyond it the road user is to one side of that path and is passed rather than followed",
+   "source": "the side clearance of safe-passing standards between a vehicle and the road user it passes, at the lower end of the distances vehicle codes and design guidance state",
+   "proposed": "smoke18/iter-002 NRS_484B_600_1a"
+  }
+ ],
+ "aggregates": [
+  {
+   "id": "DEF-NRS-484A-320::vehicle",
+   "term": "vehicle",
+   "definition": "DEF-NRS-484A-320",
+   "included": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [],
+   "certificate": "573f276bd41e982604b9275c33a2819e8941607417979f49f4689da5f12b6199",
+   "admitted": "smoke18/iter-001"
+  },
+  {
+   "id": "DEF-NRS-484A-285::traffic",
+   "term": "traffic",
+   "definition": "DEF-NRS-484A-285",
+   "included": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.child",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal",
+    "ru.rail_vehicle",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": [],
+   "certificate": "98e84b9851c23adfc968ae11279431d5dd35fde72b83043dc5bdd79ca462dc3a",
+   "admitted": "smoke18/iter-001"
+  }
+ ],
+ "_fields": {
+  "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+ }
+}

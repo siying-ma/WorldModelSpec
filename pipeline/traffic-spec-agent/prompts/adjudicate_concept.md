@@ -15,8 +15,13 @@ a fix, or look for further items.
 - **The rendering** — the body as prose, generated mechanically from the code.
 - **The contracts** — what every name the body uses denotes.
 - **The items** — each confirmed divergence with its situation, the contract's words the reviewer
-  cites, the reviewer's verdict for the contract and the body's executed verdict; each
-  `not_general` item with its words.
+  cites, the reviewer's verdict for the contract (for a quantity, the interval the contract's words
+  put the value in, with its units) and the body's executed verdict at the observation named (for a
+  quantity, its value there); each `not_general` item with its words. An item marked as upheld
+  before is an earlier challenge, or finding, decided again on this body.
+- **The executed facts** of each divergence — the scenes in time order as the harness ran them, the
+  grounding, the instant judged and the instance, in Core units, with the fields the body reads that
+  a scene leaves unobserved. The reviewer's situation is the reviewer's prose, unverified.
 - **Earlier rulings** — what was ruled on this concept in earlier reviews, and why (rule 5).
 
 {contract}
@@ -47,7 +52,9 @@ a fix, or look for further items.
 5. **Earlier rulings.** A situation an earlier ruling on this concept decided is ruled the same
    way, unless the record or the rendering changed on the point that ruling turned on; a ruling
    that departs names, in its reason, the change it turns on.
-6. Quote, verbatim, the words that decide each ruling, from the contract, the record or the
+6. **Facts over prose.** Rule on the executed facts. Where the reviewer's situation and the executed
+   facts disagree, the facts govern.
+7. Quote, verbatim, the words that decide each ruling, from the contract, the record or the
    rendering. Do not use knowledge of any law or jurisdiction.
 
 ## Output
