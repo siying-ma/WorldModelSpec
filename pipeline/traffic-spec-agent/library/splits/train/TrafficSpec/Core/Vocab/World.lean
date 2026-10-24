@@ -70,7 +70,6 @@ structure WarningLamp where
 /-- Signals a road user emits (ATOMS.md §5). -/
 structure Signals where
   turnIndicator : Option TurnIndicatorState := none
-  brakeLamp : Option Bool := none
   hazard : Option Bool := none
   warningLamps : Option (List WarningLamp) := none
   siren : Option Bool := none

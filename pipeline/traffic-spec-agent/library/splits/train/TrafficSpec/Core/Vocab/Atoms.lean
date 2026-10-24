@@ -4,6 +4,11 @@
   support is a test line are omitted. Do not edit; regenerate.
 -/
 /-
+  TRAINING SPLIT of TrafficSpec.Core.Vocab.Atoms. Generated from Core/Vocab/Atoms.lean by
+  ontology_provenance/nrs_tools/atoms_train.py: the definitions of the atoms whose only textual
+  support is a test line are omitted. Do not edit; regenerate.
+-/
+/-
   TrafficSpec.Core.Vocab.Atoms
   The bijection with ATOMS.md §1–§7: exactly one definition per atom id, named `family_name`,
   each reading one field of `World` and nothing else. Attribute accessors of an atom carry the
@@ -339,7 +344,6 @@ def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
 -- §5 Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
-def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
 def sig_warning_lamp (s : Scene) (x : TrackId) : Option (List WarningLamp) := (s.user x).bind (·.sig.warningLamps)
 /-- A warning lamp of the given colour lit, in any mode or facing. -/

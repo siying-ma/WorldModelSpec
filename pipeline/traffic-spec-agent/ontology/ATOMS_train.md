@@ -92,6 +92,7 @@ ontology change request.
 | `ru.moped` | a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it | general |
 | `ru.bus` | motor vehicle designed to carry many passengers | general |
 | `ru.transit_bus` | bus in public transit service, identifiable by its livery or route display | general |
+| `ru.school_bus` | bus designated for carrying school children, with the jurisdiction's markings | general |
 | `ru.taxicab` | passenger vehicle for hire, identifiable by its markings | general |
 | `ru.tour_bus_or_limousine` | a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery | local |
 | `ru.truck` | motor vehicle for carrying goods, with a body built for that purpose | general |
@@ -129,8 +130,10 @@ vehicle is the derived concept `drv.responding_emergency`.
 | `kin.accel_longitudinal` | acceleration along heading, signed **Not a stand-in for:** speed | m/s² | general |
 | `kin.yaw_rate` | rate of change of heading **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres | deg/s | general |
 | `kin.extent` | body half-length, half-width, half-height about the reference point, along the body axes | m | general |
+| `kin.steer_angle` | front-wheel steering angle. A source often carries it for the road user whose conduct is judged and not for the others; the capability is declared for the atom, not per road user, so a source that supplies it for the subject alone declares `subject` and one that cannot supply it at all declares it absent **Not a stand-in for:** road geometry, a turn, a lane change or any other manoeuvre — a steering input is not a path and not a road | deg | general |
 | `kin.path_length` | distance travelled along the body's path since the start of the trace, monotone | m | general |
 | `kin.engine_running` | the vehicle's engine or motor is running, so that propulsion is available **Not a stand-in for:** motion or a halt — a vehicle stands with its engine running and rolls with it stopped | — | general |
+| `kin.parking_brake` | the parking brake (hand brake) is set **Not a stand-in for:** the service brake (`kin.service_brake`) or the brake lamp (`sig.brake_lamp`) — a set parking brake lights no lamp and a pressed pedal sets no parking brake | — | general |
 | `kin.gear` | the gear selected: negative for reverse, zero for neutral, positive for a forward gear **Not a stand-in for:** the direction of motion — a vehicle in a forward gear rolls backwards on a grade; backing is read from kinematics | gear number, signed | general |
 | `kin.throttle` | the accelerator input, as the fraction of its full travel that is applied **Not a stand-in for:** acceleration (`kin.accel_longitudinal`) — the input is what the driver does, the acceleration is what the body does | ratio | general |
 | `kin.service_brake` | the service brake (foot brake) input, as the fraction of its full travel that is applied **Not a stand-in for:** deceleration or the brake lamp — the lamp is what other road users see, the input is what the driver does | ratio | general |
@@ -181,6 +184,7 @@ reports unknown.
 | `st.pedestrian_grade_separation` | a pedestrian tunnel or overpass at a point on the highway | general |
 | `st.fire_hydrant` | a fire hydrant beside the roadway | general |
 | `st.fire_station_entrance` | the driveway entrance of a fire station | general |
+| `st.roundabout` | a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches | general |
 | `st.lane_width` | width of a lane at a point | general |
 | `st.region_geometry` | the reference point and the boundary polygon of a structure region in the world frame, and the ground distance from a road user's body outline to it (zero when they overlap); a source that maps regions without their outline declares it absent, and every such distance is then unknown **Not a stand-in for:** occupancy — a footprint inside a boundary is `rel.occupies`, which a source may observe without geometry | general |
 | `st.obstruction` | a physical object on or beside the roadway that is not a road user; **kind** ∈ {debris, excavation, hose, barrier, stalled_vehicle_wreckage, sidewalk_fixture, mail_drop_box, other} | general |
@@ -197,7 +201,7 @@ reports unknown.
 | `dev.crossing_warning_signal` | a signal device at a pedestrian or school crossing that warns of persons crossing; **active** attribute | general |
 | `dev.stop_sign` | regulatory sign requiring a full halt | general |
 | `dev.yield_sign` | regulatory sign requiring yielding without a mandatory halt | general |
-| `dev.speed_limit_sign` | sign stating a maximum or minimum speed, with value and unit; **kind** ∈ {maximum, minimum, zone} | general |
+| `dev.speed_limit_sign` | sign stating a maximum or minimum speed, with value and unit; **kind** ∈ {maximum, minimum, structure_maximum, zone} | general |
 | `dev.regulatory_sign` | a point regulation by catalogue **code**, with the same structured **conditions** attribute as `dev.zone_sign` where the sign states hours, days, a duration or a class: no_left_turn, no_right_turn, no_u_turn, no_straight, one_way, keep_right, do_not_enter, wrong_way, no_stopping, no_standing, no_parking, angle_parking, lane_use_arrow, turn_course_marker, right_turn_only, entrance, exit, closed_to_traffic, exempt_crossing, abandoned_crossing, shoulder_use_permitted, bicycles_prohibited, pedestrians_prohibited, nonmotorized_prohibited, motor_vehicles_prohibited, truck_route, no_trucks **Not a stand-in for:** a manoeuvre or a road feature — a prohibition sign is a condition, a warning sign is not the hazard it warns of, and a sign is not a signal | general (`shoulder_use_permitted`, `exempt_crossing`, `truck_route`: local) |
 | `dev.zone_sign` | a sign that begins or ends a signed zone along the road; **kind** ∈ {school, school_crossing, pedestrian_safety, temporary_traffic_control, no_passing, high_occupancy_lane, heavy_vehicle_lane, speed_zone, narrow_highway, hazardous_place, parking_restricted, trail}; **end** attribute; **conditions** attribute: a structured reading of the sign's legend — a list of time windows (a set of weekdays or a calendar class such as school days, a start and an end time of day), a minimum occupancy, a duration limit, a vehicle class, or a "when children present" flag **Not a stand-in for:** whether the condition holds now — that is `drv.condition_in_effect` | general (kinds `school_crossing`, `pedestrian_safety`, `high_occupancy_lane`: local) |
 | `dev.railway_signal_or_gate` | the devices at a level crossing; **lights** ∈ {flashing, dark}; **gate** ∈ {up, lowering, down, raising, none}; **bell** attribute | general |
@@ -212,13 +216,16 @@ reports unknown.
 | id | contract | scope |
 |---|---|---|
 | `sig.turn_indicator` | the turn indicator **state** ∈ {off, left, right}: neither indicator lit, or the left or the right one **Not a stand-in for:** the turn or lane change itself — the indicator is the signal that precedes a manoeuvre, judged separately from it | general |
-| `sig.brake_lamp` | brake lamps lit **Not a stand-in for:** a halt or a deceleration — a lamp is an actuation; the motion state is `kin.velocity` / `kin.accel_longitudinal` | general |
 | `sig.hazard` | both indicators flashing together | general |
+| `sig.headlamp` | headlamp **state** ∈ {off, low_beam, high_beam} | general |
+| `sig.position_lamp` | position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps) | general |
 | `sig.compression_brake` | an engine compression brake sounding (audible; a source without audio declares it absent) | general |
+| `sig.reverse_lamp` | reversing lamps lit | general |
 | `sig.warning_lamp` | a warning lamp lit; **colour** ∈ {red, blue, amber, white}, **mode** ∈ {flashing, rotating, steady}, **facing** ∈ {front, rear, side} **Not a stand-in for:** an audible warning | general (steady blue rear lamps and amber-lamp roles: local) |
 | `sig.siren` | a siren, whistle or bell sounding (audible; a source without audio declares it absent, and does not read a warning lamp as the sound — the two are separable and a road user may show one without the other) | general |
 | `sig.horn` | an ordinary horn or a rail vehicle's horn or bell sounding (audible; a source without audio declares it absent, and no visible state stands in for it) **Not a stand-in for:** a siren | general |
 | `sig.hand_signal` | a driver's or rider's arm signal; **meaning** ∈ {left, right, stop_or_slow, re_enter} | general |
+| `sig.door_open` | a door open; **side** ∈ {traffic, curb} | general |
 
 ## 6. Environment (`env`)
 

@@ -1,5 +1,10 @@
 """Split the pipeline corpus into a training set (build the autoformalization repository) and a
-test set (new legislation: rules, road structures and devices the repository has never seen).
+test set.
+
+With laws/example/law-split.json present, the approved versioned roster is authoritative.
+Only derived training vocabulary is regenerated; no law files are rewritten. Cross-split
+references are reported instead of requiring reference closure. The description below
+applies to the historical unversioned split generator.
 
     python -m nrs_tools.split          # from pipeline/ontology_provenance
 
@@ -89,6 +94,14 @@ TEST: dict[str, str] = {
     "NRS-484B-587-1": "control: enter or leave a controlled-access highway only at the signed points",
 }
 
+
+# The approved versioned roster supersedes the historical novelty-only roster.
+active_policy = LAWS_ROOT / "example" / "law-split.json"
+if active_policy.exists():
+    active_data = json.loads(active_policy.read_text(encoding="utf-8"))
+    TEST = {law: "Approved demo-overlap interaction hold-out (" + active_data["version"] + ")"
+            for law in active_data["heldout_law_ids"]}
+
 # Atoms with no support on either side are ontology design, not test knowledge: they stay in the
 # training ontology. Listed so the report can say so.
 ZERO_SUPPORT_STAY = ("sig.brake_lamp", "sig.hazard")
@@ -166,6 +179,17 @@ def held_out_rows(atoms: list[str]) -> dict[str, dict[str, str]]:
 
 
 def main() -> int:
+    # Versioned migrations own corpus membership. Regeneration updates only
+    # derived atom views and cannot reapply the legacy 2026-10-13 roster.
+    active = LAWS_ROOT / "example" / "law-split.json"
+    if active.exists():
+        project = PIPE.parents[2]
+        sys.path.insert(0, str(project / "scenario_pipeline"))
+        from update_law_split_views import update_views
+        report = update_views(project=project)
+        print(json.dumps(report, indent=2))
+        return 0
+
     laws = with_meta(load("laws.jsonl"), "laws_meta.jsonl")
     defs = with_meta(load("definitions.jsonl"), "definitions_meta.jsonl")
     if not all("tier" in x for x in laws):

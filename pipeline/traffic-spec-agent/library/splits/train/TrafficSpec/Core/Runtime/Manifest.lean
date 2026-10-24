@@ -148,7 +148,6 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "kin.throttle" => { u with kin := { u.kin with throttle := none } }
   | "kin.service_brake" => { u with kin := { u.kin with serviceBrake := none } }
   | "sig.turn_indicator" => { u with sig := { u.sig with turnIndicator := none } }
-  | "sig.brake_lamp" => { u with sig := { u.sig with brakeLamp := none } }
   | "sig.hazard" => { u with sig := { u.sig with hazard := none } }
   | "sig.warning_lamp" => { u with sig := { u.sig with warningLamps := none } }
   | "sig.siren" => { u with sig := { u.sig with siren := none } }

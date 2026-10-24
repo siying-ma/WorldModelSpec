@@ -27,6 +27,27 @@ def toString : TurnIndicatorState → String
 instance : ToString TurnIndicatorState := ⟨toString⟩
 end TurnIndicatorState
 
+/-- `sig.headlamp` **state** — generated from ATOMS.md; do not edit. -/
+inductive HeadlampState
+  | off
+  | lowBeam
+  | highBeam
+  deriving DecidableEq, Repr, Inhabited
+
+namespace HeadlampState
+def ofString (s : String) : Option HeadlampState :=
+  match s with
+  | "off" => some .off
+  | "low_beam" => some .lowBeam
+  | "high_beam" => some .highBeam
+  | _ => Option.none
+def toString : HeadlampState → String
+  | .off => "off"
+  | .lowBeam => "low_beam"
+  | .highBeam => "high_beam"
+instance : ToString HeadlampState := ⟨toString⟩
+end HeadlampState
+
 /-- `sig.warning_lamp` **colour** — generated from ATOMS.md; do not edit. -/
 inductive LampColour
   | red
@@ -116,5 +137,23 @@ def toString : HandSignal → String
   | .reEnter => "re_enter"
 instance : ToString HandSignal := ⟨toString⟩
 end HandSignal
+
+/-- `sig.door_open` **side** — generated from ATOMS.md; do not edit. -/
+inductive DoorSide
+  | traffic
+  | curb
+  deriving DecidableEq, Repr, Inhabited
+
+namespace DoorSide
+def ofString (s : String) : Option DoorSide :=
+  match s with
+  | "traffic" => some .traffic
+  | "curb" => some .curb
+  | _ => Option.none
+def toString : DoorSide → String
+  | .traffic => "traffic"
+  | .curb => "curb"
+instance : ToString DoorSide := ⟨toString⟩
+end DoorSide
 
 end TrafficSpec
