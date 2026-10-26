@@ -25,7 +25,7 @@ def parameter_catalogue(reading: Reading) -> str:
     return "\n".join(out) + "\n"
 
 PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_language", "library_summary", "concepts", "mapping_index",
-                "parameters", "gaps", "feedback", "upheld", "user_hints", "anchors", "aggregate_atom")
+                "parameters", "gaps", "feedback", "upheld", "previous_records", "user_hints", "anchors", "aggregate_atom")
 PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
                        "definition", "users")
 PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
@@ -141,6 +141,32 @@ def pending_proposals_table(pending: list[dict] | None) -> str:
     return "\n".join(out) + "\n"
 
 
+def previous_records(run: Run, laws: list[corpus.Law]) -> str:
+    """For each law planned again, the records its nodes were last coded from in this run, each with
+    its gate verdict: the latest earlier iteration that coded a node of the law, all of that
+    iteration's nodes of the law. Empty for a law no earlier iteration coded."""
+    out: list[str] = []
+    for law in laws:
+        for it in range(run.iteration - 1, 0, -1):
+            code = paths.iter_dir(run.opts.run_id, it) / "code"
+            nodes = []
+            for d in sorted(code.glob("*/node.json")) if code.exists() else []:
+                raw = json.loads(d.read_text(encoding="utf-8"))
+                if (raw.get("law_refs") or [None])[0] == law.id:
+                    v = json.loads((d.parent / "verdict.json").read_text(encoding="utf-8")) if (d.parent / "verdict.json").exists() else {}
+                    nodes.append((raw, v))
+            if nodes:
+                out += [f"### `{law.id}`, as coded in iteration {it}", ""]
+                for raw, v in nodes:
+                    out += [f"`{raw.get('node_id')}`: gate {v.get('verdict', 'not run')}"
+                            + (f" — {'; '.join(str(x) for x in (v.get('details') or [])[:2])[:300]}" if v.get("details") else ""),
+                            "", "```json", json.dumps(raw, ensure_ascii=False, indent=1), "```", ""]
+                break
+    if not out:
+        return ""
+    return "## Your previous record of these laws\n\n" + "\n".join(out) + "\n"
+
+
 def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", pending: list[dict] | None = None) -> Path:
     """One plan session over `laws`. With a `tag` the session writes under `iter/plan/<tag>/` (one
     batch of several); `pending` lists the nodes and concept records earlier batches of this
@@ -165,6 +191,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
         "upheld": review_phase.upheld_block(run, {l.id for l in laws}),
+        "previous_records": previous_records(run, laws),
         "user_hints": run.read_hints(),
         "anchors": ontology.anchors_text(onto),
         "aggregate_atom": ontology.AGGREGATE,
@@ -290,7 +317,8 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
-        "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n",
+        "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
+                + GapLedger(paths.GAPS_DIR).cited_block(node.raw),
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
@@ -334,7 +362,8 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         rec2 = rep.records[0]
         errs = []
         others = [s for s in siblings if s.id != node.id]
-        outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [])
+        outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [],
+                                       rejected_gaps=GapLedger(paths.GAPS_DIR).rejected())
         errs += [r for o in outcomes if o.node.id == node.id for r in o.reasons]
         # a mapping the repair changed on words a sibling also carries: the same-words rule lands on the sibling, and is the repair's to keep or dispute
         errs += [f"{node.id}: your mapping of shared words differs from the held sibling's — {r}" for o in outcomes if o.node.id != node.id

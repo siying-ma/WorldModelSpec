@@ -1,0 +1,1178 @@
+{
+ "contract_cases": [
+  {
+   "name": "stationary vehicle on a one-way lane is not driven against the designation",
+   "law": "NRS-484B-220-1",
+   "expected_stage_a": "compliant",
+   "source_case_ids": [
+    "1d0ac3df1650fd9138d566845a79283e6053fdb66a6576e3feef35c436c0053f",
+    "620b3f628a058c6f5c0bcaf52dc89b0dd491c5ab151e348de63519cbfb7157a0"
+   ],
+   "trace": {
+    "scenes": [
+     {
+      "t": 0,
+      "subject": 1,
+      "users": [
+       {
+        "track": 1,
+        "classes": [
+         "motor_vehicle"
+        ],
+        "unobserved_classes": [],
+        "occupants": 1,
+        "kin": {
+         "position": [
+          0,
+          0
+         ],
+         "heading": [
+          1,
+          0
+         ],
+         "extent": [
+          1,
+          0.5,
+          0.5
+         ],
+         "velocity": [
+          0,
+          0
+         ],
+         "speed": 0.0
+        }
+       }
+      ],
+      "structures": [
+       {
+        "id": 10,
+        "kind": "highway",
+        "boundary": [
+         [
+          -40,
+          -20
+         ],
+         [
+          40,
+          -20
+         ],
+         [
+          40,
+          20
+         ],
+         [
+          -40,
+          20
+         ]
+        ],
+        "ways": []
+       },
+       {
+        "id": 32,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          30,
+          -2
+         ],
+         [
+          30,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 31,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          30,
+          -2
+         ],
+         [
+          30,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       }
+      ],
+      "devices": [
+       {
+        "id": 90,
+        "kind": "regulatory_sign",
+        "code": "one_way",
+        "governs": [
+         31
+        ],
+        "conditions": {}
+       }
+      ],
+      "env": {
+       "civil_time": {
+        "year": 2026,
+        "month": 1,
+        "day": 1,
+        "weekday": 4,
+        "minute_of_day": 720
+       }
+      },
+      "occupancy_observed": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "an unoccupied lane's opposite designation does not bind the vehicle (loop)",
+   "law": "NRS-484B-220-1",
+   "expected_stage_a": "compliant",
+   "source_case_ids": [
+    "8843c8b449ff8ecc0b516a06bdb0dabf55a096458cb2607304df12c9363d9dba",
+    "5fcf7b34df5695e55524a49773286944099bddb5686bb0d61fd0142709f06d32"
+   ],
+   "trace": {
+    "scenes": [
+     {
+      "t": 0,
+      "subject": 1,
+      "users": [
+       {
+        "track": 1,
+        "classes": [
+         "motor_vehicle"
+        ],
+        "unobserved_classes": [],
+        "occupants": 1,
+        "kin": {
+         "position": [
+          -15,
+          0
+         ],
+         "heading": [
+          1,
+          0
+         ],
+         "extent": [
+          1,
+          0.5,
+          0.5
+         ],
+         "velocity": [
+          5,
+          0
+         ],
+         "speed": 5.0
+        }
+       }
+      ],
+      "structures": [
+       {
+        "id": 10,
+        "kind": "highway",
+        "boundary": [
+         [
+          -40,
+          -20
+         ],
+         [
+          40,
+          -20
+         ],
+         [
+          40,
+          20
+         ],
+         [
+          -40,
+          20
+         ]
+        ],
+        "ways": []
+       },
+       {
+        "id": 23,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          0,
+          -2
+         ],
+         [
+          0,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 24,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          10
+         ],
+         [
+          0,
+          10
+         ],
+         [
+          0,
+          14
+         ],
+         [
+          -30,
+          14
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 21,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          0,
+          -2
+         ],
+         [
+          0,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 22,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          10
+         ],
+         [
+          0,
+          10
+         ],
+         [
+          0,
+          14
+         ],
+         [
+          -30,
+          14
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          -1,
+          0
+         ]
+        }
+       }
+      ],
+      "devices": [
+       {
+        "id": 90,
+        "kind": "regulatory_sign",
+        "code": "one_way",
+        "governs": [
+         21,
+         22
+        ],
+        "conditions": {}
+       }
+      ],
+      "env": {
+       "civil_time": {
+        "year": 2026,
+        "month": 1,
+        "day": 1,
+        "weekday": 4,
+        "minute_of_day": 720
+       }
+      },
+      "occupancy_observed": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "a one-way service road's sign does not make the two-way main road one-way",
+   "law": "NRS-484B-220-1",
+   "expected_stage_a": "not_applicable",
+   "source_case_ids": [
+    "498035120706ba57a74e830d5f0bd2b4a8b3d85391df9089c8997a5b90eee0c3"
+   ],
+   "trace": {
+    "scenes": [
+     {
+      "t": 0,
+      "subject": 1,
+      "users": [
+       {
+        "track": 1,
+        "classes": [
+         "motor_vehicle"
+        ],
+        "unobserved_classes": [],
+        "occupants": 1,
+        "kin": {
+         "position": [
+          0,
+          -2
+         ],
+         "heading": [
+          -1,
+          0
+         ],
+         "extent": [
+          1,
+          0.5,
+          0.5
+         ],
+         "velocity": [
+          -5,
+          0
+         ],
+         "speed": 5.0
+        }
+       }
+      ],
+      "structures": [
+       {
+        "id": 10,
+        "kind": "highway",
+        "boundary": [
+         [
+          -40,
+          -20
+         ],
+         [
+          40,
+          -20
+         ],
+         [
+          40,
+          20
+         ],
+         [
+          -40,
+          20
+         ]
+        ],
+        "ways": []
+       },
+       {
+        "id": 16,
+        "kind": "roadway",
+        "boundary": [
+         [
+          -30,
+          -4
+         ],
+         [
+          30,
+          -4
+         ],
+         [
+          30,
+          4
+         ],
+         [
+          -30,
+          4
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 12,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          -4
+         ],
+         [
+          30,
+          -4
+         ],
+         [
+          30,
+          0
+         ],
+         [
+          -30,
+          0
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 13,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          0
+         ],
+         [
+          30,
+          0
+         ],
+         [
+          30,
+          4
+         ],
+         [
+          -30,
+          4
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          -1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 15,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          6
+         ],
+         [
+          30,
+          6
+         ],
+         [
+          30,
+          9
+         ],
+         [
+          -30,
+          9
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 14,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          6
+         ],
+         [
+          30,
+          6
+         ],
+         [
+          30,
+          9
+         ],
+         [
+          -30,
+          9
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       }
+      ],
+      "devices": [
+       {
+        "id": 90,
+        "kind": "regulatory_sign",
+        "code": "one_way",
+        "governs": [
+         14
+        ],
+        "conditions": {}
+       }
+      ],
+      "env": {
+       "civil_time": {
+        "year": 2026,
+        "month": 1,
+        "day": 1,
+        "weekday": 4,
+        "minute_of_day": 720
+       }
+      },
+      "occupancy_observed": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "wrong-way driving on the shoulder of a one-way highway",
+   "law": "NRS-484B-220-1",
+   "expected_stage_a": "violated",
+   "source_case_ids": [
+    "31aa45a238f91c5958711be8f8b35baedab6c05071654f1db536bb9a8f093211",
+    "2ebd4d17878902d2864a29078849d458b155a95018e22f8709af264df436c072"
+   ],
+   "trace": {
+    "scenes": [
+     {
+      "t": 0,
+      "subject": 1,
+      "users": [
+       {
+        "track": 1,
+        "classes": [
+         "motor_vehicle"
+        ],
+        "unobserved_classes": [],
+        "occupants": 1,
+        "kin": {
+         "position": [
+          0,
+          -3.5
+         ],
+         "heading": [
+          -1,
+          0
+         ],
+         "extent": [
+          1,
+          0.5,
+          0.5
+         ],
+         "velocity": [
+          -5,
+          0
+         ],
+         "speed": 5.0
+        }
+       }
+      ],
+      "structures": [
+       {
+        "id": 10,
+        "kind": "highway",
+        "boundary": [
+         [
+          -40,
+          -20
+         ],
+         [
+          40,
+          -20
+         ],
+         [
+          40,
+          20
+         ],
+         [
+          -40,
+          20
+         ]
+        ],
+        "ways": []
+       },
+       {
+        "id": 32,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          30,
+          -2
+         ],
+         [
+          30,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 31,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          -2
+         ],
+         [
+          30,
+          -2
+         ],
+         [
+          30,
+          2
+         ],
+         [
+          -30,
+          2
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 42,
+        "kind": "shoulder",
+        "boundary": [
+         [
+          -30,
+          -5
+         ],
+         [
+          30,
+          -5
+         ],
+         [
+          30,
+          -2
+         ],
+         [
+          -30,
+          -2
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       }
+      ],
+      "devices": [
+       {
+        "id": 90,
+        "kind": "regulatory_sign",
+        "code": "one_way",
+        "governs": [
+         31,
+         42
+        ],
+        "conditions": {}
+       }
+      ],
+      "env": {
+       "civil_time": {
+        "year": 2026,
+        "month": 1,
+        "day": 1,
+        "weekday": 4,
+        "minute_of_day": 720
+       }
+      },
+      "occupancy_observed": [
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "wrong-way driving on a signposted one-way service road",
+   "law": "NRS-484B-220-1",
+   "expected_stage_a": "violated",
+   "source_case_ids": [],
+   "trace": {
+    "scenes": [
+     {
+      "t": 0,
+      "subject": 1,
+      "users": [
+       {
+        "track": 1,
+        "classes": [
+         "motor_vehicle"
+        ],
+        "unobserved_classes": [],
+        "occupants": 1,
+        "kin": {
+         "position": [
+          0,
+          7.5
+         ],
+         "heading": [
+          -1,
+          0
+         ],
+         "extent": [
+          1,
+          0.5,
+          0.5
+         ],
+         "velocity": [
+          -5,
+          0
+         ],
+         "speed": 5.0
+        }
+       }
+      ],
+      "structures": [
+       {
+        "id": 10,
+        "kind": "highway",
+        "boundary": [
+         [
+          -40,
+          -20
+         ],
+         [
+          40,
+          -20
+         ],
+         [
+          40,
+          20
+         ],
+         [
+          -40,
+          20
+         ]
+        ],
+        "ways": []
+       },
+       {
+        "id": 16,
+        "kind": "roadway",
+        "boundary": [
+         [
+          -30,
+          -4
+         ],
+         [
+          30,
+          -4
+         ],
+         [
+          30,
+          4
+         ],
+         [
+          -30,
+          4
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 12,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          -4
+         ],
+         [
+          30,
+          -4
+         ],
+         [
+          30,
+          0
+         ],
+         [
+          -30,
+          0
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 13,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          0
+         ],
+         [
+          30,
+          0
+         ],
+         [
+          30,
+          4
+         ],
+         [
+          -30,
+          4
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          -1,
+          0
+         ]
+        }
+       },
+       {
+        "id": 15,
+        "kind": "one_way_roadway",
+        "boundary": [
+         [
+          -30,
+          6
+         ],
+         [
+          30,
+          6
+         ],
+         [
+          30,
+          9
+         ],
+         [
+          -30,
+          9
+         ]
+        ],
+        "ways": [
+         10
+        ]
+       },
+       {
+        "id": 14,
+        "kind": "lane",
+        "boundary": [
+         [
+          -30,
+          6
+         ],
+         [
+          30,
+          6
+         ],
+         [
+          30,
+          9
+         ],
+         [
+          -30,
+          9
+         ]
+        ],
+        "ways": [
+         10
+        ],
+        "lane": {
+         "direction": [
+          1,
+          0
+         ]
+        }
+       }
+      ],
+      "devices": [
+       {
+        "id": 90,
+        "kind": "regulatory_sign",
+        "code": "one_way",
+        "governs": [
+         14
+        ],
+        "conditions": {}
+       }
+      ],
+      "env": {
+       "civil_time": {
+        "year": 2026,
+        "month": 1,
+        "day": 1,
+        "weekday": 4,
+        "minute_of_day": 720
+       }
+      },
+      "occupancy_observed": [
+       1
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "recorded_highway_governs": {
+  "case_id": "31aa45a238f91c5958711be8f8b35baedab6c05071654f1db536bb9a8f093211",
+  "iteration": 1,
+  "trace": {
+   "scenes": [
+    {
+     "t": 0,
+     "subject": 1,
+     "users": [
+      {
+       "track": 1,
+       "classes": [
+        "motor_vehicle"
+       ],
+       "unobserved_classes": [],
+       "kin": {
+        "position": [
+         0,
+         4
+        ],
+        "heading": [
+         -1,
+         0
+        ],
+        "extent": [
+         1,
+         0.5,
+         0.5
+        ],
+        "velocity": [
+         -5,
+         0
+        ],
+        "speed": 5
+       }
+      }
+     ],
+     "structures": [
+      {
+       "id": 10,
+       "kind": "highway",
+       "boundary": [
+        [
+         -50,
+         -6
+        ],
+        [
+         50,
+         -6
+        ],
+        [
+         50,
+         6
+        ],
+        [
+         -50,
+         6
+        ]
+       ],
+       "ways": []
+      },
+      {
+       "id": 11,
+       "kind": "one_way_roadway",
+       "boundary": [
+        [
+         -50,
+         -2
+        ],
+        [
+         50,
+         -2
+        ],
+        [
+         50,
+         2
+        ],
+        [
+         -50,
+         2
+        ]
+       ],
+       "ways": [
+        10
+       ]
+      },
+      {
+       "id": 12,
+       "kind": "lane",
+       "boundary": [
+        [
+         -50,
+         -2
+        ],
+        [
+         50,
+         -2
+        ],
+        [
+         50,
+         2
+        ],
+        [
+         -50,
+         2
+        ]
+       ],
+       "ways": [
+        10
+       ],
+       "lane": {
+        "direction": [
+         1,
+         0
+        ]
+       }
+      },
+      {
+       "id": 13,
+       "kind": "shoulder",
+       "boundary": [
+        [
+         -50,
+         2
+        ],
+        [
+         50,
+         2
+        ],
+        [
+         50,
+         6
+        ],
+        [
+         -50,
+         6
+        ]
+       ],
+       "ways": [
+        10
+       ]
+      }
+     ],
+     "devices": [
+      {
+       "id": 20,
+       "kind": "regulatory_sign",
+       "code": "one_way",
+       "governs": [
+        10,
+        12
+       ],
+       "conditions": {}
+      }
+     ],
+     "occupancy_observed": true
+    }
+   ]
+  }
+ }
+}

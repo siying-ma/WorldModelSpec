@@ -101,6 +101,17 @@ class Launches(unittest.TestCase):
         rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: restored.append(1), relaunch_cut_off=True)
         self.assertEqual((rec["cut_off"], restored), (None, [1]))
 
+    def test_a_coding_session_cut_off_at_every_launch_is_returned_not_an_outage(self):
+        """A session that ran and was cut off each time (its own work too slow for its time) is
+        returned with `cut_off` once its relaunches are spent: the caller's gate judges what it
+        left. Only a session that did not run is an outage."""
+        restored = []
+        self.claude(self.CUT, self.CUT, self.CUT)
+        sub = self.d / "code"; sub.mkdir()
+        rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: restored.append(1), relaunch_cut_off=True)
+        self.assertEqual(rec["cut_off"], "the session stopped at its turn cap")
+        self.assertEqual((self.launches, len(restored)), (self.opts.session_retries + 1, self.opts.session_retries))
+
     def test_a_rejected_request_is_reported_and_never_retried(self):
         calls = []
 

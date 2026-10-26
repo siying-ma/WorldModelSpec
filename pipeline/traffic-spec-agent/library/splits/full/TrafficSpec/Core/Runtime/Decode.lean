@@ -13,7 +13,9 @@
                     "devices": [...], "occupancy_observed": true | [track...]?, "occupies": [[track, region]...]?,
                     "relations": [...]?, "env": {...}?, "assumptions": [[id, bool]...]?,
                     "links": [[old, new]...]? } ] }
-  Field names follow the structures of World.lean in snake_case; see the decoders below.
+  Field names follow the structures of World.lean in snake_case; see the decoders below. A
+  device's `governs` absent or null is not observed (`governsObserved` false, so whether it
+  governs a region is unknown); `[]` is observed and governs nothing.
 
   A formula, a term and an argument decode strictly from the JSON Export.lean writes: the
   decoder is that encoder's inverse, so a decoded formula exported again is the canonical form.
@@ -205,6 +207,7 @@ def device (path : String) (j : Json) : D Device := do
          unobservedKinds := ← list j path "unobserved_kinds" (enum DeviceKind.ofString)
          position := ← opt j path "position" vec
          governs := ← list j path "governs" nat
+         governsObserved := (field? j "governs").isSome
          onTrack := ← opt j path "on_track" nat
          indications := ← optList j path "indications" (enum SignalIndication.ofString)
          uncovered := ← opt j path "uncovered" bool

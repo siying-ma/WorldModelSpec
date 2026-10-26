@@ -12,5 +12,5 @@ WORK="${WORK:-/tmp/eval_carla_new_$RUN}"
 
 build_monitor
 echo "== cases as shipped"
-for c in $CASES; do python3 "$EVAL_DIR/lib/prepare_cases.py" "$DATA/$c" "$WORK/cases/$c"; done
+for c in $CASES; do python3 "$EVAL_DIR/lib/prepare_cases.py" "$DATA/$c" "$WORK/cases/$c" --mask "$CARLA_NEW_INDICATOR_MASK"; done
 run_monitor

@@ -409,6 +409,22 @@
    "convention": "Junction path-conflict convention: the distance ahead of a road user, taken along the direction its body points, within which another body standing in its line of travel obstructs its passage, so that it cannot proceed past. It is taken from the length of a passenger-car design vehicle together with the ground such a vehicle covers while its driver reacts at the speed traffic crosses a junction. It names where one body stands in another's way and states no standard of conduct and no required separation.",
    "source": "AASHTO, A Policy on Geometric Design of Highways and Streets: passenger-car design vehicle length (about 5.8 m), with the perception-reaction allowance at a low junction crossing speed.",
    "proposed": "smoke20/iter-004 NRS_484B_257_1_o2"
+  },
+  {
+   "name": "p.stop_approach_window",
+   "value": 12,
+   "unit": "s",
+   "convention": "Approach look-back in time: the stretch of time behind a vehicle's entry into an intersection within which the halt required on its approach is looked for. It covers the time a vehicle stands at such a halt together with the time it takes to cover the entrance of the junction from the place of the halt - the setback of a stop line or near-side crosswalk, the width of that crossing and the vehicle's own length - at the low speed at which a vehicle proceeds after stopping. It names only how far back the halt is sought, the halt's tie to this junction being carried by the entrance reach of the intersection region, and it sets no standard of conduct.",
+   "source": "Junction-entrance geometry, as the entrance reach p.junction_approach_reach is taken, divided by the departure speed of a vehicle proceeding from a stop, with an allowance for the time spent standing at the halt.",
+   "proposed": "smoke21/iter-002 NRS_484B_250_4_o1"
+  },
+  {
+   "name": "p.intersection_edge_tolerance",
+   "value": 2,
+   "unit": "m",
+   "convention": "Nearest-point tolerance: the ground distance from an intersection region within which a halted vehicle counts as standing at the point nearest that intersection, the nearest place at which it can stand without entering it. It covers the survey tolerance of the intersection's mapped boundary, the resolution of a stopped body's outline, and the small gap a driver leaves short of the edge of a junction. It names where a halt counts as made at the nearest point and states no standard of conduct and no required separation.",
+   "source": "Mapped-boundary survey tolerance for an intersection region together with the clearance a vehicle is brought to rest short of a junction edge; well below the setback of a stop line, which is the stopping place the earlier limb reads.",
+   "proposed": "smoke21/iter-002 NRS_484B_250_4_o1"
   }
  ],
  "aggregates": [],

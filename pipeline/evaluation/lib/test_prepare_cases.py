@@ -64,6 +64,52 @@ class PreparationTests(unittest.TestCase):
             self.assertEqual(manifest["atoms"]["env.wet_road"], "exact")
             self.assertEqual(json.loads((out / "conversion.json").read_text())["assumptions"], {})
 
+    def test_source_manifest_mask_and_unwritten_indicator(self):
+        lib = Path(__file__).resolve().parents[2] / "traffic-spec-agent/library"
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            scenes = [{"t": 0, "subject": 1, "users": [{"track": 1, "sig": {"brake_lamp": False}},
+                                                      {"track": 2, "sig": {"brake_lamp": False}}]},
+                      {"t": 50, "subject": 1, "users": [{"track": 1, "sig": {"turn_indicator": "left"}}]},
+                      {"t": 100, "subject": 1, "users": [{"track": 1}]}]
+            (source / "trace.json").write_text(json.dumps({"scenes": scenes}))
+            shared = Path(tmp) / "source_manifest.json"
+            shared.write_text(json.dumps({"source": "test", "atoms": {"sig.turn_indicator": "exact", "sig.hazard": "exact"}}))
+            out = Path(tmp) / "out"
+            with patch("sys.argv", ["prepare_cases", str(source), str(out), "--library", str(lib), "--manifest", str(shared),
+                                    "--mask", "sig.hazard=reported wrongly", "--indicator-off"]):
+                main()
+            got = json.loads((out / "trace.json").read_text())["scenes"]
+            self.assertEqual(got[0]["users"][0]["sig"]["turn_indicator"], "off")
+            self.assertNotIn("turn_indicator", got[0]["users"][1]["sig"])   # not the subject
+            self.assertEqual(got[1]["users"][0]["sig"]["turn_indicator"], "left")
+            self.assertNotIn("sig", got[2]["users"][0])                      # signals not reported: unknown stays unknown
+            manifest = json.loads((out / "manifest.json").read_text())
+            self.assertEqual(manifest["atoms"]["sig.hazard"], "absent")
+            self.assertEqual(manifest["atoms"]["sig.turn_indicator"], "exact")
+            conversion = json.loads((out / "conversion.json").read_text())
+            self.assertEqual(conversion["masked_atoms"], {"sig.hazard": "reported wrongly"})
+            self.assertEqual(conversion["assumptions"], {"unwritten_turn_indicator": "off"})
+            self.assertEqual(conversion["manifest"], str(shared.resolve()))
+
+    def test_mask_of_unknown_atom_rejected(self):
+        lib = Path(__file__).resolve().parents[2] / "traffic-spec-agent/library"
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            (source / "trace.json").write_text('{"scenes":[{"t":0}]}')
+            (source / "manifest.json").write_text(json.dumps({"source": "test", "atoms": {}}))
+            with patch("sys.argv", ["prepare_cases", str(source), str(Path(tmp) / "out"), "--library", str(lib),
+                                    "--mask", "sig.no_such_atom=typo"]):
+                with self.assertRaises(ValueError):
+                    main()
+
+    def test_demo13_manifest_is_complete(self):
+        lib = Path(__file__).resolve().parents[2] / "traffic-spec-agent/library"
+        atoms = json.loads((Path(__file__).parent / "demo13_manifest.json").read_text())["atoms"]
+        self.assertEqual(set(atoms), set(atom_ids(lib)))
+
 
 if __name__ == "__main__":
     unittest.main()

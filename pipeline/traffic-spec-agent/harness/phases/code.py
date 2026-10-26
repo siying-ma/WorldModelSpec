@@ -12,6 +12,7 @@ from ..checks import gate
 from ..lean import index_sync, lean, skeleton, surface
 from ..model import nodeid, ontology
 from ..store import paths
+from ..store.gaps import GapLedger
 from ..agents import render, session
 from ..model.blueprint import Node, ConceptRecord
 from ..model.reading import Reading
@@ -229,7 +230,7 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     gate_text = (f"Run exactly this command, nothing more and nothing else:\n\n```\n{gate_cli(run, node.id)}\n```\n\nIt prints the verdict and its details. The verdicts on your files: "
                  + ", ".join(gate.VERDICTS) + f". `{gate.INFRA}` is not one: the toolchain or the run did not let the gate judge your files. Budget: {run.opts.gate_budget} runs; the harness re-runs the gate itself after you stop, on the files as they are then.\n")
     prompt = render.render("code.md", {
-        "node": json.dumps(node.raw, ensure_ascii=False, indent=1),
+        "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger(paths.GAPS_DIR).cited_block(node.raw),
         "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "reading": reading_table(node, reading),
         "example": worked_example(run), "skeletons": skeletons, "gate": gate_text,
         "rule_path": str(rule_abs), "witness_path": str(wit_abs), "node_id": node.id,

@@ -14,6 +14,15 @@
   - a static map: the same structures in every scene, each identical at every appearance; every
     device that does not move (`Device.mobile`) in every scene; a device identical at every
     appearance outside its state (`Device.staticPart`);
+  - one representation of direction and control: a designated direction (`lane.direction`) is
+    carried only by a structure a vehicle travels in (`directionKinds`: a lane, reserved lane,
+    turn lane, bicycle lane or path, roadway, one-way roadway or shoulder; a centre turn lane
+    carries none), and is not the zero vector; each carrier stands on its own, and carriers that
+    overlap or cross may carry different directions. A device whose control is observed governs
+    only the travel regions whose traffic it controls, or an intersection, read as control of the
+    junction itself (`governedKinds`); never a highway, a controlled-access region or a region no
+    vehicle travels in. A place no carrier covers has no designated direction, and a device whose
+    `governs` is not written has no observed control; neither is filled in;
   - valid geometry: a boundary has at least three vertices, all distinct (the first is not
     repeated at the end), a non-zero area and no self-intersection; an extent's half-length and
     half-width are positive; a path length is not negative; a heading is not the zero vector;
@@ -108,6 +117,40 @@ private def devices (τ : Trace) : List String :=
           some s!"{at_ s}: device {dv.id} differs from its first appearance in a field that is not its state (its state is {String.intercalate ", " Device.stateFields}{if d0.mobile then ", position" else ""})"
         else none
       | none => none
+
+-- ---------------------------------------------------------------------------------------------
+-- Representation: where a designated direction and a device's control are written
+-- ---------------------------------------------------------------------------------------------
+/-- The structure kinds a vehicle travels in that may carry a designated direction. A centre turn
+    lane, shared by both directions, carries none. -/
+def directionKinds : List StructureKind :=
+  [.lane, .reservedLane, .turnLane, .bicycleLaneOrPath, .roadway, .oneWayRoadway, .shoulder]
+
+/-- The structure kinds a device may govern: the regions whose traffic it controls, and an
+    intersection, which is read as control of the junction itself and of nothing else. -/
+def governedKinds : List StructureKind :=
+  directionKinds ++ [.centreTurnLane, .intersection]
+
+private def representation (τ : Trace) : List String :=
+  let firstStructure := fun (r : RegionId) => τ.findSome? fun s => (s.structure? r).map fun _ => s.t
+  let firstDevice := fun (d : DeviceId) => τ.findSome? fun s => (s.device d).map fun _ => s.t
+  τ.flatMap fun s =>
+    (s.structures.flatMap fun st =>
+      -- the map is static, so each structure is reported once, at its first appearance
+      if firstStructure st.id != some s.t then []
+      else match st.lane.bind (·.direction) with
+        | none => []
+        | some v =>
+          (if directionKinds.contains st.kind then []
+           else [s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries lane.direction; only a lane, reserved lane, turn lane, bicycle lane or path, roadway, one-way roadway or shoulder does"])
+          ++ (if Q.isZero v.1 && Q.isZero v.2 then [s!"{at_ s}: structure {st.id} lane.direction is the zero vector"] else []))
+    ++ s.devices.flatMap fun dv =>
+      if firstDevice dv.id != some s.t || !dv.governsObserved then []
+      else dv.governs.filterMap fun r => match s.structure? r with
+        | some st =>
+          if governedKinds.contains st.kind then none
+          else some s!"{at_ s}: device {dv.id} governs structure {r} ({st.kind.toString}); a device governs the travel regions whose traffic it controls (a lane, reserved lane, turn lane, centre turn lane, bicycle lane or path, roadway, one-way roadway or shoulder) or an intersection"
+        | none => none
 
 -- ---------------------------------------------------------------------------------------------
 -- Geometry
@@ -231,7 +274,7 @@ def checkReferences (τ : Trace) : List String :=
 
 /-- Every inconsistency of a written trace. Empty for a trace that passes. -/
 def checkTrace (τ : Trace) : List String :=
-  checkReferences τ ++ staticMap τ ++ devices τ ++ geometry τ
+  checkReferences τ ++ staticMap τ ++ devices τ ++ representation τ ++ geometry τ
     ++ τ.flatMap occupancy ++ pathLength τ ++ yaw τ
 
 /-- Every defect of the witness instant: `at` is a scene's timestamp, and every grounded track and

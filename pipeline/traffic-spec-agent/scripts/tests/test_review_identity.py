@@ -75,7 +75,8 @@ class Precedents(unittest.TestCase):
     def test_the_case_never_sees_its_own_lineage(self):
         rows = [{"lineage": "A", "iteration": 1, "subject": "n", "item": "a", "ruling": "upheld", "reason": "r1"},
                 {"lineage": "B", "iteration": 1, "subject": "n", "item": "b", "ruling": "upheld", "reason": "r2"}]
-        ctx = SimpleNamespace(precedents=rows, law=TWO, seg="", definitions=[], record={}, rendering="", params=[], aggregates=[])
+        ctx = SimpleNamespace(precedents=rows, law=TWO, seg="", definitions=[], record={}, rendering="", params=[], aggregates=[],
+                              not_atoms="")
         saved = review.render.render
         review.render.render = lambda name, vals: vals["precedents"]
         try:
@@ -490,6 +491,23 @@ class ReplayTransition(unittest.TestCase):
         self.replay()
         self.replay()
         self.assertEqual((self.calls, len(self.rows())), (calls, n))
+
+
+# ---------------------------------------------------------------------------------------------
+# Stage A sees the same duties however a segmentation cuts the same words
+# ---------------------------------------------------------------------------------------------
+class DutyBlock(unittest.TestCase):
+
+    def test_two_cuts_of_the_same_sibling_words_render_alike(self):
+        n1, _ = two_nodes()
+        recut = Node({**n1.raw, "segmentation": n1.raw["segmentation"][:3] + [
+            {"id": "s4", "role": "sibling", "text": "At a blue marker the driver"},
+            {"id": "s5", "role": "sibling", "text": "shall stop."}]})
+        self.assertEqual(review.duty_block(n1, TWO), review.duty_block(recut, TWO))
+        self.assertEqual(review.duty_of(n1, TWO)["id"], review.duty_of(recut, TWO)["id"])   # the duty's identity is untouched
+
+    def test_words_of_the_node_between_siblings_keep_them_apart(self):
+        self.assertEqual(review.merged_ranges("a b. c d", [(0, 1), (2, 3), (7, 8)]), [(0, 3), (7, 8)])
 
 
 if __name__ == "__main__":

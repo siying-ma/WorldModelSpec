@@ -78,8 +78,11 @@ Users: {users}
    withdraw the record and write the new records, each under its own id, each a complete record in
    the schema below. The laws that used the concept go back to their planner to use the new ones.
 6. **Withdraw** only when no split carries the notion: write the withdrawal with the atom or
-   operator that is missing; the laws that used the concept go back to their planner, and the
-   operator sees it as a gap.
+   operator that is missing and the distinction of the driving task it would decide (the action a
+   law requires or forbids, where it is required, its time or order, the road users it concerns, or
+   whether a plan can be carried out); the laws that used the concept go back to their planner, and
+   the operator sees it as a gap. That a word has no atom of its own is never, by itself, a reason
+   to withdraw.
 7. Decide; do not ask.
 
 ## Output

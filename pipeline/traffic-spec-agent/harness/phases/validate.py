@@ -57,7 +57,7 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
         index, accepted, accepted_concepts, mode = MappingIndex(plan_dir / "mapping.json"), {}, {}, "train"
     concept_outcomes = validate_a.validate_concepts(concepts, defs, onto, accepted_concepts, users, mode)
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
-    rejected = {r["id"]: set(r.get("law_refs", [])) for r in GapLedger(paths.GAPS_DIR).rows if r.get("state") == "rejected"}
+    rejected = GapLedger(paths.GAPS_DIR).rejected()
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
                                    known_nodes=known_nodes, rejected_gaps=rejected)
     return nodes, concepts, outcomes, concept_outcomes

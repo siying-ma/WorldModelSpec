@@ -45,14 +45,16 @@ from ..model import corpus, nodeid, ontology
 from ..model.blueprint import Node, span_offsets
 from ..model.reading import Reading
 from ..store import jsonl, paths
+from ..store.gaps import GapLedger
 from ..store.state import Run
 from . import validate as validate_phase
 
 PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
-                            "case_language", "case_vocabulary", "obligations", "max_divergences", "review_checks", "review_submissions")
+                            "case_language", "case_vocabulary", "not_atoms", "obligations", "max_divergences", "review_checks",
+                            "review_submissions")
 PLACEHOLDERS_JUDGE_CASE = ("law", "definitions", "case", "contracts")
 PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "definitions", "record", "rendered", "contracts", "parameters", "aggregates",
-                           "item", "precedents")
+                           "item", "precedents", "not_atoms")
 VERDICTS = {"accept", "return"}
 GAP_KINDS = {"standard_factor", "broader_contract"}
 KINDS = {"rule_permits_unlawful", "rule_forbids_lawful", "rule_undecided"}
@@ -331,7 +333,11 @@ def _accessor(atoms_src: str, name: str) -> str:
 
 def _field_path(atoms_src: str, name: str, fields: dict, depth: int = 0) -> str | None:
     """The trace path an atom accessor reads, from the projections in its body (`(s.user x).bind
-    (·.kin.speed)` ↦ `users[].kin.speed`), following a call of another accessor."""
+    (·.kin.speed)` ↦ `users[].kin.speed`), following a call of another accessor. A projection of
+    the entity's record (`u.f`, `st.f`, `dv.f`, or a first `·.f`) starts a path, each later `·.g`
+    continues it (`.bind (·.lane) |>.bind (·.direction)` ↦ `lane.direction`), and the path stops at a
+    step the decoder does not read (a method, a tuple index, a field no key fills). The last path
+    that reads a decoded field is the one the accessor answers from."""
     body = _accessor(atoms_src, name)
     if not body or depth > 4:
         return None
@@ -340,17 +346,24 @@ def _field_path(atoms_src: str, name: str, fields: dict, depth: int = 0) -> str 
         key = fields.get("env", {}).get(f, (None,))[0]
         return f"env.{key}" if key else None
     base = re.search(r"\(s\.(user|structure\?|device|relation) ", body)
-    chain = re.findall(r"(?:·|\bu|\bst|\bdv)\.((?:\w+\.)*\w+)", body)
-    if base and chain:
-        prefix, rec = _BASES[base.group(1)]
-        path = []
-        for f in chain[-1].split("."):
-            key, sub = fields.get(rec, {}).get(f, (None, ""))
-            if key is None:
-                return None
-            path.append(key)
-            rec = sub or rec
-        return f"{prefix}.{'.'.join(path)}"
+    if base:
+        prefix, base_rec = _BASES[base.group(1)]
+        best, cur = None, None
+        for m in re.finditer(r"(·|\bu|\bst|\bdv)\.((?:\w+\.)*\w+)", body):
+            if m.group(1) != "·" or cur is None:
+                cur = ([], base_rec, True)                # a projection of the record starts a path
+            path, rec, open_ = cur
+            for f in m.group(2).split("."):
+                key, sub = fields.get(rec, {}).get(f, (None, ""))
+                if key is None or not open_:
+                    open_ = False
+                    break
+                path, rec = path + [key], sub or rec
+            cur = (path, rec, open_)
+            if path:
+                best = path
+        if best:
+            return f"{prefix}.{'.'.join(best)}"
     call = re.search(r"\b((?:ru|kin|st|dev|sig|env|rel)_\w+) s\b", body.split(":=", 1)[-1])
     if call and call.group(1) != name:
         inner = _field_path(atoms_src, call.group(1), fields, depth + 1)
@@ -992,10 +1005,24 @@ def duty_of(n: Node, law: corpus.Law) -> dict:
     return _occurrence(law, [offs[str(s["id"])] for s in n.get("segmentation", []) if s.get("role") == "obligation" and str(s.get("id")) in offs])
 
 
+def merged_ranges(text: str, ranges: list) -> list[tuple[int, int]]:
+    """Character ranges of a law joined wherever only spaces or punctuation lie between them, so the
+    same words read as the same stretches however a segmentation cuts them."""
+    out: list[list[int]] = []
+    for a, z in sorted(tuple(r) for r in ranges):
+        if out and not re.search(r"\w", text[out[-1][1]:a]):
+            out[-1][1] = max(out[-1][1], z)
+        else:
+            out.append([a, z])
+    return [(a, z) for a, z in out]
+
+
 def sibling_duties(n: Node, law: corpus.Law) -> list[dict]:
-    """The law's other duties, as this node's segmentation marks them (`sibling` spans)."""
+    """The law's other duties, as this node's segmentation marks them (`sibling` spans), each a
+    stretch of the law's words: spans that adjoin are one stretch, whatever the cut."""
     offs = span_offsets(n.get("segmentation", []), law.text)
-    return [_occurrence(law, [offs[str(s["id"])]]) for s in n.get("segmentation", []) if s.get("role") == "sibling" and str(s.get("id")) in offs]
+    ranges = [offs[str(s["id"])] for s in n.get("segmentation", []) if s.get("role") == "sibling" and str(s.get("id")) in offs]
+    return [_occurrence(law, [r]) for r in merged_ranges(law.text, ranges)]
 
 
 def overlaps(a: list, b: list) -> bool:
@@ -1009,7 +1036,8 @@ def duty_block(n: Node, law: corpus.Law) -> str:
     if not others:
         return ""
     d = duty_of(n, law)
-    out = ["### The duty judged here", "", *[f"> {w}" for w in d["words"]], "", f"in the sentence: \u201c{_ws(d['context'])}\u201d", "",
+    words = [law.text[a:z] for a, z in merged_ranges(law.text, d["ranges"])]
+    out = ["### The duty judged here", "", *[f"> {w}" for w in words], "", f"in the sentence: \u201c{_ws(d['context'])}\u201d", "",
            "### Judged separately", "", "These duties of the law are judged on their own cases; every other word of the law applies by its meaning.", ""]
     out += [f"- \u201c{_ws(' '.join(o['words']))}\u201d (in the sentence: \u201c{_ws(o['context'])}\u201d)" for o in others]
     return "\n".join(out) + "\n"
@@ -1184,6 +1212,7 @@ class Context:
     duty: dict = field(default_factory=dict)              # the duty occurrence the node formalizes (`duty_of`)
     duty_block: str = ""                                  # what stage A is shown of it (`duty_block`)
     precedents: list[dict] = field(default_factory=list)  # the effective rulings on this duty, as they stood when the review began
+    not_atoms: str = ""                                   # the ontology's section on what is not an atom, verbatim
 
 
 def definitions_block(defs: list[dict]) -> str:
@@ -1304,13 +1333,15 @@ def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str],
     return render.render("adjudicate.md", {
         "law_and_segmentation": f"### Law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n\nSpans:\n{ctx.seg}\n",
         "definitions": definitions_block(ctx.definitions),
-        "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n",
+        "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n\n"
+                  + GapLedger(paths.GAPS_DIR).cited_block(ctx.record),
         "rendered": "### Rendering\n\n" + ctx.rendering + "\n",
         "contracts": validate_phase.contracts_table(contracts),
         "parameters": params_block(ctx.params),
         "aggregates": aggregates_block(ctx.aggregates),
         "item": item,
-        "precedents": precedents_block([r for r in ctx.precedents if not lineage or r.get("lineage") != lineage])})
+        "precedents": precedents_block([r for r in ctx.precedents if not lineage or r.get("lineage") != lineage]),
+        "not_atoms": ctx.not_atoms})
 
 
 def stage_b_digest(run: Run, prompt: str) -> str:
@@ -2218,7 +2249,7 @@ def build_context(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, r
     duty = duty_of(n, law)
     return Context(law, seg, definitions_mod.applicable(run, law.id), record, rendering, glosses, params, aggs,
                    definitions_mod.precedence_hash(run), duty=duty, duty_block=duty_block(n, law),
-                   precedents=precedent_rows(run, f"law:{law.id}", duty))
+                   precedents=precedent_rows(run, f"law:{law.id}", duty), not_atoms=ontology.not_atoms_text(onto))
 
 
 def evidence_block(items: list[dict]) -> str:
@@ -2282,7 +2313,8 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     binders = [b["name"] for b in n.get("binders", [])]
     blocks = {
         "law_and_segmentation": f"### Law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans:\n{ctx.seg}\n",
-        "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n",
+        "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n\n"
+                  + GapLedger(paths.GAPS_DIR).cited_block(ctx.record),
         "rendered": "### Rendering\n\n" + ctx.rendering + "\n",
         "atoms_read": atoms_read_block(rule_json, run.all_concepts()),
         "contracts": validate_phase.contracts_table(ctx.rule_glosses) + aggregates_block(ctx.aggregates),
@@ -2290,6 +2322,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         "trace_format": trace_format_block(),
         "case_language": surface.case_language(),
         "case_vocabulary": surface.case_vocabulary(onto),
+        "not_atoms": ctx.not_atoms,
         "obligations": evidence_block(rep.evidence),
         "max_divergences": str(run.opts.max_divergences),
         "review_checks": str(run.opts.review_checks),

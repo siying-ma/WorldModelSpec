@@ -78,4 +78,26 @@ def occOf (τ : Trace) : List (TrackId × RegionId) := (completeOccupancy τ).he
 #guard has (checkWitness clean [("v", 2)] [] 0) "binder v is grounded to track 2"
 #guard has (checkWitness clean [("v", 1)] [("light", .region 9)] 0) "entity light is region 9"
 
+-- one representation of direction and control: a direction on a structure a vehicle travels in,
+-- each carrier on its own; a device governs travel regions or an intersection, nothing else
+def carrier (id : RegionId) (k : StructureKind) (d : Vec := (Q.ofInt 1, Q.zero)) (b : List Vec := rect 0 (-2) 100 2) : Structure :=
+  { id := id, kind := k, boundary := some b, lane := some { direction := some d } }
+#guard checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .roadway])] = []
+#guard checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .oneWayRoadway])] = []
+#guard checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .shoulder])] = []
+#guard has (checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .highway])]) "carries lane.direction"
+#guard has (checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .centreTurnLane])]) "carries lane.direction"
+#guard has (checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .lane (Q.zero, Q.zero)])]) "lane.direction is the zero vector"
+-- crossing carriers with different directions are both valid: no agreement is required between carriers
+#guard checkTrace [scene 0 (car 10 0) (structures := [carrier 7 .lane, carrier 8 .turnLane (Q.zero, Q.ofInt 1) (rect 40 (-10) 44 10)])] = []
+def region8 (k : StructureKind) : Structure := { id := 8, kind := k, boundary := some (rect 40 (-10) 44 10) }
+def withGov (k : StructureKind) : Trace := [scene 0 (car 10 0) (structures := [lane7, region8 k]) (devs := [signal .circularGreen [8]])]
+#guard checkTrace (withGov .intersection) = []                 -- control of the junction itself
+#guard checkTrace (withGov .centreTurnLane) = []
+#guard has (checkTrace (withGov .highway)) "device 9 governs structure 8 (highway)"
+#guard has (checkTrace (withGov .controlledAccess)) "device 9 governs structure 8"
+#guard has (checkTrace (withGov .sidewalk)) "device 9 governs structure 8"
+-- a device whose control is not observed is not checked, and governs nothing decided
+#guard checkTrace [scene 0 (car 10 0) (structures := [lane7, region8 .highway]) (devs := [{ signal .circularGreen [] with governsObserved := false }])] = []
+
 end TrafficSpec.Tests.TraceLint

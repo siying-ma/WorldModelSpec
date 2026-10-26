@@ -1,11 +1,14 @@
 """Rewrite a library copy's registry (TrafficSpec/Index.lean) so it holds exactly the rules and
-concepts a run accepted, and nothing a coding session may still be writing.
+concepts a run holds, and nothing a coding session may still be writing.
 
     python3 register_accepted.py <library copy> <run results dir> <pipeline root>
 
-The run's accepted records (accepted_nodes.jsonl, accepted_concepts.jsonl) name what is registered;
-files on disk that no record names are removed from the copy, so a half-written node never enters
-the monitor's build. Only the copy is touched.
+What a run holds is the harness's own read-only view of it (`base_view`): its accepted records and
+those of its base chain, a later run's record replacing an earlier one of the same id, and a base
+node of a law the run planned again left out. A fenced version is kept on disk but not registered,
+as the harness keeps it out of every registry build. Files on disk that no record names are removed
+from the copy, so a half-written node never enters the monitor's build. The registered rules and
+the law each formalizes are written to `registered.json` beside the copy. Only the copy is touched.
 """
 from __future__ import annotations
 
@@ -14,27 +17,22 @@ import sys
 from pathlib import Path
 
 
-def records(path: Path, key: str) -> list[str]:
-    if not path.exists():
-        return []
-    return [json.loads(l)[key] for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
-
-
 def main(lib: Path, run_dir: Path, pipeline_root: Path) -> None:
     sys.path.insert(0, str(pipeline_root))
     from harness.model import nodeid  # module and namespace names, as the harness derives them
+    from harness.store import paths
+    from harness.store.state import base_view
 
-    nodes = records(run_dir / "accepted_nodes.jsonl", "node_id")
-    concepts = records(run_dir / "accepted_concepts.jsonl", "concept_id")
-    opts = json.loads((run_dir / "options.json").read_text(encoding="utf-8")) if (run_dir / "options.json").exists() else {}
-    if opts.get("base_run"):                                      # a test run also carries its base run's records
-        base = run_dir.parent / opts["base_run"]
-        nodes = records(base / "accepted_nodes.jsonl", "node_id") + nodes
-        concepts = records(base / "accepted_concepts.jsonl", "concept_id") + concepts
+    if run_dir.resolve() != paths.run_dir(run_dir.name).resolve():
+        sys.exit(f"{run_dir} is not a run of {paths.RESULTS}")
+    view = base_view(run_dir.name)
+    fenced = set(view["fenced"])
+    nodes = [n for n in view["nodes"] if n not in fenced]
+    concepts = [c for c in view["concepts"] if c not in fenced]
     if not nodes:
-        sys.exit(f"{run_dir} has no accepted node: nothing to evaluate")
+        sys.exit(f"{run_dir} holds no accepted node: nothing to evaluate")
 
-    keep = {nodeid.rule_path(n) for n in nodes} | {nodeid.concept_path(c) for c in concepts}
+    keep = {nodeid.rule_path(n) for n in view["nodes"]} | {nodeid.concept_path(c) for c in view["concepts"]}
     for sub in ("TrafficSpec/Rules", "TrafficSpec/Concepts"):
         for f in (lib / sub).rglob("*.lean"):
             if f.relative_to(lib).as_posix() not in keep:
@@ -52,7 +50,12 @@ def main(lib: Path, run_dir: Path, pipeline_root: Path) -> None:
         f"def allRules : List Rule := [\n{rules}\n]\n"
         f"def allConcepts : List Concept := [\n{cons}\n]\n"
         "end TrafficSpec\n", encoding="utf-8")
-    print(f"   registered {len(nodes)} rule(s): {', '.join(nodes)}; {len(concepts)} concept(s)")
+    (lib.parent / "registered.json").write_text(json.dumps(
+        {"run": run_dir.name, "chain": view["chain"], "fenced": sorted(fenced),
+         "rules": {n: {"law": view["nodes"][n]["law_refs"][0], "accepted_by": view["provenance"].get(n)} for n in nodes},
+         "concepts": concepts}, indent=1) + "\n", encoding="utf-8")
+    print(f"   registered {len(nodes)} rule(s): {', '.join(nodes)}; {len(concepts)} concept(s)"
+          + (f"; fenced, not registered: {', '.join(sorted(fenced))}" if fenced else ""))
 
 
 if __name__ == "__main__":

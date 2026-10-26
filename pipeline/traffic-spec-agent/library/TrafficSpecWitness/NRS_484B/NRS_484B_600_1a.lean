@@ -1,22 +1,20 @@
 /-
   Witnesses for NRS_484B_600_1a.
 
-  The geometry, once for all the scenes below. A straight public way runs east: region 10, a
-  rectangle 1000 m long and 20 m wide (`wayRegion`), of kind `highway`. Upon it lies one lane,
-  region 20, the southern 10 m of the same rectangle (`laneRegion`), which carries the two figures
-  the rule reads of a lane — the width the source reports at that place and the sight distance
-  along the road there. The subject is track 1, a body 4 m long and 2 m wide, at (100 m, 5 m),
-  heading east, inside both polygons, so `Build.scene` derives that it occupies the way and the
-  lane. Other road users are placed on the same way east of it, or off the way at y = 60 m.
-  Every scene is repeated at three instants one second apart; no formula of the rule looks back,
-  so no padding and no window is needed.
+  The geometry is the same straight way in every scene: one highway region 600 m long and 20 m wide
+  (region 1), and inside it one eastbound lane (region 2) whose polygon is the declared width about
+  the centre line, whose `LaneInfo.width` is the width the source maps there and whose
+  `sightDistance` is the view the road affords at that place. The subject is track 1 at the origin,
+  heading east; other road users stand on the same way ahead of it, so that each is within the
+  highway region the subject occupies and at a centre distance the scene states by its position.
+  Every scene is repeated at three instants one second apart; the rule looks back nowhere, so no
+  scenario names a window.
 
-  Every figure here is the witness's own and appears nowhere in the rule. Against the run's
-  reading — dry 25, wet 20, ice 11, night 20 m/s, reference lane width 3.6 m, width-penalty time
-  0.2 s, sight-clearance time 4 s, traffic reach 50 m, traffic decrement 1.5 m/s — the margins are:
-  a long view is 400 m of sight distance (a bound of 100 m/s) and 600 m of visibility (150 m/s),
-  so that in every scene but `branch_4` and `branch_5` the view and weather bounds are far above
-  the speed and the scene turns on the bound it is about.
+  Every figure here is the witness's own and appears nowhere in the rule: the speeds and widths are
+  chosen to break or keep each bound the reading's values set by a clear margin (the reading has
+  p.speed_dry 25 m/s, p.speed_wet 20, p.speed_ice 11, p.speed_dark 20, p.speed_resolution 0.2 m/s,
+  p.reference_lane_width 3.6 m, p.width_penalty_time 0.2 s, p.traffic_reach 50 m,
+  p.traffic_speed_decrement 1.5 m/s, p.sight_clearance_time 4 s).
 -/
 import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1a
 import TrafficSpec.Core.Evidence.Builders
@@ -28,138 +26,142 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 def mps (n : Int) : Q := Units.metresPerSecond n
-def kmh (n : Int) : Q := Units.kmh n
+
+/-- The whole way between its boundary lines. -/
+def highway : Structure := Build.rect 1 .highway (m (-300)) (m (-10)) (m 300) (m 10)
+
+/-- The one eastbound lane of that way: its polygon is `width` wide about the centre line, the
+    source maps `width` to it and `sight` is the distance that can be seen along the road there. -/
+def laneAt (width sight : Q) : Structure :=
+  let half := Q.div width (Q.ofInt 2)
+  { Build.rect 2 .lane (m (-300)) (Q.neg half) (m 300) half with
+      lane := some { direction := some Build.east, width := some width }
+      sightDistance := some sight }
+
+/-- A passenger car at a place on the way, heading east. -/
+def carAt (track : TrackId) (pos : Vec) (speed : Q) : RoadUser :=
+  Build.user track [.motorVehicle] pos Build.east speed (m 2, cm 90, cm 75)
+
+/-- A passenger car on the centre line of the lane, heading east. -/
+def car (track : TrackId) (x : Q) (speed : Q) : RoadUser := carAt track (x, Q.zero) speed
+
+/-- A pedal bicycle, a device moved by human power: no class the reading includes under
+    DEF-NRS-484A-320::vehicle, and one it includes under DEF-NRS-484A-285::traffic. -/
+def bike (track : TrackId) (x : Q) (speed : Q) : RoadUser :=
+  Build.user track [.bicycle] (x, Q.zero) Build.east speed (m 1, cm 30, cm 90)
+
+/-- A person on foot upon the way. -/
+def walker (track : TrackId) (x : Q) : RoadUser :=
+  Build.user track [.pedestrian] (x, Q.zero) Build.east (mps 1) (cm 30, cm 30, cm 90)
+
+def envOf (dark precip wet ice : Bool) (vis : Q) : Env :=
+  { darkness := some dark, precipitation := some precip, wetRoad := some wet,
+    iceOrSnow := some ice, visibility := some vis }
+
+/-- Daylight, a dry surface, clear air. -/
+def dryDay : Env := envOf false false false false (m 500)
+
+def sceneOf (t : Timestamp) (users : List RoadUser) (width sight : Q) (e : Env) : Scene :=
+  Build.scene t (some 1) users [highway, laneAt width sight] [] none e
 
 -- Binders ↦ tracks: v ↦ 1
 
-/-- Half-length, half-width, half-height of a vehicle body. -/
-def body : Q × Q × Q := (m 2, m 1, m 1)
-/-- The same of a person on foot. -/
-def personBody : Q × Q × Q := (cm 30, cm 30, m 2)
-
-/-- The public way: region 10, 1000 m by 20 m. -/
-def wayRegion : Structure := Build.rect 10 .highway (m 0) (m 0) (m 1000) (m 20)
-
-/-- The lane upon it: region 20, the southern half of the way, with the width the source reports
-    and the sight distance along the road at that place. -/
-def laneRegion (width sight : Q) : Structure :=
-  { Build.rect 20 .lane (m 0) (m 0) (m 1000) (m 10) with
-      lane := some { direction := some Build.east, width := some width },
-      sightDistance := some sight }
-
-/-- A long view: the sight distance of an open straight road. -/
-def longSight : Q := m 400
-/-- Clear air. -/
-def clearAir : Q := m 600
-/-- A lane of the reference width (3.6 m in the run's reading). -/
-def referenceWidth : Q := cm 360
-
-/-- The weather and the light, every field of them observed. -/
-def air (dark wet ice precip : Bool) (visibility : Q) : Env :=
-  { darkness := some dark, wetRoad := some wet, iceOrSnow := some ice,
-    precipitation := some precip, visibility := some visibility }
-
-/-- Daylight, a dry surface, no precipitation, clear air. -/
-def dryAir : Env := air false false false false clearAir
-
-/-- The subject: a motor vehicle at (100 m, 5 m), heading east at `speed`. -/
-def subjectAt (speed : Q) : RoadUser := Build.user 1 [.motorVehicle] (m 100, m 5) Build.east speed body
-
-/-- Another road user standing on the way at `x`. -/
-def standingAt (track : TrackId) (classes : List TrafficSpec.RoadUserClass) (x y : Q)
-    (halfExtent : Q × Q × Q) : RoadUser :=
-  Build.user track classes (x, y) Build.east Q.zero halfExtent
-
-/-- Three instants one second apart of one unchanging scene. -/
-def still (users : List RoadUser) (structures : List Structure) (env : Env) : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun _k t =>
-    Build.scene t (some 1) users structures [] (env := env)
-
-/-- `forbid` (violated): A single road user is in the scene: a motor vehicle, a class the definition of 'vehicle' includes. Its footprint overlaps a public way and a lane of that way whose width equals the reference lane width. The roadway carries no ice and no snow and is not wet, no precipitation falls, the natural light is sufficient, the visibility distance is long and the sight distance at its place is likewise long. No other road user is present, so the traffic about it is of no road users at all and the density allowance takes nothing from the bound. Its speed is far above the dry-surface free-flow speed and so above the least of the four bounds, none of which is at its floor. The rule reports violated. This is also the scenario in which no road user other than the binder is in the scene, and the duty is still decided. -/
+/-- `forbid` (violated): One track only, a passenger car whose class the reading includes under DEF-NRS-484A-320::vehicle; no other road user is in the scene, so the traffic count about it is zero and the duty is decided on the subject alone. Its footprint overlaps a lane that lies within a highway region it also overlaps; st.lane_width at its place is at p.reference_lane_width, so no width deficit is owed. env.wet_road, env.ice_or_snow, env.precipitation and env.darkness are all observed false; env.visibility and st.sight_distance are both long, far above the bounds p.sight_clearance_time makes of them. kin.speed is far above p.speed_dry, hence above the least bound. -/
 def forbidTrace : Trace :=
-  still [subjectAt (mps 40)] [wayRegion, laneRegion referenceWidth longSight] dryAir
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 40)] (cm 360) (m 500) dryDay
 
-/-- `permit` (compliant): The same single motor vehicle on the same public way and in the same lane, with the same dry surface, sufficient light, long visibility distance and long sight distance, and again no other road user in the scene. Its speed is well below the dry-surface free-flow speed and below the night, visibility and sight bounds as well. The rule reports compliant. -/
+/-- `permit` (compliant): The same car on the same lane at reference width, alone in the scene, in daylight; env.wet_road is observed true and env.ice_or_snow false, so the baseline is p.speed_wet. env.visibility and st.sight_distance are long. kin.speed is well below p.speed_wet, and below every other bound, so the rate of speed is within the reasonable-and-proper bound. -/
 def permitTrace : Trace :=
-  still [subjectAt (mps 10)] [wayRegion, laneRegion referenceWidth longSight] dryAir
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 12)] (cm 360) (m 500)
+      (envOf false false true false (m 500))
 
-/-- `idle` (not_applicable): The only road user in the scene is a motor vehicle, a class the definition of 'vehicle' includes, standing still with its engine running on a narrow icy strip of private ground: its footprint overlaps a lane region one metre wide whose surface carries ice, and it overlaps no public way at all - the scene holds no st.highway region its footprint lies in. There is therefore no highway whose traffic, surface, width, weather and other conditions the rate could be weighed against, the engagement condition of s5 fails, and the rule does not engage. The rule reports not_applicable. (This is the shape of the situation an earlier rule condemned: standing still where the composed bound had gone negative.) -/
+/-- `idle` (not_applicable): The only track is a pedal bicycle, a device moved by human power and so a class the reading excludes from DEF-NRS-484A-320::vehicle. It runs at a kin.speed above p.speed_dry on a lane whose st.lane_width is well below p.reference_lane_width, in darkness. The subject's aggregate membership is false, so the rule is not engaged. -/
 def idleTrace : Trace :=
-  still [Build.withKin (subjectAt Q.zero) fun k =>
-          { k with engineRunning := some true, serviceBrake := some (Units.ratio 1 1) }]
-    [laneRegion (m 1) (m 100)]
-    (air false false true false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [bike 1 (m 0) (mps 30)] (m 2) (m 500)
+      (envOf true false false false (m 500))
 
-/-- `blind` (unknown): A motor vehicle alone on a public way, in a lane of the reference width, with sufficient light, a long visibility distance and a long sight distance, and no other road user in the scene. The source does not observe whether the road surface is wet: env.wet_road is unobserved on this trace, while env.ice_or_snow is observed false and env.precipitation observed false. The vehicle's speed lies above the wet-surface free-flow speed and below the dry-surface one, and both selections give a bound well above the floor, so the surface bound decides the comparison one way if the surface is wet and the other way if it is dry, and the two selections do not agree. The rule reports unknown. -/
+/-- `blind` (unknown): A car alone in the scene, in daylight (env.darkness false) with env.ice_or_snow and env.precipitation observed false, on a lane at p.reference_lane_width, with env.visibility and st.sight_distance both long. The source declares env.wet_road absent, so whether the baseline is p.speed_dry or p.speed_wet is unknown; kin.speed lies between p.speed_wet and p.speed_dry, so the comparison is decided neither way and the rule reports unknown. -/
 def blindTrace : Trace :=
-  still [subjectAt (kmh 81)] [wayRegion, laneRegion referenceWidth longSight]
-    { darkness := some false, wetRoad := none, iceOrSnow := some false,
-      precipitation := some false, visibility := some clearAir }
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 22)] (cm 360) (m 500)
+      (envOf false false true false (m 500))
 
-/-- `branch_1` (violated): A motor vehicle alone on a dry public way, in a lane of the reference width, with a long visibility distance and a long sight distance, but the natural light is insufficient, so env.darkness holds. Its speed is below the dry-surface free-flow speed and above the night allowance. The night bound is the least of the four, and the rule reports violated. -/
+/-- `branch_1` (violated): Daylight, dry surface, lane at reference width, long visibility and long sight distance; kin.speed sits just below p.speed_dry. Several other tracks - two cars and a person on foot, all classes the reading includes under DEF-NRS-484A-285::traffic - overlap the same highway region the subject overlaps and each lies within p.traffic_reach of it by rel.centre_distance, so the bound falls by p.traffic_speed_decrement for each of them and the subject's speed exceeds it. The traffic factor alone decides the verdict. -/
 def branch_1Trace : Trace :=
-  still [subjectAt (kmh 81)] [wayRegion, laneRegion referenceWidth longSight]
-    (air true false false false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 24), car 2 (m 10) (mps 24), car 3 (m 20) (mps 24), walker 4 (m 30)]
+      (cm 360) (m 500) dryDay
 
-/-- `branch_2` (violated): A motor vehicle on a dry public way in a lane of the reference width, in sufficient light with a long visibility distance and a long sight distance, but four other road users - three motor vehicles and a pedestrian, all of them classes the traffic aggregate includes - overlap the same public way and stand within the traffic reach of it. Its speed is below the dry-surface free-flow speed but above that speed reduced by the decrement for each of those four, which is still well above the floor. The rule reports violated. -/
+/-- `branch_2` (violated): Daylight, dry surface, no other road user in the scene, long visibility and long sight distance; kin.speed sits just below p.speed_dry. The lane the subject's footprint overlaps has st.lane_width well below p.reference_lane_width, and the deficit divided by p.width_penalty_time brings the bound below the subject's speed. The width factor alone decides the verdict. -/
 def branch_2Trace : Trace :=
-  still
-    [ subjectAt (kmh 81)
-    , standingAt 2 [.motorVehicle] (m 110) (m 5) body
-    , standingAt 3 [.motorVehicle] (m 120) (m 5) body
-    , standingAt 4 [.motorVehicle] (m 130) (m 5) body
-    , standingAt 5 [.pedestrian] (m 140) (m 5) personBody ]
-    [wayRegion, laneRegion referenceWidth longSight] dryAir
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 24)] (m 2) (m 500) dryDay
 
-/-- `branch_3` (violated): A motor vehicle alone on a dry public way in sufficient light, with a long visibility distance and a long sight distance, but the lane its footprint overlaps is narrower than the reference lane width. Its speed is below the dry-surface free-flow speed and above that speed less the cost of the missing width, which remains a positive rate. The rule reports violated. -/
+/-- `branch_3` (violated): Daylight, dry surface, lane at reference width, no other road user, env.visibility long; but st.sight_distance at the subject's place is short - a place on the road from which little of it can be seen - and kin.speed, though below p.speed_dry, exceeds st.sight_distance divided by p.sight_clearance_time. The catch-all factor, read through the view the road affords, decides the verdict. -/
 def branch_3Trace : Trace :=
-  still [subjectAt (mps 23)] [wayRegion, laneRegion (m 3) longSight] dryAir
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 24)] (cm 360) (m 60) dryDay
 
-/-- `branch_4` (violated): A motor vehicle alone on a dry public way in a lane of the reference width, in sufficient light, with a long sight distance at its place, but the air is thick with fog and the visibility distance is short. Its speed is below the dry-surface free-flow speed and above the visibility distance divided by the sight-clearance time. The rule reports violated. -/
+/-- `branch_4` (violated): env.ice_or_snow observed true and env.darkness observed true; lane at reference width, no other road user, long visibility and long sight distance. kin.speed is above p.speed_ice and above p.speed_dark, so both the surface baseline and the night cap are exceeded. -/
 def branch_4Trace : Trace :=
-  still [subjectAt (kmh 72)] [wayRegion, laneRegion referenceWidth longSight]
-    (air false false false false (m 60))
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 24)] (cm 360) (m 500)
+      (envOf true false false true (m 500))
 
-/-- `branch_5` (violated): A motor vehicle alone on a dry public way in a lane of the reference width, in sufficient light and clear air, but the sight distance at its place on the road is short, the road rising to a crest ahead of it. Its speed is below the dry-surface free-flow speed and above the sight distance divided by the sight-clearance time. The rule reports violated. -/
+/-- `branch_5` (violated): Daylight, dry surface, lane at reference width, no other road user, st.sight_distance long; but env.visibility is short, a fog or dust that shortens the distance that can be seen, and kin.speed exceeds env.visibility divided by p.sight_clearance_time while remaining below p.speed_dry. The weather factor, read by the degree to which it holds, decides the verdict. -/
 def branch_5Trace : Trace :=
-  still [subjectAt (kmh 72)] [wayRegion, laneRegion referenceWidth (m 40)] dryAir
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 24)] (cm 360) (m 500)
+      (envOf false false false false (m 80))
 
-/-- `branch_6` (violated): A motor vehicle alone on a public way, in a lane of the reference width, in sufficient light with a long visibility distance and a long sight distance, on a roadway covered with snow and ice, so env.ice_or_snow holds. Its speed is below the wet-surface free-flow speed and above the icy one. The rule reports violated. -/
+/-- `branch_6` (not_applicable): the same car on the same lane in the same clear daylight, standing
+    still at the kerbside halt: kin.speed is zero and does not stand clear of p.speed_resolution,
+    so the vehicle is not being driven or operated and the duty is not engaged. The motion leaf of
+    the applicability decides the verdict. -/
 def branch_6Trace : Trace :=
-  still [subjectAt (mps 15)] [wayRegion, laneRegion referenceWidth longSight]
-    (air false false true false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) Q.zero] (cm 360) (m 500) dryDay
 
-/-- `branch_7` (violated): A motor vehicle alone on a public way, in a lane of the reference width, in sufficient light with a long visibility distance and a long sight distance; rain is falling, so env.precipitation holds, although the source reports the surface as not yet wet and free of ice and snow. Its speed is below the dry-surface free-flow speed and above the wet-surface one. The rule reports violated. -/
+/-- `branch_7` (violated): daylight, lane at reference width, no other road user, long visibility
+    and long sight distance, env.wet_road and env.ice_or_snow observed false; but
+    env.precipitation is observed true, so the baseline is p.speed_wet, and kin.speed lies between
+    p.speed_wet and p.speed_dry. The falling rain alone decides the verdict. -/
 def branch_7Trace : Trace :=
-  still [subjectAt (kmh 81)] [wayRegion, laneRegion referenceWidth longSight]
-    (air false false false true clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 22)] (cm 360) (m 500)
+      (envOf false true false false (m 500))
 
-/-- `branch_8` (compliant): A motorcycle, a class the vehicle aggregate includes, stands still upon a public way: its footprint overlaps that way and a lane of it one metre wide, far narrower than the reference lane width, the surface carries ice and snow, the light is sufficient, the air clear and the sight distance at its place moderate. Its engine is running and its service brake is fully applied; its measured speed is nought. The width the lane lacks, costed at the width-penalty time, exceeds the icy free-flow speed, so the surface, traffic and width bound stands at its floor of none - and a rate of none is not greater than a rate of none. The night bound does not bind, and both the visibility and the sight bounds are far above nought. The rule reports compliant: no accumulation of adverse circumstances condemns a vehicle that is not moving. -/
+/-- `branch_8` (compliant): daylight, dry surface, lane at reference width, long visibility and
+    long sight distance; one other car of the traffic lies 30 m ahead within p.traffic_reach, so
+    the bound is p.speed_dry less one p.traffic_speed_decrement, and kin.speed is just below it.
+    The scene is the one in which counting the subject itself among the traffic about it would
+    lower the bound below its speed, so it holds the traffic count to the other road users. -/
 def branch_8Trace : Trace :=
-  still [Build.withKin (Build.user 1 [.motorcycle] (m 100, m 5) Build.east Q.zero body) fun k =>
-          { k with engineRunning := some true, serviceBrake := some (Units.ratio 1 1) }]
-    [wayRegion, laneRegion (m 1) (m 200)]
-    (air false false true false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 23), car 2 (m 30) (mps 23)] (cm 360) (m 500) dryDay
 
-/-- `branch_9` (violated): The same public way, the same one-metre icy lane, the same sufficient light, clear air and moderate sight distance, but the motorcycle is creeping forward at a few metres a second rather than standing. The surface, traffic and width bound is again at its floor of none, and its rate of speed is above it. The rule reports violated, so the floor permits only a vehicle that is not moving and does not excuse one that is. -/
+/-- `branch_9` (violated): night (env.darkness observed true) on a dry surface, no other road user,
+    long visibility and long sight distance; kin.speed is exactly at p.speed_dark and below
+    p.speed_dry, so neither bare baseline is exceeded. The lane the subject occupies is narrower
+    than p.reference_lane_width by a width whose allowance keeps the day bound but breaks the night
+    one: the night cap less the width allowance alone decides the verdict. -/
 def branch_9Trace : Trace :=
-  still [Build.withKin (Build.user 1 [.motorcycle] (m 100, m 5) Build.east (mps 2) body) fun k =>
-          { k with engineRunning := some true }]
-    [wayRegion, laneRegion (m 1) (m 200)]
-    (air false false true false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [car 1 (m 0) (mps 20)] (m 3) (m 500)
+      (envOf true false false false (m 500))
 
-/-- `branch_10` (compliant): A motor vehicle in a lane of the reference width on a dry public way in sufficient light with a long view, and two other road users that are not the traffic about it: one motor vehicle on the same way but far ahead, beyond the traffic reach, and one motor vehicle off the way, whose footprint overlaps no public way the vehicle overlaps. Neither counts, the density allowance takes nothing, and its speed stays below the dry-surface free-flow speed and below the other three bounds. The rule reports compliant. -/
+/-- `branch_10` (violated): night again, dry surface, long visibility, no other road user; but the
+    car stands on the way outside the one lane - on the shoulder breadth of the highway region, so
+    its footprint overlaps no lane and no width allowance or sight-distance cap is owed. kin.speed
+    is between p.speed_dark and p.speed_dry, so the night cap on the baseline alone decides the
+    verdict. -/
 def branch_10Trace : Trace :=
-  still
-    [ subjectAt (kmh 72)
-    , standingAt 2 [.motorVehicle] (m 200) (m 5) body
-    , standingAt 3 [.motorVehicle] (m 100) (m 60) body ]
-    [wayRegion, laneRegion referenceWidth longSight] dryAir
-
-/-- `branch_11` (violated): A motor vehicle alone on a public way in sufficient light with a long visibility distance; the surface is reported wet with standing water, although no rain or snow is falling and there is no ice, so env.wet_road alone selects the wet-surface free-flow speed. Its lane is of the reference width and the sight distance at its place is long. Its speed is above the wet-surface free-flow speed and below the dry one. The rule reports violated. -/
-def branch_11Trace : Trace :=
-  still [subjectAt (kmh 81)] [wayRegion, laneRegion referenceWidth longSight]
-    (air false true false false clearAir)
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
+    sceneOf t [carAt 1 (m 0, m 5) (mps 22)] (cm 360) (m 500)
+      (envOf true false false false (m 500))
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=
@@ -181,11 +183,10 @@ def scenarios : List Scenario :=
   , witness "branch_3" branch_3Trace .violated
   , witness "branch_4" branch_4Trace .violated
   , witness "branch_5" branch_5Trace .violated
-  , witness "branch_6" branch_6Trace .violated
+  , witness "branch_6" branch_6Trace .notApplicable
   , witness "branch_7" branch_7Trace .violated
   , witness "branch_8" branch_8Trace .compliant
   , witness "branch_9" branch_9Trace .violated
-  , witness "branch_10" branch_10Trace .compliant
-  , witness "branch_11" branch_11Trace .violated ]
+  , witness "branch_10" branch_10Trace .violated ]
 
 end TrafficSpecWitness.NRS_484B_600_1a

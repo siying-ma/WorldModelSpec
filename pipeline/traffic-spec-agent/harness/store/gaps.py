@@ -97,6 +97,34 @@ class GapLedger:
         """Gaps the operator has closed, retired or rejected, with the decision's words."""
         return {r["id"]: (r["state"], str(r.get("decision", ""))) for r in self.rows if r.get("state") in ("retired", "rejected")}
 
+    def rejected(self) -> dict[str, dict]:
+        """Each rejected gap, as a cited narrowing is checked and shown against it: the laws it was
+        filed on, the occurrence of its words (`<law>@<digest>:<start>-<end>`, absent on older rows),
+        its words, and the operator's decision."""
+        return {r["id"]: {"laws": set(r.get("law_refs", [])), "occurrence": r.get("occurrence"), "span": r.get("span", ""),
+                          "decision": str(r.get("decision", ""))} for r in self.rows if r.get("state") == "rejected"}
+
+    def cited_block(self, record: dict) -> str:
+        """The operator's decisions a record's narrowings cite (`gap`), for every session that reads the
+        record: each gap's decision in the operator's words and the words it was filed on. Empty when
+        the record cites none. A decision settles only those words."""
+        rejected = self.rejected()
+        cited = sorted({n.get("gap") for n in record.get("narrowings") or [] if isinstance(n, dict) and isinstance(n.get("gap"), str)})
+        if not cited:
+            return ""
+        out = ["### The operator's decisions this record follows", "",
+               "A narrowing that names a gap carries its span as the operator decided that gap. The decision settles "
+               "only the distinction it names, on the words it was filed on; every other distinction of those words is "
+               "judged as usual.", ""]
+        for gid in cited:
+            r = rejected.get(gid)
+            if r is None:
+                out.append(f"- `{gid}`: no rejected gap of the ledger has this id; the record cites no decision")
+                continue
+            where = f" ({r['occurrence']})" if r.get("occurrence") else ""
+            out.append(f"- `{gid}`, filed on the words \u201c{r['span']}\u201d{where}: {r['decision']}")
+        return "\n".join(out) + "\n"
+
     def remove_undecided(self) -> list[dict]:
         """The operator's archive of a fresh library: the proposals still undecided (or accepted) leave
         the ledger; the decided ones stay, with their decisions. Returns the rows removed."""

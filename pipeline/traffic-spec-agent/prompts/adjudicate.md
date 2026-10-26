@@ -27,6 +27,8 @@ may name the law's words the rule ignores, but not a replacement for them.
   verdict, whether an aggregate membership mechanically explains the difference, and the outcomes
   available for this item; or structural evidence: a word-level claim no trace can show.
 - **Earlier rulings** — what was decided on this law before, and why (rule 8).
+- **What is not an atom** — the ontology's section on the words read without an atom of their own,
+  and the conventions every role applies to them alike (rule 7).
 
 {law_and_segmentation}
 
@@ -45,6 +47,8 @@ may name the law's words the rule ignores, but not a replacement for them.
 {item}
 
 {precedents}
+
+{not_atoms}
 
 ## Outcomes
 
@@ -109,10 +113,14 @@ A structural evidence item is `upheld` or `dismissed_permitted_reading` only.
    they contradict: the record carries words of a subject, trigger, condition, exception or
    obligation span with a contract that admits things the words exclude, and no contract makes the
    distinction, so no trace can show it. Decide it on the words and the contracts alone. Uphold it
-   when the contract's own words admit what
-   the law's words exclude and the difference changes where the law applies or what it requires;
-   an upheld item returns the rule so that the plan files a gap on that span. Otherwise the words
-   permit the carried contract (`dismissed_permitted_reading`).
+   when the contract's own words admit what the law's words exclude and the difference changes what
+   a check of driving decides: the action the law requires or forbids, where it is required, its
+   time or order, the road users it concerns, or whether a plan can be carried out. An upheld item
+   returns the rule so that the plan files a gap on that span. Otherwise the words permit the
+   carried contract (`dismissed_permitted_reading`). An item on a distinction that a convention of
+   the section on what is not an atom reads, or that an operator's decision on a gap of those words
+   settles (shown with the record), is `dismissed_permitted_reading`. You apply a convention or a
+   decision only to the distinction it names, and never make one.
 8. **Earlier rulings.** A situation an earlier ruling on this duty decided is decided the same way,
    unless the record or the rendering changed on the point that ruling turned on; a decision that
    departs from an earlier one names, in its reason, the change it turns on.

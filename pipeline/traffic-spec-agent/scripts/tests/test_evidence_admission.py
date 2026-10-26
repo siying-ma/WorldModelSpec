@@ -448,5 +448,24 @@ class CarryOver(unittest.TestCase):
         self.assertEqual(rows[-1]["obligation"], "open")
 
 
+# ---------------------------------------------------------------------------------------------
+# Where a trace writes what an atom reads, for the reviewer and the planner's notes
+# ---------------------------------------------------------------------------------------------
+class TracePlace(unittest.TestCase):
+
+    def test_a_chain_of_projections_and_a_named_record(self):
+        self.assertEqual(review.trace_place("st_lane_direction"), "`structures[].lane.direction`")
+        self.assertEqual(review.trace_place("dev_governs"), "`devices[].governs`")
+        self.assertEqual(review.trace_place("st_sight_along_way"), "`users[].sight_along_way`")
+        self.assertEqual(review.trace_place("kin_speed"), "`users[].kin.speed`")
+
+    def test_every_accessor_names_a_place(self):
+        from harness.store import paths
+        src = (paths.CORE / "Vocab" / "Atoms.lean").read_text(encoding="utf-8")
+        names = re.findall(r"^def ((?:ru|kin|st|dev|sig|env|rel)_\w+) \(s : Scene\)", src, re.M)
+        vague = sorted(n for n in names if review.trace_place(n) == "(see the trace format)")
+        self.assertEqual(vague, ["kin_time", "ru_subject"])     # the scene's own subject and time, not an entity's field
+
+
 if __name__ == "__main__":
     unittest.main()

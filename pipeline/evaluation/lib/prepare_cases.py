@@ -1,17 +1,21 @@
-"""Copy one carla_new case (trace.json, manifest.json) into a work directory, ready for the monitor.
+"""Copy one case (its trace.json, and its manifest.json or the source's) into a work directory,
+ready for the monitor.
 
-    python3 prepare_cases.py <case dir> <out dir> [--fill] [--visibility M] [--lane-width M] [--engine]
+    python3 prepare_cases.py <case dir> <out dir> [--manifest M] [--mask ATOM=REASON ...]
+                             [--fill] [--visibility M] [--lane-width M] [--engine] [--indicator-off]
 
 Retired unobserved classes and absent capabilities are removed; a positively observed retired
 class requires an explicit source-supported mapping and is rejected. Newly introduced atoms are
-declared absent, never inferred. A conversion record hashes the inputs and outputs. The turn
-indicator is declared absent: the adapter writes `left` in every scene of every case, whatever the
-light state, so no rule that reads a signal is judged on it until the adapter is fixed.
+declared absent, never inferred. A conversion record hashes the inputs and outputs. --manifest
+names the source's manifest for a case that ships none. --mask declares an atom absent, with the
+reason recorded: an atom the source reports wrongly is not judged on until the adapter is fixed.
 
 With --fill, assumptions are added, and the manifest declares them observed: no ice or snow,
 the visibility distance given, and a lane width
 for every lane that has none (lanes with a measured width keep it). With --engine as well, the ego's
-engine is reported running. The dataset itself is only read.
+engine is reported running. With --indicator-off, the ego's turn indicator is read `off` in every
+scene whose signals are reported without it, for a source that wrote the indicator only while lit.
+The dataset itself is only read.
 """
 from __future__ import annotations
 
@@ -101,6 +105,9 @@ def main() -> None:
     ap.add_argument("--visibility", type=float, default=10000.0)
     ap.add_argument("--lane-width", type=float, default=3.5)
     ap.add_argument("--engine", action="store_true")
+    ap.add_argument("--indicator-off", action="store_true")
+    ap.add_argument("--manifest", type=Path)
+    ap.add_argument("--mask", action="append", default=[], metavar="ATOM=REASON")
     ap.add_argument("--library", type=Path, default=Path(os.environ.get(
         "PIPELINE", str(Path(__file__).resolve().parents[2] / "traffic-spec-agent"))) / "library")
     a = ap.parse_args()
@@ -110,7 +117,9 @@ def main() -> None:
     target = Path(a.out)
     if source.resolve() == target.resolve():
         raise ValueError("output must not overwrite the source case")
-    manifest = json.loads((source / "manifest.json").read_text())
+    manifest_path = a.manifest or source / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    masks = dict(m.split("=", 1) for m in a.mask)
     atoms = manifest["atoms"]
     ids = atom_ids(a.library)
     retired = sorted(set(atoms) - set(ids))
@@ -121,9 +130,13 @@ def main() -> None:
     added = sorted(set(ids) - set(atoms))
     for missing in added:
         atoms[missing] = "absent"
-    atoms["sig.turn_indicator"] = "absent"
+    unknown = sorted(set(masks) - set(ids))
+    if unknown:
+        raise ValueError(f"not atom ids: {unknown}")
+    for atom in masks:
+        atoms[atom] = "absent"
 
-    widths = 0
+    widths = indicators = 0
     scenes = 0
     with (target / "trace.json").open("w") as output:
         output.write('{"scenes":[')
@@ -142,6 +155,10 @@ def main() -> None:
                     for u in s.get("users", []):
                         if u.get("track") == s.get("subject"):
                             u.setdefault("kin", {})["engine_running"] = True
+            if a.indicator_off:
+                for u in s.get("users", []):
+                    if u.get("track") == s.get("subject") and u.get("sig") and u["sig"].get("turn_indicator") is None:
+                        u["sig"]["turn_indicator"] = "off"; indicators += 1
             if scenes:
                 output.write(",")
             output.write(json.dumps(s, separators=(",", ":"), allow_nan=False))
@@ -153,16 +170,18 @@ def main() -> None:
             atoms["kin.engine_running"] = "subject"
 
     (target / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    conversion = {"source": str(source.resolve()), "scenes": scenes,
+    assumptions = ({"ice_or_snow": False, "visibility_m": a.visibility,
+                    "missing_lane_width_m": a.lane_width, "engine_running": a.engine} if a.fill else {})
+    if a.indicator_off:
+        assumptions["unwritten_turn_indicator"] = "off"
+    conversion = {"source": str(source.resolve()), "manifest": str(manifest_path.resolve()), "scenes": scenes,
                   "retired_absent_atoms_removed": retired, "new_atoms_declared_absent": added,
-                  "masked_atoms": {"sig.turn_indicator": "legacy exporter emits constant left"},
-                  "assumptions": ({"ice_or_snow": False, "visibility_m": a.visibility,
-                                   "missing_lane_width_m": a.lane_width, "engine_running": a.engine}
-                                  if a.fill else {}),
-                  "source_sha256": {n: sha256(source / n) for n in ("trace.json", "manifest.json")},
+                  "masked_atoms": masks, "assumptions": assumptions,
+                  "source_sha256": {"trace.json": sha256(source / "trace.json"), "manifest.json": sha256(manifest_path)},
                   "output_sha256": {n: sha256(target / n) for n in ("trace.json", "manifest.json")}}
     (target / "conversion.json").write_text(json.dumps(conversion, indent=2) + "\n")
     note = f", weather filled, {widths} lane entries given {a.lane_width} m" + (", engine running" if a.engine else "") if a.fill else ""
+    note += f", indicator read off in {indicators} scenes" if a.indicator_off else ""
     print(f"   {os.path.basename(a.case)}: {scenes} scenes{note}; {len(added)} new atoms absent")
 
 

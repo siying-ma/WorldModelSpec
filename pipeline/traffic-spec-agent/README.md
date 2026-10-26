@@ -443,8 +443,11 @@ launch: at most `session_retries + 1` launches per task, counted from the launch
 directory, each recorded before its call starts; a new loop launch grants a fresh allowance. The
 relaunches are made `--retry_wait` (900 s) apart, of a
 session the account or the API refused (a usage limit, an API error, a timeout with no answer) and
-of a coding session cut off by its turn cap, budget or timeout, relaunched from its baseline; a
-spent budget holds the task, uncharged. A plan session cut off before it wrote a law's node returns
+of a coding session cut off by its turn cap, budget or timeout, relaunched from its baseline. A
+session the account refused holds its task, uncharged, once its relaunches are spent, and the loop
+stops after the iteration. A coding session that ran and was cut off at every launch is no outage:
+its task is judged by the harness's own gate on what the last launch left (a candidate too slow
+to evaluate is `GATE_TIMEOUT`), and the run goes on. A plan session cut off before it wrote a law's node returns
 that law once uncharged. A request the API rejects as such (400, 404, 422) is a harness defect,
 reported and never sent again until the effective request (its input, model, tools, effort and
 output cap) changes. `--plan_batch` (8) is the most laws one plan

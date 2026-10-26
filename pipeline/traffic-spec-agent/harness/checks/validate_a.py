@@ -519,21 +519,27 @@ OBSERVABLE_READING = "observable_reading"
 OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose", "agency"}
 
 
-def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = None) -> list[str]:
+def check_narrowings(node: Node, rejected_gaps: dict[str, dict] | None = None, law_text: str = "") -> list[str]:
     """A narrowing is a disclosed reading of a span the plan carries by an element or an
     operationalization: the span exists, has role obligation or standard, is so carried, and the
     narrowing says why. An `observable_reading` (a word with no observable counterpart, read through
     the conduct or feature it refers to, of a category in the closed list) may also be declared on a
     trigger, subject, condition or exception span an element carries. Otherwise a span that decides
     when the rule applies is never narrowed; a span nothing
-    carries is a residue or a gap, not a narrowing. A narrowing may name in `gap` a rejected gap of
-    the ledger on this law: the operator's decision that the span is carried as it is."""
+    carries is a residue or a gap, not a narrowing. A narrowing of either kind may name in `gap` a
+    rejected gap of the ledger (`rejected_gaps`: id ↦ {laws, occurrence}): the operator's decision
+    that the span is carried as it is. It must be a gap decided on this law, and the narrowing's span
+    must overlap the words the gap was filed on (its `occurrence`, `<law>@<digest>:<start>-<end>`);
+    a gap recorded without an occurrence is checked for its law only."""
     errs = []
     spans = node.spans()
     carried = {x.get("span") for key in ("elements", "operationalizations") for x in node.get(key, [])}
+    offsets = span_offsets(node.get("segmentation", []), law_text) if law_text else {}
     for n in node.get("narrowings", []):
         sid, role = n.get("span"), spans.get(n.get("span"), {}).get("role")
         gap = n.get("gap")
+        if gap is not None:
+            errs += _cited_gap_errors(node, sid, gap, rejected_gaps or {}, offsets)
         if n.get("kind") == OBSERVABLE_READING:          # a word with no observable counterpart, read through conduct
             if sid not in spans:
                 errs.append(f"{node.id}: narrowing refers to unknown span {sid!r}")
@@ -548,11 +554,6 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = Non
             continue
         if n.get("kind") not in (None, "reading"):
             errs.append(f"{node.id}: narrowing on span {sid} has kind {n.get('kind')!r}; a plan's narrowing is `reading` or `{OBSERVABLE_READING}`")
-        if gap is not None:
-            if not rejected_gaps or gap not in rejected_gaps:
-                errs.append(f"{node.id}: narrowing on span {sid} names gap {gap!r}, which is no rejected gap of the ledger")
-            elif node.law not in rejected_gaps[gap]:
-                errs.append(f"{node.id}: narrowing on span {sid} names gap {gap}, which was decided on {sorted(rejected_gaps[gap])}, not on this law")
         if sid not in spans:
             errs.append(f"{node.id}: narrowing refers to unknown span {sid!r}")
         elif role in SCOPE_ROLES:
@@ -564,6 +565,20 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, set[str]] | None = Non
         if not _ws(n.get("why")):
             errs.append(f"{node.id}: narrowing on span {sid} states no `why`")
     return errs
+
+
+def _cited_gap_errors(node: Node, sid, gap, rejected_gaps: dict[str, dict], offsets: dict[str, tuple[int, int]]) -> list[str]:
+    row = rejected_gaps.get(gap) if isinstance(gap, str) else None
+    if row is None:
+        return [f"{node.id}: narrowing on span {sid} names gap {gap!r}, which is no rejected gap of the ledger"]
+    if node.law not in row["laws"]:
+        return [f"{node.id}: narrowing on span {sid} names gap {gap}, which was decided on {sorted(row['laws'])}, not on this law"]
+    occ = re.fullmatch(r".*:(\d+)-(\d+)", str(row.get("occurrence") or ""))
+    at = offsets.get(str(sid))
+    if occ and at and not (at[0] < int(occ.group(2)) and int(occ.group(1)) < at[1]):
+        return [f"{node.id}: narrowing on span {sid} names gap {gap}, which the operator decided on other words of the law "
+                f"(characters {occ.group(1)}–{occ.group(2)}); a decision settles only the words it was filed on"]
+    return []
 
 
 def check_reemission(node: Node, accepted: dict[str, Node], law_text: str) -> list[str]:
@@ -739,10 +754,10 @@ def identifier_collisions(ident: str, groups: dict[str, list[str]]) -> list[str]
 def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: Reading,
              index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
-             known_nodes: list[Node] | None = None, rejected_gaps: dict[str, set[str]] | None = None) -> list[Outcome]:
+             known_nodes: list[Node] | None = None, rejected_gaps: dict[str, dict] | None = None) -> list[Outcome]:
     """`known_nodes` are nodes of the same iteration's other plan batches: a composition may name
     them, they are not validated here. `rejected_gaps` maps each rejected gap of the ledger to the
-    laws it was decided on."""
+    laws it was decided on and the occurrence it was filed on (`{laws, occurrence}`)."""
     outcomes: list[Outcome] = []
     accepted_concepts = accepted_concepts or {}
     plan_concepts = plan_concepts or []
@@ -803,7 +818,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_segment_roles(n, index)
         errs += check_compositions(n, known)
         errs += check_residue_scope(n)
-        errs += check_narrowings(n, rejected_gaps)
+        errs += check_narrowings(n, rejected_gaps, law.text)
         errs += check_reemission(n, accepted, law.text)
         errs += check_region_places(n.id, n.claimed_atoms(), onto)
         errs += [c for c in cycle_errs if n.id in c]

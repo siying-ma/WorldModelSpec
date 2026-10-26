@@ -51,6 +51,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   It is not a mapping instruction. Do not copy an atom from the case into a record merely because
   the case used it. Every changed mapping is justified by the law's span and the chosen atom's or
   concept's contract.
+- **Your previous record of these laws** (for a law planned again) — the records its nodes were
+  last coded from, each with its gate verdict. Keep what met its cases. Restructure only where a
+  failing case, a validator defect, an upheld structural finding or another returned reason
+  requires it; the harness runs every recorded case on the new record.
 - **User hints** — `USER_HINTS.md`.
 
 {laws}
@@ -65,6 +69,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 {gaps}
 {feedback}
 {upheld}
+{previous_records}
 {user_hints}
 
 ## Hard rules
@@ -368,6 +373,11 @@ with its new name). An atom gap never proposes an atom the ontology has, and an 
 proposes what the formula language already writes. A gap is filed, and blocks its law until the
 operator decides it, only when the coding session confirms the span cannot be written with the
 atoms and operators you map it to; nothing else is a gap.
+A gap's proposal names the distinction of the driving task the missing atom or operator would
+decide: the action the law requires or forbids, where it is required, its time or order, the
+road users it concerns, or whether a plan can be carried out. That a word has no atom of its own is
+never, by itself, a reason for a gap; a word a convention of the ontology's section on what is not
+an atom reads is no gap.
 
 Concept records, in the same file, one JSON object per concept, this schema and nothing more:
 

@@ -1,4 +1,4 @@
-# Shared steps of the carla_new evaluation scripts; sourced, not run.
+# Shared steps of the evaluation scripts; sourced, not run.
 #
 # Settings (environment variables, all optional):
 #   PIPELINE  the traffic-spec-agent tree whose run is evaluated (default: the one beside this folder;
@@ -7,7 +7,8 @@
 #             the run the library holds); a run archived by `init --fresh --snapshot` is read from its
 #             library_snapshot
 #   RULES     comma-separated node ids to evaluate (default: every rule the run accepted)
-#   CASES     space-separated case ids (default: every case of carla_new)
+#   DATA      the dataset's case directory (default: carla_new's)
+#   CASES     space-separated case ids (default: every case of $DATA)
 #   WORK      scratch directory (default /tmp/eval_<script>_<RUN>)
 set -euo pipefail
 EVAL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,6 +20,9 @@ CASES="${CASES:-$(ls "$DATA")}"
 RUN_DIR="$PIPELINE/results/$RUN"
 READING="$RUN_DIR/reading.json"
 [ -f "$READING" ] || { echo "no run $RUN under $PIPELINE/results (no reading.json)" >&2; exit 1; }
+
+# carla_new's adapter writes `left` in every scene of every case, whatever the light state.
+CARLA_NEW_INDICATOR_MASK="sig.turn_indicator=legacy exporter emits constant left"
 
 # A copy of the library with the full split active and only the run's accepted rules registered:
 # the monitor needs the full Core, and a rule still being coded must not enter the build.
@@ -42,4 +46,14 @@ run_monitor() {
         --manifest "$WORK/cases/$c/manifest.json" --reading "$READING" \
         "$WORK/cases/$c/trace.json" 2>&1 | grep -E '^(GROUND|TL|UNK)' || echo "   (no verdict lines: run the monitor by hand to see why)"
   done
+}
+
+# The monitor on one prepared case, as JSON lines in $WORK/reports/<case>.jsonl (stderr beside it);
+# fails on a decode error.
+monitor_json() {
+  local c="$1"
+  mkdir -p "$WORK/reports"
+  "$WORK/lib/.lake/build/bin/monitor" ${RULES:+--rules "$RULES"} --json \
+      --manifest "$WORK/cases/$c/manifest.json" --reading "$READING" \
+      "$WORK/cases/$c/trace.json" > "$WORK/reports/$c.jsonl" 2> "$WORK/reports/$c.err"
 }

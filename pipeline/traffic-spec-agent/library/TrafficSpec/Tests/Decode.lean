@@ -162,4 +162,17 @@ def scGap : Scenario :=
   | .error e => e == "truck stands: not applicable, but no instant has every bound track present"
   | .ok _ => false
 
+-- a device's control: `governs` absent or null is not observed (unknown), `[]` governs nothing,
+-- a malformed value is a decode error
+def devScene (dev : String) : String :=
+  "{\"scenes\": [{\"t\": 0, \"users\": [], \"structures\": [{\"id\": 10, \"kind\": \"lane\"}], \"devices\": [" ++ dev ++ "]}]}"
+def govOf (dev : String) : Option (Option Bool) :=
+  (parse trace (devScene dev)).toOption.map fun τ => dev_governs τ[0]! 9 10
+#guard govOf "{\"id\": 9, \"kind\": \"stop_sign\"}" = some none
+#guard govOf "{\"id\": 9, \"kind\": \"stop_sign\", \"governs\": null}" = some none
+#guard govOf "{\"id\": 9, \"kind\": \"stop_sign\", \"governs\": []}" = some (some false)
+#guard govOf "{\"id\": 9, \"kind\": \"stop_sign\", \"governs\": [10]}" = some (some true)
+#guard (parse trace (devScene "{\"id\": 9, \"kind\": \"stop_sign\", \"governs\": \"10\"}")).isOk = false
+#guard ((parse trace (devScene "{\"id\": 9, \"kind\": \"stop_sign\"}")).toOption.map fun τ => dev_governs_regions τ[0]! 9) = some none
+
 end TrafficSpec.Tests.Decode

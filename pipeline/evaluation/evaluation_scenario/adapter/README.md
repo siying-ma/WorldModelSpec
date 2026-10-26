@@ -9,6 +9,21 @@ The monitor runs the formalized traffic rules over that trace and reports a verd
 adapter knows no law. It writes everything the capture supports in the atom vocabulary, and the
 manifest declares honestly what it cannot supply.
 
+**Which contract governs: the pipeline first.** The adapter is developed for what the formalization
+pipeline needs. The pipeline alone sets:
+- the trace format;
+- the meaning of every atom;
+- what a trace may contain.
+
+It sets them in three places: the ontology (`ontology/ATOMS.md`); Core's scene types and decoder
+(`library/TrafficSpec/Core/Vocab/World.lean`, `library/TrafficSpec/Core/Runtime/Decode.lean`); and
+the trace check (`library/TrafficSpec/Core/Evidence/TraceLint.lean`).
+
+This guide describes those contracts for the adapter's developers and has no authority of its
+own. Where it disagrees with them, the pipeline is right: this guide is corrected to match, and
+the adapter is then changed to produce what the specs the pipeline formalizes require. A source's
+limits never change the pipeline; what a source cannot supply is declared absent in the manifest.
+
 This folder is `pipeline/evaluation/evaluation_scenario/adapter/`. Paths below that begin with
 `library/`, `harness`, `results/` or `ontology/` are relative to `pipeline/traffic-spec-agent/`.
 
@@ -246,7 +261,7 @@ lamps also need the modified generator.
 | `id`, `kind` | natural, enum, **required** | `kind` from StructureKind (§4.6) |
 | `boundary` | [[x, y], …] | polygon, world frame; needed for occupancy and every distance-to-region |
 | `position` | [x, y] | reference point of a point-like structure |
-| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | lanes only |
+| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | on a lane, reserved lane, turn lane, centre turn lane or bicycle lane or path. `direction` alone may also be written on a roadway, one-way roadway or shoulder a vehicle travels in (a road written without lane regions); a centre turn lane has none. A direction is local to its region (write a bend or a loop as segments); regions that overlap or cross may have different directions; a place no region carries a direction for has none — never infer one |
 | `unobserved_kinds` | [kind] | kinds the source cannot tell for this region |
 | `ways` | [highway region ids] | the public ways (`highway` regions) this region lies on (`st.on_way`): a lane, roadway, shoulder, crosswalk, stop line or median its road's; a junction every highway whose road connects there |
 | others | `paved`, `opening`, `marked`, `curvature` (1/m; Core reads its magnitude, so either sign is accepted), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
@@ -270,7 +285,9 @@ CARLA mapping:
   so the manifest says `estimate:junction_bounding_box`.
 - **Crosswalks.** `Map.get_crosswalks()`, one polygon per closed loop of points.
 - **Stop lines.** From the traffic lights' `get_stop_waypoints()` and the stop-sign trigger volumes,
-  as a thin polygon across the lane (an estimate).
+  as a thin polygon across the lane (an estimate). A stop line is written where it is in place; its
+  paint condition (clarity, wear) is not reported, and a rule reads a represented stop line as the
+  clearly marked one.
 
 **Device**
 
@@ -278,7 +295,7 @@ CARLA mapping:
 |---|---|---|
 | `id`, `kind` | natural, enum, **required** | `kind` from DeviceKind (§4.6) |
 | `position` | [x, y] | |
-| `governs` | [region ids] | the lanes the device controls (`controlsTrafficOf` edges, or the landmark's affected waypoints) |
+| `governs` | [region ids] | the travel regions whose traffic the device controls: the lanes (`controlsTrafficOf` edges, or the landmark's affected waypoints), or a roadway, one-way roadway or shoulder written without lane regions; or the intersection, where the source reports the device as controlling the junction itself (read as that and nothing more). Never a highway, a controlled-access region or a region no vehicle travels in. Write `[]` when the source observes that the device governs nothing; omit the key when the source cannot tell (read as unknown) |
 | `indications` | [indication] | what a signal shows now. CARLA `TrafficLightState`: Red → `circular_red`, Yellow → `circular_yellow`, Green → `circular_green`, Off → `dark`, Unknown → `unknown`. |
 | `speed_value`, `speed_kind` | m/s, `maximum`/`minimum`/`structure_maximum`/`zone` | speed-limit landmarks: the value converted from the landmark unit to m/s |
 | `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `code`, `zone_kind`, `is_end`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks |

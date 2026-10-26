@@ -8,6 +8,37 @@ library). The CARLA-first generation of this project lives on the branch
 
 ## Working agreement
 
+### Project objective and modeling scope
+
+Autoformalization serves two downstream tasks: detecting traffic-rule violations during autonomous
+driving and assessing whether a driving plan is feasible under the modeled rules. It does not aim
+to encode every word or every distinction in statutory language. Judge a proposed atom, mechanism
+or audit finding by whether it materially improves those tasks within the operator's declared
+scope, rather than by word-level coverage alone.
+
+The operator may explicitly approve an abstraction of an incidental qualifier. Record that
+convention in the rule's disclosed reading and assess the rule under that approved scope. Do not
+reopen the same distinction as a vocabulary gap merely because it has no dedicated atom. An
+approved abstraction is a modeling choice, not evidence that the source observed the omitted
+property; planners and reviewers must not invent such evidence or grant themselves new exceptions.
+
+Only a distinction of the driving task warrants a new atom, a gap or a structural finding:
+- the action the law requires or forbids;
+- where it is required (which stopping point or place governs);
+- its time or order;
+- the road users it concerns (whom to yield to or keep clear of);
+- whether a plan can be carried out.
+
+That a word has no atom of its own is never, by itself, such a reason, and a gap states which of
+these distinctions it would change.
+
+An approved abstraction covers a kind of word across the corpus, never one law's word. It is
+written once, in the ontology's section on what is not an atom, where every role of the loop sees
+it; it is never made by editing one atom's contract for the words of one law. No abstraction relaxes
+the checks of the distinctions above.
+
+### Change discipline
+
 **The repository is incomplete by design and updated continuously.** Only the artifacts named
 frozen below are finished; elsewhere a missing piece is work not yet done, not a decision taken.
 
@@ -34,6 +65,10 @@ Before changing anything, in this order:
 
 **Reporting a finding.** A defect found by a check, an audit or a run is reported to the operator
 under three headings, in this order:
+
+Every factual claim in a finding, or in any report, is verified on the code or the recorded run
+before it is stated. Fact is kept apart from judgment, and a claim later found wrong is corrected
+openly.
 
 1. **Is it sound, and does it matter for the library's quality?** Whether the defect is real
    (verified on the code or the recorded run, not inferred), and what it costs the accepted rules:
@@ -143,7 +178,11 @@ feature is not better for being there, and one whose use cannot be stated is rem
   edit `evaluation_scenario/`, with two exceptions: its `README.md` and its `adapter/` folder (the
   trace format and the adapter's contract), which a development session may read and edit when a
   change to Core or the ontology changes what a trace carries, and where the changes the pipeline
-  requires of the adapter are recorded.
+  requires of the adapter are recorded. **The pipeline's contracts govern.** The ontology, Core's
+  scene types and decoder, and the trace check set the trace format and every atom's meaning. The
+  adapter's guide only describes them: where it disagrees, the pipeline is right, the guide is
+  corrected, and the adapter is changed to fit the specs the pipeline formalizes. A data source's
+  limits never change the pipeline.
 - The corpus covers ordinary urban Las Vegas driving, judged for a vehicle driver. A law leaves
   only by the rule in `laws/README.md` (Scope), recorded in
   `pipeline/ontology_provenance/nrs_tools/tiers.py` (`EXCLUDED`);
@@ -206,6 +245,16 @@ exposes are fixed:
   belongs in the commit message or `pipeline/DesignFile/CORE_V2_FILES.md`. `Core/**` is read by
   the plan and code agents; keep every file short, organized and tidy.
 
+## Editing while a run is live
+
+- Change nothing under `pipeline/traffic-spec-agent/` while a `harness loop` process runs. That
+  covers the harness, the prompts, the ontology, the library, the corpus, the readings, the
+  config, the scripts and the README. The coding gate digests the whole tree around each coding
+  session, so any edit there is a scope violation, charged to the law being coded.
+- Queue the change, and land it once the loop has exited or been stopped. Then run the tests and
+  the doctor, and resume the run with the same command.
+- Documents under `pipeline/DesignFile/` lie outside that tree and may be written at any time.
+
 ## Documents and comments
 
 - A header or comment in a `.lean` or `.py` file never cites a markdown file or a section of one:
@@ -225,6 +274,8 @@ exposes are fixed:
   a purpose, the legal status of a feature on the road, who or what controls a vehicle): it is read through the conduct or the
   feature it refers to and disclosed as an `observable_reading` narrowing (`ontology/ATOMS.md`,
   the section on what is not an atom), because the rules exist to check conduct on traces.
+  Separately, apply the operator-approved scope abstractions stated above: do not demand a new
+  atom solely to restore an incidental distinction the operator has explicitly left out of scope.
 - Decompose below an obligation span, or re-plan a law the ledger has closed.
 - Copy from the archived prototype; borrow ideas, cite nothing from it.
 

@@ -20,7 +20,7 @@ FILL_ENGINE="${FILL_ENGINE:-1}"
 build_monitor
 echo "== cases with weather, lane width$([ "$FILL_ENGINE" = 1 ] && echo ' and engine state') filled"
 for c in $CASES; do
-  python3 "$EVAL_DIR/lib/prepare_cases.py" "$DATA/$c" "$WORK/cases/$c" --fill \
+  python3 "$EVAL_DIR/lib/prepare_cases.py" "$DATA/$c" "$WORK/cases/$c" --mask "$CARLA_NEW_INDICATOR_MASK" --fill \
       --visibility "$VISIBILITY_M" --lane-width "$LANE_WIDTH_M" $([ "$FILL_ENGINE" = 1 ] && echo --engine)
 done
 run_monitor

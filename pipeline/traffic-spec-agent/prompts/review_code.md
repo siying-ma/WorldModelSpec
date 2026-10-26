@@ -39,6 +39,8 @@ words and the contracts alone. You do not edit the rule.
 - **The case language** — the JSON forms a case is written in.
 - **The case vocabulary** — every atom and primitive a case may name, with its arguments, unit,
   contract and where a trace writes it. A case may name any of them, not only what the rule reads.
+- **What is not an atom** — the ontology's section on the words read without an atom of their own,
+  and the conventions every role applies to them alike.
 - **Cases to extend** (when there are any) — cases upheld against earlier rules of this duty whose
   evidence no longer suffices to judge this rule: each must come back in your answer as a divergence
   that `extends` it, its trace extended as the case says.
@@ -60,6 +62,8 @@ words and the contracts alone. You do not edit the rule.
 {case_language}
 
 {case_vocabulary}
+
+{not_atoms}
 
 {obligations}
 
@@ -144,9 +148,15 @@ words and the contracts alone. You do not edit the rule.
    named item and one with another member of the class are written alike. List it as structural
    evidence under `gap_candidates` with `kind` `broader_contract`: the span, the words that name the item
    (verbatim from the span), what the words exclude that the contract admits (`factor`), and the
-   contract the record carries with the clause that makes it broader (`nearest`). A legal
-   aggregate the gate admitted, and a word read through conduct under question 8, are not such
-   items.
+   contract the record carries with the clause that makes it broader (`nearest`). File it only
+   for a distinction that changes what a check of driving decides: the action the law requires or
+   forbids, where it is required, its time or order, the road users it concerns, or whether a plan
+   can be carried out. That a word has no atom of its own is never, by itself, such a distinction.
+   A legal aggregate the gate admitted, a word read through conduct under question 8, a word a
+   convention of the section on what is not an atom reads, and a distinction that an operator's
+   decision on a gap of those words settles (shown with the record) are not such items. A
+   convention or a decision settles only the distinction it names; any other distinction of the
+   same words is reviewed as usual.
 12. `accept` when you find no situation under questions 1 to 3; `return` otherwise. Before you
    answer, run each divergence through `check_divergence`, at most {review_checks} calls in all: it
    checks the trace and the case, runs the rule at `at`, and says what the harness would make of

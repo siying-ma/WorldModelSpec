@@ -123,8 +123,13 @@ You are a one-shot session. Nothing waits for a reply.
    road user's motion is read through the conduct or feature it refers to and declared as an
    `observable_reading` narrowing; never assumed, never a gap.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
-   atom or an operator is missing, what it would have to carry, and the nearest existing id with
-   the clause of its contract that excludes the span, so the operator can decide a gap.
+   atom or an operator is missing, what it would have to carry, which distinction of the driving
+   task it would decide (the action the law requires or forbids, where it is required, its time or
+   order, the road users it concerns, or whether a plan can be carried out), and the nearest
+   existing id with the clause of its contract that excludes the span, so the operator can decide a
+   gap. That a word has no atom of its own is never, by itself, a reason to withdraw it as a gap. A
+   repair that needs a concept no catalogue holds withdraws with kind `plan`, so the planner
+   proposes it; it never names a concept id that does not exist.
 9. Decide; do not ask.
 
 ## Output

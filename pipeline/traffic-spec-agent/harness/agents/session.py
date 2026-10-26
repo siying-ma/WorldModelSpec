@@ -15,7 +15,8 @@ bad request (400, 404, 422) is the harness's input to fix: it is reported at onc
 the digest of the effective request is recorded, so the same request is never sent again, in any
 generation; a changed request (another prompt, model, effort, output cap or tool schema) may be. A session cut off by
 its turn cap, budget cap or timeout ran: with `relaunch_cut_off` (a coding task) it is relaunched
-under the same budget; without, its record's `cut_off` tells the caller. No launch or relaunch starts once the owner's stop event is set. The
+under the same budget, and once those relaunches are spent its record is returned with `cut_off`
+set, so the caller's own gate judges what it left; without, its record's `cut_off` tells the caller. No launch or relaunch starts once the owner's stop event is set. The
 OpenAI client does not retry: the session's relaunch is the one retry.
 
 `run` launches a Claude session, or one tool-less call of the second vendor (a reader, a judge).
@@ -106,16 +107,22 @@ def harness_env(shell_timeout: float | None = None) -> dict[str, str]:
 
 def config_dirs() -> list[Path]:
     """Claude Code's own configuration and memory directories: what a session could otherwise read
-    or write regardless of the allow-list, since the tool treats its memory as its own. Denied to
-    every session, for reading and for writing, unless the pipeline itself lives under one."""
+    or write regardless of the allow-list, since the tool treats its memory as its own. Both the
+    directory the environment names (`CLAUDE_CONFIG_DIR`, the account the run uses) and the
+    default one (`~/.claude`) are denied to every session, for reading and for writing, so that
+    neither account's memory reaches a session; a directory the pipeline itself lives under is
+    not denied."""
     import os
-    d = Path(os.environ.get("CLAUDE_CONFIG_DIR") or (Path.home() / ".claude"))
     repo = paths.REPO.resolve()
-    if repo.is_relative_to(d.resolve()):
-        return []
-    # both spellings: the path as the environment names it and the path with its links resolved,
-    # since a rule matches the spelling the tool uses
-    return sorted({d, d.resolve()}, key=str)
+    named = [Path(os.environ["CLAUDE_CONFIG_DIR"])] if os.environ.get("CLAUDE_CONFIG_DIR") else []
+    out: set[Path] = set()
+    for d in named + [Path.home() / ".claude"]:
+        if repo.is_relative_to(d.resolve()):
+            continue
+        # both spellings: the path as named and the path with its links resolved, since a rule
+        # matches the spelling the tool uses
+        out |= {d, d.resolve()}
+    return sorted(out, key=str)
 
 
 def deny_rules(kind: str) -> list[str]:
@@ -271,6 +278,12 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
             return record
         why = failure or cut
         spent += 1
+        if failure is None and spent > opts.session_retries:
+            # a session that ran and was cut off is no outage: once its relaunches are spent, the
+            # caller's own gate judges what the last launch left
+            print(f"[session] {label} was cut off: {why}; its {opts.session_retries + 1} launch(es) are spent, "
+                  "the task is judged on what the last one left")
+            return record
         hint = runner.reset_hint(why)
         print(f"[session] {label} {'did not run' if failure else 'was cut off'}: {why}" + (f" (resets {hint})" if hint else ""))
         _retry(label, why, spent, opts, relaunch)

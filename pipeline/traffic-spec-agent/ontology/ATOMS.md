@@ -144,10 +144,10 @@ reports unknown.
 | `st.highway` | the entire public way between its boundary lines, including sidewalks and shoulders **Not a stand-in for:** the roadway | general |
 | `st.roadway` | the part of a highway improved for vehicular traffic, excluding shoulder; separate roadways of a divided highway are separate **Not a stand-in for:** the sidewalk — 'not on the roadway' includes shoulder, verge and parking bays | general |
 | `st.lane` | a longitudinal strip of roadway for one line of vehicles **Not a stand-in for:** a half of the roadway or a lateral position within a lane — lane membership is not an offset from the edge, and lane ordinal equals roadway half only on a two-lane road | general |
-| `st.lane_direction` | direction of travel a lane is designated for | general |
+| `st.lane_direction` | direction of travel designated for a structure a vehicle travels in — a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder; a centre turn lane carries none. The direction is local to its carrier (a bend or a loop is written as segments), carriers that overlap or cross may carry different directions, and a place no carrier covers has none (unknown) | general |
 | `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane, looking along the lane's direction **Not a stand-in for:** the marking between two lanes | general |
 | `st.lane_connectivity` | which lane a lane leads into | general |
-| `st.lane_enters` | relation: the intersection region a lane runs into at its end — the lane is an approach to that intersection **Not a stand-in for:** the lane a lane leads into (`st.lane_connectivity`), the subject's presence in the intersection (`rel.occupies`), or the region a device governs (`dev.governs`) — a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both | general |
+| `st.lane_enters` | relation: the intersection region a lane runs into at its end — the lane is an approach to that intersection **Not a stand-in for:** the lane a lane leads into (`st.lane_connectivity`), the subject's presence in the intersection (`rel.occupies`), or the region a device governs (`dev.governs`) — a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both, or directly where the device governs the intersection | general |
 | `st.on_way` | relation: the public way (a `highway` region) a structure region lies on — a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it; an intersection lies on every way that meets there **Not a stand-in for:** nearness to a way (`st.region_geometry`), or the lane a lane leads into (`st.lane_connectivity`) | general |
 | `st.lane_marking` | per side of a lane: **type** ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, **colour** ∈ {white, yellow, other} | general |
 | `st.centre_line` | the marking, or the geometric centre, dividing the two directions of a two-way roadway | general |
@@ -204,7 +204,7 @@ reports unknown.
 | `dev.temporary_traffic_control` | cones, barricades, temporary signs and flashers marking works, a closure or an obstruction | general |
 | `dev.human_direction` | a person directing traffic and the direction given; **role** ∈ {police_officer, flagger, school_crossing_guard, railroad_flagger}; **indication** ∈ {stop, proceed, slow, turn(dir)} | general |
 | `dev.school_bus_signal` | the school bus's own devices; **red_flashing**, **amber_flashing**, **stop_arm** attributes | general |
-| `dev.governs` | relation: the device applies to a lane, approach or region (which traffic it faces) **Not a stand-in for:** a position — the region a device acts on is not where a halt is required and not the intersection region | general |
+| `dev.governs` | relation: the travel regions whose traffic the device controls — a lane, reserved lane, turn lane, centre turn lane, bicycle lane or path, roadway, one-way roadway or shoulder — or an intersection, read as control of the junction itself and of nothing else (no closure to the lanes that enter it); never a highway, a controlled-access region or a region no vehicle travels in. Unknown where the source does not observe what a device governs **Not a stand-in for:** a position — the region a device governs is not where a halt is required | general |
 | `dev.position` | location of the device head / sign face **Not a stand-in for:** a stop line or a crossing — the distance to a signal head is a different quantity from the distance to the line or region | general |
 | `dev.inoperative` | a signal head installed and uncovered but showing no valid indication | general |
 
@@ -324,6 +324,12 @@ crossing is official, posted or designated by an authority. The feature's presen
 the observable evidence of that status: a rule reads the feature and presumes the status (an
 `observable_reading` of category `status`). A category that no feature on the road displays is a
 legal region class (above).
+
+**A clearly marked stop line** — the words "clearly marked" said of a stop line the scene
+represents. The line's presence is the evidence: a rule reads the represented stop line as the
+clearly marked one (an `observable_reading` of category `status`), and the paint's clarity or wear
+is not modelled. This reading never relaxes which stopping point governs, the action and its
+timing, or the road users to yield to.
 
 **Lawfulness of another road user's conduct** ("pedestrians lawfully within the crosswalk", "a
 person lawfully riding") — a reference to another rule's verdict, expressed by rule composition in
