@@ -191,11 +191,15 @@ and the gate's scope check ignores them. SIGTERM or SIGINT stops every launch an
 child. The doctor runs at every loop start and refuses a run on a failure.
 
 **Parallel coding.** `--workers N` codes up to N independent concepts, then N independent nodes, at
-once, in dependency waves (a node is coded after every node it composes is accepted). Every gate,
-skeleton build and integration holds a library-wide lock while it regenerates the registries,
-builds and runs, and a gate registers only the accepted ids plus its own, so a half-written
-sibling never enters its build; the scope check tolerates the files of the sessions coding
-beside it. `--plan_turns` caps a plan or
+once, in dependency waves (a node is coded after every node it composes is accepted). Every gate
+and skeleton build holds a library-wide lock while it regenerates the registries and builds, and
+a gate registers only the accepted ids plus its own, so a half-written sibling never enters its
+build; the scope check tolerates the files of the sessions coding beside it. A gate's evaluation,
+and every Lean program of a review, runs after that lock is released, beside the others: each
+imports Core and the modules of its own registry (those its gate registered) instead of the
+generated one, which another gate may be rewriting, so one slow evaluation holds no other gate up.
+They share an evaluation lock that only the isolated rerun of a resource failure takes alone.
+Integration holds the library-wide lock throughout. `--plan_turns` caps a plan or
 repair session.
 
 **The behaviour review and its two judges.** `--reviewer_model <model>` is required (a model of
@@ -245,7 +249,8 @@ session runs. Each launch keeps its evidence in its own directories (`review/che
 `review/submissions/L<launch>/`). Each request is reserved and recorded on its own
 (`<label>:<subject>:L<launch>.r<n>` in `usage.jsonl`; the judges' rows also carry the node), and the
 session has one deadline, `--session_timeout`. A request the API refuses or fails relaunches the
-whole session, as for any session, with no retry inside the request; the API's reason, sanitized,
+whole session, as for any session, with no retry inside the request (the first relaunch after the
+API failed a request, a 5xx, a timeout or a lost answer, comes after a minute); the API's reason, sanitized,
 is kept in the session's stream. A certificate program that does not run defers at stage
 `certificate`, for a rule or a concept; the diagnosis of a case that is not true is an aid only,
 and when it does not run the certificate stands without it. A case whose execution refutes the
@@ -372,14 +377,18 @@ is active, and the old fence moves to `fence_history`.
 
 At loop start, before any session, the run:
 1. restores its base chain's aggregate admissions;
-2. holds each inherited and accepted record to today's gates (the admission recheck, cached in
-   `admission.json`);
+2. holds each inherited and accepted record to today's gates (the admission recheck). Verdicts are
+   cached in `admission.json` under what each rests on: the record's context and the gate's
+   implementation. A record the run's own gate accepted is entered there when it is accepted, so it
+   is gated again only when something its verdict rests on changes;
 3. checks every record whose context is new or changed against its obligations.
 
 Each admission gate registers only its subject and the records it needs, so an unrelated broken
 file cannot stop another record's check. Each record is checked against its own law, from whichever
-corpus of the chain holds it. A check that cannot be made stops the run before any spend. Notices
-found at start are kept in the snapshot until `TO_USER.md` receives them.
+corpus of the chain holds it. A check that cannot be made because the toolchain does not run stops
+the run before any spend. An accepted record whose evaluation exceeds the gate's deadline is not
+judged: it stays as accepted, with a notice, and is checked again at the next launch. Notices found
+at start are kept in the snapshot until `TO_USER.md` receives them.
 - **A failure is fenced** (reason `gate`), and so is every record that calls it (reason
   `dependency`).
 - **A kept node that is fenced or calls a fenced record** (one whose law the subset does not list)
@@ -441,9 +450,13 @@ Session options: `--plan_effort`, `--code_effort` (default `high`), `--judge_eff
 cap a session; `--session_retries` (2) is each task's operational retry budget within one loop
 launch: at most `session_retries + 1` launches per task, counted from the launch records kept in its
 directory, each recorded before its call starts; a new loop launch grants a fresh allowance. The
-relaunches are made `--retry_wait` (900 s) apart, of a
-session the account or the API refused (a usage limit, an API error, a timeout with no answer) and
-of a coding session cut off by its turn cap, budget or timeout, relaunched from its baseline. A
+relaunches are of a session the account or the API refused (a usage limit, an API error, a
+timeout with no answer), made `--retry_wait` (900 s) apart for the limit or the outage to clear (the
+first relaunch of a reviewer session whose request the API failed comes after a minute), and of a
+coding session cut off by its turn cap, budget or timeout, relaunched at once: its files keep the
+candidate the cut-off launch left, its prompt says so with the verdict of that launch's last gate
+run (`last_gate.json`; the note is kept as `relaunch_note.md`), and it may run the gate at least
+half of `--gate_budget` again. A
 session the account refused holds its task, uncharged, once its relaunches are spent, and the loop
 stops after the iteration. A coding session that ran and was cut off at every launch is no outage:
 its task is judged by the harness's own gate on what the last launch left (a candidate too slow
@@ -572,7 +585,10 @@ evaluation or the run's stop is `INFRA`, which names no candidate verdict: the l
 without an attempt and the loop stops after the iteration. A resource failure or a panic is run
 once more in isolation, and charged to the candidate only when it recurs (a panic is also named to
 the operator as a possible Core defect). Every toolchain call of a gate is recorded in the
-task's `toolchain.jsonl`.
+task's `toolchain.jsonl`, with its wall time and how long each lock was waited for and held; the
+gate harness also prints a `TIME` line per part of its evaluation (each witness scenario, the
+adequacy check, the rule checks, the trace lint). Integration records its build and witness run
+the same way.
 The witnesses are the node's tests, written by the same session as the rule from the planner's
 narratives; they show the formulas are executable and reach every verdict, and never stand as
 evidence that the rule says what the law says — that is the review's job.

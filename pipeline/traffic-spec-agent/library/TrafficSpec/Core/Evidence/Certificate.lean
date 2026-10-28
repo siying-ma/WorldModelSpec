@@ -143,9 +143,9 @@ end
 
 /-- Every unit defect of a formula: comparisons, windows, arithmetic, selections, the parameters of
     atoms (which carry no unit), primitives and concepts, and the formulas terms carry. Assumptions,
-    composed rules and aggregates have no unit and are not defects here. -/
+    declared intentions, composed rules and aggregates have no unit and are not defects here. -/
 partial def errors (env : DimEnv) : Formula → List DimError
-  | .tt | .ff | .same _ _ | .asm _ | .rule _ _ | .ruleApplies _ _ => []
+  | .tt | .ff | .same _ _ | .asm _ | .intent .. | .rule _ _ | .ruleApplies _ _ => []
   | .atom n _ ps =>
     ps.flatMap (fun p => match termDim env p with
       | .ok d => if d == Dim.one then [] else [.mismatch s!"atom `{n}`: a parameter in {d.render}; its parameters carry no unit"]
@@ -234,9 +234,9 @@ def env : DimEnv :=
 
 /-- A case's own prohibitions, apart from its units: no assumption, no other rule, no legal
     aggregate, no division except by a non-zero literal, and no quantifier variable that reuses a
-    binder's or an entity's name. -/
+    binder's or an entity's name. A declared intention is a fact of the trace a case may state. -/
 partial def policyErrors (reserved : List String) : Formula → List String
-  | .tt | .ff | .same _ _ => []
+  | .tt | .ff | .same _ _ | .intent .. => []
   | .asm id => [s!"assumption `{id}`: a case states facts of the trace, never an assumption"]
   | .rule id _ | .ruleApplies id _ => [s!"rule `{id}`: a case names no other rule"]
   | .atom n _ ps =>
@@ -338,13 +338,14 @@ def record (rules : List Rule) (r : Rule) (ρ : Reading) (k : Nat) (traceText ca
   let traceRes := Decode.parse Decode.trace traceText
   let (caseErrs, caseOpt) := decodeCase caseText
   let τo := match traceRes with | .ok τ => some (TraceLint.completeOccupancy τ) | .error _ => none
-  let lint := τo.map TraceLint.checkTrace
+  let m := Manifest.full "review"
+  let admitted := τo.map fun τ => Grounding.Setup.admit rules (maskTrace m τ) ρ m.reidGap
+  let lint := τo.map fun τ => TraceLint.checkTrace τ ++ (match admitted with | some (.error ds) => ds | _ => [])
   let witness := match τo, caseOpt with
     | some τ, some c => some (TraceLint.checkWitness τ grounding c.entities c.at_)
     | _, _ => none
   let checked := caseOpt.map fun c => Case.check c (grounding.map (·.1))
-  let m := Manifest.full "review"
-  let setup := τo.map fun τ => Grounding.Setup.mk' rules (maskTrace m τ) ρ m.reidGap
+  let setup := admitted.bind (·.toOption)
   let caseValue : Option R := match setup, caseOpt, witness, checked with
     | some S, some c, some [], some [] => some (Case.eval S grounding c)
     | _, _, _, _ => none
@@ -353,7 +354,7 @@ def record (rules : List Rule) (r : Rule) (ρ : Reading) (k : Nat) (traceText ca
     | some S, some c, some [], some v =>
       if v.v != .t then none
       else (S.scenes.findIdx? (·.t == c.at_)).map fun i =>
-        (S, ⟨grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩, i)
+        (S, { assign := grounding.map fun (n, t) => (n, Grounding.canon S.cm t) }, i)
     | _, _, _, _ => none
   let ruleResult := ready.map fun (S, g, i) => verdictJson (verdictAt S r g i)
   let overrides := ready.map fun (S, g, i) =>
@@ -374,6 +375,7 @@ def record (rules : List Rule) (r : Rule) (ρ : Reading) (k : Nat) (traceText ca
     , ("case_decode_errors", strs caseErrs)
     , ("canonical_case", orNull (caseOpt.map (·.formula.toJson)))
     , ("case_atoms", orNull (caseOpt.map fun c => strs (Formula.atoms c.formula).eraseDups))
+    , ("case_declarations", orNull (caseOpt.map fun c => strs (Formula.intentions c.formula).eraseDups))
     , ("lint_errors", orNull (lint.map strs))
     , ("witness_errors", orNull (witness.map strs))
     , ("case_check_errors", orNull (checked.map strs))

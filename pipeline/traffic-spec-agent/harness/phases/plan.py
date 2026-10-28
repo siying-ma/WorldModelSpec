@@ -24,6 +24,26 @@ def parameter_catalogue(reading: Reading) -> str:
         out.append(f"| `{name}` | {p.get('unit', '')} | {p.get('convention', '')} |")
     return "\n".join(out) + "\n"
 
+def declaration_catalogue(reading: Reading, pending: list[dict] | None = None) -> str:
+    """The one catalogue of declared-fact ids, assumptions (`asm.*`) and declared intentions
+    (`int.*`), with their meanings: the reading's, then those the nodes of earlier batches of this
+    iteration declared. A node reuses an id whose meaning is its words' meaning, and proposes a new
+    id with its meaning only where none is."""
+    rows = {i: (" ".join(str(d.get("meaning", "")).split()), "reviewed" if not d.get("proposed") else "proposed")
+            for i, d in (reading.declarations() if hasattr(reading, "declarations") else {}).items()}
+    for n in pending or []:
+        for d in n.get("assumptions", []) + n.get("intentions", []):
+            if isinstance(d, dict) and d.get("id") and str(d.get("meaning") or "").strip():
+                rows.setdefault(d["id"], (" ".join(str(d["meaning"]).split()), f"declared this iteration by {n.get('node_id')}"))
+    if not rows:
+        return ("\n### Declared-fact ids (assumptions `asm.*`, declared intentions `int.*`)\n(the catalogue is empty: an id a node "
+                "needs is declared on its span with its `meaning`)\n")
+    out = ["", "### Declared-fact ids (assumptions `asm.*`, declared intentions `int.*`): reuse an id whose meaning is the words' meaning",
+           "| id | meaning | status |", "|---|---|---|"]
+    out += [f"| `{i}` | {m} | {st} |" for i, (m, st) in sorted(rows.items())]
+    return "\n".join(out) + "\n"
+
+
 PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_language", "library_summary", "concepts", "mapping_index",
                 "parameters", "gaps", "feedback", "upheld", "previous_records", "user_hints", "anchors", "aggregate_atom")
 PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
@@ -187,7 +207,8 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         "library_summary": library_summary(run, [n for n in pending or [] if "node_id" in n]),
         "concepts": concept_catalogue(run) + pending_concepts_table(pending),
         "mapping_index": MappingIndex(run.mapping_file).render() + pending_mappings_table(pending),
-        "parameters": parameter_catalogue(Reading(run.reading_file)) + pending_proposals_table(pending),
+        "parameters": parameter_catalogue(Reading(run.reading_file)) + pending_proposals_table(pending)
+                      + declaration_catalogue(Reading(run.reading_file), pending),
         "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
         "upheld": review_phase.upheld_block(run, {l.id for l in laws}),
@@ -322,7 +343,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
-        "parameters": "## Parameters\n\n" + parameter_catalogue(reading),
+        "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + declaration_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object, the revised node record (the harness attaches `node_id`, `law_refs` and `segmentation` itself), or a withdrawal "

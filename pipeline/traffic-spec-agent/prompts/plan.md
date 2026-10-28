@@ -91,13 +91,14 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    the scene a definition or a clause states (where or when a road user is) is not membership: the
    rule carries it beside the aggregate.
 0b. **Concepts are catalogued or proposed, never assumed.** A span that names a manoeuvre, a
-   state of motion, a configuration of the scene or a relation between road users over time maps to a
-   concept: an entry of the catalogue
-   when one denotes it, else a **concept record** you write in `blueprint.jsonl` beside the nodes.
+   state of motion or a relation between road users over time maps to a concept: an entry of the
+   catalogue when one denotes it, else a **concept record** you write in `blueprint.jsonl` beside
+   the nodes. A configuration of the scene maps to a catalogued concept where one fits it, and
+   otherwise may be written with atoms in the node's formula (the rule on singled-out regions below).
    A record has an id in the fixed grammar `drv.<family>.<name>` (the families are listed with
    the catalogue; a snake_case name for the observable notion, never a statute's word, a place or
    a figure), a `contract` in neutral words stating unit, frame and what is *not* denoted, typed
-   `args` (`track`, `literal` with its admissible `values`, or `nat`), `params` (formal names with
+   `args` (`track`, `region`, `literal` with its admissible `values`, or `nat`), `params` (formal names with
    units and meanings — every magnitude the contract leaves open, never a value), `elements`
    mapping the contract's words to atoms and catalogued or co-proposed concepts with a quoted
    justification (a primitive's inputs are the primitive's: an element that maps to a primitive
@@ -144,10 +145,45 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    bound, and so does one that bundles several factors of one standard into one verdict. A reach
    relates a region to a road user; it never stands for a relation between two regions. For words
    that relate two regions, read the contracts of the relation atoms in the contracts table: where
-   none of them relates the two, the span is an `atom` gap. A concept
-   the catalogue already carries, or one a concept repair or an earlier batch of this iteration
+   none of them relates the two, the span is an `atom` gap.
+
+   A region the words single out ("the", "that", "such", "its") is one variable within one
+   quantifier's scope, and every condition the words place on it there reads that variable. The
+   applicability and the obligation are separate formulas: a region bound in one is not in scope in
+   the other. Where the other must speak of the same region, it binds it again with the whole
+   selection and every relation that fixed it, so that it again denotes the region the words single
+   out; a shared variable name alone never makes two regions the same. Where the words speak of
+   different regions, each keeps its own role and its own relations. A line, crossing or device *of*
+   a region is tied to it by relation atoms, directly or through a chain of them (a marked line on the
+   approach lane that runs into the junction); distance never stands for belonging, though a
+   distance the words themselves require is read as the words state it.
+   Where the words leave open which region is meant, the choice is disclosed as a reading; a reading
+   never turns a region the words single out into any region of its kind.
+
+   A condition the words fix to an event of this duty ("the signal at the moment it enters") is read
+   at the observation at which that event occurred: through a past operator when the event lies
+   before the judged observation, and directly when it is the judged observation. Every other
+   condition is read at the moment the words give it; words of order ("after halting there")
+   fix the order, not the moment of every later condition. An earlier occurrence of the same kind of
+   event never stands for the one this duty refers to.
+
+   A concept the catalogue already carries, or one a concept repair or an earlier batch of this iteration
    proposed (listed under the catalogue), is reused by its id and never re-proposed: a second record
-   under the same id is dropped, and only the first contract reaches the coder. A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
+   under the same id is dropped, and only the first contract reaches the coder.
+
+   A region the words single out — the junction a road user enters, the stretch a posting governs,
+   the line or crossing of an entrance — is the region every condition the words place on it reads,
+   however that condition is carried. A catalogued concept fits it only if the concept takes that
+   region as a `region` argument and checks its condition there: reuse it, passing the region the
+   node binds. A concept that finds a region for itself, by a quantifier in its body, never stands
+   for the one the words single out, even where the rest of its contract fits, since another region
+   of the scene may satisfy it; it stays in the catalogue for words that single out no region. Where
+   no catalogued concept fits, a condition of the scene may be written in the node's own formula on
+   the region the node binds, read at the observation the words fix, or carried by a new concept
+   that takes that region as a `region` argument; that other laws may use the same condition is a
+   reason to propose one, not a requirement.
+
+   A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
    edited: a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
    the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
    gives the wrong verdict; a version the catalogue lists as fenced is superseded the same way
@@ -164,18 +200,31 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    or forbid anything are never boilerplate, nor `sibling`).
 2. **Account for every substantive span** exactly once: an element (atoms, or concepts under `derived`),
    an operationalization (a standard), an assumption (a legal region class the ontology names as
-   an assumption), a composition (another rule, see rule 5), or a residue (words the vocabulary
-   cannot carry). A gap is not a carrier: it annotates a span an element or an operationalization
+   an assumption), a declared intention (below), a composition (another rule, see rule 5), or a
+   residue (words the vocabulary cannot carry). A gap is not a carrier: it annotates a span an element or an operationalization
    carries with its nearest atoms (step 6). Two exceptions to "exactly once": a `reference` span naming several
    rules carries one composition per rule; a `sibling` span carries nothing in this node.
    A residue is for words of the **obligation side** the rule does not capture. A `trigger`,
    `subject`, `condition` or `exception` span the vocabulary cannot carry is never a residue:
    dropping it makes the rule apply where the law does not. Such a span is an **assumption**
    (`asm.<name>`, with the meaning a trace must declare; an undeclared assumption leaves the
-   verdict unknown), or mapped to its nearest atoms with a gap. A word with no observable counterpart is neither: an intention, a
+   verdict unknown), or mapped to its nearest atoms with a gap.
+   Where the words state that a road user intends, or is preparing, to turn, the span is carried
+   by a **declared intention** `{span, id, meaning}` in `intentions` (`int.<name>`), which the trace
+   declares for that road user at a region (the formula `intent`, with the road user and the region
+   as its arguments). It is carried only on a trigger, subject, condition or exception span; its
+   region is the region the words name; it is read at the judged observation or in a window behind
+   it, never in a window ahead; its id names the manoeuvre only, never the place or the law, since
+   the place is its argument. The act the words also name ("is making …") is read by its manoeuvre
+   concept, and the two are joined as the words join them. Such words are never carried by an act in
+   a window ahead, nor by a signal; a signal "of intention" is the signal itself, not a declared
+   intention. An assumption or an intention reuses an id of the declared-fact catalogue (listed with
+   the parameters) whose meaning is the words' meaning, with no `meaning`; a new id gives its
+   `meaning`, and never names again a meaning the catalogue holds.
+   Any other word with no observable counterpart is neither: an imminent movement, a
    perception or a knowledge, a purpose, the legal status of a feature in the scene, or who or what
-   controls a road user's motion is read through the conduct or feature it refers to (an intention to act by the
-   act that follows within a window ahead, or the signal for it; a duty to ascertain or make sure by
+   controls a road user's motion is read through the conduct or feature it refers to (an imminent
+   movement, "about to …", by the movement itself; a duty to ascertain or make sure by
    the outcome it secures; a posted or official feature by its presence; "drives" and "operates", and
    the word for the one who does, by the road user's controlled motion, whether a person or an
    automated system is at the controls), as the ontology's section on what is not an atom
@@ -357,7 +406,7 @@ Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal)
 ```
 node_id, law_refs, subject{binder, class_elements}, segmentation[{id, text, role}],
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
-params, convention, surrogate}], assumptions[{span, id, meaning}],
+params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
@@ -383,7 +432,7 @@ Concept records, in the same file, one JSON object per concept, this schema and 
 
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
-args[{name, sort: "track" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+args[{name, sort: "track" | "region" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
 elements[{span (words of the contract), atoms, concepts, justification}], residues[{span, why}],
 literals[{value, unit, why}] (a geometric constant or a figure the definition states),
 scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only, a list)}],
@@ -407,7 +456,7 @@ Run the validator on the finished file and fix what it names; then confirm by re
   `aggregates.jsonl` that classifies every class of road users with the law's own words;
 - every span text is a verbatim substring of its law, spans disjoint, union complete;
 - every non-boilerplate span appears in exactly one of elements / operationalizations /
-  assumptions / compositions / residues, and a gap's span in an element or an operationalization;
+  assumptions / intentions / compositions / residues, and a gap's span in an element or an operationalization;
 - every atom, value and concept id you wrote exists in the ontology or the catalogue, or is a
   concept record of this plan;
   every node that reads a feature claims an anchor;

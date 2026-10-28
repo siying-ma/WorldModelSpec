@@ -53,6 +53,7 @@ mutual
     | .atom n as ps => Json.mkObj [("atom", n), ("args", args as), ("params", Json.arr (ps.map Term.toJson).toArray)]
     | .cmp l op r => Json.mkObj [("cmp", op.toJson), ("lhs", l.toJson), ("rhs", r.toJson)]
     | .asm id => Json.mkObj [("asm", id)]
+    | .intent id who target => Json.mkObj [("int", id), ("args", Json.arr #[who.toJson, target.toJson])]
     | .same a b => Json.mkObj [("same", Json.arr #[a.toJson, b.toJson])]
     | .not φ => Json.mkObj [("not", φ.toJson)]
     | .and φ ψ => Json.mkObj [("and", Json.arr #[φ.toJson, ψ.toJson])]
@@ -84,6 +85,7 @@ end
 
 def ArgSort.toJson : ArgSort → Json
   | .track => Json.mkObj [("sort", "track")]
+  | .region => Json.mkObj [("sort", "region")]
   | .literal vs => Json.mkObj [("sort", "literal"), ("values", Json.arr (vs.map Json.str).toArray)]
   | .nat => Json.mkObj [("sort", "nat")]
 
@@ -107,6 +109,7 @@ def Rule.toJson (r : Rule) : Json :=
     , ("binders", Json.arr (r.binders.map fun b => Json.mkObj [("name", b.name), ("cls", b.cls.toJson)]).toArray)
     , ("applicability", r.applicability.toJson), ("obligation", r.obligation.toJson)
     , ("assumptions", Json.arr (r.assumptions.map Json.str).toArray)
+    , ("intentions", Json.arr (r.intentions.map Json.str).toArray)
     , ("residues", Json.arr (r.residues.map Json.str).toArray)
     , ("narrowings", Json.arr (r.narrowings.map Narrowing.toJson).toArray), ("surrogate", r.surrogate) ]
 

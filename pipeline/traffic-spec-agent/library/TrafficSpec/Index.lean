@@ -3,53 +3,9 @@
   do not edit.
 -/
 import TrafficSpec.Core
-import TrafficSpec.Rules.NRS_484B.NRS_484B_127_1
-import TrafficSpec.Rules.NRS_484B.NRS_484B_257_1_o1
-import TrafficSpec.Rules.NRS_484B.NRS_484B_257_1_o2
-import TrafficSpec.Rules.NRS_484B.NRS_484B_307_6a
-import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1a
-import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1e
-import TrafficSpec.Concepts.control.approach_without_stop_or_yield_sign
-import TrafficSpec.Concepts.control.intersection_controlled
-import TrafficSpec.Concepts.interaction.following_in_line
-import TrafficSpec.Concepts.interaction.follows_in_line_of_travel
-import TrafficSpec.Concepts.interaction.from_different_ways
-import TrafficSpec.Concepts.interaction.travel_gap
-import TrafficSpec.Concepts.lane.lane_change
-import TrafficSpec.Concepts.lane.marked_lane_departure
-import TrafficSpec.Concepts.lane.travel_with_designated_direction
-import TrafficSpec.Concepts.lane.travel_with_roadway_designated_direction
-import TrafficSpec.Concepts.motion.backing
-import TrafficSpec.Concepts.motion.ceased_movement
-import TrafficSpec.Concepts.motion.left_turn
-import TrafficSpec.Concepts.motion.u_turn
-import TrafficSpec.Concepts.road.on_divided_highway
 namespace TrafficSpec
 /-- Every registered rule, in file order. -/
-def allRules : List Rule := [
-  TrafficSpec.Rules.NRS_484B_127_1.rule,
-  TrafficSpec.Rules.NRS_484B_257_1_o1.rule,
-  TrafficSpec.Rules.NRS_484B_257_1_o2.rule,
-  TrafficSpec.Rules.NRS_484B_307_6a.rule,
-  TrafficSpec.Rules.NRS_484B_600_1a.rule,
-  TrafficSpec.Rules.NRS_484B_600_1e.rule
-]
+def allRules : List Rule := []
 /-- Every registered concept, in file order. -/
-def allConcepts : List Concept := [
-  TrafficSpec.Concepts.control.approach_without_stop_or_yield_sign.concept,
-  TrafficSpec.Concepts.control.intersection_controlled.concept,
-  TrafficSpec.Concepts.interaction.following_in_line.concept,
-  TrafficSpec.Concepts.interaction.follows_in_line_of_travel.concept,
-  TrafficSpec.Concepts.interaction.from_different_ways.concept,
-  TrafficSpec.Concepts.interaction.travel_gap.concept,
-  TrafficSpec.Concepts.lane.lane_change.concept,
-  TrafficSpec.Concepts.lane.marked_lane_departure.concept,
-  TrafficSpec.Concepts.lane.travel_with_designated_direction.concept,
-  TrafficSpec.Concepts.lane.travel_with_roadway_designated_direction.concept,
-  TrafficSpec.Concepts.motion.backing.concept,
-  TrafficSpec.Concepts.motion.ceased_movement.concept,
-  TrafficSpec.Concepts.motion.left_turn.concept,
-  TrafficSpec.Concepts.motion.u_turn.concept,
-  TrafficSpec.Concepts.road.on_divided_highway.concept
-]
+def allConcepts : List Concept := []
 end TrafficSpec

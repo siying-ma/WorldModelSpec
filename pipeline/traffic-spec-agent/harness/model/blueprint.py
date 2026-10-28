@@ -30,7 +30,7 @@ GAP_KINDS = {"atom", "operator"}   # the two ways the frozen vocabulary can fail
 #: A concept's witnesses: the body can hold, can fail, and stays unknown when a read atom is masked.
 CONCEPT_SCENARIOS = {"holds": "compliant", "fails": "violated", "blind": "unknown"}
 CONCEPT_KINDS = {"formula", "quantity"}
-ARG_SORTS = {"track", "literal", "nat"}
+ARG_SORTS = {"track", "region", "literal", "nat"}
 
 
 def span_offsets(segmentation: list, text: str) -> dict[str, tuple[int, int]]:

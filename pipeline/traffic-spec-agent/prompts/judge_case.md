@@ -38,7 +38,9 @@ of words to vocabulary, and you propose none: no fix, no atom, no mapping, no re
    state (a fact before or after the observation, a road user or a feature the case does not name,
    a value it leaves open).
 3. Use the definitions for what a defined word covers, and the contracts for what a name of the
-   case asserts. Do not use knowledge of any jurisdiction or of what such laws usually mean.
+   case asserts. A declared intention the case states (a road user declared to intend an id at a
+   region) is a fact of the case, and means what its contract in the table says. Do not use
+   knowledge of any jurisdiction or of what such laws usually mean.
 4. Quote, verbatim, the words of the law or of a definition that decide the verdict.
 
 ## Output

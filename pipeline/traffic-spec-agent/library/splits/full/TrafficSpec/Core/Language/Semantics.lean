@@ -26,6 +26,7 @@
 -/
 import TrafficSpec.Core.Language.Formula
 import TrafficSpec.Core.Vocab.Primitives
+import TrafficSpec.Core.Vocab.Intentions
 
 namespace TrafficSpec
 namespace Semantics
@@ -563,6 +564,15 @@ mutual
         | .ok a, .ok b => R.ofBool (op.apply a b)
         | .error w, _ | _, .error w => R.u w) (evalTAll c l) (evalTAll c r)
     | .asm id => c.scenes.map fun s => R.ofOption (s.assumption id) (.assumptionMissing id)
+    | .intent id who target =>
+      match who, target with
+      | .var a, .var b =>
+        match c.β.lookup a, c.β.lookup b with
+        | some (.track x), some (.region r) => c.scenes.map fun s => R.ofOption (s.intention id x r) (.intentionMissing id)
+        | none, _ => constU c.n (.unboundVariable a)
+        | _, none => constU c.n (.unboundVariable b)
+        | _, _ => constU c.n (.malformed "intent: a track and a region expected")
+      | _, _ => constU c.n (.malformed "intent: a track and a region expected")
     | .same a b =>
       match resolve c.β a, resolve c.β b with
       | .ok (.v i), .ok (.v j) => const c.n (R.ofBool (i == j))

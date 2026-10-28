@@ -99,6 +99,10 @@ LAW_FREE_PATTERNS = {
         "evaluation coupling": r"\b(?:capture_eval|capture_bench"
                                r"|agreeing result|scores? it as"
                                r"|the Python side)\b",
+        # A concrete declared-fact id. The plan proposes each one per law at run
+        # time, with its meaning, into the reading's catalogue; a frozen file
+        # names the prefixes only.
+        "declared id": r"\b(?:asm|int)\.[a-z][a-z0-9_]*\b",
 }
 
 # Capture measurements belong to evaluation inputs, never to frozen prompt templates.
@@ -543,10 +547,11 @@ class Doctor:
     def reading_proposals_reviewed(self) -> Result:
         """A parameter a plan session proposed enters the reading marked `proposed` (run, iteration and
         node) with its convention and source, and is listed here until the operator reviews it by
-        removing the marker or changing the value. Nothing evaluated against the reading is final
-        while a proposal stands."""
-        src = ("library/TrafficSpec/Readings/*.json → params[].proposed",)
-        rows, n = [], 0
+        removing the marker or changing the value. So is a declared-fact id (`asm.*`, `int.*`) with
+        its meaning; every declaration of the catalogue is listed with its meaning. Nothing evaluated
+        against the reading is final while a proposal stands."""
+        src = ("library/TrafficSpec/Readings/*.json → params[].proposed, declarations[]",)
+        rows, n, decls = [], 0, []
         for path in sorted((self.lib / "TrafficSpec" / "Readings").glob("*.json")):
             try:
                 data = json.loads(_read(path))
@@ -556,9 +561,16 @@ class Doctor:
                 n += 1
                 if prm.get("proposed"):
                     rows.append(f"{path.name}: `{prm.get('name')}` = {prm.get('value')} {prm.get('unit')} proposed by {prm.get('proposed')}: {str(prm.get('convention', ''))[:90]}")
+            for d in data.get("declarations", []):
+                line = f"{path.name}: `{d.get('id')}` means {str(d.get('meaning', ''))[:120]!r}"
+                decls.append(line + (f" (proposed by {d.get('proposed')}, unreviewed)" if d.get("proposed") else ""))
+                if d.get("proposed"):
+                    rows.append(line + f" proposed by {d.get('proposed')}")
         if rows:
-            return Result("reading proposals", REVIEW, f"{len(rows)} proposed parameter(s) await the operator's review", tuple(rows) + src)
-        return Result("reading proposals", OK, f"{n} parameter(s), none proposed and unreviewed", src)
+            return Result("reading proposals", REVIEW, f"{len(rows)} proposed parameter(s) or declaration(s) await the operator's review",
+                          tuple(rows) + tuple(decls) + src)
+        return Result("reading proposals", OK, f"{n} parameter(s) and {len(decls)} declaration(s), none proposed and unreviewed",
+                      tuple(decls) + src)
 
     def case_blocks_cover(self) -> Result:
         """The two blocks a reviewer is taught a case from are generated and cover what `Case.check`

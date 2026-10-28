@@ -23,6 +23,7 @@ import TrafficSpec.Core.Vocab.Ontology.Signal
 import TrafficSpec.Core.Vocab.Ontology.Dimensions
 import TrafficSpec.Core.Vocab.World
 import TrafficSpec.Core.Vocab.Assumptions
+import TrafficSpec.Core.Vocab.Intentions
 import TrafficSpec.Core.Vocab.Params
 import TrafficSpec.Core.Vocab.Atoms
 import TrafficSpec.Core.Vocab.Primitives
@@ -32,6 +33,8 @@ import TrafficSpec.Core.Language.Rule
 import TrafficSpec.Core.Language.Concept
 import TrafficSpec.Core.Language.RuleEval
 import TrafficSpec.Core.Language.Export
+import TrafficSpec.Core.Runtime.Identity
+import TrafficSpec.Core.Runtime.Admission
 import TrafficSpec.Core.Runtime.Grounding
 import TrafficSpec.Core.Runtime.Manifest
 import TrafficSpec.Core.Runtime.Monitor

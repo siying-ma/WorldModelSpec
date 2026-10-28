@@ -14,10 +14,11 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import time
 from pathlib import Path
 from ..lean import index_sync, lean
 from ..store import paths
-from ..checks import validate_a
+from ..checks import gate, validate_a
 from ..model import nodeid
 from ..model.blueprint import Node
 from ..model.reading import Reading
@@ -60,11 +61,14 @@ def verify_library(work: Path, reading: Reading, only_nodes: list[str] | None = 
     a failing witness or a failing file belongs to; an error no owner explains leaves `owners`
     short) or `infrastructure` (the build or the harness did not run for a reason no node owns,
     or the reading does not decode). With `only_*`, the registries hold those ids alone (a run's own
-    accepted records), not every file on disk."""
+    accepted records), not every file on disk. Each build and witness run, and the lock, is timed
+    in `toolchain.jsonl` beside them."""
     work.mkdir(parents=True, exist_ok=True)
-    with lean.library_lock(paths.LIBRARY):
+    with gate._timed(work, "lock", lean.library_lock(paths.LIBRARY)):
         index_sync.write_index(only_nodes=only_nodes, only_concepts=only_concepts)
+        t0 = time.monotonic()
         code, out = lean.lake_build(paths.LIBRARY); ok = code == 0
+        gate._record(work, "build", code, out, time.monotonic() - t0)
         (work / "build.log").write_text(out, encoding="utf-8")
         if not ok:
             errs = lean.errors(out)
@@ -74,7 +78,9 @@ def verify_library(work: Path, reading: Reading, only_nodes: list[str] | None = 
             return "failed", ["library build failed"] + errs[:8], owners
         rj = work / "reading.json"; rj.write_text(reading.lean_json(), encoding="utf-8")
         h = work / "witness_harness.lean"; h.write_text(_witness_harness(rj), encoding="utf-8")
+        t0 = time.monotonic()
         code, hout = lean.lean_run(paths.LIBRARY, h); ok = code == 0
+        gate._record(work, "witnesses", code, hout, time.monotonic() - t0)
     (work / "witness_harness.out").write_text(hout, encoding="utf-8")
     decode = [l for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
     if decode:
@@ -411,7 +417,8 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
                     divs = [{x: r.get(x) for x in review_phase.CONCEPT_CASE_FIELDS if r.get(x) is not None} for r in cases]
                     try:
                         confirmed, _agree, errors, incomplete = review_phase.execute_concept_divergences(
-                            c, {"divergences": divs}, run.iter / "recheck" / ident, dim, reading, saved=True)
+                            c, {"divergences": divs}, run.iter / "recheck" / ident, dim, reading, saved=True,
+                            registry=review_phase._registry(run, ident, None))
                     except review_phase.HarnessFailure as e:
                         confirmed, errors, incomplete = [], [], []
                         undecided.append(f"the concept program did not run: {e}")
@@ -502,7 +509,24 @@ def admission_selection(run: Run, kind: str, ident: str) -> dict:
     return {"nodes": sorted(seen & (set(nodes) | {ident})), "concepts": sorted(concept_closure(used, refs) & set(concepts)), "keep": [ident]}
 
 
-def admission_recheck(run: Run, reading: Reading, base: dict) -> dict[str, dict]:
+def record_admitted(run: Run, records: list[tuple[str, str]], reading: Reading, base: dict, iteration: int) -> None:
+    """Enter in the admission cache each record (`(kind, id)`) the run's own gate accepted in this
+    iteration, under the key the next loop start's admission recheck computes, so that recheck runs
+    no gate for it while nothing its verdict rests on has changed. A fenced record is left out."""
+    from ..store import jsonl
+    cache_file = run.dir / "admission.json"
+    try:
+        cache = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
+    except json.JSONDecodeError:
+        cache = {}
+    for kind, ident in records:
+        if ident not in run.fenced:
+            cache[ident] = {"key": admission_key(run, kind, ident, reading, base), "verdict": "OK",
+                            "details": [f"accepted by the run's own gate in iteration {iteration}"]}
+    jsonl.write_atomic(cache_file, json.dumps(cache, indent=1, ensure_ascii=False))
+
+
+def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str] | None = None) -> dict[str, dict]:
     """Rerun today's gates on every accepted record of the effective view not fenced, the concepts
     a record calls before it, each gate registering only that record and what it uses
     (`admission_selection`). A verdict is cached under the record's admission key (its context
@@ -510,7 +534,10 @@ def admission_recheck(run: Run, reading: Reading, base: dict) -> dict[str, dict]
     record is not run again. A record the gate rejects is fenced (`fenced`, reason `gate`, its
     verdict as evidence), and so is everything that calls it; the operational selection
     (`.inactive.json`) is rewritten before the next gate. Returns {id: verdict} of the records
-    fenced here. Raises `AdmissionUnavailable` when a gate does not judge a record."""
+    fenced here. Raises `AdmissionUnavailable` when a gate does not judge a record because the
+    toolchain did not run. With `unjudged`, a record whose evaluation exceeded the gate's deadline
+    (`GATE_TIMEOUT`) is no outage and no judgement: it stays as accepted, is not cached, so the next
+    launch checks it again, and a line naming it is appended to `unjudged`."""
     from ..checks import gate
     from ..model.blueprint import ConceptRecord
     from ..loop import concept_order, topological, concept_deps
@@ -541,6 +568,10 @@ def admission_recheck(run: Run, reading: Reading, base: dict) -> dict[str, dict]
                                           accepted={k: r for k, r in run.all_concepts().items() if k != ident})
             else:
                 v = gate.run_gate(rec, reading, gate.repo_digest(), work, 0, 1, accepted_concepts=run.all_concepts())
+            if v.verdict == gate.GATE_TIMEOUT and unjudged is not None:
+                unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation exceeded the gate's deadline "
+                                f"({'; '.join(v.details[:1])[:200]}); it stays as accepted and is checked again at the next launch")
+                continue
             if v.verdict in (gate.INFRA, gate.GATE_TIMEOUT, "BUDGET_EXHAUSTED"):
                 raise AdmissionUnavailable(f"`{ident}`: the gate did not judge it ({v.verdict}: {'; '.join(v.details[:2])})")
             verdict, details = v.verdict, v.details[:6]

@@ -109,6 +109,35 @@ You are a one-shot session. Nothing waits for a reply.
    elsewhere: cover the rest of the domain with another element or concept, or propose a gap.
    Unknown is for observations a source may lack and for the limits of a finite trace, not for a
    part of the domain no element reads.
+4d. **The same one keeps its identity.** A region the words single out ("the", "that", "such",
+   "its") is one variable within one quantifier's scope, and every condition the words place on it
+   there reads that variable. The applicability and the obligation are separate formulas: a region
+   bound in one is not in scope in the other. Where the other must speak of the same region, it
+   binds it again with the whole selection and every relation that fixed it, so that it again
+   denotes the region the words single out; a shared variable name alone never makes two regions the
+   same. Where the words speak of different regions, each keeps its own role and its own relations.
+   A line, crossing or device *of* a region is tied to it by relation atoms, directly or through a
+   chain of them (a marked line on the approach lane that runs into the junction); distance never
+   stands for belonging, though a distance the words themselves require is read as the words state
+   it.
+   Where the words leave open which region is meant, the choice is disclosed as a reading; a reading
+   never turns a region the words single out into any region of its kind.
+   A condition the words fix to an event of this duty ("the signal at the moment it enters") is read
+   at the observation at which that event occurred: through a past operator when the event lies
+   before the judged observation, and directly when it is the judged observation. Every other
+   condition is read at the moment the words give it; words of order ("after halting there")
+   fix the order, not the moment of every later condition. An earlier occurrence of the same kind of
+   event never stands for the one this duty refers to.
+   A region the words single out is the region every condition the words place on it reads. A
+   catalogued concept fits it only if the concept takes that region as a `region` argument and
+   checks its condition there: reuse it, passing the region the node binds. A concept that finds a
+   region for itself, by a quantifier in its body, never stands for the one the words single out,
+   even where the rest of its contract fits, since another region of the scene may satisfy it; it
+   stays in the catalogue for words that single out no region. Where no catalogued concept fits,
+   write the condition of the scene in the node's own formula on the region the node binds, read at
+   the observation the words fix; a manoeuvre, a state of motion or a relation over time that no
+   catalogued concept carries is withdrawn with kind `plan`, naming the concept the span needs and
+   the region it must take.
 5. **Parameters come from the catalogue or are proposed** (`param_proposals`: name, unit, a
    provisional value, convention, source); never a value in the record or the prose. A value the
    catalogue marks proposed by a node of this law, not yet reviewed, may be proposed again with
@@ -118,10 +147,15 @@ You are a one-shot session. Nothing waits for a reply.
    the exception the four do not visit. The coder adds further branch witnesses itself. A rule
    that quantifies over parties other than its binders keeps a scenario with no such party in
    the scene and a decided verdict.
-7. **A word with no observable counterpart is never withdrawn.** An intention, a perception or a
-   knowledge, a purpose, the legal status of a feature in the scene, or who or what controls a
-   road user's motion is read through the conduct or feature it refers to and declared as an
-   `observable_reading` narrowing; never assumed, never a gap.
+7. **A word with no observable counterpart is never withdrawn.** Words that state that a road user
+   intends, or is preparing, to turn are carried by a declared intention (`intentions`, `int.<name>`)
+   of that road user at the region the words name, on a trigger, subject, condition or exception
+   span, read at the judged observation or in a window behind it, never by an act in a window ahead
+   nor by a signal. An imminent movement, a perception or a knowledge, a purpose, the legal status of
+   a feature in the scene, or who or what controls a road user's motion is read through the conduct
+   or feature it refers to and declared as an `observable_reading` narrowing; never assumed, never a
+   gap. An assumption or an intention reuses an id of the declared-fact catalogue whose meaning is
+   the words' meaning, with no `meaning`; a new id gives its `meaning`.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
    atom or an operator is missing, what it would have to carry, which distinction of the driving
    task it would decide (the action the law requires or forbids, where it is required, its time or
@@ -145,7 +179,7 @@ then, beside `record.jsonl`, `dependency_defect.json` with the JSON object `{"co
 "kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
 "contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
 "instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
-"trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}`, which an adjudicator judges
+"regions": {"<region formal>": <region id>}, "trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}`, which an adjudicator judges
 by the concept's contract before anything is charged. The harness validates a record in its plan's context
 with its sibling nodes and, if it names a defect, asks you once more with the defect; a record
 that keeps a defect returns the law to the planner.
@@ -153,7 +187,7 @@ that keeps a defect returns the law to the planner.
 ```
 subject{binder, class_elements},
 elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
-params, convention, surrogate}], assumptions[{span, id, meaning}],
+params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope}],
 narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
 binders[{name, class_elements}], applicability, obligation, params,

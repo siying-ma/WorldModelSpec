@@ -45,6 +45,16 @@ class FakeRun:
     def reading_file(self):
         return self.dir / "reading.json"
 
+    @property
+    def iter(self):
+        return self.dir / f"iter-{self.iteration:03d}"
+
+    def all_nodes(self):
+        return {}
+
+    def all_concepts(self):
+        return {}
+
 
 class Structure(unittest.TestCase):
     def row(self, **kw):

@@ -187,6 +187,7 @@ class Run:
             if broken:
                 raise SystemExit(f"base run `{self.opts.base_run}`: node(s) {broken} compose a node of a law this run plans again "
                                  f"({sorted(dropped)}); list their laws too")
+            self.inherit_declarations(enter=False)
             self.base_concepts = view["concepts"]
             self.provenance = {k: v for k, v in view["provenance"].items() if k in self.base_nodes or k in self.base_concepts}
             self.base_chain = view["chain"]
@@ -194,6 +195,34 @@ class Run:
                 self.fenced.setdefault(k, ev)
             self.fence_history += [f for f in view["history"] if f not in self.fence_history]
         self.reconcile_fences()
+
+    def inherit_declarations(self, enter: bool = True) -> None:
+        """Every declared-fact id an inherited base node reads, checked against the reading with the
+        meaning the node's record carries: a record with no meaning, or a meaning other than the
+        reading's, stops the run, naming the id, both meanings and the nodes; no meaning is guessed.
+        With `enter` (the loop's start only), an id the reading lacks is entered `proposed` as
+        inherited."""
+        from ..model.reading import Reading, same_meaning
+        targets = [self.reading_file] + ([Path(self.opts.reading)] if getattr(self.opts, "reading", None) else [])
+        have = Reading(self.reading_file).declarations()
+        conflicts, enter_ids = [], {}
+        for nid, d in sorted(self.base_nodes.items()):
+            for x in (d.get("assumptions") or []) + (d.get("intentions") or []):
+                if not isinstance(x, dict) or not x.get("id"):
+                    continue
+                cid, meaning = x["id"], x.get("meaning")
+                known = have.get(cid) or enter_ids.get(cid)
+                if not isinstance(meaning, str) or not meaning.strip():
+                    conflicts.append(f"`{cid}` of `{nid}` carries no meaning")
+                elif known is None:
+                    enter_ids[cid] = {"id": cid, "meaning": meaning, "node": nid}
+                elif not same_meaning(known.get("meaning"), meaning):
+                    conflicts.append(f"`{cid}`: `{nid}` means {meaning!r}, the reading or `{known.get('node', 'the reading')}` {known.get('meaning')!r}")
+        if conflicts:
+            raise SystemExit(f"base run `{self.opts.base_run}`: declared ids inherited without one meaning: " + "; ".join(conflicts))
+        for d in (enter_ids.values() if enter else []):
+            for target in targets:
+                Reading.add_declarations(target, [d], f"inherited {self.opts.base_run} {d['node']}")
 
     def _records(self) -> dict[str, dict]:
         return {**self.base_nodes, **self.base_concepts, **self.accepted_nodes, **self.accepted_concepts}
@@ -337,10 +366,13 @@ def base_view(run_id: str, seen: frozenset = frozenset()) -> dict:
     A later run's record overrides an earlier one of the same id; every record names the run that
     accepted it; fences are inherited, a later run's standing over an earlier one's, and a fence holds
     only the version it names (`fence_applies`): one whose record was replaced is history. A cycle
-    in the chain stops the run."""
+    in the chain stops the run, and so does a run of the chain whose directory holds no
+    `options.json`: its records cannot be read, and an empty view would pass for a complete one."""
     if run_id in seen:
         raise SystemExit(f"the base_run chain returns to `{run_id}`: {sorted(seen)}")
     d = paths.run_dir(run_id)
+    if not (d / "options.json").exists():
+        raise SystemExit(f"the base_run chain names `{run_id}`, but {d} holds no options.json: its records cannot be read")
     opts = jsonl.read_json(d / "options.json", None) or {}
     if opts.get("base_run"):
         view = base_view(opts["base_run"], seen | {run_id})

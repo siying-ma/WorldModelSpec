@@ -190,19 +190,23 @@ def admission_preflight(run: Run, opts: Options, reading, base: dict, context_ba
     (`integrate.admission_recheck`), then, with `context_base`, its recorded obligations are checked
     on its dependency context as it is now (`integrate.recheck_contexts`, over `laws`), so a provider
     whose context fails is fenced before anything is coded on it. A record either check rejects is
-    fenced with everything that calls it, and the operational library leaves them out. Returns
+    fenced with everything that calls it, and the operational library leaves them out; a record
+    whose evaluation exceeded the gate's deadline stays as accepted, with a notice, and is checked
+    again at the next launch. Returns
     (notes, the stop message): the run stops before any spend when an accepted node it keeps is
     fenced, or calls or composes a fenced record, with the subset continuation that re-plans those
     nodes' laws; when a check could not be made (a gate or program that did not run, a law in no
     corpus); a fenced concept alone stops nothing, since its successor comes through the planner of
     the laws that need it."""
     refresh_inactive(run)
+    unjudged: list[str] = []
     try:
-        failed = integrate_phase.admission_recheck(run, reading, base)
+        failed = integrate_phase.admission_recheck(run, reading, base, unjudged)
     except integrate_phase.AdmissionUnavailable as e:
         return [], f"the admission recheck of the accepted records did not run: {e}; nothing was spent, rerun the loop"
     refresh_inactive(run)
     notes = [f"`{i}` fails today's gates ({v['verdict']}: {'; '.join(v['details'][:2])[:300]}): fenced" for i, v in failed.items()]
+    notes += unjudged
     if context_base is not None:
         _ok, failing, unresolved = integrate_phase.recheck_contexts(run, reading, context_base, laws or {})
         closed = integrate_phase.fence_closure(run)
@@ -550,7 +554,8 @@ def semantic_inputs(opts: Options) -> dict[str, str]:
     precedence = Path(opts.definition_precedence or definitions_mod.DEFAULT_PRECEDENCE)
     def reviewed(reading: Path) -> str:                  # the operator's values; proposals awaiting review are runs' state
         data = jsonl.read_json(reading, {}) or {}
-        kept = {**data, "params": [p for p in data.get("params", []) if isinstance(p, dict) and not p.get("proposed")]}
+        kept = {**data, "params": [p for p in data.get("params", []) if isinstance(p, dict) and not p.get("proposed")],
+                "declarations": [d for d in data.get("declarations", []) if isinstance(d, dict) and not d.get("proposed")]}
         return hashlib.sha256(json.dumps(kept, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:24]
     out = {"corpus": digest([laws, laws.with_name("definitions.jsonl")]),
            "definition_precedence": digest([precedence]),
@@ -629,6 +634,8 @@ def _run_loop(opts: Options) -> dict:
     doctor_ok()
     snap = run.restore_state()                            # projections completed from the snapshot before anything reads them
     run.load_accepted()
+    if opts.base_run:
+        run.inherit_declarations()                       # an inherited node's declared ids enter the readings before any session
     laws = corpus.load_laws(opts.laws)
     defs = corpus.load_definitions(opts.laws)
     by_id = {l.id: l for l in laws}
@@ -1367,8 +1374,11 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         for n in wave:                                   # the proposed tier: the node's vetted proposals enter both readings before its gate runs (idempotent, so a resume repeats it)
             vetted = [pr for pr in n.get("param_proposals", []) if isinstance(pr, dict)]
             origin = f"{opts.run_id}/iter-{run.iteration:03d} {n.id}"
+            decls = [d for d in n.get("assumptions", []) + n.get("intentions", []) if isinstance(d, dict) and d.get("id")]
+            decls = list({d["id"]: {"id": d["id"], "meaning": d.get("meaning")} for d in decls}.values())
             for target in (run.reading_file, opts.reading):
                 Reading.add_proposals(target, vetted, origin)
+                Reading.add_declarations(target, decls, origin)
             # the notices come from the reading's own record of what this node proposed in this iteration,
             # so a resume after a stop re-derives the ones the stop lost and repeats none
             names = {pr.get("name") for pr in vetted}
@@ -1685,6 +1695,12 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     index.save()
     if run.reconcile_fences():                         # a fence of a version this iteration replaced is history now
         refresh_inactive(run)
+    # what this iteration's own gates accepted is known to pass them: the next loop start reuses that verdict
+    sem = semantic_inputs(opts)
+    integrate_phase.record_admitted(
+        run, [("node", n.id) for n in added] + [("concept", c) for c in concepts_now
+                                                if c in result.get("kept_concepts", concepts_now) and c in run.accepted_concepts],
+        Reading(run.reading_file), {"core": sem["core"], "ontology": sem["ontology"]}, run.iteration)
     prog["stage"] = "integrated"; persist()
     # a law is accepted when every node it was planned with is accepted, whichever iteration coded it
     for e in ledger.entries.values():

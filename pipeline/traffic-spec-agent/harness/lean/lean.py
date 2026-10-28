@@ -11,9 +11,11 @@ class LeanUnavailable(RuntimeError):
 
 
 class library_lock:
-    """One process at a time regenerates the registries, builds or runs Lean over the library:
-    gates launched by parallel coding sessions serialize on this lock (a file lock, so it holds
-    across processes), and the registries a gate writes are the ones its build sees."""
+    """One process at a time regenerates the registries and builds the library: gates launched by
+    parallel coding sessions serialize on this lock (a file lock, so it holds across processes), and
+    the registries a gate writes are the ones its build sees. Integration, which runs while no
+    session codes, also runs its witnesses under it. No holder waits for the evaluation lock while
+    it holds this one."""
     def __init__(self, library: Path):
         self.path = library / ".harness.lock"
         self.fh = None
@@ -22,6 +24,33 @@ class library_lock:
         import fcntl
         self.fh = open(self.path, "w")
         fcntl.flock(self.fh, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        import fcntl
+        fcntl.flock(self.fh, fcntl.LOCK_UN)
+        self.fh.close()
+        return False
+
+
+class evaluation_lock:
+    """Every Lean evaluation run outside the library lock holds this lock shared, so evaluations run
+    side by side; the isolated rerun of a gate's resource failure holds it exclusive, so it runs
+    alone: it waits for the running evaluations to end and lets no new one start. Every holder
+    passes a turnstile first, which an exclusive request keeps while it waits, since `flock` would
+    otherwise let new shared holders in ahead of it."""
+    def __init__(self, library: Path, exclusive: bool = False):
+        self.turnstile = library / ".harness.turnstile.lock"
+        self.path = library / ".harness.evaluation.lock"
+        self.exclusive = exclusive
+        self.fh = None
+
+    def __enter__(self):
+        import fcntl
+        with open(self.turnstile, "w") as turn:
+            fcntl.flock(turn, fcntl.LOCK_EX)
+            self.fh = open(self.path, "w")
+            fcntl.flock(self.fh, fcntl.LOCK_EX if self.exclusive else fcntl.LOCK_SH)
         return self
 
     def __exit__(self, *exc):

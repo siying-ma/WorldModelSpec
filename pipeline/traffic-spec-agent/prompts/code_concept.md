@@ -91,9 +91,10 @@ Run mode: `{mode}`.
 3. **The body uses only claimed names**: every atom and concept in it is an element of the record,
    and every claimed name is used. Arguments are the formals, variables bound in the body, or
    enumeration spellings from the surface.
-4. **Every bound variable is anchored** to a track formal through the formula (an anchoring
-   relation — {anchors} — or another relation that reads the formal), or the gate returns
-   `UNANCHORED_VARIABLE`.
+4. **Every bound variable is anchored** to a track or region formal through the formula (an
+   anchoring relation — {anchors} — or another relation that reads the formal), or the gate returns
+   `UNANCHORED_VARIABLE`. A region argument is read wherever the contract speaks of that region; the
+   body never quantifies over a region the contract names as an argument.
 5. **Parameters, not values.** A magnitude enters the body as `.param "<formal>"`. The only
    literals are zero, enumeration spellings, and the record's declared `literals`, each written
    through the `Units` constructor of its unit. Never divide by a term that reads a measurement:
@@ -103,7 +104,8 @@ Run mode: `{mode}`.
    `CHECK_FAIL` on such a division.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
-   adds `counterexample`, on which the old body must give the wrong verdict.
+   adds `counterexample`, on which the old body must give the wrong verdict. A scenario of an
+   instance whose concept takes a region gives it in `regions`, beside `grounding`.
 7. **No history of your own**: no captures, no imports but `TrafficSpec.Core.Language.Concept` in the
    concept file and the concept plus `TrafficSpec.Core.Evidence.Builders` in the witness file. A
    sign whose legend states no restriction carries `conditions := some {}`; `none` is a legend not
@@ -143,6 +145,7 @@ working directory: the JSON object `{"concept_id": "<id>", "contract_words": "<i
 "kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
 "contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
 "instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
+"regions": {"<region formal>": <region id>},
 "trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}` — and finish. The harness runs that concept on your trace and an
 adjudicator judges the report by its contract before anything is charged; a report it does not
 uphold is your session's defect, and the gate's verdict stands.

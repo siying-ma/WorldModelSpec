@@ -95,7 +95,7 @@ more with the defect; a record that keeps a defect fails the concept.
 
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
-args[{name, sort: "track" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+args[{name, sort: "track" | "region" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
 elements[{span (words of the contract, verbatim), atoms, concepts, justification}], residues[{span, why}],
 literals[{value, unit, why}], scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only: a list of atom ids the body reads)}],
 used_by[<node ids>], supersedes (null), counterexample (null), differs_from{concept, why} (only when the sorts and atoms match an accepted concept's)

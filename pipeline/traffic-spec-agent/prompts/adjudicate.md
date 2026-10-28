@@ -95,11 +95,13 @@ A structural evidence item is `upheld` or `dismissed_permitted_reading` only.
    — is judged as a reading of that span, whichever span the record discloses it on. A span of role
    `sibling` is another duty of the law, formalized and judged on its own: leaving it unread is not
    a word left out.
-5. **Words with no observable counterpart.** An intention, a perception or a knowledge, a purpose,
-   the legal status of a feature in the scene, or who or what controls a road user's motion is read
-   through the conduct or feature it refers to, and the record discloses each such reading as an
-   `observable_reading`. A mismatch that turns only on what the subject intended, perceived or knew
-   apart from that conduct, on whether a feature present in the scene is official, or on whether a
+5. **Words with no observable counterpart.** An imminent movement, a perception or a knowledge, a
+   purpose, the legal status of a feature in the scene, or who or what controls a road user's motion
+   is read through the conduct or feature it refers to, and the record discloses each such reading as
+   an `observable_reading`. A declared intention (`intent`) is a fact of the case like any other, and
+   a mismatch that turns on it is judged as any mismatch is. A mismatch that turns only on what the
+   subject intended apart from what the trace declares, on what it perceived or knew apart from that
+   conduct, on whether a feature present in the scene is official, or on whether a
    person, an automated system or no one controls a road user in motion, is a permitted reading. A
    reading of the conduct that misses the duty, or forbids conduct the words permit, is upheld.
 6. **Surrogates.** When the record marks the operationalization `surrogate`, the rule fixes what

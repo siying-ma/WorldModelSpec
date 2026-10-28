@@ -110,6 +110,7 @@ mutual
     | atom (name : String) (args : List Arg) (params : List Term)   -- a Boolean atom; params for tolerances
     | cmp (lhs : Term) (op : CmpOp) (rhs : Term)
     | asm (id : AsmId)
+    | intent (id : IntId) (who target : Arg)                 -- the declaration current here: road user `who` intends `id` at region `target`
     | same (a b : Arg)                                        -- the two variables denote the same entity
     | not (φ : Formula)
     | and (φ ψ : Formula)
@@ -210,18 +211,33 @@ mutual
     | _ => []
 end
 
+-- The rules a formula composes, with each call's binder map, at any depth of formulas and terms.
+mutual
+  partial def termCompositions : Term → List (String × List (String × String))
+    | .quantity _ _ ps => ps.flatMap termCompositions
+    | .distanceWhile _ φ | .sinceRise φ => compositions φ
+    | .aggregate _ _ φ t => compositions φ ++ termCompositions t
+    | .add a b | .sub a b | .mul a b | .div a b => termCompositions a ++ termCompositions b
+    | .neg a | .abs a => termCompositions a
+    | .cond φ a b => compositions φ ++ termCompositions a ++ termCompositions b
+    | _ => []
+  partial def compositions : Formula → List (String × List (String × String))
+    | .rule id map | .ruleApplies id map => [(id, map)]
+    | .atom _ _ ps | .derived _ _ ps => ps.flatMap termCompositions
+    | .cmp l _ r => termCompositions l ++ termCompositions r
+    | .not φ | .always φ | .eventually φ | .rises φ => compositions φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => compositions φ ++ compositions ψ
+    | .holdsFor _ d _ φ | .within _ d _ φ => termCompositions d ++ compositions φ
+    | .untilWithin _ d _ φ ψ => termCompositions d ++ compositions φ ++ compositions ψ
+    | .atLast _ d _ ψ φ => termCompositions d ++ compositions ψ ++ compositions φ
+    | .count e s _ _ => compositions e ++ compositions s
+    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsUser _ φ | .forallUser _ φ => compositions φ
+    | _ => []
+end
+
 /-- The rules a formula composes. -/
-partial def composed : Formula → List String
-  | .rule id _ | .ruleApplies id _ => [id]
-  | .not φ | .always φ | .eventually φ | .rises φ => composed φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => composed φ ++ composed ψ
-  | .holdsFor _ _ _ φ | .within _ _ _ φ => composed φ
-  | .untilWithin _ _ _ φ ψ => composed φ ++ composed ψ
-  | .atLast _ _ _ ψ φ => composed ψ ++ composed φ
-  | .count e s _ _ => composed e ++ composed s
-  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
-  | .existsUser _ φ | .forallUser _ φ => composed φ
-  | _ => []
+def composed (φ : Formula) : List String := (compositions φ).map (·.1)
 
 -- Numeric literals other than zero, with their units: what the gate holds against the node's
 -- declared parameters (a magnitude belongs in the reading, not in a rule).
@@ -254,7 +270,7 @@ end
 /-- A leaf is a subformula that reads the world or another rule: an atom, a comparison, an
     assumption, a derived concept or a composition. Leaves are numbered in traversal order. -/
 def isLeaf : Formula → Bool
-  | .atom .. | .cmp .. | .asm _ | .derived .. | .rule .. | .ruleApplies .. => true
+  | .atom .. | .cmp .. | .asm _ | .intent .. | .derived .. | .rule .. | .ruleApplies .. => true
   | _ => false
 
 /-- The leaves in traversal order, as a description each. -/
@@ -262,6 +278,7 @@ partial def leaves : Formula → List String
   | .atom n args _ => [s!"atom {n} {repr args}"]
   | .cmp l _ r => [s!"cmp {repr l} {repr r}"]
   | .asm id => [s!"asm {id}"]
+  | .intent id who target => [s!"intent {id} {repr who} {repr target}"]
   | .derived n args _ => [s!"derived {n} {repr args}"]
   | .rule id _ => [s!"rule {id}"]
   | .ruleApplies id _ => [s!"ruleApplies {id}"]
@@ -280,7 +297,7 @@ def leafCount (φ : Formula) : Nat := (leaves φ).length
 /-- The formula with its `k`-th leaf (traversal order) replaced by `r`, and the number of leaves
     in the formula. A subformula whose leaves all precede or follow the `k`-th is returned as it is. -/
 partial def replaceLeafAux (k : Nat) (r : Formula) : Formula → Formula × Nat
-  | φ@(.atom ..) | φ@(.cmp ..) | φ@(.asm _) | φ@(.derived ..) | φ@(.rule ..) | φ@(.ruleApplies ..) =>
+  | φ@(.atom ..) | φ@(.cmp ..) | φ@(.asm _) | φ@(.intent ..) | φ@(.derived ..) | φ@(.rule ..) | φ@(.ruleApplies ..) =>
     (if k = 0 then r else φ, 1)
   | .not φ => let (φ', n) := replaceLeafAux k r φ; (.not φ', n)
   | .always φ => let (φ', n) := replaceLeafAux k r φ; (.always φ', n)
@@ -314,18 +331,36 @@ where
 /-- The formula with its `k`-th leaf replaced by `r`. -/
 def replaceLeaf (k : Nat) (r : Formula) (φ : Formula) : Formula := (replaceLeafAux k r φ).1
 
+-- The assumptions and the declared intentions a formula reads, at any depth of formulas and terms.
+mutual
+  partial def termDeclared : Term → List (Sum AsmId IntId)
+    | .quantity _ _ ps => ps.flatMap termDeclared
+    | .distanceWhile _ φ | .sinceRise φ => declared φ
+    | .aggregate _ _ φ t => declared φ ++ termDeclared t
+    | .add a b | .sub a b | .mul a b | .div a b => termDeclared a ++ termDeclared b
+    | .neg a | .abs a => termDeclared a
+    | .cond φ a b => declared φ ++ termDeclared a ++ termDeclared b
+    | _ => []
+  partial def declared : Formula → List (Sum AsmId IntId)
+    | .asm id => [.inl id]
+    | .intent id _ _ => [.inr id]
+    | .atom _ _ ps | .derived _ _ ps => ps.flatMap termDeclared
+    | .cmp l _ r => termDeclared l ++ termDeclared r
+    | .not φ | .always φ | .eventually φ | .rises φ => declared φ
+    | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => declared φ ++ declared ψ
+    | .holdsFor _ d _ φ | .within _ d _ φ => termDeclared d ++ declared φ
+    | .untilWithin _ d _ φ ψ => termDeclared d ++ declared φ ++ declared ψ
+    | .atLast _ d _ ψ φ => termDeclared d ++ declared ψ ++ declared φ
+    | .count e s _ _ => declared e ++ declared s
+    | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
+    | .existsUser _ φ | .forallUser _ φ => declared φ
+    | _ => []
+end
+
 /-- The assumptions a formula reads. -/
-partial def assumptions : Formula → List AsmId
-  | .asm id => [id]
-  | .not φ | .always φ | .eventually φ | .rises φ => assumptions φ
-  | .and φ ψ | .or φ ψ | .implies φ ψ | .until φ ψ | .since φ ψ | .definedWhen φ ψ => assumptions φ ++ assumptions ψ
-  | .holdsFor _ _ _ φ | .within _ _ _ φ => assumptions φ
-  | .untilWithin _ _ _ φ ψ => assumptions φ ++ assumptions ψ
-  | .atLast _ _ _ ψ φ => assumptions ψ ++ assumptions φ
-  | .count e s _ _ => assumptions e ++ assumptions s
-  | .existsRegion _ _ φ | .forallRegion _ _ φ | .existsDevice _ _ φ | .forallDevice _ _ φ
-  | .existsUser _ φ | .forallUser _ φ => assumptions φ
-  | _ => []
+def assumptions (φ : Formula) : List AsmId := (declared φ).filterMap fun | .inl a => some a | .inr _ => none
+/-- The declared intentions a formula reads. -/
+def intentions (φ : Formula) : List IntId := (declared φ).filterMap fun | .inr i => some i | .inl _ => none
 
 /-- The aggregate ids a formula names (`ru_aggregate x "<definition id>::<term>"`), for the reading check. -/
 partial def aggregateIds : Formula → List String

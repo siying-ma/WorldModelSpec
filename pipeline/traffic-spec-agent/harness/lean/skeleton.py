@@ -1,7 +1,7 @@
 """Rule and witness skeletons, generated from a blueprint node.
 
 The skeleton carries everything the gate's DECLARATION_MISMATCH step compares (id, laws, binders,
-assumptions, operationalizations, residues, surrogate), the node's parameters as `Term` values,
+assumptions, intentions, operationalizations, residues, surrogate), the node's parameters as `Term` values,
 and the four scenarios with their expected verdicts and masked atoms; the formulas and the scenes
 are left to the coding session, marked `TODO`. Both files build as written, so the session's first
 gate run measures its own work rather than a spelling.
@@ -58,6 +58,7 @@ def rule_skeleton(node: Node) -> str:
     params = node.params()
     ops = node.get("operationalizations", [])
     asms = node.get("assumptions", [])
+    intents = list(dict.fromkeys(a.get("id") for a in node.get("intentions", [])))
     residues = node.get("residues", [])
     surrogate = any(o.get("surrogate") for o in ops)
     elements = node.get("elements", [])
@@ -122,6 +123,7 @@ def rule_skeleton(node: Node) -> str:
     out.append("    applicability := applicability")
     out.append("    obligation := obligation")
     out.append(f"    assumptions := {_lean_list([_s(a.get('id')) for a in asms])}")
+    out.append(f"    intentions := {_lean_list([_s(i) for i in intents])}")
     if ops:
         olines = []
         for o in ops:
@@ -205,6 +207,8 @@ def _sort_lean(a: dict) -> str:
     s = a.get("sort")
     if s == "track":
         return ".track"
+    if s == "region":
+        return ".region"
     if s == "nat":
         return ".nat"
     return ".literal " + _lean_list([_s(v) for v in a.get("values", [])])
@@ -269,6 +273,8 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
     lits = [a for a in c.args() if a.get("sort") == "literal"]
     nats = [a for a in c.args() if a.get("sort") == "nat"]
     grounding = ", ".join(f"({_s(n)}, {i + 1})" for i, n in enumerate(tracks))
+    regions = [a["name"] for a in c.args() if a.get("sort") == "region"]
+    region_ids = ", ".join(f"({_s(n)}, {100 + i})" for i, n in enumerate(regions))
     scen = {s.get("name"): s for s in c.get("scenarios", [])}
     inst_name = c.id + "@w"
     out = ["/-", f"  Witnesses for {c.id}.", "",
@@ -277,7 +283,9 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
            f"import {nodeid.concept_module(c.id)}", "import TrafficSpec.Core.Evidence.Builders", "",
            f"namespace {ns}", "", "open TrafficSpec", "",
            "def m (n : Int) : Q := Units.metres n", "def cm (n : Int) : Q := Units.centimetres n", "",
-           f"-- Formals ↦ tracks: {', '.join(f'{n} ↦ {i + 1}' for i, n in enumerate(tracks)) or '(no track formal)'}", "",
+           f"-- Formals ↦ tracks: {', '.join(f'{n} ↦ {i + 1}' for i, n in enumerate(tracks)) or '(no track formal)'}",
+           f"-- Formals ↦ regions: {', '.join(f'{n} ↦ {100 + i}' for i, n in enumerate(regions)) or '(no region formal)'}"
+           + ("  (TODO: each id a structure of every trace)" if regions else ""), "",
            "/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a",
            "    value through a `Units` constructor (TODO), a quantity concept given its expected bounds. -/",
            "def inst : Concept.Instance :=",
@@ -312,6 +320,8 @@ def concept_witness_skeleton(c: ConceptRecord) -> str:
     out.append("    reading := {}          -- ignored by the gate: the run's reading is substituted")
     out.append("    manifest := Build.manifest absent")
     out.append(f"    grounding := [{grounding}]")
+    if regions:
+        out.append(f"    regions := [{region_ids}]")
     out.append("    expected := expected }")
     out.append("")
     lines = []

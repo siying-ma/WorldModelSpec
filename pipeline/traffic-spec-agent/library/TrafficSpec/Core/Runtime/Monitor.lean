@@ -65,10 +65,10 @@ def isUnknown : Verdict → Bool | .unknown _ => true | _ => false
 
 /-- Evaluate a rule set over one trace as the source would have produced it, the rules' concept
     calls expanded over `cs`. Unsupported rules are reported without groundings: nothing they
-    say could be decided. -/
-def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) (cs : List Concept := []) : Report :=
+    say could be decided. A trace the admission rejects is not evaluated: its defects are returned. -/
+def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) (cs : List Concept := []) : Except (List String) Report := do
   let rules := rules.map (Concept.expandRule cs)
-  let S := Setup.mk' rules (maskTrace m τ) ρ m.reidGap
+  let S ← Setup.admit rules (maskTrace m τ) ρ m.reidGap
   let per := rules.map fun r =>
     let sup := support rules r m
     match sup with
@@ -86,7 +86,7 @@ def check (rules : List Rule) (τ : Trace) (ρ : Reading) (m : Manifest) (cs : L
          live := evaluated.any (fun e => e.2.1.live),
          violated := countVerdict eps (· == Verdict.violated), compliant := countVerdict eps (· == Verdict.compliant),
          notApplicable := countVerdict eps (· == Verdict.notApplicable), unknown := countVerdict eps isUnknown : RuleLine }, rows)
-  { source := m.source, instants := τ.length, gap := m.reidGap, rules := per.map (·.1), rows := per.flatMap (·.2) }
+  pure { source := m.source, instants := τ.length, gap := m.reidGap, rules := per.map (·.1), rows := per.flatMap (·.2) }
 
 -- ---------------------------------------------------------------------------------------------
 -- Text

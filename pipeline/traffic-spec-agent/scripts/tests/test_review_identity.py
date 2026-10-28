@@ -160,7 +160,8 @@ class ConceptChallenges(unittest.TestCase):
 
     def test_a_superseded_concepts_challenge_is_replayed_only_through_its_formals(self):
         with tempfile.TemporaryDirectory() as t:
-            run = SimpleNamespace(dir=Path(t), iteration=2, reading_file=Path(t) / "reading.json")
+            run = SimpleNamespace(dir=Path(t), iteration=2, iter=Path(t) / "iter-002", reading_file=Path(t) / "reading.json",
+                                  all_nodes=lambda: {}, all_concepts=lambda: {})
             run.reading_file.write_text(json.dumps({"params": [], "aggregates": []}))
             old = {"key": "concept:drv.motion.x", "schema": review.CONCEPT_CASE_SCHEMA, "ruling": "upheld", "obligation": "open",
                    "subject": "drv.motion.x", "iteration": 1, "case_id": "k1", **{f: v for f, v in self.div().items()}}
@@ -186,7 +187,8 @@ class DependencyReports(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         d = Path(self.tmp.name)
-        self.run = SimpleNamespace(dir=d, iteration=3, reading_file=d / "reading.json", all_concepts=lambda: {"drv.motion.x": self.CONCEPT})
+        self.run = SimpleNamespace(dir=d, iteration=3, iter=d / "iter-003", reading_file=d / "reading.json", all_nodes=lambda: {},
+                                   all_concepts=lambda: {"drv.motion.x": self.CONCEPT})
         self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": []}))
         self.saved = (review.execute_concept_divergences, review.adjudicate_concept, review.concept_blocks)
         review.concept_blocks = lambda run, rec, extras: ({}, "", "")

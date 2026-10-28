@@ -7,6 +7,7 @@ import collections
 import contextlib
 import json
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -124,6 +125,15 @@ class BaseChain(unittest.TestCase):
             r.run("B", base="A")
             with self.assertRaises(SystemExit):
                 base_view("A")
+
+    def test_a_chain_member_without_options_stops(self):
+        with Results() as r:
+            r.run("A", laws=["L-1"], nodes={"L_1": N("L_1", "L-1")})
+            r.run("B", base="A")
+            shutil.rmtree(paths.RESULTS / "A")                      # an ancestor not copied along
+            with self.assertRaises(SystemExit) as e:
+                base_view("B")
+            self.assertIn("holds no options.json", str(e.exception))
 
     def test_inherited_obligations_are_read_only_and_qualified(self):
         rows_a = [{"ruling_id": "r1", "key": "concept:drv.motion.creep", "subject": "drv.motion.creep", "schema": review.CONCEPT_CASE_SCHEMA,

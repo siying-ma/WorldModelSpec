@@ -135,6 +135,34 @@ def _start(work: Path, rels: tuple[str, ...]) -> dict[str, str]:
     return baseline
 
 
+def _cut_off_relaunch(work: Path, rels: tuple[str, ...], budget: int) -> str:
+    """Before relaunching a coding session that was cut off: its files keep the candidate it left,
+    and it may run the gate at least half its budget again (the runs it left, if more). Returns what
+    the relaunch's prompt adds: that the files hold that candidate, the budget, and the verdict of
+    the last gate run the cut-off launch made. The same text is kept as `relaunch_note.md`."""
+    floor = -(-budget // 2)
+    f = work / "gate_runs.txt"
+    used = int(f.read_text().strip() or 0) if f.exists() else 0
+    if used > budget - floor:
+        f.write_text(str(budget - floor), encoding="utf-8")
+    left = budget - min(used, budget - floor)
+    last = work / "last_gate.json"
+    try:
+        v = json.loads(last.read_text(encoding="utf-8")) if last.exists() else None
+    except json.JSONDecodeError:
+        v = None
+    verdict = ("its last gate run returned " + v["verdict"] + "".join(f"\n  - {x}" for x in v.get("details", [])[:8])
+               if v else "it ran no gate")
+    files = "".join(f"- `{(paths.LIBRARY / r).resolve()}`\n" for r in rels)
+    note = ("\n\n## This is a relaunch after a cut-off\n\n"
+            "The previous launch of this session was cut off before it finished. The two files no longer hold the skeletons "
+            "shown above: they hold the candidate that launch left, which you continue from:\n" + files +
+            f"\nThis task has used {used} gate run(s); this launch may run the gate {left} more time(s). "
+            f"Before it was cut off, {verdict}\n(the files may have changed after that run).\n")
+    (work / "relaunch_note.md").write_text(note, encoding="utf-8")
+    return note
+
+
 def _task_files(work: Path, registry: dict | None, concurrent: list[str] | None) -> None:
     """What a gate run from this task directory registers and tolerates: the accepted ids plus
     this task's, and the files of the sessions coding beside it."""
@@ -246,7 +274,8 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
                         allow=session.code_allow([rule_abs, wit_abs], d, gate_cli(run, node.id)),
                         deny=session.deny_rules("code"), tools=session.CODE_TOOLS,
                         env=session.harness_env(run.opts.session_timeout),
-                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_skeletons(node)), relaunch_cut_off=True)
+                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_skeletons(node)),
+                        relaunch_cut_off=lambda: _cut_off_relaunch(d, rels, run.opts.gate_budget))
         except session.SessionUnavailable as e:
             _restore(d, baseline, rels, keep_final=False)
             v = gate.Verdict(SESSION_FAILED, [str(e)])
@@ -262,8 +291,9 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
 
 
 def gate_from_cli(run_id: str, node_id: str) -> gate.Verdict:
-    """The gate as the coding session calls it: counted against the budget, never authoritative.
-    `node_id` is a node id or a concept id."""
+    """The gate as the coding session calls it: counted against the budget, never authoritative, its
+    verdict kept as `last_gate.json` for a relaunch after a cut-off. `node_id` is a node id or a
+    concept id."""
     run_root = paths.run_dir(run_id)
     dirname = concept_dirname(node_id) if nodeid.is_concept_id(node_id) else node_id
     iters = sorted(p for p in run_root.glob("iter-*") if (p / "code" / dirname).exists())
@@ -277,11 +307,14 @@ def gate_from_cli(run_id: str, node_id: str) -> gate.Verdict:
     if nodeid.is_concept_id(node_id):
         rec = ConceptRecord(json.loads((d / "concept.json").read_text(encoding="utf-8")))
         accepted = cli_catalogue(run_id)
-        return gate.run_concept_gate(rec, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
-                                     mode=opts.get("mode", "train"), accepted=accepted)
-    node = Node(json.loads((d / "node.json").read_text(encoding="utf-8")))
-    return gate.run_gate(node, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
-                         accepted_concepts=cli_catalogue(run_id))
+        v = gate.run_concept_gate(rec, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
+                                  mode=opts.get("mode", "train"), accepted=accepted)
+    else:
+        node = Node(json.loads((d / "node.json").read_text(encoding="utf-8")))
+        v = gate.run_gate(node, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
+                          accepted_concepts=cli_catalogue(run_id))
+    (d / "last_gate.json").write_text(json.dumps({"verdict": v.verdict, "details": v.details[:8]}, ensure_ascii=False), encoding="utf-8")
+    return v
 
 
 def cli_catalogue(run_id: str) -> dict[str, dict]:
@@ -376,7 +409,8 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
                         allow=session.code_allow([c_abs, w_abs], d, gate_cli(run, rec.id)),
                         deny=session.deny_rules("code"), tools=session.CODE_TOOLS,
                         env=session.harness_env(run.opts.session_timeout),
-                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_concept_skeletons(rec)), relaunch_cut_off=True)
+                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_concept_skeletons(rec)),
+                        relaunch_cut_off=lambda: _cut_off_relaunch(d, rels, run.opts.gate_budget))
         except session.SessionUnavailable as e:
             _restore(d, baseline, rels, keep_final=False)
             v = gate.Verdict(SESSION_FAILED, [str(e)])

@@ -154,7 +154,10 @@ feature is not better for being there, and one whose use cannot be stated is rem
   source) and the harness enters it in the reading marked `proposed`, where it stays until the
   operator reviews it; the doctor lists every unreviewed proposal, and `init --fresh` archives
   the unreviewed ones with the run's library, so a new run is never guided by the last run's
-  guesses. A figure the statute states is
+  guesses. The reading also holds `declarations`, the one catalogue of declared-fact ids
+  (assumptions `asm.*` and declared intentions `int.*`) with their meanings: a plan proposes an id
+  with its meaning, the harness enters it marked `proposed` when the node is coded, and the doctor
+  lists it and `init --fresh` archives it like a parameter until the operator reviews it. A figure the statute states is
   declared on its span in the blueprint and written through a `Units` constructor.
 - The Core directory holds either the full or the training variant of the split files
   (`library/splits/ACTIVE`); swap with `python -m harness split --use train|full`, never by hand.
@@ -211,6 +214,12 @@ feature is not better for being there, and one whose use cannot be stated is rem
 
 ## Development runs
 
+**What they are for.** Every smoke and demo is part of the training phase: its purpose is to
+find the pipeline's defects and remove them, until the pipeline is complete enough to run on the
+whole training split and then on the held-out and test splits. A development run's acceptance
+count is a diagnostic, not a result. demo14 is a fresh run (`init --fresh`): no record built by an
+earlier pipeline enters it.
+
 To save budget, a restart between full runs reruns only a subset, until the pipeline issues it
 exposes are fixed:
 - **Which laws.** The laws the previous run did not accept (failed, blocked, returned or still
@@ -226,6 +235,12 @@ exposes are fixed:
   script from the corpus file into `results/<run>/laws/`, never by hand and never under `laws/`.
 - **After a change to Core or the ontology.** `python -m harness verify` must pass on the base
   run's nodes; a node that no longer builds or passes its witnesses joins the subset.
+- **A fix covers the records already accepted.** Each revision states what it means for the
+  accepted nodes and concepts a later run may reuse, and for their callers, and how that is
+  checked. A record confirmed defective is re-planned, repaired or fenced before it is reused;
+  that it predates the revision is no exemption. A record is not judged defective by its form
+  alone, and the check need not replay every record at a cost: records are grouped by how the
+  revision affects them, and the evidence for each group is kept.
 - **Full runs.** Acceptance counts of subset runs are not comparable between runs. A full fresh
   run is made before any figure is reported and before the test split is run.
 - **Before a bigger corpus, minimize the returns to fix the pipeline.** Moving from a smoke to the
@@ -270,10 +285,12 @@ exposes are fixed:
 
 - Special-case a law in Core, the ontology, the prompts, the harness or the doctor.
 - Approximate a span the ontology cannot carry with a neighbouring atom: file a gap. The one
-  exception is a word with no observable counterpart (an intention, a perception or a knowledge,
-  a purpose, the legal status of a feature on the road, who or what controls a vehicle): it is read through the conduct or the
-  feature it refers to and disclosed as an `observable_reading` narrowing (`ontology/ATOMS.md`,
-  the section on what is not an atom), because the rules exist to check conduct on traces.
+  exception is a word with no observable counterpart (an imminent movement, a perception or a
+  knowledge, a purpose, the legal status of a feature on the road, who or what controls a vehicle):
+  it is read through the conduct or the feature it refers to and disclosed as an
+  `observable_reading` narrowing (`ontology/ATOMS.md`, the section on what is not an atom), because
+  the rules exist to check conduct on traces. Words that a road user intends, or is preparing, to
+  turn are no such exception: they are carried by a declared intention the trace supplies.
   Separately, apply the operator-approved scope abstractions stated above: do not demand a new
   atom solely to restore an incidental distinction the operator has explicitly left out of scope.
 - Decompose below an obligation span, or re-plan a law the ledger has closed.

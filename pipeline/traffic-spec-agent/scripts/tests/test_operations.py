@@ -12,6 +12,7 @@ import tempfile
 import threading
 import time
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from harness.agents import openai_runner, runner, session
@@ -254,6 +255,40 @@ class Launches(unittest.TestCase):
             with self.assertRaises(session.BadRequest):
                 session.run_tools("p", self.d, self.opts, Tools(), label="review", effort="high")
         self.assertEqual(sent, [1])
+
+    def waits(self, answers) -> list[float]:
+        """The waits before each relaunch of a tool session whose requests get `answers` in turn:
+        `LOST` (the API failed the request), 1 (it refused it) or "ok" (the reviewer submits)."""
+        class Tools:
+            specs, done, max_requests = [], False, 3
+            def reset(self): self.done = False
+            def choice(self): return "auto"
+            def call(self, name, args):
+                self.done = True
+                return "{}"
+        seq = list(answers)
+
+        def fake(items, **kw):
+            a = seq.pop(0)
+            if a == "ok":
+                return 0, {"output": [{"type": "function_call", "name": "submit_review", "arguments": "{}", "call_id": "c"}],
+                           "usage": {"input_tokens": 1, "output_tokens": 1}}, False
+            return a, {"error": "InternalServerError: Error code: 503" if a == openai_runner.LOST else "RateLimitError: 429"}, False
+        openai_runner.request = fake
+        self.opts.model, self.opts.retry_wait = "gpt-x", 900
+        slept = []
+        with unittest.mock.patch.object(session.time, "sleep", side_effect=lambda s: slept.append(s)):
+            session.run_tools("p", self.d, self.opts, Tools(), label="review", effort="high")
+        return slept
+
+    def test_a_server_failure_is_relaunched_after_a_minute_then_after_retry_wait(self):
+        self.assertEqual(self.waits([openai_runner.LOST, "ok"]), [session.SERVER_FAILURE_WAIT])
+        for f in self.d.glob("review_result*.json"):
+            f.unlink()
+        self.assertEqual(self.waits([openai_runner.LOST, openai_runner.LOST, "ok"]), [session.SERVER_FAILURE_WAIT, 900])
+
+    def test_a_refusal_still_waits_retry_wait(self):
+        self.assertEqual(self.waits([1, "ok"]), [900])
 
 
 PRELUDE = """

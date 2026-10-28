@@ -191,8 +191,32 @@ What to drop:
 | `occupies` | [[track, region]] | a user's footprint overlaps the region. The footprint is the oriented box from position, heading and extent; compute it against each region's polygon. |
 | `relations` | [Relation] | optional measured relations; Core computes them from kinematics when absent (§4.5) |
 | `env` | Env | weather, light, calendar |
-| `assumptions` | [["asm.<name>", bool]] | legal facts no sensor sees (a through highway, a business district), supplied from scenario metadata only; omit when unknown |
-| `links` | [[old_track, new_track]] | a track re-identified after a break; CARLA ids never break, so leave it empty |
+| `assumptions` | [["asm.<name>", bool]] | legal facts no sensor sees (a through highway, a business district), supplied from scenario metadata only; omit when unknown. Each id at most once per scene; the ids and their meanings are the reading's `declarations` (§4.1a) |
+| `intents` | [Intent] | declared intentions, per road user and target region (§4.1a); omit a pair whose plan the source does not know |
+| `links` | [[old_track, new_track]] | a track re-identified after a break; CARLA ids never break, so leave it empty. Accepted links are one-to-one: no track continued twice, none continuing two |
+
+### 4.1a Declared intentions (`intents`)
+
+An Intent record has exactly these keys; a missing or an extra key fails the trace:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `vehicle` | track | the road user whose plan is declared; a track of this scene's `users` |
+| `target` | region | the region the plan concerns; a structure of this scene |
+| `source` | non-empty string | where the declaration comes from: `authored_scenario` (a condition of the test, set by the scenario's author), `controller_plan` (the recorded active plan of the driving system) or `inferred_from_path` (a proxy read from the motion). Core does not read it; the evaluation reports verdicts on `inferred_from_path` traces apart and never counts them as evidence of intention independent of the behaviour |
+| `values` | [["int.<name>", bool]] | each id at most once |
+
+What a value means, the same for every id:
+- **true** where the source's current plan for that road user includes, at that target, what the id means;
+- **false** where the plan decides that what the id means does not hold there: another manoeuvre, passing through, a manoeuvre cancelled, or one the plan has completed;
+- an **id left out** wherever the plan does not decide its meaning, even when other ids of the pair are listed: what a plan does not mention is unknown, never false;
+- the **pair absent** where the source has no current plan for that road user at that target, or does not know it. Never write false for a road user whose plan you do not know.
+
+The value follows the plan, never the motion: a manoeuvre blocked, delayed or under way stays true while the plan holds it. A change of declaration takes effect from the scene that carries it; a rule reads a declaration only at the observation it judges or before it. State in the report whose intentions the trace supplies (the ego only, or every road user).
+
+**Which ids.** The ids a trace must supply, `asm.*` and `int.*` alike, and what each means, are the reading's `declarations` (`library/TrafficSpec/Readings/<run>.json`), entered as the plan proposes them and reviewed by the operator. An id the reading does not list is never written.
+
+**Admission.** A trace is rejected before any rule reads it, with every defect named, when an intent record names a vehicle not among the scene's users or a target that is no structure of the scene, when a scene has two records for one (vehicle, target) pair, an id twice in one record or twice in `assumptions`, an ill-formed id, or when two accepted links continue or are continued by one track. The monitor then exits with code 2.
 
 ### 4.2 RoadUser
 

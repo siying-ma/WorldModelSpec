@@ -5,6 +5,9 @@ import hashlib
 import json
 import os
 import re
+import time
+from contextlib import ExitStack, contextmanager, nullcontext
+from typing import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from ..store import paths
@@ -190,16 +193,18 @@ end
 '''
 
 
-def _harness_source(node_id: str, reading_json_path: Path) -> str:
+def _harness_source(node_id: str, reading_json_path: Path, registry: tuple[str, str]) -> str:
+    """The node's gate harness; `registry` is its own registry (`index_sync.registry_source`), so the
+    evaluation reads no generated file another gate may be rewriting."""
     rns, wns = nodeid.rule_namespace(node_id), nodeid.witness_namespace(node_id)
-    return f'''import TrafficSpec
-import TrafficSpec.Core.Evidence.Adequacy
+    imports, defs = registry
+    return f'''{imports}import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Language.Export
 import TrafficSpec.Core.Evidence.TraceLint
 import {nodeid.rule_module(node_id)}
 import {nodeid.witness_module(node_id)}
-open TrafficSpec Lean
+{defs}open TrafficSpec Lean
 #print axioms {rns}.rule
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
@@ -216,6 +221,7 @@ def main : IO Unit := do
     ("id", r.id), ("laws", Json.arr (r.laws.map Json.str).toArray),
     ("binders", Json.arr (r.binders.map fun b => Json.str b.name).toArray),
     ("assumptions", Json.arr (r.assumptions.map Json.str).toArray),
+    ("intentions", Json.arr (r.intentions.map Json.str).toArray),
     ("operationalizations", Json.arr (r.operationalizations.map fun o => Json.mkObj [("standard", o.standard), ("concepts", Json.arr (o.concepts.map Json.str).toArray), ("params", Json.arr (o.params.map Json.str).toArray), ("surrogate", o.surrogate)]).toArray),
     ("residues", Json.arr (r.residues.map Json.str).toArray),
     ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
@@ -226,26 +232,37 @@ def main : IO Unit := do
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
   IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (r.formulas.flatMap Formula.aggregateIds).eraseDups}}"
   for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
+  let tOcc ← IO.monoMsNow
   for g in (r.binders.flatMap fun b => occF b.cls) ++ occF r.applicability ++ occF r.obligation do
     IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in r.formulas.flatMap Formula.literals do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
+  IO.println s!"TIME\\toccurrences\\t{{(← IO.monoMsNow) - tOcc}}"
+  let tChk ← IO.monoMsNow
   let rulesX := rules.map (Concept.expandRule allConcepts)
   for e in Rule.check rulesX (Concept.expandRule allConcepts r) do IO.println s!"CHECK\\t{{e}}"
+  for e in Concept.ruleCallDefects allConcepts r do IO.println s!"CHECK\\t{{e}}"
   for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
   for e in DimCheck.rule (DimCheck.envOf ρ allConcepts) r do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
+  IO.println s!"TIME\\tchecks\\t{{(← IO.monoMsNow) - tChk}}"
+  let tLint ← IO.monoMsNow
   for sc in scs do
     let τ := TraceLint.completeOccupancy sc.trace
     for e in TraceLint.checkTrace τ do IO.println s!"REF\\t{{sc.name}}\\t{{e}}"
     RelCheck.run sc.name τ
     if let some (a, b) := sc.window then
       if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
+  IO.println s!"TIME\\tlint\\t{{(← IO.monoMsNow) - tLint}}"
   for sc in scs do
+    let tSc ← IO.monoMsNow
     let sc' : Scenario := {{ sc with reading := ρ }}
     match sc'.run rules allConcepts with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
+    IO.println s!"TIME\\tscenario:{{sc.name}}\\t{{(← IO.monoMsNow) - tSc}}"
   let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  let tAdq ← IO.monoMsNow
   for u in Adequacy.unexercised rules r scs' allConcepts do IO.println s!"ADEQ\\t{{u}}"
+  IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
   IO.println "DONE"
 '''
 
@@ -258,18 +275,35 @@ STOP_SIGNALS = {1: "SIGHUP", 2: "SIGINT", 15: "SIGTERM"}
 GENERATED_LIB = {"TrafficSpec/Index.lean", "TrafficSpecWitness.lean"}
 
 
-def _record(work: Path, phase: str, code: int, out: str) -> dict:
+def _record(work: Path, phase: str, code: int, out: str, seconds: float | None = None) -> dict:
     """One toolchain run of the gate, appended to the task's `toolchain.jsonl`: the phase, the exit
     code and signal, the origin of a stop (the gate's own deadline, the run's stop event, a stopping
-    signal, a resource failure), any panic, and the first lines it printed."""
+    signal, a resource failure), any panic, the first lines it printed, and its wall time."""
     from ..store import owner
     sig = -code if code < 0 else None
     stop = ("deadline" if lean.timed_out(out) else "run_stop" if owner.STOP.is_set()
             else "stop_signal" if sig in STOP_SIGNALS else "resource" if sig in RESOURCE_SIGNALS or lean.STACK_OVERFLOW.search(out) else None)
-    row = {"phase": phase, "exit": code, "signal": sig, "stop": stop, "panic": lean.panicked(out), "head": out.splitlines()[:3]}
+    row = {"phase": phase, "exit": code, "signal": sig, "stop": stop, "panic": lean.panicked(out), "head": out.splitlines()[:3],
+           "seconds": None if seconds is None else round(seconds, 3)}
     with open(work / "toolchain.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
     return row
+
+
+@contextmanager
+def _timed(work: Path, phase: str, lock):
+    """`lock` (the library lock, `lock`, or the evaluation lock, `evaluation_lock`), with a row of
+    that phase appended to the task's `toolchain.jsonl` once it is released: how long it was waited
+    for and how long it was held."""
+    asked = time.monotonic()
+    with lock:
+        got = time.monotonic()
+        try:
+            yield
+        finally:
+            held = time.monotonic() - got
+            with open(work / "toolchain.jsonl", "a", encoding="utf-8") as f:
+                f.write(json.dumps({"phase": phase, "wait": round(got - asked, 3), "held": round(held, 3)}) + "\n")
 
 
 def _located(out: str, own: set[str], namespaces: tuple[str, ...], generated: dict[str, Path]) -> tuple[list[str], list[str], list[str]]:
@@ -295,8 +329,11 @@ def _located(out: str, own: set[str], namespaces: tuple[str, ...], generated: di
     return mine, iface, other
 
 
-def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[str, ...], harness: Path) -> "Verdict | tuple[str, str]":
-    """Build the candidate and run its harness, under the library lock the caller holds. Returns the
+def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[str, ...], harness: Path,
+               register: "Callable[[], None] | None" = None) -> "Verdict | tuple[str, str]":
+    """Build the candidate and run its harness. The build holds the library lock, after `register`
+    has written the registries it builds; the harness run reads no generated file and holds the
+    evaluation lock shared, so it runs beside other gates' evaluations and the reviews. Returns the
     (build, harness) outputs, or the verdict a failure is attributed to:
     - a located error in the candidate's files, or on a line of a generated file (the registry, the
       harness) that names the candidate's declarations, is the candidate's (`BUILD_FAIL`);
@@ -305,34 +342,45 @@ def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[
     - the harness's deadline during the evaluation of the candidate's scenarios goes to
       `harness_failure` (`GATE_TIMEOUT`);
     - a resource failure (a signal the gate did not send, a stack overflow) or a panic is reproduced
-      once in isolation: reproduced, it is the candidate's (`GATE_TIMEOUT`, a panic also in
-      `extras`, a possible Core defect); not reproduced, the isolated run's outputs stand."""
+      once in isolation, holding the evaluation lock exclusive across the build and the run, so
+      that no other evaluation's load is charged to the candidate: reproduced, it is the
+      candidate's (`GATE_TIMEOUT`, a panic also in `extras`, a possible Core defect); not
+      reproduced, the isolated run's outputs stand."""
     lib = paths.LIBRARY
     generated = {**{g: lib / g for g in GENERATED_LIB}, str(harness.resolve()): harness}
     first: dict | None = None
     for trial in (1, 2):
-        try:
-            bcode, out = lean.lake_build(lib, targets)
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
-        (work / "build.log").write_text(out, encoding="utf-8")
-        b = _record(work, "build", bcode, out)
-        if bcode != 0:
-            if b["stop"] in ("deadline", "run_stop", "stop_signal"):
-                return Verdict(INFRA, [f"the build was stopped ({b['stop']}) before evaluation"] + out.splitlines()[:1])
-            if b["stop"] == "resource":
-                if trial == 1:
-                    first = b; continue
-                return Verdict(GATE_TIMEOUT, [f"the build failed twice on a resource limit ({RESOURCE_SIGNALS.get(b['signal'], 'stack overflow')})"])
-            mine, iface, other = _located(out, own, namespaces, generated)
-            if mine or iface:
-                return Verdict("BUILD_FAIL", (mine + [f"the registry does not accept the candidate's declaration: {x}" for x in iface])[:8])
-            return Verdict(INFRA, ["the build failed outside the candidate's files"] + (other or out.splitlines()[-3:])[:6])
-        try:
-            hcode, hout = lean.lean_run(lib, harness)
-        except lean.LeanUnavailable as e:
-            return Verdict(INFRA, [str(e)])
-        h = _record(work, "harness", hcode, hout)
+        with ExitStack() as alone:
+            if trial == 2:
+                alone.enter_context(_timed(work, "evaluation_lock", lean.evaluation_lock(lib, exclusive=True)))
+            with _timed(work, "lock", lean.library_lock(lib)):
+                if register is not None:
+                    register()
+                try:
+                    t0 = time.monotonic()
+                    bcode, out = lean.lake_build(lib, targets)
+                except lean.LeanUnavailable as e:
+                    return Verdict(INFRA, [str(e)])
+            (work / "build.log").write_text(out, encoding="utf-8")
+            b = _record(work, "build", bcode, out, time.monotonic() - t0)
+            if bcode != 0:
+                if b["stop"] in ("deadline", "run_stop", "stop_signal"):
+                    return Verdict(INFRA, [f"the build was stopped ({b['stop']}) before evaluation"] + out.splitlines()[:1])
+                if b["stop"] == "resource":
+                    if trial == 1:
+                        first = b; continue
+                    return Verdict(GATE_TIMEOUT, [f"the build failed twice on a resource limit ({RESOURCE_SIGNALS.get(b['signal'], 'stack overflow')})"])
+                mine, iface, other = _located(out, own, namespaces, generated)
+                if mine or iface:
+                    return Verdict("BUILD_FAIL", (mine + [f"the registry does not accept the candidate's declaration: {x}" for x in iface])[:8])
+                return Verdict(INFRA, ["the build failed outside the candidate's files"] + (other or out.splitlines()[-3:])[:6])
+            with (nullcontext() if trial == 2 else _timed(work, "evaluation_lock", lean.evaluation_lock(lib))):
+                try:
+                    t0 = time.monotonic()
+                    hcode, hout = lean.lean_run(lib, harness)
+                except lean.LeanUnavailable as e:
+                    return Verdict(INFRA, [str(e)])
+            h = _record(work, "harness", hcode, hout, time.monotonic() - t0)
         evaluated = bool(re.search(r"^[A-Z_]+\t", hout, re.M))
         if h["stop"] in ("run_stop", "stop_signal") or (h["stop"] == "deadline" and not evaluated):
             return Verdict(INFRA, [f"the gate harness was stopped ({h['stop']}) before it evaluated the candidate"])
@@ -390,24 +438,23 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if f"namespace {nodeid.rule_namespace(node.id)}" not in rtext or f"namespace {nodeid.witness_namespace(node.id)}" not in wtext:
         return Verdict("SCOPE_VIOLATION", ["namespace must be derived from the node id"])
 
-    # 2. build, and 3. the harness run: one holder of the library lock at a time, so the
-    # registries this gate writes are the ones its build and its run see
+    # 2. build, under the library lock, so the registries this gate writes are the ones its build
+    # sees; and 3. the harness run, over the harness's own registry, beside other evaluations
     only_nodes, only_concepts = task_registry(work)
-    with lean.library_lock(lib):
-        index_sync.write_index(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts,
-                               keep=task_keep(work) | {node.id})
-        harness = work / "gate_harness.lean"
-        reading_json = work / "reading.json"
-        reading_json.write_text(reading.lean_json(), encoding="utf-8")
-        harness.write_text(_harness_source(node.id, reading_json), encoding="utf-8")
-        ran = _toolchain(work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)], {rule_rel, wit_rel},
-                         (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness)
-        if isinstance(ran, Verdict):
-            return ran
-        out, hout = ran
-        details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
-        if lean.sorry_warnings(out):
-            details.append("build reports a declaration that uses sorry")
+    reg = dict(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts,
+               keep=task_keep(work) | {node.id})
+    harness = work / "gate_harness.lean"
+    reading_json = work / "reading.json"
+    reading_json.write_text(reading.lean_json(), encoding="utf-8")
+    harness.write_text(_harness_source(node.id, reading_json, index_sync.registry_source(**reg)), encoding="utf-8")
+    ran = _toolchain(work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)], {rule_rel, wit_rel},
+                     (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness, register=lambda: index_sync.write_index(**reg))
+    if isinstance(ran, Verdict):
+        return ran
+    out, hout = ran
+    details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
+    if lean.sorry_warnings(out):
+        details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
     decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
     if decode:
@@ -453,6 +500,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if sorted(decl["laws"]) != sorted(node["law_refs"]): mism.append(f"laws {decl['laws']} ≠ {node['law_refs']}")
     if decl["binders"] != exp_binders: mism.append(f"binders {decl['binders']} ≠ {exp_binders}")
     if sorted(decl["assumptions"]) != sorted(a.get("id") for a in node.get("assumptions", [])): mism.append("assumptions differ")
+    if sorted(decl["intentions"]) != sorted({a.get("id") for a in node.get("intentions", [])}): mism.append("intentions differ")
     if got_ops != exp_ops: mism.append(f"operationalizations {got_ops} ≠ {exp_ops}")
     node_residues = [ws(r.get("why", "")) for r in node.get("residues", [])]
     decl_residues = [ws(w) for w in decl["residues"]]
@@ -795,16 +843,17 @@ CONCEPT_VERDICTS = ["SCOPE_VIOLATION", "TEST_ADD_ONLY", "BUILD_FAIL", "UNSOUND",
 ALLOWED_CONCEPT_IMPORTS = {"TrafficSpec.Core.Language.Concept"}
 
 
-def _concept_harness_source(cid: str, reading_json_path: Path) -> str:
+def _concept_harness_source(cid: str, reading_json_path: Path, registry: tuple[str, str]) -> str:
+    """The concept's gate harness; `registry` as for a node's."""
     ns, wns = nodeid.concept_namespace(cid), nodeid.concept_witness_namespace(cid)
-    return f'''import TrafficSpec
-import TrafficSpec.Core.Evidence.Adequacy
+    imports, defs = registry
+    return f'''{imports}import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Language.Export
 import TrafficSpec.Core.Evidence.TraceLint
 import {nodeid.concept_module(cid)}
 import {nodeid.concept_witness_module(cid)}
-open TrafficSpec Lean
+{defs}open TrafficSpec Lean
 #print axioms {ns}.concept
 #print axioms {wns}.instances
 #print axioms {wns}.scenarios
@@ -826,6 +875,7 @@ def main : IO Unit := do
     | .formula φ => (Formula.toJson (Concept.expand cs φ)).compress
     | .quantity t => (Term.toJson (Concept.expandTerm cs t)).compress
   IO.println s!"BODY\\t{{bodyJson}}"
+  let tChk ← IO.monoMsNow
   for g in occF c.bodyFormula do IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in Formula.literals c.bodyFormula do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   for id in Concept.onCycle cs do IO.println s!"CYCLE\\t{{id}}"
@@ -834,24 +884,36 @@ def main : IO Unit := do
   let instRules := insts.filterMap (Concept.asRule cs)
   let rules := allRules ++ instRules
   for i in insts do
+    for e in Concept.Instance.defects cs i do IO.println s!"CHECK\\t{{e}}"
+    let regionFormals := ((cs.find? (·.id == i.concept)).map (·.regionFormals)).getD []
     match Concept.asRule cs i with
     | none => IO.println s!"INST\\t{{i.name}}\\tunfilled"
     | some r =>
       IO.println s!"INST\\t{{i.name}}\\tok"
-      for e in Rule.check (rules.map (Concept.expandRule cs)) (Concept.expandRule cs r) do IO.println s!"CHECK\\t{{e}}"
+      for e in Rule.check (rules.map (Concept.expandRule cs)) (Concept.expandRule cs r) regionFormals do IO.println s!"CHECK\\t{{e}}"
+    if let some ci := cs.find? (·.id == i.concept) then
+      for sc in scs.filter (·.rule == i.name) do
+        for e in Concept.regionDefects ci sc.name sc.regions do IO.println s!"CHECK\\t{{e}}"
+  IO.println s!"TIME\\tchecks\\t{{(← IO.monoMsNow) - tChk}}"
   let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  let tLint ← IO.monoMsNow
   for sc in scs' do
     let τ := TraceLint.completeOccupancy sc.trace
     for e in TraceLint.checkTrace τ do IO.println s!"REF\\t{{sc.name}}\\t{{sc.rule}}\\t{{e}}"
     RelCheck.run sc.name τ
     if let some (a, b) := sc.window then
       if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
+  IO.println s!"TIME\\tlint\\t{{(← IO.monoMsNow) - tLint}}"
   for sc in scs' do
+    let tSc ← IO.monoMsNow
     match sc.run rules cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
+    IO.println s!"TIME\\tscenario:{{sc.rule}}/{{sc.name}}\\t{{(← IO.monoMsNow) - tSc}}"
+  let tAdq ← IO.monoMsNow
   for r in instRules do
     for u in Adequacy.unexercised rules r (scs'.filter (·.rule == r.id)) cs do IO.println s!"ADEQ\\t{{r.id}}: {{u}}"
+  IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
   match c.supersedes with
   | none => pure ()
   | some old =>
@@ -912,23 +974,22 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if rec.get("supersedes") and mode == "test":
         return Verdict("TEST_ADD_ONLY", [f"a test run adds concepts and supersedes none; `{rec.get('supersedes')}` keeps its body, the defect is recorded"])
 
-    # 2. build, and 3. the harness run, under the library lock
+    # 2. build, and 3. the harness run, as for a node
     only_nodes, only_concepts = task_registry(work)
-    with lean.library_lock(lib):
-        index_sync.write_index(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}),
-                               keep=task_keep(work) | {cid})
-        harness = work / "gate_harness.lean"
-        reading_json = work / "reading.json"
-        reading_json.write_text(reading.lean_json(), encoding="utf-8")
-        harness.write_text(_concept_harness_source(cid, reading_json), encoding="utf-8")
-        ran = _toolchain(work, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)], {c_rel, w_rel},
-                         (nodeid.concept_namespace(cid) + ".", nodeid.concept_witness_namespace(cid) + "."), harness)
-        if isinstance(ran, Verdict):
-            return ran
-        out, hout = ran
-        details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
-        if lean.sorry_warnings(out):
-            details.append("build reports a declaration that uses sorry")
+    reg = dict(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}),
+               keep=task_keep(work) | {cid})
+    harness = work / "gate_harness.lean"
+    reading_json = work / "reading.json"
+    reading_json.write_text(reading.lean_json(), encoding="utf-8")
+    harness.write_text(_concept_harness_source(cid, reading_json, index_sync.registry_source(**reg)), encoding="utf-8")
+    ran = _toolchain(work, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)], {c_rel, w_rel},
+                     (nodeid.concept_namespace(cid) + ".", nodeid.concept_witness_namespace(cid) + "."), harness, register=lambda: index_sync.write_index(**reg))
+    if isinstance(ran, Verdict):
+        return ran
+    out, hout = ran
+    details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
+    if lean.sorry_warnings(out):
+        details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
     decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
     if decode:
@@ -954,13 +1015,13 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if checks:
         return Verdict("CHECK_FAIL", checks)
 
-    # 4b. anchoring within the body: quantified variables reach a track formal
-    tracks = [a["name"] for a in rec.args() if a.get("sort") == "track"]
-    if tracks:
-        unanchored = unanchored_variables([row[0].split(",") if row and row[0] else [] for row in col("OCC")], tracks)
+    # 4b. anchoring within the body: quantified variables reach a track or region formal (the caller supplies both)
+    roots = [a["name"] for a in rec.args() if a.get("sort") in ("track", "region")]
+    if roots:
+        unanchored = unanchored_variables([row[0].split(",") if row and row[0] else [] for row in col("OCC")], roots)
         if unanchored:
-            return Verdict("UNANCHORED_VARIABLE", [f"in the body, the quantified variable `{v}` shares no atom with a track formal of the "
-                                                   "concept, nor with a variable that does" for v in unanchored])
+            return Verdict("UNANCHORED_VARIABLE", [f"in the body, the quantified variable `{v}` shares no atom with a track or region "
+                                                   "formal of the concept, nor with a variable that does" for v in unanchored])
 
     # 5. declarations
     decl = json.loads(col("DECL")[0][0])

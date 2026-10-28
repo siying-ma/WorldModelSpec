@@ -14,7 +14,7 @@ advisory. You do not edit the concept and you do not propose another.
 ## Inputs (injected below)
 
 - **The contract** — the concept's meaning, and the definition it quotes when it has one.
-- **The record** — the formals (`track`, `literal` with its admissible spellings, `nat`), the
+- **The record** — the formals (`track`, `region`, `literal` with its admissible spellings, `nat`), the
   parameters with their units and meanings, which words of the contract map to which atoms, and
   the readings the coder chose (`narrowings_by_the_coder`).
 - **The rendering** — the body as prose, generated mechanically from the code. This, and not any
@@ -105,6 +105,7 @@ The answer is the argument of `submit_review`, in this schema and nothing more:
                                "nats": {"<nat formal>": <natural number>},
                                "params": {"<parameter>": [<value>, "<unit>"]}},
                   "grounding": {"<track formal>": <track id>},
+                  "regions": {"<region formal>": <region id>},
                   "trace": {"scenes": [ ... ]},
                   "at": <timestamp of a scene, ms>,
                   "extends": "<the id of a challenge to carry over, only for such a divergence>"}],

@@ -35,8 +35,8 @@ class NodeVerdict:
 def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.Law], reading: Reading, defs: list[dict],
                        onto: ontology.Ontology | None = None, blueprint_file: Path | None = None,
                        extra_concepts: list[ConceptRecord] | None = None, extra_nodes: list[Node] | None = None,
-                       extra_validate_nodes: list[Node] | None = None, known_nodes: list[Node] | None = None
-                       ) -> tuple[list[Node], list[ConceptRecord], list[validate_a.Outcome], list[validate_a.ConceptOutcome]]:
+                       extra_validate_nodes: list[Node] | None = None, known_nodes: list[Node] | None = None,
+                       prior_nodes: list[Node] | None = None) -> tuple[list[Node], list[ConceptRecord], list[validate_a.Outcome], list[validate_a.ConceptOutcome]]:
     """Validator A over the concepts and nodes of a blueprint, against everything the run knows:
     its accepted nodes and concepts, its mapping index (for the roles of a law's own words) and its
     mode. The loop and the `validate` command both call this, so a draft is checked by the
@@ -59,7 +59,7 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
     rejected = GapLedger(paths.GAPS_DIR).rejected()
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
-                                   known_nodes=known_nodes, rejected_gaps=rejected)
+                                   known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes)
     return nodes, concepts, outcomes, concept_outcomes
 
 
@@ -124,14 +124,25 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
 def glosses_of(names, onto: ontology.Ontology, run: Run | None = None) -> dict[str, str]:
     """The contract of each id or Lean name: an accessor resolves to its atom as the gate's
     canonical form does (`st_region_geometry_distance` → `st.region_geometry`), a primitive to its
-    `prim.*` row, a concept id to the run's catalogue. The one path every contract a reviewer or a
-    judge is shown goes through."""
+    `prim.*` row, a concept id to the run's catalogue, a declared-fact id (`asm.*`, `int.*`) to its
+    meaning in the run's reading. The one path every contract a reviewer or a judge is shown goes
+    through. A declared-fact id the reading does not mean is never left out: it breaks the invariant
+    that every record is validated against the catalogue, and stops the run."""
     from ..lean import surface
+    from ..model.reading import DECLARED_ID
+    from ..store.jsonl import DataIntegrityError
     atom_ids = set(onto.atom_ids)
     concepts = run.all_concepts() if run is not None else {}
+    declarations = Reading(run.reading_file).declarations() if run is not None else {}
     out: dict[str, str] = {}
     for name in names:
         name = str(name).split("=")[0]
+        if DECLARED_ID.match(name):
+            if not str((declarations.get(name) or {}).get("meaning") or "").strip():
+                raise DataIntegrityError(run.reading_file if run is not None else Path("reading"), None,
+                                         f"the declared id `{name}` has no meaning in the run's reading")
+            out[name] = " ".join(declarations[name]["meaning"].split())
+            continue
         if name in concepts:
             out[name] = " ".join(str(concepts[name].get("contract", "")).split())
             continue
@@ -154,6 +165,7 @@ def glosses_for(node: Node, onto: ontology.Ontology, run: Run) -> dict[str, str]
         if cid in node.claimed_atoms():
             ids.add(cid)
             ids |= set(rec.get("reads", []))
+    ids |= {d.get("id") for d in node.get("assumptions", []) + node.get("intentions", []) if d.get("id")}
     out = glosses_of(sorted(ids), onto, run)
     for c in node.compositions():
         out[c.get("rule", "")] = "another rule of the library; its verdict, or whether it applies, is read here"

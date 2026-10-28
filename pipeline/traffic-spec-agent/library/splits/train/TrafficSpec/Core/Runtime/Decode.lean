@@ -16,10 +16,14 @@
     { "scenes": [ { "t": <ms>, "subject": <track>?, "users": [...], "structures": [...],
                     "devices": [...], "occupancy_observed": true | [track...]?, "occupies": [[track, region]...]?,
                     "relations": [...]?, "env": {...}?, "assumptions": [[id, bool]...]?,
+                    "intents": [{"vehicle": <track>, "target": <region>, "source": <string>,
+                                 "values": [[id, bool]...]}...]?,
                     "links": [[old, new]...]? } ] }
   Field names follow the structures of World.lean in snake_case; see the decoders below. A
   device's `governs` absent or null is not observed (`governsObserved` false, so whether it
-  governs a region is unknown); `[]` is observed and governs nothing.
+  governs a region is unknown); `[]` is observed and governs nothing. An intent record has
+  exactly its four keys, and a non-empty `source`, which names where the declaration comes from
+  and is not kept in the scene.
 
   A formula, a term and an argument decode strictly from the JSON Export.lean writes: the
   decoder is that encoder's inverse, so a decoded formula exported again is the canonical form.
@@ -255,6 +259,18 @@ def relation (path : String) (j : Json) : D MeasuredRelation := do
          contact := ← opt j path "contact" bool
          visible := ← opt j path "visible" bool }
 
+def declaredIntent (path : String) (j : Json) : D DeclaredIntent := do
+  let want := ["vehicle", "target", "source", "values"]
+  let ks : List String := match j with | .obj kvs => kvs.toArray.toList.map (·.1) | _ => []
+  if !(ks.length == want.length && want.all ks.contains) then
+    fail path s!"an intent record has exactly the keys {want}; found {ks}"
+  if (← req j path "source" str).isEmpty then fail (path ++ ".source") "empty"
+  pure { vehicle := ← req j path "vehicle" nat
+         target := ← req j path "target" nat
+         values := ← req j path "values" fun p v => do
+           let xs ← arr p v
+           (xs.zip (List.range xs.length)).mapM fun (x, i) => pair str bool s!"{p}[{i}]" x }
+
 def scene (path : String) (j : Json) : D Scene := do
   let users ← list j path "users" roadUser
   pure { t := ← req j path "t" int
@@ -272,6 +288,7 @@ def scene (path : String) (j : Json) : D Scene := do
          relations := ← list j path "relations" relation
          env := (← opt j path "env" env).getD {}
          assumptions := ← list j path "assumptions" (pair str bool)
+         intents := ← list j path "intents" declaredIntent
          links := ← list j path "links" (pair nat nat) }
 
 def trace (j : Json) : D Trace := do
@@ -482,6 +499,9 @@ mutual
     if keyed ks ["cmp", "lhs", "rhs"] then
       return .cmp (← need path j "lhs" >>= term (at_ "lhs")) (← need path j "cmp" >>= cmpOp (at_ "cmp")) (← need path j "rhs" >>= term (at_ "rhs"))
     if keyed ks ["asm"] then return .asm (← s "asm")
+    if keyed ks ["int", "args"] then
+      let ab ← need path j "args" >>= exactly 2 arg (at_ "args") >>= pair2 (at_ "args")
+      return .intent (← s "int") ab.1 ab.2
     if keyed ks ["same"] then
       let ab ← need path j "same" >>= exactly 2 arg (at_ "same") >>= pair2 (at_ "same")
       return .same ab.1 ab.2

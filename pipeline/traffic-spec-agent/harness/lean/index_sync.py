@@ -61,14 +61,39 @@ def set_inactive(ids: set[str], run_id: str) -> bool:
     return True
 
 
-def write_index(only_nodes: list[str] | None = None, only_concepts: list[str] | None = None, keep: set[str] | frozenset = frozenset()) -> None:
-    """The registries over the files on disk; with `only_*`, over those ids alone (a gate run
-    while other sessions are coding registers the accepted nodes and its own, not theirs). An
-    inactive record is registered by no build, except one `keep` names (a gate's own subject, and
-    what it calls, when the subject is a fenced record checked again)."""
+def registered(only_nodes: list[str] | None = None, only_concepts: list[str] | None = None,
+               keep: set[str] | frozenset = frozenset()) -> tuple[list[str], list[str]]:
+    """The rule and concept ids a registry carries, in file order: the files on disk, or with
+    `only_*` those ids alone (a gate run while other sessions are coding registers the accepted
+    nodes and its own, not theirs). An inactive record is registered by none, except one `keep`
+    names (a gate's own subject, and what it calls, when the subject is a fenced record checked
+    again)."""
     off = inactive() - set(keep)
     ids = [i for i in node_ids() if i not in off and (only_nodes is None or i in set(only_nodes))]
     cids = [c for c in concept_ids() if c not in off and (only_concepts is None or c in set(only_concepts))]
+    return ids, cids
+
+
+def registry_source(only_nodes: list[str] | None = None, only_concepts: list[str] | None = None,
+                    keep: set[str] | frozenset = frozenset()) -> tuple[str, str]:
+    """A program's own registry, for a Lean program run while other sessions rebuild the generated
+    one: (the import lines of Core and of every registered rule and concept module, the definitions
+    of `TrafficSpec.allRules` and `TrafficSpec.allConcepts` over them). The ids are those
+    `registered` selects, so the program sees what a build of the same registry would register."""
+    ids, cids = registered(only_nodes, only_concepts, keep)
+    imports = "import TrafficSpec.Core\n" + "".join(f"import {nodeid.rule_module(i)}\n" for i in ids) + \
+        "".join(f"import {nodeid.concept_module(c)}\n" for c in cids)
+    defs = ("namespace TrafficSpec\n"
+            f"def allRules : List Rule := {_lean_list([f'{nodeid.rule_namespace(i)}.rule' for i in ids])}\n"
+            f"def allConcepts : List Concept := {_lean_list([f'{nodeid.concept_namespace(c)}.concept' for c in cids])}\n"
+            "end TrafficSpec\n")
+    return imports, defs
+
+
+def write_index(only_nodes: list[str] | None = None, only_concepts: list[str] | None = None, keep: set[str] | frozenset = frozenset()) -> None:
+    """The registries over the ids `registered` selects."""
+    off = inactive() - set(keep)
+    ids, cids = registered(only_nodes, only_concepts, keep)
     imports = [f"import {nodeid.rule_module(i)}" for i in ids] + [f"import {nodeid.concept_module(c)}" for c in cids]
     paths.INDEX_FILE.write_text(
         "/-\n  TrafficSpec.Index — generated registry of formalized rules and concepts (harness index_sync);\n  do not edit.\n-/\n"

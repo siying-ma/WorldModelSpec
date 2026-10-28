@@ -62,9 +62,10 @@ def snapshot_library(snapshot: str) -> list[Path]:
 
 def archive_proposals(snapshot: str) -> dict[str, int]:
     """A fresh library starts from a reading without the previous run's unreviewed proposals: every
-    `params` entry still marked `proposed` is moved out of each reading in `paths.READINGS` into
-    `results/<snapshot>/reading_proposals.json`, so a planner is shown only what the operator wrote
-    or reviewed. Returns the count removed per reading."""
+    `params` and `declarations` entry still marked `proposed` is moved out of each reading in
+    `paths.READINGS` into `results/<snapshot>/reading_proposals.json` (a declaration under
+    `<reading>#declarations`), so a planner is shown only what the operator wrote or reviewed.
+    Returns the count removed per reading."""
     import datetime
     dest = paths.RESULTS / moved_name(snapshot) / "reading_proposals.json"
     archive = json.loads(dest.read_text(encoding="utf-8")) if dest.exists() else {}
@@ -73,12 +74,20 @@ def archive_proposals(snapshot: str) -> dict[str, int]:
         data = json.loads(f.read_text(encoding="utf-8"))
         keep = [x for x in data.get("params", []) if not x.get("proposed")]
         gone = [x for x in data.get("params", []) if x.get("proposed")]
-        if not gone:
+        keep_d = [x for x in data.get("declarations", []) if not x.get("proposed")]
+        gone_d = [x for x in data.get("declarations", []) if x.get("proposed")]
+        if not gone and not gone_d:
             continue
         data["params"] = keep
+        if "declarations" in data:
+            data["declarations"] = keep_d
         f.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        archive.setdefault(f.name, []).extend([{**x, "archived": datetime.datetime.now().strftime("%Y-%m-%d")} for x in gone])
-        removed[f.name] = len(gone)
+        day = datetime.datetime.now().strftime("%Y-%m-%d")
+        if gone:
+            archive.setdefault(f.name, []).extend([{**x, "archived": day} for x in gone])
+        if gone_d:
+            archive.setdefault(f"{f.name}#declarations", []).extend([{**x, "archived": day} for x in gone_d])
+        removed[f.name] = len(gone) + len(gone_d)
     if removed:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(archive, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -234,16 +243,20 @@ class Cli:
                 reading_obj.pending_ids.add(aid)
         # the other plan batches of the same iteration that already exist: their nodes may be composed and their
         # concepts called, as the loop's merged validation will see them
-        sib_nodes, sib_concepts = [], []
+        sib_nodes, sib_concepts, prior_nodes = [], [], []
         if plan_dir.name.startswith("batch-"):
             for d in sorted(plan_dir.parent.glob("batch-*")):
                 if d != plan_dir and (d / "blueprint.jsonl").exists():
                     try:
-                        sib_nodes += blueprint.load(d / "blueprint.jsonl"); sib_concepts += blueprint.load_concepts(d / "blueprint.jsonl")
+                        got = blueprint.load(d / "blueprint.jsonl")
+                        sib_nodes += got; sib_concepts += blueprint.load_concepts(d / "blueprint.jsonl")
+                        if d.name < plan_dir.name:       # the loop validates the batches in this order
+                            prior_nodes += got
                     except ValueError:
                         pass
         _nodes, _concepts, outcomes, c_outcomes = validate_phase.validate_a_for_run(run, plan_dir, by_id, reading_obj, defs, onto=onto, blueprint_file=bp,
-                                                                                    extra_concepts=sib_concepts or None, known_nodes=sib_nodes or None)
+                                                                                    extra_concepts=sib_concepts or None, known_nodes=sib_nodes or None,
+                                                                                    prior_nodes=prior_nodes or None)
         for o in c_outcomes:
             print(f"{o.kind:7s} concept {o.concept.id}")
             for r in o.reasons: print("        ", r)

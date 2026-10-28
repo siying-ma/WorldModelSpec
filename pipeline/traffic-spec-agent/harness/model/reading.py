@@ -6,7 +6,12 @@ Format (JSON; `Decode.reading` in Core decodes the same fields):
  "params": [{"name": "p.<name>", "value": 1.5, "unit": "s", "convention": "<where the value comes from>"}],
    (a param whose value equals a figure a law of the corpus states also carries "figure_review": "<why it is a
     convention, not that figure>"; the doctor lists every such param until it does)
- "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...], ...}]}
+ "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...], ...}],
+ "declarations": [{"id": "asm.<name>" | "int.<name>", "meaning": "<what the id states>", "proposed": "<origin>"?}]}
+A declaration is a fact a trace supplies and no camera observes, an assumption (`asm.*`) or a declared
+intention (`int.*`): one catalogue for both, so an id has one meaning and an adapter can read every id
+it must supply. A plan proposes an id with its meaning; the harness enters it `proposed` when the node
+is coded, and the operator reviews it by removing the marker.
 An aggregate is admitted per run by the aggregate gate (`harness/phases/aggregate.py`) into
 results/<run>/reading.json, keyed by its legal source; every class it lists neither as included nor
 as unresolved is excluded. The operator's base reading declares parameters, never aggregates.
@@ -14,6 +19,7 @@ Units: m, s, m/s, m/s2, deg, deg/s, ratio, count.
 """
 from __future__ import annotations
 import json
+import re
 from pathlib import Path
 
 def _spellings() -> list[str]:
@@ -25,10 +31,12 @@ TEMPLATE = {
     "run": "<run id>",
     "params": [],
     "aggregates": [],
+    "declarations": [],
     "_fields": {
         "params": "name (p.<name>), value (number), unit (one of Core's spellings: " + "|".join(_spellings()) + "), convention (text), "
                   "figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
         "aggregates": "admitted by the run's aggregate gate, never written by hand: id (<definition id>::<term>), included and unresolved ru.* classes",
+        "declarations": "id (asm.<name> or int.<name>), meaning (what the id states); proposed (the run, iteration and node that proposed it, until reviewed)",
     },
 }
 
@@ -71,7 +79,28 @@ def reading_defects(data) -> list[str]:
         for k in ("included", "unresolved"):
             if not isinstance(a.get(k, []), list) or not all(isinstance(x, str) for x in a.get(k, [])):
                 errs.append(f"aggregates[{i}] `{a['id']}`: `{k}` is not a list of class ids")
+    decls = data.get("declarations", [])
+    if not isinstance(decls, list):
+        return errs + ["`declarations` is not a list"]
+    seen_ids = set()
+    for i, d in enumerate(decls):
+        if not isinstance(d, dict) or not isinstance(d.get("id"), str) or not DECLARED_ID.match(d["id"]):
+            errs.append(f"declarations[{i}]: the id is not `asm.<name>` or `int.<name>`"); continue
+        if not isinstance(d.get("meaning"), str) or not d["meaning"].strip():
+            errs.append(f"declarations[{i}] `{d['id']}`: no meaning")
+        if d["id"] in seen_ids:
+            errs.append(f"declarations[{i}] `{d['id']}`: the id is given twice")
+        seen_ids.add(d["id"])
     return errs
+
+
+#: A declared-fact id: an assumption or a declared intention, `asm.` or `int.` and a snake-case name.
+DECLARED_ID = re.compile(r"^(asm|int)\.[a-z0-9_]+$")
+
+
+def same_meaning(a, b) -> bool:
+    """Two meanings are the same when they are equal up to whitespace."""
+    return isinstance(a, str) and isinstance(b, str) and " ".join(a.split()) == " ".join(b.split())
 
 
 class Reading:
@@ -116,6 +145,32 @@ class Reading:
                 continue
             data.setdefault("params", []).append(entry); have[pr["name"]] = entry; added.append(entry)
         if added:                                     # replaced whole, so a stop midway leaves the previous reading
+            from ..store import jsonl
+            jsonl.write_atomic(path, json.dumps(data, ensure_ascii=False, indent=1) + "\n")
+        return added
+
+    def declarations(self) -> dict[str, dict]:
+        """The catalogue of declared-fact ids, `asm.*` and `int.*`, by id."""
+        return {d["id"]: d for d in self.data.get("declarations", []) if isinstance(d, dict) and d.get("id")}
+
+    @staticmethod
+    def add_declarations(path: Path, decls: list[dict], origin: str) -> list[dict]:
+        """Enter declared-fact ids into the reading at `path`: an id it lacks becomes a `declarations`
+        entry with its meaning, marked `proposed: <origin>` until the operator reviews it. An id it
+        has with the same meaning is left as it is; one with another meaning is a broken invariant
+        (validation gives every record its catalogue's meaning) and raises. Returns the entries added."""
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"params": [], "aggregates": []}
+        have = {d.get("id"): d for d in data.get("declarations", []) if isinstance(d, dict)}
+        added = []
+        for d in decls:
+            old = have.get(d["id"])
+            if old is not None:
+                if same_meaning(old.get("meaning"), d.get("meaning")):
+                    continue
+                raise ValueError(f"declaration `{d['id']}`: the reading means {old.get('meaning')!r}, a record {d.get('meaning')!r}")
+            entry = {"id": d["id"], "meaning": " ".join(str(d.get("meaning", "")).split()), "proposed": origin}
+            data.setdefault("declarations", []).append(entry); have[d["id"]] = entry; added.append(entry)
+        if added:
             from ..store import jsonl
             jsonl.write_atomic(path, json.dumps(data, ensure_ascii=False, indent=1) + "\n")
         return added

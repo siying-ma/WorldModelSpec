@@ -109,14 +109,17 @@ words and the contracts alone. You do not edit the rule.
    measured over a window, a measure or a quantity that cannot reach the case the words name at any
    such value — the situation turns on how the rule is built, and it is a divergence. Wherever a
    divergence's situation or an advisory turns on a parameter's value, name the parameter by its id.
-   The rule is a check of conduct on a trace: a word with no observable counterpart (an intention,
-   a perception or a knowledge, a purpose, the legal status of a feature in the scene, who or what
-   controls a road user's motion) is read through the conduct or feature it refers to, and the record
-   discloses each such reading as an `observable_reading`. A situation that turns only on what the
-   subject intended, perceived or knew apart from that conduct, on whether a feature present in the
-   scene is official, or on whether a person, an automated system or no one controls a road user in
-   motion, is an advisory, never a divergence. A reading of that conduct that misses the duty or
-   forbids conduct the words permit is a divergence.
+   The rule is a check of conduct on a trace: a word with no observable counterpart (an imminent
+   movement, a perception or a knowledge, a purpose, the legal status of a feature in the scene, who
+   or what controls a road user's motion) is read through the conduct or feature it refers to, and
+   the record discloses each such reading as an `observable_reading`. Words that a road user intends,
+   or is preparing, to turn are read from the intention the trace declares (`intent`), a fact of the
+   trace like any other: a situation that turns on a declared intention is a divergence where the
+   rule decides it otherwise than the words. A situation that turns only on what the subject
+   intended apart from what the trace declares, on what it perceived or knew apart from that
+   conduct, on whether a feature present in the scene is official, or on whether a person, an
+   automated system or no one controls a road user in motion, is an advisory, never a divergence. A
+   reading of that conduct that misses the duty or forbids conduct the words permit is a divergence.
 9. **Surrogates.** When the record marks the operationalization `surrogate`, the duty is the
    standard itself and the rule fixes the magnitude the words leave open, which question 8
    governs. A surrogate's divergence turns on the law's other words — who and when the duty

@@ -228,8 +228,11 @@ def concept_language() -> str:
             + _structure(c, "Concept where") + "\n" + _structure(c, "Instance") + "```\n"
             "A rule calls a concept by its Lean name (the id with `.` → `_`): `.derived \"drv_<family>_<name>\" args params`\n"
             "for a formula concept, `Term.quantity \"drv_<family>_<name>\" args params` for a quantity; `args` fill the\n"
-            "formals in order (a track formal takes a variable, a literal formal a spelling among its values, a nat a\n"
-            "count), `params` fill the formal parameters in order with constant terms (`.param \"p.…\"` of the reading,\n"
+            "formals in order (a track formal takes a variable bound to a road user, a region formal a variable bound\n"
+            "to a region — the one the caller singles out, bound by its own region quantifier — a literal formal a\n"
+            "spelling among its values, a nat a count; each variable's innermost binding decides its sort, and the\n"
+            "gate checks every call against these sorts), `params` fill the formal parameters in order with constant\n"
+            "terms (`.param \"p.…\"` of the reading,\n"
             "or a declared literal). Inside a concept's body every `.var` is a formal or bound in the body and every\n"
             "`.param` is a formal parameter: a body never names a reading parameter. The call is expanded before\n"
             "evaluation, so its atoms count as the caller's.\n")
@@ -238,7 +241,7 @@ def concept_language() -> str:
 def concepts_table(accepted: dict[str, dict]) -> str:
     """The catalogue of accepted concepts: what a plan may reuse and a rule may call."""
     if not accepted:
-        return "### Concept catalogue\n(no concept accepted yet: a manoeuvre, state or configuration a span needs is proposed as a concept record)\n"
+        return "### Concept catalogue\n(no concept accepted yet: a manoeuvre, a state of motion or a relation over time a span needs is proposed as a concept record)\n"
     out = ["### Concept catalogue (accepted concepts; call by Lean name = id with `.` → `_`)",
            "| id | kind | contract | definition | args | params | reads | calls | planned users | accepted callers |",
            "|---|---|---|---|---|---|---|---|---|---|"]
@@ -344,7 +347,7 @@ _JSON_OF_TYPE = {"Formula": "formula", "Term": "term", "Arg": "argument", "List 
                  "List Term": "[term, …]", "String": "string", "Nat": "natural number", "Measure": '"time" | "path"',
                  "CmpOp": '"lt" | "le" | "eq" | "ge" | "gt"', "AggOp": '"min" | "max" | "median" | "count"',
                  "Q": '{"num": integer, "den": positive integer}', "PUnit'": "a unit spelling below", "ParamName": "string",
-                 "AsmId": "string"}
+                 "AsmId": "string", "IntId": "string"}
 #: Constructors a case may not use; `derived` and `quantity` are admitted for primitives only.
 CASE_BANNED = {"param", "asm", "rule", "ruleApplies"}
 
@@ -476,6 +479,9 @@ def case_language() -> str:
             "Not admitted in a case: a reading parameter (`param`), an assumption (`asm`), another rule (`rule`, `rule_applies`),\n"
             "a concept (a `derived` or `quantity` whose name is not `prim_…`), a division except by a non-zero literal, and\n"
             "`ru_aggregate`: a case names a road user's concrete classes.\n\n"
+            "A declared intention (`int`) is a fact of the trace a case may state: its id is one the run's declarations\n"
+            "catalogue (a case naming another is not admitted), its arguments a road user and a region of the case, and the\n"
+            "judges are shown the id's meaning.\n\n"
             "A divergence that carries a case adds three fields:\n"
             "- `case`: the formula, true at `at` on the trace, that states the facts the law's verdict turns on;\n"
             "- `entities`: `{\"<name>\": {\"kind\": \"track\" | \"region\" | \"device\", \"id\": natural number}}`, the regions,\n"
@@ -659,10 +665,11 @@ _RECORDS = {"scene": "scene", "roadUser": "user (scene.users[])", "kin": "kin (u
             "structure'": "structure (scene.structures[])", "laneInfo": "lane (structure.lane)",
             "device": "device (scene.devices[])", "conditions": "conditions (device.conditions)",
             "timeWindow": "time window (conditions.windows[])", "env": "env (scene.env)",
-            "civilTime": "civil time (env.civil_time)", "relation": "relation (scene.relations[])"}
+            "civilTime": "civil time (env.civil_time)", "relation": "relation (scene.relations[])",
+            "declaredIntent": "intent (scene.intents[])"}
 _SUB = {"roadUser": "user", "kin": "kin", "signals": "sig", "posture": "posture", "warningLamp": "warning lamp",
         "structure'": "structure", "laneInfo": "lane", "device": "device", "conditions": "conditions",
-        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation",
+        "timeWindow": "time window", "env": "env", "civilTime": "civil time", "relation": "relation", "declaredIntent": "intent",
         "marking": "[marking type, marking colour]"}
 _PRIM = {"vec": "[x, y]", "num": "number", "bool": "bool", "nat": "nat", "int": "int", "str": "string"}
 
@@ -670,6 +677,8 @@ _PRIM = {"vec": "[x, y]", "num": "number", "bool": "bool", "nat": "nat", "int": 
 def _decoder_type(tok: str, key: str) -> str:
     if key == "extent":
         return "[half_length, half_width, half_height]"
+    if key == "values":
+        return "[[int.<name>, bool], ...]"
     if tok in _PRIM:
         return _PRIM[tok]
     if tok in _SUB:

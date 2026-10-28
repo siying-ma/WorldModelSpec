@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..agents import render, session
-from ..lean import lean, render_formula, surface
+from ..lean import index_sync, lean, render_formula, surface
 from ..lean.surface import _decode_source, decoder_fields, decoder_keys, read_part, trace_schema, unread_keys
 from ..model import corpus, nodeid, ontology
 from ..model.blueprint import Node, span_offsets
@@ -48,6 +48,7 @@ from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..store.state import Run
 from . import validate as validate_phase
+from .code import concept_dir, node_dir
 
 PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
                             "case_language", "case_vocabulary", "not_atoms", "obligations", "max_divergences", "review_checks",
@@ -552,7 +553,29 @@ class HarnessFailure(RuntimeError):
     """The certificate program did not run, or its output breaks the protocol."""
 
 
-def _cert_source(node_id: str, reading_json: Path, items: list[tuple[int, Path, Path, dict[str, int]]]) -> str:
+
+def _registry(run: Run | None, subject: str, task: Path | None) -> tuple[str, str]:
+    """A review program's own registry (`index_sync.registry_source`), so that a program run beside
+    other sessions' gates reads no generated file they rewrite: the ids the gate of `task`
+    registered (its `registry.json`), or, with no such file, the run's accepted records, or, with no
+    run (an offline check), every active record on disk; with `subject` itself registered."""
+    from ..checks import gate
+    if task is not None and (task / "registry.json").exists():
+        nodes, concepts = gate.task_registry(task)
+        keep = gate.task_keep(task)
+    elif run is not None:
+        nodes, concepts, keep = sorted(run.all_nodes()), sorted(run.all_concepts()), set()
+    else:
+        nodes, concepts, keep = None, None, set()
+    if nodeid.is_concept_id(subject):
+        concepts = None if concepts is None else sorted(set(concepts) | {subject})
+    else:
+        nodes = None if nodes is None else sorted(set(nodes) | {subject})
+    return index_sync.registry_source(nodes, concepts, keep | {subject})
+
+
+def _cert_source(node_id: str, reading_json: Path, items: list[tuple[int, Path, Path, dict[str, int]]],
+                 registry: tuple[str, str]) -> str:
     """A Lean program that prints, for each divergence, `CERT\\t<json>`: `Certificate.record` of its
     trace and case for the node's rule among the library's rules (concepts expanded), under the run's
     reading, after the check that the trace supplies no relation Core computes from the scene
@@ -562,9 +585,9 @@ def _cert_source(node_id: str, reading_json: Path, items: list[tuple[int, Path, 
         f'({k}, {json.dumps(str(t.resolve()))}, {json.dumps(str(c.resolve()))}, [{", ".join(f"({json.dumps(b)}, {g})" for b, g in gr.items())}])'
         for k, t, c, gr in items)
     from ..lean import relations
-    return f'''import TrafficSpec
-import {nodeid.rule_module(node_id)}
-open TrafficSpec Lean
+    imports, defs = registry
+    return f'''{imports}import {nodeid.rule_module(node_id)}
+{defs}open TrafficSpec Lean
 {relations.lean_defs()}
 def main : IO UInt32 := do
   let r := {rns}.rule
@@ -640,6 +663,18 @@ def strip_computed_relations(trace: dict, fields: list) -> dict:
     return out
 
 
+def undeclared_case_errors(recs: dict[int, dict], catalogue: dict[str, dict]) -> None:
+    """A certified case that names a declared intention the run's catalogue does not hold is not
+    admitted: its judges could not be told what the id means. The defect joins the case's own
+    errors, which return it to the reviewer."""
+    for c in recs.values():
+        unknown = [i for i in c.get("case_declarations") or [] if i not in catalogue]
+        if unknown:
+            c["case_check_errors"] = (c.get("case_check_errors") or []) + [
+                f"the case names the declared intention `{i}`, which is in no catalogue of the run: a case states only intentions "
+                "the run's declarations give a meaning" for i in unknown]
+
+
 def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir: Path, saved: bool = False) -> dict[int, dict]:
     """Run the certificate program on every certifiable divergence; their records by number. With
     `saved` (a recorded obligation's trace, replayed), the supplied relations Core computes are not
@@ -659,12 +694,15 @@ def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir:
     reading_json = out_dir / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
     prog = out_dir / "certificate.lean"
-    prog.write_text(_cert_source(n.id, reading_json, items), encoding="utf-8")
-    code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
+    registry = _registry(run, n.id, None if run is None else node_dir(run, n.id))
+    prog.write_text(_cert_source(n.id, reading_json, items, registry), encoding="utf-8")
+    with lean.evaluation_lock(paths.LIBRARY):
+        code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
     (out_dir / "certificate.out").write_text(out, encoding="utf-8")
     if not ok:
         raise HarnessFailure(f"the certificate program did not run: {out[-600:]}")
     recs = parse_cert(out, set(divs))
+    undeclared_case_errors(recs, reading.declarations() if hasattr(reading, "declarations") else {})
     if saved:
         strip = {k: c for k, c in recs.items() if c.get("relation_fields")}
         if strip:
@@ -674,7 +712,7 @@ def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir:
                 recs[k] = {**again[k], "relations_stripped": c["relation_errors"]}
             divs = {k: d for k, d in divs.items() if k not in strip}     # the stripped ones were diagnosed on their own run
     try:
-        _diagnose(n, divs, {k: recs[k] for k in divs}, reading_json, out_dir / "diagnosis")
+        _diagnose(n, divs, {k: recs[k] for k in divs}, reading_json, out_dir / "diagnosis", registry)
     except HarnessFailure as e:                              # an aid only: the certificate stands without it
         for c in recs.values():
             if (c.get("case_value") or {}).get("value") not in (None, "true"):
@@ -689,7 +727,8 @@ def _conjuncts(f) -> list:
     return [f]
 
 
-def _diagnose(n: Node, divs: dict[int, dict], recs: dict[int, dict], reading_json: Path, out_dir: Path) -> None:
+def _diagnose(n: Node, divs: dict[int, dict], recs: dict[int, dict], reading_json: Path, out_dir: Path,
+              registry: tuple[str, str]) -> None:
     """For every case that is evaluated but not true at `at`, which of its conjuncts is not, and,
     within a conjunct over every road user, which fact fails for which user: each part is run as a
     case of its own, by the same certificate program. Recorded on the record as `diagnosis`."""
@@ -722,8 +761,9 @@ def _diagnose(n: Node, divs: dict[int, dict], recs: dict[int, dict], reading_jso
         cf.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
         items.append((idx + 1, t, cf, {b: int(x) for b, x in divs[k]["grounding"].items()}))
     prog = out_dir / "certificate.lean"
-    prog.write_text(_cert_source(n.id, reading_json, items), encoding="utf-8")
-    code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
+    prog.write_text(_cert_source(n.id, reading_json, items, registry), encoding="utf-8")
+    with lean.evaluation_lock(paths.LIBRARY):
+        code, out = lean.lean_run(paths.LIBRARY, prog); ok = code == 0
     (out_dir / "certificate.out").write_text(out, encoding="utf-8")
     if not ok:
         raise HarnessFailure(f"the certificate program did not run on the case's parts: {out[-600:]}")
@@ -967,8 +1007,9 @@ def render_case(canonical, entities: dict, at: int, grounding: dict[str, int], g
             + render_formula.formula(canonical, glosses) + "\n\n" + render_formula.timeline(canonical, at, {}, times))
 
 
-def _case_glosses(onto: ontology.Ontology, case_atoms: list[str]) -> dict[str, str]:
-    return validate_phase.glosses_of(case_atoms, onto)
+def _case_glosses(onto: ontology.Ontology, case_atoms: list[str], run: Run | None = None,
+                  declared: list[str] | None = None) -> dict[str, str]:
+    return validate_phase.glosses_of(list(case_atoms) + list(declared or []), onto, run)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1648,7 +1689,7 @@ def judge_divergence(run: Run, n: Node, ctx: Context, onto: ontology.Ontology, d
     extended trace); a new case starts its own. Raises `Deferred` when a judge's answer stays invalid."""
     binders = [b["name"] for b in n.get("binders", [])]
     canon = canonical_case(d, c.get("canonical_case"), binders)
-    glosses_case = _case_glosses(onto, c.get("case_atoms") or [])
+    glosses_case = _case_glosses(onto, c.get("case_atoms") or [], run, c.get("case_declarations") or [])
     times = [sc.get("t") for sc in ((d.get("trace") or {}).get("scenes") or []) if isinstance(sc, dict) and isinstance(sc.get("t"), int)]
     rendered = render_case(canon["case"], canon["entities"], d.get("at"), canon["grounding"], glosses_case, times)
     cid = case_id(ctx.law, d, canon)
@@ -1883,14 +1924,15 @@ def computed_relation_fields(traces: list) -> list[list]:
                 f.write_text(json.dumps(traces[i], ensure_ascii=False), encoding="utf-8")
                 rows.append(f"({i}, {json.dumps(str(f))})")
             prog = Path(t) / "computed.lean"
-            prog.write_text("import TrafficSpec\nopen TrafficSpec Lean\n" + relations.lean_defs() + f"""
+            prog.write_text("import TrafficSpec.Core\nopen TrafficSpec Lean\n" + relations.lean_defs() + f"""
 def main : IO Unit := do
   for (k, p) in ([{", ".join(rows)}] : List (Nat × String)) do
     match Decode.parse Decode.trace (← IO.FS.readFile p) with
     | .ok τ => RelCheck.run (toString k) τ
     | .error _ => pure ()
 """, encoding="utf-8")
-            code, text = lean.lean_run(paths.LIBRARY, prog)
+            with lean.evaluation_lock(paths.LIBRARY):
+                code, text = lean.lean_run(paths.LIBRARY, prog)
             if code != 0:
                 raise HarnessFailure(f"the relation check did not run: {text[-400:]}")
         found: dict[int, list] = {i: [] for i in todo}
@@ -1973,20 +2015,22 @@ def node_extension_defects(prior: dict, d: dict, c: dict, binders: list[str]) ->
 
 def concept_extension_defects(old: dict, d: dict, rec) -> list[str]:
     """Why a concept divergence that `extends` a recorded challenge does not continue it: its trace
-    does not extend the recorded trace; a recorded formal (a track, a literal, a nat, a parameter)
+    does not extend the recorded trace; a recorded formal (a track, a region, a literal, a nat, a parameter)
     keeps no value under a formal of the same sort — the same name, or one formal the successor
     renamed it to, holding the same value; or its instant, its contract words or its claimed
     verdict or interval changed. Only a formal the recorded challenge did not have is new."""
     out = trace_extension_defects(old.get("trace") or {}, d.get("trace") or {})
     sorts = {a["name"]: a.get("sort") for a in rec.args()} | {p["name"]: "param" for p in rec.params()}
     oi, ni = old.get("instance") or {}, d.get("instance") or {}
-    def values(inst: dict, g: dict) -> dict[str, tuple[str, str]]:
+    def values(inst: dict, g: dict, regions: dict) -> dict[str, tuple[str, str]]:
         v = {f: ("track", json.dumps(t)) for f, t in (g or {}).items()}
+        v |= {f: ("region", json.dumps(r)) for f, r in (regions or {}).items()}
         v |= {f: ("literal", json.dumps(x)) for f, x in (inst.get("literals") or {}).items()}
         v |= {f: ("nat", json.dumps(x)) for f, x in (inst.get("nats") or {}).items()}
         v |= {f: ("param", json.dumps(x)) for f, x in (inst.get("params") or {}).items()}
         return v
-    was, now = values(oi, old.get("grounding") or {}), values(ni, d.get("grounding") or {})
+    was = values(oi, old.get("grounding") or {}, old.get("regions") or {})
+    now = values(ni, d.get("grounding") or {}, d.get("regions") or {})
     taken = set()
     for f, (sort, val) in was.items():
         if f in now and sorts.get(f) == sort:
@@ -2611,8 +2655,14 @@ QUANTITY_KINDS = {"value_wrongly", "undecided"}
 #: The contract's verdict, as the episode verdict the concept's instance gives when the body agrees.
 CONTRACT_VERDICTS = {"holds": "compliant", "fails": "violated"}
 CONCEPT_CASE_SCHEMA = "concept_case/1"
-#: What a concept ruling keeps to be replayed: the immutable trace, the instance, the grounding, `at` and the claim.
-CONCEPT_CASE_FIELDS = ("kind", "situation", "contract_words", "contract_verdict", "contract_value", "instance", "grounding", "trace", "at")
+#: What a concept ruling keeps to be replayed: the immutable trace, the instance, the grounding, its regions, `at` and the claim.
+CONCEPT_CASE_FIELDS = ("kind", "situation", "contract_words", "contract_verdict", "contract_value", "instance", "grounding", "regions", "trace", "at")
+
+
+def concept_case_id(concept_id: str, d: dict) -> str:
+    """A concept case's identity: the concept and the case's fields. `regions` enters only when it
+    names a region, so a case recorded before concepts took regions keeps its id."""
+    return _digest({"concept": concept_id, **{x: d.get(x) for x in CONCEPT_CASE_FIELDS if x != "regions" or d.get("regions")}})
 CONCEPT_RULINGS = {"upheld", "dismissed"}
 CONCEPT_AGREES = " (the body agrees with the contract on this trace)"
 
@@ -2815,6 +2865,11 @@ def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple 
     g = d.get("grounding")
     if not isinstance(g, dict) or set(g) != set(tracks) or not all(_is_id(x) for x in g.values()):
         errs.append(f"divergence {k}: grounding must map exactly the track formals {tracks} to track ids")
+    regions = [a["name"] for a in rec.args() if a.get("sort") == "region"]
+    rg = d.get("regions", {})
+    if not isinstance(rg, dict) or set(rg) != set(regions) or not all(_is_nat(x) for x in rg.values()):
+        errs.append(f"divergence {k}: regions must map exactly the region formals {regions} to region ids (natural numbers)"
+                    + ("; with no region formal it is `{}` or absent" if not regions else ""))
     tr = d.get("trace")
     if not isinstance(tr, dict) or not isinstance(tr.get("scenes"), list) or not tr["scenes"]:
         errs.append(f"divergence {k}: trace must be an object with a non-empty `scenes` list")
@@ -2836,11 +2891,13 @@ def _lean_q(value: float, unit: str) -> str:
     return f".lit (Q.mk' ({q.numerator}) {q.denominator}) .{core}"
 
 
-def _concept_review_harness_source(cid: str, traces: list[tuple], reading_json: Path | None = None) -> str:
+def _concept_review_harness_source(cid: str, traces: list[tuple], reading_json: Path | None, registry: tuple[str, str]) -> str:
     """A Lean program that, for each divergence, prints the trace check's messages (`LINT`) and runs
     the concept, as the instance the divergence names, on its trace (`DIS`): its verdict at the
     observation `at` — compliant where the body holds there, violated where it fails, unknown where
-    it has no value, as `Certificate.verdictAt` reads a rule. A quantity concept runs against the
+    it has no value, as `Certificate.verdictAt` reads a rule; its region formals bound to the regions
+    the divergence names, and a region no scene of the trace holds a `LINT` message. A trace the
+    admission rejects is reported as `LINT` messages and not run. A quantity concept runs against the
     interval its divergence states (`bounds`): compliant where its value at `at` lies in it; its
     value there is printed (`VAL`, in Core units). It runs on the run's reading (`reading_json`: its
     admitted aggregates), as the rules that call the concept do. The occupancy of every observed track
@@ -2851,22 +2908,23 @@ def _concept_review_harness_source(cid: str, traces: list[tuple], reading_json: 
     bound = lambda b: "none" if b is None else f"some (({_lean_q(*b[0])} : TrafficSpec.Term), ({_lean_q(*b[1])} : TrafficSpec.Term))"
     items = ", ".join(
         f'({k}, {json.dumps(str(p.resolve()))}, [{", ".join(f"({json.dumps(b)}, {t})" for b, t in g.items())}], '
+        f'[{", ".join(f"({json.dumps(f)}, {int(r)})" for f, r in regs.items())}], '
         f'[{", ".join(f"({json.dumps(f)}, {json.dumps(v)})" for f, v in lits.items())}], '
         f'[{", ".join(f"({json.dumps(f)}, {int(v)})" for f, v in nats.items())}], '
         f'[{", ".join(f"({json.dumps(n)}, ({_lean_q(v[0], v[1])} : TrafficSpec.Term))" for n, v in ps.items())}], {bound(bd)}, ({int(at)} : Int))'
-        for k, p, g, lits, nats, ps, bd, at in traces)
-    return f'''import TrafficSpec
-import TrafficSpec.Core.Runtime.Decode
+        for k, p, g, regs, lits, nats, ps, bd, at in traces)
+    imports, defs = registry
+    return f'''{imports}import TrafficSpec.Core.Runtime.Decode
 import TrafficSpec.Core.Evidence.Builders
 import {nodeid.concept_module(cid)}
-open TrafficSpec Lean
+{defs}open TrafficSpec Lean
 {relations.lean_defs()}
 def main : IO Unit := do
   let c := {ns}.concept
   let cs := (allConcepts.filter (·.id != c.id)) ++ [c]
   let ρ : Reading ← {"pure {}" if reading_json is None else f'match Decode.parse Decode.reading (← IO.FS.readFile {json.dumps(str(reading_json.resolve()))}) with | .ok v => pure v | .error e => throw (IO.userError s!"reading: {{e}}")'}
-  let items : List (Nat × String × List (String × Nat) × List (String × String) × List (String × Nat) × List (String × TrafficSpec.Term) × Option (TrafficSpec.Term × TrafficSpec.Term) × Int) := [{items}]
-  for (k, path, grounding, lits, nats, ps, bd, atT) in items do
+  let items : List (Nat × String × List (String × Nat) × List (String × Nat) × List (String × String) × List (String × Nat) × List (String × TrafficSpec.Term) × Option (TrafficSpec.Term × TrafficSpec.Term) × Int) := [{items}]
+  for (k, path, grounding, regs, lits, nats, ps, bd, atT) in items do
     let inst : Concept.Instance := {{ name := s!"review_{{k}}", concept := c.id, literals := lits, nats := nats, params := ps, bounds := bd }}
     match Concept.asRule cs inst with
     | none => IO.println s!"DIS\\t{{k}}\\tunfilled\\t"
@@ -2877,28 +2935,34 @@ def main : IO Unit := do
       | .error e => IO.println s!"DIS\\t{{k}}\\tdecode\\t{{e}}"
       | .ok τ0 =>
         let τ := TraceLint.completeOccupancy τ0
-        IO.println s!"LINT\\t{{k}}\\t{{(Json.arr ((TraceLint.checkTrace τ).map Json.str).toArray).compress}}"
+        let m := Manifest.full "review"
+        let admitted := Grounding.Setup.admit [r'] (maskTrace m τ) ρ m.reidGap
+        let refused := (match admitted with | .error ds => ds | .ok _ => []) ++
+          regs.filterMap fun (n, reg) => if τ.any (fun s => (s.structure? reg).isSome) then none
+            else some s!"region formal `{{n}}` is region {{reg}}, which is no structure of the trace"
+        IO.println s!"LINT\\t{{k}}\\t{{(Json.arr ((TraceLint.checkTrace τ ++ refused).map Json.str).toArray).compress}}"
         RelCheck.run (toString k) τ
         for s in τ do
           IO.println s!"OCCD\\t{{k}}\\t{{s.t}}\\t{{String.intercalate "," (s.occupies.map fun p => s!"{{p.1}}-{{p.2}}")}}"
-        let m := Manifest.full "review"
-        let S := Grounding.Setup.mk' [r'] (maskTrace m τ) ρ m.reidGap
-        let g : Grounding.Grounding := ⟨grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
-        let tl := Grounding.evaluate S r' g
-        let mut found : Option (Nat × Verdict) := none
-        for j in [0:tl.verdicts.size] do
-          if tl.verdicts[j]!.1 == atT then found := some (j, tl.verdicts[j]!.2)
-        match found with
-        | none => IO.println s!"DIS\\t{{k}}\\tat_missing\\t"
-        | some (j, v) =>
-          IO.println s!"DIS\\t{{k}}\\t{{v.tag}}\\t{{String.intercalate "," (v.reasons.map UnknownReason.tag)}}"
-          match r'.obligation with
-          | .and (.cmp _ _ value) _ =>
-            match (Semantics.evalTAll (S.ctx g.binding) value)[j]? with
-            | some (.ok q) => IO.println s!"VAL\\t{{k}}\\t{{q.num}}/{{q.den}}"
-            | some (.error e) => IO.println s!"VAL\\t{{k}}\\tunknown:{{e.tag}}"
-            | none => IO.println s!"VAL\\t{{k}}\\tmissing"
-          | _ => pure ()
+        match admitted, refused with
+        | .error _, _ | _, _ :: _ => IO.println s!"DIS\\t{{k}}\\tlint\\t"
+        | .ok S, [] =>
+          let g : Grounding.Grounding := {{ assign := grounding.map (fun (n, t) => (n, Grounding.canon S.cm t)), regions := regs }}
+          let tl := Grounding.evaluate S r' g
+          let mut found : Option (Nat × Verdict) := none
+          for j in [0:tl.verdicts.size] do
+            if tl.verdicts[j]!.1 == atT then found := some (j, tl.verdicts[j]!.2)
+          match found with
+          | none => IO.println s!"DIS\\t{{k}}\\tat_missing\\t"
+          | some (j, v) =>
+            IO.println s!"DIS\\t{{k}}\\t{{v.tag}}\\t{{String.intercalate "," (v.reasons.map UnknownReason.tag)}}"
+            match r'.obligation with
+            | .and (.cmp _ _ value) _ =>
+              match (Semantics.evalTAll (S.ctx g.binding) value)[j]? with
+              | some (.ok q) => IO.println s!"VAL\\t{{k}}\\t{{q.num}}/{{q.den}}"
+              | some (.error e) => IO.println s!"VAL\\t{{k}}\\tunknown:{{e.tag}}"
+              | none => IO.println s!"VAL\\t{{k}}\\tmissing"
+            | _ => pure ()
 '''
 
 
@@ -2913,7 +2977,8 @@ def _core_value(raw: str | None, dim: tuple | None) -> str:
 
 
 def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tuple | None = None,
-                                reading: Reading | None = None, saved: bool = False) -> tuple[list[dict], list[str], list[str], list[str]]:
+                                reading: Reading | None = None, saved: bool = False,
+                                registry: tuple[str, str] | None = None) -> tuple[list[dict], list[str], list[str], list[str]]:
     """Run the concept on every divergence trace, as a rule's case is run. Returns (confirmed,
     unconfirmed, errors, incomplete): a trace on which the body's verdict differs from the
     contract's — or is unknown where the contract decides, for a divergence claiming the body
@@ -2941,7 +3006,8 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         p.write_text(json.dumps(d.get("trace"), ensure_ascii=False, indent=1), encoding="utf-8")
         inst = d.get("instance") or {}
         bd = (tuple(d["contract_value"]["lo"]), tuple(d["contract_value"]["hi"])) if quantity else None
-        traces.append((k, p, {b: int(t) for b, t in d["grounding"].items()}, dict(inst.get("literals") or {}), dict(inst.get("nats") or {}),
+        traces.append((k, p, {b: int(t) for b, t in d["grounding"].items()}, {f: int(r) for f, r in (d.get("regions") or {}).items()},
+                       dict(inst.get("literals") or {}), dict(inst.get("nats") or {}),
                        dict(inst.get("params") or {}), bd, d["at"]))
     harness = out_dir / "review_harness.lean"
     rj = None
@@ -2949,8 +3015,9 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         rj = out_dir / "reading.json"; rj.write_text(reading.lean_json(), encoding="utf-8")
     stripped: dict[int, list[str]] = {}
     for _pass in (1, 2):                                   # a second pass only for saved traces whose supplied relations were stripped
-        harness.write_text(_concept_review_harness_source(rec.id, traces, rj), encoding="utf-8")
-        code, hout = lean.lean_run(paths.LIBRARY, harness); ok = code == 0
+        harness.write_text(_concept_review_harness_source(rec.id, traces, rj, registry or index_sync.registry_source()), encoding="utf-8")
+        with lean.evaluation_lock(paths.LIBRARY):
+            code, hout = lean.lean_run(paths.LIBRARY, harness); ok = code == 0
         (out_dir / "review_harness.out").write_text(hout, encoding="utf-8")
         if not ok:
             raise HarnessFailure(f"the concept review harness did not run: {hout[-600:]}")
@@ -3030,7 +3097,8 @@ def executed_facts(d: dict, read_paths: list[str] | None = None, occupancy: dict
     """The executed facts of a divergence: what the decoder reads of its trace, and only that; the
     keys it does not read listed apart as the reviewer's unverified annotations."""
     return render_formula.trace_facts(d.get("trace") if isinstance(d.get("trace"), dict) else {}, d.get("grounding") or {}, d.get("at"),
-                                      d.get("instance") if isinstance(d.get("instance"), dict) else {}, read_paths, occupancy)
+                                      d.get("instance") if isinstance(d.get("instance"), dict) else {}, read_paths, occupancy,
+                                      d.get("regions") if isinstance(d.get("regions"), dict) else {})
 
 
 def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict], out_dir: Path, body_digest: str = "",
@@ -3096,7 +3164,7 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
                       **({"legacy_of": i["legacy_of"]} if i.get("legacy_of") else {})}
         else:
             replay = {
-                "schema": CONCEPT_CASE_SCHEMA, "case_id": _digest({"concept": rec.id, **{x: d.get(x) for x in CONCEPT_CASE_FIELDS}}),
+                "schema": CONCEPT_CASE_SCHEMA, "case_id": concept_case_id(rec.id, d),
                 **{x: d.get(x) for x in CONCEPT_CASE_FIELDS}, "verdict": i.get("verdict"), "value": i.get("value"),
                 "contract_digest": _digest(_ws(rec.get("contract"))), "body_digest": body_digest,
                 "obligation": "open" if ruling == "upheld" else None}
@@ -3115,8 +3183,9 @@ class ConceptTools(ReviewTools):
     check_name = "run_instance"
 
     def __init__(self, rec, contract: str, rendering: str, result_dim, out_dir: Path, checks: int, submissions: int,
-                 reading: Reading | None = None, carry: dict[str, dict] | None = None):
+                 reading: Reading | None = None, carry: dict[str, dict] | None = None, registry: tuple[str, str] | None = None):
         self.rec, self.contract, self.rendering, self.result_dim, self.reading = rec, contract, rendering, result_dim, reading
+        self.registry = registry
         self.carry = carry or {}
         self.specs = [
             _fn("run_instance", "Run one divergence: the trace check, then the concept's body, as the instance names it, on the "
@@ -3132,7 +3201,7 @@ class ConceptTools(ReviewTools):
     def run_answer(self, a: dict, where: Path) -> tuple:
         key = _canon(a)
         if key not in self.cache:
-            self.cache[key] = execute_concept_divergences(self.rec, a, where, self.result_dim, self.reading)
+            self.cache[key] = execute_concept_divergences(self.rec, a, where, self.result_dim, self.reading, registry=self.registry)
         return self.cache[key]
 
     def extension_defects(self, k: int, d) -> list[str]:
@@ -3255,7 +3324,8 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
     for r in [r for r in rows if r.get("schema") == CONCEPT_CASE_SCHEMA and r.get("obligation") in ("open", "satisfied", None)]:
         d = {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}
         inst, g = r.get("instance") or {}, r.get("grounding") or {}
-        named = {**{f: "literal" for f in inst.get("literals") or {}}, **{f: "nat" for f in inst.get("nats") or {}}, **{f: "track" for f in g}}
+        named = {**{f: "literal" for f in inst.get("literals") or {}}, **{f: "nat" for f in inst.get("nats") or {}}, **{f: "track" for f in g},
+                 **{f: "region" for f in r.get("regions") or {}}}
         if any(formals.get(f) != sort for f, sort in named.items()) or set(named) != set(formals):
             out.carry.append({"case_id": r.get("case_id"), "row": r,
                               "why": f"its formals {sorted(named)} do not correspond to {sorted(formals)}"})
@@ -3267,7 +3337,8 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
         k = len(divs) + 1
         divs[k], by_k[k] = d, r
     confirmed, unconfirmed, errors, incomplete = execute_concept_divergences(
-        rec, {"divergences": list(divs.values())}, out_dir, result_dim, Reading(run.reading_file), saved=True) if divs else ([], [], [], [])
+        rec, {"divergences": list(divs.values())}, out_dir, result_dim, Reading(run.reading_file), saved=True,
+        registry=_registry(run, rec.id, concept_dir(run, rec.id))) if divs else ([], [], [], [])
     k_of = lambda line: int(m.group(1)) if (m := re.match(r"divergence (\d+)", line)) else None
     for c in confirmed:
         out.items.append({**c, "replay_of": by_k[k_of(c["line"])].get("case_id")})
@@ -3398,7 +3469,8 @@ def dependency_report(run: Run, task_dir: Path, reached: set[str]) -> Dependency
     rec = ConceptRecord(acc)
     result_dim = body_dim(rec, acc.get("body_json")) if rec.get("kind") == "quantity" else None
     out = task_dir / "dependency_defect"
-    confirmed, agrees, errors, incomplete = execute_concept_divergences(rec, {"divergences": [d]}, out, result_dim, Reading(run.reading_file))
+    confirmed, agrees, errors, incomplete = execute_concept_divergences(rec, {"divergences": [d]}, out, result_dim, Reading(run.reading_file),
+                                                                        registry=_registry(run, rec.id, task_dir))
     if not confirmed:
         return DependencyReport("protocol", cid, errors + incomplete + [f"the concept gives the verdict the report claims for its contract: {x}" for x in agrees])
     blocks, _rendering, _contract = concept_blocks(run, rec, acc)
@@ -3443,7 +3515,8 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     carry = {c["case_id"]: c["row"] for c in rep.carry if c.get("case_id")}
     prompt = render.render("review_concept.md", {**blocks, "carry_over": carry_over_block(rep.carry)})
     tools = ConceptTools(rec, contract, rendering, result_dim, out_dir, run.opts.review_checks,
-                         run.opts.review_submissions, Reading(run.reading_file), carry)
+                         run.opts.review_submissions, Reading(run.reading_file), carry,
+                         registry=_registry(run, rec.id, concept_dir(run, rec.id)))
     (out_dir / "review_concept_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])

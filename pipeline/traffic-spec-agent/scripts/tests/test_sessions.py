@@ -1,6 +1,7 @@
 """Development regression tests for session launches and process ownership: the stop event, each
 task's retry budget kept on disk, cut-off sessions, rejected requests, structured refusals, process
 groups, a coding task's baseline on a relaunch, and the gate's attribution of a toolchain failure."""
+import dataclasses
 import json
 import os
 import subprocess
@@ -8,6 +9,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -91,14 +93,15 @@ class Launches(unittest.TestCase):
                          ["session_result.json", "session_result.retry1.json", "session_result.retry2.json",
                           "session_result.retry3.json"])
 
-    def test_a_cut_off_is_returned_without_relaunch_and_relaunched_from_the_baseline_with_one(self):
+    def test_a_cut_off_is_returned_without_relaunch_and_relaunched_with_one(self):
         self.claude(self.CUT)
         self.assertEqual(self.go()["cut_off"], "the session stopped at its turn cap")
         self.assertEqual(session.cut_off_of(self.d), "the session stopped at its turn cap")
         restored = []
         self.claude(self.CUT, self.OK)
         sub = self.d / "code"; sub.mkdir()
-        rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: restored.append(1), relaunch_cut_off=True)
+        rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: None,
+                          relaunch_cut_off=lambda: (restored.append(1), "")[1])
         self.assertEqual((rec["cut_off"], restored), (None, [1]))
 
     def test_a_coding_session_cut_off_at_every_launch_is_returned_not_an_outage(self):
@@ -108,9 +111,23 @@ class Launches(unittest.TestCase):
         restored = []
         self.claude(self.CUT, self.CUT, self.CUT)
         sub = self.d / "code"; sub.mkdir()
-        rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: restored.append(1), relaunch_cut_off=True)
+        rec = session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: None,
+                          relaunch_cut_off=lambda: (restored.append(1), "")[1])
         self.assertEqual(rec["cut_off"], "the session stopped at its turn cap")
         self.assertEqual((self.launches, len(restored)), (self.opts.session_retries + 1, self.opts.session_retries))
+
+    def test_a_cut_off_relaunches_without_waiting_and_a_refusal_waits(self):
+        """`retry_wait` is for a limit or an outage to clear; a session that ran and was cut off has
+        nothing to wait for."""
+        self.opts = dataclasses.replace(self.opts, retry_wait=7)
+        slept = []
+        sub = self.d / "code"; sub.mkdir()
+        with mock.patch.object(session.time, "sleep", side_effect=lambda s: slept.append(s)):
+            self.claude(self.CUT, self.OK)
+            session.run("p", sub, sub, self.opts, max_turns=10, effort=None, relaunch=lambda: None, relaunch_cut_off=lambda: "")
+            self.claude(self.REFUSED, self.OK)
+            session.run("p", self.d, self.d, self.opts, max_turns=10, effort=None)
+        self.assertEqual(slept, [0.0, 7])
 
     def test_a_rejected_request_is_reported_and_never_retried(self):
         calls = []
@@ -297,7 +314,7 @@ class GateAttribution(unittest.TestCase):
         self.assertEqual(v.verdict, self.gate.GATE_TIMEOUT)
         self.assertTrue(v.extras["panic"])
         rows = [json.loads(l) for l in (self.work / "toolchain.jsonl").read_text().splitlines()]
-        self.assertEqual([r["phase"] for r in rows], ["build", "harness", "build", "harness"])
+        self.assertEqual([r["phase"] for r in rows if r["phase"] in ("build", "harness")], ["build", "harness", "build", "harness"])
 
 
 

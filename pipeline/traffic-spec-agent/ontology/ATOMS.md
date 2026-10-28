@@ -285,7 +285,8 @@ conclusion, and it is evaluated separately.
 
 **One kind of standard has only a surrogate.** A standard about the driver's state of mind —
 care, attention, intent, knowledge — is not observable (§9): any operationalization of it is a
-surrogate, whatever concepts bound it.
+surrogate, whatever concepts bound it. A declared intention (§9) is not of this kind: it is a fact
+the trace supplies, not an operationalization of a standard.
 
 ## 9. Not atoms
 
@@ -298,12 +299,36 @@ restriction is in effect when the sign only refers to them. These enter a formal
 Where the same category is *also* marked on the road by a sign (`dev.zone_sign`), the sign is the
 atom and the category is not.
 
-**Purpose, perception and intention** — why a vehicle is stopped (loading, waiting for a
-pedestrian, receiving passengers), what a driver perceived, knew, ascertained or intended. These
-are not observable, and a rule is a check of conduct on a trace, so a span that turns on one is
-read through the conduct or the outcome it governs: an intention by the act it leads to (an
-intention to turn by the turn the road user makes within a window ahead, or by the signal given
-for it), a duty to perceive, ascertain or make sure by the outcome the check is there to secure
+**Declared intentions** — where the words state that a road user intends, or is preparing, to
+turn, the span is carried by a declared intention of that road user at the region the words name:
+a fact the trace supplies, under an `int.*` id the plan declares with its meaning, never an act in
+a window ahead nor a signal (a signal "of intention" is the signal, `sig.turn_indicator`). The act
+the words also name ("is making …") is read by its manoeuvre concept, and the two are joined as the
+words join them. What an id covers (an intention to turn, a preparation for a turn) is its
+meaning; when it begins and ends is the source's declaration. A declared intention states, at each
+scene, the source's declaration current at that scene for one road user at one target region:
+- it is **true** where the source's current plan for that road user includes, at that target, what
+  the id means;
+- it is **false** where the source's current plan decides that what the id means does not hold at
+  that target: another manoeuvre, passing through, a manoeuvre cancelled, or one the plan has
+  completed;
+- an **id is left out** of the record's values wherever the source's plan does not decide its
+  meaning, even when other ids of the same pair are listed: what a plan does not mention is
+  unknown, never false;
+- the **pair is absent** where the source has no current plan for that road user at that target,
+  or does not know it.
+
+The value follows the source's plan, never the road user's motion: a manoeuvre that is blocked,
+delayed or under way stays true while the plan still holds it. A source never writes false for a
+road user whose plan it does not know. A change of declaration takes effect from the scene that
+carries it, and a rule reads a declaration only at the observation it judges or before it, so a
+later change never alters an earlier verdict or erases an obligation already triggered.
+
+**Purpose, perception and imminent movement** — why a vehicle is stopped (loading, waiting for a
+pedestrian, receiving passengers), what a driver perceived, knew or ascertained, a movement it is
+about to make. These are not observable, and a rule is a check of conduct on a trace, so a span
+that turns on one is read through the conduct or the outcome it governs: an imminent movement
+("about to …") by the movement it leads to, a duty to perceive, ascertain or make sure by the outcome the check is there to secure
 (the movement made with the clearances the reading sets), a purpose by the conduct it explains.
 Who or what controls a vehicle — a person at the controls, an automated driving system, no one —
 is not observable either: "drives", "operates" and "the driver" are read through the vehicle's

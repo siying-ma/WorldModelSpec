@@ -109,6 +109,9 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
         return f"{_arg(a)} and {_arg(b)} are the same entity"
     if "asm" in f:
         return f"the assumption `{f['asm']}` is declared true"
+    if "int" in f:
+        who, target = f["args"]
+        return f"road user {_arg(who)} is declared to intend `{f['int']}` at region {_arg(target)}"
     if "not" in f:
         return f"it is not the case that ({formula(f['not'], glosses, depth)})"
     if "count" in f:
@@ -420,14 +423,16 @@ def _has(obj, path: list[str]) -> bool:
 
 
 def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = None, read: list[str] | None = None,
-                occupancy: dict[int, list[str]] | None = None) -> str:
+                occupancy: dict[int, list[str]] | None = None, regions: dict | None = None) -> str:
     """Every input Core reads that the trace states, scene by scene in time order: each user (its
     classes, kinematics, posture, signals, everything written), each structure and device with
-    every attribute, the environment, the assumptions, the supplied relations, the occupancy as
+    every attribute, the environment, the assumptions, each declared intention with the source that
+    declares it, the supplied relations, the occupancy as
     written; then the occupancy the harness derived from the geometry before running (`occupancy`,
     by timestamp: `track-region` pairs), apart. A field the body reads (`read`: trace paths such as
     `users[].kin.speed`) that a user, structure or device leaves out is written "not observed",
-    never false or zero. The grounding, the instant judged and the instance head it. Numbers are in
+    never false or zero. The grounding, the regions a concept's region formals name (with the kind
+    of structure each is), the instant judged and the instance head it. Numbers are in
     Core units, as every trace writes them. Only the keys the decoder reads are facts: the keys of
     the written trace it does not read were never executed, and are listed after the facts, by
     path, as the reviewer's unverified annotations."""
@@ -447,6 +452,11 @@ def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = N
             "",
             "- grounding: " + (", ".join(f"`{f}` = track {t}" for f, t in (grounding or {}).items()) or "none"),
             f"- the observation judged: t = {at} ms"]
+    if regions:
+        kinds = {st.get("id"): st.get("kind") for sc in ((trace or {}).get("scenes") or []) if isinstance(sc, dict)
+                 for st in sc.get("structures") or [] if isinstance(st, dict)}
+        head.insert(-1, "- regions: " + ", ".join(f"`{f}` = region {r}" + (f" ({kinds[r]})" if kinds.get(r) else " (no structure of the trace)")
+                                                  for f, r in regions.items()))
     for key, label in (("literals", "literal formals"), ("nats", "nat formals"), ("params", "parameters")):
         vals = inst.get(key) or {}
         if vals:
@@ -468,7 +478,12 @@ def trace_facts(trace: dict, grounding: dict, at: int, instance: dict | None = N
         for m in sc.get("relations") or []:
             if isinstance(m, dict):
                 out.append(f"- supplied relation {m.get('a')}-{m.get('b')}: " + "; ".join(_fields(m, ("a", "b"))))
-        rest = {k: v for k, v in sc.items() if k not in ("t", "users", "structures", "devices", "relations")}
+        for d in sc.get("intents") or []:
+            if isinstance(d, dict):
+                vals = "; ".join(f"`{v[0]}` {_value(v[1])}" for v in d.get("values") or [] if isinstance(v, list) and len(v) == 2)
+                out.append(f"- declared intention of track {d.get('vehicle')} at region {d.get('target')} (declared by: {d.get('source')}): "
+                           + (vals or "no id decided"))
+        rest = {k: v for k, v in sc.items() if k not in ("t", "users", "structures", "devices", "relations", "intents")}
         for k, v in rest.items():
             out.append(f"- {k}: " + ("; ".join(_fields(v)) if isinstance(v, dict) else _value(v)))
         derived = (occupancy or {}).get(sc.get("t"))

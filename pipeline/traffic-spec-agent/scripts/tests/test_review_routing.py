@@ -29,6 +29,16 @@ class FakeRun:
         if not self.reading_file.exists():
             self.reading_file.write_text(json.dumps({"params": [], "aggregates": []}))
 
+    @property
+    def iter(self):
+        return self.dir / f"iter-{self.iteration:03d}"
+
+    def all_nodes(self):
+        return {}
+
+    def all_concepts(self):
+        return {}
+
 
 def node() -> Node:
     return Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}],
@@ -698,7 +708,8 @@ class SubsetRun(unittest.TestCase):
         self.saved = paths.RESULTS
         paths.RESULTS = Path(self.tmp.name)
         base = paths.run_dir("base"); base.mkdir()
-        rows = [{"node_id": "L_1", "law_refs": ["L-1"]}, {"node_id": "L_2", "law_refs": ["L-2"]}]
+        (base / "options.json").write_text(json.dumps({"run_id": "base"}))
+        rows =[{"node_id": "L_1", "law_refs": ["L-1"]}, {"node_id": "L_2", "law_refs": ["L-2"]}]
         (base / "accepted_nodes.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
         self.corpus = Path(self.tmp.name) / "corpus" / "laws.jsonl"; self.corpus.parent.mkdir()
         self.corpus.write_text("".join(json.dumps({"id": i, "title": "", "text": "t", "source": ""}) + "\n" for i in ("L-1", "L-2", "L-3")))
@@ -725,7 +736,7 @@ class SubsetRun(unittest.TestCase):
         from scripts.subset_laws import subset
         f = paths.run_dir("base") / "accepted_nodes.jsonl"
         f.write_text(f.read_text().replace('"law_refs": ["L-2"]}', '"law_refs": ["L-2"], "compositions": [{"rule": "L_1"}]}'))
-        with self.assertRaises(SystemExit):
+        with self.assertRaisesRegex(SystemExit, "compose a node of a law this run plans again"):
             self.run_of(subset("sub", self.corpus, ["L-1"]))
 
     def test_a_stray_goes_to_the_base_run_first(self):
@@ -994,7 +1005,7 @@ class CaseDiagnosis(unittest.TestCase):
         recs = {1: {"case_value": {"value": "false", "unknown_reasons": []}}}
         with tempfile.TemporaryDirectory() as t:
             try:
-                review._diagnose(SimpleNamespace(id="L_1_o1"), {1: d}, recs, Path(t) / "r.json", Path(t) / "diagnosis")
+                review._diagnose(SimpleNamespace(id="L_1_o1"), {1: d}, recs, Path(t) / "r.json", Path(t) / "diagnosis", ("", ""))
             finally:
                 review.lean.lean_run = saved
         self.assertEqual([x.split(":")[0] for x in recs[1]["diagnosis"]],

@@ -17,9 +17,11 @@ import TrafficSpec.Core.Language.Rule
 
 namespace TrafficSpec
 
-/-- The sort of a formal argument. A literal formal ranges over the admissible spellings. -/
+/-- The sort of a formal argument. A literal formal ranges over the admissible spellings; a region
+    formal is the region the caller singles out, never one the body finds for itself. -/
 inductive ArgSort
   | track
+  | region
   | literal (values : List String)
   | nat
   deriving Repr, DecidableEq, Inhabited
@@ -52,6 +54,8 @@ def leanName (c : Concept) : String := c.id.replace "." "_"
 def isQuantity (c : Concept) : Bool := match c.body with | .quantity _ => true | _ => false
 def trackFormals (c : Concept) : List String :=
   c.args.filterMap fun (n, s) => if s == .track then some n else none
+def regionFormals (c : Concept) : List String :=
+  c.args.filterMap fun (n, s) => if s == .region then some n else none
 def paramNames (c : Concept) : List ParamName := c.params.map (·.name)
 /-- The body as a formula, for the inspectors (a quantity as a trivial comparison of itself). -/
 def bodyFormula (c : Concept) : Formula :=
@@ -62,7 +66,7 @@ def bodyFormula (c : Concept) : Formula :=
     literal value once with the other literals at their first value. -/
 def samples (c : Concept) : List (List Arg) :=
   let base : List Arg := c.args.map fun (n, s) => match s with
-    | .track => Arg.var n
+    | .track | .region => Arg.var n
     | .literal vs => Arg.lit (vs.headD "")
     | .nat => Arg.nat 0
   let variants := (List.range c.args.length).flatMap fun i =>
@@ -114,6 +118,7 @@ mutual
     | .atom n args ps => .atom n (args.map σ.arg) (ps.map (substT σ))
     | .cmp l op r => .cmp (substT σ l) op (substT σ r)
     | .asm id => .asm id
+    | .intent id who target => .intent id (σ.arg who) (σ.arg target)
     | .same a b => .same (σ.arg a) (σ.arg b)
     | .not φ => .not (substF σ φ)
     | .and φ ψ => .and (substF σ φ) (substF σ ψ)
@@ -258,7 +263,8 @@ def onCycle (cs : List Concept) : List String :=
 
 -- ---------------------------------------------------------------------------------------------
 -- Witness instances: a concept applied to named tracks, chosen literals and parameter terms,
--- as a rule the witness machinery can run. Track formals are the rule's binders, by name.
+-- as a rule the witness machinery can run. Track formals are the rule's binders, by name; region
+-- formals stay variables, which each scenario of the instance binds to a region of its trace.
 -- ---------------------------------------------------------------------------------------------
 structure Instance where
   name : String
@@ -275,7 +281,7 @@ structure Instance where
 def asRule (cs : List Concept) (i : Instance) : Option Rule := do
   let c ← cs.find? (·.id == i.concept)
   let args : List Arg ← c.args.mapM fun (n, s) => match s with
-    | .track => some (.var n)
+    | .track | .region => some (.var n)
     | .literal _ => (i.literals.find? (·.1 == n)).map fun (_, v) => Arg.lit v
     | .nat => (i.nats.find? (·.1 == n)).map fun (_, k) => Arg.nat k
   let ps : List Term ← c.params.mapM fun p => (i.params.find? (·.1 == p.name)).map (·.2)
@@ -289,6 +295,32 @@ def asRule (cs : List Concept) (i : Instance) : Option Rule := do
          binders := (trackFormals c).map fun n => ⟨n, .tt⟩
          applicability := .tt
          obligation := expandOnce cs call }
+
+/-- Each formal named exactly once among the names given, and no name that is not a formal. -/
+private def givenOnce (where_ what : String) (formals given : List String) : List String :=
+  (formals.filter (fun f => given.count f != 1)).map (fun f => s!"{where_}: {what} formal `{f}` given {given.count f} times") ++
+  (given.eraseDups.filter (!formals.contains ·)).map fun g => s!"{where_}: `{g}` is no {what} formal"
+
+/-- What is wrong with an instance's values: a concept the list lacks, a literal, nat or
+    parameter formal not given exactly once, a name that is no formal of its sort, a literal
+    outside its admissible values. -/
+def Instance.defects (cs : List Concept) (i : Instance) : List String :=
+  match cs.find? (·.id == i.concept) with
+  | none => [s!"{i.name}: concept `{i.concept}` is not in the list"]
+  | some c =>
+    let lits := c.args.filterMap fun (n, s) => match s with | .literal _ => some n | _ => none
+    let nats := c.args.filterMap fun (n, s) => if s == .nat then some n else none
+    givenOnce i.name "literal" lits (i.literals.map (·.1)) ++
+    givenOnce i.name "nat" nats (i.nats.map (·.1)) ++
+    givenOnce i.name "parameter" c.paramNames (i.params.map (·.1)) ++
+    i.literals.filterMap fun (n, v) => match c.args.find? (·.1 == n) with
+      | some (_, .literal vs) => if vs.contains v then none else some s!"{i.name}: literal `{n}` is `{v}`, not one of {vs}"
+      | _ => none
+
+/-- What is wrong with the regions a scenario or a challenge gives an instance: each region formal
+    given exactly once, and no name that is not one. -/
+def regionDefects (c : Concept) (where_ : String) (regions : List (String × RegionId)) : List String :=
+  givenOnce where_ "region" c.regionFormals (regions.map (·.1))
 
 end Concept
 end TrafficSpec

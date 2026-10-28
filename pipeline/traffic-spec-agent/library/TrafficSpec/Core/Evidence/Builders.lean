@@ -89,7 +89,7 @@ def occupancyFromGeometry (users : List RoadUser) (structures : List Structure) 
 /-- A scene; occupancy is derived from geometry unless given. -/
 def scene (t : Timestamp) (subject : Option TrackId) (users : List RoadUser) (structures : List Structure)
     (devices : List Device) (occupies : Option (List (TrackId × RegionId)) := none)
-    (env : Env := {}) (assumptions : List (AsmId × Bool) := []) : Scene :=
+    (env : Env := {}) (assumptions : List (AsmId × Bool) := []) (intents : List DeclaredIntent := []) : Scene :=
   { t := t
     subject := subject
     users := users
@@ -98,7 +98,8 @@ def scene (t : Timestamp) (subject : Option TrackId) (users : List RoadUser) (st
     occupancyObserved := users.map (·.track)
     occupies := occupies.getD (occupancyFromGeometry users structures)
     env := env
-    assumptions := assumptions }
+    assumptions := assumptions
+    intents := intents }
 
 /-- A trace from a scene generator over instants `t0, t0 + dt, …` (`dt` in seconds). -/
 def trace (n : Nat) (t0 : Timestamp) (dt : Q) (f : Nat → Timestamp → Scene) : Trace :=
@@ -142,6 +143,7 @@ structure Scenario where
   reading : Reading
   manifest : Manifest
   grounding : List (String × TrackId)
+  regions : List (String × RegionId) := []   -- an instance's region formals, each a region of the trace
   expected : Verdict
   window : Option (Timestamp × Timestamp) := none
   deriving Repr, Inhabited
@@ -152,14 +154,20 @@ namespace Scenario
     instant at which every bound track is present (a track that never appears leaves any rule not
     engaged); an `unknown` witness must be unknown only for atoms its manifest masks (an unbound
     variable, a truncated window or a missing parameter is a defect, not a masked observation).
-    The rules are evaluated with their concept calls expanded over `concepts`. -/
+    The rules are evaluated with their concept calls expanded over `concepts`. A trace the
+    admission rejects, or a region formal given a region no scene of the trace holds, fails. -/
 def run (rules : List Rule) (sc : Scenario) (concepts : List Concept := []) : Except String Verdict := do
   let rules := rules.map (Concept.expandRule concepts)
   let r ← match rules.find? (·.id == sc.rule) with
     | some r => pure r
     | none => throw s!"{sc.name}: rule {sc.rule} is not registered"
-  let S := Grounding.Setup.mk' rules (maskTrace sc.manifest sc.trace) sc.reading sc.manifest.reidGap
-  let g : Grounding.Grounding := ⟨sc.grounding.map fun (n, t) => (n, Grounding.canon S.cm t)⟩
+  let S ← match Grounding.Setup.admit rules (maskTrace sc.manifest sc.trace) sc.reading sc.manifest.reidGap with
+    | .ok S => pure S
+    | .error ds => throw s!"{sc.name}: the trace is not admitted: {"; ".intercalate ds}"
+  for (n, reg) in sc.regions do
+    if !(sc.trace.any fun s => (s.structure? reg).isSome) then
+      throw s!"{sc.name}: region formal `{n}` is region {reg}, which is no structure of the trace"
+  let g : Grounding.Grounding := ⟨sc.grounding.map (fun (n, t) => (n, Grounding.canon S.cm t)), sc.regions⟩
   let tl := Grounding.evaluate S r g
   let rows := tl.verdicts.toList.filter fun (t, _) =>
     match sc.window with

@@ -20,52 +20,27 @@
   Rules never import this file: a rule that could see the census of tracks could special-case it.
 -/
 import TrafficSpec.Core.Language.RuleEval
+import TrafficSpec.Core.Runtime.Admission
 
 namespace TrafficSpec
 namespace Grounding
 open Semantics
 
-/-- An assignment of canonical tracks to binder names. -/
+/-- An assignment of canonical tracks to binder names, and of regions to the variables a
+    concept's instance takes as region formals (a rule's groundings bind none). -/
 structure Grounding where
   assign : List (String × TrackId)
+  regions : List (String × RegionId) := []
   deriving Repr, DecidableEq, Inhabited
 
 def Grounding.render (g : Grounding) : String :=
   String.intercalate "," (g.assign.map fun (n, t) => s!"{n}={t}")
-def Grounding.binding (g : Grounding) : Binding := ⟨g.assign.map fun (n, t) => (n, Val.track t)⟩
+def Grounding.binding (g : Grounding) : Binding :=
+  ⟨g.assign.map (fun (n, t) => (n, Val.track t)) ++ g.regions.map fun (n, r) => (n, Val.region r)⟩
 
 -- ---------------------------------------------------------------------------------------------
 -- Identity: canonical tracks through accepted links, applied to the trace once
 -- ---------------------------------------------------------------------------------------------
-def firstSeen (τ : Array Scene) (t : TrackId) : Option Nat :=
-  (List.range τ.size).find? fun i => τ[i]!.tracks.contains t
-def lastSeen (τ : Array Scene) (t : TrackId) : Option Nat :=
-  ((List.range τ.size).reverse).find? fun i => τ[i]!.tracks.contains t
-
-/-- A link old ↦ new is accepted when `new` first appears after `old` was last seen, within `gap`. -/
-def acceptedLinks (τ : Array Scene) (gap : Q) : List (TrackId × TrackId) :=
-  (τ.toList.flatMap (·.links)).eraseDups.filter fun (old, new) =>
-    match lastSeen τ old, firstSeen τ new with
-    | some lo, some fn =>
-      fn > lo && Q.le (Q.sub (Time.ofTimestamp τ[fn]!.t) (Time.ofTimestamp τ[lo]!.t)) gap
-    | _, _ => false
-
-/-- The canonical (root) track of every track, following accepted links backwards. -/
-def canonMap (τ : Array Scene) (gap : Q) : List (TrackId × TrackId) :=
-  let links := acceptedLinks τ gap
-  let tracks := (τ.toList.flatMap (·.tracks)).eraseDups
-  let rec root (t : TrackId) (fuel : Nat) : TrackId :=
-    match fuel with
-    | 0 => t
-    | fuel + 1 =>
-      match links.find? (·.2 == t) with
-      | some (old, _) => root old fuel
-      | none => t
-  tracks.map fun t => (t, root t (links.length + 1))
-
-def canon (cm : List (TrackId × TrackId)) (t : TrackId) : TrackId :=
-  ((cm.find? (·.1 == t)).map (·.2)).getD t
-
 /-- The scene with every track id replaced by its canonical identity. -/
 def canonicalScene (cm : List (TrackId × TrackId)) (s : Scene) : Scene :=
   let c := canon cm
@@ -74,7 +49,8 @@ def canonicalScene (cm : List (TrackId × TrackId)) (s : Scene) : Scene :=
     users := s.users.map fun u => { u with track := c u.track }
     occupancyObserved := s.occupancyObserved.map c
     occupies := s.occupies.map fun (t, r) => (c t, r)
-    relations := s.relations.map fun m => { m with a := c m.a, b := c m.b } }
+    relations := s.relations.map fun m => { m with a := c m.a, b := c m.b }
+    intents := s.intents.map fun d => { d with vehicle := c d.vehicle } }
 
 -- ---------------------------------------------------------------------------------------------
 -- Setup: the canonical, indexed trace and the rule set
@@ -89,6 +65,13 @@ def Setup.mk' (rules : List Rule) (τ : Trace) (ρ : Reading) (gap : Q) : Setup 
   let arr := τ.toArray
   let cm := canonMap arr gap
   { rules := rules, d := Primitives.Ctx.mk' (τ.map (canonicalScene cm)) ρ, gap := gap, cm := cm }
+
+/-- The setup of a trace every evaluation reaches: built only when `Admission.defects` finds no
+    defect in the trace as written, else the defects. -/
+def Setup.admit (rules : List Rule) (τ : Trace) (ρ : Reading) (gap : Q) : Except (List String) Setup :=
+  match Admission.defects τ gap with
+  | [] => .ok (Setup.mk' rules τ ρ gap)
+  | ds => .error ds
 
 def Setup.n (S : Setup) : Nat := S.d.n
 def Setup.scenes (S : Setup) : Array Scene := S.d.scenes
@@ -123,7 +106,7 @@ def groundings (S : Setup) (r : Rule) : List Grounding :=
     | (name, cs) :: rest =>
       cs.filter (fun c => !used.contains c && used.all (spansOverlap S c)) |>.flatMap fun c =>
         (go rest (c :: used)).map fun tail => (name, c) :: tail
-  (go cands []).map Grounding.mk
+  (go cands []).map fun a => { assign := a }
 
 /-- Predicted grounding count without enumerating: the product of candidate counts (an upper
     bound when candidates overlap). -/

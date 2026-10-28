@@ -487,7 +487,7 @@ class AggregateOrder(R.Interruptions, unittest.TestCase):
             return [], []
         real = integrate.admission_recheck
 
-        def admission_recheck(run, reading, base):
+        def admission_recheck(run, reading, base, unjudged=None):
             has = any(a.get("id") == AGG for a in (jsonl.read_json(run.reading_file, {}) or {}).get("aggregates", []))
             w.admission["L_1"] = "OK" if has or not run.opts.base_run else "CHECK_FAIL"
             return real(run, reading, base)

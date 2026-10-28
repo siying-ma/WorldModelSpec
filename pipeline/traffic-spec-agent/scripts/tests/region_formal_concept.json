@@ -1,0 +1,69 @@
+{
+ "concept_id": "drv.lane.travel_against_designated_direction",
+ "kind": "formula",
+ "contract": "The road user travels along the named region contrary to the direction that region is designated for, at the observation: its footprint overlaps that region, and the component of its velocity along that region's designated direction of travel is at or below the along-region speed tolerance the caller sets, taken negative. The designated direction is a direction of unit length, so the inner product of the velocity with it is already the component in metres per second, and a component more negative than the tolerance is a body going further against the designation, so the bound is one-sided. The tolerance is the observer's: a sampled velocity never stands exactly at zero along a designation, so the caller sets the magnitude of contrary motion below which a measured velocity does not stand clear of none, and it is no measure of how far or how fast a road user must go against the designation to matter, which is the business of the law that calls the concept. The region is the caller's own: the concept finds no region for itself, so the caller says which region's designation is meant. The concept is a state of motion at an instant, read from the road user's own velocity and that region's designation: it says nothing about the lawfulness of the direction, nothing about any sign, marking or device that announces or governs the designation, nothing about which other regions the footprint overlaps, nothing about the compass direction of travel, and nothing about how long the road user has gone that way. It is read of the direction the body travels and never of the direction it points: a body that points along the designation while rolling backwards along it satisfies the concept, and one that points against the designation while drifting along it does not. A road user at rest does not satisfy it, and neither does one that travels across the designation: the concept bounds the component along the designation alone and says nothing of motion across it. It is not a lane change, not a turning, not a reversal of direction, and not a verdict that the road user goes the wrong way. Where the named region carries no designated direction, the concept is unknown.",
+ "definition": null,
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "along_region_speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the magnitude of motion along the region's designated direction, taken contrary to that direction, below which a measured velocity does not stand clear of zero; it names the source's speed resolution and no standard of conduct"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its footprint overlaps that region",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies is 'a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure)', which is exactly the membership these words state; the region is the concept's own formal, so the overlap is read of that region and of no other. It is not st.region_geometry, whose exclusion says a footprint inside a boundary is rel.occupies: no distance is taken here, only membership."
+  },
+  {
+   "span": "the component of its velocity along that region's designated direction of travel",
+   "atoms": [
+    "kin.velocity",
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the 'velocity vector', m/s in the world frame, which is the direction the body travels; st.lane_direction is the 'direction of travel designated for a structure a vehicle travels in - a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder', recorded as a direction, so the inner product of the one with the other is the component along the designation in metres per second, and st.lane_direction's note that 'a place no carrier covers has none (unknown)' is why the concept is unknown where the named region carries no direction. kin.heading is deliberately not read: the contract is of the direction the body travels, and the ontology warns that a body points one way while it may move the other. st.lane_direction is not read as a marking or a sign announcing the designation, and the atom carries the designation of its own carrier alone, which the region formal fixes."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A one-way roadway region whose designated direction of travel is due east. A passenger car's footprint overlaps that region and its velocity is 8 m/s due west, so the component along the designation is about -8 m/s, below the caller's tolerance taken negative: the concept holds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same region designated due east. The car's footprint overlaps it and its velocity is 8 m/s due east, so the component along the designation is about +8 m/s, well above the tolerance taken negative: the concept fails."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same region and the same car travelling west over it, but the source's capability manifest declares st.lane_direction absent: the region's designated direction is not observed, so the component along it cannot be computed and the concept is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "supersedes": null,
+ "differs_from": {
+  "concept": "drv.lane.travel_with_roadway_designated_direction",
+  "why": "That accepted concept reads the same three atoms, but it denotes the opposite state of motion and takes its region differently. Its body holds where the along-designation component is at least the tolerance - travel with the designation - and the negation of that bound is not this concept's: a body at rest, and a body crossing the designation, fail the accepted concept while they also fail this one, so neither concept is the other's complement and neither body computes the other. And it finds its region by a quantifier over a literal kind, which leaves a caller no way to say which region is meant; this concept takes the region as a formal, for the laws whose words single one out."
+ }
+}

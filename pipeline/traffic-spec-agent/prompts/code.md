@@ -83,7 +83,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    every definition with `def`, never `private def`: each file has its own namespace, and every
    part of a rule or a witness stays reachable to the tools that inspect it.
 2. **The rule declares what the node declares.** `laws`, `binders` (names, order), `assumptions`,
-   `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
+   `intentions`, `operationalizations`, `residues`, `surrogate` are the skeleton's; leave them. A residue is the
    plan's: words nothing carries. Where the record leaves the writing of a span the node carries
    open, you choose only among meanings its words already allow, and you declare each such choice
    — the formulas state the span more narrowly than its words — as a **narrowing**
@@ -133,6 +133,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
    in its narrowings) is written from its element's atoms as any span is. It is the plan's
    narrowing, already on record: you do not restate it, and you never declare one the node does not.
+   A declared intention the node carries (`intentions`) is the formula `intent` of the road user and
+   the region its span names, read at the judged observation or in a window behind it, never in a
+   window ahead.
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
@@ -201,6 +204,7 @@ computes on a situation what its own contract excludes, write `dependency_defect
 "kind": "holds_wrongly | fails_wrongly | undecided" (a quantity: "value_wrongly | undecided"), "situation": "<one sentence>",
 "contract_verdict": "holds | fails"` (a quantity: `"contract_value": {"lo": [<value>, "<unit>"], "hi": [<value>, "<unit>"]}`)`,
 "instance": {"literals": {...}, "nats": {...}, "params": {"<parameter>": [<value>, "<unit>"]}}, "grounding": {"<track formal>": <track id>},
+"regions": {"<region formal>": <region id>},
 "trace": {"scenes": [...]}, "at": <timestamp of a scene, ms>}`
 — and finish. The harness runs the concept on your trace and an adjudicator judges the report by
 the concept's contract before anything is charged; a report it does not uphold is your session's

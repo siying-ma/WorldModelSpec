@@ -10,7 +10,7 @@ from ..model import corpus
 from ..model.corpus import Law
 from ..model.mapping import MappingIndex
 from ..model.ontology import Ontology
-from ..model.reading import Reading
+from ..model.reading import Reading, DECLARED_ID, same_meaning
 
 ACCEPT, RETURN, FAIL = "accept", "return", "fail"
 _STRIP = re.compile(r"[\s\.,;:()\[\]“”\"'‘’—–-]+")
@@ -59,7 +59,7 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
     errs = []
     spans = node.spans()
     carriers: dict[str, list[str]] = {sid: [] for sid in spans}
-    for key in ("elements", "operationalizations", "assumptions", "compositions", "residues"):
+    for key in ("elements", "operationalizations", "assumptions", "intentions", "compositions", "residues"):
         for item in node.get(key, []):
             sid = item.get("span")
             if sid not in spans:
@@ -519,6 +519,44 @@ OBSERVABLE_READING = "observable_reading"
 OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose", "agency"}
 
 
+def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
+    """The node's declared facts against the run's one catalogue of ids (`catalogue`: id ↦ meaning,
+    the reading's declarations and those of the nodes validated before this one). An assumption's
+    id is `asm.<name>` and an intention's `int.<name>`. An id the catalogue has is reused: it may
+    omit its meaning, which the harness writes into the record; a meaning it gives is the
+    catalogue's. An id the catalogue lacks gives its meaning, and joins the catalogue for the nodes
+    validated after this one. A declared intention is carried on a span that decides when the rule
+    applies (trigger, subject, condition, exception), and that span carries no observable reading
+    of an intention: the words are read either as declared or through conduct, never both."""
+    errs = []
+    spans = node.spans()
+    observed = {n.get("span") for n in node.get("narrowings", []) if n.get("kind") == OBSERVABLE_READING and n.get("category") == "intention"}
+    for key, prefix in (("assumptions", "asm."), ("intentions", "int.")):
+        for d in node.get(key, []):
+            cid, meaning = d.get("id"), _ws(d.get("meaning"))
+            if not DECLARED_ID.match(cid or "") or not cid.startswith(prefix):
+                errs.append(f"{node.id}: {key} id `{cid}` is not `{prefix}<snake_case name>`"); continue
+            if cid in catalogue:
+                if meaning and not same_meaning(meaning, catalogue[cid]):
+                    errs.append(f"{node.id}: `{cid}` means {catalogue[cid]!r} in the catalogue, here {meaning!r}: reuse the id without a "
+                                "meaning, or propose a new id for another meaning")
+                else:
+                    d["meaning"] = catalogue[cid]
+            elif not meaning:
+                errs.append(f"{node.id}: `{cid}` is in no catalogue and gives no meaning: reuse a catalogued id, or give the new id its meaning")
+            else:
+                catalogue[cid] = meaning
+            if key == "intentions":
+                role = spans.get(d.get("span"), {}).get("role")
+                if role not in SCOPE_ROLES:
+                    errs.append(f"{node.id}: intention `{cid}` on span {d.get('span')} ({role}); a declared intention is carried on a "
+                                "trigger, subject, condition or exception span")
+                if d.get("span") in observed:
+                    errs.append(f"{node.id}: span {d.get('span')} carries the intention `{cid}` and an observable reading of an intention; "
+                                "the words are read as declared, or through conduct, not both")
+    return errs
+
+
 def check_narrowings(node: Node, rejected_gaps: dict[str, dict] | None = None, law_text: str = "") -> list[str]:
     """A narrowing is a disclosed reading of a span the plan carries by an element or an
     operationalization: the span exists, has role obligation or standard, is so carried, and the
@@ -618,7 +656,7 @@ def check_decomposition(nodes: list[Node], law: Law) -> list[str]:
     seen: dict[tuple, str] = {}
     offs = {n.id: span_offsets(n.get("segmentation", []), law.text) for n in nodes}
     for n in nodes:
-        carried = {e.get("span") for key in ("elements", "operationalizations", "residues", "compositions", "assumptions") for e in n.get(key, [])}
+        carried = {e.get("span") for key in ("elements", "operationalizations", "residues", "compositions", "assumptions", "intentions") for e in n.get(key, [])}
         for s in n.get("segmentation", []):
             if s.get("role") == "obligation" and s["id"] in carried and s["id"] in offs[n.id]:
                 key = offs[n.id][s["id"]]
@@ -754,9 +792,11 @@ def identifier_collisions(ident: str, groups: dict[str, list[str]]) -> list[str]
 def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: Reading,
              index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
-             known_nodes: list[Node] | None = None, rejected_gaps: dict[str, dict] | None = None) -> list[Outcome]:
+             known_nodes: list[Node] | None = None, rejected_gaps: dict[str, dict] | None = None,
+             prior_nodes: list[Node] | None = None) -> list[Outcome]:
     """`known_nodes` are nodes of the same iteration's other plan batches: a composition may name
-    them, they are not validated here. `rejected_gaps` maps each rejected gap of the ledger to the
+    them, they are not validated here. `prior_nodes` are those of them validated before these (the
+    earlier batches): the ids they declare are in the catalogue these nodes reuse. `rejected_gaps` maps each rejected gap of the ledger to the
     laws it was decided on and the occurrence it was filed on (`{laws, occurrence}`)."""
     outcomes: list[Outcome] = []
     accepted_concepts = accepted_concepts or {}
@@ -786,6 +826,11 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         if a.law in by_law and a.id not in plan_ids:
             by_law[a.law].append(a)
     cycle_errs = _guarded("the plan's compositions", acyclic, known)
+    catalogue = {i: _ws(d.get("meaning")) for i, d in (reading.declarations() if hasattr(reading, "declarations") else {}).items()}
+    for m in prior_nodes or []:                          # nodes of earlier batches were validated before these
+        for d in m.get("assumptions", []) + m.get("intentions", []):
+            if d.get("id") and _ws(d.get("meaning")):
+                catalogue.setdefault(d["id"], _ws(d["meaning"]))
     def one(n: Node) -> Outcome:
         errs = []
         refs = n.get("law_refs", ["?"])
@@ -819,6 +864,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_compositions(n, known)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps, law.text)
+        errs += check_declarations(n, catalogue)
         errs += check_reemission(n, accepted, law.text)
         errs += check_region_places(n.id, n.claimed_atoms(), onto)
         errs += [c for c in cycle_errs if n.id in c]
@@ -902,6 +948,7 @@ NODE_SCHEMA = {
     "operationalizations?": [{"span": "id", "standard?": "str", "concepts?": ["id"], "concept?": "id", "params?": ["id"],
                               "convention?": "str", "surrogate?": "bool"}],
     "assumptions?": [{"span": "id", "id": "id", "meaning?": "str"}],
+    "intentions?": [{"span": "id", "id": "id", "meaning?": "str"}],
     "compositions?": [{"span": "id", "rule": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id"}],
     "residues?": [{"span": "id", "why?": "str", "scope?": "str"}],
     "binders": [{"name": "id", "class_elements?": ["str"]}],
@@ -1081,7 +1128,8 @@ def check_region_places(ident: str, claims: set[str], onto: Ontology) -> list[st
     """A record that reads a region's property claims the kind of region it is read on, since a
     region quantifier names its kind. How the region is tied to the road user (occupancy, distance,
     a device governing it) is the formula's, and the gate checks that every quantified region is
-    anchored to a binder (`UNANCHORED_VARIABLE`)."""
+    anchored to a binder (`UNANCHORED_VARIABLE`). A concept that takes a region formal is not held
+    to it: the caller's quantifier names that region's kind."""
     props, kinds = region_atoms(onto)
     read = sorted(claims & props)
     if not read or claims & kinds:
@@ -1140,7 +1188,8 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
     # elements: contract words → atoms and concepts
     if not c.elements():
         errs.append(f"{cid}: no elements: the contract's words map to nothing")
-    errs += check_region_places(cid, c.claimed_atoms(), onto)
+    if not any(a.get("sort") == "region" for a in c.args()):
+        errs += check_region_places(cid, c.claimed_atoms(), onto)
     for e in c.elements():
         span = _ws(e.get("span"))
         if not span or span not in contract:

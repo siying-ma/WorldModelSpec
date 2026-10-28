@@ -103,9 +103,9 @@ def noLanes : Manifest := { full with entries := full.entries.map fun (id, c) =>
 def S : Setup := Setup.mk' rules τ ρ (seconds 2)
 #guard (groundings S rule).length = 2
 #guard predictedGroundings S rule = 4
-#guard (groundings S truckRule) = [⟨[("x", 2)]⟩]
-def g12 : Grounding := ⟨[("x", 1), ("y", 2)]⟩
-def g21 : Grounding := ⟨[("x", 2), ("y", 1)]⟩
+#guard (groundings S truckRule) = [{ assign := [("x", 2)] }]
+def g12 : Grounding := { assign := [("x", 1), ("y", 2)] }
+def g21 : Grounding := { assign := [("x", 2), ("y", 1)] }
 -- gaps 25.5/10, 20.5/8, 16.5/6, 13.5/4, 11.5/2 s all exceed 1.5 s; then x stands and the gap is undefined
 #guard (timeline S rule g12).toList.map (·.2) =
   List.replicate 5 Verdict.compliant ++ List.replicate 4 (Verdict.unknown [.divisionByZero "div"])
@@ -115,8 +115,8 @@ def strict : Rule := { rule with obligation := .cmp timeGap .ge (.lit (seconds 3
 #guard episode ((timeline S rule g21).toList.map (·.2)) = .notApplicable
 #guard (Grounding.check S rule).map (fun (_, tl, ep) => (tl.live, ep.tag)) = [(true, "unknown"), (false, "not_applicable")]
 #guard (Grounding.check S rule).map (fun (_, tl, _) => tl.present) = [true, true]
-#guard !(evaluate S rule ⟨[("x", 1), ("y", 9)]⟩).present                                  -- track 9 never appears
-#guard ((evaluate S rule ⟨[("x", 1), ("y", 9)]⟩).verdicts.toList.map (·.2)) = List.replicate 9 Verdict.notApplicable
+#guard !(evaluate S rule { assign := [("x", 1), ("y", 9)] }).present                                  -- track 9 never appears
+#guard ((evaluate S rule { assign := [("x", 1), ("y", 9)] }).verdicts.toList.map (·.2)) = List.replicate 9 Verdict.notApplicable
 #guard live S rule
 #guard !(live S { rule with applicability := .ff })
 #guard episode [.compliant, .notApplicable] = .compliant
@@ -128,8 +128,8 @@ def strict : Rule := { rule with obligation := .cmp timeGap .ge (.lit (seconds 3
 #guard (((timeline S composed g12).toList.map (·.2)).drop 2).take 3 = List.replicate 3 Verdict.compliant
 #guard Grounding.verdictAt S composed g12 0 = Verdict.unknown [.windowTruncated "holdsFor"]
 #guard Grounding.verdictAt S composed g12 8 = Verdict.unknown [.divisionByZero "div"]
-#guard Grounding.verdictAt S truckRule ⟨[("x", 2)]⟩ 8 = Verdict.compliant
-#guard Grounding.verdictAt S truckRule ⟨[("x", 2)]⟩ 0 = Verdict.unknown [.windowTruncated "holdsFor"]
+#guard Grounding.verdictAt S truckRule { assign := [("x", 2)] } 8 = Verdict.compliant
+#guard Grounding.verdictAt S truckRule { assign := [("x", 2)] } 0 = Verdict.unknown [.windowTruncated "holdsFor"]
 
 -- a composed rule's applicability (for exceptions and conditions), and a user quantifier
 def applies : Rule := { composed with id := "test/applies", obligation := .ruleApplies "test/gap" [("x", "x"), ("y", "y")] }
@@ -139,8 +139,8 @@ def rulesC : List Rule := rules ++ [applies, anyFollower]
 def SC : Setup := Setup.mk' rulesC τ ρ (seconds 2)
 #guard ((timeline SC applies g12).toList.map (·.2)).take 2 = [Verdict.compliant, Verdict.compliant]   -- x follows y: the gap rule applies
 #guard ((timeline SC applies g21).toList.map (·.2)).take 2 = [Verdict.violated, Verdict.violated]     -- y=1 is not ahead of x=2: it does not
-#guard Grounding.verdictAt SC anyFollower ⟨[("x", 2)]⟩ 0 = Verdict.compliant                          -- some non-truck (1) follows the truck (2)
-#guard Grounding.verdictAt SC anyFollower ⟨[("x", 1)]⟩ 0 = Verdict.violated                           -- nobody follows 1
+#guard Grounding.verdictAt SC anyFollower { assign := [("x", 2)] } 0 = Verdict.compliant                          -- some non-truck (1) follows the truck (2)
+#guard Grounding.verdictAt SC anyFollower { assign := [("x", 1)] } 0 = Verdict.violated                           -- nobody follows 1
 #guard Rule.check rulesC anyFollower = []
 #guard (Rule.check rulesC { anyFollower with obligation := .ruleApplies "test/gap" [("x", "x")] }).length = 1
 
@@ -171,7 +171,7 @@ def Sc : Setup := Setup.mk' rules τb ρ (seconds 1)
 #guard ((timeline Sc rule g12).toList.map (·.2)).drop 3 = List.replicate 6 Verdict.notApplicable
 
 -- the report
-def rep : Monitor.Report := Monitor.check rules τ ρ full
+def rep : Monitor.Report := (Monitor.check rules τ ρ full).toOption.getD default
 #guard rep.rules.length = 3
 #guard rep.rows.length = 2 + 1 + 2
 #guard (rep.rules.map (·.live)) = [true, true, true]
@@ -182,7 +182,7 @@ def text : String := Monitor.renderText rep
 #guard (text.splitOn "\n").any (· == "UNK\ttest/gap\tx=1,y=2\tdivision_by_zero:div\t4")
 #guard (text.splitOn "\n").any (·.startsWith "SUMMARY\tconcrete\trules=3\tsupported=3\tpartial=0\tunsupported=0\tlive=3")
 #guard (text.splitOn "\n").any (·.startsWith "SUMMARY\tsurrogate\trules=0")
-def repNoSpeed : Monitor.Report := Monitor.check rules τ ρ noSpeed
+def repNoSpeed : Monitor.Report := (Monitor.check rules τ ρ noSpeed).toOption.getD default
 #guard (repNoSpeed.rules.map (·.support.tag)) = ["partial", "unsupported", "unsupported"]
 #guard repNoSpeed.rows.length = 2 + 0 + 0                       -- unsupported rules are not enumerated
 #guard (repNoSpeed.rows.map (·.episode)) = [Verdict.unknown [.absentAtom "kin_speed"], Verdict.notApplicable]

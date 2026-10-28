@@ -15,8 +15,10 @@ bad request (400, 404, 422) is the harness's input to fix: it is reported at onc
 the digest of the effective request is recorded, so the same request is never sent again, in any
 generation; a changed request (another prompt, model, effort, output cap or tool schema) may be. A session cut off by
 its turn cap, budget cap or timeout ran: with `relaunch_cut_off` (a coding task) it is relaunched
-under the same budget, and once those relaunches are spent its record is returned with `cut_off`
-set, so the caller's own gate judges what it left; without, its record's `cut_off` tells the caller. No launch or relaunch starts once the owner's stop event is set. The
+at once, after `relaunch_cut_off` has prepared the relaunch and returned what the relaunch's prompt
+adds (a coding task keeps the candidate the launch left and says so), and once those relaunches are
+spent its record is returned with `cut_off` set, so the caller's own gate judges what it left;
+without, its record's `cut_off` tells the caller. No launch or relaunch starts once the owner's stop event is set. The
 OpenAI client does not retry: the session's relaunch is the one retry.
 
 `run` launches a Claude session, or one tool-less call of the second vendor (a reader, a judge).
@@ -198,11 +200,22 @@ def _stopping(label: str) -> None:
         raise SessionUnavailable(f"{label}: the run is stopping")
 
 
-def _retry(label: str, why: str, spent: int, opts: Options, relaunch: Optional[Callable[[], None]]) -> None:
-    """After a launch that did not do its work: raise when the task's allowance is spent, else wait and prepare the relaunch."""
+#: The wait before the first relaunch after the API failed a request (a 5xx, a timeout, a lost
+#: answer): such a failure usually clears within a minute; a later one waits `retry_wait`.
+SERVER_FAILURE_WAIT = 60.0
+
+
+def _retry(label: str, why: str, spent: int, opts: Options, relaunch: Optional[Callable[[], None]],
+           cut_off: bool = False, server_failure: bool = False) -> None:
+    """After a launch that did not do its work: raise when the task's allowance is spent, else wait and
+    prepare the relaunch. A session the account or the API refused waits `retry_wait` for the limit or
+    the outage to clear, except the first relaunch after the API failed a request, which waits
+    `SERVER_FAILURE_WAIT` (never longer than `retry_wait`); one that ran and was cut off has nothing to
+    wait for and is relaunched at once."""
     _spent(label, spent, opts, why)
-    print(f"[session] relaunching {label} in {opts.retry_wait:.0f}s ({spent}/{opts.session_retries})")
-    time.sleep(opts.retry_wait)
+    wait = 0.0 if cut_off else min(SERVER_FAILURE_WAIT, opts.retry_wait) if server_failure and spent == 1 else opts.retry_wait
+    print(f"[session] relaunching {label} in {wait:.0f}s ({spent}/{opts.session_retries})")
+    time.sleep(wait)
     _stopping(label)
     if relaunch is not None:
         relaunch()
@@ -212,10 +225,11 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
         label: str = "session", timeout: Optional[float] = None, allow: Optional[list[str]] = None,
         deny: Optional[list[str]] = None, tools: Optional[list[str]] = None,
         env: Optional[dict[str, str]] = None, model: Optional[str] = None, usage_label: Optional[str] = None,
-        relaunch: Optional[Callable[[], None]] = None, relaunch_cut_off: bool = False) -> dict:
+        relaunch: Optional[Callable[[], None]] = None, relaunch_cut_off: Optional[Callable[[], str]] = None) -> dict:
     """Launch, record `<label>.jsonl` and `<label>_result.json` (`.retryN` for later launches), relaunch
-    a session that did not run (and, with `relaunch_cut_off`, one cut off), calling `relaunch` before
-    each relaunch. Returns the record of the launch that ran, its `cut_off` set when it was cut off. `usage_label` (default: the
+    a session that did not run, calling `relaunch` before each such relaunch, and, with
+    `relaunch_cut_off`, one cut off, calling it before the relaunch and adding what it returns to the
+    relaunch's prompt. Returns the record of the launch that ran, its `cut_off` set when it was cut off. `usage_label` (default: the
     session's directory under the run and its label) names its row in `usage.jsonl`, with the launch. `cwd` is the session's jail: it may read anything under it, so it
     holds only the session's own files; `allow` names everything else it may do."""
     chosen = model or opts.model
@@ -223,6 +237,7 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
         raise RuntimeError(f"{label}: an OpenAI model ({chosen}) runs here only tool-less sessions (readers, judges); a reviewer's "
                            "tool session goes through `run_tools`")
     launched, spent, rejected = _launches(out_dir, label)
+    text = prompt
     while True:
         _stopping(label)
         _spent(label, spent, opts)
@@ -236,14 +251,14 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
             from . import openai_runner
             name = chosen.split(":", 1)[1] if chosen.startswith("openai:") else chosen
             cap = opts.reviewer_max_output_tokens
-            digest = openai_runner.call_digest(prompt, model=chosen, effort=effort, max_output_tokens=cap)
+            digest = openai_runner.call_digest(text, model=chosen, effort=effort, max_output_tokens=cap)
             if digest in rejected:
                 raise BadRequest(f"{label}: the API rejected this very request before; it is not sent again until it changes")
-            token = ledger.reserve(name, len(prompt), cap or 0, row_label)    # raises BudgetPaused when the call does not fit
+            token = ledger.reserve(name, len(text), cap or 0, row_label)    # raises BudgetPaused when the call does not fit
             _started(out_dir, label, suffix, launched)
             try:
                 code, result, timed_out = openai_runner.run_openai(
-                    prompt, model=chosen, stream_path=stream, effort=effort,
+                    text, model=chosen, stream_path=stream, effort=effort,
                     timeout_seconds=timeout if timeout is not None else opts.session_timeout, max_output_tokens=cap)
             except budget.BudgetPaused:                    # the quota answered: nothing was executed
                 ledger.settle(token, budget.usage_row(row_label, "openai", name, effort, {}, 0.0)); raise
@@ -261,7 +276,7 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
         else:
             _started(out_dir, label, suffix, launched)
             code, result, timed_out = runner.run_claude(
-                prompt, cwd=cwd, stream_path=stream, max_turns=max_turns,
+                text, cwd=cwd, stream_path=stream, max_turns=max_turns,
                 model=chosen, effort=effort, max_budget_usd=opts.session_budget_usd,
                 timeout_seconds=timeout if timeout is not None else opts.session_timeout,
                 env_overrides=env, allow=allow, deny=deny, tools=tools)
@@ -274,7 +289,7 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
                   "failure": None if stopped else failure, "cut_off": None if stopped else cut, "stopped": stopped}
         (out_dir / f"{label}_result{suffix}.json").write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
         _stopping(label)
-        if failure is None and (cut is None or not relaunch_cut_off):
+        if failure is None and (cut is None or relaunch_cut_off is None):
             return record
         why = failure or cut
         spent += 1
@@ -286,7 +301,12 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
             return record
         hint = runner.reset_hint(why)
         print(f"[session] {label} {'did not run' if failure else 'was cut off'}: {why}" + (f" (resets {hint})" if hint else ""))
-        _retry(label, why, spent, opts, relaunch)
+        if failure is None:
+            added: list[str] = []
+            _retry(label, why, spent, opts, lambda: added.append(relaunch_cut_off()), cut_off=True)
+            text = prompt + added[0]
+        else:
+            _retry(label, why, spent, opts, relaunch)
 
 
 def _account(ledger, token: str, row_label: str, name: str, effort, code: int, timed_out: bool, response: Optional[dict],
@@ -340,8 +360,9 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
     reservation at a time and a failure leaves the usage of the requests before it recorded.
     `BudgetPaused` propagates. The whole session has one deadline, `session_timeout`; each
     request's timeout is what remains, at most `REQUEST_TIMEOUT`. A refused, failed or overdue
-    request is a session that did not run: it is relaunched from the start after `retry_wait`, within
-    the task's launches of this loop launch, and then `SessionUnavailable`; a rejected request raises
+    request is a session that did not run: it is relaunched from the start after `retry_wait` (the
+    first time after `SERVER_FAILURE_WAIT` when the API failed it), within the task's launches of this
+    loop launch, and then `SessionUnavailable`; a rejected request raises
     `BadRequest` and its digest is recorded, so the same request is never sent again; the API's
     reason, sanitized, is written to the session's stream. Each request's usage row is
     `<label>:<subject>:L<launch>.r<n>`. Returns the record: `result` with the request count and
@@ -367,7 +388,7 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
         tools.reset()
         items: list = [{"role": "user", "content": prompt}]
         deadline = time.time() + float(opts.session_timeout or REQUEST_TIMEOUT)
-        why, n = None, 0
+        why, n, server_failure = None, 0, False
         while not tools.done and n < tools.max_requests:
             n += 1
             remaining = deadline - time.time()
@@ -395,6 +416,7 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
                 with open(stream, "a", encoding="utf-8") as f:
                     f.write(json.dumps({"type": "error", "n": n, "timed_out": timed_out, "error": reason}, ensure_ascii=False) + "\n")
                 why = ("the request timed out" if timed_out else "the API refused or failed the request") + (f": {reason}" if reason else "")
+                server_failure = code == openai_runner.LOST
                 if code == openai_runner.BAD_REQUEST:
                     record = {"code": code, "timed_out": False, "attempt": attempts, "generation": owner.generation(),
                               "result": {"requests": n, "submitted": False}, "failure": why, "rejected_request": digest}
@@ -432,4 +454,4 @@ def run_tools(prompt: str, out_dir: Path, opts: Options, tools, *, label: str, e
             return record
         spent += 1
         print(f"[session] {label} did not run: {why}")
-        _retry(label, why, spent, opts, None)
+        _retry(label, why, spent, opts, None, server_failure=server_failure)

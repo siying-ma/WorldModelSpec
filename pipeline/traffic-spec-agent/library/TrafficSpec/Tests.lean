@@ -15,3 +15,4 @@ import TrafficSpec.Tests.Concept
 import TrafficSpec.Tests.Rewrites
 import TrafficSpec.Tests.TraceLint
 import TrafficSpec.Tests.Certificate
+import TrafficSpec.Tests.Intentions

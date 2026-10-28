@@ -1,8 +1,8 @@
 /-
   TrafficSpec.Core.Language.Rule
   What a specification is: binders with class formulas, an applicability and an obligation, and
-  the declarations a reviewer needs (parameters, assumptions, operationalizations, residues,
-  narrowings, the rules it composes, the surrogate flag).
+  the declarations a reviewer needs (parameters, assumptions, declared intentions,
+  operationalizations, residues, narrowings, the rules it composes, the surrogate flag).
 
   A residue is a span of the text the rule does not capture at all; the plan declares it and the
   rule repeats it verbatim. A narrowing is a reading the coder chose on a span the plan does
@@ -54,6 +54,7 @@ structure Rule where
   applicability : Formula
   obligation : Formula
   assumptions : List AsmId := []
+  intentions : List IntId := []                 -- the declared intentions its formulas read
   operationalizations : List Operationalization := []
   residues : List String := []                  -- what the text says and the rule does not capture
   narrowings : List Narrowing := []             -- readings the coder chose on carried spans
@@ -109,6 +110,8 @@ def params (r : Rule) : List ParamName := (r.formulas.flatMap Formula.params).er
 def composes (r : Rule) : List String := (r.formulas.flatMap Formula.composed).eraseDups
 /-- Assumptions the formulas read. -/
 def usedAssumptions (r : Rule) : List AsmId := (r.formulas.flatMap Formula.assumptions).eraseDups
+/-- Declared intentions the formulas read. -/
+def usedIntentions (r : Rule) : List IntId := (r.formulas.flatMap Formula.intentions).eraseDups
 def binderNames (r : Rule) : List String := r.binders.map (·.name)
 def subject (r : Rule) : Option String := r.binders.head?.map (·.name)
 
@@ -122,6 +125,11 @@ def closure (rules : List Rule) (r : Rule) : List Rule :=
         if seen.contains id then none else rules.find? (·.id == id)
       x :: go fuel (seen ++ next.map (·.id)) (rest ++ next)
   go (rules.length + 1) [r.id] [r]
+
+/-- Whether the rule reads a declared intention, in its own formulas or through a rule it
+    composes at any depth. -/
+def readsIntention (rules : List Rule) (r : Rule) : Bool :=
+  (closure rules r).any fun x => !x.usedIntentions.isEmpty
 end Rule
 
 end TrafficSpec

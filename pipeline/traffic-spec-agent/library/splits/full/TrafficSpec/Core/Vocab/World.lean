@@ -222,6 +222,14 @@ structure MeasuredRelation where
   visible : Option Bool := none              -- b in a's line of sight
   deriving Repr, Inhabited
 
+/-- A source's declaration current at a scene for one road user at one target region: each id
+    listed true or false, an id the declaration does not decide left out. -/
+structure DeclaredIntent where
+  vehicle : TrackId
+  target : RegionId
+  values : List (IntId × Bool)
+  deriving Repr, Inhabited
+
 structure Scene where
   t : Timestamp
   subject : Option TrackId := none
@@ -235,6 +243,7 @@ structure Scene where
   relations : List MeasuredRelation := []
   env : Env := {}
   assumptions : List (AsmId × Bool) := []
+  intents : List DeclaredIntent := []
   links : List (TrackId × TrackId) := []
   deriving Repr, Inhabited
 

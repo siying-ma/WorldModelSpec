@@ -3,8 +3,8 @@
 
     monitor --manifest <m.json> [--reading <r.json>] [--rules id,id,...] [--json] <trace.json>...
 
-  One report per trace. Exit status 2 on a decode error, 0 otherwise: verdicts are the report's
-  business, not the process's.
+  One report per trace. Exit status 2 on a decode error or a trace the admission refuses, 0
+  otherwise: verdicts are the report's business, not the process's.
 -/
 import TrafficSpec
 import TrafficSpec.Core.Runtime.Decode
@@ -50,8 +50,11 @@ def main (args : List String) : IO UInt32 := do
       | none => allRules
     for path in opts.traces do
       let τ ← readJson Decode.trace path
-      let rep := Monitor.check rules τ ρ m allConcepts
-      IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)
+      match Monitor.check rules τ ρ m allConcepts with
+      | .ok rep => IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)
+      | .error ds =>
+        IO.eprintln s!"monitor: {path}: the trace is not admitted: {"; ".intercalate ds}"
+        return (2 : UInt32)
     return (0 : UInt32)
   catch e =>
     IO.eprintln s!"monitor: {e}"

@@ -43,4 +43,42 @@ def following : Scenario := { stopped with rule := "test/gap", grounding := [("x
 def blindOnly : Scenario := { following with manifest := Build.manifest ["kin.speed"], expected := .unknown [], window := none }
 #guard (blindOnly.run rules).isOk
 #guard (TrafficSpec.Adequacy.unexercised rules rule [idleOnly, blindOnly]).length = 2
+-- `moves` decides what comparing the whole verdict profiles decides, for rules that move and do not
+def pair : List Scenario := [idleOnly, following]
+def base := TrafficSpec.Adequacy.profile rules rule pair
+def mutants : List Rule := [rule, { rule with obligation := .tt }, { rule with obligation := .ff },
+  { rule with applicability := .tt }, { rule with applicability := .ff }]
+#guard mutants.all fun r' => TrafficSpec.Adequacy.moves rules r' [] pair base == (TrafficSpec.Adequacy.profile rules r' pair != base)
+#guard mutants.any fun r' => TrafficSpec.Adequacy.moves rules r' [] pair base
+#guard !TrafficSpec.Adequacy.moves rules rule [] pair base
+#guard TrafficSpec.Adequacy.moves rules rule [] pair []
+-- the family scheduling against the order of evaluation it replaced (every leaf asked, then each
+-- unmoved first member reported when no member of its family moved), on every assignment of moving
+-- leaves to six leaves: a family of three non-adjacent literal variants (leaves 0, 2, 5), one of
+-- two (1, 4) and a leaf alone (3)
+def refReport (label : String) (names : List String) (moved : Nat → Bool) : List String :=
+  let mv := (List.range names.length).map moved
+  let fams := names.map TrafficSpec.Adequacy.family
+  (List.range names.length).filterMap fun k =>
+    if mv[k]?.getD true then none
+    else
+      let fam := fams[k]?.getD ""
+      let members := (List.range names.length).filter fun j => fams[j]?.getD "" == fam
+      if members.any (fun j => mv[j]?.getD false) then none
+      else if members.head? != some k then none
+      else
+        let note := if members.length > 1 then s!" (one of {members.length} literal variants of this atom; none exercised)" else ""
+        some s!"{label} leaf {k}: {names[k]?.getD ""}{note}"
+def six : List String :=
+  ["atom dev_x [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"a\"]", "atom dev_y [TrafficSpec.Arg.lit \"p\"]",
+   "atom dev_x [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"b\"]", "asm c",
+   "atom dev_y [TrafficSpec.Arg.lit \"q\"]", "atom dev_x [TrafficSpec.Arg.var \"d\", TrafficSpec.Arg.lit \"c\"]"]
+def bits (m : Nat) : Nat → Bool := fun k => (m >>> k) % 2 == 1
+#guard (List.range 64).all fun m => TrafficSpec.Adequacy.report "obligation" six (bits m) == refReport "obligation" six (bits m)
+-- only the last variant of the first family moves: that family is not reported, the others are
+#guard TrafficSpec.Adequacy.report "obligation" six (· == 5)
+  = ["obligation leaf 1: atom dev_y [TrafficSpec.Arg.lit \"p\"] (one of 2 literal variants of this atom; none exercised)",
+     "obligation leaf 3: asm c"]
+-- nothing moves: each family once, at its first leaf, with its member count
+#guard (TrafficSpec.Adequacy.report "obligation" six (fun _ => false)).length = 3
 end TrafficSpec.Tests.Adequacy
