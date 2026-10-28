@@ -1,5 +1,10 @@
 """Split the pipeline corpus into a training set (build the autoformalization repository) and a
-test set (new legislation: rules, road structures and devices the repository has never seen).
+test set.
+
+With laws/example/law-split.json present, the approved versioned roster is authoritative.
+Only derived training vocabulary is regenerated; no law files are rewritten. Cross-split
+references are reported instead of requiring reference closure. The description below
+applies to the historical unversioned split generator.
 
     python -m nrs_tools.split          # from pipeline/ontology_provenance
 
@@ -89,6 +94,14 @@ TEST: dict[str, str] = {
     "NRS-484B-587-1": "control: enter or leave a controlled-access highway only at the signed points",
 }
 
+
+# The approved versioned roster supersedes the historical novelty-only roster.
+active_policy = LAWS_ROOT / "example" / "law-split.json"
+if active_policy.exists():
+    active_data = json.loads(active_policy.read_text(encoding="utf-8"))
+    TEST = {law: "Approved demo-overlap interaction hold-out (" + active_data["version"] + ")"
+            for law in active_data["heldout_law_ids"]}
+
 # Atoms with no support on either side are ontology design, not test knowledge: they stay in the
 # training ontology. Listed so the report can say so.
 ZERO_SUPPORT_STAY = ("sig.brake_lamp", "sig.hazard")
@@ -165,7 +178,82 @@ def held_out_rows(atoms: list[str]) -> dict[str, dict[str, str]]:
     return rows
 
 
+
+def training_vocabulary(laws, definitions, held, atom_ids):
+    """Withhold only atoms or values whose recorded support is exclusively held out."""
+    lex_atoms, lex_values = defaultdict(set), defaultdict(set)
+    for row in laws + definitions:
+        atoms, values = scan(row["text"] + " " + row["title"])
+        for atom in atoms:
+            lex_atoms[atom].add(row["id"])
+        for value in values:
+            lex_values[value].add(row["id"])
+    prov = provenance_support([law["id"] for law in laws])
+    support = {atom: lex_atoms[atom] | prov.get(atom, set()) for atom in atom_ids}
+    atoms = sorted(atom for atom, ids in support.items() if ids and ids <= held)
+    values = sorted(value for value, ids in lex_values.items()
+                    if ids and ids <= held and value.split("=")[0] not in atoms)
+    return atoms, values, sorted(atom for atom, ids in support.items() if not ids)
+
+
+def update_versioned_views():
+    """Regenerate vocabulary from the approved roster without changing corpus membership."""
+    policy = json.loads(active_policy.read_text(encoding="utf-8"))
+    laws = load("laws.jsonl")
+    train = load("laws.jsonl", SPLIT_DIR / "train")
+    test = load("laws.jsonl", SPLIT_DIR / "test")
+    definitions = load("definitions.jsonl", SPLIT_DIR / "train")
+    held = set(policy["heldout_law_ids"])
+    if {x["id"] for x in train} != set(policy["training_law_ids"]) or {x["id"] for x in test} != held:
+        raise ValueError("Corpus partitions differ from the approved roster")
+    full = {x["id"]: x for x in laws}
+    if {x["id"]: x for x in train + test} != full or set(policy["training_law_ids"]) & held:
+        raise ValueError("Training and held-out records must partition the full corpus unchanged")
+    demo = load("laws.jsonl", SPLIT_DIR / "demo")
+    if any(row != full[row["id"]] or row["id"] not in policy["training_law_ids"] for row in demo):
+        raise ValueError("Demo laws must remain unchanged in training")
+    # Use the ontology's current declarations, including atoms added upstream,
+    # rather than treating the lexical scanner as the vocabulary catalogue.
+    atom_ids = set(re.findall(r"^\| `((?:ru|kin|st|dev|sig|env|rel)\.[a-z_]+)` \|", ATOMS_MD.read_text(), re.M))
+    atoms, values, zero = training_vocabulary(laws, definitions, held, atom_ids)
+    path = AUDIT_DIR / "split_atoms.json"
+    data = json.loads(path.read_text())
+    data.update(test_ids=sorted(held), test_only_atoms=atoms, test_only_values=values,
+                held_out_rows=held_out_rows(atoms), train_atoms=sorted(atom_ids - set(atoms)),
+                zero_support_atoms_kept_in_train=zero, split_version=policy["version"])
+    # The runtime split implementation owns all dependent Core projections.
+    agent = LAWS_ROOT.parent
+    sys.path.insert(0, str(agent))
+    sys.path.insert(0, str(HERE.parent))
+    from harness.tools import split as runtime_split
+    from nrs_tools import atoms_train
+    runtime_split.archive_full()
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    if atoms_train.main():
+        raise RuntimeError("Training ontology generation failed")
+    if runtime_split.active() == "train":
+        runtime_split.activate("train")
+    else:
+        runtime_split.generate_train(runtime_split.SPLITS / "full" / "TrafficSpec" / "Core",
+                                     runtime_split.SPLITS / "train" / "TrafficSpec" / "Core")
+    metadata = {x["id"]: x for x in load("laws_meta.jsonl", AUDIT_DIR)}
+    references = [{"training_law": row["id"], "heldout_reference": ref}
+                  for row in sorted(train, key=lambda x: x["id"])
+                  for ref in metadata.get(row["id"], {}).get("refs", []) if ref in held]
+    return {"version": policy["version"], "test_only_atoms": atoms, "test_only_values": values,
+            "training_references_to_heldout": references, "law_records_unchanged": True,
+            "generator": "nrs_tools.split and harness.tools.split", "native_executions": 0}
+
+
 def main() -> int:
+    # Versioned migrations own corpus membership. Regeneration updates only
+    # derived atom views and cannot reapply the legacy 2026-10-13 roster.
+    active = LAWS_ROOT / "example" / "law-split.json"
+    if active.exists():
+        report = update_versioned_views()
+        print(json.dumps(report, indent=2))
+        return 0
+
     laws = with_meta(load("laws.jsonl"), "laws_meta.jsonl")
     defs = with_meta(load("definitions.jsonl"), "definitions_meta.jsonl")
     if not all("tier" in x for x in laws):

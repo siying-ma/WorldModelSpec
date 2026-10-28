@@ -24,6 +24,7 @@ def ofMeasure : List (String × Dim) := [
   ("kin_accel_longitudinal", ⟨1, -2, 0⟩),
   ("kin_yaw_rate", ⟨0, -1, 1⟩),
   ("kin_extent", ⟨1, 0, 0⟩),
+  ("kin_steer_angle", ⟨0, 0, 1⟩),
   ("kin_path_length", ⟨1, 0, 0⟩),
   ("kin_gear", ⟨0, 0, 0⟩),
   ("kin_throttle", ⟨0, 0, 0⟩),

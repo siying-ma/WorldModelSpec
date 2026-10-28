@@ -139,19 +139,24 @@ def user (id : String) (u : RoadUser) : RoadUser :=
   | "kin.accel_longitudinal" => { u with kin := { u.kin with accelLongitudinal := none } }
   | "kin.yaw_rate" => { u with kin := { u.kin with yawRate := none } }
   | "kin.extent" => { u with kin := { u.kin with extent := none } }
+  | "kin.steer_angle" => { u with kin := { u.kin with steerAngle := none } }
   | "kin.path_length" => { u with kin := { u.kin with pathLength := none } }
   | "kin.engine_running" => { u with kin := { u.kin with engineRunning := none } }
+  | "kin.parking_brake" => { u with kin := { u.kin with parkingBrake := none } }
   | "kin.gear" => { u with kin := { u.kin with gear := none } }
   | "kin.throttle" => { u with kin := { u.kin with throttle := none } }
   | "kin.service_brake" => { u with kin := { u.kin with serviceBrake := none } }
   | "sig.turn_indicator" => { u with sig := { u.sig with turnIndicator := none } }
-  | "sig.brake_lamp" => { u with sig := { u.sig with brakeLamp := none } }
   | "sig.hazard" => { u with sig := { u.sig with hazard := none } }
+  | "sig.headlamp" => { u with sig := { u.sig with headlamp := none } }
+  | "sig.position_lamp" => { u with sig := { u.sig with positionLamp := none } }
+  | "sig.reverse_lamp" => { u with sig := { u.sig with reverseLamp := none } }
   | "sig.warning_lamp" => { u with sig := { u.sig with warningLamps := none } }
   | "sig.siren" => { u with sig := { u.sig with siren := none } }
   | "sig.horn" => { u with sig := { u.sig with horn := none } }
   | "sig.hand_signal" => { u with sig := { u.sig with handSignal := none } }
   | "ru.aggregate" => { u with classes := none }   -- the source classifies nothing: every member unknown
+  | "sig.door_open" => { u with sig := { u.sig with doorsOpen := none } }
   | "sig.compression_brake" => { u with sig := { u.sig with compressionBrake := none } }
   | "st.sight_along_way" => { u with sightAlongWay := none }
   | _ =>

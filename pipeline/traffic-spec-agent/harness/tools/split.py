@@ -27,6 +27,7 @@ DEPENDENT = [WORLD, DECODE, MANIFEST, SEMANTICS, PRIMITIVES, GROUNDING]
 FIELDS_OF_ATOM: dict[str, list[tuple[str, str]]] = {
     "kin.steer_angle": [("steerAngle", "steer_angle")],
     "kin.parking_brake": [("parkingBrake", "parking_brake")],
+    "sig.brake_lamp": [("brakeLamp", "brake_lamp")],
     "sig.headlamp": [("headlamp", "headlamp")],
     "sig.position_lamp": [("positionLamp", "position_lamp")],
     "sig.reverse_lamp": [("reverseLamp", "reverse_lamp")],

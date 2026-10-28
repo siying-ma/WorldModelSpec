@@ -37,6 +37,7 @@ inductive StructureKind
   | pedestrianGradeSeparation
   | fireHydrant
   | fireStationEntrance
+  | roundabout
   | obstruction
   deriving DecidableEq, Repr, Inhabited
 
@@ -72,6 +73,7 @@ def ofString (s : String) : Option StructureKind :=
   | "pedestrian_grade_separation" => some .pedestrianGradeSeparation
   | "fire_hydrant" => some .fireHydrant
   | "fire_station_entrance" => some .fireStationEntrance
+  | "roundabout" => some .roundabout
   | "obstruction" => some .obstruction
   | _ => Option.none
 def toString : StructureKind → String
@@ -104,6 +106,7 @@ def toString : StructureKind → String
   | .pedestrianGradeSeparation => "pedestrian_grade_separation"
   | .fireHydrant => "fire_hydrant"
   | .fireStationEntrance => "fire_station_entrance"
+  | .roundabout => "roundabout"
   | .obstruction => "obstruction"
 instance : ToString StructureKind := ⟨toString⟩
 end StructureKind

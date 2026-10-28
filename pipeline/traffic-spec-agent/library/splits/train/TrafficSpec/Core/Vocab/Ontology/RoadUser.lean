@@ -13,6 +13,7 @@ inductive RoadUserClass
   | moped
   | bus
   | transitBus
+  | schoolBus
   | taxicab
   | tourBusOrLimousine
   | truck
@@ -38,6 +39,7 @@ def ofString (s : String) : Option RoadUserClass :=
   | "moped" => some .moped
   | "bus" => some .bus
   | "transit_bus" => some .transitBus
+  | "school_bus" => some .schoolBus
   | "taxicab" => some .taxicab
   | "tour_bus_or_limousine" => some .tourBusOrLimousine
   | "truck" => some .truck
@@ -60,6 +62,7 @@ def toString : RoadUserClass → String
   | .moped => "moped"
   | .bus => "bus"
   | .transitBus => "transit_bus"
+  | .schoolBus => "school_bus"
   | .taxicab => "taxicab"
   | .tourBusOrLimousine => "tour_bus_or_limousine"
   | .truck => "truck"

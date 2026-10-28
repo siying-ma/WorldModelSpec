@@ -112,7 +112,9 @@ def kin (path : String) (j : Json) : D Kin := do
            match ← arr p v with
            | [l, w, h] => pure (← num p l, ← num p w, ← num p h)
            | _ => fail p "expected [half_length, half_width, half_height]"
+         steerAngle := ← opt j path "steer_angle" num
          engineRunning := ← opt j path "engine_running" bool
+         parkingBrake := ← opt j path "parking_brake" bool
          gear := ← opt j path "gear" int
          throttle := ← opt j path "throttle" num
          serviceBrake := ← opt j path "service_brake" num
@@ -132,12 +134,15 @@ def warningLamp (path : String) (j : Json) : D WarningLamp := do
 
 def signals (path : String) (j : Json) : D Signals := do
   pure { turnIndicator := ← opt j path "turn_indicator" (enum TurnIndicatorState.ofString)
-         brakeLamp := ← opt j path "brake_lamp" bool
          hazard := ← opt j path "hazard" bool
+         headlamp := ← opt j path "headlamp" (enum HeadlampState.ofString)
+         positionLamp := ← opt j path "position_lamp" bool
+         reverseLamp := ← opt j path "reverse_lamp" bool
          warningLamps := ← optList j path "warning_lamps" warningLamp
          siren := ← opt j path "siren" bool
          horn := ← opt j path "horn" bool
          handSignal := ← opt j path "hand_signal" (enum HandSignal.ofString)
+         doorsOpen := ← optList j path "doors_open" (enum DoorSide.ofString)
          compressionBrake := ← opt j path "compression_brake" bool }
 
 def roadUser (path : String) (j : Json) : D RoadUser := do

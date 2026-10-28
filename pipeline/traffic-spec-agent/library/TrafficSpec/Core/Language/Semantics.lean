@@ -115,6 +115,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "ru_official_vehicle_kind", [x, k] => pure (eqEnum (ru_official_vehicle_kind s (← ent x)) (← enumLit OfficialKind.ofString k) name)
   -- control state
   | "kin_engine_running", [x] => pure (b (kin_engine_running s (← ent x)) name)
+  | "kin_parking_brake", [x] => pure (b (kin_parking_brake s (← ent x)) name)
   -- structure attributes
   | "st_road_edge_paved", [r] => pure (b (st_road_edge_paved s (← ent r)) name)
   | "st_shoulder_paved", [r] => pure (b (st_shoulder_paved s (← ent r)) name)
@@ -172,13 +173,17 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "dev_inoperative", [d] => pure (b (dev_inoperative s (← ent d)) name)
   -- signals emitted
   | "sig_turn_indicator", [x, k] => pure (eqEnum (sig_turn_indicator s (← ent x)) (← enumLit TurnIndicatorState.ofString k) name)
-  | "sig_brake_lamp", [x] => pure (b (sig_brake_lamp s (← ent x)) name)
   | "sig_hazard", [x] => pure (b (sig_hazard s (← ent x)) name)
+  | "sig_headlamp", [x, k] => pure (eqEnum (sig_headlamp s (← ent x)) (← enumLit HeadlampState.ofString k) name)
+  | "sig_position_lamp", [x] => pure (b (sig_position_lamp s (← ent x)) name)
+  | "sig_reverse_lamp", [x] => pure (b (sig_reverse_lamp s (← ent x)) name)
   | "sig_warning_lamp", [x, col] => pure (b (sig_warning_lamp_colour s (← ent x) (← enumLit LampColour.ofString col)) name)
   | "sig_warning_lamp", [x, col, m] => pure (b (sig_warning_lamp_shows s (← ent x) (← enumLit LampColour.ofString col) (← enumLit LampMode.ofString m)) name)
   | "sig_siren", [x] => pure (b (sig_siren s (← ent x)) name)
   | "sig_horn", [x] => pure (b (sig_horn s (← ent x)) name)
   | "sig_hand_signal", [x, k] => pure (eqEnum (sig_hand_signal s (← ent x)) (← enumLit HandSignal.ofString k) name)
+  | "sig_door_open", [x] => pure (b ((sig_door_open s (← ent x)).map (!·.isEmpty)) name)
+  | "sig_door_open", [x, k] => pure (b (sig_door_open_side s (← ent x) (← enumLit DoorSide.ofString k)) name)
   | "sig_compression_brake", [x] => pure (b (sig_compression_brake s (← ent x)) name)
   -- environment
   | "env_darkness", [] => pure (b (env_darkness s) name)
@@ -233,7 +238,8 @@ where
   boolAtomNames : List String := [
     "ru_subject", "ru_aggregate", "ru_rider_posture", "ru_rider_posture_on_seat", "ru_rider_posture_standing_on_deck",
     "ru_rider_posture_holding_another_vehicle", "ru_rider_posture_stunt", "ru_emergency_vehicle_kind",
-    "ru_official_vehicle_kind", "kin_engine_running", "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
+    "ru_official_vehicle_kind", "kin_engine_running", "kin_parking_brake",
+    "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
     "st_curb_zone_kind", "st_curb_zone_colour", "st_obstruction_kind", "st_lane_adjacency", "st_lane_adjacency_left",
     "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_on_way", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
@@ -243,8 +249,9 @@ where
     "dev_zone_sign_kind", "dev_zone_sign_end", "dev_railway_signal_or_gate_lights",
     "dev_railway_signal_or_gate_gate", "dev_railway_signal_or_gate_bell", "dev_human_direction_role",
     "dev_human_direction_indication", "dev_governs", "dev_inoperative",
-    "sig_turn_indicator", "sig_brake_lamp", "sig_hazard", "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
-    "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
+    "sig_turn_indicator", "sig_hazard", "sig_headlamp", "sig_position_lamp",
+    "sig_reverse_lamp", "sig_warning_lamp", "sig_siren", "sig_horn", "sig_hand_signal",
+    "sig_door_open", "sig_compression_brake", "env_darkness", "env_precipitation", "env_wet_road",
     "env_ice_or_snow", "rel_ahead_behind_in_lane", "rel_ahead_in_lane", "rel_behind_in_lane", "rel_oncoming",
     "rel_same_direction", "rel_bearing", "rel_contact", "rel_visible"]
 
@@ -273,6 +280,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
     | .s "width" => q (e.map fun (_, w, _) => Q.mul (Q.ofInt 2) w) name
     | .s "height" => q (e.map fun (_, _, h) => Q.mul (Q.ofInt 2) h) name
     | _ => .error (.malformed "extent")
+  | "kin_steer_angle", [x] => q (kin_steer_angle s (← ent x)) name
   | "kin_path_length", [x] => q (kin_path_length s (← ent x)) name
   | "kin_gear", [x] => qz (kin_gear s (← ent x)) name
   | "kin_throttle", [x] => q (kin_throttle s (← ent x)) name
@@ -322,7 +330,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
 where
   measureNames : List String := [
     "kin_time", "kin_position", "kin_heading", "kin_velocity", "kin_speed", "kin_accel_longitudinal",
-    "kin_yaw_rate", "kin_extent", "kin_path_length", "kin_gear", "kin_throttle", "kin_service_brake", "ru_occupant_count",
+    "kin_yaw_rate", "kin_extent", "kin_steer_angle", "kin_path_length", "kin_gear", "kin_throttle", "kin_service_brake", "ru_occupant_count",
     "ru_rider_posture_hands_on_controls", "ru_electric_bicycle_class", "st_lane_direction", "st_lane_adjacency",
     "st_lane_adjacency_ordinal", "st_lane_adjacency_count", "st_lane_width", "st_curvature", "st_grade",
     "st_sight_distance", "st_sight_along_way", "st_parking_space_angle", "st_region_geometry", "st_region_geometry_distance",

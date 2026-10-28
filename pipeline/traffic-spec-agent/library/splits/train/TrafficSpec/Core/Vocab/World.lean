@@ -45,8 +45,10 @@ structure Kin where
   accelLongitudinal : Option Q := none   -- m/s², signed along heading
   yawRate : Option Q := none             -- deg/s
   extent : Option (Q × Q × Q) := none    -- half-length, half-width, half-height, m
+  steerAngle : Option Q := none          -- deg
   pathLength : Option Q := none          -- m since the start of the trace
   engineRunning : Option Bool := none    -- propulsion available
+  parkingBrake : Option Bool := none     -- parking brake set
   gear : Option Int := none              -- negative reverse, zero neutral, positive forward
   throttle : Option Q := none            -- fraction of full travel applied
   serviceBrake : Option Q := none        -- fraction of full travel applied
@@ -70,12 +72,15 @@ structure WarningLamp where
 /-- Signals a road user emits (the `sig.*` atoms). -/
 structure Signals where
   turnIndicator : Option TurnIndicatorState := none
-  brakeLamp : Option Bool := none
   hazard : Option Bool := none
+  headlamp : Option HeadlampState := none
+  positionLamp : Option Bool := none
+  reverseLamp : Option Bool := none
   warningLamps : Option (List WarningLamp) := none
   siren : Option Bool := none
   horn : Option Bool := none
   handSignal : Option HandSignal := none
+  doorsOpen : Option (List DoorSide) := none
   compressionBrake : Option Bool := none
   deriving Repr, Inhabited
 

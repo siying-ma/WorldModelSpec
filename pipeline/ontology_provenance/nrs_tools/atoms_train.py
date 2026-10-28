@@ -10,8 +10,9 @@ Writes
   traffic-spec-agent/library/splits/train/TrafficSpec/Core/Vocab/Ontology/*.lean
                                                              generated from ATOMS_train.md by gen_ontology
 
-The training run swaps these three over the full ones (the tree under splits/train mirrors the
-library). Nothing else in Core is touched: the other files are audited (SPLIT_AUDIT.md), not split.
+The atom definitions are read from the full snapshot even when the training variant is active.
+The versioned split command also regenerates dependent runtime files and synchronizes the active
+training Core through the runtime split implementation.
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ AGENT = PIPE / "traffic-spec-agent"
 SPLIT = AGENT / "laws" / "audit_and_scripts" / "split_atoms.json"
 ATOMS_MD = AGENT / "ontology" / "ATOMS.md"
 ATOMS_TRAIN_MD = AGENT / "ontology" / "ATOMS_train.md"
-ATOMS_LEAN = AGENT / "library" / "TrafficSpec" / "Core" / "Vocab" / "Atoms.lean"
+ATOMS_LEAN = AGENT / "library" / "splits" / "full" / "TrafficSpec" / "Core" / "Vocab" / "Atoms.lean"
 TRAIN_ROOT = AGENT / "library" / "splits" / "train" / "TrafficSpec" / "Core"
 
 
@@ -43,6 +44,11 @@ def filter_atoms_md(text: str, atoms: list[str], values: list[str], derived: lis
         m = re.match(r"^\| `([a-z]+\.[a-z_]+)` \|", line)
         if m and m.group(1) in drop_ids:
             continue
+        # A retained contract may mention a withheld atom in an aside. Keep
+        # its plain-language distinction without exposing an unavailable id.
+        for aid in drop_ids:
+            line = re.sub(r"\s*\(`" + re.escape(aid) + r"`\)", "", line)
+            line = line.replace("`" + aid + "`", aid.split(".", 1)[1].replace("_", " "))
         for aid, val in (v.split("=") for v in values):
             if m and m.group(1) == aid:
                 # inside a `{a, b, val, c}` set or a `: a, b, val, c **Not` code list

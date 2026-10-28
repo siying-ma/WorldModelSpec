@@ -138,6 +138,7 @@ def ru_motorcycle (s : Scene) (x : TrackId) : Option Bool := hasClass s x .motor
 def ru_moped (s : Scene) (x : TrackId) : Option Bool := hasClass s x .moped
 def ru_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .bus
 def ru_transit_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .transitBus
+def ru_school_bus (s : Scene) (x : TrackId) : Option Bool := hasClass s x .schoolBus
 def ru_taxicab (s : Scene) (x : TrackId) : Option Bool := hasClass s x .taxicab
 def ru_tour_bus_or_limousine (s : Scene) (x : TrackId) : Option Bool := hasClass s x .tourBusOrLimousine
 def ru_truck (s : Scene) (x : TrackId) : Option Bool := hasClass s x .truck
@@ -188,8 +189,10 @@ def kin_speed (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.sp
 def kin_accel_longitudinal (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.accelLongitudinal)
 def kin_yaw_rate (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.yawRate)
 def kin_extent (s : Scene) (x : TrackId) : Option (Q × Q × Q) := (s.user x).bind (·.kin.extent)
+def kin_steer_angle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.steerAngle)
 def kin_path_length (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.pathLength)
 def kin_engine_running (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.kin.engineRunning)
+def kin_parking_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.kin.parkingBrake)
 def kin_gear (s : Scene) (x : TrackId) : Option Int := (s.user x).bind (·.kin.gear)
 def kin_throttle (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.throttle)
 def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (·.kin.serviceBrake)
@@ -276,6 +279,7 @@ def st_safety_zone (s : Scene) (r : RegionId) : Option Bool := isKind s r .safet
 def st_pedestrian_grade_separation (s : Scene) (r : RegionId) : Option Bool := isKind s r .pedestrianGradeSeparation
 def st_fire_hydrant (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireHydrant
 def st_fire_station_entrance (s : Scene) (r : RegionId) : Option Bool := isKind s r .fireStationEntrance
+def st_roundabout (s : Scene) (r : RegionId) : Option Bool := isKind s r .roundabout
 def st_obstruction (s : Scene) (r : RegionId) : Option Bool := isKind s r .obstruction
 def st_obstruction_kind (s : Scene) (r : RegionId) : Option ObstructionKind := (s.structure? r).bind (·.obstructionKind)
 /-- Geometry accessors every structure atom shares: the reference point and the boundary polygon. -/
@@ -388,8 +392,10 @@ def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
 -- Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
-def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
+def sig_headlamp (s : Scene) (x : TrackId) : Option HeadlampState := (s.user x).bind (·.sig.headlamp)
+def sig_position_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.positionLamp)
+def sig_reverse_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.reverseLamp)
 def sig_warning_lamp (s : Scene) (x : TrackId) : Option (List WarningLamp) := (s.user x).bind (·.sig.warningLamps)
 /-- A warning lamp of the given colour lit, in any mode or facing. -/
 def sig_warning_lamp_colour (s : Scene) (x : TrackId) (c : LampColour) : Option Bool :=
@@ -399,6 +405,8 @@ def sig_warning_lamp_shows (s : Scene) (x : TrackId) (c : LampColour) (m : LampM
 def sig_siren (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.siren)
 def sig_horn (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.horn)
 def sig_hand_signal (s : Scene) (x : TrackId) : Option HandSignal := (s.user x).bind (·.sig.handSignal)
+def sig_door_open (s : Scene) (x : TrackId) : Option (List DoorSide) := (s.user x).bind (·.sig.doorsOpen)
+def sig_door_open_side (s : Scene) (x : TrackId) (side : DoorSide) : Option Bool := (sig_door_open s x).map (·.contains side)
 def sig_compression_brake (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.compressionBrake)
 
 -- ---------------------------------------------------------------------------------------------

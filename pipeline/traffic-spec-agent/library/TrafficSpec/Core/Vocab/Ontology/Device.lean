@@ -191,6 +191,7 @@ end LaneControlState
 inductive SpeedSignKind
   | maximum
   | minimum
+  | structureMaximum
   | zone
   deriving DecidableEq, Repr, Inhabited
 
@@ -199,11 +200,13 @@ def ofString (s : String) : Option SpeedSignKind :=
   match s with
   | "maximum" => some .maximum
   | "minimum" => some .minimum
+  | "structure_maximum" => some .structureMaximum
   | "zone" => some .zone
   | _ => Option.none
 def toString : SpeedSignKind → String
   | .maximum => "maximum"
   | .minimum => "minimum"
+  | .structureMaximum => "structure_maximum"
   | .zone => "zone"
 instance : ToString SpeedSignKind := ⟨toString⟩
 end SpeedSignKind

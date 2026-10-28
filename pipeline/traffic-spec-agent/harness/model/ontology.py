@@ -80,7 +80,8 @@ def load(path: Path) -> Ontology:
                 for v in e.group(2).split(","):
                     v = v.strip()
                     if v:
-                        o.values.add(f"{aid}={re.sub(r'\(.*\)', '', v)}")
+                        value = re.sub(r'\(.*\)', '', v)
+                        o.values.add(f"{aid}={value}")
             c = CODES.search(rest)
             if c:
                 for v in (c.group(1) or c.group(2)).split(","):

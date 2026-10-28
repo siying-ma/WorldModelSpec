@@ -1,3 +1,13 @@
+# Active policy note
+
+The active split is demo-overlap-v2; see SPLIT.md. The analysis below is retained
+historical audit material. Its old roster, vocabulary exclusions and claim that
+non-vocabulary Core views are identical do not describe the new filtered view.
+The current training codec and generic semantics were built in an isolated
+Lean 4.28 workspace; no formalized law was executed.
+
+---
+
 # Split audit of the unsplit Core files
 
 ## The split of 2026-10-13 (current)
