@@ -225,8 +225,6 @@ inductive SignCode
   | noStanding
   | noParking
   | angleParking
-  | laneUseArrow
-  | turnCourseMarker
   | rightTurnOnly
   | entrance
   | exit
@@ -257,8 +255,6 @@ def ofString (s : String) : Option SignCode :=
   | "no_standing" => some .noStanding
   | "no_parking" => some .noParking
   | "angle_parking" => some .angleParking
-  | "lane_use_arrow" => some .laneUseArrow
-  | "turn_course_marker" => some .turnCourseMarker
   | "right_turn_only" => some .rightTurnOnly
   | "entrance" => some .entrance
   | "exit" => some .exit
@@ -286,8 +282,6 @@ def toString : SignCode → String
   | .noStanding => "no_standing"
   | .noParking => "no_parking"
   | .angleParking => "angle_parking"
-  | .laneUseArrow => "lane_use_arrow"
-  | .turnCourseMarker => "turn_course_marker"
   | .rightTurnOnly => "right_turn_only"
   | .entrance => "entrance"
   | .exit => "exit"

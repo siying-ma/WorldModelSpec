@@ -58,3 +58,42 @@ class VersionedViewsTests(unittest.TestCase):
         filtered = filter_atoms_md(text, ['sig.brake_lamp'], [], [])
         self.assertNotIn('sig.brake_lamp', filtered)
         self.assertIn('not the brake lamp', filtered)
+
+
+class RosterTests(unittest.TestCase):
+    LAWS = [{'id': 'NRS-484B-100', 'title': '', 'text': 'a', 'source': 'NRS 484B.100'},
+            {'id': 'NRS-484B-200-1', 'title': '', 'text': 'b', 'source': 'NRS 484B.200(1)'},
+            {'id': 'NRS-484B-300-1', 'title': '', 'text': 'c', 'source': 'NRS 484B.300(1)'}]
+
+    def test_partition_keeps_corpus_order(self):
+        policy = {'training_law_ids': ['NRS-484B-300-1', 'NRS-484B-100'], 'heldout_law_ids': ['NRS-484B-200-1']}
+        train, test = split.partition(self.LAWS, policy)
+        self.assertEqual([x['id'] for x in train], ['NRS-484B-100', 'NRS-484B-300-1'])
+        self.assertEqual([x['id'] for x in test], ['NRS-484B-200-1'])
+
+    def test_partition_refuses_a_roster_that_misses_or_repeats_a_line(self):
+        for policy in ({'training_law_ids': ['NRS-484B-100'], 'heldout_law_ids': ['NRS-484B-200-1']},
+                       {'training_law_ids': ['NRS-484B-100', 'NRS-484B-300-1'],
+                        'heldout_law_ids': ['NRS-484B-200-1', 'NRS-484B-100']}):
+            with self.assertRaises(SystemExit):
+                split.partition(self.LAWS, policy)
+
+    def test_a_training_line_citing_a_held_out_line_is_found(self):
+        train = [{'id': 'NRS-484B-300-1', 'text': 'Except as provided in NRS 484B.307 [NRS-484B-307-2a, NRS-484B-307-6a], ...'},
+                 {'id': 'NRS-484D-165-3', 'text': 'during the times mentioned in NRS 484D.100'}]
+        meta = {'NRS-484D-165-3': {'refs': ['NRS-484D-100-1']}}
+        found = split.training_citations_of_heldout(train, {'NRS-484B-307-2a', 'NRS-484D-100-1'}, meta)
+        self.assertEqual(found, [('NRS-484B-300-1', 'NRS-484B-307-2a'), ('NRS-484D-165-3', 'NRS-484D-100-1')])
+        self.assertEqual(split.training_citations_of_heldout(train, {'NRS-484B-250-3'}, meta), [])
+
+    def test_definitions_follow_the_lines_they_resolve_from(self):
+        definitions = [{'id': 'DEF-NRS-484A-230', 'title': 'School bus defined', 'source': 'NRS 484A.230',
+                        'text': '\u201cSchool bus\u201d means every motor vehicle used to transport pupils.'},
+                       {'id': 'DEF-NRS-484A-080', 'title': 'Driver defined', 'source': 'NRS 484A.080',
+                        'text': '\u201cDriver\u201d means every person who drives a vehicle.'},
+                       {'id': 'DEF-LVMC-11-02-130', 'title': 'Roundabout defined', 'source': 'LVMC 11.02.130',
+                        'text': '\u201cRoundabout\u201d means an intersection with a circulatory roadway.'}]
+        rows = [{'id': 'NRS-484B-353-1', 'title': '', 'source': 'NRS 484B.353(1)',
+                 'text': 'The driver of any vehicle, when meeting any school bus, shall stop.'}]
+        got = [d['id'] for d in split.split_definitions(rows, definitions)]
+        self.assertEqual(got, ['DEF-NRS-484A-230', 'DEF-NRS-484A-080'])

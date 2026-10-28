@@ -625,6 +625,21 @@ class Doctor:
             return Result("held-out atoms stay out", FAIL, "; ".join(bad[:6]), src)
         return Result("held-out atoms stay out", OK, f"none of {len(held)} held-out atoms in the training tables", src)
 
+    def held_out_laws_out_of_gap_ledger(self) -> Result:
+        """While the training split is active, no gap row names a held-out law: the ledger persists
+        across development runs and quotes the laws it was filed on."""
+        src = ("laws/example/test/laws.jsonl → ids", "library/TrafficSpec/Gaps/proposals.jsonl → law_refs")
+        test_file = self.repo / "laws" / "example" / "test" / "laws.jsonl"
+        proposals = self.lib / "TrafficSpec" / "Gaps" / "proposals.jsonl"
+        if self._active() != "train" or not test_file.exists():
+            return Result("held-out laws out of the gap ledger", SKIP, "the training split is not active", src)
+        held = {json.loads(l)["id"] for l in _read(test_file).splitlines() if l.strip()}
+        rows = [json.loads(l) for l in _read(proposals).splitlines() if l.strip()] if proposals.exists() else []
+        bad = [f"{r.get('id')}: {', '.join(sorted(set(r.get('law_refs', [])) & held))}" for r in rows if set(r.get("law_refs", [])) & held]
+        if bad:
+            return Result("held-out laws out of the gap ledger", FAIL, "gap rows name held-out laws: " + "; ".join(bad[:6]), src)
+        return Result("held-out laws out of the gap ledger", OK, f"{len(rows)} gap row(s) name none of {len(held)} held-out laws", src)
+
     def definition_resolution_report(self) -> Result:
         """Which defined terms of the training laws the operator's declared precedence leaves without
         an applicable definition, or with several: a report, read from the posted training files and
@@ -654,7 +669,8 @@ class Doctor:
 
     def checks(self) -> list[Callable[[], Result]]:
         return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.case_blocks_cover,
-                                   self.held_out_absent_from_training_tables, self.definition_resolution_report,
+                                   self.held_out_absent_from_training_tables, self.held_out_laws_out_of_gap_ledger,
+                                   self.definition_resolution_report,
                                    self.placeholders_supplied, self.skeleton_tokens,
                                    self.sessions_are_isolated, self.prompts_are_law_free, self.prompts_are_vocabulary_free,
                                    self.frozen_artifacts_are_law_free, self.ontology_is_neutral,

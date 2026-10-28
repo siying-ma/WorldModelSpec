@@ -392,10 +392,10 @@ def deviceCandidates (s : Scene) (k : DeviceKind) : List DeviceId :=
 -- Signals emitted by road users
 -- ---------------------------------------------------------------------------------------------
 def sig_turn_indicator (s : Scene) (x : TrackId) : Option TurnIndicatorState := (s.user x).bind (·.sig.turnIndicator)
+def sig_brake_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.brakeLamp)
 def sig_hazard (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.hazard)
 def sig_headlamp (s : Scene) (x : TrackId) : Option HeadlampState := (s.user x).bind (·.sig.headlamp)
 def sig_position_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.positionLamp)
-def sig_reverse_lamp (s : Scene) (x : TrackId) : Option Bool := (s.user x).bind (·.sig.reverseLamp)
 def sig_warning_lamp (s : Scene) (x : TrackId) : Option (List WarningLamp) := (s.user x).bind (·.sig.warningLamps)
 /-- A warning lamp of the given colour lit, in any mode or facing. -/
 def sig_warning_lamp_colour (s : Scene) (x : TrackId) (c : LampColour) : Option Bool :=

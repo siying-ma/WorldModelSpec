@@ -134,10 +134,10 @@ def warningLamp (path : String) (j : Json) : D WarningLamp := do
 
 def signals (path : String) (j : Json) : D Signals := do
   pure { turnIndicator := ← opt j path "turn_indicator" (enum TurnIndicatorState.ofString)
+         brakeLamp := ← opt j path "brake_lamp" bool
          hazard := ← opt j path "hazard" bool
          headlamp := ← opt j path "headlamp" (enum HeadlampState.ofString)
          positionLamp := ← opt j path "position_lamp" bool
-         reverseLamp := ← opt j path "reverse_lamp" bool
          warningLamps := ← optList j path "warning_lamps" warningLamp
          siren := ← opt j path "siren" bool
          horn := ← opt j path "horn" bool

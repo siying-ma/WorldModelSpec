@@ -21,8 +21,8 @@ of every road user, road curvature and grade along the route, sight distance or 
 lane width, and the weather and surface state (precipitation, wet road, ice or snow, visibility).
 An atom the capture's manifest marks absent makes every verdict that reads it unknown.
 
-`definitions.jsonl` holds the 4 posted definitions whose terms occur in the two lines and whose
-applicability clause reaches them (NRS 484A.010: chapters 484A to 484E). Regenerate both files
+`definitions.jsonl` holds the 15 posted definitions the pipeline's definition resolver reaches
+from the two lines (directly, resolved or ambiguous, and nested). Regenerate both files
 with
 
 ```bash

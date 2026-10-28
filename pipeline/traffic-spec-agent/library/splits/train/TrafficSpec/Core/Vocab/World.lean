@@ -72,10 +72,10 @@ structure WarningLamp where
 /-- Signals a road user emits (the `sig.*` atoms). -/
 structure Signals where
   turnIndicator : Option TurnIndicatorState := none
+  brakeLamp : Option Bool := none
   hazard : Option Bool := none
   headlamp : Option HeadlampState := none
   positionLamp : Option Bool := none
-  reverseLamp : Option Bool := none
   warningLamps : Option (List WarningLamp) := none
   siren : Option Bool := none
   horn : Option Bool := none

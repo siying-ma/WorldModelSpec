@@ -94,6 +94,20 @@ def archive_proposals(snapshot: str) -> dict[str, int]:
     return removed
 
 
+def snapshot_gaps(snapshot: str) -> list[str]:
+    """Copy the whole gap ledger, as the operator left it after deciding the previous run's gaps,
+    to `results/<snapshot>/gaps_snapshot/`, before a fresh run prunes it. Returns the files copied."""
+    import shutil
+    if not paths.GAPS_DIR.exists():
+        return []
+    dest = paths.RESULTS / moved_name(snapshot) / "gaps_snapshot"
+    copied = []
+    for f in sorted(p for p in paths.GAPS_DIR.iterdir() if p.is_file()):
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(f, dest / f.name); copied.append(f.name)
+    return copied
+
+
 def archive_gaps(snapshot: str) -> int:
     """A fresh library starts from a gap ledger without the previous run's undecided rows: every
     row still `proposed` or `accepted` is moved to `results/<snapshot>/gaps_undecided.jsonl`; the
@@ -116,8 +130,9 @@ class Cli:
         """Write the readings template, regenerate the registries, build. `--fresh` first moves every
         node and concept out of the library into `results/<snapshot>/library_snapshot/` (the run they
         belong to; a timestamped name when not given), and every unreviewed parameter proposal out of
-        the readings into `results/<snapshot>/reading_proposals.json`, and every undecided gap row
-        into `results/<snapshot>/gaps_undecided.jsonl`, so a new run starts from an empty library, a
+        the readings into `results/<snapshot>/reading_proposals.json`, copies the whole gap ledger to
+        `results/<snapshot>/gaps_snapshot/`, and moves every undecided gap row into
+        `results/<snapshot>/gaps_undecided.jsonl`, so a new run starts from an empty library, a
         reading the operator wrote or reviewed, and a gap ledger of decisions only."""
         from .store import owner
         owner.acquire_for_command("init")
@@ -129,6 +144,8 @@ class Cli:
             gone = archive_proposals(snapshot)
             print(("archived unreviewed proposals: " + ", ".join(f"{k} ({v})" for k, v in gone.items())
                    + f" → results/{snapshot}/reading_proposals.json") if gone else "readings carry no unreviewed proposal")
+            kept = snapshot_gaps(snapshot)
+            print(f"gap ledger copied → results/{snapshot}/gaps_snapshot/ ({', '.join(kept)})" if kept else "no gap ledger to copy")
             gaps_gone = archive_gaps(snapshot)
             print(f"archived {gaps_gone} undecided gap row(s) → results/{snapshot}/gaps_undecided.jsonl" if gaps_gone else "the gap ledger holds no undecided row")
         index_sync.write_index()

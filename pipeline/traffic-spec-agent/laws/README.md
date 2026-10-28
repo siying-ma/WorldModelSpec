@@ -1,11 +1,10 @@
-# Active split: demo-overlap-v2
+# Active split: demo-overlap-v3
 
-The corpus remains 249 laws: 221 training and 28 held-out. The 22 demo laws and
-their records are unchanged. See `audit_and_scripts/SPLIT.md` and
-`example/law-split.json` for the active policy. Corpus partition (training/held-out)
-is distinct from scenario role (training/testing). Vocabulary withholding remains
-enabled; training-only views are regenerated from actual training usage,
-including shared definitions. Historical scope notes follow.
+The corpus is 249 laws: 221 training and 28 held-out, named in `example/law-split.json` and
+written by `python -m nrs_tools.split`; training cites no held-out law, and each split's
+`definitions.jsonl` holds the definitions its laws resolve to. See `audit_and_scripts/SPLIT.md`.
+Corpus partition (training/held-out) is distinct from scenario role (training/testing).
+Historical scope notes follow.
 
 # The law corpus — the traffic law in force in Las Vegas
 
@@ -15,7 +14,7 @@ including shared definitions. Historical scope notes follow.
 |---|---|
 | `full_list/` | the whole corpus as **posted law**: `laws.jsonl` (249 obligations) and `definitions.jsonl` (123), each record `id`, `title`, `text`, `source` and nothing else — what a government website shows and what a person adds a new law with |
 | `example/train/`, `example/test/` | the training / test split of `full_list/laws.jsonl` (221 / 28), each with the `definitions.jsonl` that goes with it (`audit_and_scripts/SPLIT.md`) |
-| `example/demo/`, `example/carla_smoke/` | reference-closed subsets of the training set for a first run (22 protected demo laws) and for a CARLA smoke test (2 lines whose duties carry standards of judgement, one of them a surrogate); each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
+| `example/demo/`, `example/carla_smoke/` | reference-closed subsets of the training set for a first run (22 demo laws) and for a CARLA smoke test (2 lines whose duties carry standards of judgement, one of them a surrogate); each has a README saying what its lines exercise (`python -m nrs_tools.subset <name> <law id> … [--split train\|test\|full]` from `pipeline/ontology_provenance/`: the named laws, every law their texts name, all in the named split, and the posted definitions whose terms occur in a line that the definition's own applicability clause reaches) |
 | `audit_and_scripts/` | the **analysis**, never the law: the sidecars `laws_meta.jsonl` (subject, theme, tier, overlap decisions, reference resolution per line) and `definitions_meta.jsonl`; the lines kept out (`excluded.jsonl` 43, `unobservable.jsonl` 4, `unresolvable.jsonl` 31) and `laws_full.jsonl` (corpus + excluded, 292); the record of how the corpus was decided: `OVERLAPS.md`, `CORPUS_AUDIT_2026-09-19.md`, `CONCRETE_DEPENDENCIES.md`, `SPLIT.md`, `SPLIT_AUDIT.md`, `split_atoms.json` |
 
 The parsers, the selection list and the generators that produce all of it live outside the agent's

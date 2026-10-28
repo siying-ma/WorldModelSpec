@@ -1,10 +1,12 @@
 """Split the pipeline corpus into a training set (build the autoformalization repository) and a
 test set.
 
-With laws/example/law-split.json present, the approved versioned roster is authoritative.
-Only derived training vocabulary is regenerated; no law files are rewritten. Cross-split
-references are reported instead of requiring reference closure. The description below
-applies to the historical unversioned split generator.
+With laws/example/law-split.json present, the roster it records is authoritative. The generator
+writes laws/example/{train,test}/laws.jsonl from it and the corpus (records unchanged, corpus
+order), writes beside each the posted definitions that apply to its laws, refuses a roster under
+which a training law cites a held-out law (a bracketed id or a recorded reference), and
+regenerates the training vocabulary. The description below applies to the historical unversioned
+split generator.
 
     python -m nrs_tools.split          # from pipeline/ontology_provenance
 
@@ -196,22 +198,57 @@ def training_vocabulary(laws, definitions, held, atom_ids):
     return atoms, values, sorted(atom for atom, ids in support.items() if not ids)
 
 
+CITED = re.compile(r"\[([^\]]*)\]")
+LAW_ID = re.compile(r"\b((?:NRS|LVMC)-[0-9A-Z]+(?:-[0-9A-Za-z]+)+)\b")
+
+
+def partition(laws: list[dict], policy: dict) -> tuple[list[dict], list[dict]]:
+    """The training and held-out lines of the corpus, in corpus order, as the roster names them."""
+    training, held = policy["training_law_ids"], policy["heldout_law_ids"]
+    ids = [x["id"] for x in laws]
+    if (len(set(training)) != len(training) or len(set(held)) != len(held) or set(training) & set(held)
+            or set(training) | set(held) != set(ids)):
+        raise SystemExit("the roster must name every corpus line exactly once, as training or held out")
+    return [x for x in laws if x["id"] not in set(held)], [x for x in laws if x["id"] in set(held)]
+
+
+def cited_laws(row: dict, meta: dict[str, dict]) -> set[str]:
+    """The law ids a corpus line cites: its bracketed ids and the references its sidecar records."""
+    bracketed = {i for b in CITED.findall(row["text"]) for i in LAW_ID.findall(b)}
+    return (bracketed | set(meta.get(row["id"], {}).get("refs", []))) - {row["id"]}
+
+
+def training_citations_of_heldout(train: list[dict], held: set[str], meta: dict[str, dict]) -> list[tuple[str, str]]:
+    """Every (training line, held-out line it cites): a training split must cite no held-out line."""
+    return sorted((row["id"], ref) for row in train for ref in cited_laws(row, meta) if ref in held)
+
+
+def split_definitions(rows: list[dict], definitions: list[dict]) -> list[dict]:
+    """The posted definitions the pipeline's definition resolver reaches from `rows`."""
+    from subset import definitions_for
+    return definitions_for(rows, definitions)
+
+
 def update_versioned_views():
-    """Regenerate vocabulary from the approved roster without changing corpus membership."""
+    """Write the training and held-out files from the roster and regenerate the training vocabulary."""
     policy = json.loads(active_policy.read_text(encoding="utf-8"))
     laws = load("laws.jsonl")
-    train = load("laws.jsonl", SPLIT_DIR / "train")
-    test = load("laws.jsonl", SPLIT_DIR / "test")
-    definitions = load("definitions.jsonl", SPLIT_DIR / "train")
-    held = set(policy["heldout_law_ids"])
-    if {x["id"] for x in train} != set(policy["training_law_ids"]) or {x["id"] for x in test} != held:
-        raise ValueError("Corpus partitions differ from the approved roster")
+    train, test = partition(laws, policy)
+    held = {x["id"] for x in test}
+    crossing = training_citations_of_heldout(train, held, {x["id"]: x for x in load("laws_meta.jsonl", AUDIT_DIR)})
+    if crossing:
+        raise SystemExit("training lines cite held-out lines; change the roster: "
+                         + ", ".join(f"{a} -> {b}" for a, b in crossing))
     full = {x["id"]: x for x in laws}
-    if {x["id"]: x for x in train + test} != full or set(policy["training_law_ids"]) & held:
-        raise ValueError("Training and held-out records must partition the full corpus unchanged")
     demo = load("laws.jsonl", SPLIT_DIR / "demo")
-    if any(row != full[row["id"]] or row["id"] not in policy["training_law_ids"] for row in demo):
-        raise ValueError("Demo laws must remain unchanged in training")
+    if any(row != full[row["id"]] or row["id"] in held for row in demo):
+        raise SystemExit("demo lines must be corpus lines of the training split, unchanged")
+    corpus_definitions = load("definitions.jsonl")
+    definitions = split_definitions(train, corpus_definitions)
+    dump("train/laws.jsonl", posted(train))
+    dump("train/definitions.jsonl", posted(definitions))
+    dump("test/laws.jsonl", posted(test))
+    dump("test/definitions.jsonl", posted(split_definitions(test, corpus_definitions)))
     # Use the ontology's current declarations, including atoms added upstream,
     # rather than treating the lexical scanner as the vocabulary catalogue.
     atom_ids = set(re.findall(r"^\| `((?:ru|kin|st|dev|sig|env|rel)\.[a-z_]+)` \|", ATOMS_MD.read_text(), re.M))
@@ -236,18 +273,14 @@ def update_versioned_views():
     else:
         runtime_split.generate_train(runtime_split.SPLITS / "full" / "TrafficSpec" / "Core",
                                      runtime_split.SPLITS / "train" / "TrafficSpec" / "Core")
-    metadata = {x["id"]: x for x in load("laws_meta.jsonl", AUDIT_DIR)}
-    references = [{"training_law": row["id"], "heldout_reference": ref}
-                  for row in sorted(train, key=lambda x: x["id"])
-                  for ref in metadata.get(row["id"], {}).get("refs", []) if ref in held]
-    return {"version": policy["version"], "test_only_atoms": atoms, "test_only_values": values,
-            "training_references_to_heldout": references, "law_records_unchanged": True,
-            "generator": "nrs_tools.split and harness.tools.split", "native_executions": 0}
+    return {"version": policy["version"], "training": len(train), "held_out": len(held),
+            "training_definitions": len(definitions), "test_only_atoms": atoms, "test_only_values": values,
+            "law_records_unchanged": True, "generator": "nrs_tools.split and harness.tools.split"}
 
 
 def main() -> int:
-    # Versioned migrations own corpus membership. Regeneration updates only
-    # derived atom views and cannot reapply the legacy 2026-10-13 roster.
+    # With a roster file the roster owns membership: the files are written from it, and the
+    # historical roster below is never reapplied.
     active = LAWS_ROOT / "example" / "law-split.json"
     if active.exists():
         report = update_versioned_views()
