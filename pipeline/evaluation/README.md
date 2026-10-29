@@ -82,10 +82,15 @@ M012, so a reading at another moment of the turn can decide them the other way.
 
 ## demo13
 
-`../datasets/demo-thirteen-latest-share-20261010/`: 58 CARLA cases in 13 cells, each built for one
-of 13 demo laws and labelled `compliant`, `non_compliant` or `not_applicable` for it (7 judgment
-sweeps of 223-1b are unlabelled). The traces decode with the full split's decoder once the retired
-classes in `unobserved_classes` are dropped. The share ships no manifest, so
+`../datasets/demo-thirteen-latest-share-20261010/`: 58 CARLA cases in 13 cells, a video and a trace
+of the same frames each, every case labelled for one target law: 30 `compliant`, 20
+`non_compliant`, 1 `not_applicable`, and 7 judgment sweeps of 223-1b unlabelled. The 13 target
+laws are demo lines, all in the training split: 450-2, 113-2, 220-1, 223-1b, 227-1, 250-1, 250-4,
+307-6a, 400-2a, 400-2b, 413-2, 600-1c, 600-1e. No held-out law has a case. Of the other demo lines,
+407 and 600-1a are recorded in carla_new, and 127-1, 127-2, 127-3, 250-2, 253, 257-1 and 257-2 in
+no package. The traces decode with the full split's decoder once the retired classes in
+`unobserved_classes` are dropped. The share's `manifest.json` is a publication index (case states,
+labels, coverage), not the capability manifest a trace's atoms are read against, so
 `lib/demo13_manifest.json` declares one for its exporter: carla_new's manifest (the same adapter
 family, with the same fields), changed where the 58 traces differ:
 
@@ -95,6 +100,14 @@ family, with the same fields), changed where the 58 traces differ:
 | `st.lane_connectivity` | exact | lanes carry `leads_to` |
 | `st.median_or_divider`, `st.one_way_roadway`, `dev.regulatory_sign`, `dev.inoperative` | `estimate:scenario_authored` | written where a scenario authored them (the 227-1, 220-1 and 250-4 cells); elsewhere their absence is the scenario's claim, not a map survey |
 | `sig.turn_indicator` | exact | written `left` while the ego's left indicator is lit (it lights before each left turn and lane change and goes out after it), and not written otherwise, since the export predates the `off` state; an unwritten indicator is unknown, read `off` only with `FILL=1` |
+
+Lamp states are declared `exact` but carry no variation: in all 58 traces every road user's
+`brake_lamp`, `reverse_lamp`, `position_lamp` and `hazard` are `false` and `headlamp` is `off` in
+every scene, including the reversing case C110763-113-2-inside and the halts at full service brake
+(C111277-250-4-halt, C111325-450-2-halt-compliant-attempt). Whether the exporter reads the
+simulator's light state, which the scenarios never switch on, or writes a default is not
+established in this repository; until it is, a verdict that turns on a lamp atom is not evidence
+on this share. No demo law reads a lamp.
 
 `score.tsv` lists per case the target law, the label, the law's verdict (its rules joined: violated
 if any is violated, else unknown, else compliant, else not applicable), whether they match, and

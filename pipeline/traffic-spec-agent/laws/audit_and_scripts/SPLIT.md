@@ -51,5 +51,7 @@ NRS 484D: .205(4); .215(2). LVMC: 11.12.020; 11.12.060; 11.12.100(C); 11.18.030(
 
 The corpus partition is distinct from the role a driving scenario plays in `scenario_pipeline`;
 its cells follow this roster by its own migration. The evaluation package
+`pipeline/datasets/demo-thirteen-latest-share-20261010` covers 13 demo lines, all training lines.
+The evaluation package
 `pipeline/datasets/held-out-v1-intent-laws` covers LVMC 11.12.100(C) (held out) and LVMC
 11.43.010(C)(1), (C)(2) (training lines).

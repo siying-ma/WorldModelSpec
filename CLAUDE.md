@@ -315,5 +315,7 @@ at build time (`lake build`) and pin the arithmetic and semantics with `#guard`.
 
 The CARLA dataset is built top-down and problem-driven: its scenarios are designed from the laws
 the pipeline formalizes, not collected and then matched to laws, and they are added gradually
-until the dataset covers most of the corpus. `pipeline/datasets/carla_new/` is its first part.
+until the dataset covers most of the corpus. Its parts so far are `pipeline/datasets/carla_new/`
+(407, 600-1a), `pipeline/datasets/demo-thirteen-latest-share-20261010/` (13 demo lines) and
+`pipeline/datasets/held-out-v1-intent-laws/` (three LVMC lines).
 Other sources (nuPlan, filtered SAVeD) are added the same way.

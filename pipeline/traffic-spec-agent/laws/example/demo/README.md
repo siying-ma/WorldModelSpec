@@ -8,7 +8,10 @@ Lines were chosen to keep judgement elements to a minimum: 13 of the first 14 ar
 judgement element) in `../../audit_and_scripts/laws_meta.jsonl`. The last two are the lines of
 `../carla_smoke/`, added so that the rules the CARLA recordings in `pipeline/datasets/carla_new/`
 evaluate are formalized in the same run. Six more were added on 2026-10-17 so that a run meets
-laws that CARLA traffic often breaks: following too closely and stop or yield signs. `../smoke/` is a subset of it.
+laws that CARLA traffic often breaks: following too closely and stop or yield signs. Labelled
+recordings exist for 15 lines: `pipeline/datasets/demo-thirteen-latest-share-20261010/` holds 13
+of the first 14 (all but 250-2) and `pipeline/datasets/carla_new/` the last two; the six added
+lines have none. `../smoke/` is a subset of it.
 
 | id | the duty | what it exercises |
 |---|---|---|
