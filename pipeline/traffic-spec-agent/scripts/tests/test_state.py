@@ -9,6 +9,20 @@ from harness.store import paths
 from harness.store.gaps import GapLedger
 from harness.store.ledger import ConceptLedger, Ledger, NodeLedger
 from harness.store.state import Options, Run, commit_state
+_RESULTS = {}
+
+
+def setUpModule():
+    """Every gap these tests file is measured under a temporary results tree, never the run's."""
+    _RESULTS["tmp"] = tempfile.TemporaryDirectory()
+    _RESULTS["saved"] = paths.RESULTS
+    paths.RESULTS = Path(_RESULTS["tmp"].name)
+
+
+def tearDownModule():
+    paths.RESULTS = _RESULTS["saved"]
+    _RESULTS["tmp"].cleanup()
+
 
 ONTO = Path(__file__).resolve().parents[2] / "ontology" / "ATOMS_train.md"
 
@@ -107,7 +121,7 @@ class DecidedGaps(unittest.TestCase):
             p = {"kind": "no_atom", "span_text": "w", "law_refs": ["L"]}
             gid = g.add(p, "r", 1)
             self.assertEqual(g.add(p, "r", 2), gid)                  # undecided: the same gap
-            g.decide(gid, "rejected", "carry it with the existing atom")
+            g.decide(gid, "rejected", "carry it with the existing atom", resolved_by="particular")
             self.assertEqual(g.add(p, "r", 3), gid)                  # decided: routed back with the decision
             self.assertEqual(g.decision(gid), ("rejected", "carry it with the existing atom"))
             linked = g.add({**p, "linked_to": gid, "excluding_clause": "clause 2 excludes it"}, "r", 4)

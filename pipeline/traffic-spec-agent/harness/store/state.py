@@ -41,6 +41,9 @@ class Options:
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
     definition_precedence: Optional[Path] = None   # the operator's declared definition precedence (default config/definition_precedence.json)
     openai_budget_usd: Optional[float] = None      # the run-wide limit on the second vendor's calls; reached, the run pauses (`paused_budget`)
+    claude_budget_usd: Optional[float] = None      # the run-wide limit on Claude's sessions, each reserved at `session_budget_usd` (required with it)
+    total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires `session_budget_usd`)
+    budget_peers: list = field(default_factory=list)   # the runs sharing this run's limits, the same group named by each; reservations take one lock
     reviewer_max_output_tokens: int = 64000        # the output-token limit of every OpenAI call, reasoning included
     max_divergences: int = 3                       # the most divergences one reviewer answer may carry
     model_prices: Optional[Path] = None            # the operator's price table (default config/model_prices.json)

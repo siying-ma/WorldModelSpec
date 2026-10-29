@@ -19,7 +19,6 @@ The records are copied from laws/full_list/ unchanged; no definition is written 
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -27,7 +26,6 @@ HERE = Path(__file__).resolve().parent
 LAWS_ROOT = HERE.parents[1] / "traffic-spec-agent" / "laws"
 CORPUS_DIR = LAWS_ROOT / "full_list"
 SPLIT_DIR = LAWS_ROOT / "example"
-REF = re.compile(r"\[([A-Z]+-[A-Za-z0-9-]+)\]")
 
 
 def load(path: Path) -> list[dict]:
@@ -48,8 +46,16 @@ def closure(ids: list[str], laws: dict[str, dict]) -> list[str]:
         if i not in laws:
             raise SystemExit(f"{i} is not a law of the corpus")
         out.append(i)
-        todo += [r for r in REF.findall(laws[i]["text"]) if not r.startswith("DEF-") and r not in out]
+        todo += [r for r in _corpus().cited_law_ids(laws[i]["text"]) if r not in out]
     return out
+
+
+def _corpus():
+    """The pipeline's own reader of posted text, so a subset closes over the references the
+    pipeline's dependency order and reference checks read."""
+    sys.path.insert(0, str(LAWS_ROOT.parent))
+    from harness.model import corpus
+    return corpus
 
 
 def definitions_for(subset: list[dict], defs: list[dict]) -> list[dict]:
@@ -58,7 +64,7 @@ def definitions_for(subset: list[dict], defs: list[dict]) -> list[dict]:
     from harness.model import corpus, definitions as resolver
     laws = [corpus.Law(x["id"], x.get("title", ""), x["text"], x.get("source", "")) for x in subset]
     table = resolver.resolve_table(laws, defs, resolver.load_precedence())
-    used = {r for x in subset for r in REF.findall(x["text"]) if r.startswith("DEF-")}
+    used = {r for x in subset for r in corpus.bracketed_ids(x["text"]) if r.startswith("DEF-")}
     for row in [r for rows in table["laws"].values() for r in rows] + [d for deps in table["dependencies"].values() for d in deps]:
         used |= set(row.get("chain") or []) | set(row.get("candidates") or [])
     return [d for d in defs if d["id"] in used]

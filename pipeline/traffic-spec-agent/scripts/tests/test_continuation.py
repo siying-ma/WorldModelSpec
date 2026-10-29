@@ -401,20 +401,22 @@ class AdmissionSelection(unittest.TestCase):
         self.assertIn("drv.motion.zz_broken", run2.fenced)
 
 
-@unittest.skipUnless(shutil.which("lake") and (paths.RESULTS / "demo12" / "accepted_concepts.jsonl").exists(),
-                     "needs the toolchain and demo12's accepted records")
+@unittest.skipUnless(shutil.which("lake"), "needs the toolchain")
 class AdmissionSelectionLean(unittest.TestCase):
     """The real gates in a disposable copy of the library: an unrelated concept that does not compile
     is never in a healthy record's admission build."""
 
     def test_real_gates_isolate_an_unrelated_broken_source(self):
-        rows = lambda f: [json.loads(line) for line in f.read_text().splitlines() if line.strip()]
-        concepts = {r["concept_id"]: r for r in rows(paths.RESULTS / "demo12" / "accepted_concepts.jsonl")}
-        good = "drv.motion.left_turn"
-        reading = Reading(paths.RESULTS / "demo12" / "reading.json")
+        fx = json.loads((Path(__file__).parent / "admission_isolation_fixture.json").read_text(encoding="utf-8"))
+        good = fx["record"]["concept_id"]
+        concepts = {good: fx["record"]}
         with tempfile.TemporaryDirectory(prefix="admission-isolation-") as td, contextlib.ExitStack() as st:
             tmp = Path(td); lib = tmp / "library"
             shutil.copytree(paths.LIBRARY, lib, ignore=shutil.ignore_patterns(".run.lock", ".run.owner.json", ".inactive.json", ".build.lock"))
+            for rel, text in ((nodeid.concept_path(good), fx["source"]), (nodeid.concept_witness_path(good), fx["witness"])):
+                (lib / rel).parent.mkdir(parents=True, exist_ok=True); (lib / rel).write_text(text, encoding="utf-8")
+            (tmp / "reading.json").write_text(json.dumps(fx["reading"]), encoding="utf-8")
+            reading = Reading(tmp / "reading.json")
             mapping = {"LIBRARY": lib, "CORE": lib / "TrafficSpec/Core", "RULES_DIR": lib / "TrafficSpec/Rules",
                        "CONCEPTS_DIR": lib / "TrafficSpec/Concepts", "WITNESS_DIR": lib / "TrafficSpecWitness",
                        "CONCEPT_WITNESS_DIR": lib / "TrafficSpecWitness/Concepts", "INDEX_FILE": lib / "TrafficSpec/Index.lean",

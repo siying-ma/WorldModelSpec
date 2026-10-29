@@ -64,6 +64,13 @@ OTHER_PHASES = {"plan": ["results/*/iter-*/code/**"], "code": ["results/*/iter-*
 #: Trees under the repository root (above the pipeline) no agent session may write.
 PROTECTED_REPO = ["CLAUDE.md", ".claude", "pipeline/DesignFile", "pipeline/ontology_provenance",
                   "pipeline/carla_scene_graphs", "pipeline/datasets"]
+#: What no agent session may read, under the pipeline root: the held-out laws and every file that
+#: carries them or their withheld vocabulary (the full corpus, the roster, the split's rows, the full
+#: ontology and the full Core variant).
+UNREADABLE = ["laws/example/test", "laws/full_list", "laws/example/law-split.json", "laws/audit_and_scripts/split_atoms.json",
+              "ontology/ATOMS.md", "library/splits/full"]
+#: What no agent session may read, under the repository root: the driving data a run is evaluated on.
+UNREADABLE_REPO = ["pipeline/datasets"]
 WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 #: The whole tool set of each kind of session (`--tools`): no search, no web, no subagent, whatever the
 #: CLI adds. A reader or a judge answers from its prompt with no tool at all.
@@ -127,12 +134,14 @@ def config_dirs() -> list[Path]:
     return sorted(out, key=str)
 
 
-def deny_rules(kind: str) -> list[str]:
+def deny_rules(kind: str, run_id: str | None = None) -> list[str]:
     """Permission rules that hold whatever the allow-list says, for a session of `kind` (`plan`,
-    `code`): every protected tree is denied to every write tool, Claude Code's configuration and
-    memory directories are denied to reading and writing alike, and `git` is denied to the shell.
-    A plan session may also not touch the library. The allow-list is the first wall; these rules
-    are the second; the gate's repository digest is the third."""
+    `code`): every protected tree is denied to every write tool; the held-out laws, the files that
+    carry them or their withheld vocabulary, the driving data, and (with `run_id`) every other run's
+    results are denied to reading; Claude Code's configuration and memory directories are denied to
+    reading and writing alike, and `git` is denied to the shell. A plan session may also not touch
+    the library. The allow-list is the first wall; these rules are the second; the gate's repository
+    digest is the third."""
     repo = paths.REPO.resolve()
     top = repo.parents[1]
     trees = list(PROTECTED) + (["library"] if kind == "plan" else [])
@@ -143,6 +152,10 @@ def deny_rules(kind: str) -> list[str]:
         rules += [f"{tool}({pat})" for tool in WRITE_TOOLS]
     for p in RUN_RECORDS + OTHER_PHASES.get(kind, []):
         rules += [f"{tool}(//{str(repo).lstrip('/')}/{p})" for tool in WRITE_TOOLS]
+    unreadable = [f"//{str(repo).lstrip('/')}/{t}" for t in UNREADABLE] + [f"//{str(top).lstrip('/')}/{t}" for t in UNREADABLE_REPO]
+    if run_id is not None and paths.RESULTS.is_dir():
+        unreadable += [f"//{str(d.resolve()).lstrip('/')}" for d in sorted(paths.RESULTS.iterdir()) if d.is_dir() and d.name != run_id]
+    rules += [f"Read({p if p.endswith('.json') or p.endswith('.md') else p + '/**'})" for p in unreadable]
     for d in config_dirs():
         rules += [f"{tool}(//{str(d).lstrip('/')}/**)" for tool in ("Read",) + WRITE_TOOLS]
     rules += ["Bash(git *)", "Bash(sudo *)", "Bash(chmod *)"]
@@ -274,14 +287,22 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
                     raise BadRequest(f"{label}: the API rejected the request — a harness input to fix: {failure}")
             cut = None
         else:
+            token = ledger.reserve_session(chosen or "", opts.session_budget_usd, row_label)   # raises BudgetPaused when it does not fit
             _started(out_dir, label, suffix, launched)
-            code, result, timed_out = runner.run_claude(
-                text, cwd=cwd, stream_path=stream, max_turns=max_turns,
-                model=chosen, effort=effort, max_budget_usd=opts.session_budget_usd,
-                timeout_seconds=timeout if timeout is not None else opts.session_timeout,
-                env_overrides=env, allow=allow, deny=deny, tools=tools)
-            ledger.settle(None, budget.usage_row(row_label, "anthropic", chosen or "", effort, (result or {}).get("usage") or {},
-                                                 (result or {}).get("total_cost_usd")))
+            try:
+                code, result, timed_out = runner.run_claude(
+                    text, cwd=cwd, stream_path=stream, max_turns=max_turns,
+                    model=chosen, effort=effort, max_budget_usd=opts.session_budget_usd,
+                    timeout_seconds=timeout if timeout is not None else opts.session_timeout,
+                    env_overrides=env, allow=allow, deny=deny, tools=tools)
+            except BaseException:                          # the session may have run: its cost is not known
+                ledger.unknown(token, budget.usage_row(row_label, "anthropic", chosen or "", effort, {}, None)); raise
+            row = budget.usage_row(row_label, "anthropic", chosen or "", effort, (result or {}).get("usage") or {},
+                                   (result or {}).get("total_cost_usd"))
+            if row["cost_usd"] is None:                    # an answer without its cost stays at the reservation
+                ledger.unknown(token, row)
+            else:
+                ledger.settle(token, row)
             failure = runner.session_failure(code, result, timed_out, stream)
             cut = None if failure else runner.cut_off(result, timed_out)
         stopped = owner.STOP.is_set()

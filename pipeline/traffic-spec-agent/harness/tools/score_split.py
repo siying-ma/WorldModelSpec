@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from ..store import paths
+from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..store.ledger import Ledger
 
@@ -13,8 +13,15 @@ def score(run_id: str, split_atoms: Path) -> dict:
     test_only = set(split["test_only_atoms"]) | set(split["test_only_values"]) | set(split.get("test_only_primitives", []))
     run_dir = paths.run_dir(run_id)
     ledger = Ledger(run_dir / "ledger.jsonl", [], 1)
-    gaps = GapLedger(paths.GAPS_DIR)
-    proposed = [g for g in gaps.rows if g.get("proposed_in", "").startswith(run_id + "/")]
+    # the gaps the run filed, as filed (`gaps_measured.jsonl`, append-only); then, for a gap filed
+    # before that record existed, its row still live or archived with the run (`gaps.jsonl`), once
+    # each by id: no decision or archive changes a finished run's score
+    own = lambda g: str(g.get("proposed_in", "")).startswith(run_id + "/")
+    proposed: list[dict] = []
+    for g in (jsonl.read_strict(run_dir / "gaps_measured.jsonl")
+              + [g for g in GapLedger(paths.GAPS_DIR).rows + jsonl.read_strict(run_dir / "gaps.jsonl") if own(g)]):
+        if g.get("id") not in {p.get("id") for p in proposed}:
+            proposed.append(g)
     sys.path.insert(0, str(paths.REPO.parents[0] / "ontology_provenance" / "nrs_tools"))
     try:
         from atom_lexicon import scan   # type: ignore

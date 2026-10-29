@@ -17,6 +17,7 @@ from ..model.blueprint import Node, ConceptRecord
 from ..model.mapping import MappingIndex
 from ..model.reading import Reading
 from ..store.state import Run
+from ..store import jsonl
 from ..store.gaps import GapLedger
 from ..store import paths
 
@@ -57,7 +58,7 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
         index, accepted, accepted_concepts, mode = MappingIndex(plan_dir / "mapping.json"), {}, {}, "train"
     concept_outcomes = validate_a.validate_concepts(concepts, defs, onto, accepted_concepts, users, mode)
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
-    rejected = GapLedger(paths.GAPS_DIR).rejected()
+    rejected = GapLedger.for_run(paths.GAPS_DIR, run).rejected()
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
                                    known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes)
     return nodes, concepts, outcomes, concept_outcomes
@@ -90,12 +91,25 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     and the second answer stands whole, with whatever defects it keeps (the caller decides what
     they mean). A session
     that ran and wrote no JSON is asked once more; a second silence returns no answer with that
-    defect, which the caller counts against the node. `usage_label` names the session's rows in
+    defect, which the caller counts against the node. An answer without defects is kept with the
+    digest of the prompt, model and effort (`<label>_answer.json`), and the same session asked again
+    in the same directory on the same inputs takes it back without a call: a review resumed after a
+    pause pays for no judgment it already has. `usage_label` names the session's rows in
     `usage.jsonl` (its subject included), `label` its files. In a dry run `(None, [])`."""
+    import hashlib
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return None, []
+    digest = hashlib.sha256(json.dumps({"prompt": prompt, "model": model or run.opts.model, "effort": effort or run.opts.judge_effort},
+                                       sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    kept_file = out_dir / f"{label}_answer.json"
+    try:
+        kept = json.loads(kept_file.read_text(encoding="utf-8"))
+        if kept.get("digest") == digest and isinstance(kept.get("answer"), dict) and not (check and list(check(kept["answer"]))):
+            return kept["answer"], []
+    except (OSError, json.JSONDecodeError):
+        pass
     ask = prompt
     parsed, errs = None, []
     for attempt in ("", "_again"):
@@ -111,6 +125,7 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
         else:
             errs = list(check(parsed)) if check else []
             if not errs:
+                jsonl.write_atomic(kept_file, json.dumps({"digest": digest, "answer": parsed}, ensure_ascii=False, indent=1))
                 return parsed, []
         ask = prompt + "\n\n## Defects of your previous answer\n\nAnswer again, in the same schema, without these defects:\n" + "".join(f"- {e}\n" for e in errs)
     if parsed is None:

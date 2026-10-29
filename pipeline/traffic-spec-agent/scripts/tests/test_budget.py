@@ -79,10 +79,10 @@ class Reservation(unittest.TestCase):
         with self.assertRaises(BudgetPaused):
             Budget(self.f, None, {}).reserve("gpt-x", 10, 10)
 
-    def test_claude_costs_are_recorded_but_not_limited(self):
+    def test_claude_costs_count_under_claude_not_against_the_openai_limit(self):
         b = Budget(self.f, 0.0, PRICES)
         b.settle(None, usage_row("s", "anthropic", "claude", "high", {"input_tokens": 5}, 3.0))
-        self.assertEqual(b.spent, 0.0)
+        self.assertEqual((b.by_vendor["openai"], b.by_vendor["anthropic"]), (0.0, 3.0))
 
 
 class StrictFiles(unittest.TestCase):

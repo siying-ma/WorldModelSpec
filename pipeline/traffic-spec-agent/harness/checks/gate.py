@@ -79,7 +79,8 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
-                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md"}
+                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md",
+                         "gaps_measured.jsonl"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
 
@@ -443,6 +444,10 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     only_nodes, only_concepts = task_registry(work)
     reg = dict(only_nodes=None if only_nodes is None else sorted(set(only_nodes) | {node.id}), only_concepts=only_concepts,
                keep=task_keep(work) | {node.id})
+    # a forbidden construct is refused before anything is compiled: the compiler runs what a file elaborates
+    bad = forbidden_tokens((("rule", rtext), ("witness", wtext)))
+    if bad:
+        return Verdict("UNSOUND", details + bad)
     harness = work / "gate_harness.lean"
     reading_json = work / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
@@ -452,7 +457,6 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if isinstance(ran, Verdict):
         return ran
     out, hout = ran
-    details += forbidden_tokens((("rule", rtext), ("witness", wtext)))
     if lean.sorry_warnings(out):
         details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")
@@ -978,6 +982,10 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     only_nodes, only_concepts = task_registry(work)
     reg = dict(only_nodes=only_nodes, only_concepts=None if only_concepts is None else sorted(set(only_concepts) | {cid}),
                keep=task_keep(work) | {cid})
+    # a forbidden construct is refused before anything is compiled: the compiler runs what a file elaborates
+    bad = forbidden_tokens((("concept", ctext), ("witness", wtext)))
+    if bad:
+        return Verdict("UNSOUND", details + bad)
     harness = work / "gate_harness.lean"
     reading_json = work / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
@@ -987,7 +995,6 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if isinstance(ran, Verdict):
         return ran
     out, hout = ran
-    details += forbidden_tokens((("concept", ctext), ("witness", wtext)))
     if lean.sorry_warnings(out):
         details.append("build reports a declaration that uses sorry")
     (work / "gate_harness.out").write_text(hout, encoding="utf-8")

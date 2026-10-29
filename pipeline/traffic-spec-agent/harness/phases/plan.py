@@ -235,7 +235,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         clear()                                  # what an unfinished launch wrote is not a plan
     session.run(prompt, cwd=plan_dir, out_dir=plan_dir, opts=run.opts, max_turns=run.opts.plan_turns,
                 effort=run.opts.plan_effort, label="session", allow=session.plan_allow(plan_dir, validate_cmd),
-                deny=session.deny_rules("plan"), tools=session.PLAN_TOOLS,
+                deny=session.deny_rules("plan", run.opts.run_id), tools=session.PLAN_TOOLS,
                 env=session.harness_env(), relaunch=clear)      # raises SessionUnavailable when it never ran
     return plan_dir
 
@@ -282,7 +282,7 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
     ask = prompt
     for attempt in ("", "_again"):
         session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
-                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan"),
+                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan", run.opts.run_id),
                     tools=session.REPAIR_TOOLS, env=session.harness_env(),
                     relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
         rep = read_repair(d, concept=True)
@@ -339,7 +339,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
-                + GapLedger(paths.GAPS_DIR).cited_block(node.raw),
+                + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
@@ -361,7 +361,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     ask = prompt
     for attempt in ("", "_again"):
         session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
-                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan"),
+                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan", run.opts.run_id),
                     tools=session.REPAIR_TOOLS, env=session.harness_env(),
                     relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
         rep = read_repair(d, concept=False)
@@ -384,7 +384,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         errs = []
         others = [s for s in siblings if s.id != node.id]
         outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [],
-                                       rejected_gaps=GapLedger(paths.GAPS_DIR).rejected())
+                                       rejected_gaps=GapLedger.for_run(paths.GAPS_DIR, run).rejected())
         errs += [r for o in outcomes if o.node.id == node.id for r in o.reasons]
         # a mapping the repair changed on words a sibling also carries: the same-words rule lands on the sibling, and is the repair's to keep or dispute
         errs += [f"{node.id}: your mapping of shared words differs from the held sibling's — {r}" for o in outcomes if o.node.id != node.id

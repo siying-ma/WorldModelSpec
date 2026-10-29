@@ -363,6 +363,30 @@ def plan_batches(plannable: list, ledger: Ledger, by_id: dict[str, corpus.Law], 
     return batches, waiting, failed
 
 
+def gap_gate(run: Run, opts: Options) -> list[tuple[str, str]]:
+    """Before a launch touches anything: a new run (no state yet) starts a round, which refuses while
+    a gap of the last one is open and archives the resolved ones with the runs that proposed them;
+    a training run, new or resumed, refuses a ledger row that names a held-out law. Returns the
+    gaps archived."""
+    gaps = GapLedger(paths.GAPS_DIR)
+    moved = gaps.start_round(paths.RESULTS) if not run.state_file.exists() else []
+    if moved:
+        print(f"[loop] {len(moved)} resolved gap(s) archived with the runs that proposed them: "
+              + ", ".join(f"{g} → results/{r}/gaps.jsonl" for g, r in moved))
+    if opts.mode == "train":
+        held = held_out_law_ids()
+        named = [f"{r['id']}: {sorted(set(r.get('law_refs', [])) & held)}" for r in gaps.rows if set(r.get("law_refs", [])) & held]
+        if named:
+            raise SystemExit("[loop] the gap ledger names held-out laws, which a training run must not see: " + "; ".join(named[:6]))
+    return moved
+
+
+def held_out_law_ids() -> set[str]:
+    """The ids of the held-out split's laws (its law file's ids only), empty without one."""
+    f = paths.REPO / "laws" / "example" / "test" / "laws.jsonl"
+    return {json.loads(line)["id"] for line in f.read_text(encoding="utf-8").splitlines() if line.strip()} if f.exists() else set()
+
+
 def doctor_ok() -> None:
     """The doctor runs before a loop: it runs no Lean and takes seconds, and a failure of a
     generated artifact would otherwise surface as a gate verdict charged to a law."""
@@ -538,7 +562,8 @@ def _files_of(kind: str, ident: str) -> list[str]:
 
 def semantic_inputs(opts: Options) -> dict[str, str]:
     """The digests of what a run's plans and reviews were built against: the corpus (its laws and
-    posted definitions), the definition precedence, the ontology, Core, the prompts, the base
+    posted definitions), the definition precedence, the definition resolver that reads them (its
+    table is rewritten at every launch), the ontology, Core, the prompts, the base
     reading's reviewed values (a proposal awaiting the operator's review is a run's own state, never
     a semantic input), and a base run's accepted records. A resume against another value of any of
     them would mix two runs, and stops before any record is rewritten."""
@@ -559,6 +584,7 @@ def semantic_inputs(opts: Options) -> dict[str, str]:
         return hashlib.sha256(json.dumps(kept, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:24]
     out = {"corpus": digest([laws, laws.with_name("definitions.jsonl")]),
            "definition_precedence": digest([precedence]),
+           "resolver": digest([paths.REPO / "harness" / "model" / "definitions.py"]),
            "ontology": digest([Path(opts.ontology)]),
            "core": digest(list(paths.CORE.rglob("*.lean"))),
            "prompts": digest(list((paths.REPO / "prompts").glob("*.md"))),
@@ -576,9 +602,10 @@ def semantic_inputs(opts: Options) -> dict[str, str]:
 
 def run_loop(opts: Options) -> dict:
     """The loop, with its two run-level stops: a damaged audit file (`data_integrity_failure`: the
-    file is named and left as it is) and an exhausted budget for the second vendor's calls
-    (`paused_budget`: resumed under the same run id once the operator raises the limit). Either is
-    raised after the iteration committed what it had validated. A fault of the validator itself
+    file is named and left as it is) and an exhausted budget (`paused_budget`: resumed under the same
+    run id once the operator raises the limit, the paused iteration taking up what it left undecided,
+    its gated candidates reviewed without being coded again). Either is raised after the iteration
+    committed what it had decided. A fault of the validator itself
     (an exception inside a check) stops the run as `infrastructure_failure`, uncharged, its traceback
     kept in `validator_fault.txt`."""
     try:
@@ -602,6 +629,7 @@ def _run_loop(opts: Options) -> dict:
     run = Run(opts)
     run.dir.mkdir(parents=True, exist_ok=True)
     owner.acquire(opts.run_id, force=opts.force_takeover)
+    gap_gate(run, opts)
     semantic = semantic_inputs(opts)
     saved_opts = jsonl.read_json(run.dir / "options.json", None)
     if saved_opts is not None and run.state_file.exists():
@@ -646,7 +674,7 @@ def _run_loop(opts: Options) -> dict:
     ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts, opts.repeat_limit)
     concept_ledger = ConceptLedger(run.concept_ledger_file, opts.concept_attempts)
     node_ledger = NodeLedger(run.node_ledger_file, opts.node_attempts)
-    gap_ledger = GapLedger(paths.GAPS_DIR)
+    gap_ledger = GapLedger.for_run(paths.GAPS_DIR, run)
     prog: dict = (snap or {}).get("prog") or {}           # a launch that starts no iteration keeps the last one's record
 
     def persist() -> None:
@@ -671,6 +699,8 @@ def _run_loop(opts: Options) -> dict:
     check_library_isolation(run)
     if not opts.reviewer_model and not opts.dry_run:
         raise SystemExit("--reviewer_model is required: the behaviour review is a node's acceptance check")
+    if (opts.claude_budget_usd is not None or opts.total_budget_usd is not None) and opts.session_budget_usd is None:
+        raise SystemExit("--claude_budget_usd and --total_budget_usd need --session_budget_usd: a Claude session is reserved at its own cap")
     if opts.reviewer_model:
         if session.vendor_of(opts.reviewer_model) == session.vendor_of(opts.model) and not opts.allow_same_vendor:
             raise SystemExit(f"the reviewer ({opts.reviewer_model}) and the planner ({opts.model}) share a vendor; a reviewer is a second "
@@ -1213,15 +1243,16 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
             reviewed_c = list(ex.map(review_one_concept, to_review_c))
         for (c, v, cdir), (out, e) in zip(to_review_c, reviewed_c):
+            if isinstance(e, BudgetPaused):
+                # a pause keeps the work: the gated candidate stays, undecided, and the resumed
+                # iteration reviews it again without coding it
+                budget_paused = str(e); continue
             if e is not None:
                 code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
                 deferred_concepts_now.append(c.raw); prog["concepts"][c.id] = "PAUSED"
                 concept_ledger.planned(c.id, concept_ledger.entries[c.id].used_by if c.id in concept_ledger.entries else [], run.iteration)
-                if isinstance(e, BudgetPaused):
-                    budget_paused = str(e)
-                else:
-                    sessions_down = True
-                    to_user.append(f"the review session for concept `{c.id}` never ran ({e}); its record is held — rerun the loop later")
+                sessions_down = True
+                to_user.append(f"the review session for concept `{c.id}` never ran ({e}); its record is held — rerun the loop later")
                 persist(); continue
             if out.status == "deferred":
                 code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
@@ -1270,7 +1301,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 users = [nid for nid, raw in run.all_nodes().items() if c.get("supersedes") in concept_deps(Node(raw))]
                 notes.append(f"migration candidates for `{c.get('supersedes')}` → `{c.id}`: {users or 'none'}")
         remaining = [c for c in remaining if c.id not in {w.id for w in wave}]
-    for c in remaining:                                   # left by an outage or a pause: held, coded next iteration
+    if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
+        persist(); raise BudgetPaused(budget_paused)
+    for c in remaining:                                   # left by an outage: held, coded next iteration
         if c.raw not in deferred_concepts_now:
             deferred_concepts_now.append(c.raw); prog["concepts"].setdefault(c.id, "PAUSED")
     propagate_concept_failures(concept_ledger)
@@ -1309,11 +1342,12 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         remaining_nodes = [n for n in remaining_nodes if n.id not in {c.id for c in closed}]
         if not remaining_nodes:
             persist(); break
-        if budget_paused or sessions_down:
-            for n in remaining_nodes:                         # the run pauses or stops: the node is held, its law keeps its plan
+        if budget_paused:
+            break
+        if sessions_down:
+            for n in remaining_nodes:                         # the run stops: the node is held, its law keeps its plan
                 deferred_now.append(n.raw); ledger.hold(n.law, run.iteration); prog["nodes"][n.id] = "PAUSED"
-                if sessions_down:
-                    ledger.defer(n.law, ["not coded: sessions unavailable this iteration"])
+                ledger.defer(n.law, ["not coded: sessions unavailable this iteration"])
             persist(); break
         accepted_n = set(run.all_nodes()) | {n.id for n in accepted_now}
         ready: list[Node] = []
@@ -1502,17 +1536,18 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
             reviewed = list(ex.map(review_one, to_review))
         for (n, v, ndir, added), (out, e) in zip(to_review, reviewed):
+            if isinstance(e, BudgetPaused):
+                # a pause keeps the work: the gated candidate stays, undecided, and the resumed
+                # iteration reviews it again without coding it
+                budget_paused = str(e); continue
             if e is not None:
-                # an outage or a pause keeps the work: the node is held, its law keeps its plan and budget
+                # an outage keeps the work: the node is held, its law keeps its plan and budget
                 code_phase.rollback(n.id, baselines[n.id], ndir)
                 deferred_now.append(n.raw); ledger.hold(n.law, run.iteration)
                 failed_ids.add(n.id); prog["nodes"][n.id] = "PAUSED"
-                if isinstance(e, BudgetPaused):
-                    budget_paused = str(e)
-                else:
-                    sessions_down = True
-                    to_user.append(f"the behaviour review for `{n.id}` never ran ({e}); the node is held, its law keeps its attempt budget — rerun the loop later")
-                    ledger.defer(n.law, [f"behaviour review never ran: {e}"])
+                sessions_down = True
+                to_user.append(f"the behaviour review for `{n.id}` never ran ({e}); the node is held, its law keeps its attempt budget — rerun the loop later")
+                ledger.defer(n.law, [f"behaviour review never ran: {e}"])
                 persist(); continue
             param_notes_to_user(to_user, out.param_notes)
             for a in out.advisories:
@@ -1570,6 +1605,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 persist(); continue
             accepted_now.append(n); prog["nodes"][n.id] = "OK"; persist()
         remaining_nodes = [n for n in remaining_nodes if n.id not in {w.id for w in wave}]
+    if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
+        persist(); raise BudgetPaused(budget_paused)
     run.deferred_nodes = deferred_now
     if not stage_at_least("nodes"):
         prog["stage"] = "nodes"
@@ -1711,9 +1748,6 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     prog["stage"] = "done"; persist()
     kept_concepts = [c for c in concepts_now if c in result.get("kept_concepts", concepts_now)]
     print(f"[loop] iteration {run.iteration}: accepted {len(kept)} node(s), {len(kept_concepts)} concept(s); laws {ledger.counts()}")
-    if budget_paused:
-        print(f"[loop] the OpenAI budget is reached: pausing — {budget_paused}")
-        return "paused_budget", budget_paused
     if sessions_down:
         print("[loop] sessions or toolchain unavailable: stopping after this iteration")
         return "infrastructure_failure", "a session or the toolchain could not be launched"

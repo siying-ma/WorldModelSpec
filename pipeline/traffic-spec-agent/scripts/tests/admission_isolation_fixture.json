@@ -1,0 +1,558 @@
+{
+ "_about": "a concept record accepted in demo12 with its source, witness and reading, so the admission-isolation test does not depend on the live library or on a run's records",
+ "record": {
+  "concept_id": "drv.motion.left_turn",
+  "kind": "formula",
+  "contract": "The road user has turned to its left so as to proceed in a direction about a quarter turn to the left of the one it was proceeding in: its signed heading change, left positive, over the window behind the observation lies within the band the caller sets, both edges of which are positive, about a quarter turn. The window is the observer's and is long enough to cover a turning made at the speed a turning road user keeps; the band is the observer's too - a sampled heading never turns exactly a quarter, so the lower edge names how much turning to the left counts as a turn rather than a drift, a lane change or an ordinary bend held, and the upper edge keeps a road user that goes on turning, towards a reversal of direction or round a block, from counting as having made a left turn. The concept is a manoeuvre read from the body's own turning: it says nothing about where on the road the turning was made, nothing about any junction, lane, opening, marking or device, nothing about the compass direction the road user set out in or ended in, nothing about its speed, and nothing about the signal given for the turning or any intention to turn. It is not a reversal of direction, which lies beyond the upper edge of the band; not a turn to the right, whose heading change has the other sign; not the road's own bend beneath a body that holds its lane; and it carries no judgement that the manoeuvre is lawful or that the road user had the right to make it. It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning. Where the window reaches past the start of the trace, or a yaw rate within it is missing, it is unknown.",
+  "definition": null,
+  "args": [
+   {
+    "name": "u",
+    "sort": "track"
+   }
+  ],
+  "params": [
+   {
+    "name": "left_turn_window",
+    "unit": "s",
+    "meaning": "the stretch of time behind the observation over which the road user's heading change is taken, within which the heading it turned from is looked for"
+   },
+   {
+    "name": "left_turn_min_heading_change",
+    "unit": "deg",
+    "meaning": "the signed heading change to the left at or above which the turning counts as a turn to the left rather than a drift or a bend held"
+   },
+   {
+    "name": "left_turn_max_heading_change",
+    "unit": "deg",
+    "meaning": "the signed heading change to the left above which the road user has gone on turning past a left turn, towards a reversal of direction"
+   }
+  ],
+  "elements": [
+   {
+    "span": "its signed heading change, left positive, over the window behind the observation",
+    "atoms": [
+     "prim.heading_change"
+    ],
+    "concepts": [],
+    "justification": "`prim.heading_change` is 'the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from `kin.yaw_rate`; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing', with the window length as its parameter. It is the quantity the contract names, sign and unit alike, and its unknown cases are the ones the contract declares. Its input, the yaw rate, is the primitive's and is not claimed here."
+   }
+  ],
+  "residues": [],
+  "literals": [],
+  "scenarios": [
+   {
+    "name": "holds",
+    "expected": "compliant",
+    "narrative": "A vehicle runs north along a roadway, then turns through about a quarter circle to its left and runs west. Over the window behind the observation its signed heading change is a little over a quarter turn to the left, inside the band. The concept holds."
+   },
+   {
+    "name": "fails",
+    "expected": "violated",
+    "narrative": "A vehicle runs north along a roadway and holds a long bend to its left over the whole window, its signed heading change amounting to a few degrees, below the band's lower edge. The concept fails; so would a vehicle that turned through a half circle, whose heading change lies above the upper edge."
+   },
+   {
+    "name": "blind",
+    "expected": "unknown",
+    "masked": [
+     "kin.yaw_rate"
+    ],
+    "narrative": "The holds scene, except that the source declares the yaw rate absent, so no rate of change of heading is observed. The heading change over the window cannot be integrated, so the concept is unknown."
+   }
+  ],
+  "used_by": [
+   "NRS_484B_227_1_o3"
+  ],
+  "supersedes": null,
+  "differs_from": {
+   "concept": "drv.motion.u_turn",
+   "why": "`drv.motion.u_turn` reads the magnitude of the signed heading change against a band about a half turn: it holds of a turning of either hand that leaves the body proceeding in the opposite direction, and it says nothing about which way the body turned. This concept reads the signed change itself, both edges of its band positive, so it holds only of a turning to the left, and its band lies about a quarter turn - above the heading change of a lane change or a bend held, and below the reversal band, which its upper edge keeps clear of. A vehicle that turns a quarter circle to its left satisfies this concept and not `drv.motion.u_turn`; one that turns through a half circle to its right satisfies `drv.motion.u_turn` and not this one."
+  },
+  "reads": [
+   "kin.yaw_rate"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"},\"rhs\":{\"param\":\"$p1\"}},{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"},\"rhs\":{\"param\":\"$p2\"}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "ge",
+     "lhs": {
+      "args": [
+       {
+        "var": "u"
+       }
+      ],
+      "params": [
+       {
+        "param": "left_turn_window"
+       }
+      ],
+      "quantity": "prim_heading_change"
+     },
+     "rhs": {
+      "param": "left_turn_min_heading_change"
+     }
+    },
+    {
+     "cmp": "le",
+     "lhs": {
+      "args": [
+       {
+        "var": "u"
+       }
+      ],
+      "params": [
+       {
+        "param": "left_turn_window"
+       }
+      ],
+      "quantity": "prim_heading_change"
+     },
+     "rhs": {
+      "param": "left_turn_max_heading_change"
+     }
+    }
+   ]
+  },
+  "accepted_in": "demo12/iter-002",
+  "narrowings": [
+   {
+    "kind": "reading",
+    "span": "lies within the band the caller sets, both edges of which are positive",
+    "why": "Written as two comparisons on the one signed quantity, conjoined: the heading change `.ge` left_turn_min_heading_change and `.le` left_turn_max_heading_change. The band is read closed at both edges — a change exactly at the lower edge counts as a turning to the left, a change exactly at the upper edge still counts as a left turn — because the edges are the observer's own thresholds on a sampled figure and a body sitting exactly on one of them is of the kind the edge admits rather than the kind it excludes. The band is read on the signed change itself and no absolute value is written: the contract says both edges are positive, so the lower comparison is what excludes a turning to the right (a negative change) and a body that holds its course (a change about nil), and the upper comparison is what excludes a reversal of direction. Nothing in the body asserts that the caller's edges are positive, or that the lower lies below the upper: those are the caller's, and a band the caller sets otherwise simply holds of nothing."
+   },
+   {
+    "kind": "reading",
+    "span": "The window is the observer's and is long enough to cover a turning made at the speed a turning road user keeps",
+    "why": "The window enters the body only as the length the formal parameter left_turn_window gives the primitive, which measures it in time behind the observation — the primitive integrates the yaw rate over the seconds behind, and there is no reading of it as a stretch of the road user's own path. Whether the window is long enough for a turning at the speed a turning body keeps is the caller's to answer in the figure it passes: the body states no condition on the window's length, on the road user's speed, or on how much of the turning falls inside the window, and reads no speed at all, which is what the contract's 'says nothing about its speed' requires."
+   },
+   {
+    "kind": "reading",
+    "span": "It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning.",
+    "why": "No operator is written for this sentence: it states what the back window already does. The body is a comparison at the instant against the window behind it, so it becomes true at the first observation whose window holds enough of the turning to reach the lower edge and stays true while the turning remains inside the window, falling false once the turning has slid out behind. No `rises`, no `since`, no `once` and no counting of turnings is added — such an operator would make the concept hold at one observation only, or count the run of observations as several turnings, and the contract says the later observations are not a further turning rather than that they are not the manoeuvre."
+   }
+  ],
+  "approximations": [
+   "dismissed: divergence 1 (holds_wrongly): The road user follows a quarter-circle bend to the left while remaining in the same lane; its own heading changes by 90 degrees over four seconds. The body acce — contract: fails, body: holds; contract: \"not the road's own bend beneath a body that holds its lane\" — The contract itself assigns the excluding of a bend held to the lower edge of the band, a figure the caller sets, and declares the concept a manoeuvre read from the body's own turning that says nothing about where on the road the turning was made; a 90-degree heading change over four seconds is the quarter turn the band admits, so the contract decides as the body does. — \"the lower edge names how much turning to the left counts as a turn rather than a drift, a lane change or an ordinary bend held\""
+  ]
+ },
+ "reading": {
+  "run": "lasvegas",
+  "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
+  "params": [
+   {
+    "name": "p.halt_speed_tolerance",
+    "value": 0.2,
+    "unit": "m/s",
+    "convention": "halt-detection convention: a sampled speed is never exactly zero, and a speed at or below the resolution of ordinary speed measurement counts as no movement; the value bounds the measurement noise, not the duration of the halt",
+    "source": "stopped-vehicle detection practice in traffic-engineering field measurement (speed-sensor resolution class)",
+    "proposed": "demo12/iter-001 NRS_484A_450_2"
+   },
+   {
+    "name": "p.stop_place_tolerance",
+    "value": 1.5,
+    "unit": "m",
+    "convention": "stop-line placement tolerance: the distance within which a halted vehicle counts as halted at a marked place, covering the vehicle's reference-point offset and the survey tolerance of the marking",
+    "source": "MUTCD stop-line placement practice and survey tolerance for pavement markings",
+    "proposed": "demo12/iter-001 NRS_484A_450_2"
+   },
+   {
+    "name": "p.intersection_view_distance",
+    "value": 60.0,
+    "unit": "m",
+    "convention": "intersection (approach) sight distance: the along-way view needed to see traffic approaching on the intersecting way at its design speed, from the place at which a driver may proceed",
+    "source": "AASHTO Green Book intersection sight distance, case B (stop-controlled approach)",
+    "proposed": "demo12/iter-001 NRS_484A_450_2"
+   },
+   {
+    "name": "p.stop_approach_lookback",
+    "value": 60.0,
+    "unit": "m",
+    "convention": "approach look-back: the distance travelled before entering the intersection within which the required halt must be found; it bounds the stretch of the approach the rule searches and is measured in path travelled, as the words measure the halt by place on the approach",
+    "source": "stop-sign compliance measurement practice (approach-zone length used in field studies)",
+    "proposed": "demo12/iter-001 NRS_484A_450_2"
+   },
+   {
+    "name": "p.speed_resolution",
+    "value": 0.2,
+    "unit": "m/s",
+    "convention": "source resolution: the speed below which a measured speed does not stand clear of zero; it names only the source's resolution and states no legal threshold",
+    "source": "speed-sensor resolution class of ordinary trace sources",
+    "proposed": "demo12/iter-001 NRS_484A_450_2"
+   },
+   {
+    "name": "p.following_reach",
+    "value": 100.0,
+    "unit": "m",
+    "convention": "following reach: the longitudinal distance within which a leading road user is the one being followed, taken from the span over which a car-following interaction is identified at highway speeds; it relates two road users and states no adequacy",
+    "source": "car-following and platoon-identification practice in traffic-flow measurement",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.following_alignment_tolerance",
+    "value": 15.0,
+    "unit": "deg",
+    "convention": "heading-alignment tolerance: the angle within which two headings count as aligned, absorbing lane curvature and heading noise over a sampled trajectory",
+    "source": "same-direction classification practice in trajectory processing",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.headway_dry",
+    "value": 2.0,
+    "unit": "s",
+    "convention": "time-headway convention (the two-second rule): the gap is the distance the follower covers at its own speed during a headway time that absorbs the driver's perception-reaction time and a braking margin; dry surface",
+    "source": "driver-handbook two-second rule; AASHTO perception-reaction time of 2.5 s for braking",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.headway_wet",
+    "value": 3.0,
+    "unit": "s",
+    "convention": "the same time-headway convention with the wet-surface braking factor, which lengthens the braking share of the headway",
+    "source": "driver-handbook wet-surface following advice; wet-pavement friction factors of the stopping-distance model",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.headway_ice",
+    "value": 5.0,
+    "unit": "s",
+    "convention": "the same time-headway convention with the icy or snow-covered braking factor",
+    "source": "winter-driving following advice; ice and packed-snow friction factors of the stopping-distance model",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.closing_time",
+    "value": 2.0,
+    "unit": "s",
+    "convention": "closing-speed allowance: the time over which the speed difference between follower and leader is allowed to close the gap, so that a faster follower owes more space than a matched one",
+    "source": "time-to-collision surrogate-safety practice in car-following analysis",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.traffic_gap_increment",
+    "value": 1.0,
+    "unit": "m",
+    "convention": "density increment: the additional space owed for each road user of the traffic on the highway within the reach about the subject, so that the bound rises as the traffic thickens",
+    "source": "headway-density relations of the Highway Capacity Manual's level-of-service bands",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.traffic_reach",
+    "value": 50.0,
+    "unit": "m",
+    "convention": "reach of the traffic about the subject: the centre distance within which another road user counts as part of the traffic upon the highway the subject is on; it relates road users and states no adequacy",
+    "source": "local-density window used in traffic-flow measurement",
+    "proposed": "demo12/iter-001 NRS_484B_127_1"
+   },
+   {
+    "name": "p.lane_change_window",
+    "value": 4.0,
+    "unit": "s",
+    "convention": "manoeuvre-recognition window: the stretch of time behind the observation within which the lane the road user came from is looked for, taken from the observed duration of a lane change from the first steering input to settling in the new lane. It names only how far back the earlier lane membership is sought and sets no standard of conduct.",
+    "source": "lane-change duration studies of naturalistic driving (median about 4 s, from first steering input to settling)",
+    "proposed": "demo12/iter-001 NRS_484B_223_1b"
+   },
+   {
+    "name": "p.lane_change_horizon",
+    "value": 3.0,
+    "unit": "s",
+    "convention": "gap-acceptance horizon: the time ahead over which the closest approach of the subject and another road user is computed under constant velocities, taken as the time a lane change occupies the space between the two lanes.",
+    "source": "lane-change duration studies; the same source as the recognition window, taken at its crossing phase",
+    "proposed": "demo12/iter-001 NRS_484B_223_1b"
+   },
+   {
+    "name": "p.lane_change_clearance",
+    "value": 5.0,
+    "unit": "m",
+    "convention": "gap-acceptance clearance: the distance between two bodies below which a lane change cannot be made with safety, taken as a passenger-car design vehicle's length so that the entering body does not come within a vehicle length of another.",
+    "source": "AASHTO, A Policy on Geometric Design of Highways and Streets, passenger car design vehicle length",
+    "proposed": "demo12/iter-001 NRS_484B_223_1b"
+   },
+   {
+    "name": "p.lane_change_yaw_rate",
+    "value": 1.0,
+    "unit": "deg/s",
+    "convention": "manoeuvre-detection tolerance: the magnitude of yaw rate above which the body counts as steering rather than holding its course, set above the yaw of following an ordinary highway bend and above heading noise, and naming only the resolution at which turning is told from running straight.",
+    "source": "the yaw rate of a vehicle on a highway curve at the design radius, below which steering is not distinguishable from course keeping",
+    "proposed": "demo12/iter-001 NRS_484B_223_1b"
+   },
+   {
+    "name": "p.lateral_offset_resolution",
+    "value": 0.3,
+    "unit": "m",
+    "convention": "source resolution: the magnitude of signed lateral offset below which a region does not stand clear of the road user's own axis, naming only the positional resolution of the source and the half-width of a painted or kerbed boundary; it sets no standard of conduct and no required separation.",
+    "source": "the lateral positional accuracy of ordinary mapped road geometry and vehicle positioning (decimetre class)",
+    "proposed": "demo12/iter-001 NRS_484B_227_1_o1"
+   },
+   {
+    "name": "p.opening_reach",
+    "value": 15.0,
+    "unit": "m",
+    "convention": "reach of an opening: the distance from a road user's body outline to an opening or crossover in a dividing structure within which the crossing counts as made through that opening rather than elsewhere on the highway. It is taken from the length of a median crossover, so a vehicle standing in or immediately at the opening is covered and one crossing the barrier well away from it is not.",
+    "source": "the typical length of a median crossover or emergency crossing on a divided highway",
+    "proposed": "demo12/iter-001 NRS_484B_227_1_o1"
+   },
+   {
+    "name": "p.yield_approach_speed",
+    "value": 4.0,
+    "unit": "m/s",
+    "convention": "yield-controlled approach convention: the speed at or below which a vehicle approaching a yield sign can give way to traffic on the intersecting way and halt before entering it within the view the approach affords",
+    "source": "AASHTO Green Book yield-controlled approach speeds; MUTCD application of the yield sign",
+    "proposed": "demo12/iter-001 NRS_484B_257_1_o1"
+   },
+   {
+    "name": "p.cautious_speed",
+    "value": 7.0,
+    "unit": "m/s",
+    "convention": "stopping-sight-distance model: the speed from which a vehicle can halt within the view an intersection approach affords",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.yield_clearance",
+    "value": 6.0,
+    "unit": "m",
+    "convention": "gap-acceptance clearance: the centre-to-centre distance at closest approach below which the two vehicles' paths conflict and the one owing the duty has taken the precedence",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.yield_horizon",
+    "value": 4.0,
+    "unit": "s",
+    "convention": "conflict horizon for gap acceptance: the time ahead over which the closest approach of two bodies is computed under constant velocities",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_4_o2",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.hazard_horizon",
+    "value": 5.0,
+    "unit": "s",
+    "convention": "immediate-hazard horizon: the time ahead within which an approaching vehicle's arrival makes it an immediate hazard to a vehicle crossing the junction",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_253_o1",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.hazard_clearance",
+    "value": 8.0,
+    "unit": "m",
+    "convention": "immediate-hazard clearance: the centre-to-centre distance at closest approach at or below which an approaching vehicle counts as so close as to be an immediate hazard",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_253_o1",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.approach_lane_window",
+    "value": 10.0,
+    "unit": "s",
+    "convention": "approach look-back: the stretch of time behind the observation within which the approach lane a road user came to the junction on is looked for",
+    "source": "the same value this iteration's earlier batch proposed for NRS_484B_250_1",
+    "proposed": "demo12/iter-001 NRS_484B_257_2_o2"
+   },
+   {
+    "name": "p.speed_dry",
+    "value": 25.0,
+    "unit": "m/s",
+    "convention": "surface-braking convention, baseline: the free-flow speed that is reasonable on a dry surface in daylight on an ordinary two-lane highway, before any reduction for surface, light, sight, width or traffic",
+    "source": "design speeds of rural two-lane highways in highway design practice",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.speed_wet",
+    "value": 20.0,
+    "unit": "m/s",
+    "convention": "the same surface-braking convention with the wet-surface braking factor, which lengthens the braking share of the stopping distance",
+    "source": "wet-pavement friction factors of the stopping-distance model",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.speed_ice",
+    "value": 11.0,
+    "unit": "m/s",
+    "convention": "the same surface-braking convention with the icy or snow-covered braking factor",
+    "source": "icy-pavement friction factors of the stopping-distance model",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.speed_dark",
+    "value": 20.0,
+    "unit": "m/s",
+    "convention": "night allowance: the baseline speed in darkness, at which a vehicle can stop within the length of road its own lamps show",
+    "source": "headlamp-range and night stopping-sight-distance practice",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.sight_clearance_time",
+    "value": 4.0,
+    "unit": "s",
+    "convention": "stopping-sight-distance convention: the time within which the vehicle must be able to come to a halt inside the distance it can see, so that the bound is the visible distance divided by this time",
+    "source": "perception-reaction plus braking times of the stopping-sight-distance model",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.reference_lane_width",
+    "value": 3.6,
+    "unit": "m",
+    "convention": "lane-width reference: the standard lane width at which the baseline speed is owed in full, the deficit below it costing speed",
+    "source": "standard lane widths in highway design practice",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.width_penalty_time",
+    "value": 0.2,
+    "unit": "s",
+    "convention": "lane-width allowance: the time in which the vehicle covers the missing width, so that each metre of lane width short of the reference costs the speed covered in that time",
+    "source": "narrow-lane speed reductions in highway design practice",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.traffic_speed_decrement",
+    "value": 1.5,
+    "unit": "m/s",
+    "convention": "traffic-density allowance: the speed the bound falls by for each road user of the traffic on the same highway within the reach, so that the bound falls as the stream thickens",
+    "source": "speed-flow relations of traffic flow practice",
+    "proposed": "demo12/iter-001 NRS_484B_600_1a"
+   },
+   {
+    "name": "p.corner_turn_window",
+    "value": 8.0,
+    "unit": "s",
+    "convention": "turn-recognition window: the stretch of time behind the observation within which the heading the road user turned from is looked for, taken from the duration of a low-speed turning movement at a junction, from the first steering input to settling on the new course. It names only how far back the earlier heading is sought and sets no standard of conduct.",
+    "source": "geometric design practice for low-speed turning movements at intersections",
+    "proposed": "demo12/iter-002 NRS_484B_113_2"
+   },
+   {
+    "name": "p.corner_min_heading_change",
+    "value": 60.0,
+    "unit": "deg",
+    "convention": "corner-turn recognition: the magnitude of heading change at or above which a movement counts as having gone round a corner, taken from the angle between two ways that join, in the words of DEF-NRS-484A-105, \"at, or approximately at, right angles\", less the margin by which approximately right-angled junctions and sampled headings depart from a quarter turn. It names the resolution at which going round a corner is told from backing straight, not how sharp a corner must be to matter.",
+    "source": "the junction geometry the posted definition of an intersection describes, with the heading tolerance of sampled trajectories",
+    "proposed": "demo12/iter-002 NRS_484B_113_2"
+   },
+   {
+    "name": "p.turn_window",
+    "value": 10.0,
+    "unit": "s",
+    "convention": "Turn-recognition window: the stretch of time behind the observation within which the heading a road user turned from is looked for. It is taken from the time a vehicle takes to carry out a turn at a junction or a reversal of direction on a roadway, from the first steering input to settling on the new heading, and it is long enough to cover a turning accomplished in more than one movement, as the definition of a U-turn requires. It names only how far back the earlier heading is sought and sets no standard of conduct.",
+    "source": "Observed turn durations at junctions and of multi-movement turns at low speed (intersection-manoeuvre timing studies underlying junction clearance intervals).",
+    "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+   },
+   {
+    "name": "p.u_turn_min_heading_change",
+    "value": 150.0,
+    "unit": "deg",
+    "convention": "Reversal-of-direction band, lower edge: a sampled heading never reverses exactly, so this names how near a half turn counts as proceeding in the opposite direction. It is set far enough below a half turn to absorb the heading noise and the sampling of a turning made at low speed, and far enough above a quarter turn that an ordinary turn at a junction does not reach it.",
+    "source": "Heading-integration tolerance over sampled trajectories, taken with the quarter-turn and half-turn geometry of road manoeuvres.",
+    "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+   },
+   {
+    "name": "p.u_turn_max_heading_change",
+    "value": 210.0,
+    "unit": "deg",
+    "convention": "Reversal-of-direction band, upper edge: it keeps a road user that goes on turning - round a roundabout, round a block - from counting as having reversed its direction, and is set as far above a half turn as the lower edge is below it.",
+    "source": "The same heading-integration tolerance, applied symmetrically about a half turn.",
+    "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+   },
+   {
+    "name": "p.left_turn_min_heading_change",
+    "value": 60.0,
+    "unit": "deg",
+    "convention": "Left-turn band, lower edge: the magnitude of signed heading change to the left at or above which a movement counts as a turn to the left rather than a drift, a lane change or an ordinary bend held. It is set below a quarter turn, since junctions meet at angles that are only approximately right, and well above the heading change of a lane change.",
+    "source": "The angles at which highways join (approximately, but not exactly, right angles, as the definition of an intersection allows) together with the heading change of an ordinary lane change.",
+    "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+   },
+   {
+    "name": "p.left_turn_max_heading_change",
+    "value": 135.0,
+    "unit": "deg",
+    "convention": "Left-turn band, upper edge: it keeps a road user that goes on turning past a quarter turn towards a reversal of direction from counting as having made a left turn, and is set at the midpoint between a quarter turn and the lower edge of the reversal band, so that the two bands do not overlap and a turning falls in at most one of them.",
+    "source": "The same quarter-turn and half-turn geometry, with the reversal band's lower edge.",
+    "proposed": "demo12/iter-002 NRS_484B_227_1_o3"
+   },
+   {
+    "name": "p.crossing_entry_lookback",
+    "value": 25,
+    "unit": "m",
+    "convention": "crossing look-back: the stretch of path behind a halt within which an earlier overlap of a crossing shows the halt to have been made after the vehicle entered that crossing rather than before it. It is taken from the ground between an entry into a marked crossing and a halt placed within the placement tolerance beyond it - the length of the crossing, the length of a design vehicle, the placement tolerance, and one sampling interval at an ordinary approach speed - so that the entry is found where it occurred and no earlier conduct of the approach is reached. It names only how far back the entry is sought and sets no standard of conduct.",
+    "source": "crosswalk width and passenger-car design-vehicle length of the geometric design conventions, with the stop-line placement tolerance of `p.stop_place_tolerance` and the sampling interval of an ordinary trace at an urban approach speed",
+    "proposed": "demo12/iter-003 NRS_484A_450_2"
+   },
+   {
+    "name": "p.mount_proximity",
+    "value": 2.0,
+    "unit": "m",
+    "convention": "sign-assembly mounting convention: the distance from a sign's face, taken on each world axis, within which a beacon head counts as mounted with that sign. It is taken from the dimensions of a roadside sign assembly and the offset at which a pair of beacon lamps is fixed above or beside the sign face it serves, so that a head on the same post or the same mast arm is covered and a head at the next installation along the road is not. It names how close a head must stand to belong to a sign's assembly and states no standard of conduct and no required separation.",
+    "source": "roadside sign and beacon mounting practice (MUTCD sign-assembly and beacon-mounting dimensions)",
+    "proposed": "demo12/iter-003 NRS_484B_600_1c"
+   },
+   {
+    "name": "p.signal_lookback",
+    "value": 5.0,
+    "unit": "s",
+    "convention": "Signalling-interval convention: the stretch of time behind the observation at which a movement is recognized within which a turn signal given for that movement is looked for. It covers the interval a driver is expected to signal before beginning the movement together with the time the movement itself occupies, so that a signal duly given before the body begins to cross is still found when the movement is recognized; it names only where the signal is looked for and states no standard of conduct.",
+    "source": "Driver-licensing signalling guidance (a continuous signal over the last stretch of road before the movement, commonly 100 feet, which is some two to three seconds at ordinary highway speeds) together with observed lane-change durations from the first steering input to settling in the new lane.",
+    "proposed": "demo12/iter-004 NRS_484B_223_1b"
+   }
+  ],
+  "aggregates": [
+   {
+    "id": "DEF-NRS-484A-320::vehicle",
+    "term": "vehicle",
+    "definition": "DEF-NRS-484A-320",
+    "included": [
+     "ru.bus",
+     "ru.commercial_motor_vehicle",
+     "ru.emergency_vehicle",
+     "ru.fire_apparatus",
+     "ru.moped",
+     "ru.motor_vehicle",
+     "ru.motorcycle",
+     "ru.official_vehicle",
+     "ru.taxicab",
+     "ru.tour_bus_or_limousine",
+     "ru.trailer_or_combination",
+     "ru.transit_bus",
+     "ru.truck"
+    ],
+    "unresolved": [],
+    "certificate": "7c72a236fa6dd78a96bc4a85d1c282c9e29304eca14cbd3c74c47f95fb32974e",
+    "admitted": "demo12/iter-001"
+   },
+   {
+    "id": "DEF-NRS-484A-285::traffic",
+    "term": "traffic",
+    "definition": "DEF-NRS-484A-285",
+    "included": [
+     "ru.bicycle",
+     "ru.bus",
+     "ru.child",
+     "ru.commercial_motor_vehicle",
+     "ru.electric_bicycle",
+     "ru.electric_scooter",
+     "ru.emergency_vehicle",
+     "ru.fire_apparatus",
+     "ru.moped",
+     "ru.motor_vehicle",
+     "ru.motorcycle",
+     "ru.official_vehicle",
+     "ru.pedestrian",
+     "ru.pedestrian_with_white_cane_or_guide_animal",
+     "ru.rail_vehicle",
+     "ru.taxicab",
+     "ru.tour_bus_or_limousine",
+     "ru.trailer_or_combination",
+     "ru.transit_bus",
+     "ru.truck"
+    ],
+    "unresolved": [],
+    "certificate": "aa826b36c138ae099b68b6e8341084877b9b14893b03cf31c00b4c2ecab030a1",
+    "admitted": "demo12/iter-001"
+   }
+  ],
+  "_fields": {
+   "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+  }
+ },
+ "source": "/-\n  drv.motion.left_turn — The road user has turned to its left so as to proceed in a direction about a quarter turn to the left of the one it was proceeding in: its signed heading change, left positive, over the window behind the observation lies within the band the caller sets, both edges of which are positive, about a quarter turn. The window is the observer's and is long enough to cover a turning made at the speed a turning road user keeps; the band is the observer's too - a sampled heading never turns exactly a quarter, so the lower edge names how much turning to the left counts as a turn rather than a drift, a lane change or an ordinary bend held, and the upper edge keeps a road user that goes on turning, towards a reversal of direction or round a block, from counting as having made a left turn. The concept is a manoeuvre read from the body's own turning: it says nothing about where on the road the turning was made, nothing about any junction, lane, opening, marking or device, nothing about the compass direction the road user set out in or ended in, nothing about its speed, and nothing about the signal given for the turning or any intention to turn. It is not a reversal of direction, which lies beyond the upper edge of the band; not a turn to the right, whose heading change has the other sign; not the road's own bend beneath a body that holds its lane; and it carries no judgement that the manoeuvre is lawful or that the road user had the right to make it. It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning. Where the window reaches past the start of the trace, or a yaw rate within it is missing, it is unknown.\n\n  THE READING (the blueprint's; the session records here, per element, how the contract's words are\n  written, and every choice the contract did not dictate).\n\n  Elements (contract words → atoms, concepts):\n    its signed heading change, left positive, over the window behind the observation: atoms ['prim.heading_change'], concepts []\n\n  How each element is written:\n\n    \"its signed heading change, left positive, over the window behind the observation\" —\n    `Term.quantity \"prim_heading_change\" [u] [left_turn_window]`: the primitive of that very name,\n    over the formal `u`, with the formal parameter `left_turn_window` as its window length. The\n    primitive is the quantity the contract names, sign and unit alike — degrees, left positive,\n    integrated from `kin.yaw_rate` over the window behind the observation — and it is the whole of\n    what this concept reads. Its input, the yaw rate, is the primitive's own and is not claimed\n    here; nothing else of the road user, of the road or of the scene is read.\n\n    \"lies within the band the caller sets\" — two comparisons on that one quantity: `.ge` the\n    formal `left_turn_min_heading_change` and `.le` the formal `left_turn_max_heading_change`,\n    conjoined. The band is closed at both edges (the narrowing below) and is read on the signed\n    change itself: no `abs` is written anywhere, so a turning to the right, whose change is\n    negative, falls below the lower edge, which the contract says the caller sets positive, and a\n    body that goes on turning past the upper edge falls above it.\n\n  The unknowns are the primitive's: a window that reaches past the start of the trace is\n  `windowTruncated` and a yaw rate missing inside it is `absentAtom kin_yaw_rate`, which is what\n  the contract's last sentence declares. The whole body is read at the instant, against the window\n  behind it; no further temporal operator is written (see the narrowing on the last sentence of\n  the contract), no region, lane, device, junction, marking, signal, heading-in-the-world or speed\n  is read, and nothing of lawfulness or of the right to turn appears, which is what the contract\n  excludes.\n\n  No magnitude below is this file's own: parameters are formals the caller fills.\n-/\nimport TrafficSpec.Core.Language.Concept\n\nnamespace TrafficSpec.Concepts.motion.left_turn\n\n/-- The formal arguments, as `Arg`s (a literal formal is written `.var` and filled by the caller). -/\ndef aU : Arg := .var \"u\"\n\n/-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/\ndef pLeftTurnWindow : Term := .param \"left_turn_window\"\ndef pLeftTurnMinHeadingChange : Term := .param \"left_turn_min_heading_change\"\ndef pLeftTurnMaxHeadingChange : Term := .param \"left_turn_max_heading_change\"\n\n/-- The road user's signed heading change (degrees, left positive) over the window behind the\n    observation, integrated from its yaw rate: the primitive, over the formal `u`, with the\n    caller's window as its length. -/\ndef headingChange : Term :=\n  .quantity \"prim_heading_change\" [aU] [pLeftTurnWindow]\n\n/-- The turning reaches the lower edge of the band: it is a turning to the left, and more of one\n    than a drift, a lane change or an ordinary bend held. -/\ndef atLeastBandLow : Formula :=\n  .cmp headingChange .ge pLeftTurnMinHeadingChange\n\n/-- The turning stays at or below the upper edge: the road user has not gone on turning past a\n    quarter, towards a reversal of direction or round a block. -/\ndef atMostBandHigh : Formula :=\n  .cmp headingChange .le pLeftTurnMaxHeadingChange\n\n/-- The road user has turned to its left so as to proceed about a quarter turn to the left of the\n    direction it was proceeding in: its signed heading change over the window behind lies within\n    the caller's band. -/\ndef body : Formula :=\n  .and atLeastBandLow atMostBandHigh\n\ndef concept : Concept :=\n  { id := \"drv.motion.left_turn\"\n    contract := \"The road user has turned to its left so as to proceed in a direction about a quarter turn to the left of the one it was proceeding in: its signed heading change, left positive, over the window behind the observation lies within the band the caller sets, both edges of which are positive, about a quarter turn. The window is the observer's and is long enough to cover a turning made at the speed a turning road user keeps; the band is the observer's too - a sampled heading never turns exactly a quarter, so the lower edge names how much turning to the left counts as a turn rather than a drift, a lane change or an ordinary bend held, and the upper edge keeps a road user that goes on turning, towards a reversal of direction or round a block, from counting as having made a left turn. The concept is a manoeuvre read from the body's own turning: it says nothing about where on the road the turning was made, nothing about any junction, lane, opening, marking or device, nothing about the compass direction the road user set out in or ended in, nothing about its speed, and nothing about the signal given for the turning or any intention to turn. It is not a reversal of direction, which lies beyond the upper edge of the band; not a turn to the right, whose heading change has the other sign; not the road's own bend beneath a body that holds its lane; and it carries no judgement that the manoeuvre is lawful or that the road user had the right to make it. It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning. Where the window reaches past the start of the trace, or a yaw rate within it is missing, it is unknown.\"\n    definition := none\n    args := [(\"u\", .track)]\n    params := [⟨\"left_turn_window\", .second⟩, ⟨\"left_turn_min_heading_change\", .degree⟩, ⟨\"left_turn_max_heading_change\", .degree⟩]\n    body := .formula body\n    residues := []  -- the record's, verbatim; not yours to change\n    narrowings :=\n      [ { span := \"lies within the band the caller sets, both edges of which are positive\"\n          why := \"Written as two comparisons on the one signed quantity, conjoined: the heading change `.ge` left_turn_min_heading_change and `.le` left_turn_max_heading_change. The band is read closed at both edges — a change exactly at the lower edge counts as a turning to the left, a change exactly at the upper edge still counts as a left turn — because the edges are the observer's own thresholds on a sampled figure and a body sitting exactly on one of them is of the kind the edge admits rather than the kind it excludes. The band is read on the signed change itself and no absolute value is written: the contract says both edges are positive, so the lower comparison is what excludes a turning to the right (a negative change) and a body that holds its course (a change about nil), and the upper comparison is what excludes a reversal of direction. Nothing in the body asserts that the caller's edges are positive, or that the lower lies below the upper: those are the caller's, and a band the caller sets otherwise simply holds of nothing.\"\n          kind := \"reading\" }\n      , { span := \"The window is the observer's and is long enough to cover a turning made at the speed a turning road user keeps\"\n          why := \"The window enters the body only as the length the formal parameter left_turn_window gives the primitive, which measures it in time behind the observation — the primitive integrates the yaw rate over the seconds behind, and there is no reading of it as a stretch of the road user's own path. Whether the window is long enough for a turning at the speed a turning body keeps is the caller's to answer in the figure it passes: the body states no condition on the window's length, on the road user's speed, or on how much of the turning falls inside the window, and reads no speed at all, which is what the contract's 'says nothing about its speed' requires.\"\n          kind := \"reading\" }\n      , { span := \"It holds from the observation at which the heading change first enters the band until the window behind has passed, and those later observations are not a further turning.\"\n          why := \"No operator is written for this sentence: it states what the back window already does. The body is a comparison at the instant against the window behind it, so it becomes true at the first observation whose window holds enough of the turning to reach the lower edge and stays true while the turning remains inside the window, falling false once the turning has slid out behind. No `rises`, no `since`, no `once` and no counting of turnings is added — such an operator would make the concept hold at one observation only, or count the run of observations as several turnings, and the contract says the later observations are not a further turning rather than that they are not the manoeuvre.\"\n          kind := \"reading\" } ]\n    supersedes := none }\n\nend TrafficSpec.Concepts.motion.left_turn\n",
+ "witness": "/-\n  Witnesses for drv.motion.left_turn.\n\n  One junction and one length of bending road carry the three scenarios. Every figure below is the\n  witness's own, including the three the instance gives the formal parameters: a window of 6 s, a\n  band from 60° to 135° of signed heading change to the left.\n\n  The subject is a car, 4 m long and 2 m wide (half-extents 2 m, 1 m, 1 m), track 1, the formal\n  `u`; it runs at 5 m/s. Every scene carries its yaw rate, which is the only thing the concept\n  reads; its position and heading are the witness's own rendering of the same motion (headings are\n  rational approximations of the unit vector at a bearing, to a thousandth), and the roadway\n  regions are drawn so that the scene is a road scene — the body reads no region, and no scenario\n  turns on one.\n\n  Fourteen instants 1 s apart from t = 0, so t = 0 … 13 s. The body looks 6 s behind, so the\n  window of every scenario is t = 9 s … 13 s: at those five instants the back window is covered\n  (an observation 6 s earlier and five between), while the instants before t = 6 s have a window\n  that reaches past the start of the trace. Nothing looks ahead, so no padding is needed.\n\n  holds:  the car runs north at x = -5 m up to y = -35 m with no yaw (t = 0 … 5 s), then turns to\n          its left at 16 deg/s for six seconds (t = 6 … 11 s), through 96° in all, and runs on\n          with no yaw. Over the window behind, its signed heading change is 64° at t = 9 s, 80° at\n          t = 10 s, 96° at t = 11 s (the whole turning inside the window), 80° at t = 12 s and 64°\n          at t = 13 s, as the turning slides out behind it: inside the band 60° … 135° at every\n          instant of the window. The concept holds throughout, which is the contract's \"from the\n          observation at which the heading change first enters the band until the window behind\n          has passed\".\n  fails:  the car runs north along a roadway that bends to its left, holding the bend at 1 deg/s\n          over the whole trace. Its signed heading change over the window behind is 6° at every\n          instant of the window — a turning to the left, but below the lower edge of the band, a\n          bend held rather than a left turn. The concept fails at every instant of the window. A\n          body that turned through a half circle would fail the other way, above the upper edge.\n  blind:  the holds scene on a source whose manifest declares kin.yaw_rate absent. The window\n          behind is covered at every instant of the window, as above, but no rate of change of\n          heading is observed within it, so the heading change cannot be integrated and the\n          concept is unknown for that atom alone.\n-/\nimport TrafficSpec.Concepts.motion.left_turn\nimport TrafficSpec.Core.Evidence.Builders\n\nnamespace TrafficSpecWitness.Concepts.motion.left_turn\n\nopen TrafficSpec\n\ndef m (n : Int) : Q := Units.metres n\ndef cm (n : Int) : Q := Units.centimetres n\n\n/-- A yaw rate (degrees per second, left positive), as `kin.yaw_rate` carries it. -/\ndef degPerSecond (n : Int) : Q := Units.degrees n\n\n/-- A heading: the direction in the world frame (+x east, +y north) written in thousandths, the\n    witness's own rational approximation of the unit vector at a bearing. -/\ndef dir (x y : Int) : Vec := (Units.ratio x 1000, Units.ratio y 1000)\n\n/-- The timestamp, in milliseconds, of the observation at second `n`. -/\ndef atSecond (n : Int) : Timestamp := n * 1000\n\n/-- The place a scene puts a body that has no table entry; no scenario reaches it. -/\ndef origin : Vec := (m 0, m 0)\n\n-- Formals ↦ tracks: u ↦ 1\n\n/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a\n    value through a `Units` constructor, a quantity concept given its expected bounds. The window\n    behind is 6 s — long enough for a junction turning at the speed a turning body keeps — and the\n    band is 60° … 135° of signed heading change to the left: below 60° the witness's source counts\n    the turning a drift, a lane change or a bend held, above 135° a body still turning towards a\n    reversal of direction. All three figures are the witness's own. -/\ndef inst : Concept.Instance :=\n  { name := \"drv.motion.left_turn@w\"\n    concept := \"drv.motion.left_turn\"\n    literals := []\n    nats := []\n    params := [(\"left_turn_window\", .lit (Units.seconds 6) .second),\n               (\"left_turn_min_heading_change\", .lit (Units.degrees 60) .degree),\n               (\"left_turn_max_heading_change\", .lit (Units.degrees 135) .degree)]\n    bounds := none\n  }\n\ndef instances : List Concept.Instance := [inst]\n\n/-- The car of the witness, with the yaw rate its source observed at this instant. -/\ndef car (pos : Vec) (heading : Vec) (yaw : Q) : RoadUser :=\n  Build.withKin (Build.user 1 [.motorVehicle] pos heading (Units.metresPerSecond 5) (m 2, m 1, m 1))\n    (fun kin => { kin with yawRate := some yaw })\n\n-- ---------------------------------------------------------------------------------------------\n-- holds (and blind): a junction, and a car that turns a quarter circle to its left through it\n-- ---------------------------------------------------------------------------------------------\n/-- The north–south arm of the junction, 20 m wide. -/\ndef northArm : Structure := Build.rect 11 .roadway (m (-10)) (m (-60)) (m 10) (m (-10))\n\n/-- The west arm, 20 m wide, which the car leaves by. -/\ndef westArm : Structure := Build.rect 12 .roadway (m (-60)) (m (-25)) (m (-10)) (m (-5))\n\ndef junction : List Structure := [northArm, westArm]\n\n/-- The car's heading at each of the fourteen instants: north until t = 5 s, then round to the\n    left by about 16° a second through the six seconds of the turning, ending 6° past west. -/\ndef holdsHeadings : List Vec :=\n  [ Build.north, Build.north, Build.north, Build.north, Build.north, Build.north\n  , dir (-276) 961, dir (-530) 848, dir (-743) 669, dir (-899) 438, dir (-985) 174\n  , dir (-995) (-105), dir (-995) (-105), dir (-995) (-105) ]\n\n/-- The car's place at each instant: 5 m further on each second, north up the arm to the junction,\n    round a turning of about 18 m radius, then west. -/\ndef holdsPositions : List Vec :=\n  [ (m (-5), m (-60)), (m (-5), m (-55)), (m (-5), m (-50)), (m (-5), m (-45))\n  , (m (-5), m (-40)), (m (-5), m (-35))\n  , (m (-6), m (-30)), (m (-8), m (-25)), (m (-11), m (-22)), (m (-15), m (-19))\n  , (m (-20), m (-17)), (m (-25), m (-17)), (m (-30), m (-17)), (m (-35), m (-18)) ]\n\n/-- The car's yaw rate at each instant: nil while it runs north, 16 deg/s to the left over the six\n    seconds t = 6 s … 11 s (96° of turning in all), nil once it runs west. -/\ndef holdsYaws : List Q :=\n  [ degPerSecond 0, degPerSecond 0, degPerSecond 0, degPerSecond 0, degPerSecond 0, degPerSecond 0\n  , degPerSecond 16, degPerSecond 16, degPerSecond 16, degPerSecond 16, degPerSecond 16\n  , degPerSecond 16, degPerSecond 0, degPerSecond 0 ]\n\n/-- `holds` (compliant): A vehicle runs north along a roadway, then turns through about a quarter circle to its left and runs west. Over the window behind the observation its signed heading change is a little over a quarter turn to the left, inside the band. The concept holds. -/\ndef holdsTrace : Trace :=\n  Build.trace 14 0 (Units.seconds 1) fun k t =>\n    Build.scene t (some 1)\n      [ car (holdsPositions.getD k origin) (holdsHeadings.getD k Build.north)\n            (holdsYaws.getD k (degPerSecond 0)) ]\n      junction\n      []\n\n-- ---------------------------------------------------------------------------------------------\n-- fails: a roadway that bends to the left, and a car that holds the bend\n-- ---------------------------------------------------------------------------------------------\n/-- The bending roadway, 40 m wide, which the car holds all the way along. -/\ndef bendingRoadway : Structure := Build.rect 21 .roadway (m (-30)) (m (-65)) (m 10) (m 10)\n\n/-- The car's heading at each instant: north, coming round by one degree a second as it holds the\n    bend, 13° in all over the thirteen seconds. -/\ndef failsHeadings : List Vec :=\n  [ Build.north, dir (-17) 1000, dir (-35) 999, dir (-52) 999, dir (-70) 998\n  , dir (-87) 996, dir (-105) 995, dir (-122) 993, dir (-139) 990, dir (-156) 988\n  , dir (-174) 985, dir (-191) 982, dir (-208) 978, dir (-225) 974 ]\n\n/-- The car's place at each instant: 5 m further on each second, drifting west as the road bends. -/\ndef failsPositions : List Vec :=\n  [ (m (-5), m (-60)), (m (-5), m (-55)), (m (-5), m (-50)), (m (-5), m (-45))\n  , (m (-6), m (-40)), (m (-6), m (-35)), (m (-7), m (-30)), (m (-7), m (-25))\n  , (m (-8), m (-20)), (m (-9), m (-15)), (m (-9), m (-10)), (m (-10), m (-5))\n  , (m (-11), m 0), (m (-12), m 5) ]\n\n/-- `fails` (violated): A vehicle runs north along a roadway and holds a long bend to its left over the whole window, its signed heading change amounting to a few degrees, below the band's lower edge. The concept fails; so would a vehicle that turned through a half circle, whose heading change lies above the upper edge. -/\ndef failsTrace : Trace :=\n  Build.trace 14 0 (Units.seconds 1) fun k t =>\n    Build.scene t (some 1)\n      [ car (failsPositions.getD k origin) (failsHeadings.getD k Build.north) (degPerSecond 1) ]\n      [ bendingRoadway ]\n      []\n\n/-- `blind` (unknown): The holds scene, except that the source declares the yaw rate absent, so no rate of change of heading is observed. The heading change over the window cannot be integrated, so the concept is unknown. -/\ndef blindTrace : Trace := holdsTrace\n\n/-- The instants every scenario speaks about: t = 9 s … 13 s, where the window of 6 s behind the\n    observation is covered by the trace. -/\ndef theWindow : Option (Timestamp × Timestamp) := some (atSecond 9, atSecond 13)\n\ndef witness (name : String) (τ : Trace) (expected : Verdict)\n    (absent : List String := []) : Scenario :=\n  { name := name\n    rule := inst.name\n    trace := τ\n    reading := {}          -- ignored by the gate: the run's reading is substituted\n    manifest := Build.manifest absent\n    grounding := [(\"u\", 1)]\n    expected := expected\n    window := theWindow }\n\ndef scenarios : List Scenario :=\n  [ witness \"holds\" holdsTrace .compliant\n  , witness \"fails\" failsTrace .violated\n  , witness \"blind\" blindTrace (.unknown []) [\"kin.yaw_rate\"] ]\n\nend TrafficSpecWitness.Concepts.motion.left_turn\n"
+}

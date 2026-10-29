@@ -70,8 +70,8 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
 
 def write_status(run: Run, ledger: Ledger, status: str, reason: str) -> dict:
     """The run's terminal status in `summary.json`: `complete` when every law is terminal,
-    `infrastructure_failure` when a session could not be launched, `paused_budget` when the second
-    vendor's budget admits no further call (resumed under the same run id once raised),
+    `infrastructure_failure` when a session could not be launched, `paused_budget` when a limit on the
+    run's spend admits no further request (resumed under the same run id once raised),
     `stale_aggregate` when an aggregate's inputs changed under nodes that claim it (a new run is
     needed), `protocol_failure` when the aggregate selection stayed defective twice, `data_integrity_failure` when an audit file cannot be read as written (named, and left as
     it is), `incomplete` when the iteration bound or a stop without progress left a law open."""

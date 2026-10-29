@@ -626,8 +626,10 @@ class Doctor:
         return Result("held-out atoms stay out", OK, f"none of {len(held)} held-out atoms in the training tables", src)
 
     def held_out_laws_out_of_gap_ledger(self) -> Result:
-        """While the training split is active, no gap row names a held-out law: the ledger persists
-        across development runs and quotes the laws it was filed on."""
+        """While the training split is active, a gap row that names a held-out law is listed for the
+        operator: it is a test round's own finding, which a training run refuses to start on (the
+        loop checks it at every launch of a run in `mode=train`), so it is reported, never a failure
+        that would stop the test round that filed it."""
         src = ("laws/example/test/laws.jsonl → ids", "library/TrafficSpec/Gaps/proposals.jsonl → law_refs")
         test_file = self.repo / "laws" / "example" / "test" / "laws.jsonl"
         proposals = self.lib / "TrafficSpec" / "Gaps" / "proposals.jsonl"
@@ -637,7 +639,8 @@ class Doctor:
         rows = [json.loads(l) for l in _read(proposals).splitlines() if l.strip()] if proposals.exists() else []
         bad = [f"{r.get('id')}: {', '.join(sorted(set(r.get('law_refs', [])) & held))}" for r in rows if set(r.get("law_refs", [])) & held]
         if bad:
-            return Result("held-out laws out of the gap ledger", FAIL, "gap rows name held-out laws: " + "; ".join(bad[:6]), src)
+            return Result("held-out laws out of the gap ledger", REVIEW, "gap rows name held-out laws (a test round's findings; "
+                          "a training run will not start until they are resolved and archived): " + "; ".join(bad[:6]), src)
         return Result("held-out laws out of the gap ledger", OK, f"{len(rows)} gap row(s) name none of {len(held)} held-out laws", src)
 
     def definition_resolution_report(self) -> Result:

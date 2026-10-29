@@ -1343,7 +1343,9 @@ class TwoPasses(unittest.TestCase):
                 tools.call(name, args)
             return {"code": 0}
         review.session.run_tools = run_tools
-        return review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
+        self.reviews = getattr(self, "reviews", 0) + 1              # each review its own directory, as each task has
+        return review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [],
+                                       Path(self.tmp.name) / f"review{self.reviews}")
 
     def test_a_find_by_either_pass_alone_returns_the_rule(self):
         for found_by in (1, 2):
@@ -1400,7 +1402,7 @@ class TwoPasses(unittest.TestCase):
             {k: {**cert(rule="compliant"), "canonical_case": "x"} for k in divs}
         self.review({1: [("check_divergence", {"divergence": div()}), submit(self.answer(div()))],
                      2: [("check_divergence", {"divergence": div()}), submit(self.answer(div()))]})
-        self.assertEqual(sorted(runs), ["pass1/checks/L1/001", "pass2/checks/L1/001"])
+        self.assertEqual(sorted(runs), ["review1/pass1/checks/L1/001", "review1/pass2/checks/L1/001"])
 
 
 class CodeReviewFixes(unittest.TestCase):

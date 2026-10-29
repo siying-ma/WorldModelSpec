@@ -118,7 +118,8 @@ source ~/.config/traffic-spec/openai.env  # in the shell that runs a loop with -
 
 python -m harness init                # library/TrafficSpec/Readings/default.json template, registries, library build
 python -m harness init --fresh --snapshot <run>   # first move <run>'s nodes and concepts to results/<run>/library_snapshot/,
-                                                  # its unreviewed proposals to reading_proposals.json, undecided gaps to gaps_undecided.jsonl
+                                                  # its unreviewed proposals to reading_proposals.json, resolved gaps to their runs' gaps.jsonl
+                                                  # (it refuses while a gap is open)
 python -m harness doctor              # hold every generated artifact to its source
 python -m harness split --use train   # swap the training-only Core files in (archives the full ones under library/splits/full/)
 python -m harness split --use full    # and back; `python -m harness split` reports which is active

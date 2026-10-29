@@ -258,7 +258,7 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     gate_text = (f"Run exactly this command, nothing more and nothing else:\n\n```\n{gate_cli(run, node.id)}\n```\n\nIt prints the verdict and its details. The verdicts on your files: "
                  + ", ".join(gate.VERDICTS) + f". `{gate.INFRA}` is not one: the toolchain or the run did not let the gate judge your files. Budget: {run.opts.gate_budget} runs; the harness re-runs the gate itself after you stop, on the files as they are then.\n")
     prompt = render.render("code.md", {
-        "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger(paths.GAPS_DIR).cited_block(node.raw),
+        "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
         "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "reading": reading_table(node, reading),
         "example": worked_example(run), "skeletons": skeletons, "gate": gate_text,
         "rule_path": str(rule_abs), "witness_path": str(wit_abs), "node_id": node.id,
@@ -272,7 +272,7 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
             session.run(prompt, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.max_turns,
                         effort=run.opts.code_effort, label="session",
                         allow=session.code_allow([rule_abs, wit_abs], d, gate_cli(run, node.id)),
-                        deny=session.deny_rules("code"), tools=session.CODE_TOOLS,
+                        deny=session.deny_rules("code", run.opts.run_id), tools=session.CODE_TOOLS,
                         env=session.harness_env(run.opts.session_timeout),
                         relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_skeletons(node)),
                         relaunch_cut_off=lambda: _cut_off_relaunch(d, rels, run.opts.gate_budget))
@@ -407,7 +407,7 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
             session.run(prompt, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.max_turns,
                         effort=run.opts.code_effort, label="session",
                         allow=session.code_allow([c_abs, w_abs], d, gate_cli(run, rec.id)),
-                        deny=session.deny_rules("code"), tools=session.CODE_TOOLS,
+                        deny=session.deny_rules("code", run.opts.run_id), tools=session.CODE_TOOLS,
                         env=session.harness_env(run.opts.session_timeout),
                         relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_concept_skeletons(rec)),
                         relaunch_cut_off=lambda: _cut_off_relaunch(d, rels, run.opts.gate_budget))

@@ -18,6 +18,20 @@ from harness.store import paths
 from harness.store.gaps import GapLedger
 from scripts.tests.test_review_routing import FakeRun, LAW as ONE_LAW, ONTO, ctx, scripted_reviewer, submit
 
+_RESULTS = {}
+
+
+def setUpModule():
+    """Every gap these tests file is measured under a temporary results tree, never the run's."""
+    _RESULTS["tmp"] = tempfile.TemporaryDirectory()
+    _RESULTS["saved"] = paths.RESULTS
+    paths.RESULTS = Path(_RESULTS["tmp"].name)
+
+
+def tearDownModule():
+    paths.RESULTS = _RESULTS["saved"]
+    _RESULTS["tmp"].cleanup()
+
 TEXT = "The driver shall stop at a clearly marked line. The driver shall yield to traffic."
 LAW = corpus.Law("L-9", "A duty", TEXT, "")
 LINE = (TEXT.index("shall stop"), TEXT.index("line.") + len("line"))
@@ -41,7 +55,7 @@ def ledger_with(root: Path, *, occurrence: str | None, law: str = "L-9") -> GapL
     root.mkdir(parents=True, exist_ok=True)
     gid = g.add({"kind": "atom", "span": "shall stop at a clearly marked line", "law_refs": [law], "proposal": "p",
                  **({"occurrence": occurrence} if occurrence else {})}, "r", 1)
-    g.decide(gid, "rejected", "A represented line is the clearly marked one; paint clarity is not assessed.")
+    g.decide(gid, "rejected", "A represented line is the clearly marked one; paint clarity is not assessed.", resolved_by="particular")
     return g
 
 

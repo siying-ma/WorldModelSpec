@@ -198,8 +198,6 @@ def training_vocabulary(laws, definitions, held, atom_ids):
     return atoms, values, sorted(atom for atom, ids in support.items() if not ids)
 
 
-CITED = re.compile(r"\[([^\]]*)\]")
-LAW_ID = re.compile(r"\b((?:NRS|LVMC)-[0-9A-Z]+(?:-[0-9A-Za-z]+)+)\b")
 
 
 def partition(laws: list[dict], policy: dict) -> tuple[list[dict], list[dict]]:
@@ -212,9 +210,17 @@ def partition(laws: list[dict], policy: dict) -> tuple[list[dict], list[dict]]:
     return [x for x in laws if x["id"] not in set(held)], [x for x in laws if x["id"] in set(held)]
 
 
+def _corpus():
+    """The pipeline's own reader of posted text: a split's self-containment is checked on the
+    references the pipeline itself reads."""
+    sys.path.insert(0, str(LAWS_ROOT.parent))
+    from harness.model import corpus
+    return corpus
+
+
 def cited_laws(row: dict, meta: dict[str, dict]) -> set[str]:
     """The law ids a corpus line cites: its bracketed ids and the references its sidecar records."""
-    bracketed = {i for b in CITED.findall(row["text"]) for i in LAW_ID.findall(b)}
+    bracketed = set(_corpus().cited_law_ids(row["text"]))
     return (bracketed | set(meta.get(row["id"], {}).get("refs", []))) - {row["id"]}
 
 

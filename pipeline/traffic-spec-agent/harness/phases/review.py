@@ -1375,7 +1375,7 @@ def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str],
         "law_and_segmentation": f"### Law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n\nSpans:\n{ctx.seg}\n",
         "definitions": definitions_block(ctx.definitions),
         "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n\n"
-                  + GapLedger(paths.GAPS_DIR).cited_block(ctx.record),
+                  + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(ctx.record),
         "rendered": "### Rendering\n\n" + ctx.rendering + "\n",
         "contracts": validate_phase.contracts_table(contracts),
         "parameters": params_block(ctx.params),
@@ -2358,7 +2358,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     blocks = {
         "law_and_segmentation": f"### Law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans:\n{ctx.seg}\n",
         "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n\n"
-                  + GapLedger(paths.GAPS_DIR).cited_block(ctx.record),
+                  + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(ctx.record),
         "rendered": "### Rendering\n\n" + ctx.rendering + "\n",
         "atoms_read": atoms_read_block(rule_json, run.all_concepts()),
         "contracts": validate_phase.contracts_table(ctx.rule_glosses) + aggregates_block(ctx.aggregates),
@@ -2383,7 +2383,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     if run.opts.dry_run:
         return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])
     try:
-        run_passes(run, n, prompt, out_dir, passes)
+        run_passes(run, n, prompt, out_dir, passes, context=_pass_context(run, n, reading, rule_json))
         answer, certs, pass_notes, pass_summary, errs, unusable_passes = join_passes(passes, law, binders, cap)
     except HarnessFailure as e:
         return ReviewOutcome("deferred", reasons=[f"the certificate harness: {e}"], defer_stage="certificate", questions=replay_questions)
@@ -2495,18 +2495,61 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     return ReviewOutcome("accepted", advisories=advisories, param_notes=notes, satisfied=sorted(set(rep.satisfied)))
 
 
-def run_passes(run: Run, n: Node, prompt: str, out_dir: Path, passes: list) -> None:
+def pass_digest(run: Run, n: Node, prompt: str, k: int, context: str) -> str:
+    """What a pass's answer depends on: its prompt, the record it reviews, the rule as built and the
+    context its gate ran on (`context`), the reviewer and its limits."""
+    o = run.opts
+    return _digest({"prompt": prompt, "record": n.raw, "context": context, "pass": k, "model": o.reviewer_model, "effort": o.review_effort,
+                    "checks": o.review_checks, "submissions": o.review_submissions, "max_divergences": o.max_divergences})
+
+
+def _pass_context(run: Run, n: Node, reading: Reading, rule_json: dict | None) -> str | None:
+    """The rule as built and the context its gate ran on, or None when that context cannot be
+    computed (then no pass is reused)."""
+    from . import code as code_phase
+    try:
+        task = code_phase.task_context(run, "node", n.id, n.raw, reading)
+    except Exception:
+        return None
+    return _digest({"rule": rule_json, "task": task}) if task else None
+
+
+def restore_pass(t, digest: str) -> bool:
+    """A pass that already submitted on these inputs (`answer.json` in its directory) takes that
+    submission back instead of running again; any other file is ignored."""
+    try:
+        kept = json.loads((t.out_dir / "answer.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if kept.get("digest") != digest or not isinstance(kept.get("answer"), dict):
+        return False
+    t.done, t.answer, t.attempts = True, kept["answer"], list(kept.get("attempts") or [])
+    return True
+
+
+def run_passes(run: Run, n: Node, prompt: str, out_dir: Path, passes: list, context: str | None = None) -> None:
     """The independent reviewer sessions of one rule review, run at the same time: the same prompt,
     each its own tool state, evidence directory (`pass<k>/`) and stream (`review_behaviour_p<k>`).
-    A budget pause in either pauses the run and a session that never ran makes the review one that
-    never ran, as for a single session; a certificate program that does not run defers at
-    `certificate`. Each is raised once every pass has ended."""
+    With a `context` (the rule as built and its gate's context), a pass that submitted keeps its
+    submission with the digest of its inputs, and a pass that already submitted on the same inputs
+    is not run again, so a review interrupted after one pass ended reruns only the others. A budget pause in either pauses the run and a session that never
+    ran makes the review one that never ran, as for a single session; a certificate program that
+    does not run defers at `certificate`. Each is raised once every pass has ended."""
     from concurrent.futures import ThreadPoolExecutor
     from ..store.budget import BudgetPaused
+    digests = {k: pass_digest(run, n, prompt, k, context) for k in range(1, len(passes) + 1)} if context else {}
+
+    def one(k: int, t) -> None:
+        if digests and restore_pass(t, digests[k]):
+            return
+        session.run_tools(prompt, out_dir, run.opts, t, label=f"review_behaviour_p{k}",
+                          effort=run.opts.review_effort, model=run.opts.reviewer_model, subject=n.id)
+        if digests and t.done and isinstance(t.answer, dict):
+            t.out_dir.mkdir(parents=True, exist_ok=True)
+            jsonl.write_atomic(t.out_dir / "answer.json", json.dumps({"digest": digests[k], "answer": t.answer, "attempts": t.attempts},
+                                                                     ensure_ascii=False, indent=1))
     with ThreadPoolExecutor(max_workers=len(passes)) as ex:
-        futures = [ex.submit(session.run_tools, prompt, out_dir, run.opts, t, label=f"review_behaviour_p{k}",
-                             effort=run.opts.review_effort, model=run.opts.reviewer_model, subject=n.id)
-                   for k, t in enumerate(passes, 1)]
+        futures = [ex.submit(one, k, t) for k, t in enumerate(passes, 1)]
         errors = []
         for f in futures:
             try:

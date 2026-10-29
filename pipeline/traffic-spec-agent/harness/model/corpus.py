@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 POSTED = ("id", "title", "text", "source")
-LAW_REF = re.compile(r"\[([A-Z]+-[A-Za-z0-9-]+)\]")
+BRACKET = re.compile(r"\[([^\]]*)\]")
+CITED_ID = re.compile(r"\b[A-Z]+-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*")
 
 
 @dataclass(frozen=True)
@@ -34,9 +35,20 @@ def load_laws(path: Path) -> list[Law]:
     return laws
 
 
+def bracketed_ids(text: str) -> list[str]:
+    """Every id a text names in brackets, in order, once each: a bracket may name several, and may
+    hold other words (`[(c) is appended below, <id>]`)."""
+    out: list[str] = []
+    for b in BRACKET.findall(text):
+        for i in CITED_ID.findall(b):
+            if i not in out:
+                out.append(i)
+    return out
+
+
 def cited_law_ids(text: str) -> list[str]:
     """The law ids a text names in brackets, in order (a definition, `DEF-…`, is not a law)."""
-    return [r for r in LAW_REF.findall(text) if not r.startswith("DEF-")]
+    return [r for r in bracketed_ids(text) if not r.startswith("DEF-")]
 
 
 def references(law: Law, ids: set[str]) -> set[str]:

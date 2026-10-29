@@ -94,60 +94,29 @@ def archive_proposals(snapshot: str) -> dict[str, int]:
     return removed
 
 
-def snapshot_gaps(snapshot: str) -> list[str]:
-    """Copy the whole gap ledger, as the operator left it after deciding the previous run's gaps,
-    to `results/<snapshot>/gaps_snapshot/`, before a fresh run prunes it. Returns the files copied."""
-    import shutil
-    if not paths.GAPS_DIR.exists():
-        return []
-    dest = paths.RESULTS / moved_name(snapshot) / "gaps_snapshot"
-    copied = []
-    for f in sorted(p for p in paths.GAPS_DIR.iterdir() if p.is_file()):
-        dest.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(f, dest / f.name); copied.append(f.name)
-    return copied
-
-
-def archive_gaps(snapshot: str) -> int:
-    """A fresh library starts from a gap ledger without the previous run's undecided rows: every
-    row still `proposed` or `accepted` is moved to `results/<snapshot>/gaps_undecided.jsonl`; the
-    decided rows (`retired`, `rejected`) and the id counter stay, so a new run is shown the
-    operator's decisions and never reuses an id. Returns the count moved."""
-    from .store.gaps import GapLedger
-    gone = GapLedger(paths.GAPS_DIR).remove_undecided()
-    if not gone:
-        return 0
-    dest = paths.RESULTS / moved_name(snapshot) / "gaps_undecided.jsonl"
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    with dest.open("a", encoding="utf-8") as f:
-        for r in gone:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    return len(gone)
-
-
 class Cli:
     def init(self, reading: str = DEFAULT_READING, fresh: bool = False, snapshot: str = "") -> int:
         """Write the readings template, regenerate the registries, build. `--fresh` first moves every
         node and concept out of the library into `results/<snapshot>/library_snapshot/` (the run they
         belong to; a timestamped name when not given), and every unreviewed parameter proposal out of
-        the readings into `results/<snapshot>/reading_proposals.json`, copies the whole gap ledger to
-        `results/<snapshot>/gaps_snapshot/`, and moves every undecided gap row into
-        `results/<snapshot>/gaps_undecided.jsonl`, so a new run starts from an empty library, a
-        reading the operator wrote or reviewed, and a gap ledger of decisions only."""
+        the readings into `results/<snapshot>/reading_proposals.json`, and moves every resolved gap to
+        `results/<the run that proposed it>/gaps.jsonl`, so a new run starts from an empty library, a
+        reading the operator wrote or reviewed, and an empty gap ledger. It refuses, before it moves
+        anything, while a gap is open: the last round's gaps are decided first."""
         from .store import owner
+        from .store.gaps import GapLedger
         owner.acquire_for_command("init")
+        gone_gaps = GapLedger(paths.GAPS_DIR).start_round(paths.RESULTS) if fresh else []   # first: it refuses before anything moves
         write_template(_p(reading))
         if fresh:
-            snapshot = moved_name(snapshot)          # one name for the three archives, also when it is a timestamp
+            snapshot = moved_name(snapshot)          # one name for the archives, also when it is a timestamp
             moved = snapshot_library(snapshot)
             print(f"moved {len(moved)} file(s) to results/{snapshot}/library_snapshot/" if moved else "library already empty")
             gone = archive_proposals(snapshot)
             print(("archived unreviewed proposals: " + ", ".join(f"{k} ({v})" for k, v in gone.items())
                    + f" → results/{snapshot}/reading_proposals.json") if gone else "readings carry no unreviewed proposal")
-            kept = snapshot_gaps(snapshot)
-            print(f"gap ledger copied → results/{snapshot}/gaps_snapshot/ ({', '.join(kept)})" if kept else "no gap ledger to copy")
-            gaps_gone = archive_gaps(snapshot)
-            print(f"archived {gaps_gone} undecided gap row(s) → results/{snapshot}/gaps_undecided.jsonl" if gaps_gone else "the gap ledger holds no undecided row")
+            print(("archived resolved gap(s): " + ", ".join(f"{g} → results/{r}/gaps.jsonl" for g, r in gone_gaps))
+                  if gone_gaps else "the gap ledger is empty")
         index_sync.write_index()
         code, out = lean.lake_build(paths.LIBRARY); ok = code == 0
         print("library builds" if ok else out[-2000:])
@@ -377,20 +346,31 @@ class Cli:
         commit_state(run, ledger, concept_ledger, node_ledger)
         print(f"reopened {len(out)}: {', '.join(out)}" + (f"; failed concepts cleared: {', '.join(freed)}" if freed else "")); return 0
 
-    def gap(self, action: str = "list", gap_id: str = "", state: str = "", decision: str = "", retired_by: str = "") -> int:
+    def gap(self, action: str = "list", gap_id: str = "", state: str = "", decision: str = "", retired_by: str = "",
+            resolved_by: str = "", manifest: str = "") -> int:
         """`gap list` prints every gap with its latest decision; `gap decide <id> --state
         retired|rejected|accepted --decision "<words>"` appends the operator's decision (the only
-        writer of decisions; the harness appends proposals only)."""
+        writer of decisions; the harness appends proposals only), a retirement with `--retired_by`
+        (the revision that carries the span), a rejection with `--resolved_by` (where the decision now
+        lives in the pipeline, or `particular`); `gap archive [--manifest <file.json>]` ends the round
+        by hand, as a new run does: every resolved gap moves to the results of the run that proposed
+        it (`manifest`, {gap id: run}, names it for a row that does not)."""
         from .store.gaps import GapLedger
         ledger = GapLedger(paths.GAPS_DIR)
         if action == "list":
             print(ledger.render()); return 0
         if action == "decide":
             if not gap_id or not state or not decision:
-                raise SystemExit("gap decide <id> --state <retired|rejected|accepted> --decision \"<words>\"")
-            ledger.decide(gap_id, state, decision, retired_by)
+                raise SystemExit("gap decide <id> --state <retired|rejected|accepted> --decision \"<words>\" [--retired_by|--resolved_by ...]")
+            ledger.decide(gap_id, state, decision, retired_by, resolved_by)
             print(f"{gap_id}: {state}"); return 0
-        raise SystemExit("gap list | gap decide <id> --state ... --decision ...")
+        if action == "archive":
+            from .store.owner import acquire_for_command
+            acquire_for_command("gap archive")
+            names = json.loads(_p(manifest).read_text(encoding="utf-8")) if manifest else {}
+            moved = ledger.start_round(paths.RESULTS, names)
+            print("\n".join(f"{g} → results/{r}/gaps.jsonl" for g, r in moved) or "the gap ledger is empty"); return 0
+        raise SystemExit("gap list | gap decide <id> --state ... --decision ... | gap archive [--manifest <file.json>]")
 
     def status(self, run_id: str) -> int:
         f = paths.run_dir(run_id) / "summary.json"
@@ -427,7 +407,10 @@ def _latest_blueprint(run) -> Path:
 
 
 def main() -> None:
-    fire.Fire(Cli)
+    """Run a command; a command's integer result is the process's exit status."""
+    code = fire.Fire(Cli)
+    if isinstance(code, int) and not isinstance(code, bool):
+        sys.exit(code)
 
 
 if __name__ == "__main__":

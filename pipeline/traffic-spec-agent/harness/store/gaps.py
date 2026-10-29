@@ -5,20 +5,50 @@ append-only files with one writer each:
 - `decisions.jsonl`: only the operator's command (`python -m harness gap ...`) appends a decision.
 A gap's state is its proposal plus its latest decision, so a decision made at any moment is never
 lost to a harness write. Ids come from `counter.txt`, which only grows, so an archived gap's id is
-never reused."""
+never reused.
+
+A gap names a deficiency of the pipeline, and a round (one run, its resumes included) ends with
+every gap it filed resolved: `retired` names the revision that now carries the span
+(`retired_by`), `rejected` names where the decision now lives in the pipeline, or `particular`
+(`resolved_by`). A new run starts only on a ledger without an open gap (`proposed`, `accepted`);
+at that start every resolved gap leaves the library for `results/<the run that proposed it>/gaps.jsonl`,
+its decisions with it, so the new round starts on an empty ledger, and a gap that comes back is a
+new gap. A record that cites a rejected gap still reads it there, from its run and its base chain.
+Each run also keeps, append-only, every gap it filed as filed (`results/<run>/gaps_measured.jsonl`):
+what a test run found, which no later decision or archive changes."""
 from __future__ import annotations
+import json
+import re
 from pathlib import Path
 from . import jsonl
 
 DECISION_STATES = ("accepted", "rejected", "retired")
+OPEN_STATES = ("proposed", "accepted")
+_PROPOSED_IN = re.compile(r"^([A-Za-z0-9_.-]+)/iter-\d{3}$")
+
+
+class OpenGaps(SystemExit):
+    """A new round cannot start: gaps of the last one are not resolved, or cannot be archived."""
 
 
 class GapLedger:
-    def __init__(self, directory: Path):
+    def __init__(self, directory: Path, archives: tuple[Path, ...] = ()):
         self.dir = directory
         self.proposals_file = directory / "proposals.jsonl"
         self.decisions_file = directory / "decisions.jsonl"
         self.counter = directory / "counter.txt"
+        #: the archived gaps a record of this run may cite: its own run's and its base chain's
+        self.archives = tuple(archives)
+
+    @classmethod
+    def for_run(cls, directory: Path, run) -> "GapLedger":
+        """The ledger as a run's records read it: the live rows, and the archived gaps of the run
+        and of its base chain."""
+        from . import paths
+        if run is None:
+            return cls(directory)
+        ids = [run.opts.run_id] + list(getattr(run, "base_chain", []) or [])
+        return cls(directory, tuple(paths.run_dir(r) / "gaps.jsonl" for r in ids))
 
     @property
     def rows(self) -> list[dict]:
@@ -29,8 +59,13 @@ class GapLedger:
         out = []
         for p in jsonl.read_strict(self.proposals_file):
             d = latest.get(p["id"], {})
-            out.append({**p, "state": d.get("state", "proposed"), "decision": d.get("decision", ""), "retired_by": d.get("retired_by", "")})
+            out.append({**p, "state": d.get("state", "proposed"), "decision": d.get("decision", ""), "retired_by": d.get("retired_by", ""),
+                        "resolved_by": d.get("resolved_by", "")})
         return out
+
+    def archived_rows(self) -> list[dict]:
+        """The archived gaps of the runs this ledger was opened for."""
+        return [r for f in self.archives for r in jsonl.read_strict(f)]
 
     def _numbers(self) -> list[int]:
         return [int(r["id"][1:]) for r in jsonl.read_strict(self.proposals_file) if str(r.get("id", "")).startswith("G") and str(r["id"])[1:].isdigit()]
@@ -68,6 +103,8 @@ class GapLedger:
         m = self.match(proposal)
         linked = proposal.get("linked_to") if proposal.get("excluding_clause") else None
         if m is not None and not (linked and linked == m["id"] and m["state"] in ("rejected", "retired")):
+            if str(m.get("proposed_in", "")).startswith(f"{run}/"):
+                self._measure(m, run)                      # a filing cut off before its measurement is completed here
             return m["id"]
         gid = self.next_id()
         row = {"id": gid, "kind": proposal.get("kind"), "span": proposal.get("span_text") or proposal.get("span"),
@@ -78,15 +115,32 @@ class GapLedger:
             row.update({"linked_to": linked, "excluding_clause": proposal.get("excluding_clause")})
         jsonl.append_atomic(self.proposals_file, row)
         jsonl.write_atomic(self.counter, str(int(gid[1:]) + 1) + "\n")
+        self._measure(row, run)
         return gid
 
-    def decide(self, gid: str, state: str, decision: str, retired_by: str = "") -> None:
-        """The operator's decision on a gap (appended; the latest one stands)."""
+    @staticmethod
+    def _measure(row: dict, run: str) -> None:
+        """Record a gap this run filed, as filed, once (`results/<run>/gaps_measured.jsonl`)."""
+        from . import paths
+        f = paths.run_dir(run) / "gaps_measured.jsonl"
+        if row["id"] not in {r.get("id") for r in jsonl.read_strict(f)}:
+            proposal = {k: v for k, v in row.items() if k not in ("state", "decision", "retired_by", "resolved_by")}
+            jsonl.append_atomic(f, proposal)
+
+    def decide(self, gid: str, state: str, decision: str, retired_by: str = "", resolved_by: str = "") -> None:
+        """The operator's decision on a gap (appended; the latest one stands). A retirement names the
+        revision that carries the span (`retired_by`); a rejection names where the decision now lives
+        in the pipeline, or `particular` (`resolved_by`)."""
         if state not in DECISION_STATES:
             raise SystemExit(f"a decision is one of {DECISION_STATES}")
         if gid not in {r["id"] for r in self.rows}:
             raise SystemExit(f"no gap {gid}")
-        jsonl.append_atomic(self.decisions_file, {"id": gid, "state": state, "decision": decision, "retired_by": retired_by})
+        if state == "retired" and not retired_by.strip():
+            raise SystemExit("a retirement names the revision that now carries the span: --retired_by \"<revision>\"")
+        if state == "rejected" and not resolved_by.strip():
+            raise SystemExit("a rejection names where its decision now lives in the pipeline, or `particular`: --resolved_by \"<place>\"")
+        jsonl.append_atomic(self.decisions_file, {"id": gid, "state": state, "decision": decision, "retired_by": retired_by,
+                                                  **({"resolved_by": resolved_by} if resolved_by else {})})
 
     def decision(self, gid: str) -> tuple[str, str] | None:
         """The operator's decision on a gap (state, words), or None while it is undecided."""
@@ -102,7 +156,7 @@ class GapLedger:
         filed on, the occurrence of its words (`<law>@<digest>:<start>-<end>`, absent on older rows),
         its words, and the operator's decision."""
         return {r["id"]: {"laws": set(r.get("law_refs", [])), "occurrence": r.get("occurrence"), "span": r.get("span", ""),
-                          "decision": str(r.get("decision", ""))} for r in self.rows if r.get("state") == "rejected"}
+                          "decision": str(r.get("decision", ""))} for r in self.archived_rows() + self.rows if r.get("state") == "rejected"}
 
     def cited_block(self, record: dict) -> str:
         """The operator's decisions a record's narrowings cite (`gap`), for every session that reads the
@@ -125,17 +179,58 @@ class GapLedger:
             out.append(f"- `{gid}`, filed on the words \u201c{r['span']}\u201d{where}: {r['decision']}")
         return "\n".join(out) + "\n"
 
-    def remove_undecided(self) -> list[dict]:
-        """The operator's archive of a fresh library: the proposals still undecided (or accepted) leave
-        the ledger; the decided ones stay, with their decisions. Returns the rows removed."""
-        rows = self.rows
-        gone = [r for r in rows if r["state"] in ("proposed", "accepted")]
-        if gone:
-            ids = {r["id"] for r in gone}
-            keep = [p for p in jsonl.read_strict(self.proposals_file) if p["id"] not in ids]
-            jsonl.write_rows(self.proposals_file, keep)
-            jsonl.write_rows(self.decisions_file, [d for d in jsonl.read_strict(self.decisions_file) if d["id"] not in ids])
-        return gone
+    def open_rows(self) -> list[dict]:
+        """The gaps not yet resolved: `proposed`, or `accepted` and not yet carried."""
+        return [r for r in self.rows if r["state"] in OPEN_STATES]
+
+    def start_round(self, results: Path, manifest: dict[str, str] | None = None) -> list[tuple[str, str]]:
+        """The gate of a new round: refuses while a gap is open; else moves every resolved gap to
+        `results/<the run that proposed it>/gaps.jsonl` (`manifest` names the run of a row whose
+        `proposed_in` does not), with its proposal, its latest state and every decision, and only
+        after every archive is written and read back equal clears the live rows. A gap already in
+        its archive with the same content is not written again; with other content the round does
+        not start. Returns (gap id, run) for every gap moved."""
+        open_ = self.open_rows()
+        if open_:
+            raise OpenGaps("a new round starts only when every gap of the last one is resolved: "
+                           + "; ".join(f"{r['id']} ({r['state']}): {str(r.get('span', ''))[:60]}" for r in open_)
+                           + " — decide each with `python -m harness gap decide`")
+        decisions: dict[str, list[dict]] = {}
+        for d in jsonl.read_strict(self.decisions_file):
+            decisions.setdefault(d["id"], []).append(d)
+        manifest = manifest or {}
+        moves, missing = [], []
+        for r in self.rows:
+            m = _PROPOSED_IN.match(str(r.get("proposed_in", "")))
+            run = manifest.get(r["id"]) or (m.group(1) if m else None)
+            if not run or not (results / run).is_dir():
+                missing.append(r["id"]); continue
+            moves.append((run, {**r, "decisions": decisions.get(r["id"], [])}))
+        if missing:
+            raise OpenGaps(f"gap(s) {missing} name no run whose results directory exists: give their runs in a manifest "
+                           "(`python -m harness gap archive --manifest <file.json>`, {\"<gap id>\": \"<run>\"})")
+        by_file: dict[Path, list[dict]] = {}
+        for run, row in moves:
+            by_file.setdefault(results / run / "gaps.jsonl", []).append(row)
+        for f, rows in by_file.items():                       # every conflict is found before anything is written
+            kept = {k["id"]: k for k in jsonl.read_strict(f)}
+            clash = [r["id"] for r in rows if r["id"] in kept and kept[r["id"]] != json.loads(json.dumps(r))]
+            if clash:
+                raise OpenGaps(f"{f} already holds gap(s) {clash} with other content; the round does not start")
+        for f, rows in by_file.items():
+            kept = {k["id"] for k in jsonl.read_strict(f)}
+            for r in rows:
+                if r["id"] not in kept:
+                    jsonl.append_atomic(f, r)
+        for f, rows in by_file.items():                       # read back before the live rows go
+            kept = {k["id"]: k for k in jsonl.read_strict(f)}
+            if any(kept.get(r["id"]) != json.loads(json.dumps(r)) for r in rows):
+                raise OpenGaps(f"{f} does not read back as written; the live ledger is left as it is")
+        top = max([self._counter()] + [n + 1 for n in self._numbers()])
+        jsonl.write_atomic(self.counter, f"{top}\n")
+        jsonl.write_rows(self.proposals_file, [])
+        jsonl.write_rows(self.decisions_file, [])
+        return [(r[1]["id"], r[0]) for r in moves]
 
     def visible(self, law_ids: set[str], base_run: str | None = None) -> list[dict]:
         """The rows a run may be shown: gaps on a law of its corpus, and gaps its base run proposed.
