@@ -16,3 +16,6 @@ import TrafficSpec.Tests.Rewrites
 import TrafficSpec.Tests.TraceLint
 import TrafficSpec.Tests.Certificate
 import TrafficSpec.Tests.Intentions
+import TrafficSpec.Tests.Refinement
+import TrafficSpec.Tests.Entrance
+import TrafficSpec.Tests.Chains

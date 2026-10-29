@@ -50,7 +50,7 @@ from ..store.state import Run
 from . import validate as validate_phase
 from .code import concept_dir, node_dir
 
-PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
+PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "definitions", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
                             "case_language", "case_vocabulary", "not_atoms", "obligations", "max_divergences", "review_checks",
                             "review_submissions")
 PLACEHOLDERS_JUDGE_CASE = ("law", "definitions", "case", "contracts")
@@ -391,7 +391,8 @@ def trace_place(atom: str, keys: dict[str, list[str]] | None = None) -> str:
     if prefix == "ru" and rest in spell.get("RoadUserClass", set()):
         return "`users[].classes`"
     if prefix == "st" and rest in spell.get("StructureKind", set()):
-        return f"`structures[].kind` = `{rest}`"
+        refining = sorted(c for c, p in surface.kind_refinements().items() if p == rest)
+        return f"`structures[].kind` = `{rest}`" + (f" or a kind that refines it ({', '.join(f'`{c}`' for c in refining)})" if refining else "")
     if prefix == "dev" and rest in spell.get("DeviceKind", set()):
         return f"`devices[].kind` = `{rest}`"
     if atom == "ru_aggregate":
@@ -1259,7 +1260,8 @@ class Context:
 def definitions_block(defs: list[dict]) -> str:
     if not defs:
         return "### Definitions that apply\n\n(none of the law's words has a posted definition that applies)\n"
-    return "### Definitions that apply\n\n" + "\n".join(f"- `{d['id']}` — {_ws(d.get('text'))}" for d in defs) + "\n"
+    return "### Definitions that apply\n\n" + "\n".join(f"- `{d['id']}` — {_ws(d.get('text'))}" + (f" {corpus.split_note(d)}" if d.get("split") else "")
+                                                       for d in defs) + "\n"
 
 
 def params_block(params: list[dict]) -> str:
@@ -2365,6 +2367,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         "parameters": _parameters_block(reading, set(n.params())) + (f"\nHistory: {history}.\n" if history else ""),
         "trace_format": trace_format_block(),
         "case_language": surface.case_language(),
+        "definitions": definitions_block(ctx.definitions),
         "case_vocabulary": surface.case_vocabulary(onto),
         "not_atoms": ctx.not_atoms,
         "obligations": evidence_block(rep.evidence),

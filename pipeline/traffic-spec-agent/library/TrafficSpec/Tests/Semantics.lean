@@ -94,6 +94,52 @@ def τheading : Trace := [{ t := 0, users := [{ track := 1, kin := { heading := 
 #guard (evalTAll (SemCtx.mk' τheading ρ β) (.measure "kin_heading" [.var "x", .lit "x"])).toList.map (·.toOption.map (Q.eq · (Q.mk' 3 5))) = [some true]
 #guard (evalTAll (SemCtx.mk' τheading ρ β) (.measure "kin_heading" [.var "x", .lit "y"])).toList.map (·.toOption.map (Q.eq · (Q.mk' 4 5))) = [some true]
 
+-- a designated direction is read as a heading is: normalised, at any length, unknown only when zero.
+-- The body `v · d ≥ c · speed` then compares the cosine between velocity and direction with `c`.
+def micro (n : Int) : Q := Q.mk' n 1000000
+def vecRead (d : Vec) : Option (Q × Q) := Geom.unit d
+#guard (vecRead (Q.ofInt 6, Q.ofInt 8)).map (fun (a, b) => Q.eq a (Q.mk' 3 5) && Q.eq b (Q.mk' 4 5)) = some true
+#guard (vecRead (micro 999999, Q.zero)).map (fun (a, b) => Q.eq a (Q.ofInt 1) && Q.isZero b) = some true
+#guard (vecRead (Q.mk' 1 10000000, Q.zero)).map (fun (a, b) => Q.eq a (Q.ofInt 1) && Q.isZero b) = some true
+#guard vecRead (micro 1, micro 1) = vecRead (Q.ofInt 1, Q.ofInt 1)
+#guard vecRead (Q.zero, Q.zero) = none
+#guard (vecRead (Q.ofInt 1, Q.ofInt 1)).map (fun (a, _) => Q.le (Q.mk' 7071067 10000000) a && Q.lt a (Q.mk' 7071083 10000000)) = some true
+def τheadingTiny : Trace := [{ t := 0, users := [{ track := 1, kin := { heading := some (Q.mk' 1 10000000, Q.zero) } }] }]
+#guard (evalTAll (SemCtx.mk' τheadingTiny ρ β) (.measure "kin_heading" [.var "x", .lit "x"])).toList.map (·.toOption.map (Q.eq · (Q.ofInt 1))) = [some true]
+def τdir (d : Option Vec) (vel : Vec) : Trace :=
+  [{ t := 0, users := [{ track := 1, kin := { velocity := some vel, speed := some (Geom.norm vel) } }],
+     structures := [{ id := 7, kind := .lane, lane := some { direction := d } }] }]
+def agrees (c : Q) : Formula :=
+  let comp (k : String) : Term := .mul (.measure "kin_velocity" [.var "x", .lit k]) (.measure "st_lane_direction" [.nat 7, .lit k])
+  .cmp (.add (comp "x") (comp "y")) .ge (.mul (.lit c .ratio) (.measure "kin_speed" [.var "x"]))
+def agreeOn (d : Option Vec) (vel : Vec) (c : Q) : Tri := (eval (SemCtx.mk' (τdir d vel) ρ β) 0 (agrees c)).v
+def v34 : Vec := (Q.ofInt 3, Q.ofInt 4)
+def v43 : Vec := (Q.ofInt 4, Q.ofInt 3)
+def along (x : Q) : Option Vec := some (x, Q.zero)
+-- velocity (3, 4) against the x axis: cosine 3/5, whatever the direction's length
+#guard [along (Q.ofInt 1), along (Q.ofInt 2), along (Q.mk' 1 2)].all fun d =>
+  agreeOn d v34 (Q.mk' 3 5) == .t && agreeOn d v34 (Q.mk' 61 100) == .f && agreeOn d v34 (Q.mk' 4 5) == .f
+-- a non-axis direction: (1, 1) at 45°, cosine 7 / (5√2) ≈ 0.98995, at any scale
+#guard [(Q.ofInt 1, Q.ofInt 1), (Q.ofInt 5, Q.ofInt 5), (micro 1, micro 1)].all fun d =>
+  agreeOn (some d) v34 (Q.mk' 98 100) == .t && agreeOn (some d) v34 (Q.mk' 99 100) == .f
+-- a direction along the velocity: cosine exactly 1, equality decides true
+#guard agreeOn (some (Q.ofInt 6, Q.ofInt 8)) v34 (Q.ofInt 1) = .t
+#guard agreeOn (some (Q.ofInt 6, Q.ofInt 8)) v34 (Q.mk' 1000001 1000000) = .f
+-- a near-unit direction: velocity (4, 3), speed 5, cosine exactly 0.8
+#guard agreeOn (along (micro 999999)) v43 (Q.mk' 4 5) = .t
+#guard agreeOn (along (micro 999999)) v43 (Q.mk' 800001 1000000) = .f
+-- tiny directions read as their unit direction
+#guard agreeOn (along (Q.mk' 1 10000000)) v43 (Q.mk' 4 5) = agreeOn (along (Q.ofInt 1)) v43 (Q.mk' 4 5)
+#guard agreeOn (along (Q.mk' 1 10000000)) v43 (Q.mk' 4 5) = .t
+#guard [Q.mk' 98 100, Q.mk' 99 100].all fun c => agreeOn (some (micro 1, micro 1)) v34 c == agreeOn (some (Q.ofInt 1, Q.ofInt 1)) v34 c
+-- a negative bound: velocity (−4, 3) against the x axis, cosine −0.8
+def vBack : Vec := (Q.ofInt (-4), Q.ofInt 3)
+#guard [along (Q.ofInt 1), along (Q.ofInt 2), along (micro 999999)].all fun d =>
+  agreeOn d vBack (Q.mk' (-4) 5) == .t && agreeOn d vBack (Q.mk' (-79) 100) == .f && agreeOn d vBack (Q.mk' (-81) 100) == .t
+-- no direction to read: zero or missing
+#guard agreeOn (some (Q.zero, Q.zero)) v34 (Q.mk' 1 2) = .u
+#guard agreeOn none v34 (Q.mk' 1 2) = .u
+
 -- `cond` selects a quantity by a guard; τ observes darkness (false) and not the wet road. Where the
 -- guard is unknown a comparison is decided by cases exactly when both selections decide it alike.
 def wet : Formula := .atom "env_wet_road" [] []

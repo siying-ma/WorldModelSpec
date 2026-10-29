@@ -45,7 +45,7 @@ than is reasonable or proper" (600-1a). "Business or residential district" (413-
 no definition here: the posted definitions are of "business district" and "residence district",
 and a district enters a rule only as a reading assumption declared per map or per trace.
 
-`definitions.jsonl` holds the 37 posted definitions the pipeline's definition resolver reaches from
+`definitions.jsonl` holds the 38 posted definitions the pipeline's definition resolver reaches from
 these lines (directly, resolved or ambiguous, and nested). Regenerate both files with
 
 ```bash

@@ -1396,6 +1396,16 @@ class TwoPasses(unittest.TestCase):
         with self.assertRaises(BudgetPaused):
             self.review({1: [submit(self.answer())], 2: BudgetPaused("over")})
 
+    def test_the_reviewer_is_shown_the_definitions(self):
+        d = {"id": "DEF-1", "text": "Two-directional highway means an undivided highway", "split": "highways are two-directional"}
+        review.build_context = lambda *_a, **_kw: review.Context(LAW, "- `s1` (obligation): shall stop before the line", [d],
+                                                                 {"node_id": "L_1_o1"}, "the rendering", {}, [], [], "p")
+        self.review({1: [submit(self.answer())], 2: [submit(self.answer())]})
+        prompt = (Path(self.tmp.name) / f"review{self.reviews}" / "review_behaviour_prompt.md").read_text(encoding="utf-8")
+        self.assertIn("### Definitions that apply", prompt)
+        self.assertIn("DEF-1", prompt)
+        self.assertIn("Found split", prompt)
+
     def test_each_pass_keeps_its_own_evidence(self):
         runs = []
         review.certify = lambda _r, _n, divs, _rd, out, **_k: runs.append(Path(out).relative_to(self.tmp.name).as_posix()) or \

@@ -32,9 +32,9 @@ def rules : List Rule := [rule, truckRule, composed]
 
 #guard rule.wellFormed
 #guard rule.atoms = ["ru_motor_vehicle", "rel_ahead_in_lane", "rel_surface_gap", "kin_speed"]
-#guard Rule.atomIds rules rule = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed"]
+#guard Rule.atomIds rules rule = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "st.lane", "rel.surface_gap", "kin.speed"]
 #guard truckRule.atoms = ["ru_truck", "kin_time", "kin_speed"]                                    -- a time window reads the clock
-#guard Rule.atomIds rules composed = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "rel.surface_gap", "kin.speed", "ru.truck", "kin.time"]
+#guard Rule.atomIds rules composed = ["ru.motor_vehicle", "rel.ahead_behind_in_lane", "st.lane", "rel.surface_gap", "kin.speed", "ru.truck", "kin.time"]
 #guard Formula.atoms (.existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] [])) = ["st_lane", "rel_occupies"]
 #guard Formula.atoms (.existsDevice (.var "k") "d" (.atom "dev_governs" [.var "d", .var "r"] [])) = ["dev_governs"]
 #guard Formula.termAtoms (.distanceWhile "x" (.atom "ru_truck" [X] [])) = ["kin_path_length", "ru_truck"]

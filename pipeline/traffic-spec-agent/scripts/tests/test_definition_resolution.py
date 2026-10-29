@@ -152,6 +152,99 @@ class DefinitionDependencies(unittest.TestCase):
         self.assertNotIn("dependencies", table["laws"]["STA-900C-100"][0])
 
 
+SPLIT_DEFS = DEFS + [
+    d("DEF-STA-900A-140", "“Two-way lane” means an undivided lane on which wagons travel both ways."),
+    d("DEF-STA-900B-140", "“Two-way lane” means a lane of this chapter on which wagons travel both ways."),
+    d("DEF-STA-900A-150", "“Paved two-way lane” means a two-way lane with a hard surface."),
+]
+SPLIT_TERMS = sorted({c.term for c in D.extract(SPLIT_DEFS, CONFIG)})
+
+
+def split_of(text):
+    return [(t, w) for t, how, w in D.matches(text, SPLIT_TERMS) if how == "split"]
+
+
+class SplitUses(unittest.TestCase):
+    """A term of several words used in the bounded copular form `<head> is|are [not] <modifiers>`."""
+
+    def test_copular_form(self):
+        self.assertEqual(split_of("Both crossing lanes are two-way."), [("two-way lane", "lanes are two-way")])
+        self.assertEqual(split_of("The lane is two-way."), [("two-way lane", "lane is two-way")])
+        self.assertEqual(split_of("Halt where the lane which is two-way ends."), [])          # the predicate goes on: "ends"
+        self.assertEqual(split_of("A lane which is two-way, the sign says."), [("two-way lane", "lane which is two-way")])
+
+    def test_plural_head(self):
+        self.assertEqual(D.uses("Where both lanes are two-way: keep right.", ["lane", "two-way lane"]), ["lane", "two-way lane"])
+        self.assertEqual(split_of("If the lanes are two-way and the wagon turns, yield."), [("two-way lane", "lanes are two-way")])
+
+    def test_negation_still_uses_the_term(self):
+        self.assertEqual(split_of("If the lane is not two-way, keep right."), [("two-way lane", "lane is not two-way")])
+        self.assertEqual(split_of("Where the lanes are not two-way, keep right."), [("two-way lane", "lanes are not two-way")])
+
+    def test_longest_term_first(self):
+        self.assertEqual(split_of("The lanes are paved two-way."), [("paved two-way lane", "lanes are paved two-way")])
+
+    def test_a_modifier_that_qualifies_another_noun_is_no_use(self):
+        self.assertEqual(split_of("The lane is straight and the side road is two-way."), [])
+        self.assertEqual(split_of("The lanes are two-way roads."), [])                       # it qualifies "roads"
+        self.assertEqual(split_of("The road beside the lane is two-way."), [])               # "lane" is not the subject
+        self.assertEqual(split_of("A two-way flag marks the lane."), [])                     # co-occurrence only
+
+    def test_no_match_across_a_sentence_or_clause(self):
+        self.assertEqual(split_of("The wagon passes two lanes is two-way."), [("two-way lane", "lanes is two-way")])   # control
+        self.assertEqual(split_of("The wagon passes two lanes. Is two-way."), [])
+        self.assertEqual(split_of("The wagon passes two lanes; is two-way."), [])
+        self.assertEqual(split_of("The wagon passes two lanes, is two-way."), [])
+
+    def test_a_contiguous_use_is_never_displaced(self):
+        found = D.matches("A two-way lane ends. Both lanes are two-way.", SPLIT_TERMS)
+        self.assertEqual([(t, how) for t, how, _ in found], [("two-way lane", "contiguous"), ("lane", "contiguous")])
+        found = D.matches("Both lanes are two-way.", SPLIT_TERMS)
+        self.assertEqual([(t, how) for t, how, _ in found], [("lane", "contiguous"), ("two-way lane", "split")])
+
+    def test_precedence_and_the_recorded_row(self):
+        r = rows(law("STA-900B-200", "Where both lanes are two-way, keep right."), SPLIT_DEFS)
+        self.assertEqual({k: r["two-way lane"][k] for k in ("status", "definition", "step", "match", "words")},
+                         {"status": "resolved", "definition": "DEF-STA-900B-140", "step": "own_chapter",
+                          "match": "split", "words": "lanes are two-way"})
+        self.assertNotIn("match", r["lane"])
+        r = rows(law("STA-900C-200", "Where both lanes are two-way, keep right."), SPLIT_DEFS)["two-way lane"]
+        self.assertEqual((r["definition"], r["step"]), ("DEF-STA-900A-140", "general_chapter"))
+        r = rows(law("STA-900B-200", "Where both lanes are two-way [DEF-STA-900A-140], keep right."), SPLIT_DEFS)["two-way lane"]
+        self.assertEqual((r["definition"], r["step"]), ("DEF-STA-900A-140", "inline_or_section"))
+        self.assertNotIn("match", r)                                                         # found by its citation
+        r = rows(law("STA-900B-200", "A two-way lane ends where both lanes are two-way."), SPLIT_DEFS)["two-way lane"]
+        self.assertNotIn("match", r)
+
+    def test_a_split_use_inside_a_definition_is_marked_too(self):
+        defs = SPLIT_DEFS + [d("DEF-STA-900A-160", "“Crossing” means a place where two lanes are two-way.")]
+        table = D.resolve_table([law("STA-900C-100", "Halt at the crossing.")], defs, CONFIG)
+        dep = next(x for x in table["dependencies"]["DEF-STA-900A-160"] if x["term"] == "two-way lane")
+        self.assertEqual((dep["definition"], dep["match"], dep["words"]), ("DEF-STA-900A-140", "split", "lanes are two-way"))
+
+    def test_the_sessions_are_shown_the_split_words(self):
+        import json, tempfile
+        from types import SimpleNamespace
+        from harness.checks import aggregates
+        from harness.phases import review
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "laws.jsonl").write_text("", encoding="utf-8")
+            (tmp / "definitions.jsonl").write_text("".join(json.dumps(x) + "\n" for x in SPLIT_DEFS), encoding="utf-8")
+            (tmp / "precedence.json").write_text(json.dumps(CONFIG), encoding="utf-8")
+            run = SimpleNamespace(dir=tmp, opts=SimpleNamespace(laws=tmp / "laws.jsonl", definition_precedence=str(tmp / "precedence.json")))
+            the_law = law("STA-900B-200", "Where both lanes are two-way, keep right.")
+            D.write_table(run, [the_law], SPLIT_DEFS)
+            shown = D.applicable(run, the_law.id)
+            self.assertEqual([(x["id"], x.get("split")) for x in shown if x["id"] in ("DEF-STA-900B-140", "DEF-STA-900B-060")],
+                             [("DEF-STA-900B-060", None), ("DEF-STA-900B-140", "lanes are two-way")])
+            note = 'the law\'s words "lanes are two-way" use this defined term in the copular form'
+            self.assertIn(note, review.definitions_block(shown))
+            self.assertIn(note, corpus.render_definitions(shown))
+            self.assertIn('| STA-900B-200 | two-way lane (found split: "lanes are two-way") | `DEF-STA-900B-140` |',
+                          aggregates.render(None, {the_law.id: D.rows_for(run, the_law.id)}, {}))
+
+
 class PostedInputOnly(unittest.TestCase):
     def test_the_resolver_reads_no_sidecar(self):
         src = (Path(D.__file__)).read_text(encoding="utf-8")

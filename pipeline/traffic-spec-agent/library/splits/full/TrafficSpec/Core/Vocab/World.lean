@@ -127,6 +127,11 @@ structure Structure where
   grade : Option Q := none                  -- ratio
   sightDistance : Option Q := none          -- m
   ways : Option (List RegionId) := none     -- the highway regions it lies on
+  /-- For a stop line or a crosswalk: the lanes whose entrance into an intersection it marks.
+      `entranceObserved` says the list is complete; where it is not, which lanes the line marks is
+      unknown and `entranceOf` is empty. -/
+  entranceOf : List RegionId := []
+  entranceObserved : Bool := false
   reservedClass : Option ReservedClass := none
   turnSide : Option TurnSide := none
   parkingAngle : Option Q := none           -- deg
@@ -274,7 +279,7 @@ structure Reference where
 
 namespace Structure
 /-- The regions a structure's own fields name: its lane's neighbours, successors and intersection,
-    and the ways it lies on. -/
+    the ways it lies on, and the lanes whose entrance it marks. -/
 def references (st : Structure) : List Reference :=
   let at_ := fun (f : String) => s!"structure {st.id} {f}"
   (st.lane.bind (·.leftNeighbour)).toList.map (fun r => { place := at_ "lane.left", kind := .region, id := r })
@@ -282,6 +287,7 @@ def references (st : Structure) : List Reference :=
   ++ ((st.lane.bind (·.leadsTo)).getD []).map (fun r => { place := at_ "lane.leads_to", kind := .region, id := r })
   ++ (st.lane.bind (·.entersIntersection)).toList.map (fun r => { place := at_ "lane.enters_intersection", kind := .region, id := r })
   ++ (st.ways.getD []).map (fun r => { place := at_ "ways", kind := .region, id := r })
+  ++ st.entranceOf.map (fun r => { place := at_ "entrance_of", kind := .region, id := r, structureKind := some .lane })
 end Structure
 
 namespace Scene

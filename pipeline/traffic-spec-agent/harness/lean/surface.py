@@ -82,7 +82,8 @@ def formula_language() -> str:
             "Notes. `Arg.var` names a binder or a quantifier variable; `Arg.lit` an enumeration spelling or an\n"
             "attribute selector (`\"x\"`, `\"y\"`, `\"width\"`, `\"length\"`, `\"lateral\"`, `\"longitudinal\"`, a side);\n"
             "`Arg.nat` a count. Quantifiers `existsRegion k v φ`/`forallRegion` range over the scene's structures of\n"
-            "kind `k` (an `Arg.lit` spelling, or a concept's literal formal), `existsDevice`/`forallDevice` over its\n"
+            "kind `k` (an `Arg.lit` spelling, or a concept's literal formal) or of a kind that refines `k`, and the\n"
+            "structures that may be of it where the source cannot tell; `existsDevice`/`forallDevice` over its\n"
             "devices of a kind, `existsUser`/`forallUser` over its road users, the bound ones included (`same a b`\n"
             "excludes the subject); the variable is an `Arg.var` inside `φ`. `rises φ` is φ here and not at the\n"
             "previous observation; `definedWhen pre φ` is undefined (unknown) where `pre` fails; `Term.sinceRise φ`\n"
@@ -186,6 +187,15 @@ def _codecs() -> dict[str, list[tuple[str, str]]]:
                       for ctor, ptype in re.findall(r'if s\.startsWith "(\w+)\(".*?\n\s*\((\w+)\.ofString', body, re.S)]
             out[name] = pairs
     return out
+
+
+def kind_refinements() -> dict[str, str]:
+    """Region kind spelling → the spelling of the kind it refines, from the generated
+    `StructureKind.parent?` (`Vocab/Ontology/Structure.lean`)."""
+    spell = {ctor: s for s, ctor in _codecs().get("StructureKind", [])}
+    body = re.search(r"def parent\? : StructureKind → Option StructureKind\n(.*?)\n\s*\| _ => none", _read("Vocab/Ontology/Structure.lean"), re.S)
+    pairs = re.findall(r"\| \.(\w+) => some \.(\w+)", body.group(1)) if body else []
+    return {spell[c]: spell[p] for c, p in pairs if c in spell and p in spell}
 
 
 def enumeration_spellings() -> dict[str, set[str]]:

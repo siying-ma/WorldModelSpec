@@ -118,7 +118,7 @@ vehicle is the derived concept `drv.responding_emergency`.
 |---|---|---|---|
 | `kin.time` | instant of observation of a scene | ms, monotone within a trace | general |
 | `kin.position` | position of the body's reference point | m, world frame (map or local) | general |
-| `kin.heading` | direction the body points | unit vector, world frame | general |
+| `kin.heading` | direction the body points; a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶ (exactly the unit vector where that scaled length is a whole number of micrometres, as for an axis-aligned direction); a zero vector reads unknown | unit vector, world frame | general |
 | `kin.velocity` | velocity vector | m/s, world frame | general |
 | `kin.speed` | magnitude of velocity | m/s | general |
 | `kin.accel_longitudinal` | acceleration along heading, signed **Not a stand-in for:** speed | m/s² | general |
@@ -139,23 +139,26 @@ reports unknown.
 
 ## 3. Road structure (`st`) — map-level atoms and occupancy
 
+A kind whose contract ends in **Refines:** names the kind it refines: every region of the refining kind is also a region of the kind it refines, and of every kind that one refines. A parent never implies a refining kind, and two kinds refining one parent never imply each other. Refinement is not lying on a way (`st.on_way`): a region that lies on another is not thereby of its kind. Where a source cannot tell a refining kind, only the regions it labels with a kind that refining kind refines are unknown members of it; a region of any other kind is known not to be one.
+
 | id | contract | scope |
 |---|---|---|
 | `st.highway` | the entire public way between its boundary lines, including sidewalks and shoulders **Not a stand-in for:** the roadway | general |
 | `st.roadway` | the part of a highway improved for vehicular traffic, excluding shoulder; separate roadways of a divided highway are separate **Not a stand-in for:** the sidewalk — 'not on the roadway' includes shoulder, verge and parking bays | general |
 | `st.lane` | a longitudinal strip of roadway for one line of vehicles **Not a stand-in for:** a half of the roadway or a lateral position within a lane — lane membership is not an offset from the edge, and lane ordinal equals roadway half only on a two-lane road | general |
-| `st.lane_direction` | direction of travel designated for a structure a vehicle travels in — a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder; a centre turn lane carries none. The direction is local to its carrier (a bend or a loop is written as segments), carriers that overlap or cross may carry different directions, and a place no carrier covers has none (unknown) | general |
+| `st.lane_direction` | direction of travel designated for a structure a vehicle travels in — a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder; a centre turn lane carries none. The direction is local to its carrier (a bend or a loop is written as segments), carriers that overlap or cross may carry different directions, and a place no carrier covers has none (unknown). It is written at any length; a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶ (exactly the unit vector where that scaled length is a whole number of micrometres, as for an axis-aligned direction); a zero vector reads unknown | general |
 | `st.lane_adjacency` | left / right neighbouring lane of the same direction; lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane, looking along the lane's direction **Not a stand-in for:** the marking between two lanes | general |
 | `st.lane_connectivity` | which lane a lane leads into | general |
 | `st.lane_enters` | relation: the intersection region a lane runs into at its end — the lane is an approach to that intersection **Not a stand-in for:** the lane a lane leads into (`st.lane_connectivity`), the subject's presence in the intersection (`rel.occupies`), or the region a device governs (`dev.governs`) — a device governs a lane and the lane enters an intersection; which intersection a device controls is read through both, or directly where the device governs the intersection | general |
 | `st.on_way` | relation: the public way (a `highway` region) a structure region lies on — a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it; an intersection lies on every way that meets there **Not a stand-in for:** nearness to a way (`st.region_geometry`), or the lane a lane leads into (`st.lane_connectivity`) | general |
+| `st.entrance_of` | relation: the lane whose entrance into an intersection a stop line or a crosswalk marks — the line or crossing a vehicle in that lane halts at or before; one line may mark several lanes, and a lane may have a stop line and a crosswalk. A lane is a directed region segmented by topology, and the intersection is the one that lane enters (`st.lane_enters`). Where the source observes a line's entrances its list is complete, and the line marks no lane it does not list; where it does not, which lanes the line marks is unknown, never "no line for this lane". No region other than a stop line or a crosswalk marks an entrance **Not a stand-in for:** distance to the line (`st.region_geometry`), or the way the line lies on (`st.on_way`) | general |
 | `st.lane_marking` | per side of a lane: **type** ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, **colour** ∈ {white, yellow, other} | general |
 | `st.centre_line` | the marking, or the geometric centre, dividing the two directions of a two-way roadway | general |
 | `st.road_edge` | curb or edge of the roadway; **paved** attribute for the surface beyond it | general |
 | `st.shoulder` | the part of the highway beside the roadway not intended for vehicular traffic; **paved** attribute | general |
 | `st.sidewalk` | area for pedestrians between roadway and property line **Not a stand-in for:** a crosswalk | general |
 | `st.median_or_divider` | physical barrier or dividing section between roadways; **opening** attribute where a crossover exists | general |
-| `st.one_way_roadway` | roadway on which traffic is restricted to one direction | general |
+| `st.one_way_roadway` | roadway on which traffic is restricted to one direction **Refines:** `st.roadway` | general |
 | `st.intersection` | the region where two roadways meet, bounded by the prolongation of their edges **Not a stand-in for:** a crosswalk or a stop line — a stop before the crossing is earlier than a stop before the intersection | general |
 | `st.crosswalk` | marked crossing, or the unmarked prolongation of sidewalks at an intersection; **marked** attribute | general |
 | `st.stop_line` | the transverse line marking where vehicles halt for a device | general |
@@ -170,9 +173,9 @@ reports unknown.
 | `st.controlled_access` | a highway with access only at designated points, and its entrance and exit lanes | general |
 | `st.elevated_structure` | bridge, viaduct or tunnel carrying the roadway | general |
 | `st.bicycle_lane_or_path` | lane or separate path reserved for bicycles and the devices a jurisdiction groups with them | general |
-| `st.reserved_lane` | lane reserved for a class of vehicles; **class** ∈ {high_occupancy, bus, heavy_vehicle, other} | general (class `high_occupancy` with occupancy and hours conditions: local) |
-| `st.centre_turn_lane` | a single centre lane used only for turning by traffic in both directions | local |
-| `st.turn_lane` | a lane designated only for turning; **side** ∈ {left, right} | general |
+| `st.reserved_lane` | lane reserved for a class of vehicles; **class** ∈ {high_occupancy, bus, heavy_vehicle, other} **Refines:** `st.lane` | general (class `high_occupancy` with occupancy and hours conditions: local) |
+| `st.centre_turn_lane` | a single centre lane used only for turning by traffic in both directions **Refines:** `st.lane` | local |
+| `st.turn_lane` | a lane designated only for turning; **side** ∈ {left, right} **Refines:** `st.lane` | general |
 | `st.parking_space` | marked bay for standing or parking; **angle** attribute; **designation** ∈ {general, disabled, disabled_side_lift, access_aisle, municipal, charging} | general |
 | `st.curb_zone` | a signed or marked length of curb; **kind** ∈ {passenger_loading, freight_loading, tour_bus_loading, restricted_parking, bus_stop, taxicab_stand, fire_lane, no_stopping, no_parking}; **colour** ∈ {red, yellow, white, blue, gray, none} where the curb itself is painted | general (curb colour code and kind `tour_bus_loading`: local) |
 | `st.transit_stop` | a bus stop, bench, shelter or platform for public transport passengers | general |

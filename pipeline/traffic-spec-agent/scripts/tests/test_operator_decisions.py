@@ -144,19 +144,26 @@ class DecisionWords(unittest.TestCase):
         n = record({"span": "s2", "why": "w", "gap": "G1"})
         d = Path(self.tmp.name) / "run"
         run = SimpleNamespace(iter=d, dir=d, iteration=2, mapping_file=d / "mapping.json",
-                              opts=SimpleNamespace(dry_run=False, plan_turns=1, plan_effort="low", run_id="t"),
+                              opts=SimpleNamespace(dry_run=False, plan_turns=1, plan_effort="low", run_id="t", laws=d / "laws.jsonl"),
                               all_nodes=lambda: {}, all_concepts=lambda: {})
         last = d / "last"
         last.mkdir(parents=True)
         def session_run(*_a, cwd=None, **_k):
             (Path(cwd) / "record.jsonl").write_text(json.dumps({k: v for k, v in n.raw.items() if k not in ("node_id", "law_refs", "segmentation")}))
+        blocks = {}
+        defs = [{"id": "DEF-1", "title": "Two-directional highway", "text": "means an undivided highway", "split": "highways are two-directional"}]
         with mock.patch.object(plan_phase.session, "run", session_run), \
                 mock.patch.object(validate_a, "validate", validate), \
-                mock.patch.object(plan_phase.render, "render", lambda *_a, **_k: "prompt"), \
+                mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: blocks.update(b) or "prompt"), \
+                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: defs), \
                 mock.patch.object(review, "upheld_block", lambda *_a, **_k: ""):
             reading = SimpleNamespace(data={"params": []}, params=[], pending_aggregates=False)
             plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], reading, ONTO)
         self.assertIn("G1", seen.get("rejected_gaps") or {})
+        # the repair is shown the definitions that apply, a term found split with its note
+        self.assertIn("## Definitions that apply", blocks["definitions"])
+        self.assertIn("DEF-1", blocks["definitions"])
+        self.assertIn("Found split", blocks["definitions"])
 
 
 class PreviousRecord(unittest.TestCase):

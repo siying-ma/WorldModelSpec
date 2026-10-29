@@ -42,15 +42,23 @@ def sqrtMicro (q : Q) : Q :=
     let scaled : Int := (q.num * 1000000000000) / (q.den : Int)   -- µm²
     Units.micrometres (Int.ofNat (isqrt scaled.toNat))
 def norm (a : Vec) : Q := sqrtMicro (normSq a)
-/-- Components of `v` in the frame of heading `h` (longitudinal, lateral); lateral positive = left. -/
-def inFrame (h v : Vec) : Option (Q × Q) :=
-  let n := norm h
-  if Q.isZero n then none
-  else some (Q.div (dot h v) n, Q.div (cross h v) n)
-/-- The unit vector along `a`; `none` for the zero vector. -/
+/-- The unit vector along `a`; `none` for the zero vector only. `a` is first divided by its larger
+    absolute component, so the vector normalised has length between 1 and √2 whatever `a`'s scale,
+    and then by that length taken to micrometres (`norm`). The result is the exact unit vector times
+    a factor of at least 1 and below 1 + 2·10⁻⁶, and is exact where the scaled length is a whole
+    number of micrometres (every axis-aligned direction). -/
 def unit (a : Vec) : Option Vec :=
-  let n := norm a
-  if Q.isZero n then none else some (Q.div a.1 n, Q.div a.2 n)
+  let m := Q.max (Q.abs a.1) (Q.abs a.2)
+  if Q.isZero m then none
+  else
+    let b := (Q.div a.1 m, Q.div a.2 m)
+    let n := norm b
+    some (Q.div b.1 n, Q.div b.2 n)
+/-- Components of `v` in the frame of heading `h` (longitudinal, lateral); lateral positive = left.
+    `h` is read as a direction (`unit`), whatever its length; `v` keeps its own. -/
+def inFrame (h v : Vec) : Option (Q × Q) := do
+  let u ← unit h
+  pure (dot u v, cross u v)
 /-- Distance from a point to a segment. -/
 def segmentDistance (p a b : Vec) : Q :=
   let ab := vsub b a
@@ -200,9 +208,32 @@ def kin_service_brake (s : Scene) (x : TrackId) : Option Q := (s.user x).bind (�
 -- ---------------------------------------------------------------------------------------------
 -- Road structure and occupancy
 -- ---------------------------------------------------------------------------------------------
-/-- Whether a region is of a kind: unknown where the source cannot tell that kind. -/
+/-- Whether kind `a` refines kind `b`, reflexively and transitively. -/
+def StructureKind.refines (a b : StructureKind) : Bool := a == b || a.ancestors.contains b
+
+/-- Whether a source that cannot tell kind `m` (it is among `unobservedKinds`) leaves this structure's
+    membership of `m`'s kinds open: always where `m` refines no kind; otherwise only where the
+    structure is labelled `m` or a kind `m` refines, since a structure of any other kind is known not
+    to be one. -/
+def Structure.maskApplies (st : Structure) (m : StructureKind) : Bool :=
+  m.parent?.isNone || m.refines st.kind
+
+/-- Whether a structure is of kind `k`: unknown where a kind the source cannot tell, applying to this
+    structure, is `k` or a kind `k` refines (the label cannot be trusted for `k`); true where the
+    structure's kind refines `k`; unknown where a kind the source cannot tell, applying to this
+    structure, refines `k`; false otherwise. A parent never implies a kind refining it, two kinds
+    refining one parent never imply each other, and a kind the source cannot tell never makes a known
+    parent unknown. -/
+def Structure.isOfKind (st : Structure) (k : StructureKind) : Option Bool :=
+  let masked := st.unobservedKinds.filter st.maskApplies
+  if masked.any (k.refines ·) then none
+  else if st.kind.refines k then some true
+  else if masked.any (·.refines k) then none
+  else some false
+
+/-- Whether a region is of a kind (`Structure.isOfKind`); unknown for a region not in the scene. -/
 def isKind (s : Scene) (r : RegionId) (k : StructureKind) : Option Bool :=
-  (s.structure? r).bind fun st => if st.unobservedKinds.contains k then none else some (st.kind == k)
+  (s.structure? r).bind (·.isOfKind k)
 
 def st_highway (s : Scene) (r : RegionId) : Option Bool := isKind s r .highway
 def st_roadway (s : Scene) (r : RegionId) : Option Bool := isKind s r .roadway
@@ -232,6 +263,14 @@ def st_lane_right_of (s : Scene) (r r' : RegionId) : Option Bool :=
 def st_lane_connectivity (s : Scene) (r : RegionId) : Option (List RegionId) := (st_lane_adjacency s r).bind (·.leadsTo)
 def st_lane_enters (s : Scene) (r : RegionId) : Option RegionId := (st_lane_adjacency s r).bind (·.entersIntersection)
 def st_on_way (s : Scene) (r : RegionId) : Option (List RegionId) := (s.structure? r).bind (·.ways)
+/-- Whether line `l` marks lane `a`'s entrance: decided where the line's entrances are observed,
+    false for a region known to be neither a stop line nor a crosswalk, unknown otherwise. -/
+def st_entrance_of (s : Scene) (l a : RegionId) : Option Bool :=
+  (s.structure? l).bind fun st =>
+    if st.entranceObserved then some (st.entranceOf.contains a)
+    else match isKind s l .stopLine, isKind s l .crosswalk with
+      | some false, some false => some false
+      | _, _ => none
 def st_lane_marking (s : Scene) (r : RegionId) : Option ((Option (MarkingType × MarkingColour)) × (Option (MarkingType × MarkingColour))) :=
   (st_lane_adjacency s r).map fun l => (l.markingLeft, l.markingRight)
 def st_lane_marking_left (s : Scene) (r : RegionId) : Option (MarkingType × MarkingColour) := (st_lane_adjacency s r).bind (·.markingLeft)
@@ -293,13 +332,10 @@ def footprint (s : Scene) (x : TrackId) : Option (List Vec) := do
   let p ← kin_position s x
   let h ← kin_heading s x
   let (hl, hw, _) ← kin_extent s x
-  let n := Geom.norm h
-  if Q.isZero n then none
-  else
-    let u := (Q.div h.1 n, Q.div h.2 n)
-    let v := (Q.neg u.2, u.1)
-    let corner (a b : Q) : Vec := Geom.vadd p (Q.add (Q.mul a u.1) (Q.mul b v.1), Q.add (Q.mul a u.2) (Q.mul b v.2))
-    pure [corner hl hw, corner hl (Q.neg hw), corner (Q.neg hl) (Q.neg hw), corner (Q.neg hl) hw]
+  let u ← Geom.unit h
+  let v := (Q.neg u.2, u.1)
+  let corner (a b : Q) : Vec := Geom.vadd p (Q.add (Q.mul a u.1) (Q.mul b v.1), Q.add (Q.mul a u.2) (Q.mul b v.2))
+  pure [corner hl hw, corner hl (Q.neg hw), corner (Q.neg hl) (Q.neg hw), corner (Q.neg hl) hw]
 
 /-- Ground distance from a road user's body to a region: zero when the footprint overlaps the
     boundary, otherwise the nearest approach between the two outlines. Without a footprint (no
@@ -319,13 +355,13 @@ def st_region_geometry_distance (s : Scene) (x : TrackId) (r : RegionId) : Optio
     match fp with
     | some poly => Geom.polygonDistance c poly
     | none => some (Geom.norm (Geom.vsub c p))
-/-- The regions of a kind present in the scene. -/
+/-- The regions present in the scene known to be of a kind (`Structure.isOfKind` true). -/
 def regionsOfKind (s : Scene) (k : StructureKind) : List RegionId :=
-  (s.structures.filter (·.kind == k)).map (·.id)
-/-- The regions a quantifier over a kind ranges over: those of the kind, and those whose kind the
-    source cannot tell, which may be of it. -/
+  (s.structures.filter (·.isOfKind k == some true)).map (·.id)
+/-- The regions a quantifier over a kind ranges over: those whose membership of the kind is not
+    false (`Structure.isOfKind`), the known members and those that may be members. -/
 def regionCandidates (s : Scene) (k : StructureKind) : List RegionId :=
-  (s.structures.filter fun st => st.kind == k || st.unobservedKinds.contains k).map (·.id)
+  (s.structures.filter (·.isOfKind k != some false)).map (·.id)
 
 def rel_occupies (s : Scene) (x : TrackId) (r : RegionId) : Option Bool :=
   if s.occupancyObserved.contains x then some (s.occupies.contains (x, r)) else none
@@ -453,17 +489,22 @@ def rel_surface_gap_lateral (s : Scene) (a b : TrackId) : Option Q := (rel_surfa
 /-- The smaller of the two clearances, as a scalar gap. -/
 def rel_surface_gap_min (s : Scene) (a b : TrackId) : Option Q := (rel_surface_gap s a b).map fun g => Q.min g.1 g.2
 
-/-- `a` and `b` share a lane and `a` is ahead of `b` along `a`'s heading. -/
+/-- `a` and `b` share a lane and `a` is ahead of `b` along `a`'s heading. The lane is any region both
+    occupy that is of kind lane (`Structure.isOfKind`): unknown when `a` is ahead and no shared region
+    is known to be a lane but one may be. -/
 def rel_ahead_behind_in_lane (s : Scene) (a b : TrackId) : Option Bool :=
   match (s.relation a b).bind (·.aAheadOfB) with
   | some v => some v
   | none => do
     let ra ← rel_occupies_regions s a
     let rb ← rel_occupies_regions s b
-    let lanes := regionsOfKind s .lane
-    let shared := lanes.any fun l => ra.contains l && rb.contains l
     let (lon, _) ← relFrame s a b
-    pure (shared && Q.lt lon Q.zero)
+    if !Q.lt lon Q.zero then some false
+    else
+      let shared := (s.structures.filter fun st => ra.contains st.id && rb.contains st.id).map (·.isOfKind .lane)
+      if shared.contains (some true) then some true
+      else if shared.contains none then none
+      else some false
 def rel_ahead_in_lane (s : Scene) (a b : TrackId) : Option Bool := rel_ahead_behind_in_lane s a b
 def rel_behind_in_lane (s : Scene) (a b : TrackId) : Option Bool := rel_ahead_behind_in_lane s b a
 
@@ -488,12 +529,10 @@ def rel_oncoming (s : Scene) (a b : TrackId) (cosTol : Q) : Option Bool :=
     let pb ← kin_position s b
     let va ← kin_velocity s a
     let vb ← kin_velocity s b
-    let na := Geom.norm ha; let nb := Geom.norm hb
-    if Q.isZero na || Q.isZero nb then none
-    else
-      let cosθ := Q.div (Geom.dot ha hb) (Q.mul na nb)
-      let closing := Q.lt (Geom.dot (Geom.vsub pb pa) (Geom.vsub vb va)) Q.zero
-      pure (Q.lt cosθ (Q.neg cosTol) && closing)
+    let ua ← Geom.unit ha
+    let ub ← Geom.unit hb
+    let closing := Q.lt (Geom.dot (Geom.vsub pb pa) (Geom.vsub vb va)) Q.zero
+    pure (Q.lt (Geom.dot ua ub) (Q.neg cosTol) && closing)
 
 /-- Headings aligned (cosine above `cosTol`). -/
 def rel_same_direction (s : Scene) (a b : TrackId) (cosTol : Q) : Option Bool :=
@@ -502,9 +541,9 @@ def rel_same_direction (s : Scene) (a b : TrackId) (cosTol : Q) : Option Bool :=
   | none => do
     let ha ← kin_heading s a
     let hb ← kin_heading s b
-    let na := Geom.norm ha; let nb := Geom.norm hb
-    if Q.isZero na || Q.isZero nb then none
-    else pure (Q.gt (Q.div (Geom.dot ha hb) (Q.mul na nb)) cosTol)
+    let ua ← Geom.unit ha
+    let ub ← Geom.unit hb
+    pure (Q.gt (Geom.dot ua ub) cosTol)
 
 /-- `b` relative to `a` in `a`'s frame: (longitudinal, lateral), lateral positive to the left. -/
 def rel_bearing (s : Scene) (a b : TrackId) : Option Vec :=

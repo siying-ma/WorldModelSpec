@@ -17,7 +17,8 @@ pipeline needs. The pipeline alone sets:
 
 It sets them in three places: the ontology (`ontology/ATOMS.md`); Core's scene types and decoder
 (`library/TrafficSpec/Core/Vocab/World.lean`, `library/TrafficSpec/Core/Runtime/Decode.lean`); and
-the trace check (`library/TrafficSpec/Core/Evidence/TraceLint.lean`).
+the trace check (`library/TrafficSpec/Core/Evidence/TraceLint.lean`). The trace check is applied
+to hand-written traces only: the monitor does not run it on a recorded trace (§6).
 
 This guide describes those contracts for the adapter's developers and has no authority of its
 own. Where it disagrees with them, the pipeline is right: this guide is corrected to match, and
@@ -33,7 +34,7 @@ Files in this folder:
 |---|---|
 | `README.md` | this guide |
 | `trace.example.json` | a two-scene CARLA-shaped trace; decodes with the Core decoder |
-| `manifest.example.json` | a complete manifest (all 134 atom ids), written by `make_manifest.py` |
+| `manifest.example.json` | a complete manifest (all 129 atom ids), written by `make_manifest.py` |
 | `make_manifest.py` | writes a complete manifest from the full ontology; edit its `OBSERVED` table |
 
 Paths below are relative to `pipeline/traffic-spec-agent/`.
@@ -165,6 +166,8 @@ What to drop:
 | Numbers | Plain JSON numbers, rounded to at most 6 decimals. They decode exactly, so write `8.2`, not `8.199999809`. |
 | Time | `t` is strictly increasing across scenes, or the trace fails to decode. Use the simulation timestamp, not the frame number. |
 | Not observed | Omit the key or write `null`. Never write `false`, `0` or `[]` for something the source did not observe. |
+| Defaults | A few omitted keys are not unknown: `conditions.when_children_present` reads `false`; a time window's `start_minute` and `end_minute` read 0 and 1440; `occupancy_observed: false` reads as no track observed. |
+| Key spelling | Only the keys named here are read. A misspelled or unknown key is silently ignored, so its value reads as unknown; check key names against `Decode.lean`. An intent record is the exception: an extra key fails the trace (§4.1a). |
 | Observed false | Write `false`. A brake lamp seen off is `"brake_lamp": false`. |
 | Track ids | Natural numbers, stable for the whole capture: the CARLA actor id, or a fixed renumbering of it. The same physical actor keeps one id. |
 | Region and device ids | Natural numbers, fixed for the whole capture. For lanes, number each (road, section, lane) triple once. Regions and devices share no id space with tracks, but each id must be unique within its own kind (structures, devices). |
@@ -204,7 +207,7 @@ An Intent record has exactly these keys; a missing or an extra key fails the tra
 | `vehicle` | track | the road user whose plan is declared; a track of this scene's `users` |
 | `target` | region | the region the plan concerns; a structure of this scene |
 | `source` | non-empty string | where the declaration comes from: `authored_scenario` (a condition of the test, set by the scenario's author), `controller_plan` (the recorded active plan of the driving system) or `inferred_from_path` (a proxy read from the motion). Core does not read it; the evaluation reports verdicts on `inferred_from_path` traces apart and never counts them as evidence of intention independent of the behaviour |
-| `values` | [["int.<name>", bool]] | each id at most once |
+| `values` | [["int.<name>", bool]] | each id at most once; an id is `int.` followed by `[a-z0-9_]+` |
 
 What a value means, the same for every id:
 - **true** where the source's current plan for that road user includes, at that target, what the id means;
@@ -212,7 +215,7 @@ What a value means, the same for every id:
 - an **id left out** wherever the plan does not decide its meaning, even when other ids of the pair are listed: what a plan does not mention is unknown, never false;
 - the **pair absent** where the source has no current plan for that road user at that target, or does not know it. Never write false for a road user whose plan you do not know.
 
-The value follows the plan, never the motion: a manoeuvre blocked, delayed or under way stays true while the plan holds it. A change of declaration takes effect from the scene that carries it; a rule reads a declaration only at the observation it judges or before it. State in the report whose intentions the trace supplies (the ego only, or every road user).
+The value follows the plan, never the motion: a manoeuvre blocked, delayed or under way stays true while the plan holds it. A record is read per scene, with no carry-forward: repeat the current record in **every** scene where the source has a declaration for the pair. A scene without the record reads unknown, and a changed record counts from the first scene that carries it. A rule reads a declaration only at the observation it judges or before it. State in the report whose intentions the trace supplies (the ego only, or every road user).
 
 **Which ids.** The ids a trace must supply, `asm.*` and `int.*` alike, and what each means, are the reading's `declarations` (`library/TrafficSpec/Readings/<run>.json`), entered as the plan proposes them and reviewed by the operator. An id the reading does not list is never written.
 
@@ -237,16 +240,16 @@ The value follows the plan, never the motion: a manoeuvre blocked, delayed or un
 | Key | Type | Unit | CARLA source |
 |---|---|---|---|
 | `position` | [x, y] | m | actor location (y negated); the body's reference point |
-| `heading` | [hx, hy] | unit vector | (cos ψ, sin ψ) with ψ = −yaw |
+| `heading` | [hx, hy] | direction | (cos ψ, sin ψ) with ψ = −yaw. Unit length is recommended, not required: any non-zero length is read normalised. A zero vector reads unknown, and the hand-written trace check rejects it |
 | `velocity` | [vx, vy] | m/s | `get_velocity()` (y negated) |
 | `speed` | number | m/s | norm of the horizontal velocity; **write it**, Core does not derive it |
 | `accel_longitudinal` | number | m/s² | acceleration projected on the heading, signed |
 | `yaw_rate` | number | deg/s | `get_angular_velocity().z`, negated (counter-clockwise positive) |
 | `extent` | [half_length, half_width, half_height] | m | `bounding_box.extent` (already half sizes) or the sidecar's 8 box vertices |
 | `path_length` | number | m | integrate speed over time from the first scene; monotone |
-| `steer_angle` | number | deg | the ego's `steer` control (full split only); ego only, so the manifest says `subject` |
+| `steer_angle` | number | deg | the ego's `steer` control; ego only, so the manifest says `subject` |
 | `engine_running` | bool | | not exposed by CARLA (the ego's engine always runs): omit, manifest `absent` |
-| `parking_brake` | bool | | the ego's `hand_brake` control (full split only); ego only: `subject` |
+| `parking_brake` | bool | | the ego's `hand_brake` control; ego only: `subject` |
 | `gear` | integer | gear number | the ego's `gear`, negated when `reverse` is set; 0 is neutral; ego only: `subject` |
 | `throttle` | number | fraction of full travel | the ego's `throttle` control; ego only: `subject` |
 | `service_brake` | number | fraction of full travel | the ego's `brake` control; ego only: `subject` |
@@ -267,9 +270,10 @@ reading them for another vehicle reports unknown.
 | `position_lamp` | bool | `Position` |
 | `reverse_lamp` | bool | `Reverse` (full split only) |
 | `siren` | bool | `Special1` / `Special2` |
-| `warning_lamps` | [{`colour`, `mode`, `facing`}] | |
+| `warning_lamps` | [{`colour`, `mode`, `facing`}] | the lit warning lamps, each key required (§4.6) |
 | `hand_signal` | `no_signal` / `left` / `right` / `stop_or_slow` / `re_enter` | CARLA renders no arm signals: write `no_signal` on every road user |
-| `horn`, `doors_open`, `compression_brake` | | not available in CARLA: omit |
+| `doors_open` | [`traffic` / `curb`] | the sides with a door open, `[]` when none is open; not available in CARLA: omit |
+| `horn`, `compression_brake` | bool | not available in CARLA: omit |
 
 Write `turn_indicator` from the light state of every frame, `off` included: a rule that requires a
 signal can come out `violated` only where the source says the indicator was off. Where the light
@@ -285,10 +289,36 @@ lamps also need the modified generator.
 | `id`, `kind` | natural, enum, **required** | `kind` from StructureKind (§4.6) |
 | `boundary` | [[x, y], …] | polygon, world frame; needed for occupancy and every distance-to-region |
 | `position` | [x, y] | reference point of a point-like structure |
-| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | on a lane, reserved lane, turn lane, centre turn lane or bicycle lane or path. `direction` alone may also be written on a roadway, one-way roadway or shoulder a vehicle travels in (a road written without lane regions); a centre turn lane has none. A direction is local to its region (write a bend or a loop as segments); regions that overlap or cross may have different directions; a place no region carries a direction for has none — never infer one |
-| `unobserved_kinds` | [kind] | kinds the source cannot tell for this region |
+| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | on a lane, reserved lane, turn lane, centre turn lane or bicycle lane or path. `direction` alone may also be written on a roadway, one-way roadway or shoulder a vehicle travels in (a road written without lane regions); a centre turn lane has none. A direction is local to its region (write a bend or a loop as segments); regions that overlap or cross may have different directions; a place no region carries a direction for has none — never infer one. `direction` may have any non-zero length: it is read normalised. A zero vector reads unknown, and the hand-written trace check rejects it |
+| `unobserved_kinds` | [kind] | kinds the source cannot tell for this region; refinement-aware (Kind refinement, below) |
 | `ways` | [highway region ids] | the public ways (`highway` regions) this region lies on (`st.on_way`): a lane, roadway, shoulder, crosswalk, stop line or median its road's; a junction every highway whose road connects there |
+| `entrance_of` | [lane ids] | on a `stop_line` or a `crosswalk` only: the lanes whose entrance into an intersection this line or crossing marks (`st.entrance_of`), the lanes whose vehicles halt at or before it; one line may list several lanes. Write the complete list when the source observes it (`[]` when it observes that the line marks none). Omit the key when the source cannot tell; it is then read as unknown, never as "this lane has no stop line". Each id is a structure of kind `lane` or of a kind that refines it (turn, reserved or centre turn lane) in the same scene. The intersection is not written here: it is the lane's own `enters_intersection` |
 | others | `paved`, `opening`, `marked`, `curvature` (1/m; Core reads its magnitude, so either sign is accepted), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
+
+**Kind refinement.** Some kinds refine another (`StructureKind.parent?` in
+`library/TrafficSpec/Core/Vocab/Ontology/Structure.lean`):
+
+| Kind | Refines |
+|---|---|
+| `one_way_roadway` | `roadway` |
+| `reserved_lane`, `centre_turn_lane`, `turn_lane` | `lane` |
+
+- Label each region with its most specific kind. A region of a refining kind counts as its parent:
+  a `turn_lane` is a `lane`, and a rule over lanes ranges over it. Do not write a second region for
+  the parent.
+- A parent never implies a refining kind, and two kinds refining one parent never imply each other.
+- `unobserved_kinds` is refinement-aware:
+  - a kind that refines nothing (for example `lane`), listed there, leaves the region's membership
+    of that kind, and of every kind refining it, unknown;
+  - a refining kind (for example `turn_lane`) applies only to a region labelled with it or with a
+    kind it refines (`lane`). On any other region it is ignored, and that region is known not to be
+    one;
+  - an unobserved refining kind never makes its parent unknown: a region labelled `turn_lane` that
+    lists `turn_lane` is still a lane.
+- Example: a source that cannot tell turn lanes labels them `lane` and lists `turn_lane` in
+  `unobserved_kinds`. Those regions are lanes whose turn-lane membership is unknown; a crosswalk is
+  still known not to be a turn lane. Declaring `st.turn_lane` absent in the manifest has the same
+  effect.
 
 CARLA mapping:
 - **Lanes.** Group waypoints by (road id, section id, lane id) and take the union of their polygons
@@ -312,6 +342,11 @@ CARLA mapping:
   as a thin polygon across the lane (an estimate). A stop line is written where it is in place; its
   paint condition (clarity, wear) is not reported, and a rule reads a represented stop line as the
   clearly marked one.
+- **Entrances.** A stop line taken from a traffic light's `get_stop_waypoints()` or a stop-sign
+  trigger volume lists the lanes of those stop waypoints, as (road, section, lane) ids. A crosswalk
+  lists the lanes whose last waypoint before the junction lies just before it, where the map makes
+  that unambiguous; where it does not, omit `entrance_of` for that crosswalk. Coverage of this key on
+  CARLA is not promised: an omitted key is unknown, which is missing evidence, never a pass.
 
 **Device**
 
@@ -319,7 +354,8 @@ CARLA mapping:
 |---|---|---|
 | `id`, `kind` | natural, enum, **required** | `kind` from DeviceKind (§4.6) |
 | `position` | [x, y] | |
-| `governs` | [region ids] | the travel regions whose traffic the device controls: the lanes (`controlsTrafficOf` edges, or the landmark's affected waypoints), or a roadway, one-way roadway or shoulder written without lane regions; or the intersection, where the source reports the device as controlling the junction itself (read as that and nothing more). Never a highway, a controlled-access region or a region no vehicle travels in. Write `[]` when the source observes that the device governs nothing; omit the key when the source cannot tell (read as unknown) |
+| `unobserved_kinds` | [kind] | device kinds the source cannot tell for this device |
+| `governs` | [region ids] | the travel regions whose traffic the device controls: the lanes (`controlsTrafficOf` edges, or the landmark's affected waypoints), a bicycle lane or path, or a roadway, one-way roadway or shoulder written without lane regions; or the intersection, where the source reports the device as controlling the junction itself (read as that and nothing more). Never a highway, a controlled-access region or a region no vehicle travels in. Write `[]` when the source observes that the device governs nothing; omit the key when the source cannot tell (read as unknown) |
 | `indications` | [indication] | what a signal shows now. CARLA `TrafficLightState`: Red → `circular_red`, Yellow → `circular_yellow`, Green → `circular_green`, Off → `dark`, Unknown → `unknown`. |
 | `speed_value`, `speed_kind` | m/s, `maximum`/`minimum`/`structure_maximum`/`zone` | speed-limit landmarks: the value converted from the landmark unit to m/s |
 | `inoperative`, `flashing`, `active`, `uncovered`, `ped_state`, `countdown`, `lane_control`, `code`, `zone_kind`, `is_end`, `rail_lights`, `gate`, `bell`, `human_role`, `human_indication` | | see `Decode.lean`; omit what CARLA lacks |
@@ -360,7 +396,7 @@ authority. The ones CARLA needs:
   `rail_vehicle`
 - **StructureKind**: `highway`, `roadway`, `lane`, `centre_line`, `road_edge`, `shoulder`,
   `sidewalk`, `median_or_divider`, `one_way_roadway`, `intersection`, `crosswalk`, `stop_line`,
-  `driveway_or_alley_entrance`, `alley`, `railway_crossing`, `controlled_access`,
+  `driveway_or_alley_entrance`, `alley`, `crest`, `railway_crossing`, `controlled_access`,
   `elevated_structure`, `bicycle_lane_or_path`, `reserved_lane`, `centre_turn_lane`, `turn_lane`,
   `parking_space`, `curb_zone`, `transit_stop`, `safety_zone`, `pedestrian_grade_separation`,
   `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`
@@ -375,6 +411,11 @@ authority. The ones CARLA needs:
 - **MarkingType** `none`, `broken`, `solid`, `double_solid`, `solid_broken`, `dotted`, `curb`;
   **MarkingColour** `white`, `yellow`, `other`
 - **TurnSide** `left`, `right`; **HeadlampState** `off`, `low_beam`, `high_beam`
+- **DoorSide** `traffic`, `curb`
+- Warning lamps: **LampColour** `red`, `blue`, `amber`, `white`; **LampMode** `flashing`,
+  `rotating`, `steady`; **Facing** `front`, `rear`, `side`
+- **Full split only** (held out of the training split): DeviceKind `school_bus_signal`; SignCode
+  (`code`) `lane_use_arrow` and `turn_course_marker`
 
 A class carries no implied membership. A CARLA car is `["motor_vehicle"]`. A CARLA bicycle is
 `["bicycle"]`, not a motor vehicle. When the blueprint does not settle a class (is this car a
@@ -383,8 +424,10 @@ written in a trace: the reading maps them to classes.
 
 ### 4.7 Example: the canonical trace
 
-This is the decoder's own test, `library/TrafficSpec/Tests/Decode.lean:7-22`. The `#guard` lines
-beneath it there pin what each value decodes to.
+This is the decoder's own test, `library/TrafficSpec/Tests/Decode.lean:7-25`, abridged. The test's
+trace also carries track 1's `engine_running`, `gear`, `throttle`, `hand_signal` and
+`sight_along_way`, lane 7's `enters_intersection`, intersection 20 with its `ways`, and a `visible`
+relation. The `#guard` lines beneath it there pin what each value decodes to.
 
 ```json
 {"scenes": [
@@ -456,10 +499,10 @@ signal that governs them controls that intersection.
 ```json
 { "source": "<name and version of the generator + adapter>",
   "reid_gap": <seconds, optional, default 0>,
-  "atoms": { "<atom id>": "exact" | "estimate:<error class>" | "absent", ... } }
+  "atoms": { "<atom id>": "exact" | "estimate:<error class>" | "absent" | "subject", ... } }
 ```
 
-- **List every atom id.** There are 134 in the full ontology, read from
+- **List every atom id.** There are 129 in the full ontology, read from
   `library/splits/full/TrafficSpec/Core/Vocab/Ontology/Ids.lean`. An id the manifest omits counts
   as `absent`, and the monitor warns that the manifest is not complete.
 - `exact` means the source supplies the atom as ground truth.
@@ -475,6 +518,11 @@ signal that governs them controls that intersection.
   generator emits crosswalks, even on a road with none.
 - **Computed relations.** `rel.*` atoms other than `rel.visible` are computed by Core from
   kinematics, so declare them observed whenever the kinematics are.
+- **Kind dependencies.** A rule that reads a region kind also needs the entries of every kind that
+  kind refines (§4.5, Kind refinement): a read of `st.turn_lane` needs `st.lane` too. A rule that
+  reads `st.entrance_of` also needs `st.stop_line`, `st.crosswalk` and `st.lane`, and one that reads
+  `rel.ahead_behind_in_lane` needs `st.lane` (`kindDependencies` in
+  `library/TrafficSpec/Core/Runtime/Manifest.lean`). An absent dependency counts as an absent atom of the rule (`partial`, or `unsupported`).
 - `reid_gap` is the longest tracker break, in seconds, that `links` may bridge. It is 0 for CARLA.
 
 Make one per generator version, never per capture:
@@ -509,7 +557,10 @@ monitor uses it in two ways:
 2. **Masking.** Every absent atom is blanked in every scene before evaluation:
    - a class becomes unknown for every user;
    - a lamp becomes `none`;
-   - a region or device kind is marked unobserved on every entity;
+   - a device kind is marked unobserved on every device;
+   - a region kind is added to every region's `unobserved_kinds`, which leaves membership open
+     only as §4.5 (Kind refinement) says: an absent `st.turn_lane` makes only the regions labelled
+     `lane` or `turn_lane` unknown turn lanes;
    - a `subject` atom is kept on the ego and blanked on everyone else.
 
    A rule that depends on it then says unknown, never `compliant`, so a capture that cannot see
@@ -521,13 +572,20 @@ track.
 ## 6. Before handing a capture over
 
 1. **It decodes.** Run the monitor on it: exit status 2 is a decode error, and the message names
-   the path, such as `trace.scenes[3].users[0].sig.turn_indicator: unknown value off`. This works
-   even before any rule is registered.
-2. **The basics hold.**
+   the path, such as `trace.scenes[3].users[0].sig.turn_indicator: unknown value blinking`. This
+   works even before any rule is registered. Beyond decoding, the monitor applies only the
+   admission checks of §4.1a.
+2. **The basics hold.** The monitor does not run the hand-written trace check
+   (`library/TrafficSpec/Core/Evidence/TraceLint.lean`) on a recorded trace. Apart from a `t` that
+   does not increase (a decode error), nothing below is rejected for you: getting it right is the
+   adapter's responsibility.
    - `t` is strictly increasing, with a step equal to the capture period (50 ms at 20 Hz).
    - Track ids are stable across scenes.
    - `path_length` never decreases.
-   - Every `occupies` and `governs` id names a structure in the same scene.
+   - Every `occupies` and `governs` id names a structure in the same scene, and every
+     `entrance_of` id names a lane (or a kind refining it) in the same scene.
+   - `entrance_of` appears only on a `stop_line` or a `crosswalk`; `governs` names only the kinds
+     of §4.5; no `heading` or `direction` is the zero vector.
 3. **The frame is right.** A car turning left in CARLA must show `heading` rotating
    counter-clockwise and a positive `yaw_rate` after conversion.
 4. **Witness replay.** Each formalized rule comes with Lean witness scenes in
@@ -537,16 +595,17 @@ track.
 
 ## 7. Known limits that affect the adapter
 
-- **Build against the full split.** The training split's decoder silently ignores ten keys:
-  `steer_angle`, `parking_brake`, `headlamp`, `position_lamp`, `reverse_lamp`, `doors_open`,
-  `on_track`, `red_flashing`, `amber_flashing` and `stop_arm`. Its atom list also lacks 9 ids, so a
-  manifest over the full list is reported incomplete. Build the monitor while `library/splits/ACTIVE` says `full`. Swap with
-  `python -m harness split --use full`, never by hand.
+- **Build against the full split.** The training split's decoder silently ignores five keys:
+  `reverse_lamp`, `on_track`, `red_flashing`, `amber_flashing` and `stop_arm`. It rejects the
+  held-out enumeration values of §4.6 (`school_bus_signal`, `lane_use_arrow`,
+  `turn_course_marker`) as a decode error: an unknown key is ignored, an unknown value is not. Its
+  atom list also lacks 2 ids (`dev.school_bus_signal`, `sig.reverse_lamp`), so a manifest over the
+  full list is reported incomplete. Build the monitor while `library/splits/ACTIVE` says `full`.
+  Swap with `python -m harness split --use full`, never by hand.
 - **A kind the trace never lists is decided, not unknown.** A rule quantifies over the regions and
   devices that are listed in the trace. If the generator emits no crosswalks, "there is no
   crosswalk" is decided true even when `st.crosswalk` is `absent`. So emit every crosswalk, stop
   line and sign the map has. This needs a Core decision.
-- **Turn indicator "off".** It cannot be written (§4.4). This needs a Core decision.
 - **Rules.** The monitor checks the rules registered in `library/TrafficSpec/Index.lean`.
   `allRules` is empty until accepted nodes are integrated, so the report has no `RULE` lines yet.
   Decode checks work regardless.

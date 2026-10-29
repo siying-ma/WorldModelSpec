@@ -1,9 +1,219 @@
 {
  "run": "<run id>",
- "params": [],
+ "params": [
+  {
+   "name": "p.motion_speed_floor",
+   "value": 0.5,
+   "unit": "m/s",
+   "convention": "motion-resolution convention: below this speed a sampled velocity carries no reliable direction, so the road user counts as not travelling",
+   "source": "trajectory-processing practice for naturalistic driving data (velocity noise floor of GNSS/INS tracks)",
+   "proposed": "smoke24/iter-001 NRS_484B_220_1"
+  },
+  {
+   "name": "p.direction_opposition_cosine",
+   "value": 0.5,
+   "unit": "ratio",
+   "convention": "heading-opposition tolerance, as the oncoming relation states it: the cosine of the largest angle off exactly opposed that still counts as opposed (here sixty degrees)",
+   "source": "conflict-analysis practice for opposed-direction encounters",
+   "proposed": "smoke24/iter-001 NRS_484B_220_1"
+  },
+  {
+   "name": "p.standstill_speed_tolerance",
+   "value": 0.1,
+   "unit": "m/s",
+   "convention": "standstill-detection convention: the speed at or below which a sampled track counts as showing no movement, set at the noise floor of the speed measurement so that a complete cessation is recognized without being asserted of a creeping vehicle",
+   "source": "instrumented-vehicle and trajectory-processing practice for stop-sign compliance studies",
+   "proposed": "smoke24/iter-001 NRS_484B_250_4_o1"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "value": 2.0,
+   "unit": "m",
+   "convention": "stop-bar compliance convention: the distance behind the marked line within which a halt counts as made at the line",
+   "source": "traffic-engineering practice for stop-line compliance measurement",
+   "proposed": "smoke24/iter-001 NRS_484B_250_4_o1"
+  },
+  {
+   "name": "p.cautious_speed_max",
+   "value": 4.5,
+   "unit": "m/s",
+   "convention": "low-speed re-entry convention: the entry speed from a required halt at which a driver retains the ability to abort within the junction, taken as the ten-mile-per-hour crawl speed used for failed-signal and all-way-stop operation",
+   "source": "traffic-engineering guidance on operation at dark or failed signals",
+   "proposed": "smoke24/iter-001 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.conflict_horizon",
+   "value": 3.0,
+   "unit": "s",
+   "convention": "gap-acceptance convention: the look-ahead over which a constant-velocity projection is taken to represent an imminent conflict at junction speeds",
+   "source": "surrogate safety measure practice (time-to-conflict horizons in conflict analysis)",
+   "proposed": "smoke24/iter-001 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.conflict_clearance",
+   "value": 2.0,
+   "unit": "m",
+   "convention": "gap-acceptance convention: the centre-to-centre clearance at closest approach below which the projected passage is taken to disturb the other road user",
+   "source": "surrogate safety measure practice (post-encroachment and minimum-separation thresholds)",
+   "proposed": "smoke24/iter-001 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.view_sight_distance_min",
+   "value": 60.0,
+   "unit": "m",
+   "convention": "intersection sight-distance convention: the distance along the through way within which an approaching vehicle must be visible from a position for that position to count as one from which the driver has a view of approaching traffic, taken from the departure sight triangle for a through way of ordinary urban through speed",
+   "source": "AASHTO Green Book, intersection sight distance (departure sight triangles, Case B); MUTCD practice on stop-line and stop-sign placement",
+   "proposed": "smoke24/iter-001 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.reasonable_speed_base",
+   "value": 24.6,
+   "unit": "m/s",
+   "convention": "basic-speed-rule convention: the speed a dry, clear, straight way of full lane width, free of other traffic and with long sight distance, supports as reasonable and proper, taken as the design speed of an ordinary undivided rural highway",
+   "source": "AASHTO Green Book design speeds for rural arterials; enforcement practice under state basic-speed rules",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lane_width_reference",
+   "value": 3.6,
+   "unit": "m",
+   "convention": "lane-width convention: the design lane width against which the width available to the vehicle is scaled, so that a narrower lane lowers the bound in proportion to its width",
+   "source": "AASHTO Green Book design lane widths",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.lateral_accel_max",
+   "value": 3.0,
+   "unit": "m/s^2",
+   "convention": "curve-speed convention: the lateral acceleration a driver of ordinary skill accepts on a horizontal curve, which with the roadway's curvature bounds the speed - the square of the speed does not exceed this acceleration divided by the curvature",
+   "source": "AASHTO Green Book side-friction factors for horizontal curves",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.sight_time",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "assured-clear-distance convention: the time within which the vehicle must be able to be brought to rest within the distance that can be seen ahead, so the bound is the sighted distance divided by this time; it folds the perception-reaction time and the braking time of the stopping-sight-distance model into one constant",
+   "source": "AASHTO Green Book stopping sight distance (perception-reaction plus braking distance)",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.traffic_headway_time",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "headway convention: the time gap to the nearest road user ahead in the same lane that the speed must leave, so the bound is the longitudinal surface gap divided by this time",
+   "source": "car-following headway guidance (AASHTO following-distance practice and the following-distance rule used in driver training)",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.wet_speed_factor",
+   "value": 0.8,
+   "unit": "ratio",
+   "convention": "surface-condition convention: the fraction of the dry-road bound that a wet surface leaves, from the reduction of available friction on wet pavement",
+   "source": "AASHTO Green Book wet-pavement friction factors",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.ice_speed_factor",
+   "value": 0.5,
+   "unit": "ratio",
+   "convention": "surface-condition convention: the fraction of the dry-road bound that an icy or snow-covered surface leaves, from the reduction of available friction on ice and packed snow",
+   "source": "winter-maintenance pavement-friction measurements; AASHTO friction guidance for winter surfaces",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.precipitation_speed_factor",
+   "value": 0.85,
+   "unit": "ratio",
+   "convention": "weather convention: the fraction of the bound that falling rain or snow leaves, from the loss of contrast and of sight distance while precipitation falls",
+   "source": "FHWA Road Weather Management speed-reduction studies",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.darkness_speed_factor",
+   "value": 0.8,
+   "unit": "ratio",
+   "convention": "night-driving convention: the fraction of the bound that insufficient natural light leaves, from the shorter distance at which a driver can resolve an object under headlamps",
+   "source": "FHWA and AASHTO guidance on night-time sight distance and headlamp illumination",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.grade_speed_sensitivity",
+   "value": 2.0,
+   "unit": "ratio",
+   "convention": "grade convention: the fractional reduction of the bound per unit of downgrade, from the lengthening of braking distance on a descending grade",
+   "source": "AASHTO Green Book grade corrections to stopping sight distance",
+   "proposed": "smoke24/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.turn_window",
+   "value": 4.0,
+   "unit": "s",
+   "convention": "manoeuvre-recognition convention: the time behind the observation over which a change of direction is accumulated for it to count as one turn, taken from the duration of a turn through a square junction at junction approach speeds",
+   "source": "turning-path and intersection-design practice (AASHTO Green Book turning paths at 15-25 km/h design speeds)",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "name": "p.turn_heading_change",
+   "value": 45.0,
+   "unit": "deg",
+   "convention": "manoeuvre-recognition convention: the accumulated heading change that tells a turn from lane-keeping and from a lane change, taken as half of the ninety-degree change of a square junction turn",
+   "source": "manoeuvre-classification practice in naturalistic driving studies (lane-change heading changes below, junction turns above)",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "name": "p.yaw_rate_floor",
+   "value": 1.0,
+   "unit": "deg/s",
+   "convention": "motion-resolution convention: below this rate of change of heading a sampled heading carries no reliable rotation, so the road user counts as not turning at that observation",
+   "source": "yaw-rate sensor noise floor used for manoeuvre detection in vehicle dynamics instrumentation",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "name": "p.approach_path_window",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "turn-approach convention: the distance travelled before a turn over which the positioning for that turn is judged, taken from the length of the deceleration and storage taper a turning lane provides at an urban junction, within which a vehicle intending to turn is expected to have taken its lane",
+   "source": "turning-lane design practice (AASHTO Green Book deceleration and storage lengths for urban turn bays at 40-50 km/h)",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "name": "p.approach_reach",
+   "value": 50.0,
+   "unit": "m",
+   "convention": "intersection approach-zone convention: the distance from a junction within which a vehicle closing on it is near enough that its passage bears on a manoeuvre made in the junction, taken from the leg of the departure sight triangle for a through way of ordinary urban through speed",
+   "source": "intersection sight-distance tables (AASHTO Green Book departure sight triangles, 40-50 km/h approach speeds)",
+   "proposed": "smoke24/iter-002 NRS_484B_253_o1"
+  },
+  {
+   "name": "p.yield_body_clearance",
+   "value": 1.5,
+   "unit": "m",
+   "convention": "gap-acceptance convention: the clearance between the bodies of two vehicles within which the one is taken to intrude on the passage of a vehicle it owes precedence to, measured between the bodies and not between their centres; taken from the one-metre lateral clearance a driver is expected to leave when passing a stationary vehicle at crawl speed, widened for the privileged vehicle's own movement",
+   "source": "lateral-clearance practice for passing a stopped vehicle at crawl speed (one metre), widened by half for the movement of the vehicle with precedence",
+   "proposed": "smoke24/iter-004 NRS_484B_250_4_o2"
+  }
+ ],
  "aggregates": [],
  "_fields": {
   "params": "name (p.<name>), value (number), unit (m|s|m/s|m/s2|deg|deg/s|ratio|count), convention (text), figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
   "aggregates": "word (a legal aggregate such as 'vehicle'), classes (ru.* ids it covers)"
- }
+ },
+ "declarations": [
+  {
+   "id": "asm.outside_city_limits",
+   "meaning": "the way the road user is travelling on lies outside the territorial limits of a city, so that it is a road within the meaning of NRS 484A.215 rather than a street; declared per map or per trace, since a city or town limit is a legal region class and nothing on the road displays it",
+   "proposed": "smoke24/iter-001 NRS_484B_620_2"
+  },
+  {
+   "id": "int.turn",
+   "meaning": "the source's current plan for the road user includes turning, to either side, at the target region: true where that plan holds at the target, false where the plan decides on another manoeuvre, on passing through, or on a turn cancelled or already completed there, and absent where the source has no plan for that road user at that region",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "id": "int.turn_left",
+   "meaning": "the source's current plan for the road user includes turning to the left at the target region: true where that plan holds at the target, false where the plan decides on another manoeuvre, on passing through, or on a turn cancelled or already completed there, and absent where the source has no plan for that road user at that region",
+   "proposed": "smoke24/iter-002 NRS_484B_253_o1"
+  }
+ ]
 }

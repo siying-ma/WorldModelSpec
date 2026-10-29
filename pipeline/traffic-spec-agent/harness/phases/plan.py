@@ -48,7 +48,7 @@ PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_
                 "parameters", "gaps", "feedback", "upheld", "previous_records", "user_hints", "anchors", "aggregate_atom")
 PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
                        "definition", "users")
-PLACEHOLDERS_NODE_REPAIR = ("law", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
+PLACEHOLDERS_NODE_REPAIR = ("law", "definitions", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
                             "concept_language", "concepts", "parameters", "anchors", "aggregate_atom")
 
 
@@ -338,6 +338,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
+        "definitions": "## Definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, [law])),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,

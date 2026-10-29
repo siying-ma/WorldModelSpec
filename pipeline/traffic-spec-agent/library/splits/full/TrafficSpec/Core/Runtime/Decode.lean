@@ -17,9 +17,10 @@
                     "links": [[old, new]...]? } ] }
   Field names follow the structures of World.lean in snake_case; see the decoders below. A
   device's `governs` absent or null is not observed (`governsObserved` false, so whether it
-  governs a region is unknown); `[]` is observed and governs nothing. An intent record has
-  exactly its four keys, and a non-empty `source`, which names where the declaration comes from
-  and is not kept in the scene.
+  governs a region is unknown); `[]` is observed and governs nothing. A structure's `entrance_of`
+  is read the same way: absent or null, which lanes it marks is not observed (`entranceObserved`
+  false); `[]` is observed and marks none. An intent record has exactly its four keys, and a
+  non-empty `source`, which names where the declaration comes from and is not kept in the scene.
 
   A formula, a term and an argument decode strictly from the JSON Export.lean writes: the
   decoder is that encoder's inverse, so a decoded formula exported again is the canonical form.
@@ -184,6 +185,8 @@ def structure' (path : String) (j : Json) : D Structure := do
          grade := ← opt j path "grade" num
          sightDistance := ← opt j path "sight_distance" num
          ways := ← optList j path "ways" nat
+         entranceOf := ← list j path "entrance_of" nat
+         entranceObserved := (field? j "entrance_of").isSome
          reservedClass := ← opt j path "reserved_class" (enum ReservedClass.ofString)
          turnSide := ← opt j path "turn_side" (enum TurnSide.ofString)
          parkingAngle := ← opt j path "parking_angle" num

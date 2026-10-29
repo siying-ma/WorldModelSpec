@@ -133,6 +133,7 @@ def evalAtomE (s : Scene) (name : String) (args : List DArg) (ps : List Q) : Exc
   | "st_lane_connectivity", [r, r'] => pure (b ((st_lane_connectivity s (← ent r)).map (·.contains (← ent r'))) name)
   | "st_lane_enters", [r, i] => pure (b ((st_lane_enters s (← ent r)).map (· == (← ent i))) name)
   | "st_on_way", [r, w] => pure (b ((st_on_way s (← ent r)).map (·.contains (← ent w))) name)
+  | "st_entrance_of", [l, a] => pure (b (st_entrance_of s (← ent l) (← ent a)) name)
   | "st_lane_marking", [r, sd, t] =>
     match sd with
     | .s "left" => pure (eqEnum ((st_lane_marking_left s (← ent r)).map (·.1)) (← enumLit MarkingType.ofString t) name)
@@ -243,7 +244,7 @@ where
     "st_road_edge_paved", "st_shoulder_paved", "st_median_or_divider_opening",
     "st_crosswalk_marked", "st_reserved_lane_class", "st_turn_lane_side", "st_parking_space_designation",
     "st_curb_zone_kind", "st_curb_zone_colour", "st_obstruction_kind", "st_lane_adjacency", "st_lane_adjacency_left",
-    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_on_way", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
+    "st_lane_adjacency_right", "st_lane_connectivity", "st_lane_enters", "st_on_way", "st_entrance_of", "st_lane_marking", "st_lane_marking_left", "st_lane_marking_right",
     "rel_occupies", "dev_traffic_signal_shows", "dev_traffic_signal_uncovered", "dev_pedestrian_signal_state",
     "dev_pedestrian_signal_countdown", "dev_lane_control_signal_state", "dev_speed_limit_beacon_flashing",
     "dev_crossing_warning_signal_active", "dev_speed_limit_sign_kind", "dev_regulatory_sign_code",
@@ -290,7 +291,7 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
   | "ru_occupant_count", [x] => qn (ru_occupant_count s (← ent x)) name
   | "ru_rider_posture_hands_on_controls", [x] => qn (ru_rider_posture_hands_on_controls s (← ent x)) name
   | "ru_electric_bicycle_class", [x] => qn (ru_electric_bicycle_class s (← ent x)) name
-  | "st_lane_direction", [r, k] => comp (st_lane_direction s (← ent r)) k name
+  | "st_lane_direction", [r, k] => comp ((st_lane_direction s (← ent r)).bind Geom.unit) k name
   | "st_lane_adjacency", [r, k] =>
     match k with
     | .s "ordinal" => qn (st_lane_adjacency_ordinal s (← ent r)) name
@@ -361,7 +362,8 @@ def atomArgSorts (name : String) : Option (List (Option EntityKind)) :=
   | "dev_school_bus_signal_on_track" => some [d, t]
   | "st_region_geometry_distance" | "st_sight_along_way" => some [t, r]
   | "st_lane_adjacency" => some [r, none, r]
-  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" | "st_lane_enters" | "st_on_way" => some [r, r]
+  | "st_lane_adjacency_left" | "st_lane_adjacency_right" | "st_lane_connectivity" | "st_lane_enters" | "st_on_way"
+  | "st_entrance_of" => some [r, r]
   | "st_lane_marking" => some [r, none, none, none]
   | "rel_oncoming" | "rel_same_direction" | "rel_ahead_behind_in_lane" | "rel_ahead_in_lane"
   | "rel_behind_in_lane" | "rel_contact" | "rel_visible" | "rel_centre_distance" | "rel_longitudinal_overlap" => some [t, t]
@@ -408,8 +410,8 @@ def subjectFor (β : Binding) (m : Measure) (v : String) : Except UnknownReason 
   | .time => .ok 0
   | .path => match β.track v with | some t => .ok t | none => .error (.unboundVariable v)
 
-/-- Every region a quantifier over a kind ranges over in some scene of the trace: those of the
-    kind, and those whose kind the source cannot tell. -/
+/-- Every region a quantifier over a kind ranges over in some scene of the trace: those whose
+    membership of the kind is not false there (`regionCandidates`). -/
 def regionsOf (c : SemCtx) (k : StructureKind) : List RegionId :=
   (c.scenes.toList.flatMap fun s => regionCandidates s k).eraseDups
 def devicesOf (c : SemCtx) (k : DeviceKind) : List DeviceId :=

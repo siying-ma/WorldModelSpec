@@ -4,7 +4,8 @@ Every attribute enumeration written in an atom's contract as `**attr** ∈ {a, b
 the sign catalogue, `**code**: a, b, …`) becomes one Lean inductive; the atom ids of the seven
 atom families and the primitive ids become string lists; the units of the measured atoms (the
 units table) and of the primitives (the last two columns of a primitive's row) become the
-dimension tables of `Dimensions.lean`. Nothing else
+dimension tables of `Dimensions.lean`; a structure kind's `**Refines:** st.<kind>` clause becomes
+`StructureKind.parent?` and its transitive closure `StructureKind.ancestors`. Nothing else
 is generated: structured attributes (a rider's posture, a sign's conditions) are hand-written
 records in World.lean.
 
@@ -60,7 +61,7 @@ KIND_ENUMS = {
     "ru": ("RoadUserClass", {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}),
     "st": ("StructureKind", {"st.lane_direction", "st.lane_adjacency", "st.lane_connectivity", "st.lane_enters", "st.lane_marking",
                              "st.lane_width", "st.curvature", "st.grade", "st.sight_distance", "st.region_geometry",
-                             "st.on_way", "st.sight_along_way"}),
+                             "st.on_way", "st.entrance_of", "st.sight_along_way"}),
     "dev": ("DeviceKind", {"dev.governs", "dev.position", "dev.inoperative"}),
 }
 FAMILIES = ("ru", "kin", "st", "dev", "sig", "env", "rel")
@@ -68,6 +69,8 @@ FAMILIES = ("ru", "kin", "st", "dev", "sig", "env", "rel")
 ROW = re.compile(r"^\| `((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)` \| (.*)$")
 ENUM = re.compile(r"\*\*(\w+)\*\* ∈ \{([^}]*)\}")
 DIRSET = re.compile(r"with dir ∈ \{([^}]*)\}")
+REFINES = re.compile(r"\*\*Refines:\*\*\s*(\S+)")
+REFINES_ID = re.compile(r"^`(st\.[a-z_]+)`$")
 CODES = re.compile(r"\*\*code\*\*, [^:]*: ([^*|]+?) \*\*Not|\*\*code\*\*: ([^*|]+?) \*\*Not")
 
 #: How ATOMS.md writes two units Core's decoder spells otherwise; `boolean` is no quantity.
@@ -91,6 +94,7 @@ def parse(atoms_path: Path = None):
     section = None
     atoms, primitives, enums = [], [], []   # enums: (atom, attr, [values], param_type)
     measures, prim_units = [], []            # (lean name, dim); (lean name, result dim or None, [param dims])
+    refines = {}                             # structure kind id -> the kind id it refines
     for line in text.splitlines():
         m = re.match(r"^## (\d+)\.", line)
         if m:
@@ -117,6 +121,12 @@ def parse(atoms_path: Path = None):
             if c:
                 vals = [v.strip() for v in (c.group(1) or c.group(2)).split(",") if v.strip()]
                 enums.append((aid, "code", vals))
+            found = REFINES.findall(rest)
+            if found:
+                target = REFINES_ID.match(found[0].rstrip(".,;"))
+                if fam != "st" or len(found) > 1 or not target:
+                    raise SystemExit(f"{aid}: a **Refines:** clause names one structure kind as `st.<kind>`, on a structure kind")
+                refines[aid] = target.group(1)
         elif section == 10 and fam == "prim":
             primitives.append(aid)
             cells = [c.strip() for c in rest.rstrip(" |").split(" | ")]
@@ -126,9 +136,35 @@ def parse(atoms_path: Path = None):
             result = None if cells[2] == "boolean" else dim(cells[2], name)
             ps = [] if cells[3] in ("—", "-", "") else [dim(u.strip(), name) for u in cells[3].split(",")]
             prim_units.append((name, result, ps))
-    return atoms, primitives, enums, measures, prim_units
+    return atoms, primitives, enums, measures, prim_units, refines
 
-def render_codec(name, vals, param_types):
+def render_refinement(kinds: list[str], refines: dict[str, str]) -> str:
+    """`parent?` and `ancestors` on `StructureKind`, from the `**Refines:**` clauses; every kind named
+    must be a kind of the same ontology, and the relation must have no cycle."""
+    ancestors = {}
+    for k in kinds:
+        chain, cur = [], "st." + k
+        while cur in refines:
+            cur = refines[cur]
+            name = cur.split(".", 1)[1]
+            if name not in kinds:
+                raise SystemExit(f"st.{k}: refines {cur}, which is no structure kind of this ontology")
+            if name == k or name in chain:
+                raise SystemExit(f"st.{k}: the **Refines:** clauses form a cycle")
+            chain.append(name)
+        if chain:
+            ancestors[k] = chain
+    lines = ["/-- The kind this kind refines (its contract's **Refines:** clause); `none` for a kind that refines none. -/",
+             "def parent? : StructureKind → Option StructureKind"]
+    lines += [f"  | .{camel(k)} => some .{camel(a[0])}" for k, a in ancestors.items()]
+    lines += ["  | _ => none",
+              "/-- Every kind this kind refines, nearest first: its parent, the parent's parent, and so on. -/",
+              "def ancestors : StructureKind → List StructureKind"]
+    lines += [f"  | .{camel(k)} => [{', '.join('.' + camel(x) for x in a)}]" for k, a in ancestors.items()]
+    lines += ["  | _ => []"]
+    return "\n".join(lines)
+
+def render_codec(name, vals, param_types, extra: str = ""):
     """`ofString`/`toString` between the ATOMS.md spelling ("green_arrow(left)") and the constructor."""
     plain = [v for v in vals if "(" not in v]
     pars = [(re.match(r"^(\w+)\((\w+)\)$", v).group(1), re.match(r"^(\w+)\((\w+)\)$", v).group(2)) for v in vals if "(" in v]
@@ -152,6 +188,8 @@ def render_codec(name, vals, param_types):
         ptype = param_types.get(par, "ArrowDir")
         lines.append(f'  | .{camel(ctor)} d => "{ctor}(" ++ {ptype}.toString d ++ ")"')
     lines.append(f"instance : ToString {name} := ⟨toString⟩")
+    if extra:
+        lines.append(extra)
     lines.append(f"end {name}")
     return "\n".join(lines)
 
@@ -192,7 +230,7 @@ def render_dimensions(header: str, measures, prim_units) -> str:
             + "\n]\nend Dimensions\n\nend TrafficSpec\n")
 
 def generate(atoms_path: Path = None):
-    atoms, primitives, enums, measures, prim_units = parse(atoms_path)
+    atoms, primitives, enums, measures, prim_units, refines = parse(atoms_path)
     files = {}
     source = (atoms_path or ATOMS).name
     header = ("/-\n  TrafficSpec.Core.Vocab.Ontology.{name}\n  GENERATED by scripts/gen_ontology.py from ontology/" + source + ". Do not edit: the doctor\n"
@@ -216,7 +254,7 @@ def generate(atoms_path: Path = None):
         body = (f"/-- The `{fam}.*` kinds of ATOMS.md, one constructor per class atom — generated; do not edit. -/\n"
                 f"inductive {tname}\n" + "\n".join(f"  | {camel(k)}" for k in kinds)
                 + "\n  deriving DecidableEq, Repr, Inhabited\n\n"
-                + render_codec(tname, kinds, {}))
+                + render_codec(tname, kinds, {}, render_refinement(kinds, refines) if fam == "st" else ""))
         per_file[FILE_OF_FAMILY[fam]].insert(0, body)
     for fname, bodies in per_file.items():
         if not bodies: continue

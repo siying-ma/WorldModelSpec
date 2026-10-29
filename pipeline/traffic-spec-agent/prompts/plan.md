@@ -147,13 +147,18 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    that relate two regions, read the contracts of the relation atoms in the contracts table: where
    none of them relates the two, the span is an `atom` gap.
 
+   A defined place word keeps its definition's whole extent; a qualification the law's own words state
+   narrows it explicitly; a narrower kind never stands in for the defined word without such words.
+
    A region the words single out ("the", "that", "such", "its") is one variable within one
    quantifier's scope, and every condition the words place on it there reads that variable. The
    applicability and the obligation are separate formulas: a region bound in one is not in scope in
    the other. Where the other must speak of the same region, it binds it again with the whole
    selection and every relation that fixed it, so that it again denotes the region the words single
-   out; a shared variable name alone never makes two regions the same. Where the words speak of
-   different regions, each keeps its own role and its own relations. A line, crossing or device *of*
+   out; a shared variable name alone never makes two regions the same. The re-bound region keeps the quantifier the words give it: where the words require the duty at
+   each region they select, the formula is written for every selected region; where they allow a
+   choice among them, the choice is kept. Where the
+   words speak of different regions, each keeps its own role and its own relations. A line, crossing or device *of*
    a region is tied to it by relation atoms, directly or through a chain of them (a marked line on the
    approach lane that runs into the junction); distance never stands for belonging, though a
    distance the words themselves require is read as the words state it.

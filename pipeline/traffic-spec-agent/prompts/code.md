@@ -112,7 +112,18 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    binder and the variable, a relation to a variable that is itself anchored, a relation to a
    binder, or a comparison that reads both. A quantifier with no such tie asks whether any entity
    of the scene qualifies, and the gate returns `UNANCHORED_VARIABLE`. If the node claims no
-   anchoring atom, the node is wrong: report it.
+   anchoring atom, the node is wrong: report it. A region kind the record names is written as
+   named: where a kind is refined by others, a quantifier over it covers them, and no exclusion the
+   record does not state is added.
+3c. **One region across formulas.** The applicability and the obligation are separate formulas: a
+   region bound in one is not in scope in the other. Where the obligation speaks of the region the
+   applicability selected, write in it the record's whole selection of that region again, with
+   every relation and declared intention that fixed it, so that it denotes the same region; a shared
+   variable name alone never makes two regions the same, and a quantifier over the kind alone never
+   replaces the record's whole selection. Keep the quantifier the record states over the selected
+   regions: where the record requires the duty at each region selected, write it for every selected
+   region; where it allows a choice among them, keep the choice. A record that leaves either open
+   is the record's defect: report it.
 4. **Parameters, not values.** A quantity enters as `.param "<name>"` from the node's `params`.
    The only literals are zero, enumeration spellings, and the node's declared `literals`, each
    written through the `Units` constructor of its unit (`Units.<unit> <figure>`). Never divide by a term that reads a measurement:

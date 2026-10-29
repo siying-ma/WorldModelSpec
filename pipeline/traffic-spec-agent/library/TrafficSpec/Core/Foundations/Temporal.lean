@@ -229,16 +229,13 @@ def countEdgesAll (op : String) (edge sinceφ : Array R) : Array (Except Unknown
         match edgeVal[nextU[j + 1]!]! with | .error e => .error e | _ => .error (.malformed op)
       else .ok (prefT[i + 1]! - prefT[j + 1]!)
 
-/-- φ true here and false at the previous observation: unknown at the first observation (the
-    previous one is unobserved) and where either value is unknown. -/
+/-- φ here and not at the previous observation, as a three-valued conjunction: false where φ is
+    false here, or true at the previous observation; true where φ is true here and false before;
+    unknown otherwise, with the reasons of the values it could not settle, the unobserved past
+    before the first observation among them. -/
 def risesAll (φ : Array R) : Array R :=
   (Array.range φ.size).map fun i =>
-    if i = 0 then truncated "rises"
-    else match φ[i]!.v, φ[i - 1]!.v with
-      | .u, _ => φ[i]!
-      | _, .u => φ[i - 1]!
-      | .t, .f => R.t
-      | _, _ => R.f
+    R.and φ[i]! (R.not (if i = 0 then truncated "rises" else φ[i - 1]!))
 
 /-- Seconds since φ last became true: from the start of the latest run of true values; unknown
     where that run reaches the trace start or none is observed. -/

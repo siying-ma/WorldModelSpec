@@ -208,6 +208,11 @@ def admitted(rec: dict, statuses: dict[str, str]) -> dict:
             "unresolved": sorted(c for c, s in statuses.items() if s == "unresolved")}
 
 
+def _term(row: dict) -> str:
+    """A resolved term as the planner's table names it, with the law's words where it was found split."""
+    return row["term"] + (f" (found split: \"{row['words']}\")" if row.get("match") == "split" else "")
+
+
 def render(reading, rows_by_law: dict[str, list[dict]] | None = None, selection: dict | None = None) -> str:
     """For a planner: per law, each defined term with the definition that applies, the planner's
     representation and, for an admitted aggregate, its id; read-only."""
@@ -220,9 +225,9 @@ def render(reading, rows_by_law: dict[str, list[dict]] | None = None, selection:
                 sel = (selection or {}).get((r["definition"], r["term"]), {})
                 rep = sel.get("representation", "(not selected)")
                 aid = sel.get("target") if rep == "aggregate" and reading.aggregate(sel.get("target") or "") else ""
-                out.append(f"| {law} | {r['term']} | `{r['definition']}` | {rep} | {'`' + aid + '`' if aid else ''} |")
+                out.append(f"| {law} | {_term(r)} | `{r['definition']}` | {rep} | {'`' + aid + '`' if aid else ''} |")
             elif r.get("status") == "ambiguous":
-                out.append(f"| {law} | {r['term']} | ambiguous: {', '.join('`' + c + '`' for c in r.get('candidates', []))} (each states its own scope) | — | |")
+                out.append(f"| {law} | {_term(r)} | ambiguous: {', '.join('`' + c + '`' for c in r.get('candidates', []))} (each states its own scope) | — | |")
             else:
-                out.append(f"| {law} | {r['term']} | none applies | — | |")
+                out.append(f"| {law} | {_term(r)} | none applies | — | |")
     return "\n".join(out) + "\n"

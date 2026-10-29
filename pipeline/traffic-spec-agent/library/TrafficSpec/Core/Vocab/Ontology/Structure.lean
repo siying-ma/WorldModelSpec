@@ -109,6 +109,20 @@ def toString : StructureKind → String
   | .roundabout => "roundabout"
   | .obstruction => "obstruction"
 instance : ToString StructureKind := ⟨toString⟩
+/-- The kind this kind refines (its contract's **Refines:** clause); `none` for a kind that refines none. -/
+def parent? : StructureKind → Option StructureKind
+  | .oneWayRoadway => some .roadway
+  | .reservedLane => some .lane
+  | .centreTurnLane => some .lane
+  | .turnLane => some .lane
+  | _ => none
+/-- Every kind this kind refines, nearest first: its parent, the parent's parent, and so on. -/
+def ancestors : StructureKind → List StructureKind
+  | .oneWayRoadway => [.roadway]
+  | .reservedLane => [.lane]
+  | .centreTurnLane => [.lane]
+  | .turnLane => [.lane]
+  | _ => []
 end StructureKind
 
 /-- `st.lane_marking` **type** — generated from ATOMS.md; do not edit. -/

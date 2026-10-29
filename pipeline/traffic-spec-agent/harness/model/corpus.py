@@ -69,4 +69,11 @@ def render_laws(laws: list[Law]) -> str:
 def render_definitions(defs: list[dict]) -> str:
     if not defs:
         return "(no definitions)\n"
-    return "\n".join(f"### `{d['id']}` — {d.get('title', '')}\n_{d.get('source', '')}_\n\n{d.get('text', '').strip()}\n" for d in defs)
+    return "\n".join(f"### `{d['id']}` — {d.get('title', '')}\n_{d.get('source', '')}_\n\n{d.get('text', '').strip()}\n"
+                     + (f"\n{split_note(d)}\n" if d.get("split") else "") for d in defs)
+
+
+def split_note(d: dict) -> str:
+    """How a session is told that a definition's term was found split in the law's words."""
+    return (f"(Found split: the law's words \"{d['split']}\" use this defined term in the copular form, "
+            "not as one contiguous phrase.)" if d.get("split") else "")

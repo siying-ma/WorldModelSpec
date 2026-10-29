@@ -69,11 +69,27 @@ def atomIdOf (name : String) : Option String :=
     | none => some id
     | some a => if id.length > a.length then some id else some a) none
 
+/-- The atom ids a read of `id` depends on: itself, and for a read of a region kind or of a relation
+    that reads kind membership, the kinds whose masks its verdict follows (a kind's ancestors; a
+    lane relation's lane kind; an entrance's line kinds). -/
+def kindDependencies (id : String) : List String :=
+  let kinds (ks : List StructureKind) := ks.map fun k => s!"st.{k}"
+  let ofKind (k : StructureKind) := kinds (k :: k.ancestors)
+  match id with
+  | "rel.ahead_behind_in_lane" => id :: ofKind .lane
+  | "st.entrance_of" => id :: ofKind .stopLine ++ ofKind .crosswalk ++ ofKind .lane
+  | _ =>
+    if id.startsWith "st." then
+      match StructureKind.ofString ((id.drop 3).toString) with
+      | some k => ofKind k
+      | none => [id]
+    else [id]
+
 /-- The atom ids a formula list reads, through atoms and primitives (a concept call is expanded first). -/
 def formulaAtomIds (fs : List Formula) : List String :=
   ((fs.flatMap Formula.atoms).flatMap fun n =>
     if n.startsWith "prim_" then (Primitives.reads n).filterMap atomIdOf
-    else (atomIdOf n).toList).eraseDups
+    else (atomIdOf n).toList).flatMap kindDependencies |>.eraseDups
 
 /-- The atom ids a rule reads, through its atoms, its primitives and, transitively, the
     rules it composes. -/
@@ -185,9 +201,11 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.grade" => some { st with grade := none }
   | "st.sight_distance" => some { st with sightDistance := none }
   | "st.on_way" => some { st with ways := none }
+  | "st.entrance_of" => some { st with entranceOf := [], entranceObserved := false }
   | "st.region_geometry" => some { st with position := none, boundary := none }
   | _ =>
-    -- a kind atom: the source cannot tell this kind, so no region is known to be or not be one
+    -- a kind atom: the source cannot tell this kind; a kind that refines another is unknown only on
+    -- the regions labelled with one of its ancestors (`Structure.isOfKind`)
     match StructureKind.ofString ((id.drop 3).toString) with
     | some k => some { st with unobservedKinds := k :: st.unobservedKinds }
     | none => some st

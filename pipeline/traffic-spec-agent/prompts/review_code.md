@@ -21,6 +21,8 @@ words and the contracts alone. You do not edit the rule.
 - **The law** — its verbatim text and the node's segmentation of it (span ids, texts, roles). A
   span of role `sibling` is another duty of the law, formalized and reviewed on its own node: a
   situation only that duty decides is not a divergence of this rule.
+- **The definitions** — the posted definitions that apply to the law's words, and the definitions
+  they use: a defined word means what its definition says, and the law's verdict follows it.
 - **The record** — the plan's node record: which spans map to which atoms, the standards and
   their parameters, the assumptions, the compositions, the residues (words the rule does not
   capture at all) and the narrowings (readings the plan or the coder chose on spans the rule
@@ -46,6 +48,8 @@ words and the contracts alone. You do not edit the rule.
   that `extends` it, its trace extended as the case says.
 
 {law_and_segmentation}
+
+{definitions}
 
 {record}
 

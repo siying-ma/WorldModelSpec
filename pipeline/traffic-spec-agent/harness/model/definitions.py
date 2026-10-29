@@ -13,11 +13,14 @@ term unresolved.
 
 A use of a term in a law or in another definition is matched case-insensitively on whole tokens,
 the last token in its singular or plural form, the longest term first (`motor vehicle` wins over
-the `vehicle` inside it). An inline citation `[DEF-…]` is read apart from the words and removed
-before matching. Once a law's term resolves, the same precedence is applied from each reached
-definition's own place to the defined terms its text uses. This finite dependency graph supplies
-the posted meanings needed to interpret nested words; it does not make an unrelated definition
-elsewhere in the same code applicable.
+the `vehicle` inside it). A term of several words is also used where its head is the subject of
+"is" or "are" and its modifiers are the whole predicate, in one clause ("the lanes are paved" uses
+`paved lane`); such a use is recorded `split` with its words, and never displaces a contiguous one.
+An inline citation `[DEF-…]` is read apart from the words and removed before matching. Once a
+law's term resolves, the same precedence is applied from each reached definition's own place to
+the defined terms its text uses. This finite dependency graph supplies the posted meanings needed
+to interpret nested words; it does not make an unrelated definition elsewhere in the same code
+applicable.
 
 For a term a law uses, the first step that finds a candidate decides:
 - `inline_or_section`: a definition the law cites inline; else a section-only definition of the
@@ -51,6 +54,20 @@ _CITATION = re.compile(r"\b([A-Z]{2,})\s+(\d[\dA-Z]*(?:\.\d[\dA-Z]*)+)")
 _INLINE = re.compile(r"\[(DEF-[A-Za-z0-9-]+)\]")
 _TOKEN = re.compile(r"[a-z0-9]+(?:[-'][a-z0-9]+)*")
 SECTION_ONLY = re.compile(r"^\W*(?:\(\w+\)\s*)?as used in this section\b", re.I)
+#: A split use of a defined term stays inside one clause: no punctuation between its words.
+_CLAUSE_BREAK = re.compile(r"[.,;:!?()\[\]\n]")
+_COPULA = ("is", "are")
+_RELATIVE = ("that", "which")
+#: A noun after a preposition (and at most one determiner) is not the subject of the copula.
+_DETERMINER = frozenset(("the", "a", "an", "each", "every", "any", "both", "either", "such", "this", "that", "these", "those"))
+_PREPOSITION = frozenset(("of", "on", "upon", "in", "into", "onto", "at", "to", "from", "with", "without", "by", "for", "beside",
+                          "near", "along", "across", "over", "under", "behind", "within", "between", "through", "toward",
+                          "towards", "past", "around", "beyond", "off", "than"))
+#: The words after which a copular predicate has ended: the modifiers qualify the subject, not a
+#: following noun.
+_PREDICATE_END = frozenset(("and", "or", "but", "nor", "if", "when", "where", "while", "unless", "until", "then", "so",
+                            "as", "at", "in", "on", "within", "from", "to", "for", "by", "with", "except", "before",
+                            "after", "because", "than"))
 
 
 @dataclass
@@ -136,11 +153,25 @@ def citation_id(code: str, number: str, config: dict) -> str | None:
 
 
 def uses(law_text: str, terms: list[str]) -> list[str]:
-    """The defined terms a law's words use, longest first, without overlaps; inline citations
-    are not words."""
-    toks = tokens(_INLINE.sub(" ", law_text))
+    """The defined terms a law's words use (`matches`, contiguous ones first)."""
+    return [term for term, _how, _words in matches(law_text, terms)]
+
+
+def matches(law_text: str, terms: list[str]) -> list[tuple[str, str, str]]:
+    """(term, how, words) for each defined term a law's words use; inline citations are not words.
+
+    `contiguous`: the term's tokens in order, longest first, without overlaps. `split`: a term of
+    several tokens none of whose uses is contiguous, used in the bounded copular form `<head> [that|
+    which] is|are [not] <modifiers>` inside one clause (no punctuation between), the head in its
+    singular or plural form and not the object of a preposition, and the modifiers ending the
+    predicate (`_PREDICATE_END`). The modifiers must follow the copula whose subject is the head:
+    co-occurring words are not a use. A split use only adds a term; it never displaces a contiguous
+    one."""
+    words = _INLINE.sub(" ", law_text)
+    toks = tokens(words)
     by_len = sorted({tuple(t.split()) for t in terms}, key=lambda t: -len(t))
-    found, i = [], 0
+    found: list[tuple[str, str, str]] = []
+    i = 0
     while i < len(toks):
         hit = None
         for t in by_len:
@@ -149,11 +180,28 @@ def uses(law_text: str, terms: list[str]) -> list[str]:
                 hit = t
                 break
         if hit:
-            if " ".join(hit) not in found:
-                found.append(" ".join(hit))
+            if all(f[0] != " ".join(hit) for f in found):
+                found.append((" ".join(hit), "contiguous", " ".join(toks[i:i + len(hit)])))
             i += len(hit)
         else:
             i += 1
+    several = [t for t in by_len if len(t) > 1]
+    for clause in _CLAUSE_BREAK.split(words):
+        ct = tokens(clause)
+        for i in range(len(ct)):
+            j = i + 1 + (i + 1 < len(ct) and ct[i + 1] in _RELATIVE)
+            if j >= len(ct) or ct[j] not in _COPULA:
+                continue
+            p = i - 1 - (i > 0 and ct[i - 1] in _DETERMINER)
+            if p >= 0 and ct[p] in _PREPOSITION:
+                continue
+            k = j + 1 + (j + 1 < len(ct) and ct[j + 1] == "not")
+            for t in several:
+                end = k + len(t) - 1
+                if (_same(t[-1], ct[i]) and tuple(ct[k:end]) == t[:-1] and (end == len(ct) or ct[end] in _PREDICATE_END)
+                        and all(f[0] != " ".join(t) for f in found)):
+                    found.append((" ".join(t), "split", " ".join(ct[i:end])))
+                    break
     return found
 
 
@@ -242,10 +290,10 @@ def _dependencies(first_chain: list[str], defs_by_id: dict[str, dict], cands: li
         where = place_of(source, config)
         inline = set(_INLINE.findall(text))
         defined_here = {c.term for c in by_id.get(source, [])}
-        for term in uses(text, all_terms):
+        for term, how, said in matches(text, all_terms):
             if term in defined_here:
                 continue
-            row = {"from": source, **_resolve_term(term, where, inline, by_term, by_id, config, posted)}
+            row = {"from": source, **_resolve_term(term, where, inline, by_term, by_id, config, posted), **_found(how, said)}
             reached = list(row.get("chain") or [])
             back = next((d for d in reached if d in ancestors + (source,)), None)
             if back:
@@ -267,12 +315,19 @@ def resolve_law(law: corpus.Law, cands: list[Candidate], config: dict, posted: s
     inline = set(_INLINE.findall(law.text))
     by_term, by_id = _indexes(cands)
     terms = set(by_term) | {c.term for c in cands if c.definition in inline}
+    found = matches(law.text, sorted(terms))
     rows = []
-    for term in uses(law.text, sorted(terms)) + [c.term for c in cands if c.definition in inline]:
+    for term, how, said in ([m for m in found if m[1] == "contiguous"] + [(c.term, "inline", "") for c in cands if c.definition in inline]
+                            + [m for m in found if m[1] == "split"]):
         if any(r["term"] == term for r in rows):
             continue
-        rows.append(_resolve_term(term, where, inline, by_term, by_id, config, posted))
+        rows.append({**_resolve_term(term, where, inline, by_term, by_id, config, posted), **_found(how, said)})
     return rows
+
+
+def _found(how: str, words: str) -> dict:
+    """What a row records of how its term was found: only a split use is marked, with its words."""
+    return {"match": "split", "words": words} if how == "split" else {}
 
 
 def resolve_table(laws: list[corpus.Law], defs: list[dict], config: dict) -> dict:
@@ -352,16 +407,24 @@ def rows_for(run, law_id: str) -> list[dict]:
 
 def applicable(run, law_id: str) -> list[dict]:
     """The posted records that apply to a law's words: every record of a resolved term's chain, and
-    resolved nested-definition closure, and every candidate of an ambiguous root term, each once."""
+    resolved nested-definition closure, and every candidate of an ambiguous root term, each once.
+    A record whose term the law's words use only split carries those words under `split`."""
     defs = {str(d.get("id")): d for d in corpus.load_definitions(run.opts.laws)}
     table = load_table(run)
     ids: list[str] = []
-    for r in table.get("laws", {}).get(law_id, []):
+    rows = table.get("laws", {}).get(law_id, [])
+    for r in rows:
         reached = source_ids(table, r["definition"]) if r.get("status") == "resolved" else []
         for i in reached + (r.get("candidates") if r.get("status") == "ambiguous" else []):
             if i not in ids:
                 ids.append(i)
-    return [defs[i] for i in ids if i in defs]
+    whole = {i for r in rows if r.get("match") != "split" for i in [r.get("definition"), *(r.get("candidates") or [])] if i}
+    split = {}
+    for r in rows:
+        for i in [r.get("definition"), *(r.get("candidates") or [])] if r.get("match") == "split" else []:
+            if i and i not in whole:
+                split.setdefault(i, r["words"])
+    return [{**defs[i], "split": split[i]} if i in split else defs[i] for i in ids if i in defs]
 
 
 def precedence_hash(run) -> str:

@@ -56,6 +56,7 @@ def atomIds : List String := [
   "st.lane_connectivity",
   "st.lane_enters",
   "st.on_way",
+  "st.entrance_of",
   "st.lane_marking",
   "st.centre_line",
   "st.road_edge",

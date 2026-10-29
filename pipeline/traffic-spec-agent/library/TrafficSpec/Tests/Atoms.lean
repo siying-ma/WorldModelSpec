@@ -167,4 +167,25 @@ def isOffset (r : QR) (q : Q) : Bool := match r with | .ok v => Q.isZero (Q.sub 
 #guard isOffset (offsetOf [strip 20 (-5) (-3)]) (metres (-3))
 #guard isOffset (offsetOf [strip 20 (-1) 1]) Q.zero
 #guard !(offsetOf [strip 20 3 5] { ua with kin := { ua.kin with heading := none } }).toBool
+-- a heading is read as a direction whatever its length: scaling every heading changes no reader
+def scaleHeadings (k : Q) (s : Scene) : Scene :=
+  { s with users := s.users.map fun u => { u with kin := { u.kin with heading := u.kin.heading.map fun (a, b) => (Q.mul k a, Q.mul k b) } } }
+def tilted : Scene :=
+  { scene0 with users := scene0.users.map fun u => if u.track == 1 then { u with kin := { u.kin with heading := some (Q.ofInt 3, Q.ofInt 4) } } else u }
+def flag (b : Bool) : List Q := [if b then Q.ofInt 1 else Q.zero]
+def headingReads (s : Scene) : List (Option (List Q)) :=
+  [ (footprint s 1).map (·.flatMap fun (x, y) => [x, y]),
+    (rel_surface_gap s 1 2).map (fun (x, y) => [x, y]),
+    (rel_surface_gap s 1 3).map (fun (x, y) => [x, y]),
+    (rel_ahead_in_lane s 2 1).map flag,
+    (rel_oncoming s 1 3 (Q.mk' 9 10)).map flag,
+    (rel_same_direction s 1 2 (Q.mk' 9 10)).map flag,
+    ((Primitives.prim_region_lateral_offset (Primitives.Ctx.mk' [{ s with structures := s.structures ++ [strip 20 3 5] }] {}) 1 20)[0]!).toOption.map ([·]) ]
+def sameReads (a b : List (Option (List Q))) : Bool :=
+  a.length == b.length && (a.zip b).all fun
+    | (some x, some y) => x.length == y.length && (x.zip y).all fun (p, q) => Q.eq p q
+    | (none, none) => true
+    | _ => false
+#guard [scene0, tilted].all fun s => [Q.ofInt 2, Q.mk' 1 2, Q.mk' 1 10000000].all fun k => sameReads (headingReads s) (headingReads (scaleHeadings k s))
+#guard (headingReads scene0).all (·.isSome)
 end TrafficSpec.Tests

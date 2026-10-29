@@ -104,13 +104,13 @@ private def call (c : SemCtx) (n : String) (args : List Arg) (ps : List Term) : 
 #guard call c "drv_motion_moving_off" [x] [.param "p.stop_speed"] = [.u, .f, .f, .f, .f, .f, .f, .f, .f]
 def τrev : Trace := ((List.range 9).map fun k => { sceneAt (8 - k) with t := Int.ofNat (k * 500) })
 def crev : SemCtx := SemCtx.mk' τrev ρ β
-#guard call crev "drv_motion_moving_off" [x] [.param "p.stop_speed"] = [.u, .f, .f, .f, .t, .f, .f, .f, .f]
+#guard call crev "drv_motion_moving_off" [x] [.param "p.stop_speed"] = [.f, .f, .f, .f, .t, .f, .f, .f, .f]
 
 -- lane change: the edge into the straddle
 #guard call clane "drv_lane_change" [x] [] = [.u, .t, .f]
 
 -- entering and inside a region of a kind chosen by the caller
-#guard call carr "drv_position_entering" [x, .lit "intersection"] [] = [.u, .f, .f, .f, .t, .f, .f, .f, .f]
+#guard call carr "drv_position_entering" [x, .lit "intersection"] [] = [.f, .f, .f, .f, .t, .f, .f, .f, .f]
 #guard call carr "drv_position_inside" [x, .lit "crosswalk"] [] = List.replicate 9 .f
 #guard (evalAll carr (.existsRegion (.var "k") "r" (occ x (.var "r"))))[0]!.why = [.malformed "region kind `k` is a variable"]
 
@@ -149,8 +149,25 @@ def cyaw : SemCtx := SemCtx.mk' ((List.range 9).map yawScene) ρ β
 #guard call c "drv_interaction_conflict_within" [x, y] [sec 5, m 1, sec 2] = List.replicate 9 .f
 
 -- new constructors on their own
-#guard vs c (.rises (.cmp (speed x) .le (mps 4))) = [.u, .f, .f, .t, .f, .f, .f, .f, .f]
+#guard vs c (.rises (.cmp (speed x) .le (mps 4))) = [.f, .f, .f, .t, .f, .f, .f, .f, .f]
 #guard (evalAll c (.rises (.atom "sig_brake_lamp" [x] [])))[3]!.why = [.absentAtom "sig_brake_lamp"]
+-- rises, cell by cell: φ here and not at the previous observation, with the reasons it could not settle
+def rA : R := R.u (.absentAtom "a")
+def rB : R := R.u (.absentAtom "b")
+def rise2 (before here : R) : R := (Temporal.risesAll #[before, here])[1]!
+def rise1 (here : R) : R := (Temporal.risesAll #[here])[0]!
+#guard [R.f, R.t, rB].map (fun b => (rise2 b R.f).v) = [.f, .f, .f]
+#guard (rise1 R.f).v = .f
+#guard [R.f, R.t, rB].map (fun b => (rise2 b R.t).v) = [.t, .f, .u]
+#guard (rise1 R.t).v = .u
+#guard [R.f, R.t, rB].map (fun b => (rise2 b rA).v) = [.u, .f, .u]
+#guard (rise1 rA).v = .u
+#guard (rise2 rB R.t).why = [.absentAtom "b"]
+#guard (rise2 R.f rA).why = [.absentAtom "a"]
+#guard (rise2 rB rA).why = [.absentAtom "a", .absentAtom "b"]
+#guard (rise1 R.t).why = [.windowTruncated "rises"]
+#guard (rise1 rA).why = [.absentAtom "a", .windowTruncated "rises"]
+#guard (rise2 rB R.f).why = [] && (rise2 R.t rA).why = []
 #guard vs c (.definedWhen (.cmp (speed x) .gt (mps 0)) .tt) = [.t, .t, .t, .t, .t, .u, .u, .u, .u]
 #guard okEq (evalTAll c (.sinceRise (.cmp (speed x) .le (mps 4))))[8]! (Q.mk' 5 2)   -- speed ≤ 4 since 1500 ms
 #guard okEq (evalTAll c (.aggregate .count "u" (.atom "ru_motor_vehicle" [.var "u"] []) (speed (.var "u"))))[0]! (Q.ofInt 2)

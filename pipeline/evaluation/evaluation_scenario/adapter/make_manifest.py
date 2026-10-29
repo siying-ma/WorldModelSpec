@@ -38,6 +38,7 @@ OBSERVED = {
     "st.lane_connectivity": "exact", "st.lane_enters": "exact", "st.lane_marking": "exact", "st.lane_width": "exact",
     "st.region_geometry": "exact", "st.crosswalk": "exact",
     "st.intersection": "estimate:junction_bounding_box", "st.stop_line": "estimate:stop_waypoints",
+    "st.entrance_of": "estimate:stop_waypoints",   # lanes of the stop waypoints; omitted where the map is ambiguous
     "rel.occupies": "exact",
     "dev.traffic_signal": "exact", "dev.stop_sign": "exact", "dev.yield_sign": "exact",
     "dev.speed_limit_sign": "exact", "dev.governs": "exact", "dev.position": "exact",

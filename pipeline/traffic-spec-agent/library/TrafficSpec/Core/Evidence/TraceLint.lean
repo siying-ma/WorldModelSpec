@@ -9,8 +9,9 @@
   `checkTrace` requires:
   - identity: track, region and device ids unique within a scene; at most one measured relation
     per ordered pair of tracks within a scene; every reference a scene makes (`Scene.references`)
-    names an entity of that kind present in the same scene, and a sight-along-way entry names a
-    highway; every track a link names appears in some scene;
+    names an entity of that kind present in the same scene, a sight-along-way entry names a
+    highway, and an `entrance_of` entry names a lane; every track a link names appears in some
+    scene;
   - a static map: the same structures in every scene, each identical at every appearance; every
     device that does not move (`Device.mobile`) in every scene; a device identical at every
     appearance outside its state (`Device.staticPart`);
@@ -21,8 +22,10 @@
     overlap or cross may carry different directions. A device whose control is observed governs
     only the travel regions whose traffic it controls, or an intersection, read as control of the
     junction itself (`governedKinds`); never a highway, a controlled-access region or a region no
-    vehicle travels in. A place no carrier covers has no designated direction, and a device whose
-    `governs` is not written has no observed control; neither is filled in;
+    vehicle travels in. Only a stop line or a crosswalk carries the lanes whose entrance it marks
+    (`entrance_of`). A place no carrier covers has no designated direction, a device whose
+    `governs` is not written has no observed control, and a line whose `entrance_of` is not
+    written has no observed entrances; none is filled in;
   - valid geometry: a boundary has at least three vertices, all distinct (the first is not
     repeated at the end), a non-zero area and no self-intersection; an extent's half-length and
     half-width are positive; a path length is not negative; a heading is not the zero vector;
@@ -79,7 +82,7 @@ private def identity (s : Scene) : List String :=
     if !present s r.kind r.id then
       some s!"{at_ s}: {r.place} names {kindName r.kind} {r.id}, which is not in this scene"
     else match r.structureKind with
-      | some k => if (s.structure? r.id).map (·.kind) != some k then some s!"{at_ s}: {r.place} names region {r.id}, which is not a {k}" else none
+      | some k => if (s.structure? r.id).map (·.kind.refines k) != some true then some s!"{at_ s}: {r.place} names region {r.id}, which is not a {k}" else none
       | none => none
 
 private def links (τ : Trace) : List String :=
@@ -131,6 +134,9 @@ def directionKinds : List StructureKind :=
 def governedKinds : List StructureKind :=
   directionKinds ++ [.centreTurnLane, .intersection]
 
+/-- The structure kinds that mark a lane's entrance into an intersection. -/
+def entranceKinds : List StructureKind := [.stopLine, .crosswalk]
+
 private def representation (τ : Trace) : List String :=
   let firstStructure := fun (r : RegionId) => τ.findSome? fun s => (s.structure? r).map fun _ => s.t
   let firstDevice := fun (d : DeviceId) => τ.findSome? fun s => (s.device d).map fun _ => s.t
@@ -144,6 +150,9 @@ private def representation (τ : Trace) : List String :=
           (if directionKinds.contains st.kind then []
            else [s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries lane.direction; only a lane, reserved lane, turn lane, bicycle lane or path, roadway, one-way roadway or shoulder does"])
           ++ (if Q.isZero v.1 && Q.isZero v.2 then [s!"{at_ s}: structure {st.id} lane.direction is the zero vector"] else []))
+    ++ (s.structures.filterMap fun st =>
+      if firstStructure st.id != some s.t || !st.entranceObserved || entranceKinds.contains st.kind then none
+      else some s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries entrance_of; only a stop line or a crosswalk marks a lane's entrance")
     ++ s.devices.flatMap fun dv =>
       if firstDevice dv.id != some s.t || !dv.governsObserved then []
       else dv.governs.filterMap fun r => match s.structure? r with
