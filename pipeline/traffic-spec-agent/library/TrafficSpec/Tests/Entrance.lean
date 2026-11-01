@@ -128,7 +128,7 @@ def has (msgs : List String) (frag : String) : Bool := msgs.any fun m => (m.spli
 #guard !(has (lint "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [11]}") "names region 11")
 
 
--- joint with refinement: every lane kind may be named, nothing else; the atom reads them alike
+-- joint with refinement: every lane kind may be named, and a one-way roadway as a roadway; the atom reads them alike
 def traceKinds (line : String) : String :=
   "{\"scenes\": [{\"t\": 0, \"structures\": [{\"id\": 10, \"kind\": \"lane\"}, {\"id\": 11, \"kind\": \"turn_lane\"}, " ++
   "{\"id\": 12, \"kind\": \"reserved_lane\"}, {\"id\": 13, \"kind\": \"centre_turn_lane\"}, {\"id\": 14, \"kind\": \"sidewalk\"}, " ++
@@ -138,7 +138,7 @@ def lintK (line : String) : List String := match Decode.parse Decode.trace (trac
   | .error e => [e]
 #guard lintK "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [10, 11, 12, 13]}" = []
 #guard has (lintK "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [14]}") "names region 14, which is not a lane"
-#guard has (lintK "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [15]}") "names region 15, which is not a lane"
+#guard !(has (lintK "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [15]}") "names region 15")
 def marksK (line : String) (a : RegionId) : Option (Option Bool) :=
   (Decode.parse Decode.trace (traceKinds line)).toOption.map fun τ => st_entrance_of τ[0]! 31 a
 #guard [10, 11, 12, 13].all fun a => marksK "{\"id\": 31, \"kind\": \"stop_line\", \"entrance_of\": [10, 11, 12, 13]}" a = some (some true)

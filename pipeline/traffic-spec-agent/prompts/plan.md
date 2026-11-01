@@ -51,10 +51,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   It is not a mapping instruction. Do not copy an atom from the case into a record merely because
   the case used it. Every changed mapping is justified by the law's span and the chosen atom's or
   concept's contract.
-- **Your previous record of these laws** (for a law planned again) — the records its nodes were
-  last coded from, each with its gate verdict. Keep what met its cases. Restructure only where a
-  failing case, a validator defect, an upheld structural finding or another returned reason
-  requires it; the harness runs every recorded case on the new record.
+- **Your previous record of these laws** (for a law planned again) — every node of its latest
+  plan, those never coded included, with each later repaired or coded version and its state (the
+  validator's, the gate's and the review's verdicts, accepted or not), and the nodes each composes.
+  They are context, not authority. Keep what met its cases. Restructure only where a failing case,
+  a validator defect, an upheld structural finding or another returned reason requires it, or where
+  the words show an earlier record wrong; the harness runs every recorded case on the new record.
 - **User hints** — `USER_HINTS.md`.
 
 {laws}
@@ -217,15 +219,19 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    Where the words state that a road user intends, or is preparing, to turn, the span is carried
    by a **declared intention** `{span, id, meaning}` in `intentions` (`int.<name>`), which the trace
    declares for that road user at a region (the formula `intent`, with the road user and the region
-   as its arguments). It is carried only on a trigger, subject, condition or exception span; its
-   region is the region the words name; it is read at the judged observation or in a window behind
-   it, never in a window ahead; its id names the manoeuvre only, never the place or the law, since
-   the place is its argument. The act the words also name ("is making …") is read by its manoeuvre
-   concept, and the two are joined as the words join them. Such words are never carried by an act in
-   a window ahead, nor by a signal; a signal "of intention" is the signal itself, not a declared
-   intention. An assumption or an intention reuses an id of the declared-fact catalogue (listed with
-   the parameters) whose meaning is the words' meaning, with no `meaning`; a new id gives its
-   `meaning`, and never names again a meaning the catalogue holds.
+   as its arguments). It is carried only on a trigger, subject, condition or exception span; it is
+   read at the judged observation or in a window behind it, never in a window ahead; its id names
+   the manoeuvre only, never the place or the law, since the place is its argument. The words
+   naming the place the intention is declared at are cut into a span of their own, carried by the
+   element that claims the place's kind and its anchor, so that the intention's span carries only
+   the words of the intention and its region is the region that element binds. The act the words
+   also name ("is making …") is read by its manoeuvre concept, and the two are joined as the words
+   join them. Such words are never carried by an act in a window ahead, nor by a signal; a signal
+   "of intention" is the signal itself, not a declared intention. An assumption or an intention
+   reuses an id of the declared-fact catalogue (listed with the parameters) whose meaning is the
+   words' meaning, with no `meaning`; a new id gives its `meaning`, and never names again a meaning
+   the catalogue holds. A meaning states the fact or state the source supplies; it never cites a
+   law, explains a defined word of the law, or presets whether the law applies or a duty is met.
    Any other word with no observable counterpart is neither: an imminent movement, a
    perception or a knowledge, a purpose, the legal status of a feature in the scene, or who or what
    controls a road user's motion is read through the conduct or feature it refers to (an imminent
@@ -318,6 +324,22 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    `occasion_<span>`, in which it holds for part of the act only, and `occasion_<span>_outside`, in
    which it holds only before the act began (`some_moment`) or throughout the act but not before it
    (`throughout`). An occasion the formula language cannot state is an `operator` gap.
+4c. **A duty whose act is searched for in the past.** Where an obligation requires an act before an
+   event the words name, and the words fix no occurrence, timing or exception of their own, the
+   record's `obligation` states, from the words and from the convention the ontology's section on
+   what is not an atom gives for that kind of duty, the trigger, the place of the act and the
+   history bound. State the event and target bindings, the conditions that end the search and how
+   their observations are read, the parameter references, and when missing evidence prevents a
+   decision, so the coder can implement the bound without choosing a reading. Do not invent a
+   history boundary from the recording's start, a subject's first observation, or a cumulative
+   quantity whose origin is the recording's start. Preserve any event, time or distance window the
+   words explicitly require. Words that fix their own occurrence, timing or exception are written
+   with their own window. A concept that carries the search states the same bound in its contract.
+   For such a duty the record plans one scenario `history_boundary` beside the four standard ones: a
+   trace in which the duty arises, the history the bound needs begins before the recording, the act
+   is not recorded, and no recorded act or visible end of the search decides the verdict; it expects
+   `unknown`, and its `boundary` names the history the trace lacks. A boundary only names missing
+   history; it never turns a verdict the trace decides into unknown.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
@@ -328,6 +350,14 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    exception or condition span of this node where the other rule applies ("except as otherwise
    provided in …" read on the words it qualifies): `scopes` names that span, whose content then
    does not hold where the composed rule applies, and the duty as a whole is untouched. A
+   condition that refers to an act, state, party or place stated elsewhere carries that referent
+   with every qualification the referring words retain: its subject, object, place, event, time,
+   order and logical force. A weaker fact is no substitute, and marking the defining words
+   `sibling` does not erase the condition. It composes the rule stating the act only where the
+   words require compliance with that rule, since a composed rule counts as complied with where it
+   is not engaged, and neither that nor its acceptance shows that the act occurred; where they
+   require the act or state itself, a suitable concept or the qualified fact in full carries it.
+   That the node stating it is not yet coded is no reason to weaken it. A
    reference to a law of this corpus is a composition, never a residue; a reference to a
    law outside the corpus may be a residue. A `standard` span whose bound an accepted rule of the
    library already states as its own obligation is carried by composing that rule (`as:
@@ -363,8 +393,11 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    `permit` → `compliant`, `idle` → `not_applicable`, `blind` → `unknown` (with `masked`: the
    atom whose absence makes the rule unknown — one the node claims, or one its claimed concepts
    read). Where the duty or the exception has alternatives the four do not visit, you may add
-   `branch_<n>` scenarios expecting `violated` or `compliant`; the coder adds further branch
-   witnesses itself until every leaf of the rule is exercised. Where the rule quantifies over
+   `branch_<n>` scenarios expecting `violated` or `compliant`, or `not_applicable` for a situation
+   the words exclude from the duty; the coder adds further branch witnesses itself until every leaf
+   of the rule is exercised. Where a weaker fact than a referred one would change the law's
+   verdict, two scenarios differ only in it, each verdict taken from the words; an existing
+   scenario may be one of them. Where the rule quantifies over
    parties other than its binders, one scenario has no such party in the scene and still
    expects a decided verdict, so the duty is shown to bind the subject alone.
 10. **No Lean, no code, no library edits.** You write `aggregates.jsonl`, `blueprint.jsonl` and
@@ -374,7 +407,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
     runs; any other command is denied. Everything you may know is in this prompt: you read no
     file.
 11. **A returned law is fixed, not re-read.** Address the returned reason, and keep every mapping
-    the reason does not concern. An obligation span that only a
+    the reason does not concern and the words do not show wrong. An obligation span that only a
     residue can carry means the duty is not expressible: say so in `PLAN.md` and do not weaken it.
 12. **Decide.** No options menus, no "awaiting", no questions. Record each decision with the
     cheapest signal that would reverse it.
@@ -394,15 +427,16 @@ For each law in the list:
    nearby) is quantified inside the applicability or the obligation, never a binder: a rule is
    judged on every grounding of its binders, so a binder no scene supplies leaves the subject's
    duty unjudged exactly when the subject is alone.
-5. Plan the four scenarios (rule 9). The `blind` scenario names the claimed atom whose absence
-   must make the rule report unknown.
+5. Plan the four scenarios (rule 9), and the `history_boundary` scenario for a duty of rule 4c.
+   The `blind` scenario names the claimed atom whose absence must make the rule report unknown.
 6. If any span is a gap, complete the gap record (span, kind `atom` or `operator`, proposal in the
    ontology's row format or the operator, nearest atoms with the excluding clause), and still map
    the span to those nearest atoms or concepts: the coding session tries them, and the gap is filed
    only if it confirms the words cannot be written with them.
 
-Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal), and
-`## For the operator`.
+Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal; for a condition
+that refers to words stated elsewhere, the referring and the defining spans, and, for a law planned
+again, why their representation or the qualifications kept changed), and `## For the operator`.
 
 ## Output
 
@@ -414,7 +448,7 @@ elements[{span, atoms, derived, justification}], operationalizations[{span, stan
 params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list)}],
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list), boundary (history_boundary only: the approach its trace lacks)}],
 occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
 gaps[{span, kind: "atom" | "operator", proposal, nearest}]
@@ -477,6 +511,8 @@ Run the validator on the finished file and fix what it names; then confirm by re
   obligations the law's nodes carry, in text order;
 - every composition's `rule` is a node id; every `masked` is a list;
 - every node has the four scenarios; the `blind` one masks a claimed atom;
+- a node of rule 4c states its trigger, place and history bound in full in `obligation`, and plans
+  the `history_boundary` scenario with its `boundary` where the missing past decides the verdict;
 - no value or threshold appears anywhere in your output except inside `literals`, quoted from the text.
 
 ## Finish

@@ -30,10 +30,12 @@ NARROWABLE_ROLES = {"obligation", "standard"}
 #: isolated run did not reproduce). The loop holds the node without counting an attempt and stops
 #: after the iteration.
 INFRA = "INFRA"
-#: A verdict on the node: its harness ran out of time while evaluating its scenarios, its formulas
-#: being too costly to evaluate on its witnesses, or a resource failure or a panic reproduced in
-#: isolation. The loop returns a node's law to the planner with the rule's nesting, a concept to its
-#: repair.
+#: A verdict on the candidate's evaluation, not on its mapping: its harness ran out of time while
+#: evaluating its witnesses or its adequacy check, the rows printed before the deadline deciding no
+#: other verdict, or a resource failure or a panic (`extras["panic"]`) recurred in isolation. It never accepts and never counts an attempt: the loop gates the saved candidate again
+#: once at the same deadline (codes the record again if its context changed) and then holds it for the
+#: operator, and holds it at once after a panic (a Core defect), with the candidate, the gate harness
+#: and its output kept in the task directory.
 GATE_TIMEOUT = "GATE_TIMEOUT"
 #: Keywords and attributes that make a declaration something other than a closed, total value.
 #: Scanned in the code only (`lean.code_only`): a law's words in a header comment or in the
@@ -194,6 +196,23 @@ end
 '''
 
 
+#: The two phases of a gate harness, one program: run with no argument it prints everything up to
+#: and including the witnesses and ends with `DONE_WITNESSES`; run with `adequacy` it prints the
+#: adequacy check (`ADEQ_SIZE` per rule it checks: its leaves and the witnesses expecting a decided
+#: verdict; `TIME adequacy_start`, ms after `main` began; `ADEQ` rows; `TIME adequacy`) and ends
+#: with `DONE`. The gate runs the second phase only when its checks of the first reject nothing.
+#: Every `TIME`, `SCEN` and `ADEQ` row is flushed as it is printed, so a run stopped at the
+#: deadline keeps the rows before it.
+_PHASES = """  if !args.isEmpty && args != ["adequacy"] then throw (IO.userError s!"unknown phase {args}")
+  let out ← IO.getStdout
+  let tMain ← IO.monoMsNow"""
+#: The line that ends each phase's output.
+PHASE_END = {"witnesses": "DONE_WITNESSES", "adequacy": "DONE"}
+#: The deadline of a gate's evaluation, in seconds: the witness phase's run has it whole, and the
+#: adequacy phase's run what the witness phase left of it.
+GATE_DEADLINE = 900.0
+
+
 def _harness_source(node_id: str, reading_json_path: Path, registry: tuple[str, str]) -> str:
     """The node's gate harness; `registry` is its own registry (`index_sync.registry_source`), so the
     evaluation reads no generated file another gate may be rewriting."""
@@ -210,7 +229,8 @@ import {nodeid.witness_module(node_id)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
-def main : IO Unit := do
+def main (args : List String) : IO Unit := do
+{_PHASES}
   let r := {rns}.rule
   let scs := {wns}.scenarios
   let rules := (allRules.filter (·.id != r.id)) ++ [r]
@@ -218,6 +238,17 @@ def main : IO Unit := do
   let ρ ← match Decode.parse Decode.reading text with
     | .ok v => pure v
     | .error e => do IO.println s!"READING_DECODE\\t{{e}}"; pure ({{}} : Reading)
+  let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  if args == ["adequacy"] then
+    IO.println s!"ADEQ_SIZE\\t{{r.id}}\\t{{r.applicability.leafCount + r.obligation.leafCount}}\\t{{(scs'.filter (·.expected.tag != "unknown")).length}}"
+    let tAdq ← IO.monoMsNow
+    IO.println s!"TIME\\tadequacy_start\\t{{tAdq - tMain}}"
+    out.flush
+    for u in Adequacy.unexercised rules r scs' allConcepts do IO.println s!"ADEQ\\t{{u}}"; out.flush
+    IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
+    out.flush
+    IO.println "DONE"
+    return
   let decl := Json.mkObj [
     ("id", r.id), ("laws", Json.arr (r.laws.map Json.str).toArray),
     ("binders", Json.arr (r.binders.map fun b => Json.str b.name).toArray),
@@ -228,16 +259,18 @@ def main : IO Unit := do
     ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
-  (← IO.getStdout).flush
+  out.flush
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
   IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (r.formulas.flatMap Formula.aggregateIds).eraseDups}}"
   for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
+  for sc in scs do if !sc.boundary.isEmpty then IO.println s!"BOUNDARY\\t{{sc.name}}"
   let tOcc ← IO.monoMsNow
   for g in (r.binders.flatMap fun b => occF b.cls) ++ occF r.applicability ++ occF r.obligation do
     IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in r.formulas.flatMap Formula.literals do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   IO.println s!"TIME\\toccurrences\\t{{(← IO.monoMsNow) - tOcc}}"
+  out.flush
   let tChk ← IO.monoMsNow
   let rulesX := rules.map (Concept.expandRule allConcepts)
   for e in Rule.check rulesX (Concept.expandRule allConcepts r) do IO.println s!"CHECK\\t{{e}}"
@@ -245,6 +278,7 @@ def main : IO Unit := do
   for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
   for e in DimCheck.rule (DimCheck.envOf ρ allConcepts) r do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
   IO.println s!"TIME\\tchecks\\t{{(← IO.monoMsNow) - tChk}}"
+  out.flush
   let tLint ← IO.monoMsNow
   for sc in scs do
     let τ := TraceLint.completeOccupancy sc.trace
@@ -253,18 +287,19 @@ def main : IO Unit := do
     if let some (a, b) := sc.window then
       if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
   IO.println s!"TIME\\tlint\\t{{(← IO.monoMsNow) - tLint}}"
-  for sc in scs do
+  out.flush
+  let tWit ← IO.monoMsNow
+  for sc in scs' do
     let tSc ← IO.monoMsNow
-    let sc' : Scenario := {{ sc with reading := ρ }}
-    match sc'.run rules allConcepts with
+    match sc.run rules allConcepts with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
+    out.flush
     IO.println s!"TIME\\tscenario:{{sc.name}}\\t{{(← IO.monoMsNow) - tSc}}"
-  let scs' := scs.map fun sc => {{ sc with reading := ρ }}
-  let tAdq ← IO.monoMsNow
-  for u in Adequacy.unexercised rules r scs' allConcepts do IO.println s!"ADEQ\\t{{u}}"
-  IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
-  IO.println "DONE"
+    out.flush
+  IO.println s!"TIME\\twitnesses\\t{{(← IO.monoMsNow) - tWit}}"
+  out.flush
+  IO.println "DONE_WITNESSES"
 '''
 
 
@@ -331,39 +366,46 @@ def _located(out: str, own: set[str], namespaces: tuple[str, ...], generated: di
 
 
 def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[str, ...], harness: Path,
-               register: "Callable[[], None] | None" = None) -> "Verdict | tuple[str, str]":
-    """Build the candidate and run its harness. The build holds the library lock, after `register`
+               register: "Callable[[], None] | None" = None, phase: str = "witnesses",
+               timeout: float = GATE_DEADLINE) -> "Verdict | tuple[str, str]":
+    """Build the candidate and run one phase of its harness (`PHASE_END`): the witness phase after the
+    build, the adequacy phase on the build the witness phase made, with `timeout` the deadline of the
+    run. The build holds the library lock, after `register`
     has written the registries it builds; the harness run reads no generated file and holds the
     evaluation lock shared, so it runs beside other gates' evaluations and the reviews. Returns the
-    (build, harness) outputs, or the verdict a failure is attributed to:
+    (build, harness) outputs (the build's empty in the adequacy phase), or the verdict a failure is
+    attributed to:
     - a located error in the candidate's files, or on a line of a generated file (the registry, the
       harness) that names the candidate's declarations, is the candidate's (`BUILD_FAIL`);
     - a located error elsewhere, a failure with no located error, the toolchain's absence, a deadline
       before evaluation, the run's stop or a stopping signal is `INFRA`, never the candidate's;
-    - the harness's deadline during the evaluation of the candidate's scenarios goes to
-      `harness_failure` (`GATE_TIMEOUT`);
+    - the harness's deadline during the evaluation of the candidate (in the adequacy phase, at any
+      point) returns the output for the gate to classify;
     - a resource failure (a signal the gate did not send, a stack overflow) or a panic is reproduced
-      once in isolation, holding the evaluation lock exclusive across the build and the run, so
+      once in isolation, holding the evaluation lock exclusive across the phase's build and run, so
       that no other evaluation's load is charged to the candidate: reproduced, it is the
       candidate's (`GATE_TIMEOUT`, a panic also in `extras`, a possible Core defect); not
       reproduced, the isolated run's outputs stand."""
     lib = paths.LIBRARY
     generated = {**{g: lib / g for g in GENERATED_LIB}, str(harness.resolve()): harness}
     first: dict | None = None
+    witnesses = phase == "witnesses"
     for trial in (1, 2):
         with ExitStack() as alone:
             if trial == 2:
                 alone.enter_context(_timed(work, "evaluation_lock", lean.evaluation_lock(lib, exclusive=True)))
-            with _timed(work, "lock", lean.library_lock(lib)):
-                if register is not None:
-                    register()
-                try:
-                    t0 = time.monotonic()
-                    bcode, out = lean.lake_build(lib, targets)
-                except lean.LeanUnavailable as e:
-                    return Verdict(INFRA, [str(e)])
-            (work / "build.log").write_text(out, encoding="utf-8")
-            b = _record(work, "build", bcode, out, time.monotonic() - t0)
+            bcode, out = 0, ""
+            if witnesses:
+                with _timed(work, "lock", lean.library_lock(lib)):
+                    if register is not None:
+                        register()
+                    try:
+                        t0 = time.monotonic()
+                        bcode, out = lean.lake_build(lib, targets)
+                    except lean.LeanUnavailable as e:
+                        return Verdict(INFRA, [str(e)])
+                (work / "build.log").write_text(out, encoding="utf-8")
+                b = _record(work, "build", bcode, out, time.monotonic() - t0)
             if bcode != 0:
                 if b["stop"] in ("deadline", "run_stop", "stop_signal"):
                     return Verdict(INFRA, [f"the build was stopped ({b['stop']}) before evaluation"] + out.splitlines()[:1])
@@ -378,29 +420,41 @@ def _toolchain(work: Path, targets: list[str], own: set[str], namespaces: tuple[
             with (nullcontext() if trial == 2 else _timed(work, "evaluation_lock", lean.evaluation_lock(lib))):
                 try:
                     t0 = time.monotonic()
-                    hcode, hout = lean.lean_run(lib, harness)
+                    hcode, hout = lean.lean_run(lib, harness, timeout=timeout, args=() if witnesses else (phase,))
                 except lean.LeanUnavailable as e:
                     return Verdict(INFRA, [str(e)])
-            h = _record(work, "harness", hcode, hout, time.monotonic() - t0)
+            h = _record(work, "harness" if witnesses else f"harness_{phase}", hcode, hout, time.monotonic() - t0)
         evaluated = bool(re.search(r"^[A-Z_]+\t", hout, re.M))
-        if h["stop"] in ("run_stop", "stop_signal") or (h["stop"] == "deadline" and not evaluated):
+        if h["stop"] in ("run_stop", "stop_signal") or (h["stop"] == "deadline" and not evaluated and witnesses):
             return Verdict(INFRA, [f"the gate harness was stopped ({h['stop']}) before it evaluated the candidate"])
         if h["stop"] == "resource" or h["panic"]:
             if trial == 1:
                 first = h; continue
             why = (f"the evaluation panicked twice (a possible Core defect): {h['panic'][0]}" if h["panic"]
                    else f"the evaluation failed twice on a resource limit ({RESOURCE_SIGNALS.get(h['signal'], 'stack overflow')})")
+            _save_output(work, phase, hout)
             return Verdict(GATE_TIMEOUT, [why], extras={"panic": h["panic"]} if h["panic"] else {})
         if hcode != 0 and h["stop"] != "deadline":
             mine, iface, other = _located(hout, own, namespaces, generated)
             if mine or iface:
                 return Verdict("BUILD_FAIL", (mine + [f"the gate harness does not accept the candidate's declaration: {x}" for x in iface])[:8])
-            if "DONE" not in hout:
+            if not ended(hout, phase):
                 return Verdict(INFRA, ["gate harness did not run"] + (other or hout.splitlines()[:3])[:6])
         if first is not None:
             print(f"[gate] the first run failed ({first['phase']}: {first['stop'] or first['panic']}); the isolated run did not reproduce it")
         return out, hout
     raise AssertionError("unreachable")
+
+
+def ended(hout: str, phase: str) -> bool:
+    """Whether a harness phase printed the line that ends it."""
+    return PHASE_END[phase] in hout.splitlines()
+
+
+def _save_output(work: Path, phase: str, hout: str) -> None:
+    """The harness output kept in the task directory: the witness phase's, then the adequacy phase's."""
+    with open(work / "gate_harness.out", "w" if phase == "witnesses" else "a", encoding="utf-8") as f:
+        f.write(hout if hout.endswith("\n") or not hout else hout + "\n")
 
 
 def _imports(text: str) -> set[str]:
@@ -452,14 +506,15 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     reading_json = work / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
     harness.write_text(_harness_source(node.id, reading_json, index_sync.registry_source(**reg)), encoding="utf-8")
-    ran = _toolchain(work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)], {rule_rel, wit_rel},
-                     (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness, register=lambda: index_sync.write_index(**reg))
+    toolchain = functools.partial(_toolchain, work, ["TrafficSpec.Index", nodeid.rule_module(node.id), nodeid.witness_module(node.id)],
+                                  {rule_rel, wit_rel}, (nodeid.rule_namespace(node.id) + ".", nodeid.witness_namespace(node.id) + "."), harness)
+    ran = toolchain(register=lambda: index_sync.write_index(**reg))
     if isinstance(ran, Verdict):
         return ran
     out, hout = ran
     if lean.sorry_warnings(out):
         details.append("build reports a declaration that uses sorry")
-    (work / "gate_harness.out").write_text(hout, encoding="utf-8")
+    _save_output(work, "witnesses", hout)
     decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
     if decode:
         return Verdict(INFRA, ["the reading does not decode (an input error, not the candidate's): " + decode[0]])
@@ -469,10 +524,11 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
             details.append(f"non-standard axioms: {sorted(axioms - STANDARD_AXIOMS)}")
     if details:
         return Verdict("UNSOUND", details)
-    if "DONE" not in hout:
+    # the witness phase's rows; after its deadline, only what they already decide (`Cut`)
+    cut = Cut(hout)
+    if not cut.stopped and not ended(hout, "witnesses"):
         return harness_failure(hout)
-
-    rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
+    rows = cut.rows
     def col(tag: str) -> list[list[str]]:
         return [r[1:] for r in rows if r[0] == tag]
 
@@ -481,7 +537,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     checks += divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else []
     checks += slot_range_defects(json.loads(col("RULEJSON")[0][0]), reading, accepted_concepts) if col("RULEJSON") else []
     if checks:
-        return Verdict("CHECK_FAIL", checks)
+        return Verdict("CHECK_FAIL", checks + cut.note())
+    if cut.stopped and not cut.reached("checks"):
+        return harness_failure(hout)
 
     # 4b. anchoring: every quantifier variable reaches a binder through shared arguments
     binders = [b["name"] for b in node.get("binders", [])]
@@ -597,14 +655,20 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
         elif name in planned and expected != (SCENARIOS.get(name) or normalize_verdict(planned[name].get("expected", ""))):
             fails.append(f"{name}: the witness declares {expected}, the plan requires {SCENARIOS.get(name) or normalize_verdict(planned[name].get('expected', ''))}")
     for name in list(SCENARIOS) + [p for p in planned if p not in SCENARIOS]:   # every planned scenario is a test
-        if name not in {s[0] for s in scen}:
+        if name not in {s[0] for s in scen} and not cut.stopped:
             fails.append(f"{name}: no witness of that name")
+    fails += boundary_defects({r[0] for r in col("BOUNDARY")}, {n for n, s in planned.items() if s.get("boundary")})
     fails += witness_trace_defects(col)
     if fails:
-        return Verdict("WITNESS_FAIL", fails)
+        return Verdict("WITNESS_FAIL", fails + cut.note())
+    if cut.stopped:
+        return harness_failure(hout)
 
-    # 8. adequacy
-    adeq = [r[0] for r in col("ADEQ")]
+    # 8. adequacy: the harness's second phase, run only now, within what the first left of the deadline
+    adequacy = adequacy_phase(work, toolchain, hout)
+    if isinstance(adequacy, Verdict):
+        return adequacy
+    adeq = [r[1] for r in (l.split("\t") for l in adequacy.splitlines()) if r[0] == "ADEQ" and len(r) > 1]
     if adeq:
         return Verdict("VACUOUS", adeq)
     return Verdict("OK", [f"{len(scen)} witnesses, {len(used)} names, composes {col('COMPOSES')[0][0] or 'nothing'}"]
@@ -685,6 +749,13 @@ def slot_range_defects(tree, reading: Reading, concepts: dict[str, dict] | None 
     return sorted(set(out))
 
 
+def boundary_defects(declared: set[str], planned: set[str]) -> list[str]:
+    """A history-boundary witness (one that may stay unknown for a window truncated at its trace's start)
+    exactly where the plan declares one: the witness cannot widen what the plan let stay unknown."""
+    return ([f"{n}: the witness declares a history boundary the plan does not" for n in sorted(declared - planned)]
+            + [f"{n}: the plan declares a history boundary the witness does not" for n in sorted(planned - declared)])
+
+
 def witness_trace_defects(col) -> list[str]:
     """What fails a witness's trace beyond its verdict: a measured relation it supplies that Core
     computes from the scene (`RELCHECK`: a hand-written trace supplies only what Core cannot compute),
@@ -731,44 +802,131 @@ def forbidden_tokens(files) -> list[str]:
     return out
 
 
-QUANTIFIERS = ("exists_user", "forall_user", "exists_region", "forall_region", "exists_device", "forall_device", "aggregate")
-WINDOWS = ("holds_for", "within", "until_within", "at_last")
+class Cut:
+    """A witness phase's output, whole or stopped at the deadline (`stopped`). Stopped, its rows decide
+    only what more rows could not undo: a static check's row, a witness that did not pass, a trace
+    defect; a check whose rows are incomplete (`reached`: the part's `TIME` row is printed) and a
+    witness that did not run decide nothing, and a witness that did not run is never counted as
+    passed. What they leave undecided is `GATE_TIMEOUT`."""
+
+    def __init__(self, hout: str):
+        self.stopped = lean.timed_out(hout)
+        self.rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
+
+    def reached(self, part: str) -> bool:
+        return any(r[0] == "TIME" and len(r) > 1 and r[1] == part for r in self.rows)
+
+    def note(self) -> list[str]:
+        """What a verdict decided on a stopped phase's rows says about the stop."""
+        if not self.stopped:
+            return []
+        missing = not_run(self.rows)
+        return [f"the evaluation was stopped at its deadline; the rows printed before it decide this verdict"
+                + (f"; not run, never counted as passed: {', '.join(missing)}" if missing else "")]
 
 
-def nesting(j, quants: int = 0, windows: int = 0) -> tuple[int, int]:
-    """The deepest chain of quantifiers in an exported formula, as (quantifiers, window operators
-    around them): each quantifier evaluates its body once per entity of the scene, and each window
-    operator once per observation of its window."""
-    best = (quants, windows)
-    if isinstance(j, dict):
-        q = quants + any(k in j for k in QUANTIFIERS)
-        w = windows + any(k in j for k in WINDOWS)
-        for v in j.values():
-            best = max(best, nesting(v, q, w))
-    elif isinstance(j, list):
-        for v in j:
-            best = max(best, nesting(v, quants, windows))
-    return best
+def not_run(rows: list[list[str]]) -> list[str]:
+    """The witnesses a harness lists (a node's `MANIFEST`, a concept's `WITNESS` rows) with no `SCEN` row."""
+    listed = [(r[1], r[2] if r[0] == "WITNESS" else "") for r in rows if r[0] in ("MANIFEST", "WITNESS") and len(r) > 2]
+    ran = {(r[1], r[2] if len(r) > 5 else "") for r in rows if r[0] == "SCEN" and len(r) > 4}
+    return [f"{n} ({rule})" if rule else n for n, rule in listed if (n, rule) not in ran]
+
+
+def _harness_seconds(work: Path) -> float:
+    """The wall time of the task's latest witness-phase run, as `toolchain.jsonl` records it."""
+    f = work / "toolchain.jsonl"
+    rows = [json.loads(l) for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
+    return next((float(r.get("seconds") or 0.0) for r in reversed(rows) if r.get("phase") == "harness"), 0.0)
+
+
+def adequacy_phase(work: Path, toolchain: Callable, hout: str) -> "Verdict | str":
+    """The harness's adequacy phase, run once the witness phase's rows (`hout`) reject nothing, with
+    what the witness phase left of `GATE_DEADLINE`: its output, or the verdict on its run (a
+    deadline, when nothing or not enough was left, is `GATE_TIMEOUT`)."""
+    spent = _harness_seconds(work)
+    left = GATE_DEADLINE - spent
+    took = f"the witness phase took {spent:.0f} s of the {GATE_DEADLINE:.0f} s deadline"
+    if left <= 0:
+        return Verdict(GATE_TIMEOUT, [f"{took}; none was left for the adequacy check"] + evaluation_progress(hout))
+    ran = toolchain(phase="adequacy", timeout=left)
+    if isinstance(ran, Verdict):
+        return ran
+    _out, aout = ran
+    _save_output(work, "adequacy", aout)
+    if ended(aout, "adequacy"):
+        return aout
+    if lean.timed_out(aout):
+        first, *rest = aout.splitlines()
+        return Verdict(GATE_TIMEOUT, [first, f"{took}; the adequacy phase had the {left:.0f} s left"]
+                       + evaluation_progress("\n".join([hout] + rest)))
+    return Verdict(INFRA, ["gate harness did not run (the adequacy phase)"] + aout.splitlines()[:3])
+
+
+def _ms(v: str) -> int:
+    try:
+        return int(v)
+    except ValueError:
+        return 0
+
+
+def evaluation_progress(hout: str) -> list[str]:
+    """What a gate harness stopped at its deadline had printed: the part it was in (each part ends
+    with its `TIME` row: the occurrences, for a node, the static checks, the trace lint, the
+    witnesses, one row each and `TIME witnesses` after them, a concept's supersession check, then,
+    in the adequacy phase, the adequacy check from `TIME adequacy_start` to `TIME adequacy`), the
+    witnesses that passed, did not pass and did not run, with their time, and, stopped in the
+    adequacy check, when it began and its input (`ADEQ_SIZE`: the leaves it mutates and the decided
+    witnesses it re-runs). Only what the harness printed; no cause is inferred."""
+    rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
+    times = {r[1]: _ms(r[2]) for r in rows if r[0] == "TIME" and len(r) >= 3}
+    scen = [r[1:] for r in rows if r[0] == "SCEN" and len(r) >= 5]
+    witness_ms = [(k.split(":", 1)[1], v) for k, v in times.items() if k.startswith("scenario:")]
+    ok = lambda sc: sc[-1] == "ok" and sc[-3] == sc[-2]
+    passed, failed = [sc for sc in scen if ok(sc)], [sc for sc in scen if not ok(sc)]
+    named = lambda sc: f"{sc[1]}/{sc[0]}" if len(sc) == 5 else sc[0]
+    node = any(r[0] == "RULEJSON" for r in rows)
+    if node and "occurrences" not in times:
+        part = "the variable occurrences, before the static checks"
+    elif "checks" not in times:
+        part = "the static checks"
+    elif "lint" not in times:
+        part = "the trace lint"
+    elif "witnesses" not in times:
+        part = f"the witnesses, after {len(witness_ms)} had finished"
+    elif not ended(hout, "witnesses"):
+        part = "the end of the witness phase" if node else "the supersession check"
+    elif "adequacy_start" not in times:
+        part = "the adequacy phase, before the adequacy check began"
+    elif "adequacy" not in times:
+        part = "the adequacy check"
+    else:
+        part = "the end of the adequacy phase"
+    out = [f"the evaluation was stopped in {part}"]
+    slow = max(witness_ms, key=lambda kv: kv[1]) if witness_ms else None
+    out.append(f"{len(passed)} witness(es) passed and {len(failed)} did not; the {len(witness_ms)} that finished took "
+               f"{sum(v for _k, v in witness_ms) / 1000:.1f} s" + (f" in all, the slowest `{slow[0]}` {slow[1] / 1000:.1f} s" if slow else ""))
+    if failed:
+        out.append("not passed: " + "; ".join(f"{named(sc)}: " + (f"expected {sc[-3]}, got {sc[-2]}" if sc[-1] == "ok" else sc[-1])
+                                             for sc in failed[:6]))
+    missing = not_run(rows)
+    if missing:
+        out.append(f"not run: {', '.join(missing)}")
+    if "adequacy_start" in times and "adequacy" not in times:
+        size = [r[1:] for r in rows if r[0] == "ADEQ_SIZE" and len(r) >= 4]
+        out.append(f"the adequacy check began {times['adequacy_start'] / 1000:.1f} s after the adequacy phase's program started "
+                   "and did not finish: "
+                   + "; ".join(f"`{z[0]}` has {z[1]} leaves, each replaced by true and by false and judged on its {z[2]} decided witness(es)"
+                               for z in size))
+    return out
 
 
 def harness_failure(hout: str) -> Verdict:
-    """A gate harness that evaluated the candidate and did not reach `DONE`. One that ran out of time
+    """A gate harness that evaluated the candidate and did not end its phase. One that ran out of time
     is the candidate's: its formulas take longer to evaluate on its witnesses than the gate allows,
-    and the details give the deepest nesting of quantifiers the exported rule shows. Every other
-    failure `_toolchain` has attributed already; what is left is the toolchain's."""
+    and the details give what the harness printed before the deadline (`evaluation_progress`).
+    Every other failure `_toolchain` has attributed already; what is left is the toolchain's."""
     if lean.timed_out(hout):
-        lines = hout.splitlines()
-        shape = []
-        rj = [l.split("\t", 1)[1] for l in lines if l.startswith("RULEJSON\t")]
-        if rj:
-            try:
-                q, w = nesting(json.loads(rj[0]))
-                shape = [f"the deepest chain of the rule nests {q} quantifier(s) over road users, regions or devices "
-                         f"under {w} window operator(s); each is evaluated per entity, per observation, per witness "
-                         "and per adequacy mutation"]
-            except json.JSONDecodeError:
-                pass
-        return Verdict(GATE_TIMEOUT, [lines[0]] + shape)
+        return Verdict(GATE_TIMEOUT, [hout.splitlines()[0]] + evaluation_progress(hout))
     return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
 
 
@@ -863,7 +1021,8 @@ import {nodeid.concept_witness_module(cid)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
-def main : IO Unit := do
+def main (args : List String) : IO Unit := do
+{_PHASES}
   let c := {ns}.concept
   let cs := (allConcepts.filter (·.id != c.id)) ++ [c]
   let insts := {wns}.instances
@@ -872,6 +1031,21 @@ def main : IO Unit := do
   let ρ ← match Decode.parse Decode.reading text with
     | .ok v => pure v
     | .error e => do IO.println s!"READING_DECODE\\t{{e}}"; pure ({{}} : Reading)
+  let instRules := insts.filterMap (Concept.asRule cs)
+  let rules := allRules ++ instRules
+  let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  if args == ["adequacy"] then
+    for r in instRules do
+      IO.println s!"ADEQ_SIZE\\t{{r.id}}\\t{{r.applicability.leafCount + r.obligation.leafCount}}\\t{{(scs'.filter fun sc => sc.rule == r.id && sc.expected.tag != "unknown").length}}"
+    let tAdq ← IO.monoMsNow
+    IO.println s!"TIME\\tadequacy_start\\t{{tAdq - tMain}}"
+    out.flush
+    for r in instRules do
+      for u in Adequacy.unexercised rules r (scs'.filter (·.rule == r.id)) cs do IO.println s!"ADEQ\\t{{r.id}}: {{u}}"; out.flush
+    IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
+    out.flush
+    IO.println "DONE"
+    return
   IO.println s!"DECL\\t{{(Concept.toJson c).compress}}"
   IO.println s!"ATOMS\\t{{String.intercalate "," c.atoms}}"
   IO.println s!"READS\\t{{String.intercalate "," (Formula.atoms (Concept.expand cs c.bodyFormula)).eraseDups}}"
@@ -879,14 +1053,14 @@ def main : IO Unit := do
     | .formula φ => (Formula.toJson (Concept.expand cs φ)).compress
     | .quantity t => (Term.toJson (Concept.expandTerm cs t)).compress
   IO.println s!"BODY\\t{{bodyJson}}"
+  for sc in scs do IO.println s!"WITNESS\\t{{sc.name}}\\t{{sc.rule}}"
+  out.flush
   let tChk ← IO.monoMsNow
   for g in occF c.bodyFormula do IO.println s!"OCC\\t{{String.intercalate "," g}}"
   for (q, u) in Formula.literals c.bodyFormula do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   for id in Concept.onCycle cs do IO.println s!"CYCLE\\t{{id}}"
   for e in Concept.check cs c do IO.println s!"CHECK\\t{{e}}"
   for e in DimCheck.concept (DimCheck.envOf ρ cs c.params) c do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
-  let instRules := insts.filterMap (Concept.asRule cs)
-  let rules := allRules ++ instRules
   for i in insts do
     for e in Concept.Instance.defects cs i do IO.println s!"CHECK\\t{{e}}"
     let regionFormals := ((cs.find? (·.id == i.concept)).map (·.regionFormals)).getD []
@@ -899,7 +1073,8 @@ def main : IO Unit := do
       for sc in scs.filter (·.rule == i.name) do
         for e in Concept.regionDefects ci sc.name sc.regions do IO.println s!"CHECK\\t{{e}}"
   IO.println s!"TIME\\tchecks\\t{{(← IO.monoMsNow) - tChk}}"
-  let scs' := scs.map fun sc => {{ sc with reading := ρ }}
+  out.flush
+  for sc in scs do if !sc.boundary.isEmpty then IO.println s!"BOUNDARY\\t{{sc.name}}"
   let tLint ← IO.monoMsNow
   for sc in scs' do
     let τ := TraceLint.completeOccupancy sc.trace
@@ -908,16 +1083,18 @@ def main : IO Unit := do
     if let some (a, b) := sc.window then
       if !(sc.trace.any fun s => decide (a ≤ s.t) && decide (s.t ≤ b)) then IO.println s!"NOWINDOW\\t{{sc.name}}"
   IO.println s!"TIME\\tlint\\t{{(← IO.monoMsNow) - tLint}}"
+  out.flush
+  let tWit ← IO.monoMsNow
   for sc in scs' do
     let tSc ← IO.monoMsNow
     match sc.run rules cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
+    out.flush
     IO.println s!"TIME\\tscenario:{{sc.rule}}/{{sc.name}}\\t{{(← IO.monoMsNow) - tSc}}"
-  let tAdq ← IO.monoMsNow
-  for r in instRules do
-    for u in Adequacy.unexercised rules r (scs'.filter (·.rule == r.id)) cs do IO.println s!"ADEQ\\t{{r.id}}: {{u}}"
-  IO.println s!"TIME\\tadequacy\\t{{(← IO.monoMsNow) - tAdq}}"
+    out.flush
+  IO.println s!"TIME\\twitnesses\\t{{(← IO.monoMsNow) - tWit}}"
+  out.flush
   match c.supersedes with
   | none => pure ()
   | some old =>
@@ -932,7 +1109,7 @@ def main : IO Unit := do
           let scOld : Scenario := {{ sc with rule := rOld.id }}
           let status := match scOld.run (allRules ++ [rOld]) csOld with | .ok _ => "same" | .error _ => "differs"
           IO.println s!"DIFF\\t{{i.name}}\\t{{status}}"
-  IO.println "DONE"
+  IO.println "DONE_WITNESSES"
 '''
 
 
@@ -990,14 +1167,15 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     reading_json = work / "reading.json"
     reading_json.write_text(reading.lean_json(), encoding="utf-8")
     harness.write_text(_concept_harness_source(cid, reading_json, index_sync.registry_source(**reg)), encoding="utf-8")
-    ran = _toolchain(work, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)], {c_rel, w_rel},
-                     (nodeid.concept_namespace(cid) + ".", nodeid.concept_witness_namespace(cid) + "."), harness, register=lambda: index_sync.write_index(**reg))
+    toolchain = functools.partial(_toolchain, work, ["TrafficSpec.Index", nodeid.concept_module(cid), nodeid.concept_witness_module(cid)],
+                                  {c_rel, w_rel}, (nodeid.concept_namespace(cid) + ".", nodeid.concept_witness_namespace(cid) + "."), harness)
+    ran = toolchain(register=lambda: index_sync.write_index(**reg))
     if isinstance(ran, Verdict):
         return ran
     out, hout = ran
     if lean.sorry_warnings(out):
         details.append("build reports a declaration that uses sorry")
-    (work / "gate_harness.out").write_text(hout, encoding="utf-8")
+    _save_output(work, "witnesses", hout)
     decode = [l.split("\t", 1)[1] for l in hout.splitlines() if l.startswith("READING_DECODE\t")]
     if decode:
         return Verdict(INFRA, ["the reading does not decode (an input error, not the candidate's): " + decode[0]])
@@ -1007,20 +1185,24 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
             details.append(f"non-standard axioms: {sorted(axioms - STANDARD_AXIOMS)}")
     if details:
         return Verdict("UNSOUND", details)
-    if "DONE" not in hout:
+    # the witness phase's rows; after its deadline, only what they already decide (`Cut`)
+    cut = Cut(hout)
+    if not cut.stopped and not ended(hout, "witnesses"):
         return harness_failure(hout)
-    rows = [l.split("\t") for l in hout.splitlines() if "\t" in l]
+    rows = cut.rows
     def col(tag: str) -> list[list[str]]:
         return [r[1:] for r in rows if r[0] == tag]
 
     # 4. cycle, static check
     cyc = [r[0] for r in col("CYCLE")]
     if cyc:
-        return Verdict("CONCEPT_CYCLE", cyc)
+        return Verdict("CONCEPT_CYCLE", cyc + cut.note())
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
     checks += divisions_by_measure(json.loads(col("BODY")[0][0])) if col("BODY") else []
     if checks:
-        return Verdict("CHECK_FAIL", checks)
+        return Verdict("CHECK_FAIL", checks + cut.note())
+    if cut.stopped and not cut.reached("checks"):
+        return harness_failure(hout)
 
     # 4b. anchoring within the body: quantified variables reach a track or region formal (the caller supplies both)
     roots = [a["name"] for a in rec.args() if a.get("sort") in ("track", "region")]
@@ -1116,11 +1298,14 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         elif name in wanted and expected != wanted[name]:
             fails.append(f"{name}: the witness declares {expected}, the record requires {wanted[name]}")
     for name in wanted:
-        if name not in {s[0] for s in scen}:
+        if name not in {s[0] for s in scen} and not cut.stopped:
             fails.append(f"{name}: no witness of that name")
+    fails += boundary_defects({r[0] for r in col("BOUNDARY")}, set())
     fails += witness_trace_defects(col)
     if fails:
-        return Verdict("WITNESS_FAIL", fails)
+        return Verdict("WITNESS_FAIL", fails + cut.note())
+    if cut.stopped:
+        return harness_failure(hout)
 
     # 7b. a supersession differs from the old body on its counterexample; a fenced version is
     # superseded on its fence, whose evidence stands for a counterexample
@@ -1136,8 +1321,11 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         if oid != rec.get("supersedes") and not orec.get("fenced") and orec.get("canonical_body") == canonical:
             return Verdict("DUPLICATE_CONCEPT", [f"the body is alpha-equivalent to accepted `{oid}`: call it instead"])
 
-    # 9. adequacy
-    adeq = [r[0] for r in col("ADEQ")]
+    # 9. adequacy: the harness's second phase, run only now, within what the first left of the deadline
+    adequacy = adequacy_phase(work, toolchain, hout)
+    if isinstance(adequacy, Verdict):
+        return adequacy
+    adeq = [r[1] for r in (l.split("\t") for l in adequacy.splitlines()) if r[0] == "ADEQ" and len(r) > 1]
     if adeq:
         return Verdict("VACUOUS", adeq)
     atom_ids = set(surface.core_atom_ids())

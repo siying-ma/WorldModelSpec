@@ -42,6 +42,12 @@ def clean : Trace := [scene 0 (car 10 0), scene 1000 (car 20 10) (devs := [signa
 #guard has (checkTrace [scene 0 (car 10 0) (structures := [{ lane7 with boundary := some [(metres 0, metres (-2)), (metres 100, metres 4), (metres 100, metres (-2)), (metres 0, metres 2)] }])]) "intersects itself"
 #guard has (checkTrace [scene 0 { car 10 0 with kin := { (car 10 0).kin with extent := some (metres 2, metres 0, metres 1) } }]) "half-width must be positive"
 #guard has (checkTrace [scene 0 (car 10 0 (h := (Q.zero, Q.zero)))]) "heading is the zero vector"
+def gapOf (lon lat : Q) : Trace :=
+  [{ scene 0 (car 10 0) with users := [car 10 0, { car 30 0 with track := 2 }], relations := [{ a := 1, b := 2, surfaceGap := some (lon, lat) }] }]
+#guard has (checkTrace (gapOf (metres (-1)) (Q.mk' (-1) 2))) "relation (1, 2) surface_gap (-1, -1/2) has a negative component"
+#guard has (checkTrace (gapOf Q.zero (Q.mk' (-1) 2))) "has a negative component"
+#guard checkTrace (gapOf Q.zero Q.zero) = []
+#guard checkTrace (gapOf (metres 6) (metres 3)) = []
 
 -- occupancy of an observed track is derived from the geometry, over closed sets; a pair left out is
 -- read as not occupied, so every structure needs a boundary where occupancy is observed

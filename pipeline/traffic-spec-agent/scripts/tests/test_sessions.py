@@ -273,7 +273,7 @@ class GateAttribution(unittest.TestCase):
     def run_with(self, builds, runs):
         builds, runs = list(builds), list(runs)
         self.lean.lake_build = lambda lib, targets: builds.pop(0)
-        self.lean.lean_run = lambda lib, f: runs.pop(0)
+        self.lean.lean_run = lambda lib, f, **k: runs.pop(0)
         return self.gate._toolchain(self.work, ["T"], self.OWN, self.NS, self.work / "gate_harness.lean")
 
     DONE = (0, "DECL\t{}\nDONE")

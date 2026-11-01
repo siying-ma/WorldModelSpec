@@ -1,15 +1,22 @@
 """Development regression tests for the planner's records: the nested schema, unique identities
-across a plan, generated-identifier collisions, a validator fault, the one repair reader, and gaps
-as annotations of a mapped span."""
+across a plan, generated-identifier collisions, a validator fault, the one repair reader, gaps
+as annotations of a mapped span, and the earlier records a law planned again and a node repair are
+shown (every node of the latest plan, later versions, true states, compositions by occurrence)."""
+import contextlib
 import copy
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 from harness.checks import validate_a
+from harness.model import corpus
 from harness.model.blueprint import Node
-from harness.phases import plan
+from harness.phases import plan, review
+from harness.store import paths
+from scripts.tests.test_review_routing import ONTO
 
 NODE = {"node_id": "L_1", "law_refs": ["L-1"], "subject": {"binder": "v", "class_elements": ["ru.motor_vehicle"]},
         "binders": [{"name": "v", "class_elements": ["ru.motor_vehicle"]}],
@@ -215,6 +222,309 @@ class SmallerChecks(unittest.TestCase):
         groups = [["?r"], ["v", "r"], ["?q"], ["?w"], ["q", "w"]]
         self.assertEqual(unanchored_variables(groups, ["v"]), ["q", "w"])
         self.assertEqual(unanchored_variables(groups + [["w", "$"]], ["v"]), [])
+
+
+# --- the earlier records a law planned again and a node repair are shown ---
+
+TEXT = ("When a vehicle enters a junction, the driver shall stop at the line. After making such a stop, the driver "
+        "shall proceed slowly, yielding to vehicles within the junction.")
+LAW5 = corpus.Law("L-5", "A junction", TEXT, "")
+CUTS = [("t1", "When a vehicle enters a junction,", "trigger"), ("s1", "the driver", "subject"), ("ob1", "shall stop at the line.", "obligation"),
+        ("c1", "After making such a stop,", "condition"), ("s2", "the driver", "subject"), ("ob2", "shall proceed slowly,", "obligation"),
+        ("ob3", "yielding to vehicles within the junction.", "obligation")]
+SMOKE23 = Path(__file__).with_name("fixtures") / "precondition_smoke23.json"
+
+
+def rec(nid: str, duty: str, comps=(), law: str = "L-5", cuts=CUTS, **extra) -> dict:
+    """A node whose obligation span is `duty`; every other obligation span of the cut is a sibling."""
+    seg = [{"id": i, "text": t, "role": ("obligation" if i == duty else "sibling") if r == "obligation" else r} for i, t, r in cuts]
+    return {"node_id": nid, "law_refs": [law], "segmentation": seg, "elements": [], "applicability": f"{nid} applicability",
+            "obligation": f"{nid} obligation", "compositions": [{"span": s, "rule": r, "map": {"v": "v"}, "as": a} for s, r, a in comps], **extra}
+
+
+class World:
+    """A run directory under a temporary results tree, written iteration by iteration."""
+    def __init__(self, root: Path, laws=(LAW5,)):
+        self.root = root
+        self.accepted: dict = {}
+        (root / "laws.jsonl").write_text("".join(json.dumps({"id": l.id, "title": l.title, "text": l.text, "source": l.source}) + "\n" for l in laws))
+        self.run = SimpleNamespace(iteration=2, opts=SimpleNamespace(run_id="r", laws=root / "laws.jsonl"), all_nodes=lambda: self.accepted)
+
+    def it(self, n: int) -> Path:
+        return paths.iter_dir("r", n)
+
+    def plan(self, n: int, *recs) -> None:
+        f = self.it(n) / "plan" / "blueprint.jsonl"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("".join(json.dumps(r) + "\n" for r in recs))
+
+    def validated(self, n: int, **kinds) -> None:
+        f = self.it(n) / "validate" / "verdicts.jsonl"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        with f.open("a") as h:
+            for nid, (kind, reasons) in kinds.items():
+                h.write(json.dumps({"node_id": nid, "kind": kind, "reasons": reasons}) + "\n")
+
+    def coded(self, n: int, raw: dict, verdict: str = "OK", upheld=None, dirname: str | None = None) -> None:
+        d = self.it(n) / "code" / (dirname or raw["node_id"])
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "node.json").write_text(json.dumps(raw))
+        (d / "verdict.json").write_text(json.dumps({"verdict": verdict, "details": [f"{verdict} detail"]}))
+        if upheld is not None:
+            (d / "review").mkdir()
+            (d / "review" / "review_outcome.json").write_text(json.dumps({"reviewer_verdict": "return" if upheld else "accept", "upheld": upheld}))
+
+    def repaired(self, n: int, raw: dict, record: dict, validation: str = "accept") -> None:
+        d = self.it(n) / "repair" / raw["node_id"]
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "planned.json").write_text(json.dumps(raw))
+        (d / "record.jsonl").write_text(json.dumps({k: v for k, v in record.items() if k not in plan.FIXED_NODE_KEYS}) + "\n")
+        (d / "validation.txt").write_text(validation)
+
+
+@contextlib.contextmanager
+def world(laws=(LAW5,)):
+    with tempfile.TemporaryDirectory() as t, mock.patch.object(paths, "RESULTS", Path(t) / "results"):
+        yield World(Path(t), laws)
+
+
+@contextlib.contextmanager
+def smoke23_world():
+    """smoke23's records of one law of three duties as they stood before its iteration-3 plan
+    (read-only copies, trimmed where the fixture says), under a temporary results tree."""
+    fx = json.loads(SMOKE23.read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory() as t, mock.patch.object(paths, "RESULTS", Path(t) / "results"):
+        for rel, c in fx["files"].items():
+            f = paths.run_dir("smoke23") / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            if rel.endswith(".jsonl"):
+                f.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in (c if isinstance(c, list) else [c])), encoding="utf-8")
+            else:
+                f.write_text(c if isinstance(c, str) else json.dumps(c, ensure_ascii=False), encoding="utf-8")
+        (Path(t) / "laws.jsonl").write_text(json.dumps(fx["law"], ensure_ascii=False) + "\n", encoding="utf-8")
+        law = corpus.Law(**{k: fx["law"][k] for k in ("id", "title", "text", "source")})
+        yield SimpleNamespace(iteration=3, opts=SimpleNamespace(run_id="smoke23", laws=Path(t) / "laws.jsonl"), all_nodes=lambda: {}), law
+
+
+def entry_of(block: str, nid: str, words: str) -> str:
+    """The lines of one node's entry in a rendered block: from its heading to the next heading."""
+    head = next((i for i, l in enumerate(block.splitlines()) if l.startswith(f"`{nid}` — ") and words in l), None)
+    if head is None:
+        raise AssertionError(f"no entry of `{nid}` with {words!r} in the block:\n{block[:600]}")
+    lines = block.splitlines()[head:]
+    end = next((i for i, l in enumerate(lines[1:], 1) if l.startswith("`") and " — " in l), len(lines))
+    return "\n".join(lines[:end])
+
+
+O1 = rec("L_5_o1", "ob1")
+O2 = rec("L_5_o2", "ob2", [("c1", "L_5_o1", "compliance")])
+O3 = rec("L_5_o3", "ob3", [("c1", "L_5_o1", "compliance")])
+
+
+class PreviousRecords(unittest.TestCase):
+    def test_callers_never_coded_are_shown_with_their_compositions(self):
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.validated(1, L_5_o1=("accept", []), L_5_o2=("accept", []), L_5_o3=("accept", []))
+            w.coded(1, O1, upheld=["a case"])
+            block = plan.previous_records(w.run, [LAW5])
+        for nid, words in (("L_5_o2", "shall proceed slowly"), ("L_5_o3", "yielding to vehicles")):
+            e = entry_of(block, nid, words)
+            self.assertIn("- iteration 1: planned; validator accept; not coded", e)
+            self.assertIn("- state: not accepted, never coded", e)
+            self.assertIn("- span `c1` “After making such a stop,” composes `L_5_o1` as compliance: its duty at characters 45–68; not accepted", e)
+            self.assertIn("The record, as planned in iteration 1:", e)
+
+    def test_a_later_repair_is_shown_over_the_plan_and_the_siblings_stay(self):
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.coded(1, O1, upheld=["a case"])
+            w.repaired(2, O1, {**O1, "obligation": "the repaired obligation"})
+            w.run.iteration = 3
+            block = plan.previous_records(w.run, [LAW5])
+        e = entry_of(block, "L_5_o1", "shall stop")
+        self.assertIn("- iteration 2: repaired; the validator accepted the revision", e)
+        self.assertIn("The record, as repaired in iteration 2:", e)
+        self.assertIn('"obligation": "the repaired obligation"', e)
+        self.assertNotIn('"obligation": "L_5_o1 obligation"', e)
+        self.assertIn("It differs from the record planned in iteration 1 in: `obligation`.", e)
+        self.assertIn("`L_5_o2` —", block)
+        self.assertIn("`L_5_o3` —", block)
+
+    def test_a_returned_repair_does_not_replace_the_coded_record(self):
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.coded(1, O1, upheld=["a case"])
+            w.repaired(2, O1, {**O1, "obligation": "a refused revision"}, validation="L_5_o1: a defect")
+            w.run.iteration = 3
+            e = entry_of(plan.previous_records(w.run, [LAW5]), "L_5_o1", "shall stop")
+        self.assertIn("the validator returned the revision: L_5_o1: a defect", e)
+        self.assertIn("The record, as coded in iteration 1:", e)
+        self.assertNotIn("a refused revision", e)
+
+    def test_states_are_the_recorded_ones(self):
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.validated(1, L_5_o1=("accept", []), L_5_o2=("return", ["L_5_o2: a defect"]), L_5_o3=("accept", []))
+            w.coded(1, O1, upheld=["one", "two"])
+            w.coded(1, O3, verdict="WITNESS_FAIL")
+            block = plan.previous_records(w.run, [LAW5])
+            self.assertNotIn("state: accepted", block)
+            self.assertIn("gate OK (OK detail), the review returned it (2 upheld case(s))", entry_of(block, "L_5_o1", "shall stop"))
+            self.assertIn("- state: not accepted\n", entry_of(block, "L_5_o1", "shall stop") + "\n")
+            self.assertIn("validator return: L_5_o2: a defect; not coded", entry_of(block, "L_5_o2", "proceed"))
+            self.assertIn("gate WITNESS_FAIL (WITNESS_FAIL detail), not reviewed", entry_of(block, "L_5_o3", "yielding"))
+            w.accepted = {"L_5_o1": O1}
+            block = plan.previous_records(w.run, [LAW5])
+        self.assertIn("- state: accepted", entry_of(block, "L_5_o1", "shall stop"))
+        self.assertEqual(block.count("- state: accepted"), 1)
+        self.assertIn("composes `L_5_o1` as compliance: its duty at characters 45–68; accepted", block)
+
+    def test_an_unreadable_record_is_named_never_skipped(self):
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.plan(2, O1)
+            (w.it(2) / "plan" / "blueprint.jsonl").write_text("{not json")
+            w.coded(1, O1)
+            (w.it(1) / "code" / "L_5_o1" / "verdict.json").write_text("{not json")
+            w.coded(1, O2)
+            (w.it(1) / "code" / "L_5_o2" / "node.json").write_text("{not json")
+            w.run.iteration = 3
+            block = plan.previous_records(w.run, [LAW5])
+        self.assertIn("- the plan of iteration 2 could not be read", block)
+        self.assertIn("- the coded record of `L_5_o2` in iteration 1 could not be read", block)
+        self.assertIn("coded: the gate verdict could not be read", entry_of(block, "L_5_o1", "shall stop"))
+
+    def test_a_renumbered_plan_is_matched_by_occurrence_never_by_suffix(self):
+        o1 = rec("L_5_o1", "ob2", [("c1", "L_5_o9", "condition")])
+        o2 = rec("L_5_o2", "ob3")
+        with world() as w:
+            w.plan(1, O1, O2, O3)
+            w.coded(1, O1)
+            w.coded(1, O2)
+            w.plan(2, o1, o2)                                   # the cut changed: the ordinals moved
+            w.coded(2, O2, dirname="L_5_o2")                   # an older record under an id the new plan reuses
+            w.run.iteration = 3
+            block = plan.previous_records(w.run, [LAW5])
+        self.assertIn("the plan of iteration 2 and what followed", block)
+        self.assertNotIn("iteration 1:", block)
+        new = entry_of(block, "L_5_o2", "yielding to vehicles")
+        self.assertIn("- state: not accepted, never coded", new)
+        old = entry_of(block, "L_5_o2", "shall proceed slowly")
+        self.assertIn("- iteration 2: coded: gate OK", old)
+        self.assertIn('"node_id": "L_5_o2"', old)
+        self.assertIn("composes `L_5_o9` as condition: missing: no record of this id", entry_of(block, "L_5_o1", "shall proceed slowly"))
+
+    def test_identical_words_are_two_occurrences(self):
+        text = "The driver shall signal. Later the driver shall signal."
+        law = corpus.Law("L-6", "", text, "")
+        cuts = [("s1", "The driver", "subject"), ("a", "shall signal.", "obligation"), ("c", "Later", "condition"),
+                ("s2", "the driver", "subject"), ("b", "shall signal.", "obligation")]
+        first, second = rec("L_6_o1", "a", law="L-6", cuts=cuts), rec("L_6_o2", "b", law="L-6", cuts=cuts)
+        misnumbered = rec("L_6_o1", "b", law="L-6", cuts=cuts, obligation="the second occurrence under the first id")
+        with world((law,)) as w:
+            w.plan(1, first, second)
+            w.coded(1, misnumbered)
+            block = plan.previous_records(w.run, [law])
+        self.assertIn("- state: not accepted, never coded", entry_of(block, "L_6_o1", "(characters 11–24)"))
+        other = entry_of(block, "L_6_o1", "(characters 42–55)")
+        self.assertIn("the second occurrence under the first id", other)
+        self.assertIn("- iteration 1: coded", other)
+
+    def test_a_reference_to_another_law_is_followed_and_a_missing_one_named(self):
+        m1 = rec("M_1", "ob1", [("c1", "M_2", "condition"), ("c1", "M_3", "condition")], law="M-1")
+        m2 = rec("M_2", "ob1", law="M-2")
+        o2 = rec("L_5_o2", "ob2", [("c1", "M_1", "compliance")])
+        laws = (LAW5, corpus.Law("M-1", "", TEXT, ""), corpus.Law("M-2", "", TEXT, ""))
+        with world(laws) as w:
+            w.plan(1, O1, o2, O3, m2)
+            w.accepted = {"M_1": m1}
+            block = plan.previous_records(w.run, [LAW5])
+        tail = block.split("### Nodes of other laws these records compose", 1)[1]
+        self.assertIn("composes `M_1` as compliance: a node of another law, below", block)
+        self.assertIn("`M_1` (M-1) — its duty: “shall stop at the line.”", tail)
+        self.assertIn("- state: accepted; the record as accepted", tail)
+        self.assertIn("`M_2` (M-2)", tail)
+        self.assertIn("- state: not accepted, not coded since; the record as planned in iteration 1", tail)
+        self.assertIn("composes `M_3` as condition: missing: no record of this id", tail)
+        self.assertEqual(tail.count("`M_1` (M-1)"), 1)
+
+    def test_a_replan_may_drop_or_correct_a_composition(self):
+        """No check holds a new plan to an earlier record's compositions: dropping one, or naming
+        another node than an earlier wrong one, adds no defect."""
+        def reasons(*recs):
+            out = validate_a.validate([Node(copy.deepcopy(r)) for r in recs], {LAW5.id: LAW5}, ONTO, SimpleNamespace(), SimpleNamespace(), {})
+            return {o.node.id: sorted(o.reasons) for o in out}
+        kept = reasons(O1, O2, O3)
+        dropped = reasons(O1, rec("L_5_o2", "ob2"), O3)
+        self.assertTrue(set(dropped["L_5_o2"]) <= set(kept["L_5_o2"]), set(dropped["L_5_o2"]) - set(kept["L_5_o2"]))
+        # an earlier plan composed the second node where the words refer to the first: the correction names no earlier target
+        self.assertFalse([r for r in reasons(O1, O2, O3)["L_5_o3"] if "L_5_o2" in r])
+
+
+class RepairContext(unittest.TestCase):
+    def test_the_repair_prompt_shows_the_referenced_records(self):
+        blocks = {}
+        m1 = rec("M_1", "ob1", law="M-1", obligation="the other law's duty")
+        o2 = rec("L_5_o2", "ob2", [("c1", "L_5_o1", "compliance"), ("c1", "M_1", "condition")])
+        laws = (LAW5, corpus.Law("M-1", "", TEXT, ""))
+        with world(laws) as w:
+            w.plan(1, O1, o2, O3)
+            w.coded(1, O1, upheld=["a case"])
+            w.coded(1, o2, upheld=["a case"])
+            w.accepted = {"M_1": m1}
+            d = w.root / "iter"
+            run = SimpleNamespace(iter=d, dir=d, iteration=2, mapping_file=d / "mapping.json", all_nodes=lambda: w.accepted,
+                                  all_concepts=lambda: {}, opts=SimpleNamespace(dry_run=True, plan_turns=1, plan_effort="low", run_id="r",
+                                                                                 laws=w.root / "laws.jsonl"))
+            last = d / "last"
+            last.mkdir(parents=True)
+            with mock.patch.object(plan.render, "render", lambda _name, b, **_k: blocks.update(b) or "prompt"), \
+                    mock.patch.object(plan, "definitions_for", lambda _run, _laws: []), \
+                    mock.patch.object(review, "upheld_block", lambda *_a, **_k: ""):
+                reading = SimpleNamespace(data={"params": []}, params=[], pending_aggregates=False)
+                plan.run_node_repair(run, Node(o2), ["r"], last, LAW5, [], [Node(O1), Node(O3)], reading, ONTO)
+        node = blocks["node"]
+        o1 = entry_of(node, "L_5_o1", "shall stop")
+        self.assertIn("- state: not accepted; the record as coded in iteration 1", o1)
+        self.assertIn("- obligation: L_5_o1 obligation", o1)
+        self.assertIn("`L_5_o3` —", node)
+        self.assertIn("composes `L_5_o1` as compliance: its duty at characters 45–68; not accepted", node)
+        self.assertIn("`M_1` (M-1)", node)
+        self.assertIn("- obligation: the other law's duty", node)
+        self.assertIn("- state: accepted; the record as accepted", node)
+
+
+def smoke23_duties() -> list[tuple[str, str]]:
+    """The fixture's plan of iteration 1: each node id with the first words of its obligation span."""
+    fx = json.loads(SMOKE23.read_text(encoding="utf-8"))
+    return [(r["node_id"], next(x["text"] for x in r["segmentation"] if x["role"] == "obligation")[:30])
+            for r in fx["files"]["iter-001/plan/blueprint.jsonl"]]
+
+
+class Smoke23Records(unittest.TestCase):
+    """smoke23, a law of three duties before its iteration-3 plan: only the first node had been
+    coded; the other two had been planned composing it and validated, never coded."""
+
+    def test_the_uncoded_callers_are_shown(self):
+        fx = json.loads(SMOKE23.read_text(encoding="utf-8"))
+        (o1, w1), (o2, w2), (o3, w3) = smoke23_duties()
+        self.assertEqual(fx["iteration_3_prompt"]["previous_record_nodes"], [o1])          # what the run showed
+        with smoke23_world() as (run, law):
+            block = plan.previous_records(run, [law])
+        for nid, words in ((o2, w2), (o3, w3)):
+            e = entry_of(block, nid, words)
+            self.assertIn(f"composes `{o1}` as compliance", e)
+            self.assertIn("- iteration 1: planned; validator accept; not coded", e)
+            self.assertIn("- iteration 2: validator accept; not coded", e)
+            self.assertIn("- state: not accepted, never coded", e)
+        self.assertIn("the plan of iteration 1 and what followed", block)
+        e1 = entry_of(block, o1, w1)
+        self.assertIn("The record, as coded in iteration 2:", e1)
+        self.assertIn("- iteration 2: repaired; the validator accepted the revision; validator accept; coded: gate OK", e1)
+        self.assertIn("the review returned it (5 upheld case(s))", e1)
+        self.assertNotIn("state: accepted", block)
+
 
 if __name__ == "__main__":
     unittest.main()

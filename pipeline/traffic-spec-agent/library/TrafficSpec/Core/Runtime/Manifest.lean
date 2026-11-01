@@ -71,13 +71,17 @@ def atomIdOf (name : String) : Option String :=
 
 /-- The atom ids a read of `id` depends on: itself, and for a read of a region kind or of a relation
     that reads kind membership, the kinds whose masks its verdict follows (a kind's ancestors; a
-    lane relation's lane kind; an entrance's line kinds). -/
+    lane relation's lane kind; an entrance's line kinds, stop line and crosswalk). No source
+    declares an abstract kind: a read of one depends on the kinds refining it directly, and no read
+    depends on an abstract ancestor. -/
 def kindDependencies (id : String) : List String :=
-  let kinds (ks : List StructureKind) := ks.map fun k => s!"st.{k}"
-  let ofKind (k : StructureKind) := kinds (k :: k.ancestors)
+  let kinds (ks : List StructureKind) := (ks.filter (!·.isAbstract)).map fun k => s!"st.{k}"
+  let ofKind (k : StructureKind) :=
+    if k.isAbstract then kinds (StructureKind.all.filter (·.parent? == some k))
+    else kinds (k :: k.ancestors)
   match id with
   | "rel.ahead_behind_in_lane" => id :: ofKind .lane
-  | "st.entrance_of" => id :: ofKind .stopLine ++ ofKind .crosswalk ++ ofKind .lane
+  | "st.entrance_of" => id :: ofKind .stopLine ++ ofKind .crosswalk
   | _ =>
     if id.startsWith "st." then
       match StructureKind.ofString ((id.drop 3).toString) with
@@ -205,9 +209,10 @@ def structure' (id : String) (st : Structure) : Option Structure :=
   | "st.region_geometry" => some { st with position := none, boundary := none }
   | _ =>
     -- a kind atom: the source cannot tell this kind; a kind that refines another is unknown only on
-    -- the regions labelled with one of its ancestors (`Structure.isOfKind`)
+    -- the regions labelled with one of its ancestors (`Structure.isOfKind`); an abstract kind is
+    -- never declared: what a source cannot tell of it is what it cannot tell of the kinds refining it
     match StructureKind.ofString ((id.drop 3).toString) with
-    | some k => some { st with unobservedKinds := k :: st.unobservedKinds }
+    | some k => if k.isAbstract then some st else some { st with unobservedKinds := k :: st.unobservedKinds }
     | none => some st
 
 def device (id : String) (d : Device) : Option Device :=

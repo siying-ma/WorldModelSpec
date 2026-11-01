@@ -5,16 +5,20 @@ open TrafficSpec Units TrafficSpec.Semantics TrafficSpec.Tests.Semantics
 
 -- ---------------------------------------------------------------------------------------------
 -- The relation: turn, reserved and centre turn lane refine lane; one-way roadway refines roadway;
+-- lane, roadway, shoulder, intersection and bicycle lane or path refine the abstract travel region;
 -- nothing else refines anything.
 -- ---------------------------------------------------------------------------------------------
 def structureKinds : List StructureKind :=
   atomIds.filterMap fun id => if id.startsWith "st." then StructureKind.ofString (id.drop 3).toString else none
-#guard structureKinds.filter (·.parent?.isSome) = [.oneWayRoadway, .reservedLane, .centreTurnLane, .turnLane]
+#guard structureKinds.filter (·.parent?.isSome) =
+  [.roadway, .lane, .shoulder, .oneWayRoadway, .intersection, .bicycleLaneOrPath, .reservedLane, .centreTurnLane, .turnLane]
+#guard structureKinds.filter (·.isAbstract) = [.travelRegion]
 #guard StructureKind.parent? .turnLane = some .lane
 #guard StructureKind.parent? .oneWayRoadway = some .roadway
-#guard StructureKind.parent? .bicycleLaneOrPath = none
+#guard StructureKind.parent? .bicycleLaneOrPath = some .travelRegion
+#guard StructureKind.parent? .sidewalk = none
 #guard structureKinds.all fun k => k.refines k
-#guard structureKinds.all fun k => k.ancestors = k.parent?.toList
+#guard structureKinds.all fun k => k.ancestors = match k.parent? with | some p => p :: p.ancestors | none => []
 
 def st (id : Nat) (k : StructureKind) (u : List StructureKind := []) : Structure := { id := id, kind := k, unobservedKinds := u }
 

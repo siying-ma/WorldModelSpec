@@ -318,12 +318,11 @@ def evalMeasure (s : Scene) (name : String) (args : List DArg) : QR := do
     | .s "year" => qn (ct.map (·.year)) name
     | _ => .error (.malformed "civil time field")
   | "rel_centre_distance", [a, a'] => q (rel_centre_distance s (← ent a) (← ent a')) name
-  | "rel_surface_gap", [a, a'] => q (rel_surface_gap_min s (← ent a) (← ent a')) name
+  | "rel_surface_gap", [a, a'] => q (rel_surface_gap_distance s (← ent a) (← ent a')) name
   | "rel_surface_gap", [a, a', k] =>
     match k with
     | .s "longitudinal" => q (rel_surface_gap_longitudinal s (← ent a) (← ent a')) name
     | .s "lateral" => q (rel_surface_gap_lateral s (← ent a) (← ent a')) name
-    | .s "min" => q (rel_surface_gap_min s (← ent a) (← ent a')) name
     | _ => .error (.malformed "gap component")
   | "rel_longitudinal_overlap", [a, a'] => q (rel_longitudinal_overlap s (← ent a) (← ent a')) name
   | "rel_bearing", [a, a', k] => comp (rel_bearing s (← ent a) (← ent a')) k name

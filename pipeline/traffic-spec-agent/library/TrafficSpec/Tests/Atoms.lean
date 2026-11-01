@@ -167,6 +167,17 @@ def isOffset (r : QR) (q : Q) : Bool := match r with | .ok v => Q.isZero (Q.sub 
 #guard isOffset (offsetOf [strip 20 (-5) (-3)]) (metres (-3))
 #guard isOffset (offsetOf [strip 20 (-1) 1]) Q.zero
 #guard !(offsetOf [strip 20 3 5] { ua with kin := { ua.kin with heading := none } }).toBool
+-- equally near boundary points: their common lateral component, undefined where they differ, the
+-- same whatever vertex the boundary starts from and in either direction
+def region (rid : Nat) (pts : List (Int × Int)) : Structure :=
+  { id := rid, kind := .medianOrDivider, boundary := some (pts.map fun (x, y) => (metres x, metres y)) }
+def notch : List (Int × Int) := [(-5, 4), (-2, 4), (0, 7), (2, 4), (5, 4), (5, 10), (-5, 10)]   -- nearest at (±2, 4)
+def around : List (Int × Int) := [(-5, 3), (4, 3), (4, -3), (-5, -3), (-5, -6), (7, -6), (7, 6), (-5, 6)]   -- nearest at (0, ±3)
+def orders (pts : List (Int × Int)) : List (List (Int × Int)) :=
+  [pts, pts.drop 3 ++ pts.take 3, pts.reverse, (pts.drop 2 ++ pts.take 2).reverse]
+def isUndefined (r : QR) : Bool := match r with | .error (.undefined _) => true | _ => false
+#guard (orders notch).all fun pts => isOffset (offsetOf [region 20 pts]) (metres 4)
+#guard (orders around).all fun pts => isUndefined (offsetOf [region 20 pts])
 -- a heading is read as a direction whatever its length: scaling every heading changes no reader
 def scaleHeadings (k : Q) (s : Scene) : Scene :=
   { s with users := s.users.map fun u => { u with kin := { u.kin with heading := u.kin.heading.map fun (a, b) => (Q.mul k a, Q.mul k b) } } }

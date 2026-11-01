@@ -2,7 +2,8 @@
 
 The session starts from two files the harness wrote (`skeleton.py`): every declaration the gate
 compares, the parameters as terms, the four scenarios with their verdicts. It is shown the Core
-surface, the run's reading (the values its witnesses must be built against), and the most recently
+surface, the contracts of what its record claims and of what those read (the ones its reviewer is
+shown), the run's reading (the values its witnesses must be built against), and the most recently
 accepted node as a worked example. Core is readable, not writable; the harness is neither.
 """
 from __future__ import annotations
@@ -17,11 +18,12 @@ from ..agents import render, session
 from ..model.blueprint import Node, ConceptRecord
 from ..model.reading import Reading
 from ..store.state import Run, base_view
+from . import validate as validate_phase
 
-PLACEHOLDERS = ("node", "files", "core_surface", "reading", "example", "skeletons", "gate", "rule_path", "witness_path", "node_id", "core_dir",
-                "anchors", "aggregate_atom")
-PLACEHOLDERS_CONCEPT = ("concept", "files", "core_surface", "example", "skeletons", "gate", "concept_path", "witness_path", "concept_id", "mode", "core_dir",
-                        "anchors")
+PLACEHOLDERS = ("node", "files", "core_surface", "contracts", "reading", "example", "skeletons", "gate", "rule_path", "witness_path", "node_id",
+                "core_dir", "anchors", "aggregate_atom")
+PLACEHOLDERS_CONCEPT = ("concept", "files", "core_surface", "contracts", "example", "skeletons", "gate", "concept_path", "witness_path", "concept_id",
+                        "mode", "core_dir", "anchors")
 SESSION_FAILED = "SESSION_FAILED"     # the session never ran; not a verdict on the node
 
 
@@ -79,6 +81,47 @@ def _save_verdict(d: Path, v: gate.Verdict, rels: tuple[str, ...], context: str 
     if v.verdict == "OK":
         v.extras["candidate_digest"] = _files_digest(rels)
     (d / "verdict.json").write_text(json.dumps(v.to_dict(), ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def last_task(run: Run, ident: str) -> Path | None:
+    """The record's most recent task directory of an earlier iteration that holds a verdict."""
+    name = concept_dirname(ident) if nodeid.is_concept_id(ident) else ident
+    done = [p.parent for p in run.dir.glob(f"iter-*/code/{name}/verdict.json") if int(p.parent.parent.parent.name[5:]) < run.iteration]
+    return max(done, key=lambda p: p.parent.parent.name) if done else None
+
+
+def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | None) -> Path | None:
+    """`saved` when it holds a candidate whose gate ended on the evaluation's cost (a deadline, or a
+    resource failure reproduced in isolation; not a panic) on this same context, with both files kept:
+    gated again as it is, it needs no new coding session. Its context is the task's admission key (the
+    record, what it calls and composes, the reading values it reads, Core, the ontology and the gate's
+    implementation), so any change to those codes the record again."""
+    if saved is None or context is None:
+        return None
+    try:
+        v = json.loads((saved / "verdict.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    ok = (v.get("verdict") == gate.GATE_TIMEOUT and not v.get("extras", {}).get("panic")
+          and v.get("extras", {}).get("context") == context and all((saved / "final" / r).is_file() for r in rels))
+    return saved if ok else None
+
+
+def _gate_saved(d: Path, rels: tuple[str, ...], saved: Path, context: str | None, run_gate, rollback_) -> gate.Verdict:
+    """Gate the saved candidate again, at the same deadline, without a session: its files enter the
+    library as they were gated, and the verdict names the task they come from."""
+    for rel in rels:
+        p = paths.LIBRARY / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes((saved / "final" / rel).read_bytes())
+    (d / "rerun_of.txt").write_text(str(saved), encoding="utf-8")
+    print(f"[code] {d.name}: gating again the candidate saved in {saved}; no session")
+    v = run_gate()
+    v.extras["rerun_of"] = str(saved)
+    _save_verdict(d, v, rels, context)
+    if v.verdict != "OK":
+        rollback_()
+    return v
 
 
 def node_dir(run: Run, node_id: str) -> Path:
@@ -200,6 +243,24 @@ def reading_table(node: Node, reading: Reading) -> str:
     return "\n".join(out) + "\n"
 
 
+def contracts_block(run: Run, rec: Node | ConceptRecord) -> str:
+    """The contracts a coding session writes by, from the run's ontology and catalogue through the
+    one gloss path the reviewer and the judges are shown: for a node, its reviewer's own contracts
+    (every id it claims, the atoms its claimed primitives and concepts read, its declared facts and
+    its compositions); for a concept, every atom, primitive and concept its elements map to and the
+    atoms those primitives and concepts read."""
+    onto = ontology.load(run.opts.ontology)
+    if isinstance(rec, Node):
+        glosses = validate_phase.glosses_for(rec, onto, run)
+    else:
+        concepts = run.all_concepts()
+        ids = validate_phase.claimed_closure(rec, onto) | rec.refs()
+        for cid in rec.refs():
+            ids |= set((concepts.get(cid) or {}).get("reads", []))
+        glosses = validate_phase.glosses_of(sorted(ids), onto, run)
+    return "### Contracts\n\n" + validate_phase.contracts_table(glosses)
+
+
 def worked_example(run: Run) -> str:
     """The most recently accepted node's two files, as the pattern to follow; the skeletons alone when there is none."""
     for nid in reversed(list(run.accepted_nodes)):
@@ -222,10 +283,12 @@ def write_skeletons(node: Node) -> tuple[str, str]:
     return r, w
 
 
-def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None) -> gate.Verdict:
+def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None,
+             saved: Path | None = None) -> gate.Verdict:
     """One coding session for a node, then the harness's own gate call. `registry` names the ids
     the gate registers (the accepted ones and this node); `concurrent` the files of the sessions
-    running beside this one, which its scope check does not count."""
+    running beside this one, which its scope check does not count; `saved` an earlier task whose
+    candidate is gated again instead of a session when `_saved_candidate` admits it."""
     d = node_dir(run, node.id)
     d.mkdir(parents=True, exist_ok=True)
     rels = (nodeid.rule_path(node.id), nodeid.witness_path(node.id))
@@ -239,6 +302,11 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     only_nodes = None if registry is None else sorted(set(registry.get("nodes", [])) | {node.id})
     only_concepts = None if registry is None else registry.get("concepts")
     baseline = _start(d, rels)
+    again = _saved_candidate(saved, rels, context)
+    if again is not None:
+        return _gate_saved(d, rels, again, context, lambda: gate.run_gate(node, reading, baseline, d, budget_used=0, budget=run.opts.gate_budget + 1,
+                                                                           accepted_concepts=run.all_concepts()),
+                           lambda: rollback(node.id, baseline, d))
     rule_rel, wit_rel = rels
     rule_text, wit_text = write_skeletons(node)
     if not run.opts.dry_run:
@@ -259,7 +327,8 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
                  + ", ".join(gate.VERDICTS) + f". `{gate.INFRA}` is not one: the toolchain or the run did not let the gate judge your files. Budget: {run.opts.gate_budget} runs; the harness re-runs the gate itself after you stop, on the files as they are then.\n")
     prompt = render.render("code.md", {
         "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
-        "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "reading": reading_table(node, reading),
+        "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "contracts": contracts_block(run, node),
+        "reading": reading_table(node, reading),
         "example": worked_example(run), "skeletons": skeletons, "gate": gate_text,
         "rule_path": str(rule_abs), "witness_path": str(wit_abs), "node_id": node.id,
         "core_dir": str(paths.CORE.resolve()),
@@ -362,7 +431,8 @@ def write_concept_skeletons(rec: ConceptRecord) -> tuple[str, str]:
     return c, w
 
 
-def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None) -> gate.Verdict:
+def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None,
+                     saved: Path | None = None) -> gate.Verdict:
     d = concept_dir(run, rec.id)
     d.mkdir(parents=True, exist_ok=True)
     rels = (nodeid.concept_path(rec.id), nodeid.concept_witness_path(rec.id))
@@ -376,6 +446,12 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
     only_nodes = None if registry is None else registry.get("nodes")
     only_concepts = None if registry is None else sorted(set(registry.get("concepts", [])) | {rec.id})
     baseline = _start(d, rels)
+    again = _saved_candidate(saved, rels, context)
+    if again is not None:
+        return _gate_saved(d, rels, again, context, lambda: gate.run_concept_gate(rec, reading, baseline, d, budget_used=0,
+                                                                                   budget=run.opts.gate_budget + 1, mode=run.opts.mode,
+                                                                                   accepted=run.all_concepts()),
+                           lambda: rollback_concept(rec.id, baseline, d))
     c_rel, w_rel = rels
     c_text, w_text = write_concept_skeletons(rec)
     if not run.opts.dry_run:
@@ -396,7 +472,8 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
                  + ", ".join(gate.CONCEPT_VERDICTS) + f". `{gate.INFRA}` is not one: the toolchain or the run did not let the gate judge your files. Budget: {run.opts.gate_budget} runs; the harness re-runs the gate itself after you stop, on the files as they are then.\n")
     prompt = render.render("code_concept.md", {
         "concept": json.dumps(rec.raw, ensure_ascii=False, indent=1), "files": files,
-        "core_surface": surface.core_surface(run.all_concepts(), claimed=rec.claimed_atoms() | rec.refs()), "example": concept_example(run), "skeletons": skeletons,
+        "core_surface": surface.core_surface(run.all_concepts(), claimed=rec.claimed_atoms() | rec.refs()), "contracts": contracts_block(run, rec),
+        "example": concept_example(run), "skeletons": skeletons,
         "gate": gate_text, "concept_path": str(c_abs), "witness_path": str(w_abs), "concept_id": rec.id,
         "mode": run.opts.mode, "core_dir": str(paths.CORE.resolve()),
         "anchors": ontology.anchors_text(ontology.load(run.opts.ontology), lean=True)})

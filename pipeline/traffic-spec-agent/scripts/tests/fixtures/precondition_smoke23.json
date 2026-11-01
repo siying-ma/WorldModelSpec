@@ -1,0 +1,1589 @@
+{
+ "about": "Minimal records of smoke23 for NRS-484B-250-4, as the run wrote them before its iteration-3 plan; read-only copies (trimmed where noted). The iteration-3 plan prompt's previous-record section named only these nodes.",
+ "law": {
+  "id": "NRS-484B-250-4",
+  "title": "Vehicle approaching or entering intersection (4)",
+  "text": "When a vehicle enters an intersection controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection, the driver of the vehicle shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway. After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+  "source": "NRS 484B.250(4)"
+ },
+ "files": {
+  "iter-001/plan/blueprint.jsonl": [
+   {
+    "node_id": "NRS_484B_250_4_o1",
+    "law_refs": [
+     "NRS-484B-250-4"
+    ],
+    "subject": {
+     "binder": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    },
+    "segmentation": [
+     {
+      "id": "t1",
+      "text": "When a vehicle enters an intersection",
+      "role": "trigger"
+     },
+     {
+      "id": "t2",
+      "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+      "role": "condition"
+     },
+     {
+      "id": "s1",
+      "text": "the driver of the vehicle",
+      "role": "subject"
+     },
+     {
+      "id": "o1",
+      "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+      "role": "obligation"
+     },
+     {
+      "id": "x1",
+      "text": "After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+      "role": "sibling"
+     }
+    ],
+    "elements": [
+     {
+      "span": "t1",
+      "atoms": [
+       "st.intersection",
+       "rel.occupies",
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [
+       "drv.position.enters_region"
+      ],
+      "justification": "\"enters an intersection\" is the event the concept `drv.position.enters_region` of this plan denotes, called on the subject and on the intersection region it enters. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over, and `rel.occupies`, \"a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line ...)\", is the anchoring relation the concept reads; `st.intersection` is \"Not a stand-in for: a crosswalk or a stop line\", and those are read separately as the places of the halt. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`."
+     },
+     {
+      "span": "t2",
+      "atoms": [
+       "dev.traffic_signal",
+       "dev.inoperative",
+       "dev.governs",
+       "st.intersection"
+      ],
+      "derived": [],
+      "justification": "\"a traffic-control signal\" is `dev.traffic_signal`, \"a signal head\"; \"controlled by\" is `dev.governs`, which carries \"an intersection, read as control of the junction itself and of nothing else (no closure to the lanes that enter it)\" and is \"Not a stand-in for: a position\", so no distance to the head is read. \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\". \"but is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\"; \"at the time the vehicle enters the intersection\" is the observation the trigger fixes, which is the observation this rule judges, so the signal's state is read there directly and no earlier state of the same head stands in for it. `st.intersection` is the kind the region quantifier ranges over."
+     },
+     {
+      "span": "s1",
+      "atoms": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [],
+      "justification": "\"the vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`, \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the duty binds that vehicle's conduct, and \"the driver of\" is read through it (see the narrowing on this span)."
+     },
+     {
+      "span": "o1",
+      "atoms": [
+       "kin.speed",
+       "st.stop_line",
+       "st.crosswalk",
+       "st.intersection",
+       "st.lane",
+       "st.lane_enters",
+       "st.on_way",
+       "st.highway",
+       "st.region_geometry",
+       "rel.occupies",
+       "st.sight_along_way"
+      ],
+      "derived": [
+       "drv.motion.standstill"
+      ],
+      "justification": "\"shall stop\" is the concept `drv.motion.standstill` of this plan, whose contract quotes NRS 484A.255, \"complete cessation from movement\" - the definition whose own scope is a stop \"when required\", which this clause requires - and which reads `kin.speed`, \"magnitude of velocity\". The places of the halt: \"a clearly marked stop line\" is `st.stop_line`, \"the transverse line marking where vehicles halt for a device\", tied to the subject's own approach by `st.lane`, \"a longitudinal strip of roadway for one line of vehicles\", `rel.occupies`, `st.lane_enters`, \"the intersection region a lane runs into at its end - the lane is an approach to that intersection\", and `st.on_way`, \"the public way (a `highway` region) a structure region lies on - a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it\", so the line read is one on the way carrying the lane that runs into the junction the subject enters, not any line of the scene; `st.lane_enters` is \"Not a stand-in for: the lane a lane leads into\", and no such chain is used. \"before entering the crosswalk on the near side of the intersection\" is `st.crosswalk`, \"marked crossing, or the unmarked prolongation of sidewalks at an intersection\", tied to the approach the same way, with `rel.occupies` negated for not having entered it. \"a view of approaching traffic on the through highway\" is `st.sight_along_way`, \"the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation ...; the smaller of the two directions\", read of a `st.highway` way on which the junction lies (`st.on_way`: \"an intersection lies on every way that meets there\") other than the way carrying the subject's approach; it is \"Not a stand-in for: the sight distance of the place the road user is at\" nor \"whether an actual road user is seen\", and neither is read. `st.region_geometry` carries \"the ground distance from a road user's body outline to it (zero when they overlap)\" for the distance to the line and to the junction, and is \"Not a stand-in for: occupancy\", which `rel.occupies` reads on its own."
+     }
+    ],
+    "operationalizations": [],
+    "assumptions": [],
+    "intentions": [],
+    "compositions": [],
+    "residues": [],
+    "binders": [
+     {
+      "name": "v",
+      "class_elements": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ]
+     }
+    ],
+    "applicability": "At an observation at which the subject vehicle enters an intersection - its overlap with that intersection region rises - and a traffic-control signal that governs that intersection has its head uncovered and is inoperative at that same observation.",
+    "obligation": "At that observation the subject must already have come to a standstill (drv.motion.standstill) at the stopping point that governs its approach, at some observation within p.stop_lookback behind the entry: (a) where a stop line lies on the way carrying an approach lane the subject occupies that runs into that intersection and lies within p.stopping_point_reach of the subject, the standstill occurred at an observation at which the subject did not overlap that stop line and its distance to it was at most p.stop_at_line_tolerance; (b) otherwise, where such a crosswalk lies on that way within p.stopping_point_reach of the subject, the standstill occurred at an observation at which the subject did not overlap that crosswalk; (c) otherwise, at the last observation in that window at which the sight along a way on which the intersection lies, other than the way carrying the subject's approach, exceeded p.sight_resolution, the subject was at a standstill.",
+    "params": [
+     "p.standstill_speed_tolerance",
+     "p.stop_lookback",
+     "p.stopping_point_reach",
+     "p.stop_at_line_tolerance",
+     "p.sight_resolution"
+    ],
+    "narrowings": [
+     {
+      "span": "s1",
+      "why": "\"the driver of the vehicle\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+      "kind": "observable_reading",
+      "category": "agency"
+     },
+     {
+      "span": "o1",
+      "why": "\"a clearly marked stop line\" - the clarity of the paint is not modelled: the represented stop line is read as the clearly marked one, as the ontology's reading of this very phrase states. This never relaxes which stopping point governs, nor the action or its timing.",
+      "kind": "observable_reading",
+      "category": "status"
+     },
+     {
+      "span": "o1",
+      "why": "\"the through highway\" - the designation of a highway as a priority way is a legal status, whose evidence on the road at this junction is the device governing the subject's own approach (the trigger's signal, an official traffic-control device at the entrance). The span is therefore read as a way on which the intersection lies other than the way carrying the subject's approach lane.",
+      "kind": "observable_reading",
+      "category": "status"
+     },
+     {
+      "span": "o1",
+      "why": "\"where the driver has a view of approaching traffic\" is read through `st.sight_along_way`, the distance along that way within which another vehicle on it could be seen from the road user's eye, standing clear of p.sight_resolution: what could be seen of a vehicle, not membership of the aggregate traffic, so the aggregate's other members (pedestrians, ridden or herded animals and other conveyances) are not read on this span, and nothing is read of what the driver in fact perceived.",
+      "kind": "reading"
+     },
+     {
+      "span": "o1",
+      "why": "\"the point nearest the intersection where the driver has a view\" is read in time rather than in space: the last observation within p.stop_lookback behind the entry at which that view held, which is the latest, hence the nearest to the intersection, point of the approach at which it held.",
+      "kind": "reading"
+     },
+     {
+      "span": "o1",
+      "why": "\"shall proceed as if a stop sign had been erected at each entrance to the intersection\" is read through the duty the same sentence spells out - the halt at the stopping point that governs the approach, before entering the intersection. No stop sign is read into the scene, and no device is required to be present.",
+      "kind": "reading"
+     }
+    ],
+    "scenarios": [
+     {
+      "name": "forbid",
+      "expected": "violated",
+      "narrative": "A signal head governs the intersection, its faces uncovered and the head inoperative. A stop line lies on the way carrying the subject's approach lane, which runs into that intersection, 4 m ahead of the subject. The subject rolls over the line at 6 m/s and its footprint overlaps the intersection, having been at no observation within p.stop_lookback at a standstill.",
+      "masked": []
+     },
+     {
+      "name": "permit",
+      "expected": "compliant",
+      "narrative": "The same inoperative uncovered signal and stop line. The subject halts at 1 m short of the line, its speed 0 m/s for several observations, then moves off and enters the intersection. No other road user is in the scene.",
+      "masked": []
+     },
+     {
+      "name": "idle",
+      "expected": "not_applicable",
+      "narrative": "The subject enters an intersection whose signal head is uncovered and shows circular green: the head is not inoperative, so the condition never holds.",
+      "masked": []
+     },
+     {
+      "name": "blind",
+      "expected": "unknown",
+      "narrative": "The subject enters an intersection governed by an uncovered signal head and made no halt, but the source declares the inoperative state of signal heads absent, so whether the head showed no valid indication at the entry cannot be read.",
+      "masked": [
+       "dev.inoperative"
+      ]
+     },
+     {
+      "name": "branch_1",
+      "expected": "compliant",
+      "narrative": "No stop line lies on the subject's approach. A marked crosswalk on the near side does. The subject halts with its footprint clear of the crosswalk, then proceeds and enters the intersection.",
+      "masked": []
+     },
+     {
+      "name": "branch_2",
+      "expected": "violated",
+      "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject's first standstill occurs with its footprint already overlapping the crosswalk, and it then enters the intersection.",
+      "masked": []
+     },
+     {
+      "name": "branch_3",
+      "expected": "compliant",
+      "narrative": "Neither a stop line nor a crosswalk lies on the subject's approach. Going forward in time, the sight along the intersecting way on which the junction lies rises above p.sight_resolution as the subject nears the junction; at the last observation of the window at which it was above that floor the subject's speed was 0 m/s, and it then entered the intersection.",
+      "masked": []
+     }
+    ],
+    "literals": [],
+    "param_proposals": [
+     {
+      "name": "p.standstill_speed_tolerance",
+      "unit": "m/s",
+      "value": 0.1,
+      "convention": "complete-cessation tolerance: the largest speed reading at which a sampled measurement still renders a road user as having completely ceased to move",
+      "source": "stop-detection practice in trajectory processing"
+     },
+     {
+      "name": "p.stop_lookback",
+      "unit": "s",
+      "value": 10,
+      "convention": "approach-dwell window: the time behind an entry into a junction within which the halt required on the approach is sought, taken from the approach-and-stop time of a vehicle decelerating from an urban approach speed",
+      "source": "intersection approach-manoeuvre timing conventions"
+     },
+     {
+      "name": "p.stopping_point_reach",
+      "unit": "m",
+      "value": 15,
+      "convention": "reach within which a stopping point on the approach counts as the subject's own, taken from the usual set-back of a stop line or near-side crosswalk from the junction",
+      "source": "traffic-marking placement practice"
+     },
+     {
+      "name": "p.stop_at_line_tolerance",
+      "unit": "m",
+      "value": 2,
+      "convention": "stop-bar placement tolerance: the distance short of the line within which a halt counts as at the line",
+      "source": "traffic-marking placement practice"
+     },
+     {
+      "name": "p.sight_resolution",
+      "unit": "m",
+      "value": 1,
+      "convention": "source resolution: the least sight distance along a way a source resolves, so that having a view is the sight distance standing clear of zero and no adequacy of the view is assumed",
+      "source": "sight-line measurement resolution of scene sources"
+     }
+    ],
+    "gaps": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o2",
+    "law_refs": [
+     "NRS-484B-250-4"
+    ],
+    "subject": {
+     "binder": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    },
+    "segmentation": [
+     {
+      "id": "t1",
+      "text": "When a vehicle enters an intersection",
+      "role": "trigger"
+     },
+     {
+      "id": "t2",
+      "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+      "role": "condition"
+     },
+     {
+      "id": "x1",
+      "text": "the driver of the vehicle shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+      "role": "sibling"
+     },
+     {
+      "id": "t3",
+      "text": "After making such a stop,",
+      "role": "condition"
+     },
+     {
+      "id": "s1",
+      "text": "the driver",
+      "role": "subject"
+     },
+     {
+      "id": "o2",
+      "text": "shall proceed",
+      "role": "obligation"
+     },
+     {
+      "id": "st1",
+      "text": "cautiously",
+      "role": "standard"
+     },
+     {
+      "id": "x2",
+      "text": ", yielding to vehicles which have previously completed a stop or are within the intersection.",
+      "role": "sibling"
+     }
+    ],
+    "elements": [
+     {
+      "span": "t1",
+      "atoms": [
+       "st.intersection",
+       "rel.occupies",
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [
+       "drv.position.enters_region"
+      ],
+      "justification": "\"enters an intersection\" is the event the concept `drv.position.enters_region` of this plan denotes, called on the subject and on the intersection region; this node reads it at the last observation within p.entry_lookback behind the judged observation at which it held, since the duty it carries falls after that entry. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over, and `rel.occupies`, \"a road user's footprint overlaps a lane / region (... intersection ...)\", is the anchoring relation the concept reads. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`. The mapping is the one node NRS_484B_250_4_o1 of this plan makes of the same words."
+     },
+     {
+      "span": "t2",
+      "atoms": [
+       "dev.traffic_signal",
+       "dev.inoperative",
+       "dev.governs",
+       "st.intersection"
+      ],
+      "derived": [],
+      "justification": "The mapping node NRS_484B_250_4_o1 of this plan makes of the same words: \"a traffic-control signal\" is `dev.traffic_signal`, \"a signal head\"; \"controlled by\" is `dev.governs`, \"an intersection, read as control of the junction itself and of nothing else\", which is \"Not a stand-in for: a position\"; \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\"; \"is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\". \"at the time the vehicle enters the intersection\" fixes the condition to the entry observation, so it is read there - at the same past observation at which the entry is read - and no later state of the head stands in for it."
+     },
+     {
+      "span": "s1",
+      "atoms": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [],
+      "justification": "\"the driver\" is the driver of the vehicle the sentence has already bound: the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`, \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the duty binds that vehicle's conduct (see the narrowing on this span)."
+     },
+     {
+      "span": "o2",
+      "atoms": [
+       "kin.speed",
+       "rel.occupies",
+       "st.intersection"
+      ],
+      "derived": [],
+      "justification": "\"shall proceed\" is the subject's going on through the junction it entered: `kin.speed`, \"magnitude of velocity\", standing above the standstill tolerance, while `rel.occupies`, \"a road user's footprint overlaps a lane / region (... intersection ...)\", holds of the `st.intersection` region the trigger bound. The clause does not require the subject to move; it governs the manner of its going on, which the standard span bounds, so the element reads only the motion and the place."
+     }
+    ],
+    "operationalizations": [
+     {
+      "span": "st1",
+      "standard": "cautiously",
+      "concepts": [
+       "kin.speed",
+       "st.sight_along_way",
+       "st.highway",
+       "st.on_way",
+       "prim.closest_approach_within",
+       "prim.closest_approach_distance",
+       "drv.motion.standstill"
+      ],
+      "params": [
+       "p.cautious_speed_max",
+       "p.cautious_decel",
+       "p.cautious_clearance_min",
+       "p.yield_horizon",
+       "p.sight_resolution"
+      ],
+      "convention": "a stopping-distance model with a creep-speed cap and a gap-acceptance clearance: proceeding cautiously is read as the subject's speed (`kin.speed`) staying within the speed from which it can halt within the view it has along the ways that meet at the junction - speed squared at most twice p.cautious_decel times `st.sight_along_way` of a `st.highway` way on which that intersection lies (`st.on_way`), the sight read as standing clear of p.sight_resolution - and never above p.cautious_speed_max, and its motion keeping every other road user clear by at least p.cautious_clearance_min at the closest approach within p.yield_horizon (`prim.closest_approach_within`, `prim.closest_approach_distance`), with a standstill (`drv.motion.standstill`) always within the bound. The bound moves with the measured sight distance and with the other road users' motion, so a shorter view or a closer conflict holds the subject to a lower speed; p.cautious_decel is the comfortable deceleration of the stopping-distance model, p.cautious_clearance_min a centre-to-centre clearance, and p.cautious_speed_max the creep speed of the convention.",
+      "surrogate": true
+     }
+    ],
+    "assumptions": [],
+    "intentions": [],
+    "compositions": [
+     {
+      "span": "t3",
+      "rule": "NRS_484B_250_4_o1",
+      "map": {
+       "v": "v"
+      },
+      "as": "compliance"
+     }
+    ],
+    "residues": [],
+    "binders": [
+     {
+      "name": "v",
+      "class_elements": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ]
+     }
+    ],
+    "applicability": "At the last observation within p.entry_lookback behind this one at which the subject vehicle entered an intersection, a traffic-control signal governing that intersection had its head uncovered and was inoperative, and the subject complied there with NRS_484B_250_4_o1 (the halt that rule requires); the subject's footprint still overlaps that intersection at this observation.",
+    "obligation": "While the subject goes on through that intersection - its speed above the standstill tolerance - it proceeds cautiously in the sense the operationalization of st1 fixes: its speed stays within what lets it halt within the view available along the ways that meet at the junction and never exceeds p.cautious_speed_max, and its motion keeps every other road user clear by p.cautious_clearance_min at the closest approach within p.yield_horizon.",
+    "params": [
+     "p.entry_lookback",
+     "p.standstill_speed_tolerance",
+     "p.cautious_speed_max",
+     "p.cautious_decel",
+     "p.cautious_clearance_min",
+     "p.yield_horizon",
+     "p.sight_resolution"
+    ],
+    "narrowings": [
+     {
+      "span": "s1",
+      "why": "\"the driver\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+      "kind": "observable_reading",
+      "category": "agency"
+     },
+     {
+      "span": "st1",
+      "why": "\"cautiously\" names no factor in its own words. The catch-all is read only through the contracts the operationalization names: the subject's speed, the sight distance available along the ways that meet at the junction, and the closest approach to other road users. The driver's attention, care or state of mind is not observable, so this node is a surrogate: its verdicts are evidence, not a legal conclusion.",
+      "kind": "reading"
+     },
+     {
+      "span": "o2",
+      "why": "\"shall proceed\" is read as the subject's motion while its footprint still overlaps the intersection it entered: the duty is judged where the going on is observed, and a vehicle that has cleared the junction is no longer proceeding through it.",
+      "kind": "reading"
+     }
+    ],
+    "scenarios": [
+     {
+      "name": "forbid",
+      "expected": "violated",
+      "narrative": "The subject halted at the stop line of an intersection whose uncovered signal head was inoperative, then entered and crosses it at 11 m/s while the sight along the intersecting way is 12 m: its speed is far above both p.cautious_speed_max and the speed from which it could halt within that view.",
+      "masked": []
+     },
+     {
+      "name": "permit",
+      "expected": "compliant",
+      "narrative": "The same junction and halt. The subject then creeps across the intersection at 2 m/s with 40 m of sight along the intersecting way and no other road user in the scene.",
+      "masked": []
+     },
+     {
+      "name": "idle",
+      "expected": "not_applicable",
+      "narrative": "The subject crosses an intersection whose signal head is uncovered and shows circular green: the head was not inoperative at the entry, so the condition never holds.",
+      "masked": []
+     },
+     {
+      "name": "blind",
+      "expected": "unknown",
+      "narrative": "The subject halted and then crosses the junction of an uncovered, inoperative signal at 9 m/s, but the source declares the sight distance along a way absent, so the view the speed is bounded against cannot be read.",
+      "masked": [
+       "st.sight_along_way"
+      ]
+     },
+     {
+      "name": "branch_1",
+      "expected": "violated",
+      "narrative": "The subject halted and then crosses at 3 m/s, under p.cautious_speed_max and within its view, but another vehicle crossing from the left would come within 1 m of it centre to centre inside p.yield_horizon under their present velocities.",
+      "masked": []
+     }
+    ],
+    "literals": [],
+    "param_proposals": [
+     {
+      "name": "p.entry_lookback",
+      "unit": "s",
+      "value": 10,
+      "convention": "junction-transit window: the time behind an observation within which the subject's entry into the junction it is crossing is sought, taken from the time a vehicle takes to clear an urban intersection from a halt",
+      "source": "intersection clearance-time conventions"
+     },
+     {
+      "name": "p.standstill_speed_tolerance",
+      "unit": "m/s",
+      "value": 0.1,
+      "convention": "complete-cessation tolerance: the largest speed reading at which a sampled measurement still renders a road user as having completely ceased to move",
+      "source": "stop-detection practice in trajectory processing"
+     },
+     {
+      "name": "p.cautious_speed_max",
+      "unit": "m/s",
+      "value": 4.5,
+      "convention": "creep-speed cap of the cautious-proceeding convention: the speed at which a vehicle crossing an uncontrolled junction can be halted within a few metres",
+      "source": "stopping-sight-distance and creep-speed practice"
+     },
+     {
+      "name": "p.cautious_decel",
+      "unit": "m/s2",
+      "value": 3.4,
+      "convention": "comfortable deceleration of the stopping-distance model, against which the speed the available view allows is computed",
+      "source": "highway-geometry stopping-sight-distance model"
+     },
+     {
+      "name": "p.cautious_clearance_min",
+      "unit": "m",
+      "value": 4,
+      "convention": "gap-acceptance clearance measured centre to centre, since centre-to-centre distance overstates a body clearance by about the two half-extents",
+      "source": "gap-acceptance and conflict-analysis practice"
+     },
+     {
+      "name": "p.yield_horizon",
+      "unit": "s",
+      "value": 4,
+      "convention": "conflict horizon of the gap-acceptance convention: the time ahead within which a closest approach is counted as a conflict the subject's motion causes",
+      "source": "surrogate-safety conflict-analysis practice"
+     },
+     {
+      "name": "p.sight_resolution",
+      "unit": "m",
+      "value": 1,
+      "convention": "source resolution: the least sight distance along a way a source resolves, so that having a view is the sight distance standing clear of zero",
+      "source": "sight-line measurement resolution of scene sources"
+     }
+    ],
+    "gaps": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o3",
+    "law_refs": [
+     "NRS-484B-250-4"
+    ],
+    "subject": {
+     "binder": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    },
+    "segmentation": [
+     {
+      "id": "t1",
+      "text": "When a vehicle enters an intersection",
+      "role": "trigger"
+     },
+     {
+      "id": "t2",
+      "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+      "role": "condition"
+     },
+     {
+      "id": "x1",
+      "text": "the driver of the vehicle shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+      "role": "sibling"
+     },
+     {
+      "id": "t3",
+      "text": "After making such a stop,",
+      "role": "condition"
+     },
+     {
+      "id": "s1",
+      "text": "the driver",
+      "role": "subject"
+     },
+     {
+      "id": "x2",
+      "text": "shall proceed cautiously,",
+      "role": "sibling"
+     },
+     {
+      "id": "o3",
+      "text": "yielding to vehicles which have previously completed a stop or are within the intersection.",
+      "role": "obligation"
+     }
+    ],
+    "elements": [
+     {
+      "span": "t1",
+      "atoms": [
+       "st.intersection",
+       "rel.occupies",
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [
+       "drv.position.enters_region"
+      ],
+      "justification": "The mapping node NRS_484B_250_4_o1 of this plan makes of the same words: \"enters an intersection\" is the concept `drv.position.enters_region` of this plan, called on the subject and on the intersection region, read here at the last observation within p.entry_lookback behind the judged observation at which it held, since this duty falls after that entry. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over; `rel.occupies`, \"a road user's footprint overlaps a lane / region (... intersection ...)\", is the anchoring relation the concept reads. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`."
+     },
+     {
+      "span": "t2",
+      "atoms": [
+       "dev.traffic_signal",
+       "dev.inoperative",
+       "dev.governs",
+       "st.intersection"
+      ],
+      "derived": [],
+      "justification": "The mapping node NRS_484B_250_4_o1 of this plan makes of the same words: `dev.traffic_signal`, \"a signal head\", governing the junction by `dev.governs`, \"an intersection, read as control of the junction itself and of nothing else\" (\"Not a stand-in for: a position\"); \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\"; \"is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\", read at the entry observation the words fix."
+     },
+     {
+      "span": "s1",
+      "atoms": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ],
+      "derived": [],
+      "justification": "\"the driver\" is the driver of the vehicle the sentence has bound: the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`; the duty binds that vehicle's conduct (see the narrowing on this span)."
+     },
+     {
+      "span": "o3",
+      "atoms": [
+       "kin.speed",
+       "rel.occupies",
+       "st.intersection",
+       "prim.closest_approach_within",
+       "prim.closest_approach_distance"
+      ],
+      "derived": [
+       "drv.motion.standstill"
+      ],
+      "justification": "\"vehicles which have previously completed a stop\" is the concept `drv.motion.standstill` of this plan - whose contract quotes NRS 484A.255, \"complete cessation from movement\" - holding of such a vehicle at an earlier observation, which the formula language counts without a further atom (the rising edges of the concept since the start of the trace). \"or are within the intersection\" is `rel.occupies`, \"a road user's footprint overlaps a lane / region (... intersection ...)\", read of the `st.intersection` region the subject entered; `st.intersection` is \"Not a stand-in for: a crosswalk or a stop line\", and neither is read on this span. \"yielding to\" is the subject's not advancing so as to deprive such a vehicle of proceeding (see the narrowing): `kin.speed`, \"magnitude of velocity\", for the subject's advance or standstill, and `prim.closest_approach_within`, \"under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon\", with `prim.closest_approach_distance`, \"the centre distance at that closest approach\", for the conflict its going on would cause; being primitives, their inputs are the primitives' and are not claimed here."
+     }
+    ],
+    "operationalizations": [],
+    "assumptions": [],
+    "intentions": [],
+    "compositions": [
+     {
+      "span": "t3",
+      "rule": "NRS_484B_250_4_o1",
+      "map": {
+       "v": "v"
+      },
+      "as": "compliance"
+     }
+    ],
+    "residues": [],
+    "binders": [
+     {
+      "name": "v",
+      "class_elements": [
+       "ru.aggregate=DEF-NRS-484A-320::vehicle"
+      ]
+     }
+    ],
+    "applicability": "At the last observation within p.entry_lookback behind this one at which the subject vehicle entered an intersection, a traffic-control signal governing that intersection had its head uncovered and was inoperative, and the subject complied there with NRS_484B_250_4_o1; the subject's footprint still overlaps that intersection at this observation.",
+    "obligation": "For every other road user of the scene that either occupies that intersection at this observation or was at a standstill (drv.motion.standstill) at some earlier observation of the trace, the subject yields: it is itself at a standstill, or, moving, it and that road user do not approach each other within p.yield_horizon under their present velocities, or their closest approach within that horizon stays at or above p.yield_clearance_min.",
+    "params": [
+     "p.entry_lookback",
+     "p.standstill_speed_tolerance",
+     "p.yield_horizon",
+     "p.yield_clearance_min"
+    ],
+    "narrowings": [
+     {
+      "span": "s1",
+      "why": "\"the driver\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+      "kind": "observable_reading",
+      "category": "agency"
+     },
+     {
+      "span": "o3",
+      "why": "\"yielding to\" is read as the subject's not advancing so as to deprive the other road user of proceeding: a standstill, or motion whose closest approach to that road user within p.yield_horizon stays at or above p.yield_clearance_min. The other's right of precedence is a relation between the parties' rights and is not read from the scene; what the rule reads is the subject's conduct towards it.",
+      "kind": "reading"
+     },
+     {
+      "span": "o3",
+      "why": "\"vehicles\" is read as the road users of the scene to which the two stated circumstances apply: the aggregate's membership is not read on this span, because the circumstances the span states - having completed a stop, being within the intersection - are what single the privileged road users out, and reading the aggregate as well would narrow the duty where a source does not classify a road user.",
+      "kind": "reading"
+     }
+    ],
+    "scenarios": [
+     {
+      "name": "forbid",
+      "expected": "violated",
+      "narrative": "The subject halted at the stop line of an intersection whose uncovered signal head was inoperative, then entered. Another vehicle already occupies that intersection, crossing from the left; the subject goes on at 7 m/s and their centres would come within 2 m of each other inside p.yield_horizon.",
+      "masked": []
+     },
+     {
+      "name": "permit",
+      "expected": "compliant",
+      "narrative": "The same junction and halt. The subject enters and goes on at 3 m/s; no other road user is in the scene at all, so the subject's duty is decided on its own conduct.",
+      "masked": []
+     },
+     {
+      "name": "idle",
+      "expected": "not_applicable",
+      "narrative": "The subject crosses an intersection whose uncovered signal head shows circular red and then circular green: the head was never inoperative, so the condition never holds.",
+      "masked": []
+     },
+     {
+      "name": "blind",
+      "expected": "unknown",
+      "narrative": "The subject halted and entered the junction of an uncovered, inoperative signal and goes on at 6 m/s while another vehicle is near the junction, but the source declares occupancy of regions absent, so whether that vehicle is within the intersection cannot be read.",
+      "masked": [
+       "rel.occupies"
+      ]
+     },
+     {
+      "name": "branch_1",
+      "expected": "violated",
+      "narrative": "The same junction and halt. No vehicle is within the intersection, but a vehicle on the cross street came to a complete standstill at its own stop line earlier in the trace and is now moving off; the subject goes on at 8 m/s and their centres would come within 2 m inside p.yield_horizon.",
+      "masked": []
+     },
+     {
+      "name": "branch_2",
+      "expected": "compliant",
+      "narrative": "The same junction and halt. A vehicle that previously completed a stop is moving off on the cross street, and the subject remains at a standstill within the junction until it has passed.",
+      "masked": []
+     }
+    ],
+    "literals": [],
+    "param_proposals": [
+     {
+      "name": "p.entry_lookback",
+      "unit": "s",
+      "value": 10,
+      "convention": "junction-transit window: the time behind an observation within which the subject's entry into the junction it is crossing is sought, taken from the time a vehicle takes to clear an urban intersection from a halt",
+      "source": "intersection clearance-time conventions"
+     },
+     {
+      "name": "p.standstill_speed_tolerance",
+      "unit": "m/s",
+      "value": 0.1,
+      "convention": "complete-cessation tolerance: the largest speed reading at which a sampled measurement still renders a road user as having completely ceased to move",
+      "source": "stop-detection practice in trajectory processing"
+     },
+     {
+      "name": "p.yield_horizon",
+      "unit": "s",
+      "value": 4,
+      "convention": "conflict horizon of the gap-acceptance convention: the time ahead within which a closest approach is counted as a conflict the subject's motion causes",
+      "source": "surrogate-safety conflict-analysis practice"
+     },
+     {
+      "name": "p.yield_clearance_min",
+      "unit": "m",
+      "value": 4,
+      "convention": "gap-acceptance clearance measured centre to centre, since centre-to-centre distance overstates a body clearance by about the two half-extents; below it the privileged road user could not proceed without one party giving way",
+      "source": "gap-acceptance and conflict-analysis practice"
+     }
+    ],
+    "gaps": []
+   }
+  ],
+  "iter-001/validate/verdicts.jsonl": [
+   {
+    "node_id": "NRS_484B_250_4_o1",
+    "kind": "accept",
+    "reasons": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o2",
+    "kind": "accept",
+    "reasons": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o3",
+    "kind": "accept",
+    "reasons": []
+   }
+  ],
+  "iter-002/validate/verdicts.jsonl": [
+   {
+    "node_id": "NRS_484B_250_4_o2",
+    "kind": "accept",
+    "reasons": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o3",
+    "kind": "accept",
+    "reasons": []
+   },
+   {
+    "node_id": "NRS_484B_250_4_o1",
+    "kind": "accept",
+    "reasons": []
+   }
+  ],
+  "iter-001/code/NRS_484B_250_4_o1/node.json": {
+   "node_id": "NRS_484B_250_4_o1",
+   "law_refs": [
+    "NRS-484B-250-4"
+   ],
+   "subject": {
+    "binder": "v",
+    "class_elements": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle"
+    ]
+   },
+   "segmentation": [
+    {
+     "id": "t1",
+     "text": "When a vehicle enters an intersection",
+     "role": "trigger"
+    },
+    {
+     "id": "t2",
+     "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+     "role": "condition"
+    },
+    {
+     "id": "s1",
+     "text": "the driver of the vehicle",
+     "role": "subject"
+    },
+    {
+     "id": "o1",
+     "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+     "role": "obligation"
+    },
+    {
+     "id": "x1",
+     "text": "After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+     "role": "sibling"
+    }
+   ],
+   "elements": [
+    {
+     "span": "t1",
+     "atoms": [
+      "st.intersection",
+      "rel.occupies",
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [
+      "drv.position.enters_region"
+     ],
+     "justification": "\"enters an intersection\" is the event the concept `drv.position.enters_region` of this plan denotes, called on the subject and on the intersection region it enters. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over, and `rel.occupies`, \"a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line ...)\", is the anchoring relation the concept reads; `st.intersection` is \"Not a stand-in for: a crosswalk or a stop line\", and those are read separately as the places of the halt. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`."
+    },
+    {
+     "span": "t2",
+     "atoms": [
+      "dev.traffic_signal",
+      "dev.inoperative",
+      "dev.governs",
+      "st.intersection"
+     ],
+     "derived": [],
+     "justification": "\"a traffic-control signal\" is `dev.traffic_signal`, \"a signal head\"; \"controlled by\" is `dev.governs`, which carries \"an intersection, read as control of the junction itself and of nothing else (no closure to the lanes that enter it)\" and is \"Not a stand-in for: a position\", so no distance to the head is read. \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\". \"but is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\"; \"at the time the vehicle enters the intersection\" is the observation the trigger fixes, which is the observation this rule judges, so the signal's state is read there directly and no earlier state of the same head stands in for it. `st.intersection` is the kind the region quantifier ranges over."
+    },
+    {
+     "span": "s1",
+     "atoms": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [],
+     "justification": "\"the vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`, \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the duty binds that vehicle's conduct, and \"the driver of\" is read through it (see the narrowing on this span)."
+    },
+    {
+     "span": "o1",
+     "atoms": [
+      "kin.speed",
+      "st.stop_line",
+      "st.crosswalk",
+      "st.intersection",
+      "st.lane",
+      "st.lane_enters",
+      "st.on_way",
+      "st.highway",
+      "st.region_geometry",
+      "rel.occupies",
+      "st.sight_along_way"
+     ],
+     "derived": [
+      "drv.motion.standstill"
+     ],
+     "justification": "\"shall stop\" is the concept `drv.motion.standstill` of this plan, whose contract quotes NRS 484A.255, \"complete cessation from movement\" - the definition whose own scope is a stop \"when required\", which this clause requires - and which reads `kin.speed`, \"magnitude of velocity\". The places of the halt: \"a clearly marked stop line\" is `st.stop_line`, \"the transverse line marking where vehicles halt for a device\", tied to the subject's own approach by `st.lane`, \"a longitudinal strip of roadway for one line of vehicles\", `rel.occupies`, `st.lane_enters`, \"the intersection region a lane runs into at its end - the lane is an approach to that intersection\", and `st.on_way`, \"the public way (a `highway` region) a structure region lies on - a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it\", so the line read is one on the way carrying the lane that runs into the junction the subject enters, not any line of the scene; `st.lane_enters` is \"Not a stand-in for: the lane a lane leads into\", and no such chain is used. \"before entering the crosswalk on the near side of the intersection\" is `st.crosswalk`, \"marked crossing, or the unmarked prolongation of sidewalks at an intersection\", tied to the approach the same way, with `rel.occupies` negated for not having entered it. \"a view of approaching traffic on the through highway\" is `st.sight_along_way`, \"the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation ...; the smaller of the two directions\", read of a `st.highway` way on which the junction lies (`st.on_way`: \"an intersection lies on every way that meets there\") other than the way carrying the subject's approach; it is \"Not a stand-in for: the sight distance of the place the road user is at\" nor \"whether an actual road user is seen\", and neither is read. `st.region_geometry` carries \"the ground distance from a road user's body outline to it (zero when they overlap)\" for the distance to the line and to the junction, and is \"Not a stand-in for: occupancy\", which `rel.occupies` reads on its own."
+    }
+   ],
+   "operationalizations": [],
+   "assumptions": [],
+   "intentions": [],
+   "compositions": [],
+   "residues": [],
+   "binders": [
+    {
+     "name": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    }
+   ],
+   "applicability": "At an observation at which the subject vehicle enters an intersection - its overlap with that intersection region rises - and a traffic-control signal that governs that intersection has its head uncovered and is inoperative at that same observation.",
+   "obligation": "At that observation the subject must already have come to a standstill (drv.motion.standstill) at the stopping point that governs its approach, at some observation within p.stop_lookback behind the entry: (a) where a stop line lies on the way carrying an approach lane the subject occupies that runs into that intersection and lies within p.stopping_point_reach of the subject, the standstill occurred at an observation at which the subject did not overlap that stop line and its distance to it was at most p.stop_at_line_tolerance; (b) otherwise, where such a crosswalk lies on that way within p.stopping_point_reach of the subject, the standstill occurred at an observation at which the subject did not overlap that crosswalk; (c) otherwise, at the last observation in that window at which the sight along a way on which the intersection lies, other than the way carrying the subject's approach, exceeded p.sight_resolution, the subject was at a standstill.",
+   "params": [
+    "p.standstill_speed_tolerance",
+    "p.stop_lookback",
+    "p.stopping_point_reach",
+    "p.stop_at_line_tolerance",
+    "p.sight_resolution"
+   ],
+   "narrowings": [
+    {
+     "span": "s1",
+     "why": "\"the driver of the vehicle\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+     "kind": "observable_reading",
+     "category": "agency"
+    },
+    {
+     "span": "o1",
+     "why": "\"a clearly marked stop line\" - the clarity of the paint is not modelled: the represented stop line is read as the clearly marked one, as the ontology's reading of this very phrase states. This never relaxes which stopping point governs, nor the action or its timing.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"the through highway\" - the designation of a highway as a priority way is a legal status, whose evidence on the road at this junction is the device governing the subject's own approach (the trigger's signal, an official traffic-control device at the entrance). The span is therefore read as a way on which the intersection lies other than the way carrying the subject's approach lane.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"where the driver has a view of approaching traffic\" is read through `st.sight_along_way`, the distance along that way within which another vehicle on it could be seen from the road user's eye, standing clear of p.sight_resolution: what could be seen of a vehicle, not membership of the aggregate traffic, so the aggregate's other members (pedestrians, ridden or herded animals and other conveyances) are not read on this span, and nothing is read of what the driver in fact perceived.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"the point nearest the intersection where the driver has a view\" is read in time rather than in space: the last observation within p.stop_lookback behind the entry at which that view held, which is the latest, hence the nearest to the intersection, point of the approach at which it held.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"shall proceed as if a stop sign had been erected at each entrance to the intersection\" is read through the duty the same sentence spells out - the halt at the stopping point that governs the approach, before entering the intersection. No stop sign is read into the scene, and no device is required to be present.",
+     "kind": "reading"
+    }
+   ],
+   "scenarios": [
+    {
+     "name": "forbid",
+     "expected": "violated",
+     "narrative": "A signal head governs the intersection, its faces uncovered and the head inoperative. A stop line lies on the way carrying the subject's approach lane, which runs into that intersection, 4 m ahead of the subject. The subject rolls over the line at 6 m/s and its footprint overlaps the intersection, having been at no observation within p.stop_lookback at a standstill.",
+     "masked": []
+    },
+    {
+     "name": "permit",
+     "expected": "compliant",
+     "narrative": "The same inoperative uncovered signal and stop line. The subject halts at 1 m short of the line, its speed 0 m/s for several observations, then moves off and enters the intersection. No other road user is in the scene.",
+     "masked": []
+    },
+    {
+     "name": "idle",
+     "expected": "not_applicable",
+     "narrative": "The subject enters an intersection whose signal head is uncovered and shows circular green: the head is not inoperative, so the condition never holds.",
+     "masked": []
+    },
+    {
+     "name": "blind",
+     "expected": "unknown",
+     "narrative": "The subject enters an intersection governed by an uncovered signal head and made no halt, but the source declares the inoperative state of signal heads absent, so whether the head showed no valid indication at the entry cannot be read.",
+     "masked": [
+      "dev.inoperative"
+     ]
+    },
+    {
+     "name": "branch_1",
+     "expected": "compliant",
+     "narrative": "No stop line lies on the subject's approach. A marked crosswalk on the near side does. The subject halts with its footprint clear of the crosswalk, then proceeds and enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_2",
+     "expected": "violated",
+     "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject's first standstill occurs with its footprint already overlapping the crosswalk, and it then enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_3",
+     "expected": "compliant",
+     "narrative": "Neither a stop line nor a crosswalk lies on the subject's approach. Going forward in time, the sight along the intersecting way on which the junction lies rises above p.sight_resolution as the subject nears the junction; at the last observation of the window at which it was above that floor the subject's speed was 0 m/s, and it then entered the intersection.",
+     "masked": []
+    }
+   ],
+   "literals": [],
+   "param_proposals": [
+    {
+     "name": "p.standstill_speed_tolerance",
+     "unit": "m/s",
+     "value": 0.1,
+     "convention": "complete-cessation tolerance: the largest speed reading at which a sampled measurement still renders a road user as having completely ceased to move",
+     "source": "stop-detection practice in trajectory processing"
+    },
+    {
+     "name": "p.stop_lookback",
+     "unit": "s",
+     "value": 10,
+     "convention": "approach-dwell window: the time behind an entry into a junction within which the halt required on the approach is sought, taken from the approach-and-stop time of a vehicle decelerating from an urban approach speed",
+     "source": "intersection approach-manoeuvre timing conventions"
+    },
+    {
+     "name": "p.stopping_point_reach",
+     "unit": "m",
+     "value": 15,
+     "convention": "reach within which a stopping point on the approach counts as the subject's own, taken from the usual set-back of a stop line or near-side crosswalk from the junction",
+     "source": "traffic-marking placement practice"
+    },
+    {
+     "name": "p.stop_at_line_tolerance",
+     "unit": "m",
+     "value": 2,
+     "convention": "stop-bar placement tolerance: the distance short of the line within which a halt counts as at the line",
+     "source": "traffic-marking placement practice"
+    },
+    {
+     "name": "p.sight_resolution",
+     "unit": "m",
+     "value": 1,
+     "convention": "source resolution: the least sight distance along a way a source resolves, so that having a view is the sight distance standing clear of zero and no adequacy of the view is assumed",
+     "source": "sight-line measurement resolution of scene sources"
+    }
+   ],
+   "gaps": []
+  },
+  "iter-001/code/NRS_484B_250_4_o1/verdict.json": {
+   "verdict": "OK",
+   "details": [
+    "7 witnesses, 18 names, composes nothing",
+    "narrowings declared by the coder: 2"
+   ]
+  },
+  "iter-001/code/NRS_484B_250_4_o1/review/review_outcome.json": {
+   "reviewer_verdict": "return",
+   "upheld": [
+    "case on `NRS_484B_250_4_o1` at t=11000 — rule: compliant; the law (stage A): violated — \"shall stop at a clearly marked stop line or, if there is none, before e",
+    "case on `NRS_484B_250_4_o1` at t=12000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line\"; stage B: upheld — The rule r",
+    "case on `NRS_484B_250_4_o1` at t=11000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line\"; stage B: upheld — The law re",
+    "case on `NRS_484B_250_4_o1` at t=11000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line\"; stage B: upheld — The case s",
+    "case on `NRS_484B_250_4_o1` at t=11000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line or, if there is none, before e"
+   ],
+   "deferred": null
+  },
+  "iter-002/code/NRS_484B_250_4_o1/node.json": {
+   "node_id": "NRS_484B_250_4_o1",
+   "law_refs": [
+    "NRS-484B-250-4"
+   ],
+   "segmentation": [
+    {
+     "id": "t1",
+     "text": "When a vehicle enters an intersection",
+     "role": "trigger"
+    },
+    {
+     "id": "t2",
+     "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+     "role": "condition"
+    },
+    {
+     "id": "s1",
+     "text": "the driver of the vehicle",
+     "role": "subject"
+    },
+    {
+     "id": "o1",
+     "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+     "role": "obligation"
+    },
+    {
+     "id": "x1",
+     "text": "After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+     "role": "sibling"
+    }
+   ],
+   "subject": {
+    "binder": "v",
+    "class_elements": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle"
+    ]
+   },
+   "elements": [
+    {
+     "span": "t1",
+     "atoms": [
+      "st.intersection",
+      "rel.occupies",
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [
+      "drv.position.enters_region"
+     ],
+     "justification": "\"enters an intersection\" is the event the concept `drv.position.enters_region` of this plan denotes, called on the subject and on the intersection region it enters. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over, and `rel.occupies`, \"a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line ...)\", is the anchoring relation the concept reads; `st.intersection` is \"Not a stand-in for: a crosswalk or a stop line\", and those are read separately as the places of the halt. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`."
+    },
+    {
+     "span": "t2",
+     "atoms": [
+      "dev.traffic_signal",
+      "dev.inoperative",
+      "dev.governs",
+      "st.intersection"
+     ],
+     "derived": [],
+     "justification": "\"a traffic-control signal\" is `dev.traffic_signal`, \"a signal head\"; \"controlled by\" is `dev.governs`, which carries \"an intersection, read as control of the junction itself and of nothing else (no closure to the lanes that enter it)\" and is \"Not a stand-in for: a position\", so no distance to the head is read. \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\". \"but is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\"; \"at the time the vehicle enters the intersection\" is the observation the trigger fixes, which is the observation this rule judges, so the signal's state is read there directly and no earlier state of the same head stands in for it. `st.intersection` is the kind the region quantifier ranges over."
+    },
+    {
+     "span": "s1",
+     "atoms": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [],
+     "justification": "\"the vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`, \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the duty binds that vehicle's conduct, and \"the driver of\" is read through it (see the narrowing on this span)."
+    },
+    {
+     "span": "o1",
+     "atoms": [
+      "kin.speed",
+      "st.stop_line",
+      "st.crosswalk",
+      "st.intersection",
+      "st.lane",
+      "st.lane_enters",
+      "st.on_way",
+      "st.highway",
+      "st.region_geometry",
+      "rel.occupies",
+      "st.sight_along_way"
+     ],
+     "derived": [
+      "drv.motion.standstill",
+      "drv.position.enters_region"
+     ],
+     "justification": "\"shall stop\" is the concept `drv.motion.standstill` of this plan, whose contract quotes NRS 484A.255, \"complete cessation from movement\", and which reads `kin.speed`, \"magnitude of velocity\". The intersection the duty speaks of is the one the trigger's entry names: the obligation binds it again as a region of kind `st.intersection` (\"the region where two roadways meet, bounded by the prolongation of their edges\") whose footprint overlap the subject has (`rel.occupies`) and into which it enters at the judged observation (`drv.position.enters_region`: \"True at the observation at which the road user's body first overlaps the structure region r\"), the same event read at the same observation, so no other or earlier entry stands in for it. The approach is `st.lane`, \"a longitudinal strip of roadway for one line of vehicles\", tied to that junction by `st.lane_enters`, \"the intersection region a lane runs into at its end - the lane is an approach to that intersection\", and its way by `st.on_way`, \"the public way (a `highway` region) a structure region lies on - a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it\", of the kind `st.highway`, \"the entire public way between its boundary lines\". The subject's membership of that approach lane is read by `rel.occupies` at the observation of the halt and not at the judged observation: `rel.occupies` is \"a road user's footprint overlaps a lane / region\", and at the entry the footprint lies in the junction and may lie in no lane, which says nothing about where the halt was made. The places of the halt: \"a clearly marked stop line\" is `st.stop_line`, \"the transverse line marking where vehicles halt for a device\", on the way carrying that approach lane; that the halt was at it is read by `st.region_geometry`, \"the ground distance from a road user's body outline to it (zero when they overlap)\", so a body standing in contact with the line is at the line, and occupancy of the line is not read at all. \"before entering the crosswalk on the near side of the intersection\" is `st.crosswalk`, \"marked crossing, or the unmarked prolongation of sidewalks at an intersection\", on that same way, with `rel.occupies` negated at the halt for not having entered it and the halt ordered against the beginning of the footprint's overlap with that crosswalk. \"a view of approaching traffic on the through highway\" is `st.sight_along_way`, \"the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation ...; the smaller of the two directions\", read of a `st.highway` way on which the junction lies (`st.on_way`: \"an intersection lies on every way that meets there\") other than the way carrying the subject's approach; it is \"Not a stand-in for: the sight distance of the place the road user is at\" nor \"whether an actual road user is seen\", and neither is read. Since that point is a point of the approach, the observation it is read at is one at which the footprint does not yet overlap the junction (`rel.occupies` negated of the intersection). `st.region_geometry` also carries the distance by which a stopping point counts as the subject's own, and is \"Not a stand-in for: occupancy\", which `rel.occupies` reads on its own."
+    }
+   ],
+   "operationalizations": [],
+   "assumptions": [],
+   "intentions": [],
+   "compositions": [],
+   "residues": [],
+   "binders": [
+    {
+     "name": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    }
+   ],
+   "applicability": "At an observation at which the subject vehicle enters an intersection - its overlap with that intersection region rises - and a traffic-control signal that governs that intersection has its head uncovered and is inoperative at that same observation.",
+   "obligation": "At that observation - the entry into the intersection - the subject must already have halted at the stopping point that governs its approach. Read the intersection again as an intersection region the subject's footprint overlaps at the judged observation and which it enters there (the same entry event the trigger reads); read the approach as a lane that runs into that intersection (st.lane_enters) and the way as a highway that lane lies on (st.on_way). Call a halt an observation within p.stop_lookback behind the judged observation at which the subject was at a standstill (drv.motion.standstill) while its footprint overlapped that approach lane; lane membership and every place condition of the halt are read at the halt's own observation, never at the judged one, so a halt completed before the entry stands even though at the entry the body lies in the junction and in no lane. Then: (a) where a stop line lies on that way and its ground distance from the subject at the judged observation is at most p.stopping_point_reach, there was a halt at which the subject's ground distance to that stop line was at most p.stop_at_line_tolerance - the body's contact with the line, a distance of zero, included, and occupancy of the line not read; (b) otherwise, where such a crosswalk lies on that way within p.stopping_point_reach, there was a halt at which the subject's footprint did not overlap that crosswalk, and that halt was not later than the subject's own crossing: either the footprint overlapped that crosswalk at no observation of the window, or the time since such a halt last began is at least the time since the footprint's overlap with that crosswalk last began; (c) otherwise, at the last observation within p.stop_lookback behind the judged observation at which the subject's footprint did not overlap that intersection and the sight along a highway on which the intersection lies, other than the way carrying the approach, exceeded p.sight_resolution, the subject was at a standstill.",
+   "params": [
+    "p.standstill_speed_tolerance",
+    "p.stop_lookback",
+    "p.stopping_point_reach",
+    "p.stop_at_line_tolerance",
+    "p.sight_resolution"
+   ],
+   "narrowings": [
+    {
+     "span": "s1",
+     "why": "\"the driver of the vehicle\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+     "kind": "observable_reading",
+     "category": "agency"
+    },
+    {
+     "span": "o1",
+     "why": "\"a clearly marked stop line\" - the clarity of the paint is not modelled: the represented stop line is read as the clearly marked one, as the ontology's reading of this very phrase states. This never relaxes which stopping point governs, nor the action or its timing.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"the through highway\" - the designation of a highway as a priority way is a legal status, whose evidence on the road at this junction is the device governing the subject's own approach (the trigger's signal, an official traffic-control device at the entrance). The span is therefore read as a way on which the intersection lies other than the way carrying the subject's approach lane.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"where the driver has a view of approaching traffic\" is read through `st.sight_along_way`, the distance along that way within which another vehicle on it could be seen from the road user's eye, standing clear of p.sight_resolution: what could be seen of a vehicle, not membership of the aggregate traffic, so the aggregate's other members (pedestrians, ridden or herded animals and other conveyances) are not read on this span, and nothing is read of what the driver in fact perceived.",
+     "kind": "observable_reading",
+     "category": "perception"
+    },
+    {
+     "span": "o1",
+     "why": "\"the point nearest the intersection where the driver has a view\" is read in time rather than in space: the last observation within p.stop_lookback behind the entry at which that view held and at which the subject's footprint did not yet overlap the intersection. That observation is the latest, hence the nearest to the intersection, point of the approach at which the view held; observations at which the body already overlaps the junction are no longer points of the approach and are not read, even where the view still holds there.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"shall proceed as if a stop sign had been erected at each entrance to the intersection\" is read through the duty the same sentence spells out - the halt at the stopping point that governs the approach, before entering the intersection. No stop sign is read into the scene, and no device is required to be present.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"the intersection\" of the duty is the intersection the trigger's entry names: the obligation binds it again by the same footprint overlap and the same entry event at the judged observation, and not by the signal that governs it, since the entry event singles out the region the words speak of without it.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "where several stop lines, or several crosswalks, lie on the way carrying the approach within p.stopping_point_reach, the halt is read as a halt at one of them, not at every one of them.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"shall stop at a clearly marked stop line\" is read as a halt whose body outline stands within p.stop_at_line_tolerance of the line, the body's contact with the line (a ground distance of zero) included: `st.region_geometry` carries the ground distance from the body outline to the region and no side of it, so on which side of the line the body stands is not resolved, and a halt in contact with the line is a halt at the line. Occupancy of the line is not read, so a body touching or straddling the line is not thereby put past it.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"before entering the crosswalk\" is read in order of time against the subject's own crossing: the halt clear of the crosswalk must be no later than the moment the footprint's overlap with that crosswalk last began, so that a standstill made only after the body had entered or passed the crossing is not the halt the duty requires. Where the window shows no overlap with that crosswalk at all - a crossing the sampling does not resolve, or an approach that turns away from it - the halt clear of it stands on its own. The order is read of the last such halt and the last such overlap, which is what the trace's operators resolve: where the subject halts clear of the crossing, proceeds over it, and halts again between the crossing and the junction, it is the later halt that is read and the duty is reported violated.",
+     "kind": "reading"
+    }
+   ],
+   "scenarios": [
+    {
+     "name": "forbid",
+     "expected": "violated",
+     "narrative": "A signal head governs the intersection, its faces uncovered and the head inoperative. A stop line lies on the way carrying the subject's approach lane, which runs into that intersection, 4 m ahead of the subject. The subject rolls over the line at 6 m/s and its footprint overlaps the intersection, having been at no observation within p.stop_lookback at a standstill.",
+     "masked": []
+    },
+    {
+     "name": "permit",
+     "expected": "compliant",
+     "narrative": "The same inoperative uncovered signal and stop line. The subject halts 1 m short of the line while its footprint overlaps the approach lane, its speed 0 m/s for several observations, then moves off and enters the intersection. No other road user is in the scene.",
+     "masked": []
+    },
+    {
+     "name": "idle",
+     "expected": "not_applicable",
+     "narrative": "The subject enters an intersection whose signal head is uncovered and shows circular green: the head is not inoperative, so the condition never holds.",
+     "masked": []
+    },
+    {
+     "name": "blind",
+     "expected": "unknown",
+     "narrative": "The subject enters an intersection governed by an uncovered signal head and made no halt, but the source declares the inoperative state of signal heads absent, so whether the head showed no valid indication at the entry cannot be read.",
+     "masked": [
+      "dev.inoperative"
+     ]
+    },
+    {
+     "name": "branch_1",
+     "expected": "compliant",
+     "narrative": "No stop line lies on the way carrying the subject's approach. A marked crosswalk on the near side does. The subject halts in the approach lane with its footprint clear of the crosswalk, then proceeds, its footprint overlapping the crosswalk at the next observation, and enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_2",
+     "expected": "violated",
+     "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject's only standstill occurs with its footprint already overlapping the crosswalk, and it then enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_3",
+     "expected": "compliant",
+     "narrative": "Neither a stop line nor a crosswalk lies on the way carrying the subject's approach. The sight along the intersecting way on which the junction lies stands well above p.sight_resolution at every observation of the window, the entry observation included. At the last observation at which the subject's footprint did not yet overlap the junction its speed was 0 m/s, and at the next observation it entered the intersection while still moving.",
+     "masked": []
+    },
+    {
+     "name": "branch_4",
+     "expected": "violated",
+     "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject crosses the crosswalk while moving - its footprint overlaps the crosswalk at an observation with speed above zero - and comes to a standstill only afterwards, with its footprint clear of the crosswalk and short of the junction, then enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_5",
+     "expected": "compliant",
+     "narrative": "A stop line lies on the way carrying the subject's approach, which runs into the intersection. The subject halts with its front just in contact with the line: its ground distance to the line is 0 m and its footprint overlaps the line, its speed 0 m/s, its footprint still overlapping the approach lane. It then proceeds and enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_6",
+     "expected": "compliant",
+     "narrative": "The same stop line on the approach. The subject halts 0.5 m short of it with its footprint overlapping the approach lane, then proceeds; at the observation at which its overlap with the intersection rises its footprint lies wholly within the junction and overlaps no lane at all.",
+     "masked": []
+    },
+    {
+     "name": "branch_7",
+     "expected": "violated",
+     "narrative": "Neither a stop line nor a crosswalk lies on the subject's approach. The sight along the intersecting way on which the junction lies stands above p.sight_resolution throughout the window, and the subject approaches and enters the intersection without its speed ever falling to zero.",
+     "masked": []
+    }
+   ],
+   "literals": [],
+   "param_proposals": [],
+   "gaps": []
+  },
+  "iter-002/code/NRS_484B_250_4_o1/verdict.json": {
+   "verdict": "OK",
+   "details": [
+    "12 witnesses, 18 names, composes nothing",
+    "narrowings declared by the coder: 2"
+   ]
+  },
+  "iter-002/code/NRS_484B_250_4_o1/review/review_outcome.json": {
+   "reviewer_verdict": "return",
+   "upheld": [
+    "case on `NRS_484B_250_4_o1` at t=10000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line or, if there is none, before e",
+    "case on `NRS_484B_250_4_o1` at t=10000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line\"; stage B: upheld — The case s",
+    "case on `NRS_484B_250_4_o1` at t=10000 — rule: not_applicable; the law (stage A): violated — \"the driver of the vehicle shall proceed as if a stop sign had been",
+    "case on `NRS_484B_250_4_o1` at t=10000 — rule: compliant; the law (stage A): violated — \"shall stop at a clearly marked stop line or, if there is none, before e",
+    "case on `NRS_484B_250_4_o1` at t=10000 — rule: violated; the law (stage A): compliant — \"shall stop at a clearly marked stop line or, if there is none, before e"
+   ],
+   "deferred": null
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/planned.json": {
+   "node_id": "NRS_484B_250_4_o1",
+   "law_refs": [
+    "NRS-484B-250-4"
+   ],
+   "segmentation": [
+    {
+     "id": "t1",
+     "text": "When a vehicle enters an intersection",
+     "role": "trigger"
+    },
+    {
+     "id": "t2",
+     "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+     "role": "condition"
+    },
+    {
+     "id": "s1",
+     "text": "the driver of the vehicle",
+     "role": "subject"
+    },
+    {
+     "id": "o1",
+     "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+     "role": "obligation"
+    },
+    {
+     "id": "x1",
+     "text": "After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+     "role": "sibling"
+    }
+   ]
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/record.jsonl": {
+   "subject": {
+    "binder": "v",
+    "class_elements": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle"
+    ]
+   },
+   "elements": [
+    {
+     "span": "t1",
+     "atoms": [
+      "st.intersection",
+      "rel.occupies",
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [
+      "drv.position.enters_region"
+     ],
+     "justification": "\"enters an intersection\" is the event the concept `drv.position.enters_region` of this plan denotes, called on the subject and on the intersection region it enters. `st.intersection` is \"the region where two roadways meet, bounded by the prolongation of their edges\", the kind the region quantifier ranges over, and `rel.occupies`, \"a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line ...)\", is the anchoring relation the concept reads; `st.intersection` is \"Not a stand-in for: a crosswalk or a stop line\", and those are read separately as the places of the halt. \"a vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`."
+    },
+    {
+     "span": "t2",
+     "atoms": [
+      "dev.traffic_signal",
+      "dev.inoperative",
+      "dev.governs",
+      "st.intersection"
+     ],
+     "derived": [],
+     "justification": "\"a traffic-control signal\" is `dev.traffic_signal`, \"a signal head\"; \"controlled by\" is `dev.governs`, which carries \"an intersection, read as control of the junction itself and of nothing else (no closure to the lanes that enter it)\" and is \"Not a stand-in for: a position\", so no distance to the head is read. \"installed and has its vehicular signals uncovered\" is that atom's \"**uncovered** attribute for an installed head whose faces are not covered\". \"but is inoperative\" is `dev.inoperative`, \"a signal head installed and uncovered but showing no valid indication\"; \"at the time the vehicle enters the intersection\" is the observation the trigger fixes, which is the observation this rule judges, so the signal's state is read there directly and no earlier state of the same head stands in for it. `st.intersection` is the kind the region quantifier ranges over."
+    },
+    {
+     "span": "s1",
+     "atoms": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ],
+     "derived": [],
+     "justification": "\"the vehicle\" is the admitted aggregate `DEF-NRS-484A-320::vehicle`, carried by `ru.aggregate`, \"membership of a legal aggregate: the atom's literal argument is an aggregate id\"; the duty binds that vehicle's conduct, and \"the driver of\" is read through it (see the narrowing on this span)."
+    },
+    {
+     "span": "o1",
+     "atoms": [
+      "kin.speed",
+      "st.stop_line",
+      "st.crosswalk",
+      "st.intersection",
+      "st.lane",
+      "st.lane_enters",
+      "st.on_way",
+      "st.highway",
+      "st.region_geometry",
+      "rel.occupies",
+      "st.sight_along_way"
+     ],
+     "derived": [
+      "drv.motion.standstill",
+      "drv.position.enters_region"
+     ],
+     "justification": "\"shall stop\" is the concept `drv.motion.standstill` of this plan, whose contract quotes NRS 484A.255, \"complete cessation from movement\", and which reads `kin.speed`, \"magnitude of velocity\". The intersection the duty speaks of is the one the trigger's entry names: the obligation binds it again as a region of kind `st.intersection` (\"the region where two roadways meet, bounded by the prolongation of their edges\") whose footprint overlap the subject has (`rel.occupies`) and into which it enters at the judged observation (`drv.position.enters_region`: \"True at the observation at which the road user's body first overlaps the structure region r\"), the same event read at the same observation, so no other or earlier entry stands in for it. The approach is `st.lane`, \"a longitudinal strip of roadway for one line of vehicles\", tied to that junction by `st.lane_enters`, \"the intersection region a lane runs into at its end - the lane is an approach to that intersection\", and its way by `st.on_way`, \"the public way (a `highway` region) a structure region lies on - a lane, roadway, shoulder, crosswalk, stop line, median or any other part of it\", of the kind `st.highway`, \"the entire public way between its boundary lines\". The subject's membership of that approach lane is read by `rel.occupies` at the observation of the halt and not at the judged observation: `rel.occupies` is \"a road user's footprint overlaps a lane / region\", and at the entry the footprint lies in the junction and may lie in no lane, which says nothing about where the halt was made. The places of the halt: \"a clearly marked stop line\" is `st.stop_line`, \"the transverse line marking where vehicles halt for a device\", on the way carrying that approach lane; that the halt was at it is read by `st.region_geometry`, \"the ground distance from a road user's body outline to it (zero when they overlap)\", so a body standing in contact with the line is at the line, and occupancy of the line is not read at all. \"before entering the crosswalk on the near side of the intersection\" is `st.crosswalk`, \"marked crossing, or the unmarked prolongation of sidewalks at an intersection\", on that same way, with `rel.occupies` negated at the halt for not having entered it and the halt ordered against the beginning of the footprint's overlap with that crosswalk. \"a view of approaching traffic on the through highway\" is `st.sight_along_way`, \"the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation ...; the smaller of the two directions\", read of a `st.highway` way on which the junction lies (`st.on_way`: \"an intersection lies on every way that meets there\") other than the way carrying the subject's approach; it is \"Not a stand-in for: the sight distance of the place the road user is at\" nor \"whether an actual road user is seen\", and neither is read. Since that point is a point of the approach, the observation it is read at is one at which the footprint does not yet overlap the junction (`rel.occupies` negated of the intersection). `st.region_geometry` also carries the distance by which a stopping point counts as the subject's own, and is \"Not a stand-in for: occupancy\", which `rel.occupies` reads on its own."
+    }
+   ],
+   "operationalizations": [],
+   "assumptions": [],
+   "intentions": [],
+   "compositions": [],
+   "residues": [],
+   "binders": [
+    {
+     "name": "v",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    }
+   ],
+   "applicability": "At an observation at which the subject vehicle enters an intersection - its overlap with that intersection region rises - and a traffic-control signal that governs that intersection has its head uncovered and is inoperative at that same observation.",
+   "obligation": "At that observation - the entry into the intersection - the subject must already have halted at the stopping point that governs its approach. Read the intersection again as an intersection region the subject's footprint overlaps at the judged observation and which it enters there (the same entry event the trigger reads); read the approach as a lane that runs into that intersection (st.lane_enters) and the way as a highway that lane lies on (st.on_way). Call a halt an observation within p.stop_lookback behind the judged observation at which the subject was at a standstill (drv.motion.standstill) while its footprint overlapped that approach lane; lane membership and every place condition of the halt are read at the halt's own observation, never at the judged one, so a halt completed before the entry stands even though at the entry the body lies in the junction and in no lane. Then: (a) where a stop line lies on that way and its ground distance from the subject at the judged observation is at most p.stopping_point_reach, there was a halt at which the subject's ground distance to that stop line was at most p.stop_at_line_tolerance - the body's contact with the line, a distance of zero, included, and occupancy of the line not read; (b) otherwise, where such a crosswalk lies on that way within p.stopping_point_reach, there was a halt at which the subject's footprint did not overlap that crosswalk, and that halt was not later than the subject's own crossing: either the footprint overlapped that crosswalk at no observation of the window, or the time since such a halt last began is at least the time since the footprint's overlap with that crosswalk last began; (c) otherwise, at the last observation within p.stop_lookback behind the judged observation at which the subject's footprint did not overlap that intersection and the sight along a highway on which the intersection lies, other than the way carrying the approach, exceeded p.sight_resolution, the subject was at a standstill.",
+   "params": [
+    "p.standstill_speed_tolerance",
+    "p.stop_lookback",
+    "p.stopping_point_reach",
+    "p.stop_at_line_tolerance",
+    "p.sight_resolution"
+   ],
+   "narrowings": [
+    {
+     "span": "s1",
+     "why": "\"the driver of the vehicle\" - who or what controls the vehicle is not observable, so the duty binds that vehicle's conduct and is read through its controlled motion, whether a person or an automated system is at the controls.",
+     "kind": "observable_reading",
+     "category": "agency"
+    },
+    {
+     "span": "o1",
+     "why": "\"a clearly marked stop line\" - the clarity of the paint is not modelled: the represented stop line is read as the clearly marked one, as the ontology's reading of this very phrase states. This never relaxes which stopping point governs, nor the action or its timing.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"the through highway\" - the designation of a highway as a priority way is a legal status, whose evidence on the road at this junction is the device governing the subject's own approach (the trigger's signal, an official traffic-control device at the entrance). The span is therefore read as a way on which the intersection lies other than the way carrying the subject's approach lane.",
+     "kind": "observable_reading",
+     "category": "status"
+    },
+    {
+     "span": "o1",
+     "why": "\"where the driver has a view of approaching traffic\" is read through `st.sight_along_way`, the distance along that way within which another vehicle on it could be seen from the road user's eye, standing clear of p.sight_resolution: what could be seen of a vehicle, not membership of the aggregate traffic, so the aggregate's other members (pedestrians, ridden or herded animals and other conveyances) are not read on this span, and nothing is read of what the driver in fact perceived.",
+     "kind": "observable_reading",
+     "category": "perception"
+    },
+    {
+     "span": "o1",
+     "why": "\"the point nearest the intersection where the driver has a view\" is read in time rather than in space: the last observation within p.stop_lookback behind the entry at which that view held and at which the subject's footprint did not yet overlap the intersection. That observation is the latest, hence the nearest to the intersection, point of the approach at which the view held; observations at which the body already overlaps the junction are no longer points of the approach and are not read, even where the view still holds there.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"shall proceed as if a stop sign had been erected at each entrance to the intersection\" is read through the duty the same sentence spells out - the halt at the stopping point that governs the approach, before entering the intersection. No stop sign is read into the scene, and no device is required to be present.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"the intersection\" of the duty is the intersection the trigger's entry names: the obligation binds it again by the same footprint overlap and the same entry event at the judged observation, and not by the signal that governs it, since the entry event singles out the region the words speak of without it.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "where several stop lines, or several crosswalks, lie on the way carrying the approach within p.stopping_point_reach, the halt is read as a halt at one of them, not at every one of them.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"shall stop at a clearly marked stop line\" is read as a halt whose body outline stands within p.stop_at_line_tolerance of the line, the body's contact with the line (a ground distance of zero) included: `st.region_geometry` carries the ground distance from the body outline to the region and no side of it, so on which side of the line the body stands is not resolved, and a halt in contact with the line is a halt at the line. Occupancy of the line is not read, so a body touching or straddling the line is not thereby put past it.",
+     "kind": "reading"
+    },
+    {
+     "span": "o1",
+     "why": "\"before entering the crosswalk\" is read in order of time against the subject's own crossing: the halt clear of the crosswalk must be no later than the moment the footprint's overlap with that crosswalk last began, so that a standstill made only after the body had entered or passed the crossing is not the halt the duty requires. Where the window shows no overlap with that crosswalk at all - a crossing the sampling does not resolve, or an approach that turns away from it - the halt clear of it stands on its own. The order is read of the last such halt and the last such overlap, which is what the trace's operators resolve: where the subject halts clear of the crossing, proceeds over it, and halts again between the crossing and the junction, it is the later halt that is read and the duty is reported violated.",
+     "kind": "reading"
+    }
+   ],
+   "scenarios": [
+    {
+     "name": "forbid",
+     "expected": "violated",
+     "narrative": "A signal head governs the intersection, its faces uncovered and the head inoperative. A stop line lies on the way carrying the subject's approach lane, which runs into that intersection, 4 m ahead of the subject. The subject rolls over the line at 6 m/s and its footprint overlaps the intersection, having been at no observation within p.stop_lookback at a standstill.",
+     "masked": []
+    },
+    {
+     "name": "permit",
+     "expected": "compliant",
+     "narrative": "The same inoperative uncovered signal and stop line. The subject halts 1 m short of the line while its footprint overlaps the approach lane, its speed 0 m/s for several observations, then moves off and enters the intersection. No other road user is in the scene.",
+     "masked": []
+    },
+    {
+     "name": "idle",
+     "expected": "not_applicable",
+     "narrative": "The subject enters an intersection whose signal head is uncovered and shows circular green: the head is not inoperative, so the condition never holds.",
+     "masked": []
+    },
+    {
+     "name": "blind",
+     "expected": "unknown",
+     "narrative": "The subject enters an intersection governed by an uncovered signal head and made no halt, but the source declares the inoperative state of signal heads absent, so whether the head showed no valid indication at the entry cannot be read.",
+     "masked": [
+      "dev.inoperative"
+     ]
+    },
+    {
+     "name": "branch_1",
+     "expected": "compliant",
+     "narrative": "No stop line lies on the way carrying the subject's approach. A marked crosswalk on the near side does. The subject halts in the approach lane with its footprint clear of the crosswalk, then proceeds, its footprint overlapping the crosswalk at the next observation, and enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_2",
+     "expected": "violated",
+     "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject's only standstill occurs with its footprint already overlapping the crosswalk, and it then enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_3",
+     "expected": "compliant",
+     "narrative": "Neither a stop line nor a crosswalk lies on the way carrying the subject's approach. The sight along the intersecting way on which the junction lies stands well above p.sight_resolution at every observation of the window, the entry observation included. At the last observation at which the subject's footprint did not yet overlap the junction its speed was 0 m/s, and at the next observation it entered the intersection while still moving.",
+     "masked": []
+    },
+    {
+     "name": "branch_4",
+     "expected": "violated",
+     "narrative": "No stop line lies on the subject's approach; a marked crosswalk on the near side does. The subject crosses the crosswalk while moving - its footprint overlaps the crosswalk at an observation with speed above zero - and comes to a standstill only afterwards, with its footprint clear of the crosswalk and short of the junction, then enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_5",
+     "expected": "compliant",
+     "narrative": "A stop line lies on the way carrying the subject's approach, which runs into the intersection. The subject halts with its front just in contact with the line: its ground distance to the line is 0 m and its footprint overlaps the line, its speed 0 m/s, its footprint still overlapping the approach lane. It then proceeds and enters the intersection.",
+     "masked": []
+    },
+    {
+     "name": "branch_6",
+     "expected": "compliant",
+     "narrative": "The same stop line on the approach. The subject halts 0.5 m short of it with its footprint overlapping the approach lane, then proceeds; at the observation at which its overlap with the intersection rises its footprint lies wholly within the junction and overlaps no lane at all.",
+     "masked": []
+    },
+    {
+     "name": "branch_7",
+     "expected": "violated",
+     "narrative": "Neither a stop line nor a crosswalk lies on the subject's approach. The sight along the intersecting way on which the junction lies stands above p.sight_resolution throughout the window, and the subject approaches and enters the intersection without its speed ever falling to zero.",
+     "masked": []
+    }
+   ],
+   "literals": [],
+   "param_proposals": [],
+   "gaps": []
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/validation.txt": "accept"
+ },
+ "provenance": {
+  "law": {
+   "source": "results/smoke23/laws/laws.jsonl",
+   "sha256": "3a4072126a9623cbf4c1aa408c6f0f973efac7443d81febdf04c04138577fa69",
+   "trimmed": "the one line of the law"
+  },
+  "iter-001/plan/blueprint.jsonl": {
+   "source": "results/smoke23/iter-001/plan/blueprint.jsonl",
+   "sha256": "d1fd9bc75c617c5836728d4ce47b704d2a13a4a2fc6c83a0dda6fe0a47f79035",
+   "trimmed": "the records of the law"
+  },
+  "iter-001/validate/verdicts.jsonl": {
+   "source": "results/smoke23/iter-001/validate/verdicts.jsonl",
+   "sha256": "d4883e025cccf4ab8fd58432c938d04683065f8930684961d366397f9419254a",
+   "trimmed": "the rows of the law, node_id/kind/reasons"
+  },
+  "iter-002/validate/verdicts.jsonl": {
+   "source": "results/smoke23/iter-002/validate/verdicts.jsonl",
+   "sha256": "9ca2fad156f72f5cbcd8dc7232e3fd9de9489bec6bed46b4cf05e7fb19b51f61",
+   "trimmed": "the rows of the law, node_id/kind/reasons"
+  },
+  "iter-001/code/NRS_484B_250_4_o1/node.json": {
+   "source": "results/smoke23/iter-001/code/NRS_484B_250_4_o1/node.json",
+   "sha256": "b9a4b3a684a866bf8a260c59f1b8e56cdaba48823d5ea2a6a407efb7baa1bda6"
+  },
+  "iter-001/code/NRS_484B_250_4_o1/verdict.json": {
+   "source": "results/smoke23/iter-001/code/NRS_484B_250_4_o1/verdict.json",
+   "sha256": "17cc370abd1bad4308808897032e1d6602d93c3e4848dda086b5d4f76a1fe77e",
+   "trimmed": "verdict and details"
+  },
+  "iter-001/code/NRS_484B_250_4_o1/review/review_outcome.json": {
+   "source": "results/smoke23/iter-001/code/NRS_484B_250_4_o1/review/review_outcome.json",
+   "sha256": "b8e3cd935ca5ef162db3a01b1f5ad5fb1386cf0c33b7bff5e1fb67361125c73e",
+   "trimmed": "reviewer_verdict, upheld (each cut to 160 characters), deferred"
+  },
+  "iter-002/code/NRS_484B_250_4_o1/node.json": {
+   "source": "results/smoke23/iter-002/code/NRS_484B_250_4_o1/node.json",
+   "sha256": "6cccf2cde1c7f69cb2859972302f02b56e5dd1a0a6348f6730ad4b518763c371"
+  },
+  "iter-002/code/NRS_484B_250_4_o1/verdict.json": {
+   "source": "results/smoke23/iter-002/code/NRS_484B_250_4_o1/verdict.json",
+   "sha256": "8b7ed0b62eaacb32b22525e0c8a377c816f33ae8acb1fe4fb39d99fe2d59dc3f",
+   "trimmed": "verdict and details"
+  },
+  "iter-002/code/NRS_484B_250_4_o1/review/review_outcome.json": {
+   "source": "results/smoke23/iter-002/code/NRS_484B_250_4_o1/review/review_outcome.json",
+   "sha256": "be6d32f90b2fa71a9c3945f8e3536725cc53a92d43c705b3c4c9b1f21eb7e181",
+   "trimmed": "reviewer_verdict, upheld (each cut to 160 characters), deferred"
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/planned.json": {
+   "source": "results/smoke23/iter-002/repair/NRS_484B_250_4_o1/planned.json",
+   "sha256": "b9a4b3a684a866bf8a260c59f1b8e56cdaba48823d5ea2a6a407efb7baa1bda6",
+   "trimmed": "node_id, law_refs, segmentation"
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/record.jsonl": {
+   "source": "results/smoke23/iter-002/repair/NRS_484B_250_4_o1/record.jsonl",
+   "sha256": "8974ca124608fc8126183307d019d1134e43d2091afabf6fae916e0af3c2b310"
+  },
+  "iter-002/repair/NRS_484B_250_4_o1/validation.txt": {
+   "source": "results/smoke23/iter-002/repair/NRS_484B_250_4_o1/validation.txt",
+   "sha256": "c125d0397b605657bc89340953f5f2897a7e00a9b7d3474fa53720c8ccbbb3e3"
+  }
+ },
+ "iteration_3_prompt": {
+  "source": "results/smoke23/iter-003/plan/prompt.md",
+  "sha256": "9c2022aabb53f8918a6da3f7b58689fe21d879d4d224f94a60453e512fb90341",
+  "previous_record_headings": [
+   "### `NRS-484B-250-4`, as coded in iteration 2"
+  ],
+  "previous_record_nodes": [
+   "NRS_484B_250_4_o1"
+  ]
+ }
+}

@@ -18,7 +18,7 @@
   Field names follow the structures of World.lean in snake_case; see the decoders below. A
   device's `governs` absent or null is not observed (`governsObserved` false, so whether it
   governs a region is unknown); `[]` is observed and governs nothing. A structure's `entrance_of`
-  is read the same way: absent or null, which lanes it marks is not observed (`entranceObserved`
+  is read the same way: absent or null, which carriers it marks is not observed (`entranceObserved`
   false); `[]` is observed and marks none. An intent record has exactly its four keys, and a
   non-empty `source`, which names where the declaration comes from and is not kept in the scene.
 

@@ -23,6 +23,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   `Concept` and `Instance` records, the catalogue of accepted concepts a body may call, every
   atom's accessor, the primitives, the enumeration spellings, the world
   records, the `Units` constructors and the builders.
+- **Contracts** — what each atom, primitive and concept the elements map to denotes, and each
+  atom those primitives and concepts read: write each by its contract.
 - **Example** — an accepted concept of this library, the pattern to follow.
 - **Skeletons** — the two files as the harness wrote them.
 - **Gate** — the command to run and the verdicts it can return.
@@ -30,6 +32,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 {concept}
 {files}
 {core_surface}
+{contracts}
 {example}
 {skeletons}
 {gate}

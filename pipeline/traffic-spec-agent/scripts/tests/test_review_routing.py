@@ -621,6 +621,13 @@ class CaseLanguageMeanings(unittest.TestCase):
         self.assertIn("never one ahead", t)
         self.assertIn('"kin_time"', t)
 
+    def test_an_assumption_is_admitted_like_an_intention(self):
+        from harness.lean import surface
+        t = surface.case_language()
+        self.assertIn('- formula `asm`: `{"asm": string}`', t)
+        refused = t[t.index("Not admitted in a case"):t.index("An assumption (`asm`) and a declared intention (`int`)")]
+        self.assertNotIn("asm", refused)
+
 
 class RegionPlaces(unittest.TestCase):
     """A record that reads a region's property claims the kind of region it is read on; how the region

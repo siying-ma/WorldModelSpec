@@ -1,6 +1,6 @@
 """A formula, as the JSON `Core/Language/Export.lean` writes it, rendered as structured prose for the blind
-reader. Deterministic and model-free: every constructor has one phrasing, atom and concept names
-are glossed from the contracts the caller supplies, and nothing is summarised away."""
+reader. Deterministic and model-free: every constructor has one phrasing, atom, primitive and
+concept names are glossed from the contracts the caller supplies, and nothing is summarised away."""
 from __future__ import annotations
 import re
 
@@ -13,6 +13,10 @@ _ANNOTATION = re.compile(r" \[[^\[\]]*\]| \((?:a bound the reading sets|a parame
 def bare(text: str) -> str:
     """The text without the rendering's annotations."""
     return _ANNOTATION.sub("", str(text or ""))
+
+
+#: How a judge's contracts mark the meaning of an assumption a case states: the source's declaration.
+DECLARED_BY_SOURCE = "declared by the source: "
 
 
 class Unrendered(ValueError):
@@ -42,13 +46,20 @@ def _num(lit: dict) -> str:
 
 
 def gloss(name: str, glosses: dict[str, str]) -> str:
-    """The contract of a Lean name, by its atom id (accessor suffixes stripped) or concept id."""
+    """The contract of a Lean name, by its atom id (accessor suffixes stripped), primitive id or
+    concept id."""
     key = name.replace("_", ".", 1) if "." not in name else name
     cands = sorted((k for k in glosses if name == k.replace(".", "_") or name.startswith(k.replace(".", "_") + "_")),
                    key=len, reverse=True)
     if cands:
         return glosses[cands[0]]
     return glosses.get(key, "")
+
+
+def _called(name: str) -> str:
+    """A called name as the reader is told what it is: an ontology primitive (`prim_*`) as the
+    primitive, any other name a body calls as the concept."""
+    return f"the {'primitive' if str(name).startswith('prim_') else 'concept'} `{name}`"
 
 
 def term(t, glosses: dict[str, str]) -> str:
@@ -64,7 +75,7 @@ def term(t, glosses: dict[str, str]) -> str:
     if "quantity" in t:
         g = gloss(t["quantity"], glosses)
         ps = ", ".join(term(p, glosses) for p in t.get("params", []))
-        return f"the concept `{t['quantity']}` of {_args(t.get('args', []))}" + (f" with {ps}" if ps else "") + (f" [{g}]" if g else "")
+        return f"{_called(t['quantity'])} of {_args(t.get('args', []))}" + (f" with {ps}" if ps else "") + (f" [{g}]" if g else "")
     if "distance_while" in t:
         return f"the path length `{t['distance_while']}` has travelled while ({formula(t['holds'], glosses)}) held continuously"
     if "since_rise" in t:
@@ -101,7 +112,7 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
     if "derived" in f:
         g = gloss(f["derived"], glosses)
         ps = ", ".join(term(p, glosses) for p in f.get("params", []))
-        return f"the concept `{f['derived']}` holds of {_args(f.get('args', []))}" + (f" with {ps}" if ps else "") + (f" [{g}]" if g else "")
+        return f"{_called(f['derived'])} holds of {_args(f.get('args', []))}" + (f" with {ps}" if ps else "") + (f" [{g}]" if g else "")
     if "cmp" in f:
         return f"{term(f['lhs'], glosses)} {_CMP[f['cmp']]} {term(f['rhs'], glosses)}"
     if "same" in f:
@@ -112,6 +123,11 @@ def formula(f, glosses: dict[str, str], depth: int = 0) -> str:
     if "int" in f:
         who, target = f["args"]
         return f"road user {_arg(who)} is declared to intend `{f['int']}` at region {_arg(target)}"
+    if "not" in f and isinstance(f["not"], dict) and set(f["not"]) == {"asm"}:
+        # a direct negation of an assumption holds exactly where the source declares it false
+        aid = f["not"]["asm"]
+        g = gloss(aid, glosses).removeprefix(DECLARED_BY_SOURCE)
+        return f"the source declares the assumption `{aid}`" + (f" [{g}]" if g else "") + " false"
     if "not" in f:
         return f"it is not the case that ({formula(f['not'], glosses, depth)})"
     if "count" in f:

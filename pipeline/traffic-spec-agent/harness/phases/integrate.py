@@ -535,9 +535,10 @@ def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str
     verdict as evidence), and so is everything that calls it; the operational selection
     (`.inactive.json`) is rewritten before the next gate. Returns {id: verdict} of the records
     fenced here. Raises `AdmissionUnavailable` when a gate does not judge a record because the
-    toolchain did not run. With `unjudged`, a record whose evaluation exceeded the gate's deadline
-    (`GATE_TIMEOUT`) is no outage and no judgement: it stays as accepted, is not cached, so the next
-    launch checks it again, and a line naming it is appended to `unjudged`."""
+    toolchain did not run. With `unjudged`, a record whose evaluation exceeded the gate's deadline or
+    panicked in isolation (`GATE_TIMEOUT`) is no outage and no judgement: it stays as accepted, is not
+    cached, so the next launch checks it again, and a line naming it, and a panic as a Core defect,
+    is appended to `unjudged`."""
     from ..checks import gate
     from ..model.blueprint import ConceptRecord
     from ..loop import concept_order, topological, concept_deps
@@ -569,7 +570,8 @@ def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str
             else:
                 v = gate.run_gate(rec, reading, gate.repo_digest(), work, 0, 1, accepted_concepts=run.all_concepts())
             if v.verdict == gate.GATE_TIMEOUT and unjudged is not None:
-                unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation exceeded the gate's deadline "
+                what = "panicked in isolation (a Core defect)" if v.extras.get("panic") else "exceeded the gate's deadline"
+                unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation {what} "
                                 f"({'; '.join(v.details[:1])[:200]}); it stays as accepted and is checked again at the next launch")
                 continue
             if v.verdict in (gate.INFRA, gate.GATE_TIMEOUT, "BUDGET_EXHAUSTED"):

@@ -62,7 +62,7 @@ class World:
         self.laws = laws
         self.plans: dict = {}            # (law, iteration) or law -> records the plan writes for it
         self.validate: dict = {}         # (id, iteration) -> (kind, reasons)
-        self.gate: dict = {}             # (id, iteration) -> verdict
+        self.gate: dict = {}             # (id, iteration) -> verdict, or "PANIC" (a reproduced panic)
         self.review: dict = {}           # (id, iteration) -> "accepted" | "returned" | ("deferred", stage) | "outage"
         self.node_repair: dict = {}      # (id, iteration) -> record raw | {"withdraw": {...}} | None
         self.concept_repair: dict = {}
@@ -179,6 +179,7 @@ class Fixture:
         s.enter_context(mock.patch.object(ontology, "anchors_text", lambda *a, **k: ""))
         s.enter_context(mock.patch.object(surface, "core_atom_ids", lambda: sorted(ATOMS)))
         s.enter_context(mock.patch.object(surface, "core_surface", lambda *a, **k: ""))
+        s.enter_context(mock.patch.object(surface, "primitive_reads", lambda: {}))
         s.enter_context(mock.patch.object(render, "render", lambda *a, **k: "prompt"))
         s.enter_context(mock.patch.object(loop, "doctor_ok", lambda: None))
         s.enter_context(mock.patch.object(owner, "acquire", lambda *a, **k: "nonce"))
@@ -271,14 +272,18 @@ class Fixture:
             w.tick("admission", ident)
             return w.admission.get(ident, "OK")
 
+        def failing(v):                          # `PANIC`: a panic the gate reproduced in isolation
+            return gate.Verdict(gate.GATE_TIMEOUT, ["scripted panic"], extras={"panic": ["PANIC at scripted"]}) if v == "PANIC" \
+                else gate.Verdict(v, [f"scripted {v}"])
+
         def run_gate(n, reading, baseline, d, budget_used=0, budget=0, accepted_concepts=None):
             v = admitted(n.id, d) or w.gate.get((n.id, _iteration_of(Path(d))), "OK")
-            return gate.Verdict(v, [] if v == "OK" else [f"scripted {v}"], extras={"rule_json": {"id": n.id}} if v == "OK" else {})
+            return gate.Verdict(v, [], extras={"rule_json": {"id": n.id}}) if v == "OK" else failing(v)
 
         def run_concept_gate(rec, reading, baseline, d, budget_used=0, budget=0, mode="train", accepted=None):
             v = admitted(rec.id, d) or w.gate.get((rec.id, _iteration_of(Path(d))), "OK")
-            return gate.Verdict(v, [] if v == "OK" else [f"scripted {v}"],
-                                extras={"reads": ["kin.speed"], "refs": sorted(rec.refs()), "body_json": {"c": rec.id}} if v == "OK" else {})
+            return gate.Verdict(v, [], extras={"reads": ["kin.speed"], "refs": sorted(rec.refs()), "body_json": {"c": rec.id}}) \
+                if v == "OK" else failing(v)
         s.enter_context(mock.patch.object(gate, "run_gate", run_gate))
         s.enter_context(mock.patch.object(gate, "run_concept_gate", run_concept_gate))
         real_restore = code_phase._restore

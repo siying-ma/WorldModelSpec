@@ -99,7 +99,9 @@ A structural evidence item is `upheld` or `dismissed_permitted_reading` only.
    purpose, the legal status of a feature in the scene, or who or what controls a road user's motion
    is read through the conduct or feature it refers to, and the record discloses each such reading as
    an `observable_reading`. A declared intention (`intent`) is a fact of the case like any other, and
-   a mismatch that turns on it is judged as any mismatch is. A mismatch that turns only on what the
+   a mismatch that turns on it is judged as any mismatch is. An assumption (`asm`) the case states is
+   the source's declaration, taken as declared, and a mismatch that turns on it is judged the same
+   way. A mismatch that turns only on what the
    subject intended apart from what the trace declares, on what it perceived or knew apart from that
    conduct, on whether a feature present in the scene is official, or on whether a
    person, an automated system or no one controls a road user in motion, is a permitted reading. A

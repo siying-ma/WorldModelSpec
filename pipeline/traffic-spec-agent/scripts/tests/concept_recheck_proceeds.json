@@ -1,0 +1,161 @@
+{
+ "source": "smoke24 rulings.jsonl rows of concept:drv.motion.proceeds_through_region (verbatim lines) and its accepted record",
+ "rows": [
+  "{\"key\": \"concept:drv.motion.proceeds_through_region\", \"subject\": \"drv.motion.proceeds_through_region\", \"iteration\": 2, \"item\": \"divergence 1 (holds_wrongly) at t=2000 ms: The road user remains completely stationary inside the region throughout the full recognition window. Its heading change is zero, so the body holds although the — contract: fails, body: holds; contract: \\\"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps i\\\"\", \"ruling\": \"upheld\", \"reason\": \"The road user is at rest at [0,0] with speed 0 across the whole window, so the body holds on overlap alone; the contract expressly refuses that reading, naming a standing road user as not denoted because it merely overlaps the region, and the body reads no motion at all. — \\\"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps it\\\"\", \"schema\": \"concept_case/1\", \"case_id\": \"35a23b0d966fcaf714c0847078bb498e35babd60cfb2c56a89c746cb3d7c9299\", \"kind\": \"holds_wrongly\", \"situation\": \"The road user remains completely stationary inside the region throughout the full recognition window. Its heading change is zero, so the body holds although the road user is not travelling across the region.\", \"contract_words\": \"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps it\", \"contract_verdict\": \"fails\", \"contract_value\": null, \"instance\": {\"literals\": {}, \"nats\": {}, \"params\": {\"straight_window\": [2, \"s\"], \"straight_heading_change\": [10, \"deg\"]}}, \"grounding\": {\"u\": 1}, \"regions\": {\"r\": 2}, \"trace\": {\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}, {\"t\": 1000, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}, {\"t\": 2000, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}]}, \"at\": 2000, \"verdict\": \"compliant\", \"value\": null, \"contract_digest\": \"eb714942e33959da57e1c184c156a967b8d74bfe986c15990fa660e4b54bb29e\", \"body_digest\": \"aaa7c9a7c21b4be76488513345073ebc3ec938abab6ae9cc63570b71111d890f\", \"obligation\": \"open\", \"ruling_id\": \"79ec3ab358478878d3ae\", \"supersedes\": null}",
+  "{\"key\": \"concept:drv.motion.proceeds_through_region\", \"subject\": \"drv.motion.proceeds_through_region\", \"iteration\": 3, \"item\": \"divergence 1 (holds_wrongly) at t=2000 ms: The road user remains completely stationary inside the region throughout the full recognition window. Its heading change is zero, so the body holds although the — contract: fails, body: holds; contract: \\\"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps i\\\"\", \"ruling\": \"upheld\", \"reason\": \"The road user is at rest at [0,0] with speed 0 across the whole window, so the body holds on overlap alone; the contract expressly refuses that reading, naming a standing road user as not denoted because it merely overlaps the region, and the body reads no motion at all. — \\\"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps it\\\"\", \"schema\": \"concept_case/1\", \"case_id\": \"35a23b0d966fcaf714c0847078bb498e35babd60cfb2c56a89c746cb3d7c9299\", \"kind\": \"holds_wrongly\", \"situation\": \"The road user remains completely stationary inside the region throughout the full recognition window, with zero heading change. This continues the earlier occupancy-only challenge with a motion speed floor of 0.1 m/s.\", \"contract_words\": \"Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps it\", \"contract_verdict\": \"fails\", \"contract_value\": null, \"instance\": {\"literals\": {}, \"nats\": {}, \"params\": {\"straight_window\": [2, \"s\"], \"straight_heading_change\": [10, \"deg\"], \"motion_speed_floor\": [0.1, \"m/s\"]}}, \"grounding\": {\"u\": 1}, \"regions\": {\"r\": 2}, \"trace\": {\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}, {\"t\": 1000, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}, {\"t\": 2000, \"users\": [{\"track\": 1, \"kin\": {\"position\": [0, 0], \"heading\": [1, 0], \"extent\": [1, 0.5, 0.5], \"velocity\": [0, 0], \"speed\": 0, \"yaw_rate\": 0}}], \"structures\": [{\"id\": 2, \"kind\": \"intersection\", \"boundary\": [[-5, -5], [5, -5], [5, 5], [-5, 5]]}], \"occupancy_observed\": [1]}]}, \"at\": 2000, \"verdict\": \"compliant\", \"value\": null, \"contract_digest\": \"eb714942e33959da57e1c184c156a967b8d74bfe986c15990fa660e4b54bb29e\", \"body_digest\": \"557363bd59c27e1e933d8dcb5e06e11a544c76a37ae48279b53c1bfcbb3051a3\", \"obligation\": \"satisfied\", \"lineage\": \"35a23b0d966fcaf714c0847078bb498e35babd60cfb2c56a89c746cb3d7c9299\", \"predecessor\": null, \"ruling_id\": \"a3f0fb9c883361f1761d\", \"supersedes\": \"79ec3ab358478878d3ae\"}"
+ ],
+ "concept": {
+  "concept_id": "drv.motion.proceeds_through_region",
+  "kind": "formula",
+  "contract": "The road user is travelling across the region named by the region formal on an unchanged course: at the observation its footprint overlaps that region, it is in motion — its speed exceeds the motion floor — and the magnitude of its signed heading change over the recognition window behind the observation, in degrees measured in the world frame, is below the course-change threshold. The concept denotes travel across the region without a change of course, read at each observation at which the road user is moving within the region and its course over the window behind has held; a road user whose accumulated change of direction within the window reaches the threshold is not denoted, to whichever side it turns, one whose speed does not exceed the motion floor is not denoted however long it overlaps the region, and one whose window reaches past the start of the trace is unknown. Not a stand-in for: occupancy of the region alone, since a road user standing in it or turning within it also overlaps it; rest within the region, which the motion floor excludes, so that a road user halted, waiting or parked there is not denoted even though its course has not changed; entry into or departure from the region, which are the observations at which the overlap begins and ends; the region the road user will leave by or the way beyond it, which the concept does not read; a change of direction to either side, which is the opposite reading of the same signed quantity; or a declared intention to proceed.",
+  "args": [
+   {
+    "name": "u",
+    "sort": "track"
+   },
+   {
+    "name": "r",
+    "sort": "region"
+   }
+  ],
+  "params": [
+   {
+    "name": "straight_window",
+    "unit": "s",
+    "meaning": "the time behind the observation over which the road user's change of direction is accumulated: the window within which a change of course counts as one manoeuvre"
+   },
+   {
+    "name": "straight_heading_change",
+    "unit": "deg",
+    "meaning": "the magnitude of signed heading change over that window at or above which the road user has changed its course, so that it is no longer travelling across the region on an unchanged course"
+   },
+   {
+    "name": "motion_speed_floor",
+    "unit": "m/s",
+    "meaning": "the speed above which the road user counts as in motion rather than at rest, the bound that separates travel across the region from standing within it"
+   }
+  ],
+  "elements": [
+   {
+    "span": "its footprint overlaps that region",
+    "atoms": [
+     "rel.occupies"
+    ],
+    "concepts": [],
+    "justification": "`rel.occupies` is 'a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure)', which is exactly the overlap the words state, read on the region the formal names and on no other. It carries no distance and no nearness, so the contract's reading of being within the region is not an approximation by `st.region_geometry`."
+   },
+   {
+    "span": "it is in motion — its speed exceeds the motion floor",
+    "atoms": [
+     "kin.speed"
+    ],
+    "concepts": [],
+    "justification": "`kin.speed` is the 'magnitude of velocity' in m/s, the road user's own motion in the world frame; compared with the motion floor it is the element that keeps the concept off occupancy alone, which the contract's 'not a stand-in for' clause expressly refuses — a road user standing in the region overlaps it and holds its course, and only this element tells it from one crossing. The atom carries no direction, so nothing of the sense of travel or of any designated direction is read here, as the accepted `drv.motion.travels_against_region_direction` reads its own motion floor through the same atom. No concept is rebuilt inline: `drv.motion.standstill` denotes the legal cessation of movement at its own tolerance drawn from a corpus definition, whereas the floor here is this concept's parameter bounding travel across a region."
+   },
+   {
+    "span": "the magnitude of its signed heading change over the recognition window behind the observation",
+    "atoms": [
+     "prim.heading_change"
+    ],
+    "concepts": [],
+    "justification": "`prim.heading_change` is 'the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from kin.yaw_rate; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing', with the window length as its parameter: that is the quantity the contract compares with the threshold, and its magnitude is sign-free, so the concept excludes a change to either side alike. As a primitive it is given the atoms it reads, which the concept therefore does not claim."
+   }
+  ],
+  "residues": [],
+  "literals": [],
+  "scenarios": [
+   {
+    "name": "holds",
+    "expected": "compliant",
+    "narrative": "The subject's footprint overlaps the intersection region named by the formal, it runs across that region at a speed well above the motion floor, and its yaw rate has been zero throughout the window behind, so its accumulated signed heading change is nil, below the course-change threshold: it is travelling across the region on an unchanged course."
+   },
+   {
+    "name": "fails",
+    "expected": "violated",
+    "narrative": "The subject stands still within the region: its footprint overlaps the region and its yaw rate is zero throughout the window behind, so the heading change is nil, but its speed is zero and so does not exceed the motion floor — it merely occupies the region and is not denoted."
+   },
+   {
+    "name": "blind",
+    "expected": "unknown",
+    "narrative": "The subject's footprint overlaps the region and its speed is above the motion floor, but the source's manifest declares the yaw rate absent, so the heading change over the window cannot be integrated and the concept reports unknown while the other two elements are decided true.",
+    "masked": [
+     "kin.yaw_rate"
+    ]
+   }
+  ],
+  "used_by": [],
+  "differs_from": {
+   "concept": "drv.motion.travels_against_region_direction",
+   "why": "That concept takes the same sorts (a track and a region) and shares the motion floor read through kin.speed, but it reads the sense of the road user's travel against the direction the region designates, through kin.velocity and st.lane_direction; this one reads no designated direction at all and no region kind that carries one, but the road user's own change of course over a window while it moves within the region, so a vehicle crossing a junction with the designated direction and one crossing it against the designated direction are alike denoted here."
+  },
+  "reads": [
+   "kin.speed",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]},{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p2\"}}]},{\"cmp\":\"lt\",\"lhs\":{\"abs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"}},\"rhs\":{\"param\":\"$p1\"}}]}",
+  "body_json": {
+   "and": [
+    {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "u"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "cmp": "gt",
+       "lhs": {
+        "args": [
+         {
+          "var": "u"
+         }
+        ],
+        "measure": "kin_speed"
+       },
+       "rhs": {
+        "param": "motion_speed_floor"
+       }
+      }
+     ]
+    },
+    {
+     "cmp": "lt",
+     "lhs": {
+      "abs": {
+       "args": [
+        {
+         "var": "u"
+        }
+       ],
+       "params": [
+        {
+         "param": "straight_window"
+        }
+       ],
+       "quantity": "prim_heading_change"
+      }
+     },
+     "rhs": {
+      "param": "straight_heading_change"
+     }
+    }
+   ]
+  },
+  "accepted_in": "smoke24/iter-003",
+  "narrowings": [],
+  "approximations": [
+   "The carried-over stationary-occupancy challenge was rerun with motion_speed_floor = 0.1 m/s. The body fails, agreeing with the contract: its speed condition excludes the stationary road user. The continuation is retained to discharge the carried-over challenge, not as a confirmed defect. No other divergence was found.",
+   "refuted by execution: divergence 1 (holds_wrongly) at t=2000 ms: The road user remains completely stationary inside the region throughout the full recognition window, with zero heading change. This continues the earlier occup — contract: fails, body: fails (the body agrees with the contract on this trace)"
+  ],
+  "context": "e3c6abeb19dc8f3528c164a3"
+ }
+}

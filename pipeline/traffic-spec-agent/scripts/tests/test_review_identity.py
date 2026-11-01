@@ -234,7 +234,7 @@ class DependencyReports(unittest.TestCase):
         led.return_for_concepts("L-1", ["drv.motion.x"], ["defective"], 1)
         led.attempt = 2; led.mark_planned("L-1", ["L_1"], 2)
         led.return_for_concepts("L-1", ["drv.motion.x"], ["defective again"], 2)
-        self.assertEqual(led.entries["L-1"].attempts, 1)
+        self.assertEqual((led.entries["L-1"].attempts, led.entries["L-1"].dependency_returns), (0, 1))
 
 # ---------------------------------------------------------------------------------------------
 # Every name a case formula holds is renamed, in scope, and recorded cases are repaired on read

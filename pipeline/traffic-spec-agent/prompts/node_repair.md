@@ -21,7 +21,9 @@ You are a one-shot session. Nothing waits for a reply.
 - **The definitions** — the posted definitions that apply to the law's words, and the definitions
   they use: a defined word means what its definition says.
 - **The node** — the record as it was planned, without the parts that are not yours (its id, its
-  law and the segmentation).
+  law and the segmentation); then, read-only, the law's other nodes in the records your revision is
+  validated with, each with its state, and the nodes the records compose. You revise this node
+  only; a different cut of the text is a plan defect (rule 2).
 - **The verdict** — what the gate or the review returned: the gate's details, or the behaviour
   review's certified cases, each holding on its trace, its law's verdict decided by a judge blind
   to the rule, and upheld by the excuse judge.
@@ -90,7 +92,13 @@ You are a one-shot session. Nothing waits for a reply.
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
    span of those roles the vocabulary cannot carry is an assumption the trace declares, or a gap.
    A feature such a span names without a size is carried by its presence, never by a size bound
-   the words do not state.
+   the words do not state. A condition that refers to an act, state, party or place stated
+   elsewhere keeps that referent with every qualification the referring words retain (its subject,
+   object, place, event, time, order and logical force), whichever node states it and whether or
+   not that node was returned; no weaker fact replaces it. Its representation (a composition, a
+   concept, the fact in full) may change where the words warrant it, and the revised prose and
+   justifications then state the referent and the qualifications kept. An earlier record's error is
+   corrected, not kept because a record held it.
 3b. **A narrowing the coder declared is decided by its span.** On a trigger, subject, condition
    or exception span it is never adopted: the span is re-mapped to what its words say, assumed,
    or withdrawn as a gap. A narrowing of kind `no_atom` or `no_operator` (the gate's
@@ -152,9 +160,21 @@ You are a one-shot session. Nothing waits for a reply.
    another value; any other catalogued value is named as it is.
 6. **The four scenarios stay** (`forbid`, `permit`, `idle`, `blind` with `masked`); scenarios named
    `branch_<n>` with `expected` `compliant` or `violated` may be added for a side of the duty or
-   the exception the four do not visit. The coder adds further branch witnesses itself. A rule
+   the exception the four do not visit, or with `not_applicable` for a situation the words exclude
+   from the duty. Where a weaker fact than a referred one would change the verdict, two scenarios
+   differ only in it; an existing scene may be one of them. The coder adds further branch witnesses
+   itself. A rule
    that quantifies over parties other than its binders keeps a scenario with no such party in
    the scene and a decided verdict.
+6b. **A history bound is kept.** Where the record's `obligation` states a trigger, a place and a
+   history bound for an act searched for in the past, a repair keeps them, written out in full (the
+   event and target bindings, the conditions that end the search and how their observations are
+   read, the parameter references, and when missing evidence prevents a decision), and keeps the
+   `history_boundary` scenario; where it changes them, it derives them again from the words and from
+   the convention of the ontology's section on what is not an atom. Do not invent a history boundary
+   from the recording's start, a subject's first observation, or a cumulative quantity whose origin
+   is the recording's start. Preserve any event, time or distance window the words explicitly
+   require.
 7. **A word with no observable counterpart is never withdrawn.** Words that state that a road user
    intends, or is preparing, to turn are carried by a declared intention (`intentions`, `int.<name>`)
    of that road user at the region the words name, on a trigger, subject, condition or exception
@@ -163,7 +183,9 @@ You are a one-shot session. Nothing waits for a reply.
    a feature in the scene, or who or what controls a road user's motion is read through the conduct
    or feature it refers to and declared as an `observable_reading` narrowing; never assumed, never a
    gap. An assumption or an intention reuses an id of the declared-fact catalogue whose meaning is
-   the words' meaning, with no `meaning`; a new id gives its `meaning`.
+   the words' meaning, with no `meaning`; a new id gives its `meaning`. A meaning states the fact or
+   state the source supplies; it never cites a law, explains a defined word of the law, or presets
+   whether the law applies or a duty is met.
 8. **Withdraw** when the vocabulary cannot carry a span the law needs: name the span, whether an
    atom or an operator is missing, what it would have to carry, which distinction of the driving
    task it would decide (the action the law requires or forbids, where it is required, its time or
@@ -200,7 +222,7 @@ compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "u
 narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
-scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside", expected, narrative, masked (blind only, a list)}],
+scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected, narrative, masked (blind only, a list), boundary (history_boundary only)}],
 occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```

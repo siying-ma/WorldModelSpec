@@ -171,7 +171,8 @@ def prim_conditions_hold (c : Ctx) (d : DeviceId) (x : TrackId) : Array R :=
 
 /-- The signed lateral offset of region r from road user x (m, left positive): the component,
     perpendicular to x's heading, of the vector from x's reference point to the nearest point of
-    r's boundary; zero where the reference point lies inside r. -/
+    r's boundary; zero where the reference point lies inside r. Where several boundary points are
+    equally nearest, their common component; undefined where those components differ. -/
 def prim_region_lateral_offset (c : Ctx) (x : TrackId) (r : RegionId) : Array QR :=
   eachQ c fun s => do
     let some p := kin_position s x | throw (.absentAtom "kin_position")
@@ -179,9 +180,53 @@ def prim_region_lateral_offset (c : Ctx) (x : TrackId) (r : RegionId) : Array QR
     let some poly := st_region_geometry_boundary s r | throw (.absentAtom "st_region_geometry")
     if Geom.inPolygon p poly then pure Q.zero
     else
-      let some q := Geom.nearestPoint p poly | throw (.absentAtom "st_region_geometry")
-      let some (_, lat) := Geom.inFrame h (Geom.vsub q p) | throw (.absentAtom "kin_heading")
-      pure lat
+      let lats ← (Geom.nearestPoints p poly).mapM fun q =>
+        match Geom.inFrame h (Geom.vsub q p) with
+        | some (_, lat) => pure lat
+        | none => throw (.absentAtom "kin_heading")
+      match lats with
+      | [] => throw (.absentAtom "st_region_geometry")
+      | l :: ls => if ls.all (Q.eq · l) then pure l else throw (.undefined "prim_region_lateral_offset")
+
+/-- The signed distance (m) from road user x's reference point to region r, along carrier l's
+    designated direction, on the line through the reference point parallel to that direction. r is
+    a closed set: a vertex the line only touches and an edge it runs along are points of r it meets.
+    Zero where the reference point lies in r or on its boundary; where every point of r on the line
+    lies ahead, the distance to the nearest of them; where every one lies behind, minus the distance
+    to the nearest. Where the line does not meet r, the value comes from r's projection on the
+    direction, the interval [lo, hi] of the signed distances of r's points along it: lo where lo > 0,
+    hi where hi < 0. That value is a projection gap, not a distance along the line, so the value may
+    jump where the line starts or stops meeting r; its sign gives the side in both cases. Undefined
+    where the line meets r both ahead and behind, where it misses r and [lo, hi] spans or touches
+    zero, and where
+    r's boundary is not a simple polygon (an empty list, fewer than three vertices, zero area, or a
+    boundary that crosses or touches itself); unknown where the position, the direction (a zero
+    vector included) or the boundary is absent. Independent of the boundary's start vertex and
+    orientation. The direction is normalised as `st_lane_direction` is read (`Geom.unit`, with Core's
+    micrometre-rounded square root), and the distance is counted in lengths of that normalised
+    vector, which lie between 1 and 1 + 2·10⁻⁶ m. The value is geometry only: it does not establish
+    that x is on l, that r marks l's entrance, that x's whole body has crossed r, or that a crossing
+    happened between observations, and a distance to r is read from `st_region_geometry_distance`. -/
+def prim_region_offset_along (c : Ctx) (x : TrackId) (r l : RegionId) : Array QR :=
+  eachQ c fun s => do
+    let some p := kin_position s x | throw (.absentAtom "kin_position")
+    let some u := (st_lane_direction s l).bind Geom.unit | throw (.absentAtom "st_lane_direction")
+    let some poly := st_region_geometry_boundary s r | throw (.absentAtom "st_region_geometry")
+    if !Geom.simplePolygon poly then throw (.undefined "prim_region_offset_along")
+    let ts := Geom.lineCrossings p u poly
+    if Geom.inPolygon p poly || Geom.onBoundary p poly then pure Q.zero
+    else match ts with
+      | [] =>
+        match poly.map fun q => Q.div (Geom.dot (Geom.vsub q p) u) (Geom.dot u u) with
+        | [] => throw (.undefined "prim_region_offset_along")
+        | t :: rest =>
+          if (t :: rest).all (Q.lt Q.zero ·) then pure (rest.foldl Q.min t)
+          else if (t :: rest).all (Q.lt · Q.zero) then pure (rest.foldl Q.max t)
+          else throw (.undefined "prim_region_offset_along")
+      | t :: rest =>
+        if ts.all (Q.lt Q.zero ·) then pure (rest.foldl Q.min t)
+        else if ts.all (Q.lt · Q.zero) then pure (rest.foldl Q.max t)
+        else throw (.undefined "prim_region_offset_along")
 
 /-- Path length over which `holds` has held continuously up to each instant (`Term.distanceWhile`). -/
 def distanceWhile (c : Ctx) (x : TrackId) (holds : Array R) : Array QR :=
@@ -193,7 +238,8 @@ def distanceWhile (c : Ctx) (x : TrackId) (holds : Array R) : Array QR :=
 /-- Every `prim_*` definition of this file. The doctor holds this against `primitiveIds`. -/
 def primitiveNames : List String :=
   ["prim_heading_change", "prim_closest_approach_within", "prim_closest_approach_time",
-   "prim_closest_approach_distance", "prim_conditions_hold", "prim_region_lateral_offset"]
+   "prim_closest_approach_distance", "prim_conditions_hold", "prim_region_lateral_offset",
+   "prim_region_offset_along"]
 
 /-- The atoms each primitive reads (Lean names of Atoms.lean); Manifest.lean turns a primitive
     into the atoms a source must observe. -/
@@ -203,6 +249,7 @@ def reads (n : String) : List String :=
   | "prim_closest_approach_within" | "prim_closest_approach_time" | "prim_closest_approach_distance" => ["kin_position", "kin_velocity"]
   | "prim_conditions_hold" => ["dev_zone_sign", "dev_regulatory_sign", "env_civil_time", "ru_occupant_count", "ru_child"]
   | "prim_region_lateral_offset" => ["kin_position", "kin_heading", "st_region_geometry"]
+  | "prim_region_offset_along" => ["kin_position", "st_lane_direction", "st_region_geometry"]
   | _ => []
 
 /-- The sort each entity argument of a primitive must have (`none` marks a literal or natural
@@ -214,6 +261,7 @@ def argSorts (name : String) : Option (List (Option EntityKind)) :=
   | "prim_closest_approach_within" | "prim_closest_approach_time" | "prim_closest_approach_distance" => some [t, t]
   | "prim_conditions_hold" => some [some EntityKind.device, t]
   | "prim_region_lateral_offset" => some [t, some EntityKind.region]
+  | "prim_region_offset_along" => some [t, some EntityKind.region, some EntityKind.region]
   | _ => none
 
 private def tid (a : DArg) : Except UnknownReason TrackId :=
@@ -237,6 +285,7 @@ def evalQ (name : String) (c : Ctx) (args : List DArg) (ps : List Q) : Except Un
   | "prim_closest_approach_time", [a, b], [h] => do pure (prim_closest_approach_time c (← tid a) (← tid b) h)
   | "prim_closest_approach_distance", [a, b], [h] => do pure (prim_closest_approach_distance c (← tid a) (← tid b) h)
   | "prim_region_lateral_offset", [x, r], [] => do pure (prim_region_lateral_offset c (← tid x) (← tid r))
+  | "prim_region_offset_along", [x, r, l], [] => do pure (prim_region_offset_along c (← tid x) (← tid r) (← tid l))
   | n, _, _ => .error (unknownName n)
 
 end Primitives

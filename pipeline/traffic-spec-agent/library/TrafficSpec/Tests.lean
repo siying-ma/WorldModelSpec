@@ -7,6 +7,7 @@ import TrafficSpec.Tests.Tri
 import TrafficSpec.Tests.Units
 import TrafficSpec.Tests.Time
 import TrafficSpec.Tests.Atoms
+import TrafficSpec.Tests.SurfaceGap
 import TrafficSpec.Tests.Semantics
 import TrafficSpec.Tests.Grounding
 import TrafficSpec.Tests.Decode
@@ -17,5 +18,11 @@ import TrafficSpec.Tests.TraceLint
 import TrafficSpec.Tests.Certificate
 import TrafficSpec.Tests.Intentions
 import TrafficSpec.Tests.Refinement
+import TrafficSpec.Tests.TravelRegion
 import TrafficSpec.Tests.Entrance
+import TrafficSpec.Tests.EntranceCarrier
 import TrafficSpec.Tests.Chains
+import TrafficSpec.Tests.PathSearch
+import TrafficSpec.Tests.HistoryBoundary
+import TrafficSpec.Tests.RegionOffsetAlong
+import TrafficSpec.Tests.ApproachChain

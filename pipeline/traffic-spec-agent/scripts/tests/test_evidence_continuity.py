@@ -39,7 +39,7 @@ def upheld(subject: str, grounding: dict, trace=None, case_id: str = "k1") -> di
     return {"key": f"concept:{subject}", "schema": review.CONCEPT_CASE_SCHEMA, "ruling": "upheld", "obligation": "open",
             "subject": subject, "iteration": 1, "case_id": case_id, "kind": "holds_wrongly", "contract_verdict": "fails",
             "contract_words": "c holds", "situation": "s", "instance": {"literals": {}, "params": {}}, "grounding": grounding,
-            "trace": trace or {"scenes": [{"t": 0}]}, "at": 0}
+            "trace": trace or {"scenes": [{"t": 0}]}, "at": 0, "contract_digest": review.contract_digest(concept(subject))}
 
 
 class Stubs:

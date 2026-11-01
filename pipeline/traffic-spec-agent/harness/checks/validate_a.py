@@ -10,7 +10,7 @@ from ..model import corpus
 from ..model.corpus import Law
 from ..model.mapping import MappingIndex
 from ..model.ontology import Ontology
-from ..model.reading import Reading, DECLARED_ID, same_meaning
+from ..model.reading import Reading, DECLARED_ID, meaning_citations, same_meaning
 
 ACCEPT, RETURN, FAIL = "accept", "return", "fail"
 _STRIP = re.compile(r"[\s\.,;:()\[\]“”\"'‘’—–-]+")
@@ -375,6 +375,15 @@ def check_scenarios(node: Node, onto: Ontology, concept_atoms: dict[str, set[str
             errs.append(f"{node.id}: the blind scenario's `masked` must be a list of atom ids, got {masked!r}")
         elif not (set(masked) & readable_atoms(node, onto, concept_atoms)):
             errs.append(f"{node.id}: the blind scenario masks {masked}, none of which the node reads (claimed, or read by a claimed concept)")
+    for name, s in scs.items():
+        if s.get("boundary") is None:
+            continue
+        if name in SCENARIOS:
+            errs.append(f"{node.id}: scenario `{name}` declares a history boundary; only a scenario beside the four standard ones may")
+        elif normalize_verdict(s.get("expected")) != "unknown":
+            errs.append(f"{node.id}: scenario `{name}` declares a history boundary and expects {s.get('expected')!r}; a history-boundary scenario expects unknown")
+        elif not str(s.get("boundary")).strip():
+            errs.append(f"{node.id}: scenario `{name}` declares an empty history boundary; it names the history its trace lacks")
     return errs
 
 
@@ -527,7 +536,10 @@ def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
     catalogue's. An id the catalogue lacks gives its meaning, and joins the catalogue for the nodes
     validated after this one. A declared intention is carried on a span that decides when the rule
     applies (trigger, subject, condition, exception), and that span carries no observable reading
-    of an intention: the words are read either as declared or through conduct, never both."""
+    of an intention: the words are read either as declared or through conduct, never both. The
+    meaning an id resolves to (its own, or the catalogue's for a reused id) states the fact or state
+    the source supplies: a meaning that cites a law, a definition or a provision is refused, and a
+    new id with such a meaning does not join the catalogue."""
     errs = []
     spans = node.spans()
     observed = {n.get("span") for n in node.get("narrowings", []) if n.get("kind") == OBSERVABLE_READING and n.get("category") == "intention"}
@@ -542,8 +554,15 @@ def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
                                 "meaning, or propose a new id for another meaning")
                 else:
                     d["meaning"] = catalogue[cid]
+                    if cited := meaning_citations(catalogue[cid]):
+                        errs.append(f"{node.id}: the catalogue's meaning of `{cid}` cites {', '.join(cited)}: a declared fact's meaning states "
+                                    "the fact or state the source supplies, never a law, a defined word's reading or whether a duty "
+                                    "applies; propose a new id whose meaning states only that fact")
             elif not meaning:
                 errs.append(f"{node.id}: `{cid}` is in no catalogue and gives no meaning: reuse a catalogued id, or give the new id its meaning")
+            elif cited := meaning_citations(meaning):
+                errs.append(f"{node.id}: the meaning of `{cid}` cites {', '.join(cited)}: a declared fact's meaning states the fact or "
+                            "state the source supplies, never a law, a defined word's reading or whether a duty applies")
             else:
                 catalogue[cid] = meaning
             if key == "intentions":
@@ -940,6 +959,8 @@ def concept_refs_acyclic(plan: list[ConceptRecord], accepted: dict[str, dict]) -
 #: does not match is returned with every mismatch named by its path, before any check reads it.
 _ELEMENT = {"span": "id", "atoms?": ["id"], "derived?": ["id"], "justification?": "str"}
 _SCENARIO = {"name": "id", "expected": "str", "narrative?": "str", "masked?": ["id"]}
+#: A node's scenario may also name the history its trace lacks (`boundary`), for a witness that stays unknown for it.
+_NODE_SCENARIO = {**_SCENARIO, "boundary?": "str"}
 NODE_SCHEMA = {
     "node_id": "id", "law_refs": ["id", 1], "applicability": "str", "obligation": "str",
     "subject?": {"binder": "id", "class_elements?": ["str"]},
@@ -954,7 +975,7 @@ NODE_SCHEMA = {
     "binders": [{"name": "id", "class_elements?": ["str"]}],
     "params?": ["id"],
     "narrowings?": [{"span": "id", "why?": "str", "kind?": PLANNED_NARROWING_KINDS, "category?": "str", "gap?": "id"}],
-    "scenarios": [_SCENARIO],
+    "scenarios": [_NODE_SCENARIO],
     "occasion?": {"act?": ("id", ["id"]), "window?": "id", "spans?": {"*": "str"},
                   "under_way?": {"words?": "str", "atoms?": ["id"], "derived?": ["id"], "params?": ["id"], "justification?": "str"}},
     "literals?": [{"span": "id", "text": "str", "value?": "any", "unit?": "str"}],

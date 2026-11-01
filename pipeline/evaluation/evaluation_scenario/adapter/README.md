@@ -34,7 +34,7 @@ Files in this folder:
 |---|---|
 | `README.md` | this guide |
 | `trace.example.json` | a two-scene CARLA-shaped trace; decodes with the Core decoder |
-| `manifest.example.json` | a complete manifest (all 129 atom ids), written by `make_manifest.py` |
+| `manifest.example.json` | a complete manifest (all 130 atom ids), written by `make_manifest.py` |
 | `make_manifest.py` | writes a complete manifest from the full ontology; edit its `OBSERVED` table |
 
 Paths below are relative to `pipeline/traffic-spec-agent/`.
@@ -289,11 +289,37 @@ lamps also need the modified generator.
 | `id`, `kind` | natural, enum, **required** | `kind` from StructureKind (§4.6) |
 | `boundary` | [[x, y], …] | polygon, world frame; needed for occupancy and every distance-to-region |
 | `position` | [x, y] | reference point of a point-like structure |
-| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this lane is an approach to), `marking_left`, `marking_right` ([type, colour]), `width` m} | on a lane, reserved lane, turn lane, centre turn lane or bicycle lane or path. `direction` alone may also be written on a roadway, one-way roadway or shoulder a vehicle travels in (a road written without lane regions); a centre turn lane has none. A direction is local to its region (write a bend or a loop as segments); regions that overlap or cross may have different directions; a place no region carries a direction for has none — never infer one. `direction` may have any non-zero length: it is read normalised. A zero vector reads unknown, and the hand-written trace check rejects it |
+| `lane` | {`direction` [x, y], `left`, `right` (neighbour lane ids in the same direction), `ordinal` (1 = leftmost), `count` (lanes in this direction), `leads_to` [lane ids], `enters_intersection` (the intersection region this carrier is an approach to; Entrance carriers, below), `marking_left`, `marking_right` ([type, colour]), `width` m} | on a lane, reserved lane, turn lane, centre turn lane or bicycle lane or path. `direction` and `enters_intersection` alone may also be written on a roadway, one-way roadway or shoulder a vehicle travels in (a road written without lane regions); a centre turn lane has no `direction`. `enters_intersection` is written only on an entrance carrier (Entrance carriers, below). A direction is local to its region (write a bend or a loop as segments); regions that overlap or cross may have different directions; a place no region carries a direction for has none — never infer one. `direction` may have any non-zero length: it is read normalised. A zero vector reads unknown, and the hand-written trace check rejects it |
 | `unobserved_kinds` | [kind] | kinds the source cannot tell for this region; refinement-aware (Kind refinement, below) |
 | `ways` | [highway region ids] | the public ways (`highway` regions) this region lies on (`st.on_way`): a lane, roadway, shoulder, crosswalk, stop line or median its road's; a junction every highway whose road connects there |
-| `entrance_of` | [lane ids] | on a `stop_line` or a `crosswalk` only: the lanes whose entrance into an intersection this line or crossing marks (`st.entrance_of`), the lanes whose vehicles halt at or before it; one line may list several lanes. Write the complete list when the source observes it (`[]` when it observes that the line marks none). Omit the key when the source cannot tell; it is then read as unknown, never as "this lane has no stop line". Each id is a structure of kind `lane` or of a kind that refines it (turn, reserved or centre turn lane) in the same scene. The intersection is not written here: it is the lane's own `enters_intersection` |
+| `entrance_of` | [carrier ids] | on a `stop_line` or a `crosswalk` only: the entrance carriers (Entrance carriers, below) whose entrance into an intersection this line or crossing marks (`st.entrance_of`), exactly that entrance: the line or crossing a vehicle approaching through the carrier halts at or before, not a line near the carrier or on its way. One line may list several carriers (several lanes, or lanes and a segment or a bicycle lane beside them), and a carrier may have a stop line and a crosswalk. Write the complete list when the source observes it (`[]` when it observes that the line marks none): a carrier the list omits is then read as not marked by it. Omit the key when the source cannot tell; it is then read as unknown, never as "this carrier has no stop line". Each id is a structure in the same scene of kind `lane` or a kind refining it (reserved, turn or centre turn lane), or `roadway`, `one_way_roadway`, `shoulder` or `bicycle_lane_or_path`. The intersection is not written here: it is the carrier's own `enters_intersection`, and a rule reads both on the same carrier, so listing a roadway that carries no `enters_intersection` gives it no entrance (which intersection stays unknown) |
 | others | `paved`, `opening`, `marked`, `curvature` (1/m; Core reads its magnitude, so either sign is accepted), `grade` (ratio), `sight_distance` (m), `reserved_class`, `turn_side`, `parking_angle`, `designation`, `curb_kind`, `curb_colour`, `obstruction_kind` | omit what CARLA lacks |
+
+**Entrance carriers.** `enters_intersection` (`st.lane_enters`) names the intersection a directed
+approach carrier runs into at its entrance end. A carrier is a lane or a kind refining it (reserved,
+turn or centre turn lane), or a `roadway`, `one_way_roadway`, `shoulder` or `bicycle_lane_or_path`
+the source records as a directed approach segment: the stretch one direction of travel uses to
+reach one junction, with its entrance end at that junction.
+- Writing `enters_intersection` on a roadway, one-way roadway, shoulder or bicycle lane or path
+  asserts that it is such a segment. A whole two-way roadway or bicycle path, with an end at each
+  junction, carries none; which junction it is an approach to is then unknown. The hand-written
+  trace check cannot tell a whole two-way carrier from a segment, so it does not reject one written
+  with `enters_intersection`: getting this right is the adapter's responsibility.
+- Where the source can separate a two-way road's directions, write one segment per direction, each
+  entering the junction its direction reaches. Each segment keeps its kind: none is relabelled
+  `one_way_roadway` for having a direction, and no lane is written where the road has none. The two
+  segments may cover the same pavement, so a body on it occupies both.
+- A carrier enters one intersection at most. The value is decided where the source records it,
+  whether or not the carrier's `direction` is written.
+- It is the source's record, never inferred from distance, overlap or a road user's motion. A carrier
+  never takes the entrance, the `entrance_of` line or the `governs` of a carrier it overlaps.
+- A bicycle lane or path stays `bicycle_lane_or_path`: never label it `lane`. Its line, and a
+  device's `governs` naming it, are its own: write them on the bicycle carrier, and they do not pass
+  to the lane beside it, nor the lane's to it. A line across both lists both.
+- Which carrier a road user approaches an intersection through is not written in the trace: a rule
+  reads it as a carrier the road user occupies whose `enters_intersection` is the intersection the
+  rule concerns, never from the road user's velocity or heading. So `occupies` and
+  `enters_intersection` must be right for every carrier a body touches.
 
 **Kind refinement.** Some kinds refine another (`StructureKind.parent?` in
 `library/TrafficSpec/Core/Vocab/Ontology/Structure.lean`):
@@ -302,13 +328,19 @@ lamps also need the modified generator.
 |---|---|
 | `one_way_roadway` | `roadway` |
 | `reserved_lane`, `centre_turn_lane`, `turn_lane` | `lane` |
+| `roadway`, `lane`, `shoulder`, `intersection`, `bicycle_lane_or_path` | `travel_region` (abstract) |
 
 - Label each region with its most specific kind. A region of a refining kind counts as its parent:
   a `turn_lane` is a `lane`, and a rule over lanes ranges over it. Do not write a second region for
   the parent.
 - A parent never implies a refining kind, and two kinds refining one parent never imply each other.
+- `travel_region` is abstract: the union of the kinds a device can govern. Never write it as a
+  structure's `kind` or in `unobserved_kinds`; admission refuses either ("an abstract kind"). Label
+  the region with its concrete kind. It is not the extent of a highway: a sidewalk, a crosswalk or a
+  stop line is no travel region.
 - `unobserved_kinds` is refinement-aware:
-  - a kind that refines nothing (for example `lane`), listed there, leaves the region's membership
+  - a kind that refines nothing concrete (for example `lane`, whose only parent is the abstract
+    `travel_region`), listed there, leaves the region's membership
     of that kind, and of every kind refining it, unknown;
   - a refining kind (for example `turn_lane`) applies only to a region labelled with it or with a
     kind it refines (`lane`). On any other region it is ignored, and that region is known not to be
@@ -376,7 +408,14 @@ the manifest. CARLA has no calendar: omit `civil_time` unless the scenario sets 
 **Relation** (optional): `a`, `b` (tracks, required), `centre_distance`, `surface_gap`
 [longitudinal, lateral], `a_ahead_of_b`, `longitudinal_overlap`, `oncoming`, `same_direction`,
 `bearing`, `contact`, `visible`. Core computes all but `visible` from positions, headings and
-extents when they are absent, so a simulator source writes none of those. `visible` is never
+extents when they are absent, so a simulator source writes none of those. `surface_gap` is the gap
+between the nearest points of the two bodies (`rel.surface_gap`), each footprint read with its own
+heading and extent, given as its lengths along and across `a`'s heading: both components are
+non-negative, and both are zero when the bodies touch or overlap. A supplied `surface_gap` with a
+negative component reads unknown, never as its magnitude, as zero or as contact, and the
+hand-written trace check rejects it. A signed overlap belongs to `longitudinal_overlap`: the length
+the two footprints' projections on `a`'s heading share, negative for the gap between those
+projections. `visible` is never
 computed: write one relation `{a: ego, b: actor, visible: ...}` per actor from the generator's
 `is_visible_from_ego` (a ray cast from the ego to the actor's bounding box, run only when the
 generator's `check_occlusion` is set), and declare `rel.visible` as `subject` in the manifest —
@@ -399,7 +438,8 @@ authority. The ones CARLA needs:
   `driveway_or_alley_entrance`, `alley`, `crest`, `railway_crossing`, `controlled_access`,
   `elevated_structure`, `bicycle_lane_or_path`, `reserved_lane`, `centre_turn_lane`, `turn_lane`,
   `parking_space`, `curb_zone`, `transit_stop`, `safety_zone`, `pedestrian_grade_separation`,
-  `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`
+  `fire_hydrant`, `fire_station_entrance`, `roundabout`, `obstruction`; the decoder also spells the
+  abstract `travel_region`, which a trace never writes (§4.5, Kind refinement)
 - **DeviceKind**: `traffic_signal`, `pedestrian_signal`, `lane_control_signal`,
   `speed_limit_beacon`, `crossing_warning_signal`, `stop_sign`, `yield_sign`, `speed_limit_sign`,
   `regulatory_sign`, `zone_sign`, `railway_signal_or_gate`, `temporary_traffic_control`,
@@ -502,9 +542,12 @@ signal that governs them controls that intersection.
   "atoms": { "<atom id>": "exact" | "estimate:<error class>" | "absent" | "subject", ... } }
 ```
 
-- **List every atom id.** There are 129 in the full ontology, read from
+- **List every atom id.** There are 130 in the full ontology, read from
   `library/splits/full/TrafficSpec/Core/Vocab/Ontology/Ids.lean`. An id the manifest omits counts
   as `absent`, and the monitor warns that the manifest is not complete.
+- `st.travel_region` is abstract: no source declares it, and its entry has no effect. Whether a
+  rule reading it is supported follows the entries of the five kinds that refine it (§4.5, Kind
+  refinement). `make_manifest.py` writes it `absent`.
 - `exact` means the source supplies the atom as ground truth.
 - `estimate:<class>` means the source supplies it with a known error type (the class is a short
   name you choose, such as `junction_bounding_box`).
@@ -520,8 +563,9 @@ signal that governs them controls that intersection.
   kinematics, so declare them observed whenever the kinematics are.
 - **Kind dependencies.** A rule that reads a region kind also needs the entries of every kind that
   kind refines (§4.5, Kind refinement): a read of `st.turn_lane` needs `st.lane` too. A rule that
-  reads `st.entrance_of` also needs `st.stop_line`, `st.crosswalk` and `st.lane`, and one that reads
-  `rel.ahead_behind_in_lane` needs `st.lane` (`kindDependencies` in
+  reads `st.entrance_of` also needs `st.stop_line` and `st.crosswalk`, and one that reads
+  `rel.ahead_behind_in_lane` needs `st.lane`. A read of `st.lane_enters` or `st.entrance_of` depends
+  on no carrier kind: it reads the carrier's record, whatever the carrier's kind (`kindDependencies` in
   `library/TrafficSpec/Core/Runtime/Manifest.lean`). An absent dependency counts as an absent atom of the rule (`partial`, or `unsupported`).
 - `reid_gap` is the longest tracker break, in seconds, that `links` may bridge. It is 0 for CARLA.
 
@@ -583,7 +627,11 @@ track.
    - Track ids are stable across scenes.
    - `path_length` never decreases.
    - Every `occupies` and `governs` id names a structure in the same scene, and every
-     `entrance_of` id names a lane (or a kind refining it) in the same scene.
+     `entrance_of` id names an entrance carrier (a lane or a kind refining it, a roadway, one-way
+     roadway, shoulder or bicycle lane or path) in the same scene.
+   - `enters_intersection` appears only on an entrance carrier, and on a roadway, one-way roadway,
+     shoulder or bicycle lane or path only where it is a directed approach segment (§4.5, Entrance
+     carriers).
    - `entrance_of` appears only on a `stop_line` or a `crosswalk`; `governs` names only the kinds
      of §4.5; no `heading` or `direction` is the zero vector.
 3. **The frame is right.** A car turning left in CARLA must show `heading` rotating

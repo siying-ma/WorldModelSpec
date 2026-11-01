@@ -5,7 +5,7 @@ import TrafficSpec.Core.Evidence.Adequacy
 import TrafficSpec.Core.Evidence.Certificate
 import TrafficSpec.Tests.Semantics
 namespace TrafficSpec.Tests.Intentions
-open TrafficSpec Units TrafficSpec.Grounding
+open Lean TrafficSpec Units TrafficSpec.Grounding
 
 -- A junction (20) and two motor vehicles (1, 2) at every scene; the ids are test labels.
 private def X : Arg := .var "x"
@@ -152,7 +152,10 @@ def nestedAsm : Formula := inCond (.asm "asm.district")
 #guard !({ intentRule with applicability := nestedAsm, intentions := [] } : Rule).wellFormed
 #guard ({ intentRule with applicability := win nestedAsm, intentions := [], assumptions := ["asm.district"] } : Rule).wellFormed
 #guard Rule.check [] { intentRule with applicability := win nestedAsm, intentions := [], assumptions := ["asm.district"] } = []
-#guard !(Case.policyErrors [] nestedAsm).isEmpty
+#guard Case.policyErrors [] nestedAsm = Case.policyErrors [] nestedIntent
+#guard Case.policyErrors [] nestedAsm = []
+#guard Case.policyErrors [] (win (.asm "asm.district")) = Case.policyErrors [] (win intends)
+#guard Case.policyErrors [] (win (.asm "asm.district")) = []
 def nestedCall (id : String) (map : List (String × String)) : Formula := inCond (.ruleApplies id map)
 #guard (Rule.check lib (caller "test/n1" (nestedCall "test/none" [("x", "x")]))).any (·.endsWith "composes unknown rule `test/none`")
 #guard (Rule.check lib (caller "test/n2" (nestedCall "test/intent" []))).any (·.endsWith "leaves its binder `x` unmapped")
@@ -162,9 +165,46 @@ def noIntentRule : Rule := { intentRule with id := "test/plain", applicability :
 #guard Rule.check (noIntentRule :: lib) (caller "test/n5" (win (nestedCall "test/plain" [("x", "x")]))) = []
 #guard (Concept.check [] { readsIntent with body := .formula (nestedCall "test/intent" [("x", "x")]) }).any (·.endsWith "a concept composes no rule (`test/intent`)")
 
--- Case policy: a case may state a declared intention, never an assumption.
+-- Case policy: a case may state a declared intention and an assumption, true or negated; it is
+-- certified only where the trace declares what it states.
 #guard Case.policyErrors [] (.intent turn (.var "e1") (.var "e2")) = []
-#guard !(Case.policyErrors [] (.asm "asm.district")).isEmpty
+#guard Case.policyErrors [] (.asm "asm.district") = []
+#guard Case.policyErrors [] (.not (.asm "asm.district")) = []
+def district : AsmId := "asm.district"
+def asmRule : Rule :=
+  { id := "test/asm", laws := [], binders := [⟨"x", mv "x"⟩], applicability := .asm district, obligation := .ff, assumptions := [district] }
+def asmTrace (decl : String) : String :=
+  "{\"scenes\": [{\"t\": 0, \"users\": [{\"track\": 1, \"classes\": [\"motor_vehicle\"]}]" ++ decl ++ "}]}"
+def declares (id : String) (b : Bool) : String := s!", \"assumptions\": [[\"{id}\", {b}]]"
+def certify (trace formula : String) : Json :=
+  Certificate.record [asmRule] asmRule {} 1 trace ("{\"case\": " ++ formula ++ ", \"entities\": {}, \"at\": 0}") [("x", 1)]
+def stated : String := "{\"asm\": \"asm.district\"}"
+def negated : String := "{\"not\": {\"asm\": \"asm.district\"}}"
+def valueOf (j : Json) : Json := (j.getObjValD "case_value").getObjValD "value"
+def verdictOf (j : Json) : Json := (j.getObjValD "rule_result").getObjValD "verdict"
+def asDeclared (id kind : String) : Json := Json.arr #[Json.mkObj [("id", Json.str id), ("kind", Json.str kind)]]
+-- declared true, stated true: admitted and certified
+#guard (certify (asmTrace (declares district true)) stated).getObjValD "case_check_errors" == Json.arr #[]
+#guard valueOf (certify (asmTrace (declares district true)) stated) == Json.str "true"
+#guard verdictOf (certify (asmTrace (declares district true)) stated) == Json.str "violated"
+#guard (certify (asmTrace (declares district true)) stated).getObjValD "case_declarations" == asDeclared district "asm"
+-- declared false, stated by negation: admitted and certified
+#guard (certify (asmTrace (declares district false)) negated).getObjValD "case_check_errors" == Json.arr #[]
+#guard valueOf (certify (asmTrace (declares district false)) negated) == Json.str "true"
+#guard verdictOf (certify (asmTrace (declares district false)) negated) == Json.str "not_applicable"
+#guard (certify (asmTrace (declares district false)) negated).getObjValD "case_declarations" == asDeclared district "asm"
+-- not declared: the case is not true on the trace, so it is not certified, stated either way
+#guard valueOf (certify (asmTrace "") stated) == Json.str "unknown"
+#guard valueOf (certify (asmTrace "") negated) == Json.str "unknown"
+#guard (certify (asmTrace "") stated).getObjValD "rule_result" == Json.null
+-- declared false, stated true: not certified
+#guard valueOf (certify (asmTrace (declares district false)) stated) == Json.str "false"
+#guard (certify (asmTrace (declares district false)) stated).getObjValD "rule_result" == Json.null
+-- an id outside the run's catalogue is named with its kind: the harness's catalogue check refuses it
+#guard (certify (asmTrace (declares "asm.other" true)) "{\"asm\": \"asm.other\"}").getObjValD "case_declarations" == asDeclared "asm.other" "asm"
+-- each id once, with its kind, nested or not
+#guard Certificate.declarations (.and nestedAsm (.and (.asm district) (atJ (.intent turn X J)))) ==
+  Json.arr #[Json.mkObj [("id", Json.str district), ("kind", "asm")], Json.mkObj [("id", Json.str turn), ("kind", "int")]]
 
 -- Adequacy: an intention leaf no witness moves (it sits beside a true disjunct) is reported, like
 -- any other leaf; the same leaf alone is exercised.

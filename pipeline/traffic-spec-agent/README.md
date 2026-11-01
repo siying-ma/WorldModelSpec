@@ -59,11 +59,11 @@ removed, not kept.
 | `library/TrafficSpec/Rules/<Body>/<NodeId>.lean`, `library/TrafficSpecWitness/<Body>/<NodeId>.lean` | one rule and its witnesses per node; `Index.lean` and `TrafficSpecWitness.lean` are generated registries | agent-written, gate-accepted |
 | `laws/full_list/`, `laws/example/{train,test,demo,carla_smoke}/` | the corpus as posted law (`id`, `title`, `text`, `source`) with its definitions; `demo/` and `carla_smoke/` are reference-closed subsets of the training set (a first run; lines with standards of judgement, scored on simulator captures), made with `python -m nrs_tools.subset`, older subsets in git history; `laws/audit_and_scripts/` holds the analysis sidecars and the split record | input |
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
-| `prompts/*.md` | twelve templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code`, `review_concept` and `verify_aggregate`, and the judges `judge_case`, `adjudicate` and `adjudicate_concept` | yes, law-free |
+| `prompts/*.md` | thirteen templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code`, `review_concept` and `verify_aggregate`, and the judges `judge_case`, `adjudicate`, `adjudicate_concept` and `recheck_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
 | `scripts/gen_ontology.py`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
 | `library/TrafficSpec/Gaps/proposals.jsonl`, `decisions.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
-| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
+| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
 
 ## Harness structure
 
@@ -328,11 +328,26 @@ instance's `bounds`, so the value outside the interval confirms it, as a quantit
 checked; the value the body computes at `at` is shown beside the interval. A parameter value outside
 the domain its meaning states is an advisory. Every ruling on a concept is kept with its instance, so
 before a later version of the concept is reviewed its upheld items are run on it again (each formal
-matched by its type) and one still upheld returns it. A challenge that cannot be run on the new
-version is shown to the reviewer under *Challenges to carry over*. An extension of it must keep its
-trace, each old formal's value and its claim, and the review defers at stage `evidence` until one
-comes. Each confirmed divergence, and each valid `not_general` item (words of the contract or the
-body tuned to one use), goes to the concept adjudicator (`prompts/adjudicate_concept.md`), with the
+matched by its type), each from its effective row. A challenge decided under the current contract
+(the same `contract_digest`) is satisfied where the body gives its claim and goes to the adjudicator
+where it does not. One decided under another contract, or recorded without a digest, is rechecked
+(`prompts/recheck_concept.md`): shown only the current contract, the contracts of the names its
+words use, the parameters with their values and the executed facts, never the body or the recorded
+claim, it answers what the contract decides there (`holds`, `fails`, an interval for a quantity, or
+`undecided`). The body within the answer satisfies the challenge (under a new id, with `lineage` the
+old case, when the answer is not the recorded claim). A body outside it sends the case, renewed under
+the current contract (the answer as its claim, the recheck's quote as its words), to the concept
+adjudicator in the same review. `undecided` becomes the challenge's claim: it is carried to the
+reviewer, never compared; the answer may say whether the facts it turns on are missing or the contract
+does not decide (`undecided_by`), and the review's outcome counts the two apart. What the recheck
+records carries the current digest, so the challenge is not rechecked until the contract changes
+again. A challenge that cannot be run on the new version
+(its formals, its trace, its history, a unit or its grounding) is shown to the reviewer under
+*Challenges to carry over*, as is one whose claim is `undecided`. An extension of it must keep its
+trace, each old formal's value and its claim (unless the claim is `undecided`), and its contract words
+unless they are no longer verbatim in the contract (new words or a new claim make a new case id with
+lineage), and the review defers at stage `evidence` until one comes. Each confirmed divergence, and each valid `not_general` item
+(words of the contract or the body tuned to one use), goes to the concept adjudicator (`prompts/adjudicate_concept.md`), with the
 executed facts rendered from the trace (`render_formula.trace_facts`, keys the decoder reads only; a
 saved trace's other keys are listed apart as unverified annotations) apart from the reviewer's prose.
 It rules by the contract's words and by its own earlier rulings on the concept, and an upheld item
@@ -387,8 +402,9 @@ At loop start, before any session, the run:
 Each admission gate registers only its subject and the records it needs, so an unrelated broken
 file cannot stop another record's check. Each record is checked against its own law, from whichever
 corpus of the chain holds it. A check that cannot be made because the toolchain does not run stops
-the run before any spend. An accepted record whose evaluation exceeds the gate's deadline is not
-judged: it stays as accepted, with a notice, and is checked again at the next launch. Notices found
+the run before any spend. An accepted record whose evaluation exceeds the gate's deadline, or panics
+in isolation (named as a Core defect), is not judged: it stays as accepted, with a notice, and is
+checked again at the next launch. Notices found
 at start are kept in the snapshot until `TO_USER.md` receives them.
 - **A failure is fenced** (reason `gate`), and so is every record that calls it (reason
   `dependency`).
@@ -484,7 +500,8 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 0. **Repair** (one session per concept, and one per node, the gate or a review returned last
    iteration while it has budget): a concept repair sees the record, the verdict, the coder's result
    note and files, the ontology and the catalogue, no law; a node repair also sees its law and
-   segmentation. Each writes a revised record or a withdrawal naming the missing atom or operator;
+   segmentation and, read-only, the law's other nodes in the records it is validated with, their
+   states, and the nodes the records compose. Each writes a revised record or a withdrawal naming the missing atom or operator;
    a concept repair may also split the concept into new records under new ids. A concept is
    repaired only while a held node claims it, or a returned concept repaired for its own users calls
    it, directly or through others; one nothing uses
@@ -509,7 +526,13 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    act and an `occasion_<span>_outside` witness where it holds only outside it, with different
    verdicts), and proposes a gap where no contract carries a span, still mapping the span to its
    nearest atoms. It is shown the ontology, the catalogue and the formula language: an atom gap may
-   not propose an atom the ontology has, nor an operator gap an operator the language has. Writes
+   not propose an atom the ontology has, nor an operator gap an operator the language has. A law
+   planned again is shown every node of its latest plan, those never coded included, with each later
+   repaired or coded version, its state (the validator's, the gate's and the review's verdicts,
+   accepted or not) and the nodes it composes, each matched by the occurrence of its duty in the
+   law, never by its id's ordinal; these records are context, not authority. A condition that refers
+   to words stated elsewhere may change its representation (a composition, a concept, the fact in
+   full), never its referent or the qualifications its words retain. Writes
    `blueprint.jsonl`, `PLAN.md`, `aggregates.jsonl`.
 2. **Validate**: A, deterministic (segmentation is a partition; total accounting; closed set;
    standards have parameters in the reading or proposed; no zero literal declared; plan narrowings
@@ -531,8 +554,10 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    node (`harness/lean/skeleton.py`: every declaration the gate compares, the parameters as terms,
    every planned scenario with its verdict and masked atoms — they build as written), with the generated
    Core surface (`harness/lean/surface.py`: accessors with the field each reads, derived contracts,
-   builders, world records, units), the reading's values for the node's parameters and the most
-   recently accepted node as the worked example. Writes the formulas and the scenes, runs the gate,
+   builders, world records, units), the ontology contracts of what the record claims and of the
+   atoms its claimed primitives and concepts read (the contracts its reviewer judges by), the
+   reading's values for the node's parameters and the most recently accepted node as the worked
+   example. A concept's session gets the same contracts for what its elements map to. Writes the formulas and the scenes, runs the gate,
    stops on `OK` or when the budget is spent. The harness re-runs the gate itself. Core is readable
    in a session and never writable; the harness is neither. **Review**: the behaviour review and the
    adjudicator (see above); a node with an upheld divergence is rolled back (its files restored)
@@ -576,19 +601,42 @@ has no witness, a verdict differs from the planned one, `idle` grounds a binder 
 anything but its masked atoms, or its manifest masks something other than the node's `masked`; a measured relation a witness
 supplies that Core, computing it from the same scene, contradicts; a window holding no observation),
 `VACUOUS` (a leaf no decided witness exercises; `blind` does not count), `GATE_TIMEOUT` (the harness
-ran out of time evaluating the formulas on the witnesses; the details give the rule's deepest chain of
-quantifiers under window operators, and the law returns to the planner, since a repair cannot change
-the shape the mapping decides), `OK`; a session that spends its gate runs ends `BUDGET_EXHAUSTED`. An
+ran out of time evaluating the formulas, the details giving the part it was stopped in, the witnesses
+that passed, did not pass or never ran with their times, and for the adequacy check its size, or a
+resource failure or a panic recurred in isolation), `OK`;
+a session that spends its gate runs ends `BUDGET_EXHAUSTED`. A `GATE_TIMEOUT` judges the evaluation,
+not the mapping: it never accepts and never counts a plan, node or concept attempt. The record is held,
+and the next iteration gates its saved candidate again, without a session, at the same deadline (the
+gate harness's 900 s) when the candidate's context (the record, what it calls and composes, the
+reading values it reads, Core, the ontology, the gate's implementation) is unchanged, or codes it again
+when that changed. A second one holds it for the operator; a panic holds it at once as a Core defect.
+A held node blocks its law on `decision:<law>`; a held concept blocks every law whose nodes reach it,
+directly or through other concepts, and is not coded again, nor are the concepts that call it, while
+it is held. The candidate (`final/`), the gate harness, the reading and the harness's output stay in
+the task directory as the evidence, and `summary.json` (`gate_costs`) and `TO_USER.md` count them
+apart. `TO_USER.md` names the one `reopen` command for every law a hold paused (a law already blocked
+or failed for another reason is not paused, and never keeps the hold); a held concept's counts are
+released once none of the laws it paused is still paused, whether they are reopened together or one at
+a time, and a `reopen` that leaves it held names the laws it still waits on. A law reopened by a gap
+decision starts its counts again as after `reopen`, and releases a concept by the same rule. An
 error the build or the harness locates in the candidate's files, or on a line of a generated
 registry or harness that names the candidate's declarations, is the candidate's (`BUILD_FAIL`). A
 located error elsewhere, a failure with no located error, a missing toolchain, a deadline before
 evaluation or the run's stop is `INFRA`, which names no candidate verdict: the law is deferred
 without an attempt and the loop stops after the iteration. A resource failure or a panic is run
-once more in isolation, and charged to the candidate only when it recurs (a panic is also named to
-the operator as a possible Core defect). Every toolchain call of a gate is recorded in the
+once more in isolation, and is the candidate's `GATE_TIMEOUT` only when it recurs.
+The gate harness runs in two phases of one program. The first evaluates everything up to and
+including the witnesses (for a concept, its supersession check too); the gate then runs every check
+that comes before adequacy on that output, in the order and with the verdicts above, and only when
+none rejects does the second phase run the adequacy check, the costliest part. Both phases share the
+900 s: the second has what the first left. When the first phase is stopped at the deadline, the same
+checks run on the rows it printed: a row that already decides a rejection gives that verdict (a
+witness that never ran is named and never counted as passed); only when none does is the verdict
+`GATE_TIMEOUT`, as it is for a stop in the second phase. Every toolchain call of a gate is recorded in the
 task's `toolchain.jsonl`, with its wall time and how long each lock was waited for and held; the
-gate harness also prints a `TIME` line per part of its evaluation (each witness scenario, the
-adequacy check, the rule checks, the trace lint). Integration records its build and witness run
+gate harness also prints a `TIME` line per part of its evaluation (the rule checks, the trace lint,
+each witness scenario, the witnesses in all, the adequacy check's start and its end), flushed as it
+is printed, so a run stopped at its deadline keeps the lines before it. Integration records its build and witness run
 the same way.
 The witnesses are the node's tests, written by the same session as the rule from the planner's
 narratives; they show the formulas are executable and reach every verdict, and never stand as

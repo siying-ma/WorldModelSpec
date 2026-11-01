@@ -97,6 +97,24 @@ def reading_defects(data) -> list[str]:
 #: A declared-fact id: an assumption or a declared intention, `asm.` or `int.` and a snake-case name.
 DECLARED_ID = re.compile(r"^(asm|int)\.[a-z0-9_]+$")
 
+#: A citation in a declared fact's meaning: a section sign; a code's abbreviation and a section
+#: number with dotted parts or bracketed subsections; an id of a corpus record (an abbreviation and
+#: hyphenated parts with a digit) or of a posted definition; a section, chapter or title named by its
+#: number; or a bare section number with dotted parts. A meaning states the fact or state the source
+#: supplies, so it names no law, no definition and no provision.
+MEANING_CITATION = re.compile(
+    r"§"
+    r"|\b[A-Z]{2,}\s*\d+[A-Z]?(?:\.\d+[A-Za-z]?)+(?:\([0-9A-Za-z]+\))*"
+    r"|\b[A-Z]{2,}(?:-[A-Za-z0-9]+)*-\d[A-Za-z0-9]*(?:-[A-Za-z0-9]+)*"
+    r"|\bDEF-"
+    r"|\b(?:[Ss]ection|[Ss]ubsection|[Cc]hapter|[Tt]itle|[Pp]aragraph)s?\s+\d+[A-Z]?(?:\.\d+)*"
+    r"|\b\d+[A-Z]\.\d+|\b\d+\.\d+\.\d+")
+
+
+def meaning_citations(meaning: str) -> list[str]:
+    """The citations a declared fact's meaning carries (`MEANING_CITATION`), in order."""
+    return [m.group(0) for m in MEANING_CITATION.finditer(meaning or "")]
+
 
 def same_meaning(a, b) -> bool:
     """Two meanings are the same when they are equal up to whitespace."""

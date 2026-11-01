@@ -96,6 +96,12 @@ structure RoadUser where
   sightAlongWay : Option (List (RegionId × Q)) := none   -- per way, m
   deriving Repr, Inhabited
 
+/-- The kinds that carry an entrance into an intersection (`lane.enters_intersection`, an
+    `entrance_of` entry): these and every kind refining them. A roadway, one-way roadway, shoulder or
+    bicycle lane or path that carries one is a directed approach segment entering that one
+    intersection. -/
+def StructureKind.entranceCarriers : List StructureKind := [.lane, .roadway, .shoulder, .bicycleLaneOrPath]
+
 /-- Lane attributes (ATOMS.md `st.lane_*`). -/
 structure LaneInfo where
   direction : Option Vec := none
@@ -104,7 +110,7 @@ structure LaneInfo where
   ordinalFromLeft : Option Nat := none
   countInDirection : Option Nat := none
   leadsTo : Option (List RegionId) := none
-  entersIntersection : Option RegionId := none   -- the intersection this lane is an approach to
+  entersIntersection : Option RegionId := none   -- the intersection this carrier is an approach to
   markingLeft : Option (MarkingType × MarkingColour) := none
   markingRight : Option (MarkingType × MarkingColour) := none
   width : Option Q := none
@@ -127,8 +133,8 @@ structure Structure where
   grade : Option Q := none                  -- ratio
   sightDistance : Option Q := none          -- m
   ways : Option (List RegionId) := none     -- the highway regions it lies on
-  /-- For a stop line or a crosswalk: the lanes whose entrance into an intersection it marks.
-      `entranceObserved` says the list is complete; where it is not, which lanes the line marks is
+  /-- For a stop line or a crosswalk: the carriers whose entrance into an intersection it marks.
+      `entranceObserved` says the list is complete; where it is not, which carriers the line marks is
       unknown and `entranceOf` is empty. -/
   entranceOf : List RegionId := []
   entranceObserved : Bool := false
@@ -217,9 +223,9 @@ structure MeasuredRelation where
   a : TrackId
   b : TrackId
   centreDistance : Option Q := none
-  surfaceGap : Option (Q × Q) := none        -- longitudinal, lateral, in a's frame
+  surfaceGap : Option (Q × Q) := none        -- nearest-point gap along, across a's heading; ≥ 0
   aAheadOfB : Option Bool := none
-  longitudinalOverlap : Option Q := none
+  longitudinalOverlap : Option Q := none     -- shared length of the projections on a's heading
   oncoming : Option Bool := none
   sameDirection : Option Bool := none
   bearing : Option Vec := none               -- b relative to a, in a's frame (long, lat)
@@ -269,17 +275,18 @@ end Scene
 -- split may omit is named on a line of its own.
 -- ---------------------------------------------------------------------------------------------
 /-- A reference a scene makes to an entity: where it is written, the kind of entity it names, the
-    id, and the structure kind that entity must have when the field requires one. -/
+    id, and the structure kinds of which that entity must have one (by refinement) when the field
+    requires one. -/
 structure Reference where
   place : String
   kind : EntityKind
   id : Nat
-  structureKind : Option StructureKind := none
+  structureKinds : List StructureKind := []
   deriving Repr, Inhabited
 
 namespace Structure
 /-- The regions a structure's own fields name: its lane's neighbours, successors and intersection,
-    the ways it lies on, and the lanes whose entrance it marks. -/
+    the ways it lies on, and the carriers whose entrance it marks. -/
 def references (st : Structure) : List Reference :=
   let at_ := fun (f : String) => s!"structure {st.id} {f}"
   (st.lane.bind (·.leftNeighbour)).toList.map (fun r => { place := at_ "lane.left", kind := .region, id := r })
@@ -287,7 +294,7 @@ def references (st : Structure) : List Reference :=
   ++ ((st.lane.bind (·.leadsTo)).getD []).map (fun r => { place := at_ "lane.leads_to", kind := .region, id := r })
   ++ (st.lane.bind (·.entersIntersection)).toList.map (fun r => { place := at_ "lane.enters_intersection", kind := .region, id := r })
   ++ (st.ways.getD []).map (fun r => { place := at_ "ways", kind := .region, id := r })
-  ++ st.entranceOf.map (fun r => { place := at_ "entrance_of", kind := .region, id := r, structureKind := some .lane })
+  ++ st.entranceOf.map (fun r => { place := at_ "entrance_of", kind := .region, id := r, structureKinds := StructureKind.entranceCarriers })
 end Structure
 
 namespace Scene
@@ -301,7 +308,7 @@ def references (s : Scene) : List Reference :=
   ++ (s.devices.flatMap fun d => d.onTrack.toList.map fun t => { place := s!"device {d.id} on_track", kind := .track, id := t })
   ++ (s.structures.flatMap Structure.references)
   ++ (s.users.flatMap fun u => (u.sightAlongWay.getD []).map fun (w, _) =>
-       { place := s!"user {u.track} sight_along_way", kind := .region, id := w, structureKind := some .highway })
+       { place := s!"user {u.track} sight_along_way", kind := .region, id := w, structureKinds := [.highway] })
 end Scene
 
 namespace Device

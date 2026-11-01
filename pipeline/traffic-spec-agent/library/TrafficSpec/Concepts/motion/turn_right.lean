@@ -1,26 +1,28 @@
 /-
-  drv.motion.turn_right — The road user has changed its direction of travel to the right: the signed heading change over the recognition window behind the observation, in degrees with left positive and measured in the world frame, is at or below the negative of the turn threshold. The concept denotes the completed change of direction, recognized at the observation at which the accumulated change first reaches the threshold and holding at the later observations whose window still covers it; a change that overshoots, carrying the road user through more than the threshold within the window, is still this change of direction, while one carried out over a span longer than the window is not one manoeuvre and is not denoted. Not a stand-in for: a change of direction to the other side, which is the opposite sense of the same signed quantity and is a concept of its own; a lane change, which shifts the body across the carriageway without such a heading change; the turn indicator or an arm signal, which are what a road user displays rather than what it does; a declared intention to turn; or occupancy of a junction, which a road user crossing straight ahead also has.
+  drv.motion.turn_right — The road user has turned to the right at this observation: the signed heading change over the window behind, left positive so that a change to the right is negative, integrated from the body's rate of change of heading, is at most the negative of min_heading_change. The concept denotes the change of the body's own direction of travel and nothing else: it is not a turn indicator or an arm signal, not an intention or a preparation to turn, not the region the body turns out of or into (which junction, lane or roadway is the caller's to state), and not a judgement that the turn is lawful, permitted or safe. The bound is one-sided because a turn carried further is still a turn to the right at this observation: a quarter, a half and a whole circle to the right all satisfy it. It is the recognition of the turn and not its whole duration: the observation at which the heading change in the window first reaches the bound is the observation at which the act is recognized, and the later observations at which the window still carries that change are not a further turn. The window is the time over which the heading change is integrated and min_heading_change the magnitude of change to the right at which a turn is told from lane keeping, from following a bend and from the yaw of a lane change.
 
   THE READING (the blueprint's; the session records here, per element, how the contract's words are
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    the signed heading change over the recognition window behind the observation, in degrees with left positive: atoms ['prim.heading_change'], concepts []
-      `prim_heading_change u turn_window` is that quantity: the signed heading change of the road
-      user (degrees, left positive) integrated from the yaw rate over the window of length
-      `turn_window` behind the observation. Its window parameter is the recognition window the
-      contract names; it is unknown where the window is truncated, sampled too sparsely, or a yaw
-      rate inside it is missing, so an unobserved yaw rate leaves the concept unknown, never false.
+    the signed heading change over the window behind, left positive so that a change to the right is negative, integrated from the body's rate of change of heading: atoms ['prim.heading_change'], concepts []
 
-  The whole body is one comparison: that signed change is at or below the negative of the turn
-  threshold — `.le` for "at or below", and `.neg turn_heading_change` because the parameter carries
-  the magnitude of the change and left is positive, so the rightward sense is the negative end of
-  the same signed quantity. Nothing else is read: no formal is tested for the sense of the turn, no
-  state of motion is required, and no cap bounds an overshoot, since a change through more than the
-  threshold within the window is still this change of direction. Equally, nothing of the indicator,
-  the hand signal, a declared intention or junction occupancy enters the body — the contract
-  excludes each of them. A change carried out over a span longer than the window is not denoted of
-  itself: only what the window behind the observation holds is integrated.
+  How the element is written. `prim.heading_change` is the signed heading change in degrees over the
+  back window, left positive, integrated from `kin.yaw_rate`; it takes the window length as its
+  only parameter and the road user as its only argument. The contract's "a change to the right is
+  negative" is that same convention, so "at most the negative of min_heading_change" is the single
+  comparison `heading_change ≤ −min_heading_change`: one-sided, so a quarter, a half and a whole
+  circle to the right all satisfy it, and no absolute value and no lower bound appear. The body
+  reads no region, no indicator and no lane: the junction the body turns out of or into is the
+  caller's to state.
+
+  Narrowing. The contract says the act is recognized at the observation where the window's change
+  first reaches the bound, and that the later observations carrying the same change are not a
+  further turn. That is written as the plain bound at this observation, not as `rises`: the
+  contract's first sentence states the concept as what holds "at this observation", and a caller
+  that needs the single act counts rising edges of the call (`count`) rather than being handed an
+  edge it cannot re-use. Were the edge built into the body, a caller asking whether the body has
+  turned right at an observation one instant after the recognition would be told no.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -32,27 +34,29 @@ namespace TrafficSpec.Concepts.motion.turn_right
 def aU : Arg := .var "u"
 
 /-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/
-def pTurnWindow : Term := .param "turn_window"
-def pTurnHeadingChange : Term := .param "turn_heading_change"
+def pWindow : Term := .param "window"
+def pMinHeadingChange : Term := .param "min_heading_change"
 
-/-- The signed heading change of the road user (degrees, left positive) over the recognition window
-    behind the observation, integrated from the yaw rate. -/
-def headingChange : Term := .quantity "prim_heading_change" [aU] [pTurnWindow]
+/-- The signed heading change of the body over the window behind this observation, in degrees and
+    left positive, integrated from its rate of change of heading. -/
+def headingChange : Term := .quantity "prim_heading_change" [aU] [pWindow]
 
-/-- The signed change is at or below the negative of the turn threshold: with left positive, that
-    is the rightward sense carried through at least the threshold within the window. -/
-def body : Formula :=
-  .cmp headingChange .le (.neg pTurnHeadingChange)
+/-- The change over the window behind is at most the negative of `min_heading_change`: a change of
+    that magnitude to the right, or more. -/
+def body : Formula := .cmp headingChange .le (.neg pMinHeadingChange)
 
 def concept : Concept :=
   { id := "drv.motion.turn_right"
-    contract := "The road user has changed its direction of travel to the right: the signed heading change over the recognition window behind the observation, in degrees with left positive and measured in the world frame, is at or below the negative of the turn threshold. The concept denotes the completed change of direction, recognized at the observation at which the accumulated change first reaches the threshold and holding at the later observations whose window still covers it; a change that overshoots, carrying the road user through more than the threshold within the window, is still this change of direction, while one carried out over a span longer than the window is not one manoeuvre and is not denoted. Not a stand-in for: a change of direction to the other side, which is the opposite sense of the same signed quantity and is a concept of its own; a lane change, which shifts the body across the carriageway without such a heading change; the turn indicator or an arm signal, which are what a road user displays rather than what it does; a declared intention to turn; or occupancy of a junction, which a road user crossing straight ahead also has."
+    contract := "The road user has turned to the right at this observation: the signed heading change over the window behind, left positive so that a change to the right is negative, integrated from the body's rate of change of heading, is at most the negative of min_heading_change. The concept denotes the change of the body's own direction of travel and nothing else: it is not a turn indicator or an arm signal, not an intention or a preparation to turn, not the region the body turns out of or into (which junction, lane or roadway is the caller's to state), and not a judgement that the turn is lawful, permitted or safe. The bound is one-sided because a turn carried further is still a turn to the right at this observation: a quarter, a half and a whole circle to the right all satisfy it. It is the recognition of the turn and not its whole duration: the observation at which the heading change in the window first reaches the bound is the observation at which the act is recognized, and the later observations at which the window still carries that change are not a further turn. The window is the time over which the heading change is integrated and min_heading_change the magnitude of change to the right at which a turn is told from lane keeping, from following a bend and from the yaw of a lane change."
     definition := none
     args := [("u", .track)]
-    params := [⟨"turn_window", .second⟩, ⟨"turn_heading_change", .degree⟩]
+    params := [⟨"window", .second⟩, ⟨"min_heading_change", .degree⟩]
     body := .formula body
-    residues := ["The integrated heading change does not tell a turn apart from a bend of the same angle traversed within the window; no atom of the ontology carries the road's alignment along a travelled path."]  -- the record's, verbatim; not yours to change
-    narrowings := []  -- one { span := "<words of the contract>", why := "<why>", kind := "reading" } per reading you chose that the contract leaves open, explained in the header
+    residues := []  -- the record's, verbatim; not yours to change
+    narrowings :=
+      [ { span := "It is the recognition of the turn and not its whole duration: the observation at which the heading change in the window first reaches the bound is the observation at which the act is recognized, and the later observations at which the window still carries that change are not a further turn"
+          why := "written as the plain bound at this observation, not as a rising edge: the contract states the concept as what holds at this observation, so the body holds at every observation whose window carries the change, and a caller that must count one act rather than many counts rising edges of the call"
+          kind := "reading" } ]
     supersedes := none }
 
 end TrafficSpec.Concepts.motion.turn_right

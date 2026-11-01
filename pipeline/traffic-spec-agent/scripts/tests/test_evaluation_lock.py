@@ -56,14 +56,14 @@ class Locks(unittest.TestCase):
     def test_the_build_holds_the_library_lock_and_the_evaluation_does_not(self):
         free = []
         lean.lake_build = lambda lib, targets: (free.append(("build", self.library_lock_free())), (0, ""))[1]
-        lean.lean_run = lambda lib, f: (free.append(("evaluation", self.library_lock_free())), DONE)[1]
+        lean.lean_run = lambda lib, f, **k: (free.append(("evaluation", self.library_lock_free())), DONE)[1]
         self.toolchain("a")
         self.assertEqual(free, [("build", False), ("evaluation", True)])
 
     def test_a_slow_evaluation_delays_no_other_gates_build(self):
         lean.lake_build = lambda lib, targets: (0, "")
 
-        def run(lib, f):
+        def run(lib, f, **k):
             if "slow" in str(f):
                 time.sleep(1.0)
             return DONE
@@ -80,7 +80,7 @@ class Locks(unittest.TestCase):
         lean.lake_build = lambda lib, targets: (0, "")
         calls = {"n": 0}
 
-        def run(lib, f):
+        def run(lib, f, **k):
             calls["n"] += 1
             if calls["n"] == 1:
                 return -9, "DECL\t{}"                     # a resource failure: rerun in isolation
@@ -111,7 +111,7 @@ class Locks(unittest.TestCase):
         lean.lake_build = build
         first = {}
 
-        def run(lib, f):
+        def run(lib, f, **k):
             name = Path(f).parent.name
             if name not in first:
                 first[name] = True

@@ -6,8 +6,21 @@ from ..model import nodeid
 from ..model.blueprint import concepts_of
 from ..store import paths
 from ..store.gaps import GapLedger
-from ..store.ledger import Ledger
+from ..store.ledger import GATE_COST_BOUND, Ledger
 from ..store.state import Run
+
+
+def gate_costs(ledger: Ledger, concept_ledger=None) -> dict:
+    """The gates that judged nothing of a mapping and counted no attempt: those that ended on the
+    evaluation's cost, those whose evaluation panicked (a Core defect), and the nodes and concepts
+    they hold for the operator."""
+    concepts = list(concept_ledger.entries.values()) if concept_ledger is not None else []
+    nodes = {n: c for e in ledger.entries.values() for n, c in e.cost_failures.items()}
+    panics = sorted({n for e in ledger.entries.values() for n in e.core_panics})
+    return {"cost_failures": sum(nodes.values()) + sum(e.cost_failures for e in concepts),
+            "core_panics": len(panics) + sum(e.core_panics for e in concepts),
+            "held_for_operator": sorted({n for n, c in nodes.items() if c >= GATE_COST_BOUND} | set(panics)
+                                        | {e.concept for e in concepts if e.core_panics or e.cost_failures >= GATE_COST_BOUND})}
 
 
 def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict],
@@ -59,10 +72,15 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         for g in gaps_filed:
             lines.append(f"- {g['id']} ({g['kind']}) on `{g.get('span', '')[:80]}` — {', '.join(g.get('law_refs', []))}")
     run.auto_notes.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    costs = gate_costs(ledger, concept_ledger)
+    if costs["cost_failures"] or costs["core_panics"]:
+        to_user = list(to_user) + [f"gates that counted no attempt so far: {costs['cost_failures']} ended on the evaluation's cost, "
+                                   f"{costs['core_panics']} panicked (a Core defect); held for you: "
+                                   + (", ".join(f"`{i}`" for i in costs["held_for_operator"]) or "none")]
     write_to_user(run, list(dict.fromkeys(l for l in to_user if l)))      # one line per decision, however often it was raised
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "status": "running", "stop_reason": "",
                "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
-               "concepts": concept_ledger.counts() if concept_ledger is not None else {},
+               "concepts": concept_ledger.counts() if concept_ledger is not None else {}, "gate_costs": costs,
                "gaps_total": len(gap_rows := GapLedger(paths.GAPS_DIR).rows),
                "gaps_created_by_this_run": sum(1 for g in gap_rows if str(g.get("proposed_in", "")).startswith(run.opts.run_id + "/"))}
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")

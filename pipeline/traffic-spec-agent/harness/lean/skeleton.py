@@ -170,14 +170,15 @@ def witness_skeleton(node: Node) -> str:
         out.append("      [ ]  -- devices")
         out.append("")
     out.append("def witness (name : String) (τ : Trace) (expected : Verdict)")
-    out.append("    (absent : List String := []) : Scenario :=")
+    out.append("    (absent : List String := []) (boundary : String := \"\") : Scenario :=")
     out.append("  { name := name")
     out.append(f"    rule := {_s(node.id)}")
     out.append("    trace := τ")
     out.append("    reading := {}          -- ignored by the gate: the run's reading is substituted")
     out.append("    manifest := Build.manifest absent")
     out.append(f"    grounding := [{grounding}]")
-    out.append("    expected := expected }")
+    out.append("    expected := expected")
+    out.append("    boundary := boundary }")
     out.append("")
     lines = []
     for name in names:
@@ -187,6 +188,8 @@ def witness_skeleton(node: Node) -> str:
         if isinstance(masked, str):
             masked = [masked]
         extra = f" {_lean_list([_s(a) for a in masked])}" if masked else ""
+        if s.get("boundary"):
+            extra += f" (boundary := {_s(' '.join(str(s['boundary']).split()))})"
         lines.append(f"witness {_s(name)} {name}Trace {expected}{extra}")
     out.append("def scenarios : List Scenario :=")
     out.append("  [ " + "\n  , ".join(lines) + " ]")

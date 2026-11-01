@@ -1,0 +1,38 @@
+{
+ "_source": "results/smoke24/reading.json `declarations`, copied verbatim (the run's planner-written catalogue)",
+ "declarations": [
+  {
+   "id": "asm.outside_city_limits",
+   "meaning": "the way the road user is travelling on lies outside the territorial limits of a city, so that it is a road within the meaning of NRS 484A.215 rather than a street; declared per map or per trace, since a city or town limit is a legal region class and nothing on the road displays it",
+   "proposed": "smoke24/iter-001 NRS_484B_620_2"
+  },
+  {
+   "id": "int.turn",
+   "meaning": "the source's current plan for the road user includes turning, to either side, at the target region: true where that plan holds at the target, false where the plan decides on another manoeuvre, on passing through, or on a turn cancelled or already completed there, and absent where the source has no plan for that road user at that region",
+   "proposed": "smoke24/iter-002 NRS_484B_400_1"
+  },
+  {
+   "id": "int.turn_left",
+   "meaning": "the source's current plan for the road user includes turning to the left at the target region: true where that plan holds at the target, false where the plan decides on another manoeuvre, on passing through, or on a turn cancelled or already completed there, and absent where the source has no plan for that road user at that region",
+   "proposed": "smoke24/iter-002 NRS_484B_253_o1"
+  }
+ ],
+ "citing": [
+  "NRS 484A.215",
+  "NRS 484B.250(4)",
+  "LVMC 11.16.060",
+  "NRS-484B-250-4",
+  "DEF-NRS-484A-215",
+  "DEF-…",
+  "§ 484A.215",
+  "section 484B.250",
+  "chapter 484B",
+  "484A.215",
+  "11.16.060"
+ ],
+ "fact_only": [
+  "the way the road user is travelling on lies outside the territorial limits of a city; declared per map or per trace",
+  "the source's plan for the road user includes a turn of at least 1.5 radians at the target region",
+  "the road user is a vehicle of a public authority on an emergency call"
+ ]
+}

@@ -10,8 +10,9 @@
   - identity: track, region and device ids unique within a scene; at most one measured relation
     per ordered pair of tracks within a scene; every reference a scene makes (`Scene.references`)
     names an entity of that kind present in the same scene, a sight-along-way entry names a
-    highway, and an `entrance_of` entry names a lane; every track a link names appears in some
-    scene;
+    highway, and an `entrance_of` entry names a lane, a roadway, a shoulder or a bicycle lane or
+    path, or a kind refining one (`StructureKind.entranceCarriers`); every track a link names
+    appears in some scene;
   - a static map: the same structures in every scene, each identical at every appearance; every
     device that does not move (`Device.mobile`) in every scene; a device identical at every
     appearance outside its state (`Device.staticPart`);
@@ -22,13 +23,19 @@
     overlap or cross may carry different directions. A device whose control is observed governs
     only the travel regions whose traffic it controls, or an intersection, read as control of the
     junction itself (`governedKinds`); never a highway, a controlled-access region or a region no
-    vehicle travels in. Only a stop line or a crosswalk carries the lanes whose entrance it marks
-    (`entrance_of`). A place no carrier covers has no designated direction, a device whose
-    `governs` is not written has no observed control, and a line whose `entrance_of` is not
-    written has no observed entrances; none is filled in;
+    vehicle travels in. Only a lane, a roadway, a shoulder or a bicycle lane or path, or a kind
+    refining one, carries the intersection it is an approach to (`lane.enters_intersection`); a
+    roadway, one-way roadway, shoulder or bicycle lane or path that carries one is a directed
+    approach segment entering that one intersection, which the check cannot see, and a whole
+    two-way roadway or bicycle path carries none. Only a stop line or a crosswalk
+    lists the carriers whose entrance it marks (`entrance_of`). A place no carrier covers has no
+    designated direction, a device whose `governs` is not written has no observed control, and a
+    line whose `entrance_of` is not written has no observed entrances; none is filled in;
   - valid geometry: a boundary has at least three vertices, all distinct (the first is not
     repeated at the end), a non-zero area and no self-intersection; an extent's half-length and
-    half-width are positive; a path length is not negative; a heading is not the zero vector;
+    half-width are positive; a path length is not negative; a heading is not the zero vector; a
+    supplied relation's `surface_gap` has no negative component (each is a distance between the
+    bodies' nearest points, zero on contact or overlap);
   - geometric occupancy: a track whose occupancy is observed has a position, a heading and an
     extent, and in a scene with such a track every structure has a valid boundary, because a
     pair absent from `occupies` is read as not occupied. The pairs of such a track are not
@@ -62,6 +69,11 @@ private def qs (q : Q) : String := if q.den == 1 then s!"{q.num}" else s!"{q.num
 private def kindName : EntityKind → String
   | .track => "track" | .region => "region" | .device => "device"
 private def reprStr {α : Type} [Repr α] (x : α) : String := toString (repr x)
+private def orList (ks : List StructureKind) : String :=
+  match ks.reverse with
+  | [] => ""
+  | [k] => k.toString
+  | k :: rest => s!"{", ".intercalate (rest.reverse.map (·.toString))} or {k}"
 
 /-- Whether an entity of this kind and id is present in the scene. -/
 def present (s : Scene) (k : EntityKind) (id : Nat) : Bool :=
@@ -81,9 +93,9 @@ private def identity (s : Scene) : List String :=
   ++ s.references.filterMap fun r =>
     if !present s r.kind r.id then
       some s!"{at_ s}: {r.place} names {kindName r.kind} {r.id}, which is not in this scene"
-    else match r.structureKind with
-      | some k => if (s.structure? r.id).map (·.kind.refines k) != some true then some s!"{at_ s}: {r.place} names region {r.id}, which is not a {k}" else none
-      | none => none
+    else if r.structureKinds.isEmpty then none
+    else if (s.structure? r.id).map (fun st => r.structureKinds.any (st.kind.refines ·)) == some true then none
+    else some s!"{at_ s}: {r.place} names region {r.id}, which is not a {orList r.structureKinds}"
 
 private def links (τ : Trace) : List String :=
   let all := (τ.flatMap (·.tracks)).eraseDups
@@ -129,13 +141,19 @@ private def devices (τ : Trace) : List String :=
 def directionKinds : List StructureKind :=
   [.lane, .reservedLane, .turnLane, .bicycleLaneOrPath, .roadway, .oneWayRoadway, .shoulder]
 
-/-- The structure kinds a device may govern: the regions whose traffic it controls, and an
-    intersection, which is read as control of the junction itself and of nothing else. -/
+/-- The structure kinds a device may govern: the kinds refining the travel region, the regions
+    whose traffic it controls and an intersection, read as control of the junction itself and of
+    nothing else. -/
 def governedKinds : List StructureKind :=
-  directionKinds ++ [.centreTurnLane, .intersection]
+  StructureKind.all.filter fun k => !k.isAbstract && k.refines .travelRegion
 
-/-- The structure kinds that mark a lane's entrance into an intersection. -/
+/-- The structure kinds that mark a carrier's entrance into an intersection. -/
 def entranceKinds : List StructureKind := [.stopLine, .crosswalk]
+
+/-- The structure kinds that carry an entrance into an intersection: those of
+    `StructureKind.entranceCarriers` and every kind refining one of them. -/
+def carrierKinds : List StructureKind :=
+  StructureKind.all.filter fun k => StructureKind.entranceCarriers.any (k.refines ·)
 
 private def representation (τ : Trace) : List String :=
   let firstStructure := fun (r : RegionId) => τ.findSome? fun s => (s.structure? r).map fun _ => s.t
@@ -151,8 +169,11 @@ private def representation (τ : Trace) : List String :=
            else [s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries lane.direction; only a lane, reserved lane, turn lane, bicycle lane or path, roadway, one-way roadway or shoulder does"])
           ++ (if Q.isZero v.1 && Q.isZero v.2 then [s!"{at_ s}: structure {st.id} lane.direction is the zero vector"] else []))
     ++ (s.structures.filterMap fun st =>
+      if firstStructure st.id != some s.t || (st.lane.bind (·.entersIntersection)).isNone || carrierKinds.contains st.kind then none
+      else some s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries lane.enters_intersection; only a lane, a roadway, a shoulder or a bicycle lane or path, or a kind refining one, enters an intersection as an approach")
+    ++ (s.structures.filterMap fun st =>
       if firstStructure st.id != some s.t || !st.entranceObserved || entranceKinds.contains st.kind then none
-      else some s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries entrance_of; only a stop line or a crosswalk marks a lane's entrance")
+      else some s!"{at_ s}: structure {st.id} ({st.kind.toString}) carries entrance_of; only a stop line or a crosswalk marks an entrance")
     ++ s.devices.flatMap fun dv =>
       if firstDevice dv.id != some s.t || !dv.governsObserved then []
       else dv.governs.filterMap fun r => match s.structure? r with
@@ -164,30 +185,12 @@ private def representation (τ : Trace) : List String :=
 -- ---------------------------------------------------------------------------------------------
 -- Geometry
 -- ---------------------------------------------------------------------------------------------
-/-- Twice the signed area of a polygon (the shoelace sum). -/
-def area2 (poly : List Vec) : Q :=
-  (Geom.edges poly).foldl (fun acc (a, b) => Q.add acc (Geom.cross a b)) Q.zero
-
-/-- Whether a polygon's boundary crosses or touches itself: two edges that are not neighbours
-    meet, or two neighbouring edges fold back along one line. -/
-def selfIntersects (poly : List Vec) : Bool :=
-  let es := (Geom.edges poly).toArray
-  let n := es.size
-  (List.range n).any fun i => (List.range n).any fun j =>
-    if j ≤ i then false
-    else
-      let (a, b) := es[i]!
-      let (c, d) := es[j]!
-      if j == i + 1 then Geom.orient a b d == 0 && Q.lt (Geom.dot (Geom.vsub b a) (Geom.vsub d c)) Q.zero
-      else if i == 0 && j + 1 == n then Geom.orient c d b == 0 && Q.lt (Geom.dot (Geom.vsub d c) (Geom.vsub b a)) Q.zero
-      else Geom.segmentsIntersect a b c d
-
 /-- What is wrong with a boundary, or nothing. -/
 def boundaryErrors (poly : List Vec) : List String :=
   if poly.length < 3 then ["has fewer than three vertices"]
   else if !(dups poly).isEmpty then ["repeats a vertex (the first vertex is not repeated at the end)"]
-  else if Q.isZero (area2 poly) then ["has zero area"]
-  else if selfIntersects poly then ["intersects itself"]
+  else if Q.isZero (Geom.area2 poly) then ["has zero area"]
+  else if Geom.selfIntersects poly then ["intersects itself"]
   else []
 
 private def geometry (τ : Trace) : List String :=
@@ -201,6 +204,12 @@ private def geometry (τ : Trace) : List String :=
           | [] => none
           | e :: _ => some s!"{at_ s}: the boundary of structure {st.id} {e}"
         | none => none)
+    ++ (s.relations.filterMap fun m => match m.surfaceGap with
+      | some (lon, lat) =>
+        if Q.lt lon Q.zero || Q.lt lat Q.zero then
+          some s!"{at_ s}: relation ({m.a}, {m.b}) surface_gap ({qs lon}, {qs lat}) has a negative component; each component is a distance between the bodies' nearest points, along and across a's heading, zero on contact or overlap"
+        else none
+      | none => none)
     ++ s.tracks.flatMap fun x =>
       (match kin_extent s x with
        | some (l, w, _) => if Q.le l Q.zero || Q.le w Q.zero then [s!"{at_ s}: track {x} extent: the half-length and the half-width must be positive"] else []

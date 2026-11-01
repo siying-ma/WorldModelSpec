@@ -22,6 +22,8 @@ from harness.store.state import Run
 from scripts.tests.test_review_routing import FakeRun, ONTO
 
 MEANING = "the road user's current plan is to turn left at the region"
+PREMISE = "the way the road user travels on lies in a district the source names"
+INT_T, ASM_D = {"id": "int.t", "kind": "int"}, {"id": "asm.d", "kind": "asm"}
 
 
 def node(intentions=(), assumptions=(), narrowings=(), role="trigger") -> Node:
@@ -64,6 +66,30 @@ class Catalogue(unittest.TestCase):
         dual = node(intentions=[{"span": "s1", "id": "int.t", "meaning": "m"}],
                     narrowings=[{"span": "s1", "kind": "observable_reading", "category": "intention", "why": "w"}])
         self.assertTrue(any("not both" in e for e in validate_a.check_declarations(dual, {})))
+
+    def test_a_meaning_that_cites_is_refused_new_or_reused(self):
+        fx = json.loads((Path(__file__).parent / "declaration_meaning_citations.json").read_text(encoding="utf-8"))
+        for words in fx["citing"]:
+            cited = node(assumptions=[{"span": "s1", "id": "asm.x", "meaning": f"the way lies outside a city ({words})"}])
+            cat: dict[str, str] = {}
+            self.assertTrue(any("cites" in e for e in validate_a.check_declarations(cited, cat)), words)
+            self.assertEqual(cat, {}, words)                                         # a citing meaning joins no catalogue
+        for words in fx["fact_only"]:
+            self.assertEqual(validate_a.check_declarations(node(assumptions=[{"span": "s1", "id": "asm.x", "meaning": words}]), {}), [], words)
+        real = {d["id"]: d["meaning"] for d in fx["declarations"]}
+        # the recorded meaning, proposed by a new record
+        new = node(assumptions=[{"span": "s1", "id": "asm.outside_city_limits", "meaning": real["asm.outside_city_limits"]}])
+        self.assertTrue(any("cites NRS 484A.215" in e for e in validate_a.check_declarations(new, {})))
+        # the recorded meaning, reached by a record that reuses the id from the run's reading
+        with tempfile.TemporaryDirectory() as t:
+            path = Path(t) / "reading.json"
+            path.write_text(json.dumps({"params": [], "aggregates": [], "declarations": fx["declarations"]}), encoding="utf-8")
+            cat = {i: d["meaning"] for i, d in Reading(path).declarations().items()}
+        reuse = node(assumptions=[{"span": "s1", "id": "asm.outside_city_limits"}])
+        errs = validate_a.check_declarations(reuse, cat)
+        self.assertTrue(any("catalogue's meaning of `asm.outside_city_limits` cites NRS 484A.215" in e for e in errs), errs)
+        for cid in ("int.turn", "int.turn_left"):                                    # the run's fact-only meanings stay usable
+            self.assertEqual(validate_a.check_declarations(node(intentions=[{"span": "s1", "id": cid}]), cat), [], cid)
 
     def test_accounting_counts_intentions(self):
         self.assertFalse([e for e in validate_a.check_accounting(node(intentions=[{"span": "s1", "id": "int.t", "meaning": "m"}]))
@@ -165,10 +191,38 @@ class JudgesAndCases(unittest.TestCase):
             validate_phase.glosses_of(["int.u"], ONTO, self.run)
 
     def test_a_case_naming_an_uncatalogued_intention_is_not_admitted(self):
-        recs = {1: {"case_declarations": ["int.t"]}, 2: {"case_declarations": ["int.u"]}}
+        recs = {1: {"case_declarations": [INT_T]}, 2: {"case_declarations": [{"id": "int.u", "kind": "int"}]}}
         review.undeclared_case_errors(recs, Reading(self.run.reading_file).declarations())
         self.assertNotIn("case_check_errors", recs[1])
         self.assertEqual(review.admission({}, recs[2], None)[0], "invalid")
+
+    def test_a_case_naming_an_uncatalogued_assumption_is_not_admitted(self):
+        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
+            {"id": "int.t", "meaning": MEANING}, {"id": "asm.d", "meaning": PREMISE}]}))
+        cat = Reading(self.run.reading_file).declarations()
+        recs = {1: {"case_declarations": [ASM_D, INT_T]}, 2: {"case_declarations": [{"id": "asm.u", "kind": "asm"}]},
+                3: {"case_declarations": [{"id": "int.t", "kind": "asm"}]}}            # an intention's id written as an assumption
+        review.undeclared_case_errors(recs, cat)
+        self.assertNotIn("case_check_errors", recs[1])
+        self.assertEqual(recs[2]["case_check_errors"], ["the case names the assumption `asm.u`, which is in no catalogue of the run: "
+                                                        "a case states only assumptions the run's declarations give a meaning"])
+        self.assertTrue(any("assumption `int.t`" in e for e in recs[3]["case_check_errors"]))
+        for k in (2, 3):
+            self.assertEqual(review.admission({}, recs[k], None)[0], "invalid")
+
+    def test_a_case_the_trace_contradicts_is_not_judged(self):
+        """The trace declares the assumption false and the case states it true: the certificate gives
+        the case false at `at`, which is returned to the reviewer, never judged."""
+        rec = {"case_declarations": [ASM_D], "case_value": {"value": "false", "unknown_reasons": []}, "rule_result": None}
+        review.undeclared_case_errors({1: rec}, {"asm.d": {"id": "asm.d", "meaning": PREMISE}})
+        self.assertEqual(review.admission({}, rec, None)[0], "invalid")
+        self.assertTrue(any("the case is false at `at`" in x for x in review.cert_unusable(1, {}, rec)))
+
+    def test_an_assumption_is_glossed_as_the_source_declaration(self):
+        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
+            {"id": "int.t", "meaning": MEANING}, {"id": "asm.d", "meaning": PREMISE}, {"id": "asm.e", "meaning": "another premise"}]}))
+        g = review._case_glosses(ONTO, [], self.run, [ASM_D, INT_T])
+        self.assertEqual(g, {"asm.d": f"declared by the source: {PREMISE}", "int.t": MEANING})   # asm.e is not stated: not shown
 
     def test_the_leaf_in_prose(self):
         f = {"int": "int.t", "args": [{"var": "v"}, {"var": "j"}]}
@@ -304,21 +358,67 @@ class JudgesSeeTheMeaning(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def declare(self, meaning):
-        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [{"id": "int.t", "meaning": meaning}]}))
+    def declare(self, meaning, premise=PREMISE):
+        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
+            {"id": "int.t", "meaning": meaning}, {"id": "asm.d", "meaning": premise}, {"id": "asm.e", "meaning": "another premise"}]}))
 
-    def judge(self):
+    def judge(self, case=None, declared=(INT_T,), rule_glosses=None):
         from scripts.tests.test_review_routing import ctx, div, node
         def session(run, out_dir, label, prompt, check=None, **_kw):
             self.prompts.append((label, prompt))
             ans = self.answers["a" if label.endswith("stage_a") else "b"]
             return ans, (list(check(ans)) if check else [])
-        case = {"int": "int.t", "args": [{"var": "v"}, {"var": "j"}]}
-        c = {"schema": review.CERT_SCHEMA, "canonical_case": case, "case_atoms": [], "case_declarations": ["int.t"],
+        case = case or {"int": "int.t", "args": [{"var": "v"}, {"var": "j"}]}
+        c = {"schema": review.CERT_SCHEMA, "canonical_case": case, "case_atoms": [], "case_declarations": list(declared),
              "rule_result": {"verdict": "compliant", "unknown_reasons": []}, "sensitivity_overrides": []}
         d = div(case=case, entities={"j": {"kind": "region", "id": 20}})
+        cx = ctx()
+        cx.rule_glosses = rule_glosses or {}
         with patch.object(validate_phase, "_session", session):
-            return review.judge_divergence(self.run, node(), ctx(), ONTO, d, c, Path(self.tmp.name), "d1")
+            return review.judge_divergence(self.run, node(), cx, ONTO, d, c, Path(self.tmp.name), "d1")
+
+    def test_stage_a_is_shown_a_stated_premise_as_the_source_declaration(self):
+        """A case stating the assumption `asm.d` (true, or negated): Stage A sees the leaf and the
+        catalogue meaning marked as the source's declaration; never the rule's rendering, its other
+        assumption `asm.e`, its reading or its verdict. Stage B sees the same declaration."""
+        self.declare(MEANING)
+        rule_glosses = {"asm.d": PREMISE, "asm.e": "another premise"}
+        for case, leaf in (({"asm": "asm.d"}, "the assumption `asm.d` is declared true"),
+                           ({"not": {"asm": "asm.d"}}, f"the source declares the assumption `asm.d` [{PREMISE}] false")):
+            with self.subTest(case=case):
+                self.prompts.clear()
+                self.judge(case, (ASM_D,), rule_glosses)
+                [(_, a)] = [x for x in self.prompts if x[0].endswith("stage_a")]
+                [(_, b)] = [x for x in self.prompts if x[0].endswith("stage_b")]
+                self.assertIn(leaf, a)
+                self.assertIn(f"| `asm.d` | declared by the source: {PREMISE} |", a)
+                shown = a[a.index("### The law"):a.index("## Deciding")]                # what is injected: the template aside
+                for absent in ("asm.e", "another premise", "the rendering", "compliant", "narrowing"):
+                    self.assertNotIn(absent, shown)
+                self.assertIn(f"declared by the source: {PREMISE}", b)
+
+    def test_a_negated_premise_inside_a_disjunction_stays_inside_it(self):
+        """`not(asm) OR true` on a trace that declares no assumption: Lean certifies it (the
+        disjunction is true whatever the premise), so the judges are shown the disjunction as one
+        fact, and no line of the prompt states on its own that the premise was declared false."""
+        self.declare(MEANING)
+        case = {"or": [{"not": {"asm": "asm.d"}}, "tt"]}
+        self.judge(case, (ASM_D,))
+        [(_, a)] = [x for x in self.prompts if x[0].endswith("stage_a")]
+        branch = f"the source declares the assumption `asm.d` [{PREMISE}] false"
+        self.assertIn(f"(\n  {branch}\n  OR\n  true\n)", a)                       # the statement, structurally
+        self.assertIn("  - (\n  the source declares the assumption `asm.d` false\n  OR\n  true\n)", a)   # the time-ordered facts: one fact
+        alone = [ln for ln in a.splitlines() if "the source declares" in ln and not ln.startswith("  the source declares")]
+        self.assertEqual(alone, [])                                                 # only ever a branch line, never a fact line of its own
+        self.assertNotIn("is declared false", a)
+
+    def test_a_changed_premise_meaning_changes_the_stage_a_digest(self):
+        self.declare(MEANING)
+        first = self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"]
+        self.declare(MEANING, premise="the way the road user travels on lies in another district the source names")
+        self.assertNotEqual(self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"], first)
+        self.declare(MEANING)
+        self.assertEqual(self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"], first)
 
     def test_both_judges_are_shown_the_meaning(self):
         self.declare(MEANING)
@@ -336,7 +436,7 @@ class JudgesSeeTheMeaning(unittest.TestCase):
     def test_an_uncatalogued_intention_never_reaches_a_judge(self):
         self.declare(MEANING)
         from scripts.tests.test_review_routing import div
-        recs = {1: {"case_declarations": ["int.unseen"], "case_value": {"value": "true"}, "rule_result": {"verdict": "compliant"}}}
+        recs = {1: {"case_declarations": [{"id": "int.unseen", "kind": "int"}], "case_value": {"value": "true"}, "rule_result": {"verdict": "compliant"}}}
         review.undeclared_case_errors(recs, Reading(self.run.reading_file).declarations())
         out = review.cert_unusable(1, div(), recs[1])
         self.assertTrue(any("in no catalogue" in x for x in out))                  # returned to the reviewer, not judged

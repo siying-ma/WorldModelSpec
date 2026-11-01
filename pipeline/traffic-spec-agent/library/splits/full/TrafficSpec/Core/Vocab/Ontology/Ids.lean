@@ -49,6 +49,7 @@ def atomIds : List String := [
   "kin.throttle",
   "kin.service_brake",
   "st.highway",
+  "st.travel_region",
   "st.roadway",
   "st.lane",
   "st.lane_direction",
@@ -146,7 +147,8 @@ def primitiveIds : List String := [
   "prim.closest_approach_time",
   "prim.closest_approach_distance",
   "prim.conditions_hold",
-  "prim.region_lateral_offset"
+  "prim.region_lateral_offset",
+  "prim.region_offset_along"
 ]
 
 end TrafficSpec

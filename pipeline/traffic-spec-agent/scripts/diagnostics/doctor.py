@@ -170,6 +170,7 @@ class Doctor:
                   "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE"),
                   "review_concept.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CONCEPT"),
                   "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT"),
+                  "recheck_concept.md": ("harness.phases.review", "PLACEHOLDERS_RECHECK_CONCEPT"),
                   "judge_case.md": ("harness.phases.review", "PLACEHOLDERS_JUDGE_CASE"),
                   "plan_aggregates.md": ("harness.phases.aggregate", "PLACEHOLDERS_PLAN_AGGREGATES"),
                   "verify_aggregate.md": ("harness.phases.aggregate", "PLACEHOLDERS_VERIFY_AGGREGATE")}

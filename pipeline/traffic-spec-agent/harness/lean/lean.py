@@ -91,9 +91,10 @@ def lake_build(library: Path, targets: Optional[list[str]] = None, timeout: floa
     return run(["lake", "build"] + (targets or []), library, timeout)
 
 
-def lean_run(library: Path, file: Path, timeout: float = 900.0) -> tuple[int, str]:
-    """Elaborate a standalone file and run its `main` (`lake env lean --run`): (exit code as `run` gives it, output)."""
-    return run(["lake", "env", "lean", "--run", str(file.resolve())], library, timeout)
+def lean_run(library: Path, file: Path, timeout: float = 900.0, args: tuple[str, ...] = ()) -> tuple[int, str]:
+    """Elaborate a standalone file and run its `main` with `args` (`lake env lean --run`): (exit code
+    as `run` gives it, output)."""
+    return run(["lake", "env", "lean", "--run", str(file.resolve()), *args], library, timeout)
 
 
 #: What a Lean program prints when it panicked and went on with a default value.

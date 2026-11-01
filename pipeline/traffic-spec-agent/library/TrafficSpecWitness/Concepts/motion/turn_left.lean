@@ -1,40 +1,29 @@
 /-
   Witnesses for drv.motion.turn_left.
 
-  The map is one crossroads, the same in every trace: region 10 the east–west roadway, the
-  rectangle from (-80, -8) to (80, 8) metres; region 11 the cross street, the rectangle from
-  (-8, -80) to (8, 80); region 12 the junction itself, the rectangle from (-8, -8) to (8, 8).
-  No region carries a designated direction and no device stands at the junction: the body reads
-  neither.
+  The instance fills the formals with figures of this file's own: `window` = 4 s (long enough to
+  span a turn at junction speeds) and `min_heading_change` = 60° (above the yaw a lane change or a
+  road bend carries in four seconds, below a quarter turn).
 
-  Every trace is eleven observations one second apart, from t = 0 to t = 10000 ms. The body is
-  track 1, a motor vehicle two metres half-length, one metre half-width and one metre
-  half-height, travelling at eight metres per second, and every scene declares its yaw rate — the
-  only measurement the body reads, through `prim.heading_change`.
+  One body, track 1, a car 4 m long and 1.8 m wide, judged alone: the concept reads nothing but
+  that body's yaw rate, so no region and no second user is built. Every trace runs at 2 Hz (0.5 s
+  between observations, half the 2 s the 4 s window needs to be adequately sampled), and each
+  witness names the instants it speaks about, since a window behind is truncated over the first
+  4 s of any trace.
 
-    `holds`  — the vehicle approaches the junction from the west along y = -2 m with a yaw rate of
-               zero through t = 4000, then turns left at a constant 22.5 degrees per second over
-               the four seconds t = 4000…8000 (its heading swinging east → 22.5° → 45° → 67.5° →
-               north, its position following the arc of about twenty metres' radius), and runs on
-               due north with a yaw rate of zero again. Over the four-second window the signed
-               change is then 90° at t = 8000, 67.5° at t = 9000 and exactly 45° at t = 10000 —
-               at or above the threshold at each of the three instants the witness judges, the
-               last of them the boundary case of "at or above".
-    `fails`  — the same vehicle crosses the junction straight ahead, due east along y = -2 m at
-               eight metres per second, its yaw rate zero at every observation: the heading does
-               not vary at all, so the signed change over any window is 0°, below the threshold.
-    `blind`  — the `holds` trace with `kin.yaw_rate` absent from the manifest: the source declares
-               no yaw rate for road users, so the heading change cannot be integrated and the
-               comparison is unknown rather than false.
+  `holds` (t = 0 … 11.5 s): the car runs east at 6 m/s to t = 5.5 s with no yaw, then swings
+  counter-clockwise at 21.25 °/s for 4 s — eight intervals of 10.625° each — so its heading
+  has come round from east to 85° at t = 9.5 s and the window behind that observation carries the
+  whole 85°, the quarter turn through the junction; after t = 10 s it runs straight on the new
+  heading. The witness judges t = 9.5 s, where 85° ≥ 60°.
 
-  Each witness judges t = 8000…10000 (the `window`), the instants whose four-second lookback lies
-  inside the trace: earlier instants have a truncated window, which is unknown for a reason no
-  manifest masks.
+  `fails` (t = 0 … 11.5 s): the car follows a gentle left-hand bend at 20 m/s (a radius of about
+  570 m), yawing 2 °/s throughout, so every window behind carries 8° — a bend followed, not a turn
+  taken. The witness judges t = 5 s … 11.5 s, every instant whose window is covered, and the
+  comparison 8° ≥ 60° is false at each.
 
-  The instance's figures are this witness's own: the recognition window four seconds (the span the
-  manoeuvre is carried out in) and the threshold 45 degrees, half the ninety degrees the turning
-  vehicle swings through, so that the window reaching only the second half of the manoeuvre still
-  recognizes it and the window reaching less than half of it does not.
+  `blind`: the same sweep through the junction as `holds`, with `kin.yaw_rate` masked, so the
+  integral cannot be formed and the comparison is unknown at the instant judged.
 -/
 import TrafficSpec.Concepts.motion.turn_left
 import TrafficSpec.Core.Evidence.Builders
@@ -46,118 +35,111 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
-/-- A yaw rate in degrees per second, written as thousandths of a degree so that 22.5 is exact. -/
-def degPerSec (milli : Int) : Q := Units.millidegrees milli
+/-- Half-length, half-width, half-height of the car: 4 m × 1.8 m × 1.5 m. -/
+def carExtent : Q × Q × Q := (m 2, cm 90, cm 75)
+
+/-- A heading from (cos, sin) in thousandths; a heading is read for its direction only. -/
+def dir (cx cy : Int) : Vec := (Units.ratio cx 1000, Units.ratio cy 1000)
+
+/-- The heading after `j` intervals of the counter-clockwise swing: 10.625° to the left each,
+    from east (j = 0) to 85° (j = 8). -/
+def turnHeading (j : Nat) : Vec :=
+  match j with
+  | 0 => dir 1000 0
+  | 1 => dir 983 184
+  | 2 => dir 932 362
+  | 3 => dir 850 528
+  | 4 => dir 737 676
+  | 5 => dir 600 800
+  | 6 => dir 442 897
+  | 7 => dir 270 963
+  | _ => dir 87 996
+
+/-- The swing runs over the observations 12 … 19 (t = 6 s … 9.5 s); before and after it the car
+    keeps its heading. -/
+def holdsHeading (k : Nat) : Vec :=
+  if k < 12 then turnHeading 0
+  else if k ≥ 20 then turnHeading 8
+  else turnHeading (k - 11)
+
+/-- The car's position: straight east at 3 m per observation, then an arc of about 16 m radius
+    through the junction, then straight north-north-east. -/
+def holdsPos (k : Nat) : Vec :=
+  if k ≤ 11 then (m (3 * (k : Int)), m 0)
+  else
+    match k - 11 with
+    | 1 => (cm 3590, cm 27)
+    | 2 => (cm 3880, cm 110)
+    | 3 => (cm 4150, cm 240)
+    | 4 => (cm 4380, cm 420)
+    | 5 => (cm 4580, cm 640)
+    | 6 => (cm 4740, cm 890)
+    | 7 => (cm 4840, cm 1170)
+    | 8 => (cm 4890, cm 1460)
+    | j => (cm 4890, cm (1460 + 300 * ((j : Int) - 8)))
+
+/-- 21.25 °/s over the four seconds of the swing, nothing before or after it. -/
+def holdsYaw (k : Nat) : Q :=
+  if k < 12 || k ≥ 20 then Q.zero else Units.millidegrees 21250
+
+/-- The heading along the gentle bend: 1° to the left per observation, written through the
+    half-angle parametrization (1 − t², 2t) with t = tan(0.5° · k). -/
+def bendHeading (k : Nat) : Vec :=
+  let t := Units.ratio (8727 * (k : Int)) 1000000
+  (Q.sub (Units.ratio 1 1) (Q.mul t t), Q.mul (Units.ratio 2 1) t)
+
+/-- The position along the bend: 10 m east per observation, drifting north as a 570 m radius. -/
+def bendPos (k : Nat) : Vec :=
+  (m (10 * (k : Int)), Units.millimetres (87 * (k : Int) * (k : Int)))
+
+/-- The car, with the yaw rate the scene observes. -/
+def carUser (pos heading : Vec) (speed ω : Q) : RoadUser :=
+  Build.withKin (Build.user 1 [.motorVehicle] pos heading speed carExtent)
+    fun kin => { kin with yawRate := some ω }
 
 -- Formals ↦ tracks: u ↦ 1
 -- Formals ↦ regions: (no region formal)
 
-/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a
-    value through a `Units` constructor, a quantity concept given its expected bounds. -/
+/-- The instance every scenario speaks about: a 4 s window and a 60° bound. -/
 def inst : Concept.Instance :=
   { name := "drv.motion.turn_left@w"
     concept := "drv.motion.turn_left"
     literals := []
     nats := []
-    params := [("turn_window", .lit (Units.seconds 4) .second),
-               ("turn_heading_change", .lit (Units.degrees 45) .degree)]
+    params := [("window", .lit (Units.seconds 4) .second),
+               ("min_heading_change", .lit (Units.degrees 60) .degree)]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The east–west roadway the vehicle arrives on. -/
-def ewRoadway : Structure := Build.rect 10 .roadway (m (-80)) (m (-8)) (m 80) (m 8)
-
-/-- The cross street it turns into. -/
-def nsRoadway : Structure := Build.rect 11 .roadway (m (-8)) (m (-80)) (m 8) (m 80)
-
-/-- The junction of the two. -/
-def junction : Structure := Build.rect 12 .intersection (m (-8)) (m (-8)) (m 8) (m 8)
-
-def crossroads : List Structure := [ewRoadway, nsRoadway, junction]
-
-/-- The vehicle's half-extents: two metres half-length, one metre half-width and half-height. -/
-def carExtent : Q × Q × Q := (m 2, m 1, m 1)
-
-/-- Eight metres per second, the speed of every body below. -/
-def speed : Q := Units.metresPerSecond 8
-
-/-- The rate the turning vehicle holds over the four seconds of its manoeuvre: 22.5 degrees per
-    second to the left, ninety degrees in four seconds. -/
-def turnRate : Q := degPerSec 22500
-
-/-- Headings on the way round: east, 22.5°, 45°, 67.5°, north, each a unit vector to four
-    decimal places. -/
-def h22 : Vec := (Units.ratio 9239 10000, Units.ratio 3827 10000)
-def h45 : Vec := (Units.ratio 7071 10000, Units.ratio 7071 10000)
-def h67 : Vec := (Units.ratio 3827 10000, Units.ratio 9239 10000)
-
-/-- The turning vehicle's heading at observation `k`: due east up to t = 4000, swinging through
-    the arc over the next four seconds, due north afterwards. -/
-def turnHeading (k : Nat) : Vec :=
-  match k with
-  | 5 => h22
-  | 6 => h45
-  | 7 => h67
-  | 8 => Build.north
-  | 9 => Build.north
-  | 10 => Build.north
-  | _ => Build.east
-
-/-- Its position at observation `k`: eight metres per second along y = -2 m, then the arc of the
-    left turn, then eight metres per second due north along x = 0.4 m. -/
-def turnPos (k : Nat) : Vec :=
-  match k with
-  | 0 => (cm (-5200), cm (-200))
-  | 1 => (cm (-4400), cm (-200))
-  | 2 => (cm (-3600), cm (-200))
-  | 3 => (cm (-2800), cm (-200))
-  | 4 => (cm (-2000), cm (-200))
-  | 5 => (cm (-1219), cm (-45))
-  | 6 => (cm (-558), cm 398)
-  | 7 => (cm (-115), cm 1059)
-  | 8 => (cm 40, cm 1840)
-  | 9 => (cm 40, cm 2640)
-  | _ => (cm 40, cm 3440)
-
-/-- Its yaw rate at observation `k`: the turn rate over the four intervals of the manoeuvre (the
-    rate at a scene is held over the interval before it), zero before and after. -/
-def turnYaw (k : Nat) : Q := if 5 ≤ k && k ≤ 8 then turnRate else Q.zero
-
-/-- The turning vehicle at observation `k`. -/
-def turningUser (k : Nat) : RoadUser :=
-  Build.withKin
-    (Build.user 1 [.motorVehicle] (turnPos k) (turnHeading k) speed carExtent)
-    fun kin => { kin with yawRate := some (turnYaw k) }
-
-/-- The vehicle crossing straight ahead at observation `k`: due east along y = -2 m, yaw rate
-    zero. -/
-def straightUser (k : Nat) : RoadUser :=
-  Build.withKin
-    (Build.user 1 [.motorVehicle]
-      (cm (-5200 + 800 * (Int.ofNat k)), cm (-200)) Build.east speed carExtent)
-    fun kin => { kin with yawRate := some Q.zero }
-
-/-- `holds` (compliant): A vehicle approaches the cross street and swings through ninety degrees to
-    the left within four seconds; at t = 8000 the accumulated change over the window reaches the
-    threshold, and it still holds at the two later observations whose window covers the manoeuvre. -/
+/-- `holds` (compliant): A car approaches a junction at 6 m/s and swings counter-clockwise through
+    the junction; its yaw rate is positive throughout and the integrated heading change over the
+    window behind reaches 85 degrees to the left at the observation judged (t = 9.5 s). -/
 def holdsTrace : Trace :=
-  Build.trace 11 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1) [ turningUser k ] crossroads [ ]
+  Build.trace 24 0 (Units.milliseconds 500) fun k t =>
+    Build.scene t (some 1)
+      [ carUser (holdsPos k) (holdsHeading k) (Units.metresPerSecond 6) (holdsYaw k) ]
+      []  -- structures: the concept reads no region
+      []  -- devices
 
-/-- `fails` (violated): The same vehicle crosses the junction straight ahead, its heading not
-    varying at all over any window. -/
+/-- `fails` (violated): A car follows a gentle left-hand bend of a road at 20 m/s; the integrated
+    heading change over the window behind is 8 degrees to the left, below min_heading_change, so no
+    turn is recognized. -/
 def failsTrace : Trace :=
-  Build.trace 11 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1) [ straightUser k ] crossroads [ ]
+  Build.trace 24 0 (Units.milliseconds 500) fun k t =>
+    Build.scene t (some 1)
+      [ carUser (bendPos k) (bendHeading k) (Units.metresPerSecond 20) (Units.degrees 2) ]
+      []  -- structures
+      []  -- devices
 
-/-- `blind` (unknown): The vehicle turns across the junction as in `holds`, but the source declares
-    no yaw rate for road users, so the heading change cannot be integrated. -/
+/-- `blind` (unknown): A car sweeps left through a junction, but the trace carries no yaw rate for
+    it, so the integrated heading change cannot be formed. The sweep of `holds`, with
+    `kin.yaw_rate` masked by the witness's manifest. -/
 def blindTrace : Trace := holdsTrace
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
-    (absent : List String := []) : Scenario :=
+    (absent : List String := []) (window : Option (Timestamp × Timestamp) := none) : Scenario :=
   { name := name
     rule := inst.name
     trace := τ
@@ -165,11 +147,11 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     manifest := Build.manifest absent
     grounding := [("u", 1)]
     expected := expected
-    window := some (8000, 10000) }
+    window := window }
 
 def scenarios : List Scenario :=
-  [ witness "holds" holdsTrace .compliant
-  , witness "fails" failsTrace .violated
-  , witness "blind" blindTrace (.unknown []) ["kin.yaw_rate"] ]
+  [ witness "holds" holdsTrace .compliant [] (some (9500, 9500))
+  , witness "fails" failsTrace .violated [] (some (5000, 11500))
+  , witness "blind" blindTrace (.unknown []) ["kin.yaw_rate"] (some (9500, 9500)) ]
 
 end TrafficSpecWitness.Concepts.motion.turn_left

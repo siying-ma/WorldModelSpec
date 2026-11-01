@@ -63,6 +63,18 @@ Before changing anything, in this order:
    with it — a Core change drags the generated tables, the prompts, the doctor and the tests.
 4. **Only then edit**, and report what landed against the plan.
 
+**Merging keeps the pipeline whole.** Work developed apart (scratch tracks, branches) is merged so
+that every function each part provided still works and the parts stay consistent with one another; a
+merge without textual conflicts is no evidence of that. After each merge:
+- the merged tree is built under both splits, and the full test suite and the doctor run on it;
+- every check a part relied on (its own tests, render and delivery checks, real-gate runs) runs again
+  on the merged tree;
+- a derived file is regenerated, never merged by hand;
+- where two parts change the same contract, text or behaviour, the merge states which governs and
+  checks that no part silently lost its effect or its quality.
+
+A result obtained on a branch is never reported as a result of the merged candidate.
+
 **Reporting a finding.** A defect found by a check, an audit or a run is reported to the operator
 under three headings, in this order:
 

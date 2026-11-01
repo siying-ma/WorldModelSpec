@@ -84,6 +84,14 @@ def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading:
 # ---------------------------------------------------------------------------------------------
 # Sessions
 # ---------------------------------------------------------------------------------------------
+def answer_digest(run: Run, prompt: str, model: str | None = None, effort: str | None = None) -> str:
+    """The identity of a tool-less session's answer: the digest of its full prompt, its model and its
+    effort, as the session is launched with them."""
+    import hashlib
+    return hashlib.sha256(json.dumps({"prompt": prompt, "model": model or run.opts.model, "effort": effort or run.opts.judge_effort},
+                                     sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
 def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model: str | None = None,
              effort: str | None = None, usage_label: str | None = None) -> tuple[dict | None, list[str]]:
     """One tool-less session: its JSON and the schema defects that remain. `check(parsed)` names the
@@ -96,13 +104,11 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     in the same directory on the same inputs takes it back without a call: a review resumed after a
     pause pays for no judgment it already has. `usage_label` names the session's rows in
     `usage.jsonl` (its subject included), `label` its files. In a dry run `(None, [])`."""
-    import hashlib
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return None, []
-    digest = hashlib.sha256(json.dumps({"prompt": prompt, "model": model or run.opts.model, "effort": effort or run.opts.judge_effort},
-                                       sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    digest = answer_digest(run, prompt, model, effort)
     kept_file = out_dir / f"{label}_answer.json"
     try:
         kept = json.loads(kept_file.read_text(encoding="utf-8"))

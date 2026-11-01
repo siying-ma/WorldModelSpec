@@ -324,7 +324,9 @@ class Cli:
 
     def reopen(self, run_id: str, laws: str = "") -> int:
         """Operator action: put a run's failed laws (or any law not accepted or blocked on a gap) back to `open`
-        with a fresh attempt budget (all, or a comma list); a failed concept only those laws used is cleared."""
+        with a fresh attempt budget (all, or a comma list); a failed concept only those laws used is cleared, and
+        a concept's gate-cost counts and hold start again once none of the laws its hold paused is still paused;
+        a concept still held is named with the laws it still waits on."""
         from .store import owner
         from .store.ledger import Ledger, ConceptLedger, NodeLedger
         from .store.state import Run, commit_state
@@ -334,7 +336,8 @@ class Cli:
         ledger = Ledger(run.ledger_file, [], run.opts.plan_attempts)
         node_ledger = NodeLedger(run.node_ledger_file, run.opts.node_attempts)
         concept_ledger = ConceptLedger(run.concept_ledger_file, run.opts.concept_attempts)
-        out = ledger.reopen([l.strip() for l in laws.split(",") if l.strip()] or None)
+        names = laws if isinstance(laws, (list, tuple)) else str(laws).split(",")   # the command line may give a list
+        out = ledger.reopen([str(l).strip() for l in names if str(l).strip()] or None)
         # a reopened law is planned afresh: its held nodes and its node entries (repairs, judge counts) are dropped
         run.deferred_nodes = [d for d in run.deferred_nodes if not (set(d.get("law_refs", [])) & set(out))]
         for law in out:
@@ -343,8 +346,13 @@ class Cli:
         freed = [cid for cid, e in concept_ledger.entries.items() if e.state == "failed" and e.used_by
                  and all(nodeid.law_of(str(u))[0] in out for u in e.used_by)]
         concept_ledger.forget(freed)
+        released, waiting = concept_ledger.release(out, ledger.paused())
         commit_state(run, ledger, concept_ledger, node_ledger)
-        print(f"reopened {len(out)}: {', '.join(out)}" + (f"; failed concepts cleared: {', '.join(freed)}" if freed else "")); return 0
+        print(f"reopened {len(out)}: {', '.join(out)}" + (f"; failed concepts cleared: {', '.join(freed)}" if freed else "")
+              + (f"; concepts released from their gate-cost hold: {', '.join(released)}" if released else "")
+              + "".join(f"; concept {cid} stays held: the laws its hold paused still wait ({', '.join(ls)}); reopen them too, "
+                        f"before the next loop, to release it (python -m harness reopen {run_id} --laws {','.join(ls)})"
+                        for cid, ls in waiting.items())); return 0
 
     def gap(self, action: str = "list", gap_id: str = "", state: str = "", decision: str = "", retired_by: str = "",
             resolved_by: str = "", manifest: str = "") -> int:

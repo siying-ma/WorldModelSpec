@@ -107,7 +107,8 @@ def rule_and_scenario() -> str:
             + _inductive(r, "Verdict") + "\n" + _structure(b, "Scenario") + "```\n"
             "`AsmId` and `ParamName` are `String`. A witness's `expected` is `.violated`, `.compliant`, `.notApplicable`\n"
             "or `.unknown []` (compared by tag). `grounding` maps binder names to track ids; `window` is a closed range\n"
-            "of timestamps (milliseconds).\n")
+            "of timestamps (milliseconds). `boundary` is set only on a scenario the plan declares a history boundary for:\n"
+            "that witness stays unknown for a window truncated at its trace's start, and for nothing else.\n")
 
 
 def world_records() -> str:
@@ -168,8 +169,11 @@ def primitives_table() -> str:
 
 def enumerations() -> str:
     out = ["### Enumeration spellings (`Vocab/Ontology/*.lean`): `Arg.lit` spelling → Lean constructor (the spelling for `existsRegion (.lit \"kind\")` and literal arguments, the constructor for `Build.*` and class lists)"]
+    abstract = abstract_kinds()
     for name, pairs in _codecs().items():
-        out.append(f"- `{name}`: " + ", ".join(f"`{s}`→`.{c}`" for s, c in pairs))
+        out.append(f"- `{name}`: " + ", ".join(f"`{s}`→`.{c}`" for s, c in pairs)
+                   + (f" (abstract, read by a formula only and never a structure's label or unobserved kind: {', '.join(f'`{s}`' for s in sorted(abstract))})"
+                      if name == "StructureKind" and abstract else ""))
     return "\n".join(out) + "\n"
 
 
@@ -196,6 +200,14 @@ def kind_refinements() -> dict[str, str]:
     body = re.search(r"def parent\? : StructureKind → Option StructureKind\n(.*?)\n\s*\| _ => none", _read("Vocab/Ontology/Structure.lean"), re.S)
     pairs = re.findall(r"\| \.(\w+) => some \.(\w+)", body.group(1)) if body else []
     return {spell[c]: spell[p] for c, p in pairs if c in spell and p in spell}
+
+
+def abstract_kinds() -> set[str]:
+    """The spellings of the abstract region kinds, from the generated `StructureKind.isAbstract`
+    (`Vocab/Ontology/Structure.lean`): a formula reads them, no trace writes them."""
+    spell = {ctor: s for s, ctor in _codecs().get("StructureKind", [])}
+    body = re.search(r"def isAbstract : StructureKind → Bool\n(.*?)\n\s*\| _ => false", _read("Vocab/Ontology/Structure.lean"), re.S)
+    return {spell[c] for c in re.findall(r"\| \.(\w+) => true", body.group(1)) if c in spell} if body else set()
 
 
 def enumeration_spellings() -> dict[str, set[str]]:
@@ -359,7 +371,7 @@ _JSON_OF_TYPE = {"Formula": "formula", "Term": "term", "Arg": "argument", "List 
                  "Q": '{"num": integer, "den": positive integer}', "PUnit'": "a unit spelling below", "ParamName": "string",
                  "AsmId": "string", "IntId": "string"}
 #: Constructors a case may not use; `derived` and `quantity` are admitted for primitives only.
-CASE_BANNED = {"param", "asm", "rule", "ruleApplies"}
+CASE_BANNED = {"param", "rule", "ruleApplies"}
 
 
 def _ctor_signatures(text: str, inductive: str) -> dict[str, list[str]]:
@@ -462,6 +474,9 @@ def case_language() -> str:
                 keys = [(k, "[formula, formula, …]") for k, _s in keys]
             obj = "{" + ", ".join(f'"{k}": {s}' for k, s in keys) + "}"
             note = " — only a primitive (`prim_…`), never a concept" if ctor in ("derived", "quantity") else ""
+            if ctor == "asm":
+                note = (" — the trace declares the assumption `id` true at this observation; `{\"not\": {\"asm\": id}}` states "
+                        "that it declares it false")
             if ctor in ("existsRegion", "forallRegion", "existsDevice", "forallDevice"):
                 note = (f" — the value of `{keys[0][0]}` is the kind (`{{\"lit\": \"<kind>\"}}`), and `var` names the "
                         "variable the body reads")
@@ -486,12 +501,13 @@ def case_language() -> str:
             "- argument: `{\"var\": string}` (a binder of the grounding, an entity, or a quantifier's variable), `{\"lit\": string}`\n"
             "  (an enumeration spelling or a selector), or `{\"nat\": natural number}` (a count, never an entity id)\n"
             f"- a literal's `unit`: {', '.join(f'`{u}`' for u in _units_spelled())}; `{{\"num\": 27, \"den\": 2}}` is 13.5\n\n"
-            "Not admitted in a case: a reading parameter (`param`), an assumption (`asm`), another rule (`rule`, `rule_applies`),\n"
-            "a concept (a `derived` or `quantity` whose name is not `prim_…`), a division except by a non-zero literal, and\n"
-            "`ru_aggregate`: a case names a road user's concrete classes.\n\n"
-            "A declared intention (`int`) is a fact of the trace a case may state: its id is one the run's declarations\n"
-            "catalogue (a case naming another is not admitted), its arguments a road user and a region of the case, and the\n"
-            "judges are shown the id's meaning.\n\n"
+            "Not admitted in a case: a reading parameter (`param`), another rule (`rule`, `rule_applies`), a concept (a\n"
+            "`derived` or `quantity` whose name is not `prim_…`), a division except by a non-zero literal, and `ru_aggregate`:\n"
+            "a case names a road user's concrete classes.\n\n"
+            "An assumption (`asm`) and a declared intention (`int`) are facts of the trace a case may state: the id is one the\n"
+            "run's declarations catalogue under its kind (a case naming another is not admitted), and the judges are shown the\n"
+            "id's meaning. A case holds only where the trace declares what it states, so an assumption the trace leaves\n"
+            "undeclared is never stated, true or false. An intention's arguments are a road user and a region of the case.\n\n"
             "A divergence that carries a case adds three fields:\n"
             "- `case`: the formula, true at `at` on the trace, that states the facts the law's verdict turns on;\n"
             "- `entities`: `{\"<name>\": {\"kind\": \"track\" | \"region\" | \"device\", \"id\": natural number}}`, the regions,\n"
@@ -695,7 +711,8 @@ def _decoder_type(tok: str, key: str) -> str:
         return _SUB[tok]
     m = re.match(r"\(enum (\w+)\.ofString\)", tok)
     if m:
-        return f"a {m.group(1)} spelling"
+        abstract = sorted(abstract_kinds()) if m.group(1) == "StructureKind" else []
+        return f"a {m.group(1)} spelling" + (f" other than an abstract kind ({', '.join(abstract)})" if abstract else "")
     m = re.match(r"\(pair (\w+) (\w+)\)", tok)
     if m:
         return f"[{_PRIM.get(m.group(1), m.group(1))}, {_PRIM.get(m.group(2), m.group(2))}]"

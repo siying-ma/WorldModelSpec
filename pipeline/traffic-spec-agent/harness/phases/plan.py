@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import json
 from pathlib import Path
 from ..checks import aggregates
-from ..model import corpus, definitions as definitions_mod, ontology
+from ..model import corpus, definitions as definitions_mod, nodeid, ontology
 from ..agents import render, session
 from ..store import paths
 from ..store.gaps import GapLedger
@@ -12,7 +12,8 @@ from ..model.mapping import MappingIndex
 from ..model.reading import Reading
 from ..lean import surface
 from . import review as review_phase
-from ..model.blueprint import ConceptRecord
+from ..model import blueprint
+from ..model.blueprint import ConceptRecord, Node
 from ..store.state import Run
 
 
@@ -161,30 +162,318 @@ def pending_proposals_table(pending: list[dict] | None) -> str:
     return "\n".join(out) + "\n"
 
 
-def previous_records(run: Run, laws: list[corpus.Law]) -> str:
-    """For each law planned again, the records its nodes were last coded from in this run, each with
-    its gate verdict: the latest earlier iteration that coded a node of the law, all of that
-    iteration's nodes of the law. Empty for a law no earlier iteration coded."""
+def _read_json(f: Path):
+    """A run's JSON file: None when absent, `_UNREAD` when it cannot be read."""
+    if not f.exists():
+        return None
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return _UNREAD
+
+
+_UNREAD = object()
+_ws = review_phase._ws
+
+
+def _law_id(raw: dict) -> str:
+    refs = raw.get("law_refs")
+    return str(refs[0]) if isinstance(refs, list) and refs else ""
+
+
+def _task_state(task: Path) -> str:
+    """What the gate and the review decided on one coding task, as they recorded it."""
+    v = _read_json(task / "verdict.json")
+    if not isinstance(v, dict):
+        return "coded: " + ("the gate verdict could not be read" if v is _UNREAD else "no gate verdict recorded")
+    out = f"coded: gate {v.get('verdict', 'not run')}" + (f" ({_ws('; '.join(str(x) for x in (v.get('details') or [])[:2]))[:240]})" if v.get("details") else "")
+    o = _read_json(task / "review" / "review_outcome.json")
+    if not isinstance(o, dict):
+        return out + (", the review outcome could not be read" if o is _UNREAD else ", not reviewed")
+    if o.get("deferred"):
+        return out + ", review deferred"
+    return out + (f", the review returned it ({len(o['upheld'])} upheld case(s))" if o.get("upheld") else ", the review upheld no case")
+
+
+def _duty(raw: dict, law: corpus.Law) -> dict:
+    return review_phase.duty_of(Node(raw), law)
+
+
+class _Entry:
+    """One node of a law's history: its duty's occurrence in the law, the record as planned, each
+    later version with where it comes from, what each iteration decided, and the accepted record."""
+    def __init__(self, nid: str, duty: dict):
+        self.id, self.duty = nid, duty
+        self.planned: dict | None = None
+        self.versions: list[tuple[str, dict]] = []
+        self.lines: dict[int, list[str]] = {}
+        self.accepted: dict | None = None
+
+    def matches(self, raw: dict, law: corpus.Law) -> bool:
+        """The same node: the same id and the same occurrence of the law's words as its duty (by
+        the id alone only where either duty is not located in the text)."""
+        if self.id != raw.get("node_id"):
+            return False
+        duty = _duty(raw, law)
+        return self.duty["id"] == duty["id"] if self.duty["ranges"] and duty["ranges"] else True
+
+    def note(self, it: int, text: str) -> None:
+        self.lines.setdefault(it, []).append(text)
+
+    def state(self) -> str:
+        if self.accepted is not None:
+            return "accepted" + (", then fenced" if self.accepted.get("fenced") else "")
+        return "not accepted" + ("" if any(src.startswith("as coded") for src, _r in self.versions) else ", never coded")
+
+
+def _entry(entries: list[_Entry], raw: dict, law: corpus.Law) -> _Entry:
+    for e in entries:
+        if e.matches(raw, law):
+            return e
+    e = _Entry(str(raw.get("node_id")), _duty(raw, law))
+    entries.append(e)
+    return e
+
+
+def law_history(run: Run, law: corpus.Law) -> tuple[int | None, list[_Entry], list[str]]:
+    """A law's nodes in this run: every node of the latest plan before this iteration that holds a
+    node of the law, coded or not; then, iteration by iteration up to this one, each repair, the
+    validator's verdict, each coding task with the gate's and the review's outcome; and the accepted
+    record. Versions are kept in the order they were made, so a later repair or coding is never
+    hidden behind the plan. Returns the plan's iteration (None when none is recorded), the entries,
+    and what could not be read."""
+    unread: list[str] = []
+    entries: list[_Entry] = []
+    k = None
+    for it in range(run.iteration - 1, 0, -1):
+        try:
+            planned = [n.raw for n in blueprint.load(paths.iter_dir(run.opts.run_id, it) / "plan" / "blueprint.jsonl") if _law_id(n.raw) == law.id]
+        except ValueError as ex:
+            unread.append(f"the plan of iteration {it} could not be read: {ex}")
+            continue
+        if planned:
+            k = it
+            for raw in planned:
+                e = _entry(entries, raw, law)
+                e.planned = raw
+                e.versions.append((f"as planned in iteration {it}", raw))
+                e.note(it, "planned")
+            break
+    first = k if k is not None else 1
+    for it in range(first, run.iteration + 1):
+        d = paths.iter_dir(run.opts.run_id, it)
+        if it > first:                       # an iteration's repairs run before its plan: those of the plan's iteration are older
+            for rdir in sorted(p for p in (d / "repair").glob("*") if (p / "planned.json").exists()) if (d / "repair").exists() else []:
+                was = _read_json(rdir / "planned.json")
+                if not isinstance(was, dict) or _law_id(was) != law.id:
+                    if was is _UNREAD and nodeid.law_of(rdir.name)[0] == law.id:
+                        unread.append(f"the repair of `{rdir.name}` in iteration {it} could not be read")
+                    continue
+                e = _entry(entries, was, law)
+                rep = read_repair(rdir, concept=False)
+                if rep.kind == "revised" and rep.validation == []:
+                    e.versions.append((f"as repaired in iteration {it}", rep.records[0].raw))
+                    e.note(it, "repaired; the validator accepted the revision")
+                elif rep.kind == "revised":
+                    e.note(it, "repaired; " + ("the revision was not validated" if rep.validation is None else
+                                               "the validator returned the revision: " + _ws("; ".join(rep.validation[:2]))[:240]))
+                elif rep.kind == "withdrawn":
+                    w = rep.withdrawal or {}
+                    e.note(it, f"the repair withdrew it ({w.get('kind', '?')}, span {w.get('span', '?')}: {_ws(w.get('missing'))[:160]})")
+                else:
+                    e.note(it, "the repair wrote no usable record" + (f" ({rep.message})" if rep.message else ""))
+        verdicts: dict = {}
+        vf = d / "validate" / "verdicts.jsonl"
+        for line in vf.read_text(encoding="utf-8").splitlines() if vf.exists() else []:
+            try:
+                row = json.loads(line)
+            except ValueError:
+                unread.append(f"a validator verdict of iteration {it} could not be read")
+                continue
+            if isinstance(row, dict):
+                verdicts[row.get("node_id")] = row
+        coded = {}
+        for f in sorted((d / "code").glob("*/node.json")) if (d / "code").exists() else []:
+            raw = _read_json(f)
+            if isinstance(raw, dict) and _law_id(raw) == law.id:
+                coded[raw.get("node_id")] = (raw, f.parent)
+            elif raw is _UNREAD and nodeid.law_of(f.parent.name)[0] == law.id:
+                unread.append(f"the coded record of `{f.parent.name}` in iteration {it} could not be read")
+        for nid, row in verdicts.items():
+            same = [e for e in entries if e.id == nid]
+            if len(same) == 1 and nid not in coded:
+                same[0].note(it, f"validator {row.get('kind')}" + ("" if row.get("kind") == "accept" else
+                                 ": " + _ws("; ".join(str(r) for r in (row.get("reasons") or [])[:2]))[:240]) + "; not coded")
+        for nid, (raw, task) in coded.items():
+            e = _entry(entries, raw, law)
+            e.versions.append((f"as coded in iteration {it}", raw))
+            e.note(it, (f"validator {verdicts[nid].get('kind')}; " if nid in verdicts else "") + _task_state(task))
+    accepted = run.all_nodes()
+    for e in entries:
+        if e.id in accepted and e.matches(accepted[e.id], law):
+            e.accepted = accepted[e.id]
+            e.versions.append(("as accepted", e.accepted))
+    return k, entries, unread
+
+
+def _chars(duty: dict) -> str:
+    return ", ".join(f"{a}–{z}" for a, z in duty["ranges"])
+
+
+def _words(duty: dict) -> str:
+    if not duty["ranges"]:
+        return "its duty is not located in the law's text"
+    return "its duty: " + "; ".join(f"“{_ws(w)}” (characters {a}–{z})" for w, (a, z) in zip(duty["words"], duty["ranges"]))
+
+
+def _latest_elsewhere(run: Run, rid: str) -> tuple[str, dict, str] | None:
+    """A node of another law: its accepted record, else its latest coded or planned record in this
+    run, with its source and state."""
+    acc = run.all_nodes().get(rid)
+    if acc is not None:
+        return "as accepted", acc, "accepted" + (", then fenced" if acc.get("fenced") else "")
+    for it in range(run.iteration, 0, -1):
+        d = paths.iter_dir(run.opts.run_id, it)
+        raw = _read_json(d / "code" / rid / "node.json")
+        if isinstance(raw, dict):
+            return f"as coded in iteration {it}", raw, f"not accepted; {_task_state(d / 'code' / rid)}"
+        try:
+            hit = [n.raw for n in blueprint.load(d / "plan" / "blueprint.jsonl") if n.id == rid]
+        except ValueError:
+            hit = []
+        if hit:
+            return f"as planned in iteration {it}", hit[0], "not accepted, not coded since"
+    return None
+
+
+def _composes(run: Run, raw: dict, entries: list[_Entry], laws: dict[str, corpus.Law], elsewhere: list[str]) -> list[str]:
+    """One line per composition of a record: the referring span's words and what the named node is
+    (its duty and state), or `missing`; a node of another law is added to `elsewhere`."""
+    spans = {s.get("id"): s.get("text", "") for s in raw.get("segmentation") or [] if isinstance(s, dict)}
+    out = []
+    for c in raw.get("compositions") or []:
+        if not isinstance(c, dict):
+            continue
+        rid = str(c.get("rule"))
+        same = [e for e in entries if e.id == rid]
+        hit = None if same else _latest_elsewhere(run, rid)
+        if len(same) == 1:
+            what = (f"its duty at characters {_chars(same[0].duty)}; " if same[0].duty["ranges"]
+                    else "its duty is not located in the law's text; ") + same[0].state()
+        elif same:
+            what = "ambiguous: records of different duties carry this id — " + " | ".join(_words(e.duty) for e in same)
+        elif hit is None:
+            what = "missing: no record of this id in this run or among the accepted nodes"
+        elif _law_id(hit[1]) == _law_id(raw):
+            law = laws.get(_law_id(raw))
+            what = (f"{_words(_duty(hit[1], law))}; " if law else "") + f"{hit[2]}; a record {hit[0]}, not a node of the plan above"
+        else:
+            what = "a node of another law, below"
+            if rid not in elsewhere:
+                elsewhere.append(rid)
+        out.append(f"- span `{c.get('span')}` “{_ws(spans.get(c.get('span'), ''))}” composes `{rid}` as {c.get('as')}: {what}")
+    return out or ["- composes no rule"]
+
+
+def _elsewhere_block(run: Run, elsewhere: list[str], laws: dict[str, corpus.Law]) -> list[str]:
+    """The nodes of other laws the records compose, followed along their own compositions, each once."""
     out: list[str] = []
+    done: set[str] = set()
+    while elsewhere:
+        rid = elsewhere.pop(0)
+        if rid in done:
+            continue
+        done.add(rid)
+        hit = _latest_elsewhere(run, rid)
+        if hit is None:
+            out += [f"`{rid}`: missing: no record of this id in this run or among the accepted nodes", ""]
+            continue
+        src, raw, state = hit
+        law = laws.get(_law_id(raw))
+        out += [f"`{rid}` ({_law_id(raw)}) — " + (_words(_duty(raw, law)) if law else "its law is not in this corpus"), "",
+                f"- state: {state}; the record {src}", f"- applicability: {_ws(raw.get('applicability'))}",
+                f"- obligation: {_ws(raw.get('obligation'))}"]
+        out += _composes(run, raw, [], laws, elsewhere) + [""]
+    return (["### Nodes of other laws these records compose", ""] + out) if out else []
+
+
+def _known_laws(run: Run, laws: list[corpus.Law]) -> dict[str, corpus.Law]:
+    out = {l.id: l for l in laws}
+    try:
+        return {**{l.id: l for l in corpus.load_laws(run.opts.laws)}, **out}
+    except (OSError, ValueError, AttributeError):
+        return out
+
+
+def _differs(old: dict, new: dict) -> list[str]:
+    """The fields in which two versions of a record differ; for a list of items named by a span or a
+    name, the items that differ."""
+    def key(x):
+        return (x.get("span") or x.get("name")) if isinstance(x, dict) else None
+    out = []
+    for k in sorted(set(old) | set(new)):
+        a, b = old.get(k), new.get(k)
+        if a == b:
+            continue
+        if isinstance(a, list) and isinstance(b, list) and all(key(x) for x in a + b):
+            names = sorted({str(key(x)) for x in a + b if [y for y in a if key(y) == key(x)] != [y for y in b if key(y) == key(x)]})
+            out.append(f"`{k}` ({', '.join(names)})")
+        else:
+            out.append(f"`{k}`")
+    return out
+
+
+def previous_records(run: Run, laws: list[corpus.Law]) -> str:
+    """For each law planned again: every node of its latest plan, those never coded included, each
+    with what every later iteration decided (repair, validator, gate, review, acceptance), its latest
+    version in full and, where it differs, the fields the plan had otherwise; what each record composes, with the
+    composed node's duty and state or `missing`; and the nodes of other laws they compose, followed
+    along their own compositions. Empty for a law no earlier iteration planned or coded."""
+    known = _known_laws(run, laws)
+    out: list[str] = []
+    elsewhere: list[str] = []
     for law in laws:
-        for it in range(run.iteration - 1, 0, -1):
-            code = paths.iter_dir(run.opts.run_id, it) / "code"
-            nodes = []
-            for d in sorted(code.glob("*/node.json")) if code.exists() else []:
-                raw = json.loads(d.read_text(encoding="utf-8"))
-                if (raw.get("law_refs") or [None])[0] == law.id:
-                    v = json.loads((d.parent / "verdict.json").read_text(encoding="utf-8")) if (d.parent / "verdict.json").exists() else {}
-                    nodes.append((raw, v))
-            if nodes:
-                out += [f"### `{law.id}`, as coded in iteration {it}", ""]
-                for raw, v in nodes:
-                    out += [f"`{raw.get('node_id')}`: gate {v.get('verdict', 'not run')}"
-                            + (f" — {'; '.join(str(x) for x in (v.get('details') or [])[:2])[:300]}" if v.get("details") else ""),
-                            "", "```json", json.dumps(raw, ensure_ascii=False, indent=1), "```", ""]
-                break
+        k, entries, unread = law_history(run, law)
+        if not entries and not unread:
+            continue
+        out += [f"### `{law.id}`: " + (f"the plan of iteration {k} and what followed" if k is not None else
+                                        "no plan of this law is recorded in this run; its later records"), ""]
+        out += [f"- {u}" for u in unread] + ([""] if unread else [])
+        for e in entries:
+            src, raw = e.versions[-1]
+            out += [f"`{e.id}` — {_words(e.duty)}", ""]
+            out += [f"- iteration {it}: {'; '.join(ls)}" for it, ls in sorted(e.lines.items())]
+            out += [f"- state: {e.state()}"] + _composes(run, raw, entries, known, elsewhere)
+            out += ["", f"The record, {src}:", "", "```json", json.dumps(raw, ensure_ascii=False, indent=1), "```", ""]
+            if e.planned is not None and _differs(e.planned, raw):
+                out += [f"It differs from the record planned in iteration {k} in: {', '.join(_differs(e.planned, raw))}.", ""]
+    out += _elsewhere_block(run, elsewhere, known)
     if not out:
         return ""
     return "## Your previous record of these laws\n\n" + "\n".join(out) + "\n"
+
+
+def repair_context(run: Run, node, law: corpus.Law, siblings: list) -> str:
+    """For a node repair, read-only: the law's other nodes, each in the record the repair is
+    validated with, with its duty, its state and what it composes; what this node composes; and the
+    nodes of other laws they compose, followed along their own compositions."""
+    known = _known_laws(run, [law])
+    _k, entries, _unread = law_history(run, law)
+    elsewhere: list[str] = []
+    out = ["## The law's other nodes and what the records compose (read-only)", "",
+           "Each other node of the law in the record your revision is validated with, with its state.", ""]
+    for s in [s for s in siblings if s.id != node.id]:
+        e = next((x for x in entries if x.matches(s.raw, law)), None)
+        src = next((label for label, raw in reversed(e.versions) if raw == s.raw), "") if e else ""
+        state = e.state() if e else ("accepted" if s.id in run.all_nodes() else "not accepted")
+        out += [f"`{s.id}` — {_words(_duty(s.raw, law))}", "", f"- state: {state}" + (f"; the record {src}" if src else ""),
+                f"- applicability: {_ws(s.raw.get('applicability'))}", f"- obligation: {_ws(s.raw.get('obligation'))}"]
+        out += [f"- span `{el.get('span')}`: {', '.join(list(el.get('atoms') or []) + list(el.get('derived') or []))}"
+                for el in s.raw.get("elements") or [] if isinstance(el, dict)]
+        out += _composes(run, s.raw, entries, known, elsewhere) + [""]
+    out += [f"This node, `{node.id}`:"] + _composes(run, node.raw, entries, known, elsewhere) + [""]
+    out += _elsewhere_block(run, elsewhere, known)
+    return "\n".join(out) + "\n"
 
 
 def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", pending: list[dict] | None = None) -> Path:
@@ -303,8 +592,9 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
 def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: corpus.Law, defs: list[dict],
                     siblings: list, reading: Reading, onto) -> Path:
     """One repair session for a node the gate or the review returned: it sees the law and its
-    segmentation, the record, the verdict, the coder's result note and final files, the ontology,
-    the catalogue and the reading, and writes a revised record (segmentation unchanged) or a
+    segmentation, the record, the law's other nodes in the records it is validated with (read-only,
+    with their states and what the records compose), the verdict, the coder's result note and final
+    files, the ontology, the catalogue and the reading, and writes a revised record (segmentation unchanged) or a
     withdrawal to `record.jsonl` in its own directory. The record is validated in the plan's
     context (the law's accepted and held siblings) with one re-ask; `validation.txt` records the
     outcome. Returns the directory."""
@@ -340,7 +630,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
         "definitions": "## Definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, [law])),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
-                + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
+                + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),

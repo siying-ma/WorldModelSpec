@@ -12,12 +12,18 @@ import json
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from . import jsonl
+from ..model import nodeid
 
 OPEN, PLANNED, RETURNED, ACCEPTED, BLOCKED, FAILED = "open", "planned", "returned", "accepted", "blocked", "failed"
 TERMINAL = {ACCEPTED, BLOCKED, FAILED}
 PLANNABLE = {OPEN, RETURNED}
 SEVERITY = {PLANNED: 1, RETURNED: 2, BLOCKED: 3, FAILED: 4}   # within one attempt, the higher outcome stands
 JUDGE_STAGES = {"stage_a", "stage_b", "concept_adjudication"}  # an invalid judge answer: two in a row close the item
+#: Gates of one node or concept that ended on the evaluation's cost (the deadline reached while its
+#: scenarios were evaluated, or a resource failure reproduced in isolation) before it is held for the
+#: operator: after the first, the saved candidate is gated again (or, when its context changed, the
+#: record is coded again) at the same deadline; the second holds it.
+GATE_COST_BOUND = 2
 
 
 def _rows(entries) -> str:
@@ -44,10 +50,14 @@ class Entry:
     gaps: list[str] = field(default_factory=list)
     iteration: int = 0
     charged_iteration: int = 0     # the iteration whose return already counted an attempt
-    charged_concepts: list[str] = field(default_factory=list)   # failed concepts whose failure already counted an attempt
+    charged_concepts: list[str] = field(default_factory=list)   # failed concepts whose failure already counted a dependency return
+    dependency_returns: int = 0     # returns because concepts the law's nodes use failed; never counted as attempts
+    dependency_iteration: int = 0   # the iteration whose dependency return already counted
     repeats: dict[str, int] = field(default_factory=dict)       # repeat identity ↦ count, across plans and repairs
     selection_corrections: int = 0  # times a plan of the law claimed an aggregate the selection did not admit
     outcome_iteration: int = 0      # the attempt (iteration) whose outcome the state records
+    cost_failures: dict[str, int] = field(default_factory=dict)   # node ↦ its gates ended on the evaluation's cost; never counted as attempts
+    core_panics: list[str] = field(default_factory=list)          # nodes whose gate's evaluation panicked in isolation; never counted as attempts
 
 
 class Ledger:
@@ -130,9 +140,14 @@ class Ledger:
         self._set(self.entries[law], RETURNED, reasons)
 
     def return_for_concepts(self, law: str, concepts: list[str], reasons: list[str], iteration: int) -> None:
-        """The law is returned because concepts its nodes use failed. A concept's failure counts
-        one attempt against the law, however many iterations later the law is still waiting on
-        it; a return for concepts that already counted adds its reasons and counts nothing."""
+        """The law is returned because concepts its nodes use failed. Its plan attempts count only
+        its own plans and nodes, and a concept has its own budget: a failure counts one dependency
+        return against the law, however many iterations later the law is still waiting on it, at
+        most one per iteration, and a return for concepts that already counted adds its reasons and
+        counts nothing. `concepts` are the concepts that cause this return only, never one still
+        pending. The law fails on its dependencies once its dependency returns exceed the plan
+        attempts (`dependency_returns > plan_attempts`): with two plan attempts, two returns caused by
+        dependencies are re-planned and the third closes the law."""
         e = self.entries[law]
         fresh = [c for c in concepts if c not in e.charged_concepts]
         if not fresh:
@@ -141,7 +156,33 @@ class Ledger:
             e.reasons = e.reasons + [r for r in reasons if r not in e.reasons]
             return
         e.charged_concepts = e.charged_concepts + fresh
-        self.return_law(law, reasons, iteration)
+        if not self._settles(e, RETURNED):
+            e.reasons = e.reasons + [r for r in reasons if r not in e.reasons]
+            return
+        if e.dependency_iteration != iteration:
+            e.dependency_returns += 1
+            e.dependency_iteration = iteration
+            e.reasons = reasons
+        else:
+            e.reasons = e.reasons + [r for r in reasons if r not in e.reasons]
+        if e.dependency_returns > self.plan_attempts:
+            self._set(e, FAILED, [f"dependency budget ({self.plan_attempts}) spent: {', '.join(e.charged_concepts)}"] + reasons)
+        else:
+            self._set(e, RETURNED)
+
+    def gate_cost(self, law: str, node: str, panic: bool) -> bool:
+        """A gate of the law's node judged nothing of its mapping: the evaluation panicked in
+        isolation (a Core defect), or it reached the deadline or a resource failure reproduced in
+        isolation (the evaluation's cost). Counted apart from the plan attempts and the node's
+        codings, and never charged. Returns whether the node is now held for the operator: a panic at
+        once, a cost failure once `GATE_COST_BOUND` are counted for the node."""
+        e = self.entries[law]
+        if panic:
+            if node not in e.core_panics:
+                e.core_panics = e.core_panics + [node]
+            return True
+        e.cost_failures = {**e.cost_failures, node: e.cost_failures.get(node, 0) + 1}
+        return e.cost_failures[node] >= GATE_COST_BOUND
 
     def defer(self, law: str, reasons: list[str]) -> None:
         """Nothing judged the law's plan or its code (an outage): its state and plan stay, no attempt
@@ -222,18 +263,26 @@ class Ledger:
     def _fresh(e: Entry, reasons: list[str]) -> None:
         e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps = OPEN, 0, reasons, [], {}, []
         e.outcome_iteration, e.charged_iteration = 0, 0
+        e.dependency_returns, e.dependency_iteration = 0, 0
+        e.cost_failures, e.core_panics = {}, []
 
     def reopen_for_gaps(self, decided: dict[str, tuple[str, str]]) -> list[tuple[str, list[str]]]:
         """A blocked law reopens once the operator has decided every gap it waits on: retired (the
         ontology or the reading now carries the span) or rejected (the span can be carried as it is;
-        the decision is the reason the next plan is shown). Returns (law, reasons)."""
+        the decision is the reason the next plan is shown), its nodes' gate-cost counts cleared as by
+        `reopen`. Returns (law, reasons)."""
         out = []
         for e in self.entries.values():
             if e.state == BLOCKED and e.gaps and all(g in decided for g in e.gaps):
                 reasons = [f"gap {g} {decided[g][0]}" + (f": {decided[g][1]}" if decided[g][1] else "") for g in e.gaps]
                 e.state, e.gaps, e.reasons = OPEN, [], reasons
+                e.cost_failures, e.core_panics = {}, []
                 out.append((e.law, reasons))
         return out
+
+    def paused(self) -> set[str]:
+        """The laws blocked for the operator's decision on their own token (`decision:<law>`)."""
+        return {e.law for e in self.entries.values() if e.state == BLOCKED and f"decision:{e.law}" in e.gaps}
 
     def counts(self) -> dict[str, int]:
         c: dict[str, int] = {}
@@ -256,6 +305,9 @@ class ConceptEntry:
     last_task: str = ""            # the task directory of the last coding attempt, for a repair session
     judge_failures: dict[str, int] = field(default_factory=dict)   # judge stage ↦ consecutive invalid answers
     waiting: list[str] = field(default_factory=list)   # pending concepts it calls: not coded until they are accepted
+    cost_failures: int = 0       # its gates that ended on the evaluation's cost; never counted as attempts
+    core_panics: int = 0         # its gates whose evaluation panicked in isolation; never counted as attempts
+    held_laws: list[str] = field(default_factory=list)   # the laws its hold for the operator paused (directly or through other concepts) and still pauses
 
 
 class ConceptLedger:
@@ -325,6 +377,43 @@ class ConceptLedger:
             return True
         e.state, e.reasons = PLANNED, reasons
         return False
+
+    def gate_cost(self, cid: str, panic: bool) -> bool:
+        """The concept's gate judged nothing of its record (as `Ledger.gate_cost`): its state, users
+        and attempts stay. Returns whether its users are now held for the operator: on a panic at
+        once, on a cost failure once `GATE_COST_BOUND` are counted."""
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        if panic:
+            e.core_panics += 1
+            return True
+        e.cost_failures += 1
+        return e.cost_failures >= GATE_COST_BOUND
+
+    def held(self, cid: str) -> bool:
+        """Whether the concept is held for the operator by its gate: a panic, or the cost bound reached."""
+        e = self.entries.get(cid)
+        return e is not None and (e.core_panics > 0 or e.cost_failures >= GATE_COST_BOUND)
+
+    def release(self, reopened: list[str], paused: set[str]) -> tuple[list[str], dict[str, list[str]]]:
+        """Laws were reopened (`reopened`; `paused` are the laws still blocked for the operator's
+        decision after it). A concept whose gate counts concern one of them (its direct users' laws or
+        the laws its hold paused) keeps, among the laws its hold paused, only those still paused; once
+        none is, its counts and hold are cleared, whether its laws were reopened together or one at a
+        time. A user blocked or failed for another reason never keeps it held. Returns the concepts
+        released, and each concept left held with the laws it still waits on."""
+        out, waiting = [], {}
+        for e in self.entries.values():
+            if not (e.cost_failures or e.core_panics or e.held_laws):
+                continue
+            if not (set(e.held_laws) | {nodeid.law_of(str(u))[0] for u in e.used_by}) & set(reopened):
+                continue
+            e.held_laws = [l for l in e.held_laws if l in paused]
+            if e.held_laws:
+                waiting[e.concept] = list(e.held_laws)
+            else:
+                e.cost_failures, e.core_panics = 0, 0
+                out.append(e.concept)
+        return out, waiting
 
     def clear_judge(self, cid: str) -> None:
         e = self.entries.get(cid)

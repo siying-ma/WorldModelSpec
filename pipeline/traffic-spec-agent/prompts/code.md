@@ -23,6 +23,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   Lean accessor with the scene field it reads, the primitives with their contracts and parameter
   order, the enumeration spellings and Lean constructors, the world records a witness builds,
   the `Units` constructors and the `Build.*` builders. It is complete for this task.
+- **Contracts** — what each name the node claims denotes, and each atom its claimed primitives
+  and concepts read: write each by its contract.
 - **Reading** — the run's values for the node's parameters. A witness is evaluated against
   these values (its own `reading` field is ignored), so its geometry is built to break or keep
   each bound by a clear margin. No value goes into the rule.
@@ -33,6 +35,7 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 {node}
 {files}
 {core_surface}
+{contracts}
 {reading}
 {example}
 {skeletons}
@@ -97,8 +100,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    plan doubts the atoms it maps that span to: write the span with them if they carry its words,
    and otherwise declare `no_atom` or `no_operator` on it, which files the plan's gap at once. The gate holds every narrowing to a span of the
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
-   condition or exception) is never narrowed: it is carried as the node maps it, or the node is
-   wrong and you report it. The review judges the rule with your narrowings in view; a choice
+   condition or exception) is never narrowed, nor written with a weaker fact than the qualified one
+   the record states: it is carried as the node maps it, or the node is wrong and you report it. The review judges the rule with your narrowings in view; a choice
    written only in prose is lost. `narrowings` holds only the readings you chose: the record's own
    narrowings, its observable readings included, are the plan's and are never restated there.
 3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
@@ -145,8 +148,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    in its narrowings) is written from its element's atoms as any span is. It is the plan's
    narrowing, already on record: you do not restate it, and you never declare one the node does not.
    A declared intention the node carries (`intentions`) is the formula `intent` of the road user and
-   the region its span names, read at the judged observation or in a window behind it, never in a
-   window ahead.
+   the region the element of its place's span binds, read at the judged observation or in a window
+   behind it, never in a window ahead.
 6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
    is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
    and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
@@ -159,6 +162,16 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    the observation at which the act is recognized until its window has passed: where the node
    reads the act as an event (the occasion, or a span placed before or after it), the act is
    `.rises (<act>)`, so each act is judged once, at its recognition.
+6c. **A duty with a history bound.** Where the node's `obligation` states a history bound, a search
+   into the past ends exactly where the record says and nowhere else. Do not invent a history
+   boundary from the recording's start, a subject's first observation, or a cumulative quantity
+   whose origin is the recording's start. Preserve any event, time or distance window the record
+   requires. A path length since the trace began is refused inside a search into the past. Each atom
+   and primitive is used only as its contract states. Where the plan declares a history-boundary
+   scenario, its witness is a trace in which the duty arises, the history the bound needs begins
+   before the recording, the act is unrecorded, and no recorded act or visible end of the search
+   decides the verdict; its `boundary` names the history the trace lacks, and it expects unknown. No
+   other witness is unknown for a window truncated at the start of its trace.
 7. **Witnesses are built, not described.** Each scenario is a `Scenario` built with the `Build.*`
    constructors from the node's narrative: `forbid` expects violated, `permit` compliant, `idle`
    not applicable, `blind` unknown with the masked atoms absent in its manifest. A scenario
@@ -166,10 +179,13 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    scenarios are the minimum, not the set: the gate's adequacy rule fails the rule when a leaf
    moves no decided witness, and a duty with alternatives (two devices, two ways to comply, an
    exception with two limbs) has leaves the planned scenes never reach. Add `branch_<n>`
-   witnesses, each expecting `violated` or `compliant` with a one-line narrative in a comment,
-   until every leaf is exercised; they are the rule's tests, yours to write. Every scenario the
-   node plans (`branch_<n>`, `occasion_<span>`) is a witness of that name with the planned verdict. Literal values of one
-   atom's enumeration tested in separate disjuncts count as one leaf: one scene exercises them.
+   witnesses, each expecting `violated` or `compliant`, or `not_applicable` where it shows a
+   situation the words exclude from the duty, with a one-line narrative in a comment, until every
+   leaf is exercised; they are the rule's tests, yours to write, not evidence of the reading. Every
+   scenario the node plans (`branch_<n>`, `occasion_<span>`) is a witness of that name with the
+   planned verdict. A fact the source does not observe is unknown, never made false to reach
+   `not_applicable`. Literal values of one atom's enumeration tested in separate disjuncts count as
+   one leaf: one scene exercises them.
 8. **No history of your own.** The trace is a list of built scenes; you do not read captures,
    and you do not import anything but `TrafficSpec.Core.Language.Rule` in the rule file and the rule plus
    `TrafficSpec.Core.Evidence.Builders` in the witness file. A sign whose legend states no

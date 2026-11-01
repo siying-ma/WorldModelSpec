@@ -5,230 +5,264 @@
   operationalization and composition below is written, and every choice the text did not dictate).
 
   Spans:
-    c1 (obligation): It is unlawful for any person to drive or operate a vehicle of any kind or character at:
-    c2 (standard): A rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions.
+    s1 (subject): It is unlawful for any person to drive or operate a vehicle of any kind or character at:
+    s2 (obligation): A rate of speed
+    s3 (standard): greater than is reasonable or proper, having due regard for
+    s4 (definitional): the traffic, surface and width of the highway, the weather and other highway conditions.
 
   Elements (span → atoms, derived):
-    c1: atoms ['ru.aggregate=DEF-NRS-484A-320::vehicle', 'kin.speed', 'rel.occupies', 'st.highway'], derived []
+    s1: atoms ['ru.subject', 'ru.aggregate=DEF-NRS-484A-320::vehicle'], derived []
+    s2: atoms ['kin.speed'], derived []
+    s4: atoms ['ru.aggregate=DEF-NRS-484A-285::traffic', 'rel.occupies', 'rel.centre_distance', 'st.highway', 'st.lane', 'st.lane_width', 'st.roadway', 'st.curvature', 'st.sight_along_way', 'env.wet_road', 'env.ice_or_snow', 'env.precipitation', 'env.visibility', 'env.darkness'], derived []
+
+  No magnitude below is this file's own: parameters name the reading, literals are the text's.
+  The text states no figure, so the only literals here are zero (the nil reduction a condition that
+  does not hold contributes, and the nil quantity the count aggregate carries).
 
   How each span is written.
 
-    c1 (obligation), the subject and the occasion: the class of `v` is the single atom
-      `ru_aggregate` with the admitted aggregate id `DEF-NRS-484A-320::vehicle` as its literal
-      argument; the classes that definition covers are never written here. 'any person to drive or
-      operate' is the record's observable reading through the vehicle's controlled motion, written
-      as `kin_speed v > 0` (zero is the only magnitude of this file). 'of any kind or character'
-      adds no class of its own. The duty binds on a public way, so the applicability also selects a
-      highway region the subject occupies: `st_highway w` with `rel_occupies v w`, one region
-      quantifier over the kind the element names. `st.highway` is the whole way between its
-      boundary lines, not the roadway: no part of the way is named by the span.
+    s1 — the subject. Both of its atoms are the binder's class: `ru_subject veh` (the road user
+    whose conduct the rule judges) and `ru_aggregate veh "DEF-NRS-484A-320::vehicle"` (membership
+    of the admitted aggregate, written with the aggregate's id and never with the classes the
+    reading puts under it). The record's own narrowing on this span — 'any person to drive or
+    operate' read through the vehicle's controlled motion, an observable_reading of category
+    agency — is the plan's and is not restated in `narrowings`; the element claims no motion atom,
+    so the span is written from its two class atoms alone. The clause states no place, time or
+    condition of its own, so the applicability is `.tt`: the prohibition engages at every
+    observation of such a vehicle, on or off a marked lane or roadway, moving or at a halt.
 
-    c2 (standard), the surrogate bound on `kin_speed v`: the operationalization's factors, each a
-      separate comparison, so that the conjunction of them is the smallest of the bounds.
+    s2 — the quantity bounded: `kin_speed veh`, the subject's own speed, the magnitude of its
+    velocity. It is read of the subject at the judged observation and compared with each of the
+    three bounds of the standard; no actuation, no acceleration and no posted figure enters.
 
-      Baseline, surface and weather, which select among bounds: `Term.cond` selects the scaled
-      baseline where the condition holds and the bare baseline where it does not, so each of
-      `env_wet_road` (p.wet_speed_factor), `env_ice_or_snow` (p.ice_speed_factor),
-      `env_precipitation` (p.precipitation_speed_factor) and `env_darkness`
-      (p.darkness_speed_factor) carries the baseline p.reasonable_speed_base as its false branch.
+    s3 / s4 — the standard and the factors it has due regard for. The node is a surrogate: the
+    standard is the whole duty, and the operationalization's three bounds, each computed from
+    magnitudes the atoms of s4 observe, together are the obligation. Each bound is written as the
+    convention states it, and in particular each is stated once with the scene-level or default
+    value, which always applies, and once at every region of its kind the subject's footprint
+    overlaps (`rel_occupies`), so that the least favourable region the subject occupies governs and
+    a subject occupying no region of a kind is judged by the factors that remain:
 
-      Width: `st_lane_width l` of a lane the subject occupies, the baseline scaled by the ratio of
-      that width to p.lane_width_reference.
+      (1) The condition bound. `conditionBound` conjoins the comparison at the default width
+      factor — the base speed itself, which is the bound where the subject overlaps no lane — with
+      the comparison at every `st.lane` the subject occupies, whose scaled base is
+      `p.reasonable_speed_base · st_lane_width(L) / p.reasonable_speed_reference_lane_width`,
+      capped at the base by the `.cond` on `st_lane_width(L) ≤ p.reasonable_speed_reference_lane_width`
+      (the ratio capped at one: a wider lane does not raise the bound). The divisor is the
+      reference-width parameter, never a measured quantity. From that scaled base
+      `rawBound` subtracts `p.reasonable_speed_wet_reduction` where `env_wet_road` or
+      `env_precipitation` holds, `p.reasonable_speed_ice_reduction` where `env_ice_or_snow` holds,
+      `p.reasonable_speed_darkness_reduction` where `env_darkness` holds — each as a `.cond`
+      selecting the parameter or nil, the boolean atoms carrying no magnitude — and
+      `p.reasonable_speed_per_road_user` times the traffic count. `flooredBound` is the greater of
+      that raw bound and `p.reasonable_speed_floor`, written as the `.cond` on
+      `rawBound ≥ p.reasonable_speed_floor`.
 
-      Weather and sight: the assured-clear-distance bound is the smaller of `env_visibility` and
-      `st_sight_along_way v w` divided by p.sight_time; the smaller of two bounds is the two
-      comparisons conjoined, one on each quantity.
+      The traffic count is `trafficCount`, the `count` aggregate over the scene's road users of
+      those which are not the subject (`.not (.same other veh)` — the subject is not counted among
+      the traffic it must have regard for), which carry a class the reading includes in
+      `DEF-NRS-484A-285::traffic` (`ru_aggregate other "DEF-NRS-484A-285::traffic"`), whose
+      footprint overlaps some `st.highway` the subject also overlaps (the highway quantified inside
+      the count, so that a subject overlapping no highway reads a nil count rather than no bound),
+      and whose `rel_centre_distance` to the subject is at most `p.reasonable_speed_traffic_reach`.
 
-      Traffic: `forallUser u`, the duty owed to each road user clear ahead of the subject in its
-      own lane — one other than the subject itself (`same`), standing in
-      `rel_ahead_behind_in_lane` with it (written with `u` first, since that atom reads 'a ahead of
-      b in the same lane' and the record reads the direction separately), whose `rel_bearing` in
-      the subject's frame is `ahead` (positive along the subject's heading), and whose longitudinal
-      `rel_surface_gap` to the subject is strictly above zero. For such a road user the speed does
-      not exceed that gap divided by p.traffic_headway_time. A road user abeam of the subject, one
-      behind it and one whose body overlaps the subject's along the lane axis leave the antecedent
-      false and bound the speed not at all.
+      (2) The sight bound. `stoppingDistance` is the ground covered at the observed speed during
+      `p.reasonable_speed_reaction_time` plus the braking distance at
+      `p.reasonable_speed_deceleration`, the stopping-distance model's `v·t + v²/(2a)`, the
+      doubled deceleration written as `a + a` so that no figure of this file's own appears and the
+      divisor reads parameters only. It must not exceed `env_visibility`, which is read of every
+      subject wherever it stands, and must not exceed `st_sight_along_way(veh, W)` at every
+      `st.highway` W the subject occupies, so the shortest of the air's clarity and the views along
+      the ways under the subject governs. No floor is needed: from rest the distance is nil.
 
-      Other highway conditions: the curve bound is written as a product —
-      `kin_speed v · kin_speed v · st_curvature d ≤ p.lateral_accel_max` — because the way runs
-      straight where `st_curvature` is zero and a division by it would report unknown instead of a
-      verdict; the product says the same thing wherever the quotient is defined. The grade bound is
-      the baseline less the baseline times the downgrade times p.grade_speed_sensitivity.
+      (3) The curve bound. At every `st.roadway` R the subject occupies, the lateral acceleration
+      the observed speed develops on `st_curvature(R)` — `v²·κ`, written as a product, never a
+      ratio, since a curvature is a measured quantity and is nil where the way runs straight —
+      must not exceed `p.reasonable_speed_lateral_acceleration`. No floor is needed: from rest the
+      lateral acceleration is nil.
 
-      Regions: the lane whose width is read, the roadway whose curvature and grade are read and the
-      way along which sight is read are each selected again in the obligation by the whole
-      selection — the kind atom (`st_lane`, `st_roadway`, `st_highway`) and `rel_occupies` of the
-      subject — and the duty is stated at every region so selected.
+    The duty is the conjunction of the three: a speed that exceeds any one of them is not
+    reasonable or proper. Every comparison is `≤`, since the text forbids a rate *greater than*
+    what is reasonable: a speed equal to a bound complies.
 
-  Narrowings declared below, both on c2, the standard's span:
-    - the downgrade: `st.grade` is signed, and the convention names only the descent, so the
-      downgrade is the negative of the grade where the grade is below zero and zero elsewhere; an
-      ascent therefore leaves the baseline untouched rather than raising it.
-    - the regional factors are stated at every region of the named kind the subject occupies, so
-      where it occupies more than one lane or roadway the lowest of those bounds governs; the
-      convention names 'the lane the subject occupies' and 'the roadway' in the singular.
-
-  No magnitude below is this file's own: parameters name the reading, literals are the text's.
+  Choices and `narrowings`. Every reading this file rests on — the crawl-speed floor, the traffic
+  read as a count within reach, the surface read through the two surface atoms, the width read
+  through the lane widths under the subject, the weather read through precipitation and visibility,
+  the catch-all read through curvature, darkness and the view along the way, and the view bounding
+  the stopping distance twice over — is the record's own narrowing on s3, already on the plan's
+  record, and is therefore not restated in `narrowings`. This session chose nothing the record's
+  words left open: the bounds, their factors, their order and their capping are the
+  operationalization's convention, and the applicability, the binder's class and the comparison
+  sense follow the record's `applicability` and `obligation` verbatim. `narrowings` is accordingly
+  empty.
 -/
 import TrafficSpec.Core.Language.Rule
 
 namespace TrafficSpec.Rules.NRS_484B_600_1a
 
 /-- The binders, as arguments (order and names are the node's). -/
-def vV : Arg := .var "v"
+def vVeh : Arg := .var "veh"
+
+/-- The quantifier variables: a lane, a highway and a roadway under the subject, and another road
+    user of the traffic. -/
+def vLane : Arg := .var "lane"
+def vWay : Arg := .var "way"
+def vRoadway : Arg := .var "roadway"
+def vOther : Arg := .var "other"
 
 /-- The reading's parameters; no value of any of them lives in this file. -/
-def pDarknessSpeedFactor : Term := .param "p.darkness_speed_factor"
-def pGradeSpeedSensitivity : Term := .param "p.grade_speed_sensitivity"
-def pIceSpeedFactor : Term := .param "p.ice_speed_factor"
-def pLaneWidthReference : Term := .param "p.lane_width_reference"
-def pLateralAccelMax : Term := .param "p.lateral_accel_max"
-def pPrecipitationSpeedFactor : Term := .param "p.precipitation_speed_factor"
 def pReasonableSpeedBase : Term := .param "p.reasonable_speed_base"
-def pSightTime : Term := .param "p.sight_time"
-def pTrafficHeadwayTime : Term := .param "p.traffic_headway_time"
-def pWetSpeedFactor : Term := .param "p.wet_speed_factor"
+def pReasonableSpeedDarknessReduction : Term := .param "p.reasonable_speed_darkness_reduction"
+def pReasonableSpeedDeceleration : Term := .param "p.reasonable_speed_deceleration"
+def pReasonableSpeedFloor : Term := .param "p.reasonable_speed_floor"
+def pReasonableSpeedIceReduction : Term := .param "p.reasonable_speed_ice_reduction"
+def pReasonableSpeedLateralAcceleration : Term := .param "p.reasonable_speed_lateral_acceleration"
+def pReasonableSpeedPerRoadUser : Term := .param "p.reasonable_speed_per_road_user"
+def pReasonableSpeedReactionTime : Term := .param "p.reasonable_speed_reaction_time"
+def pReasonableSpeedReferenceLaneWidth : Term := .param "p.reasonable_speed_reference_lane_width"
+def pReasonableSpeedTrafficReach : Term := .param "p.reasonable_speed_traffic_reach"
+def pReasonableSpeedWetReduction : Term := .param "p.reasonable_speed_wet_reduction"
 
-def zeroMetres : Term := .lit Q.zero .metre
+/-- The nil reduction a condition that does not hold contributes. -/
 def zeroSpeed : Term := .lit Q.zero .metrePerSecond
-def zeroRatio : Term := .lit Q.zero .ratio
+/-- The nil quantity the count aggregate carries; a count reads no summand. -/
+def zeroCount : Term := .lit Q.zero .count
 
-/-- Class of `v`: ru.aggregate=DEF-NRS-484A-320::vehicle -/
-def clsV : Formula :=
-  .atom "ru_aggregate" [vV, .lit "DEF-NRS-484A-320::vehicle"] []
+/-- s2: the rate of speed the clause bounds. -/
+def speedVeh : Term := .measure "kin_speed" [vVeh]
 
-/-- c1/c2: the quantity the standard bounds. -/
-def speedV : Term := .measure "kin_speed" [vV]
+/-- Class of `veh`: ru.subject, ru.aggregate=DEF-NRS-484A-320::vehicle -/
+def clsVeh : Formula :=
+  .and (.atom "ru_subject" [vVeh] [])
+       (.atom "ru_aggregate" [vVeh, .lit "DEF-NRS-484A-320::vehicle"] [])
 
-/-- c1: the vehicle is in controlled motion. -/
-def inMotion : Formula := .cmp speedV .gt zeroSpeed
+/-- Applicability: (no trigger/condition span) — the clause states no place, time or condition, so
+    the prohibition engages at every observation of such a vehicle. -/
+def applicability : Formula := .tt
 
-/-- c1: `w` is a highway the subject occupies (the whole way between its boundary lines). -/
-def onWay (w : String) : Formula :=
-  .and (.atom "st_highway" [.var w] [])
-       (.atom "rel_occupies" [vV, .var w] [])
+-- -------------------------------------------------------------------------------------------
+-- (1) The condition bound: the base reasonable speed, scaled by the width and reduced by the
+-- surface, the weather, the light and the stream, floored at the crawl speed.
+-- -------------------------------------------------------------------------------------------
 
-/-- Applicability: c1 — a vehicle in controlled motion on a highway. -/
-def applicability : Formula :=
-  .and inMotion (.existsRegion (.lit "highway") "w" (onWay "w"))
+/-- The width of a lane under the subject. -/
+def laneWidth (l : Arg) : Term := .measure "st_lane_width" [l]
 
-/-- c2: the baseline, scaled by `factor` where `φ` holds and bare where it does not. -/
-def baseUnder (φ : Formula) (factor : Term) : Term :=
-  .cond φ (.mul pReasonableSpeedBase factor) pReasonableSpeedBase
+/-- The base speed scaled by the ratio of a lane's width to the standard lane width, the ratio
+    capped at one: a narrower lane lowers the bound in proportion, a wider one does not raise it. -/
+def widthScaledBase (l : Arg) : Term :=
+  .cond (.cmp (laneWidth l) .le pReasonableSpeedReferenceLaneWidth)
+        (.div (.mul pReasonableSpeedBase (laneWidth l)) pReasonableSpeedReferenceLaneWidth)
+        pReasonableSpeedBase
 
-/-- c2 (surface): a wet surface leaves p.wet_speed_factor of the baseline. -/
-def wetBound : Formula :=
-  .cmp speedV .le (baseUnder (.atom "env_wet_road" [] []) pWetSpeedFactor)
+/-- The wet-pavement reduction: taken where the surface is wet or rain or snow is falling. -/
+def wetReduction : Term :=
+  .cond (.or (.atom "env_wet_road" [] []) (.atom "env_precipitation" [] []))
+        pReasonableSpeedWetReduction zeroSpeed
 
-/-- c2 (surface): an icy or snow-covered surface leaves p.ice_speed_factor of the baseline. -/
-def iceBound : Formula :=
-  .cmp speedV .le (baseUnder (.atom "env_ice_or_snow" [] []) pIceSpeedFactor)
+/-- The winter-surface reduction: taken where the surface is icy or snow-covered. -/
+def iceReduction : Term :=
+  .cond (.atom "env_ice_or_snow" [] []) pReasonableSpeedIceReduction zeroSpeed
 
-/-- c2 (the weather): falling precipitation leaves p.precipitation_speed_factor of the baseline. -/
-def precipitationBound : Formula :=
-  .cmp speedV .le (baseUnder (.atom "env_precipitation" [] []) pPrecipitationSpeedFactor)
+/-- The night-driving reduction: taken where there is insufficient natural light. -/
+def darknessReduction : Term :=
+  .cond (.atom "env_darkness" [] []) pReasonableSpeedDarknessReduction zeroSpeed
 
-/-- c2 (other highway conditions): darkness leaves p.darkness_speed_factor of the baseline. -/
-def darknessBound : Formula :=
-  .cmp speedV .le (baseUnder (.atom "env_darkness" [] []) pDarknessSpeedFactor)
+/-- Another road user of the traffic within reach of the subject on a way the subject is on: not
+    the subject itself, a class the reading includes in DEF-NRS-484A-285::traffic, a footprint
+    overlapping some highway the subject's footprint also overlaps, and a centre distance to the
+    subject within the interaction reach. -/
+def trafficWithinReach : Formula :=
+  .and (.not (.same vOther vVeh))
+    (.and (.atom "ru_aggregate" [vOther, .lit "DEF-NRS-484A-285::traffic"] [])
+      (.and (.existsRegion (.lit "highway") "way"
+               (.and (.atom "rel_occupies" [vVeh, vWay] [])
+                     (.atom "rel_occupies" [vOther, vWay] [])))
+            (.cmp (.measure "rel_centre_distance" [vVeh, vOther]) .le
+                  pReasonableSpeedTrafficReach)))
 
-/-- c2 (the weather): the assured clear distance within the visibility. -/
-def visibilityBound : Formula :=
-  .cmp speedV .le (.div (.measure "env_visibility" []) pSightTime)
+/-- How many road users of the traffic are within reach: nil where the subject overlaps no highway
+    and where it is alone on the way. -/
+def trafficCount : Term := .aggregate .count "other" trafficWithinReach zeroCount
 
-/-- c2 (other highway conditions): the assured clear distance along the way `w`. -/
-def sightBoundAt (w : String) : Formula :=
-  .cmp speedV .le (.div (.measure "st_sight_along_way" [vV, .var w]) pSightTime)
+/-- The speed-flow reduction: taken for each further road user of the traffic within reach. -/
+def trafficReduction : Term := .mul pReasonableSpeedPerRoadUser trafficCount
 
-/-- c2 (width of the highway): the width of the lane `l` the subject occupies, against the
-    reference lane width. -/
-def widthBoundAt (l : String) : Formula :=
-  .cmp speedV .le
-    (.mul pReasonableSpeedBase (.div (.measure "st_lane_width" [.var l]) pLaneWidthReference))
+/-- The raw condition bound: a width-scaled base less the surface, weather, light and stream
+    reductions. -/
+def rawBound (b : Term) : Term :=
+  .sub (.sub (.sub (.sub b wetReduction) iceReduction) darknessReduction) trafficReduction
 
-/-- c2 (other highway conditions): the square of the speed times the curvature of the roadway `d`
-    does not exceed the lateral acceleration (a product, since a straight way has zero curvature). -/
-def curveBoundAt (d : String) : Formula :=
-  .cmp (.mul (.mul speedV speedV) (.measure "st_curvature" [.var d])) .le pLateralAccelMax
+/-- The condition bound the duty uses: the greater of the raw bound and the crawl-speed floor. -/
+def flooredBound (b : Term) : Term :=
+  .cond (.cmp (rawBound b) .ge pReasonableSpeedFloor) (rawBound b) pReasonableSpeedFloor
 
-/-- c2: the downgrade at the subject's place: the grade of `d` negated where it descends, zero
-    where it is level or ascends. -/
-def downgradeAt (d : String) : Term :=
-  .cond (.cmp (.measure "st_grade" [.var d]) .lt zeroRatio)
-    (.neg (.measure "st_grade" [.var d])) zeroRatio
+/-- The observed speed is within the condition bound computed from a width-scaled base. -/
+def speedWithin (b : Term) : Formula := .cmp speedVeh .le (flooredBound b)
 
-/-- c2 (other highway conditions): the baseline less the downgrade's share of it. -/
-def gradeBoundAt (d : String) : Formula :=
-  .cmp speedV .le
-    (.sub pReasonableSpeedBase
-      (.mul (.mul pReasonableSpeedBase (downgradeAt d)) pGradeSpeedSensitivity))
+/-- The condition bound: at the default width factor, which always applies, and at the width of
+    every lane the subject occupies, so the narrowest lane under the subject governs. -/
+def conditionBound : Formula :=
+  .and (speedWithin pReasonableSpeedBase)
+       (.forallRegion (.lit "lane") "lane"
+          (.implies (.atom "rel_occupies" [vVeh, vLane] [])
+                    (speedWithin (widthScaledBase vLane))))
 
-/-- c2 (the traffic): `u` is a road user clear ahead of the subject in its own lane. -/
-def clearAhead (u : String) : Formula :=
-  .and (.not (.same (.var u) vV))
-    (.and (.atom "rel_ahead_behind_in_lane" [.var u, vV] [])
-      (.and (.atom "rel_bearing" [vV, .var u, .lit "ahead"] [])
-            (.cmp (.measure "rel_surface_gap" [vV, .var u, .lit "longitudinal"]) .gt zeroMetres)))
+-- -------------------------------------------------------------------------------------------
+-- (2) The sight bound: the distance needed to stop fits within what can be seen.
+-- -------------------------------------------------------------------------------------------
 
-/-- c2 (the traffic): the headway owed to each road user clear ahead in the subject's own lane. -/
-def headwayDuty : Formula :=
-  .forallUser "u"
-    (.implies (clearAhead "u")
-      (.cmp speedV .le
-        (.div (.measure "rel_surface_gap" [vV, .var "u", .lit "longitudinal"])
-              pTrafficHeadwayTime)))
+/-- The stopping-distance model: the ground covered at the observed speed during the
+    perception-reaction time, plus the braking distance at the comfortable deceleration. The
+    doubled deceleration is written as the parameter added to itself; the divisor reads parameters
+    only, never a measurement. -/
+def stoppingDistance : Term :=
+  .add (.mul speedVeh pReasonableSpeedReactionTime)
+       (.div (.mul speedVeh speedVeh)
+             (.add pReasonableSpeedDeceleration pReasonableSpeedDeceleration))
 
-/-- c2: `l` is a lane the subject occupies. -/
-def occupiedLane (l : String) : Formula :=
-  .and (.atom "st_lane" [.var l] [])
-       (.atom "rel_occupies" [vV, .var l] [])
+/-- The sight bound: the stopping distance fits within the air's clarity, which always applies, and
+    within the view along every highway the subject occupies, so the shortest governs. -/
+def sightBound : Formula :=
+  .and (.cmp stoppingDistance .le (.measure "env_visibility" []))
+       (.forallRegion (.lit "highway") "way"
+          (.implies (.atom "rel_occupies" [vVeh, vWay] [])
+                    (.cmp stoppingDistance .le (.measure "st_sight_along_way" [vVeh, vWay]))))
 
-/-- c2: `d` is a roadway the subject occupies. -/
-def occupiedRoadway (d : String) : Formula :=
-  .and (.atom "st_roadway" [.var d] [])
-       (.atom "rel_occupies" [vV, .var d] [])
+-- -------------------------------------------------------------------------------------------
+-- (3) The curve bound: the lateral acceleration the speed develops on the bend under the subject.
+-- -------------------------------------------------------------------------------------------
 
-/-- c2: the factors that read no region: the surface, the weather, the light and the sight. -/
-def conditionBounds : Formula :=
-  .and wetBound
-    (.and iceBound
-      (.and precipitationBound
-        (.and darknessBound visibilityBound)))
+/-- The curve bound: at every roadway the subject occupies, the lateral acceleration the observed
+    speed develops on that roadway's curvature stays within the side-friction bound. Written as a
+    product: a curvature is measured and is nil where the way runs straight. -/
+def curveBound : Formula :=
+  .forallRegion (.lit "roadway") "roadway"
+    (.implies (.atom "rel_occupies" [vVeh, vRoadway] [])
+              (.cmp (.mul (.mul speedVeh speedVeh) (.measure "st_curvature" [vRoadway])) .le
+                    pReasonableSpeedLateralAcceleration))
 
-/-- c2: the factors read at a region the subject occupies. -/
-def regionBounds : Formula :=
-  .and (.forallRegion (.lit "lane") "l" (.implies (occupiedLane "l") (widthBoundAt "l")))
-    (.and (.forallRegion (.lit "roadway") "d"
-            (.implies (occupiedRoadway "d") (.and (curveBoundAt "d") (gradeBoundAt "d"))))
-          (.forallRegion (.lit "highway") "w" (.implies (onWay "w") (sightBoundAt "w"))))
-
-/-- Obligation: c1 (obligation): It is unlawful for any person to drive or operate a vehicle of any kind or character at:; c2 (standard): A rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions. -/
+/-- Obligation: s2 (obligation): A rate of speed; s3 (standard): greater than is reasonable or proper, having due regard for -/
 def obligation : Formula :=
-  .and conditionBounds (.and headwayDuty regionBounds)
+  .and conditionBound (.and sightBound curveBound)
 
 def rule : Rule :=
   { id := "NRS_484B_600_1a"
     laws := ["NRS-484B-600-1a"]
     binders :=
-      [ { name := "v", cls := clsV } ]
+      [ { name := "veh", cls := clsVeh } ]
     applicability := applicability
     obligation := obligation
     assumptions := []
     intentions := []
     operationalizations :=
-      [ { standard := "A rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions"
-          concepts := ["env.darkness", "env.ice_or_snow", "env.precipitation", "env.visibility", "env.wet_road", "kin.speed", "rel.ahead_behind_in_lane", "rel.bearing", "rel.occupies", "rel.surface_gap", "st.curvature", "st.grade", "st.highway", "st.lane", "st.lane_width", "st.roadway", "st.sight_along_way"]
-          params := ["p.reasonable_speed_base", "p.lane_width_reference", "p.lateral_accel_max", "p.sight_time", "p.traffic_headway_time", "p.wet_speed_factor", "p.ice_speed_factor", "p.precipitation_speed_factor", "p.darkness_speed_factor", "p.grade_speed_sensitivity"]
-          convention := "A bound on `kin.speed` built factor by factor from engineering conventions, each factor of the standard read by the degree to which it holds, the smallest of the bounds governing. The defined term 'the traffic' (the admitted aggregate DEF-NRS-484A-285::traffic) is read through the road users wholly ahead of the subject in its own lane, every member of that aggregate being capable of being such a road user, so the bound reads the factor without a membership test. Baseline: p.reasonable_speed_base, the design-speed convention for a dry, clear, straight way of full lane width free of other traffic. Width (st.lane_width, the width of the lane the subject occupies): the baseline scaled by the ratio of that width to p.lane_width_reference, a lane-width convention, so the bound falls as the lane narrows. Traffic: a headway convention, which measures the clear length of lane ahead in which the subject must be able to come to rest, so it reads only a road user that is clear ahead of the subject - one other than the subject itself, standing in rel.ahead_behind_in_lane with it (an atom whose contract covers ahead and behind alike, so the direction is read separately), whose rel.bearing in the subject's frame is positive along the subject's heading, and whose longitudinal component of rel.surface_gap to the subject is strictly greater than zero. For such a road user the bound is that gap divided by p.traffic_headway_time, so the bound falls as the gap closes; a road user abeam of the subject, one behind it, and one whose body overlaps the subject's along the lane axis (a gap of zero or less) leave no clear length to measure and bound the speed not at all. Weather and sight: the smaller of env.visibility and st.sight_along_way divided by p.sight_time, an assured-clear-distance convention, so the bound falls as what can be seen shortens; falling precipitation selects the baseline scaled by p.precipitation_speed_factor and env.darkness selects a scaling by p.darkness_speed_factor. Surface: env.wet_road selects a scaling by p.wet_speed_factor and env.ice_or_snow by p.ice_speed_factor, a pavement-friction convention. Other highway conditions: a curve-speed convention bounds the square of the speed by p.lateral_accel_max divided by st.curvature, so the bound falls as the bend tightens, and a grade convention scales the bound by the downgrade at the subject's place times p.grade_speed_sensitivity, so the bound falls as the descent steepens."
+      [ { standard := "greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions"
+          concepts := ["env.darkness", "env.ice_or_snow", "env.precipitation", "env.visibility", "env.wet_road", "kin.speed", "rel.centre_distance", "rel.occupies", "st.curvature", "st.highway", "st.lane", "st.lane_width", "st.roadway", "st.sight_along_way"]
+          params := ["p.reasonable_speed_base", "p.reasonable_speed_reference_lane_width", "p.reasonable_speed_wet_reduction", "p.reasonable_speed_ice_reduction", "p.reasonable_speed_darkness_reduction", "p.reasonable_speed_per_road_user", "p.reasonable_speed_traffic_reach", "p.reasonable_speed_floor", "p.reasonable_speed_reaction_time", "p.reasonable_speed_deceleration", "p.reasonable_speed_lateral_acceleration"]
+          convention := "Three bounds of the engineering literature, each computed from magnitudes the atoms observe, together bound the standard; since the standard is the whole duty the node is a surrogate. Every bound is written so that no occupancy gates the duty: each is stated once with the scene-level or default value, which always applies, and once at every region of its kind the subject's footprint overlaps (rel.occupies), which applies in addition, so that the least favourable region the subject occupies governs and a vehicle on a shoulder, in an alley or on a surface the map carries no lane or roadway for is judged by the factors that remain rather than condemned or left unjudged for occupying none. (1) A speed-flow and road-condition bound, from the basic-speed-rule convention. The raw bound is the base reasonable speed of a dry, clear, wide, straight and uncongested highway (p.reasonable_speed_base), scaled by the ratio of a lane width to the standard lane width of geometric design (p.reasonable_speed_reference_lane_width), the ratio capped at one, and then reduced by p.reasonable_speed_wet_reduction where env.wet_road or env.precipitation holds, by p.reasonable_speed_ice_reduction where env.ice_or_snow holds, by p.reasonable_speed_darkness_reduction where env.darkness holds, and by p.reasonable_speed_per_road_user for each road user other than the subject carrying a class the reading includes in DEF-NRS-484A-285::traffic whose footprint overlaps some st.highway the subject also occupies and whose rel.centre_distance to the subject is at most p.reasonable_speed_traffic_reach — the highway being quantified inside the count, so that a subject overlapping no highway reads a nil traffic term rather than no bound. The bound the duty uses is the greater of that raw bound and p.reasonable_speed_floor: no rate of speed at or below the slowest speed the jurisdiction's own speed law posts is greater than is reasonable or proper, whatever the surface, the weather, the light, the width and the stream, so the summed reductions never fall to or below nothing and never condemn a vehicle standing still or creeping. The observed kin.speed must not exceed that bound computed with the ratio at one (the width factor where the subject overlaps no lane), and must not exceed it computed with the st.lane_width of each st.lane the subject occupies, so the narrowest lane under the subject governs and a wide way laid out in narrow lanes reads as narrow. Each factor moves the bound by the degree to which it holds: the measured lane width and the count of the traffic enter the bound itself, so the bound falls as the way narrows and as the stream thickens, and the surface and light conditions, which the ontology carries as boolean atoms with no magnitude, select among bounds. (2) The stopping-distance model of geometric design: the distance covered at the observed kin.speed during p.reasonable_speed_reaction_time plus the braking distance at p.reasonable_speed_deceleration must not exceed env.visibility, and must not exceed the st.sight_along_way of each st.highway the subject occupies, so the shortest of the air's clarity and the views along the ways under the subject governs, and a subject on no mapped way is still bounded by the air. This bound needs no floor: at a standstill the distance needed to stop is nil and the bound holds of itself. (3) The curve-speed model: for each st.roadway the subject occupies, the lateral acceleration the observed kin.speed develops on the st.curvature at that roadway's point must not exceed p.reasonable_speed_lateral_acceleration, the side-friction convention for horizontal curves, so the bound tightens as the sharpest bend under the subject sharpens; where the subject occupies no roadway no curvature is read and the bend bounds nothing, and at a standstill the lateral acceleration is nil, so this bound too needs no floor. A speed that exceeds any of the three is not reasonable or proper."
           surrogate := true } ]
     residues := []  -- the node's, verbatim; not yours to change
-    narrowings :=
-      [ { span := "c2"
-          why := "'the downgrade at the subject's place' is written as the negative of `st.grade` where that grade is below zero and as zero where the way is level or ascends, the bound being the baseline less that downgrade times p.grade_speed_sensitivity. The convention names only the descent and the atom's value is signed, so an ascent leaves the baseline untouched rather than raising the bound; how much an ascent would permit the words do not say."
-          kind := "reading" }
-      , { span := "c2"
-          why := "each factor read at a region - the lane whose width is read, the roadway whose curvature and grade are read, the way along which sight is read - is stated at every region of that kind the subject occupies, so where its footprint occupies more than one lane or more than one roadway the lowest of those bounds governs. The convention names 'the lane the subject occupies' and 'the roadway' in the singular and does not say which bound governs where the subject straddles two."
-          kind := "reading" } ]
+    narrowings := []  -- no reading of this session's own: every narrowing this rule rests on is the record's, on s1 and s3
     surrogate := true }
 
 end TrafficSpec.Rules.NRS_484B_600_1a

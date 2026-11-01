@@ -170,7 +170,7 @@ class PreviousRecord(unittest.TestCase):
 
     def test_a_law_planned_again_sees_the_records_it_was_coded_from(self):
         with tempfile.TemporaryDirectory() as t, mock.patch.object(paths, "RESULTS", Path(t)):
-            run = SimpleNamespace(iteration=3, opts=SimpleNamespace(run_id="r"))
+            run = SimpleNamespace(iteration=3, opts=SimpleNamespace(run_id="r"), all_nodes=lambda: {})
             for it, nid, verdict in ((1, "L_9_o1", "CHECK_FAIL"), (2, "L_9_o1", "OK")):
                 d = paths.iter_dir("r", it) / "code" / nid
                 d.mkdir(parents=True)

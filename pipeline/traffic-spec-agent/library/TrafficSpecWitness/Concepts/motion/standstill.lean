@@ -1,20 +1,22 @@
 /-
   Witnesses for drv.motion.standstill.
 
-  The geometry. A straight one-lane roadway runs east along y = 0; a stop line sits at x = 0 as the
-  "line" of the narratives (no formal of the concept reads it — it is scenery that places the
-  bodies). The single road user is track 1, a motor vehicle of half-extents 2 m × 1 m × 1 m heading
-  east, and it is the formal `u`. Each trace has three instants, at t = 0, 1000 and 2000 ms.
+  The geometry is the same place in all three scenes: one straight east-bound lane, region 10, the
+  rectangle from (0, -2) to (60, 2) m, with a stop line, region 11, the 40 cm band across it from
+  x = 29.8 to 30.2 m. One body, track 1, a motor vehicle of half-extents (2.4, 0.9, 0.75) m,
+  heading east. Three observations a second apart, at t = 0, 1000 and 2000 ms.
 
-  The instance's own figure: the standstill tolerance is 0.2 m/s (written through
-  `Units.micrometresPerSecond`), a sampling bound well under any creep a tracker would call motion.
+  The instance sets speed_tolerance to 0.2 m/s (200000 µm/s), a sampling bound wide enough to
+  swallow sensor noise at rest and far below any travelling speed.
 
-  `holds`: the vehicle has come to rest with its front at the stop line and stays there — measured
-  speed 0 m/s at all three instants, which is below 0.2 m/s, so the body holds throughout.
-  `fails`: the vehicle creeps east across the same line at a measured 1.5 m/s at every instant
-  (position advancing 1.5 m per second), never at or below the tolerance, so the body is false.
-  `blind`: the same creep past the line, but the manifest declares `kin.speed` unobserved, so the
-  one atom that decides the body reads nothing and the body is unknown.
+  holds:  the car waits just short of the stop line at (27.6, 0) m, its reported speed a steady
+          0.03 m/s of noise and its path length not advancing — 0.03 ≤ 0.2, so the body holds at
+          every instant.
+  fails:  the car rolls through the same place at 2 m/s, passing x = 20, 22, 24 m with a path
+          length that grows by 2 m a step — 2 > 0.2 at every instant, so the body is false.
+  blind:  the car stands at the same spot as in `holds`, but the source reports no speed (and no
+          velocity) for it and the manifest declares `kin.speed` absent, so the one atom the body
+          reads is unobserved and the halt cannot be decided.
 -/
 import TrafficSpec.Concepts.motion.standstill
 import TrafficSpec.Core.Evidence.Builders
@@ -26,11 +28,16 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
-/-- The standstill tolerance the witness chooses: 0.2 m/s. -/
-def tolerance : Q := Units.micrometresPerSecond 200000
+/-- A speed in micrometres per second, the exact way to write a fraction of a metre per second. -/
+def mps (n : Int) : Q := Units.micrometresPerSecond n
 
-/-- The creep speed of `fails` and `blind`: 1.5 m/s. -/
-def creep : Q := Units.micrometresPerSecond 1500000
+/-- The lane the body stands in and the stop line across it. -/
+def places : List Structure :=
+  [ Build.lane 10 [(m 0, m (-2)), (m 60, m (-2)), (m 60, m 2), (m 0, m 2)] Build.east
+  , Build.rect 11 .stopLine (cm 2980) (m (-2)) (cm 3020) (m 2) ]
+
+/-- The half-extents of the car: half-length, half-width, half-height, in metres. -/
+def carExtent : Q × Q × Q := (cm 240, cm 90, cm 75)
 
 -- Formals ↦ tracks: u ↦ 1
 -- Formals ↦ regions: (no region formal)
@@ -42,48 +49,40 @@ def inst : Concept.Instance :=
     concept := "drv.motion.standstill"
     literals := []
     nats := []
-    params := [("standstill_speed_tolerance", .lit tolerance .metrePerSecond)]
+    params := [("speed_tolerance", .lit (mps 200000) .metrePerSecond)]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The roadway, its lane and the stop line at x = 0; the same scenery in every scenario. -/
-def structures : List Structure :=
-  [ Build.rect 10 .roadway (m (-60)) (m (-5)) (m 60) (m 5)
-  , Build.lane 11 [(m (-60), m (-5)), (m 60, m (-5)), (m 60, m 5), (m (-60), m 5)] Build.east
-  , Build.rect 12 .stopLine (m 0) (m (-5)) (cm 20) (m 5) ]
-
-/-- `holds` (compliant): A vehicle rolls up to a line and its speed falls to zero; at the observation judged its measured speed is below the standstill tolerance. -/
+/-- `holds` (compliant): A car at a stop line is stationary for three seconds, its reported speed hovering at a few centimetres per second of sensor noise. -/
 def holdsTrace : Trace :=
   Build.trace 3 0 (Units.seconds 1) fun _k t =>
     Build.scene t (some 1)
-      [ Build.user 1 [.motorVehicle] (m (-2), Q.zero) Build.east Q.zero (m 2, m 1, m 1)
-          (some (m 30)) ]
-      structures
-      [ ]
+      [ Build.user 1 [.motorVehicle] (cm 2760, m 0) Build.east
+          (mps 30000) carExtent (some (m 0)) ]
+      places
+      [ ]  -- devices
 
-/-- `fails` (violated): A vehicle creeps past the same line at one and a half metres per second without its speed ever falling to the tolerance. -/
+/-- `fails` (violated): A car rolls through the same place at two metres per second, never dropping below walking pace. -/
 def failsTrace : Trace :=
   Build.trace 3 0 (Units.seconds 1) fun k t =>
     Build.scene t (some 1)
-      [ Build.user 1 [.motorVehicle]
-          (Q.add (m (-2)) (Q.mul creep (Q.ofInt (Int.ofNat k))), Q.zero)
-          Build.east creep (m 2, m 1, m 1)
-          (some (Q.add (m 30) (Q.mul creep (Q.ofInt (Int.ofNat k))))) ]
-      structures
-      [ ]
+      [ Build.user 1 [.motorVehicle] (m (20 + 2 * Int.ofNat k), m 0) Build.east
+          (Units.metresPerSecond 2) carExtent (some (m (2 * Int.ofNat k))) ]
+      places
+      [ ]  -- devices
 
-/-- `blind` (unknown): The vehicle is tracked past the line but the source declares no speed for road users. -/
+/-- `blind` (unknown): A car is at the stop line but the source declares speed absent for it, so whether it has ceased movement cannot be decided. -/
 def blindTrace : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun k t =>
+  Build.trace 3 0 (Units.seconds 1) fun _k t =>
     Build.scene t (some 1)
-      [ Build.user 1 [.motorVehicle]
-          (Q.add (m (-2)) (Q.mul creep (Q.ofInt (Int.ofNat k))), Q.zero)
-          Build.east creep (m 2, m 1, m 1)
-          (some (Q.add (m 30) (Q.mul creep (Q.ofInt (Int.ofNat k))))) ]
-      structures
-      [ ]
+      [ Build.withKin
+          (Build.user 1 [.motorVehicle] (cm 2760, m 0) Build.east
+            (mps 30000) carExtent (some (m 0)))
+          (fun kin => { kin with speed := none, velocity := none }) ]
+      places
+      [ ]  -- devices
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=

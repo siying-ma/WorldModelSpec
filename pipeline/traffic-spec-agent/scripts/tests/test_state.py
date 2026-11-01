@@ -62,6 +62,116 @@ class LifeCycle(unittest.TestCase):
         self.assertEqual((led.entries["L"].state, led.entries["L"].attempts), ("planned", 0))
 
 
+class DependencyReturns(unittest.TestCase):
+    """A concept's failure returns the laws whose nodes use it without spending their plan attempts:
+    it counts a dependency return, once per failed concept and at most once per iteration, and a law
+    fails on its dependencies only when those returns exceed the plan attempts."""
+    CALLERS = ["L1", "L2", "L3", "L4", "L5", "L6"]
+
+    def ledger(self, laws=None, attempts=2):
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        led = Ledger(Path(tmp.name) / "ledger.jsonl", laws or self.CALLERS, attempts)
+        return led
+
+    def iteration(self, led, n, laws=None):
+        led.attempt = n
+        for law in laws or self.CALLERS:
+            led.mark_planned(law, [law + "_n"], n)
+
+    def test_one_concept_failure_with_six_callers_spends_no_attempt(self):
+        led = self.ledger(); self.iteration(led, 1)
+        for law in self.CALLERS:
+            led.return_for_concepts(law, ["drv.c1"], ["uses drv.c1, failed"], 1)
+        for law in self.CALLERS:
+            e = led.entries[law]
+            self.assertEqual((e.state, e.attempts, e.dependency_returns), ("returned", 0, 1))
+
+    def test_distinct_failed_concepts_count_until_the_budget_is_exceeded(self):
+        led = self.ledger(["L"]); self.iteration(led, 1, ["L"])
+        led.return_for_concepts("L", ["drv.c1"], ["c1 failed"], 1)
+        self.iteration(led, 2, ["L"])
+        led.return_for_concepts("L", ["drv.c2"], ["c2 failed"], 2)
+        e = led.entries["L"]
+        self.assertEqual((e.state, e.attempts, e.dependency_returns), ("returned", 0, 2))
+        self.iteration(led, 3, ["L"])
+        led.return_for_concepts("L", ["drv.c3"], ["c3 failed"], 3)
+        self.assertEqual((e.state, e.attempts, e.dependency_returns), ("failed", 0, 3))
+        self.assertEqual(e.reasons[0], "dependency budget (2) spent: drv.c1, drv.c2, drv.c3")
+
+    def test_own_attempts_and_dependency_returns_are_apart(self):
+        led = self.ledger(["L"]); self.iteration(led, 1, ["L"])
+        led.return_law("L", ["its own node returned"], 1)
+        self.iteration(led, 2, ["L"])
+        led.return_for_concepts("L", ["drv.c1"], ["c1 failed"], 2)
+        self.iteration(led, 3, ["L"])
+        led.return_for_concepts("L", ["drv.c2"], ["c2 failed"], 3)
+        e = led.entries["L"]
+        self.assertEqual((e.state, e.attempts, e.dependency_returns), ("returned", 1, 2))
+
+    def test_the_same_concept_or_the_same_iteration_counts_once(self):
+        led = self.ledger(["L"]); self.iteration(led, 1, ["L"])
+        led.return_for_concepts("L", ["drv.c1"], ["c1 failed"], 1)
+        led.return_for_concepts("L", ["drv.c2"], ["c2 failed in the same iteration"], 1)
+        self.iteration(led, 2, ["L"])
+        led.return_for_concepts("L", ["drv.c1"], ["c1 still failed"], 2)
+        e = led.entries["L"]
+        self.assertEqual((e.state, e.attempts, e.dependency_returns), ("returned", 0, 1))
+        self.assertEqual(e.charged_concepts, ["drv.c1", "drv.c2"])
+
+    def test_the_boundary_two_dependency_returns_re_plan_the_third_closes(self):
+        led = self.ledger(["L"], attempts=2)
+        for n, c in ((1, "drv.c1"), (2, "drv.c2")):
+            self.iteration(led, n, ["L"]); led.return_for_concepts("L", [c], [c + " failed"], n)
+            self.assertEqual(led.entries["L"].state, "returned")                  # re-planned
+        self.assertTrue(led.mark_planned("L", ["L_n"], 3))
+        led.attempt = 3; led.return_for_concepts("L", ["drv.c3"], ["c3 failed"], 3)
+        self.assertEqual((led.entries["L"].state, led.entries["L"].dependency_returns), ("failed", 3))
+
+    def test_only_the_dependencies_that_cause_the_return_are_registered(self):
+        from harness.loop import dependency_causes
+        # A failed, B pending (returned with a repair to come): the return is A's alone
+        states, repairable = {"drv.a": "failed", "drv.b": "returned"}, {"drv.b"}
+        self.assertEqual(dependency_causes(states, repairable), ["drv.a"])
+        self.assertEqual(dependency_causes({"drv.b": "planned"}, set()), [])            # waiting or under repair: no cause
+        self.assertEqual(dependency_causes({"drv.c": "not proposed", "drv.d": "returned"}, set()), ["drv.c", "drv.d"])
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "ledger.jsonl"
+        led = Ledger(path, ["L"], 2); self.iteration(led, 1, ["L"])
+        led.return_for_concepts("L", dependency_causes(states, repairable), ["uses drv.a, failed"], 1)
+        e = led.entries["L"]
+        self.assertEqual((e.dependency_returns, e.charged_concepts, e.attempts), (1, ["drv.a"], 0))
+        led.save()
+        led = Ledger(path, ["L"], 2)                                                     # a restart between the iterations
+        self.assertEqual((led.entries["L"].dependency_returns, led.entries["L"].charged_concepts), (1, ["drv.a"]))
+        self.iteration(led, 2, ["L"])                                                    # B fails at the next iteration
+        states = {"drv.a": "failed", "drv.b": "failed"}
+        led.return_for_concepts("L", dependency_causes(states, set()), ["uses drv.b, failed"], 2)
+        e = led.entries["L"]
+        self.assertEqual((e.state, e.dependency_returns, e.charged_concepts, e.attempts), ("returned", 2, ["drv.a", "drv.b"], 0))
+
+    def test_reopen_resets_both_counters(self):
+        led = self.ledger(["L"]); self.iteration(led, 1, ["L"])
+        led.return_law("L", ["own"], 1)
+        for n, c in ((2, "drv.c1"), (3, "drv.c2"), (4, "drv.c3")):
+            self.iteration(led, n, ["L"]); led.return_for_concepts("L", [c], [c + " failed"], n)
+        e = led.entries["L"]
+        self.assertEqual(e.state, "failed")
+        self.assertEqual(led.reopen(["L"]), ["L"])
+        self.assertEqual((e.state, e.attempts, e.dependency_returns, e.dependency_iteration, e.charged_concepts),
+                         ("open", 0, 0, 0, []))
+
+    def test_a_ledger_written_before_the_counter_loads_with_zero(self):
+        with tempfile.TemporaryDirectory() as t:
+            path = Path(t) / "ledger.jsonl"
+            path.write_text(json.dumps({"law": "L", "state": "returned", "attempts": 1, "reasons": ["r"], "nodes": [],
+                                        "gaps": [], "iteration": 1, "charged_iteration": 1,
+                                        "charged_concepts": ["drv.c1"], "repeats": {}, "selection_corrections": 0,
+                                        "outcome_iteration": 1}) + "\n", encoding="utf-8")
+            e = Ledger(path, ["L"], 2).entries["L"]
+            self.assertEqual((e.attempts, e.dependency_returns, e.dependency_iteration, e.charged_concepts),
+                             (1, 0, 0, ["drv.c1"]))
+
+
 class JudgeCounts(unittest.TestCase):
     def test_counts_are_per_node_and_per_stage(self):
         with tempfile.TemporaryDirectory() as t:

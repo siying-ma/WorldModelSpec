@@ -82,6 +82,13 @@ def param_notes_to_user(to_user: list[str], notes: list[tuple[str, str]]) -> Non
         to_user.insert(at + 1, f"  - {text}")
 
 
+def dependency_causes(states: dict[str, str], repairable: set[str]) -> list[str]:
+    """The unmet concepts (id ↦ ledger state) that return a node's law: failed, never proposed, or
+    returned with no repair to come. A concept still pending (returned and repairable, under repair or
+    waiting) causes no return and is not registered against the law: the law waits for it."""
+    return sorted(cd for cd, s in states.items() if s in ("failed", "not proposed") or (s == "returned" and cd not in repairable))
+
+
 def concept_deps(n: Node) -> set[str]:
     """The pipeline concepts a node claims, wherever the record claims them (`Node.claimed_concepts`)."""
     return n.claimed_concepts()
@@ -727,6 +734,9 @@ def _run_loop(opts: Options) -> dict:
     if stop:
         raise SystemExit(f"[loop] {stop}")
     reopened = ledger.reopen_for_gaps(gap_ledger.decided())
+    released, _ = concept_ledger.release([law for law, _ in reopened], ledger.paused())   # as an operator's reopen
+    for cid in released:
+        print(f"[loop] concept `{cid}` released from its gate-cost hold with the laws reopened by a gap decision")
     status, stop_reason = "", ""
 
     def settle(reason_if_open: str) -> tuple[str, str]:
@@ -1092,6 +1102,33 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         elif not decided:
             concept_ledger.noted(cv.concept.id, cv.reasons)
             notes.append(f"concept `{cv.concept.id}` returned by the validator — " + "; ".join(cv.reasons[:4]))
+    # the calls between concepts: the accepted records', this iteration's, and those the ledger keeps for a
+    # concept set aside with a held concept it calls
+    graph: dict[str, set[str]] = {cid: set(ConceptRecord(r).refs()) for cid, r in run.all_concepts().items()}
+    for cid, e in concept_ledger.entries.items():
+        graph.setdefault(cid, set()).update(e.waiting)
+    for c in to_code_concepts:
+        graph[c.id] = set(c.refs()) | graph.get(c.id, set())
+
+    def laws_reaching(cid: str, recorded: bool = True) -> list[str]:
+        """The laws whose live nodes call `cid`, directly or through other concepts, and with
+        `recorded`, the laws the ledger records as users of it or of a concept calling it."""
+        callers = {c for c in graph if cid in concept_closure({c}, graph)} | {cid}
+        laws = {n.law for n in ok_nodes if callers & concept_closure(concept_deps(n), graph)}
+        if recorded:
+            laws |= {nodeid.law_of(str(u))[0] for c in callers if c in concept_ledger.entries for u in concept_ledger.entries[c].used_by}
+        return sorted(l for l in laws if l in ledger.entries)
+    # a concept its gate holds for the operator is not coded again, nor is any concept that calls it, and
+    # every law whose live nodes reach it is paused, at every iteration, resume or restart
+    held_c = {cid for cid in concept_ledger.entries if concept_ledger.held(cid)}
+    if held_c:
+        stuck = {c.id for c in to_code_concepts if concept_closure({c.id}, graph) & held_c}
+        to_code_concepts = [c for c in to_code_concepts if c.id not in stuck]
+        for cid in sorted(held_c):
+            _pause_users(ledger, concept_ledger, cid, laws_reaching(cid, recorded=False), f"concept `{cid}` is held for you by its gate "
+                         f"({'; '.join(concept_ledger.entries[cid].reasons[:1]) or 'cost or panic'})", to_user, opts.run_id)
+        if stuck:
+            notes.append(f"concepts not coded, held for the operator or calling one that is: {sorted(stuck)}")
     for v in verdicts:                                    # a plan that names a failed concept is a defect of the plan
         if v.kind != "accept":
             continue
@@ -1188,7 +1225,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         wave_files = {c.id: _files_of("concept", c.id) for c in wave}
         with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
             futures = {c.id: ex.submit(code_phase.run_code_concept, run, c, reading, registry,
-                                       [f for o, fs in wave_files.items() if o != c.id for f in fs]) for c in wave}
+                                       [f for o, fs in wave_files.items() if o != c.id for f in fs],
+                                       saved=code_phase.last_task(run, c.id) if c.id in concept_ledger.entries
+                                       and concept_ledger.entries[c.id].cost_failures == 1 else None) for c in wave}
             results = {cid: f.result() for cid, f in futures.items()}
         to_review_c: list[tuple] = []
         for c in wave:
@@ -1215,13 +1254,28 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 persist(); continue
             if dep.status != "none":
                 notes.append(f"concept `{c.id}`: its dependency-defect report was not admitted ({dep.status}): " + "; ".join(dep.reasons)[:300])
-            if v.extras.get("panic"):
-                to_user.append(f"concept `{c.id}`: the gate's evaluation panicked, reproduced in isolation — a possible Core defect: {v.extras['panic'][0]}")
             if v.verdict in (code_phase.SESSION_FAILED, gate.INFRA):
                 # an outage keeps the work: the record is held and coded again, nothing is charged
                 sessions_down = True
                 deferred_concepts_now.append(c.raw); prog["concepts"][c.id] = "PAUSED"
                 to_user.append(f"the coding session or the toolchain for concept `{c.id}` did not run ({'; '.join(v.details[:1])}); rerun the loop later")
+                persist(); continue
+            if v.verdict == gate.GATE_TIMEOUT:
+                # the evaluation's cost or a Core panic judges nothing of the record: no coding attempt is counted
+                kept = gate_evidence(cdir)
+                panic = v.extras.get("panic", [])
+                if concept_ledger.gate_cost(c.id, bool(panic)):
+                    why = (f"core_defect: the gate's evaluation of concept `{c.id}` panicked, reproduced in isolation: {panic[0]}" if panic else
+                           f"gate_cost: the gate's evaluation of concept `{c.id}` ended on its cost "
+                           f"{concept_ledger.entries[c.id].cost_failures} times at the same deadline")
+                    prog["concepts"][c.id] = v.verdict
+                    concept_ledger.entries[c.id].reasons = [why]
+                    _pause_users(ledger, concept_ledger, c.id, laws_reaching(c.id), f"{why}; evidence in {kept}", to_user, opts.run_id)
+                    _set_aside_callers(concept_ledger, prog, remaining, c.id, graph)
+                else:
+                    deferred_concepts_now.append(c.raw); prog["concepts"][c.id] = "DEFERRED"
+                    notes.append(f"concept `{c.id}`: gate {v.verdict} on the evaluation's cost — next iteration its saved candidate "
+                                 f"is gated again (coded again if its context changed) at the same deadline, no attempt counted; evidence in {kept}")
                 persist(); continue
             if v.verdict == "SCOPE_VIOLATION":
                 to_user.append(f"the coding session for concept `{c.id}` changed files outside its concept: {'; '.join(v.details[:2])} — "
@@ -1270,7 +1324,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                         to_user.append(f"concept `{c.id}` failed: its review was left without a valid judgment twice in a row "
                                        "(a diagnostic; the laws that use it are closed by the dependency route)")
                     else:
-                        _pause_users(ledger, concept_ledger, c.id, f"the review of concept `{c.id}` stayed unusable {bound} times", to_user)
+                        _pause_users(ledger, concept_ledger, c.id, laws_reaching(c.id), f"the review of concept `{c.id}` stayed unusable {bound} times",
+                                     to_user, opts.run_id)
+                        _set_aside_callers(concept_ledger, prog, remaining, c.id, graph)
                 else:
                     deferred_concepts_now.append(c.raw)
                     notes.append(f"concept `{c.id}`: review deferred ({stage}) — " + "; ".join(out.reasons[:2]) + "; coded again next iteration")
@@ -1300,7 +1356,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             if c.get("supersedes"):
                 users = [nid for nid, raw in run.all_nodes().items() if c.get("supersedes") in concept_deps(Node(raw))]
                 notes.append(f"migration candidates for `{c.get('supersedes')}` → `{c.id}`: {users or 'none'}")
-        remaining = [c for c in remaining if c.id not in {w.id for w in wave}]
+        remaining = [c for c in remaining if c.id not in {w.id for w in wave} and c.id not in prog["concepts"]]
     if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
         persist(); raise BudgetPaused(budget_paused)
     for c in remaining:                                   # left by an outage: held, coded next iteration
@@ -1366,10 +1422,11 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             if unmet_concepts:
                 states = {cd: (concept_ledger.entries[cd].state if cd in concept_ledger.entries else "not proposed") for cd in unmet_concepts}
                 repairable = {cd for cd in unmet_concepts if cd in concept_ledger.entries and concept_ledger.entries[cd].state == "returned" and concept_ledger.entries[cd].last_task}
-                if any(s in ("failed", "not proposed") for s in states.values()) or any(cd not in repairable and states[cd] == "returned" for cd in unmet_concepts):
+                causes = dependency_causes(states, repairable)
+                if causes:
                     reasons = [f"uses concept `{cd}`, {s}" + (f": {'; '.join(concept_ledger.entries[cd].reasons[:3])}" if cd in concept_ledger.entries and concept_ledger.entries[cd].reasons else "") for cd, s in states.items()]
                     notes.append(f"`{n.id}`: not coded — " + "; ".join(reasons))
-                    ledger.return_for_concepts(n.law, sorted(states), reasons, run.iteration)
+                    ledger.return_for_concepts(n.law, causes, reasons, run.iteration)
                 else:
                     notes.append(f"`{n.id}`: held — uses {unmet_concepts}, pending (under repair or waiting); no attempt counted")
                     deferred_now.append(n.raw); ledger.hold(n.law, run.iteration)
@@ -1430,7 +1487,9 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         wave_files = {n.id: _files_of("node", n.id) for n in wave}
         with ThreadPoolExecutor(max_workers=max(1, opts.workers)) as ex:
             futures = {n.id: ex.submit(code_phase.run_code, run, n, reading, registry,
-                                       [f for o, fs in wave_files.items() if o != n.id for f in fs]) for n in wave}
+                                       [f for o, fs in wave_files.items() if o != n.id for f in fs],
+                                       saved=code_phase.last_task(run, n.id) if ledger.entries[n.law].cost_failures.get(n.id) == 1 else None)
+                       for n in wave}
             results = {nid: f.result() for nid, f in futures.items()}
         to_review: list[tuple] = []
         for n in wave:
@@ -1459,14 +1518,31 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 persist(); continue
             if dep.status != "none":
                 notes.append(f"`{n.id}`: its dependency-defect report was not admitted ({dep.status}): " + "; ".join(dep.reasons)[:300])
-            if v.extras.get("panic"):
-                to_user.append(f"`{n.id}`: the gate's evaluation panicked, reproduced in isolation — a possible Core defect: {v.extras['panic'][0]}")
             if v.verdict in (code_phase.SESSION_FAILED, gate.INFRA):
                 # an outage keeps the work: the node is held and coded again, its law keeps its plan and budget
                 sessions_down = True
                 deferred_now.append(n.raw); failed_ids.add(n.id); prog["nodes"][n.id] = "PAUSED"
                 to_user.append(f"the coding session or the toolchain for `{n.id}` did not run ({'; '.join(v.details[:1])}); the law keeps its attempt budget — rerun the loop later")
                 ledger.defer(n.law, [f"session or toolchain did not run: {'; '.join(v.details[:1])}"]); persist(); continue
+            if v.verdict == gate.GATE_TIMEOUT:
+                # the evaluation's cost or a Core panic judges nothing of the mapping: no attempt is counted
+                failed_ids.add(n.id)
+                kept = gate_evidence(ndir)
+                panic = v.extras.get("panic", [])
+                if ledger.gate_cost(n.law, n.id, bool(panic)):
+                    why = ([f"core_defect: the gate's evaluation of `{n.id}` panicked, reproduced in isolation: {panic[0]}"] if panic else
+                           [f"gate_cost: the gate's evaluation of `{n.id}` ended on its cost {ledger.entries[n.law].cost_failures[n.id]} times "
+                            "at the same deadline"]) + v.details[:2]
+                    prog["nodes"][n.id] = v.verdict
+                    ledger.block(n.law, [f"decision:{n.law}"], why)
+                    to_user.append(f"`{n.law}` held for you, no attempt counted: {why[0]}; evidence in {kept} "
+                                   f"(python -m harness reopen {opts.run_id} --laws {n.law})")
+                else:
+                    deferred_now.append(n.raw); prog["nodes"][n.id] = "DEFERRED"
+                    ledger.defer(n.law, [f"gate_cost: {'; '.join(v.details[:1])}"])
+                    notes.append(f"`{n.id}`: gate {v.verdict} on the evaluation's cost — next iteration its saved candidate is gated "
+                                 f"again (coded again if its context changed) at the same deadline, no attempt counted; evidence in {kept}")
+                persist(); continue
             if v.verdict == "SCOPE_VIOLATION":
                 to_user.append(f"the coding session for `{n.id}` changed files outside its node: {'; '.join(v.details[:2])} — "
                                f"the node was rolled back; {ndir / 'baseline.json'} holds each library file's digest before the session: "
@@ -1514,10 +1590,10 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                     else:                                 # every span names a gap the operator already decided: back to the planner with the decision
                         ledger.return_law(n.law, reasons_g + routed, run.iteration)
                         notes.append(f"`{n.id}`: gate UNEXPRESSED on decided gap(s) — returned to the planner with the decision: " + "; ".join(routed)[:300])
-                elif v.verdict not in ("SCOPE_VIOLATION", gate.GATE_TIMEOUT) and node_ledger.budget_left(n.id):
+                elif v.verdict != "SCOPE_VIOLATION" and node_ledger.budget_left(n.id):
                     node_ledger.returned(n.id, n.law, reasons_g, str(ndir), run.iteration); ledger.hold(n.law, run.iteration)
                     notes.append(f"`{n.id}`: gate {v.verdict} — sent to a node repair session; no attempt counted")
-                else:                                     # a repair cannot make the evaluation cheaper: the plan's mapping decides its shape
+                else:                                     # a scope violation, or the node's codings are spent: the planner decides
                     ledger.return_law(n.law, reasons_g, run.iteration)
                 persist(); continue
             added = list(v.extras.get("narrowings_added", []))
@@ -1774,14 +1850,36 @@ def _file_gap(gap_ledger: GapLedger, proposal: dict, run_id: str, iteration: int
     return gid, None
 
 
-def _pause_users(ledger: Ledger, concept_ledger: ConceptLedger, cid: str, why: str, to_user: list[str]) -> None:
-    """A concept whose review stayed unusable within its operational budget: the laws that use it
-    wait for the operator, uncharged."""
+def gate_evidence(task: Path) -> str:
+    """Where a gate's evidence stays in its task directory, for the operator."""
+    return f"{task} (the candidate under final/, gate_harness.lean, reading.json, build.log, gate_harness.out, toolchain.jsonl)"
+
+
+def _set_aside_callers(concept_ledger: ConceptLedger, prog: dict, remaining: list, cid: str, graph: dict[str, set[str]]) -> None:
+    """The concepts left to code that call `cid`, directly or not, wait for the operator with it: not
+    coded or carried, and each keeps in the ledger the held concept it waits on."""
+    for a in remaining:
+        if a.id != cid and cid in concept_closure({a.id}, graph):
+            prog["concepts"][a.id] = "HELD_FOR_OPERATOR"
+            concept_ledger.wait(a.id, [cid], [f"calls `{cid}`, held for the operator"])
+
+
+def _pause_users(ledger: Ledger, concept_ledger: ConceptLedger, cid: str, laws: list[str], why: str, to_user: list[str],
+                 run_id: str) -> list[str]:
+    """A concept held for the operator (its review stayed unusable within its operational budget, or its
+    gate's cost bound or a panic): `laws`, every law reaching it, each once, wait for the operator,
+    uncharged, and are recorded on the concept as the laws its hold paused; a law already accepted,
+    blocked or failed is neither paused nor recorded. One line names them all with the one command that
+    reopens them together. Returns the laws newly paused."""
+    new = [l for l in laws if ledger.entries[l].state not in ("blocked", "failed", "accepted")]
+    for law in new:
+        ledger.block(law, [f"decision:{law}"], [why])
     e = concept_ledger.entries.get(cid)
-    for law in sorted({nodeid.law_of(str(u))[0] for u in (e.used_by if e else [])}):
-        if law in ledger.entries:
-            ledger.block(law, [f"decision:{law}"], [why])
-            to_user.append(f"`{law}` paused: {why} (python -m harness reopen <run> --laws {law})")
+    if e is not None:
+        e.held_laws = sorted(set(e.held_laws) | set(new))
+    if new:
+        to_user.append(f"{', '.join(f'`{l}`' for l in new)} paused: {why} (python -m harness reopen {run_id} --laws {','.join(new)})")
+    return new
 
 
 def _apply_repairs(run: Run, opts: Options, prog: dict, ledger: Ledger, concept_ledger: ConceptLedger, node_ledger: NodeLedger,

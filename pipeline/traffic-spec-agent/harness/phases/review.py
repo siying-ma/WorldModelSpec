@@ -4,8 +4,8 @@ formalizes decide differently; the harness certifies each one; two judges decide
 A node divergence returns the node only when it is admitted:
 - its trace is consistent (`TraceLint.checkTrace`) and its witness instant valid (`checkWitness`);
 - it states a case — a typed formula over the trace, naming concrete classes and no parameter,
-  assumption, rule, concept or legal aggregate — that holds at one instant `at` (`Case.check`,
-  `Case.eval`);
+  rule, concept or legal aggregate, and only assumptions and declared intentions of the run's
+  catalogue — that holds at one instant `at` (`Case.check`, `Case.eval`);
 - stage A, a judge that sees the law, the definitions that apply to it, the rendered case and the
   contracts it reads, and never the rule, the record, the reviewer's prose or any mapping, decides
   the law's verdict on that case;
@@ -392,6 +392,8 @@ def trace_place(atom: str, keys: dict[str, list[str]] | None = None) -> str:
         return "`users[].classes`"
     if prefix == "st" and rest in spell.get("StructureKind", set()):
         refining = sorted(c for c, p in surface.kind_refinements().items() if p == rest)
+        if rest in surface.abstract_kinds():
+            return f"`structures[].kind` = a kind that refines `{rest}` ({', '.join(f'`{c}`' for c in refining)}); `{rest}` itself is abstract and labels no structure"
         return f"`structures[].kind` = `{rest}`" + (f" or a kind that refines it ({', '.join(f'`{c}`' for c in refining)})" if refining else "")
     if prefix == "dev" and rest in spell.get("DeviceKind", set()):
         return f"`devices[].kind` = `{rest}`"
@@ -408,14 +410,13 @@ def trace_place(atom: str, keys: dict[str, list[str]] | None = None) -> str:
     return "(see the trace format)"
 
 
-def atoms_read(rule_json: dict, concepts: dict[str, dict]) -> list[str]:
-    """Every atom (Lean name) the rule reads: its own leaves, and what the concepts and primitives
-    it calls read, so a trace that leaves none of them out can be judged."""
+def names_called(exported, keys: tuple[str, ...] = ("atom", "measure", "derived", "quantity")) -> set[str]:
+    """The Lean names an exported formula or term names under `keys`, at any depth of nesting."""
     names: set[str] = set()
 
     def walk(x) -> None:
         if isinstance(x, dict):
-            for k in ("atom", "measure", "derived", "quantity"):
+            for k in keys:
                 if isinstance(x.get(k), str):
                     names.add(x[k])
             for v in x.values():
@@ -423,7 +424,20 @@ def atoms_read(rule_json: dict, concepts: dict[str, dict]) -> list[str]:
         elif isinstance(x, list):
             for v in x:
                 walk(v)
-    walk(rule_json)
+    walk(exported)
+    return names
+
+
+def primitives_called(body) -> list[str]:
+    """The primitives (Lean names) an exported body calls, as a Boolean (`derived`) or a value
+    (`quantity`), wherever an operator nests the call."""
+    return sorted(n for n in names_called(body, ("derived", "quantity")) if n.startswith("prim_"))
+
+
+def atoms_read(rule_json: dict, concepts: dict[str, dict]) -> list[str]:
+    """Every atom (Lean name) the rule reads: its own leaves, and what the concepts and primitives
+    it calls read, so a trace that leaves none of them out can be judged."""
+    names = names_called(rule_json)
     prims = surface.primitive_reads()
     reads = {n for n in names if not n.startswith(("drv_", "prim_"))}
     for n in names:
@@ -664,16 +678,22 @@ def strip_computed_relations(trace: dict, fields: list) -> dict:
     return out
 
 
+#: How a case's messages name each kind of declared-fact id (`case_declarations[].kind`).
+_DECLARED_KIND = {"asm": ("assumption", "assumptions"), "int": ("declared intention", "intentions")}
+
+
 def undeclared_case_errors(recs: dict[int, dict], catalogue: dict[str, dict]) -> None:
-    """A certified case that names a declared intention the run's catalogue does not hold is not
-    admitted: its judges could not be told what the id means. The defect joins the case's own
-    errors, which return it to the reviewer."""
+    """A certified case that names an assumption (`asm.*`) or a declared intention (`int.*`) the
+    run's catalogue does not hold under that kind is not admitted: its judges could not be told what
+    the id means. The defect joins the case's own errors, which return it to the reviewer."""
     for c in recs.values():
-        unknown = [i for i in c.get("case_declarations") or [] if i not in catalogue]
-        if unknown:
+        for d in c.get("case_declarations") or []:
+            if d["id"] in catalogue and d["id"].startswith(d["kind"] + "."):
+                continue
+            one, many = _DECLARED_KIND[d["kind"]]
             c["case_check_errors"] = (c.get("case_check_errors") or []) + [
-                f"the case names the declared intention `{i}`, which is in no catalogue of the run: a case states only intentions "
-                "the run's declarations give a meaning" for i in unknown]
+                f"the case names the {one} `{d['id']}`, which is in no catalogue of the run: a case states only {many} "
+                "the run's declarations give a meaning"]
 
 
 def certify(run: Run, n: Node, divs: dict[int, dict], reading: Reading, out_dir: Path, saved: bool = False) -> dict[int, dict]:
@@ -1009,8 +1029,16 @@ def render_case(canonical, entities: dict, at: int, grounding: dict[str, int], g
 
 
 def _case_glosses(onto: ontology.Ontology, case_atoms: list[str], run: Run | None = None,
-                  declared: list[str] | None = None) -> dict[str, str]:
-    return validate_phase.glosses_of(list(case_atoms) + list(declared or []), onto, run)
+                  declared: list[dict] | None = None) -> dict[str, str]:
+    """The contracts of the names a case reads. An assumption the case states is shown as what it is,
+    a declaration of the source with its catalogue meaning, never as a verified fact; an assumption
+    the case does not state is not shown."""
+    ids = [d.get("id") for d in declared or []]
+    out = validate_phase.glosses_of(list(case_atoms) + ids, onto, run)
+    for d in declared or []:
+        if d.get("kind") == "asm":
+            out[d["id"]] = f"{render_formula.DECLARED_BY_SOURCE}{out[d['id']]}"
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1570,15 +1598,17 @@ def ruling_identity(row: dict) -> tuple | None:
     return None
 
 
-def append_ruling(run: Run, row: dict) -> dict:
-    """Append a row with a fresh `ruling_id`; an earlier ruling of the same identity is superseded by it."""
+def append_ruling(run: Run, row: dict, supersedes: str | None = None) -> dict:
+    """Append a row with a fresh `ruling_id`; an earlier ruling of the same identity is superseded by it.
+    A row of a new identity may name the ruling it supersedes (`supersedes`: a concept case whose
+    recorded content changed, under a new id, supersedes the ruling of the case it came from)."""
     with _RULINGS_LOCK:
         row = dict(row)
         row["ruling_id"] = _digest({"row": row, "n": len(_all_rows(run))})[:20]
         ident = ruling_identity(row)
         if ident is not None:
             prev = next((r for r in effective_rows(_all_rows(run)) if ruling_identity(r) == ident), None)
-            row["supersedes"] = prev.get("ruling_id") if prev else None
+            row["supersedes"] = prev.get("ruling_id") if prev else supersedes
         jsonl.append_atomic(_rulings_file(run), row)
         return row
 
@@ -2020,7 +2050,10 @@ def concept_extension_defects(old: dict, d: dict, rec) -> list[str]:
     does not extend the recorded trace; a recorded formal (a track, a region, a literal, a nat, a parameter)
     keeps no value under a formal of the same sort — the same name, or one formal the successor
     renamed it to, holding the same value; or its instant, its contract words or its claimed
-    verdict or interval changed. Only a formal the recorded challenge did not have is new."""
+    verdict or interval changed. Only a formal the recorded challenge did not have is new; its
+    contract words may change only where the recorded ones are no longer verbatim in the current
+    contract (the divergence's own words are, by its schema); its claim only where the challenge's
+    effective claim is `undecided` under the current contract."""
     out = trace_extension_defects(old.get("trace") or {}, d.get("trace") or {})
     sorts = {a["name"]: a.get("sort") for a in rec.args()} | {p["name"]: "param" for p in rec.params()}
     oi, ni = old.get("instance") or {}, d.get("instance") or {}
@@ -2048,9 +2081,10 @@ def concept_extension_defects(old: dict, d: dict, rec) -> list[str]:
             taken.add(same[0])
     if d.get("at") != old.get("at"):
         out.append(f"it is read at t={d.get('at')}, the recorded challenge at t={old.get('at')}")
-    if _ws(d.get("contract_words")) != _ws(old.get("contract_words")):
-        out.append("its contract words are not the recorded ones")
-    if d.get("contract_verdict") != old.get("contract_verdict") or d.get("contract_value") != old.get("contract_value"):
+    if _ws(d.get("contract_words")) != _ws(old.get("contract_words")) and _in(str(old.get("contract_words") or ""), _ws(rec.get("contract"))):
+        out.append("its contract words are not the recorded ones, which the contract still states verbatim")
+    if (d.get("contract_verdict") != old.get("contract_verdict") or d.get("contract_value") != old.get("contract_value")) \
+            and not undecided_under(old, contract_digest(rec)):
         out.append("its claimed verdict or interval is not the recorded one")
     return out
 
@@ -2863,7 +2897,9 @@ def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple 
     shape: `instance` (absent means `{}`) and its `literals`, `nats` and `params` are objects,
     `grounding` an object, `trace` an object with a list of scenes; a value of the wrong shape is a
     defect, never read as empty. A fresh trace holding keys the decoder does not read is refused;
-    a `saved` one (a recorded challenge, replayed) keeps them as unverified annotations."""
+    a `saved` one (a recorded challenge, replayed) keeps them as unverified annotations. A saved
+    challenge's contract words are those of the contract it was recorded under: the replay compares
+    that contract with the current one by digest, so they need not be verbatim in the current one."""
     from ..model import units
     if not isinstance(d, dict):
         return [f"divergence {k} is not an object"]
@@ -2882,7 +2918,7 @@ def concept_divergence_defects(k: int, d, rec, contract: str, result_dim: tuple 
             errs.append(f"divergence {k}: kind must be one of {sorted(CONCEPT_KINDS)}")
         if not _member(d.get("contract_verdict"), CONTRACT_VERDICTS):
             errs.append(f"divergence {k}: contract_verdict must be one of {sorted(CONTRACT_VERDICTS)}")
-    if not _is_str(d.get("contract_words")) or not _in(d["contract_words"], contract):
+    if not _is_str(d.get("contract_words")) or not (saved or _in(d["contract_words"], contract)):
         errs.append(f"divergence {k}: contract_words is not verbatim from the contract")
     inst = d.get("instance", {})
     if not isinstance(inst, dict):
@@ -3024,7 +3060,8 @@ def _core_value(raw: str | None, dim: tuple | None) -> str:
 
 def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tuple | None = None,
                                 reading: Reading | None = None, saved: bool = False,
-                                registry: tuple[str, str] | None = None) -> tuple[list[dict], list[str], list[str], list[str]]:
+                                registry: tuple[str, str] | None = None,
+                                runs: dict | None = None) -> tuple[list[dict], list[str], list[str], list[str]]:
     """Run the concept on every divergence trace, as a rule's case is run. Returns (confirmed,
     unconfirmed, errors, incomplete): a trace on which the body's verdict differs from the
     contract's — or is unknown where the contract decides, for a divergence claiming the body
@@ -3034,7 +3071,13 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
     recorded challenge's trace, replayed), the supplied relations Core computes are stripped and the
     concept is run again on the stripped trace; the item keeps what was stripped
     (`relations_stripped`). A divergence that fails the schema is not run and is accounted for all
-    the same, among the incomplete, with its defects: no submitted divergence disappears."""
+    the same, among the incomplete, with its defects: no submitted divergence disappears. With
+    `runs`, each divergence run is also recorded there by its number as the body gave it (`tag`:
+    compliant, violated or unknown, its unknown reasons `why`, a quantity's `value` as printed in
+    Core units), with its executed facts (`facts`) and, where it could not be judged, the reason
+    code of `R0_REASONS` (`reason`: `admission` for a trace that does not decode, names no
+    observation or fails the trace check, `formals` for an instance that leaves a formal unfilled,
+    `history` for a verdict unknown only because the trace is incomplete)."""
     contract = " ".join(str(rec.get("contract", "")).split())
     listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
     defects = {k: concept_divergence_defects(k, d, rec, contract, result_dim, saved) for k, d in enumerate(listed, 1)}
@@ -3108,15 +3151,19 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         else:
             body = {"compliant": "holds", "violated": "fails"}.get(tag, tag)
             head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {_ws(d.get('situation'))[:160]} — contract: {d.get('contract_verdict')}, body: {body}")
+        reason = None
         if tag in ("decode", "missing", "unfilled", "at_missing"):
+            reason = "formals" if tag == "unfilled" else "admission"
             errors.append(f"divergence {k}: " + {"decode": f"the trace does not decode: {why[:200]}", "missing": "the harness printed no verdict",
                                                   "unfilled": "the instance leaves a formal unfilled",
                                                   "at_missing": "`at` names no observation of the trace"}[tag])
         elif lint.get(k):
+            reason = "admission"
             incomplete.append(f"divergence {k}: trace check: " + "; ".join(lint[k][:8]))
         elif tag == claimed:
             unconfirmed.append(head + CONCEPT_AGREES)
         elif tag == "unknown" and why and all(_trace_defect(r, "rule_undecided" if d.get("kind") == "undecided" else None) for r in why.split(",")):
+            reason = "history"
             incomplete.append(f"divergence {k}: {_ws(d.get('situation'))[:120]} — the body's verdict on the trace is unknown only because the "
                               "trace is incomplete: " + "; ".join(sorted({_trace_remedy(r) for r in why.split(",")})))
         else:
@@ -3125,6 +3172,8 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
                               "key": f"{d.get('kind')}", "verdict": tag, "value": observed if quantity else None,
                               "facts": executed_facts(d, read_paths, occd.get(k)),
                               **({"relations_stripped": stripped[k]} if k in stripped else {})})
+        if runs is not None:
+            runs[k] = {"tag": tag, "why": why, "value": value.get(k), "facts": executed_facts(d, read_paths, occd.get(k)), "reason": reason}
     return confirmed, unconfirmed, errors, incomplete + unrunnable
 
 
@@ -3205,19 +3254,23 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
             root = i.get("finding_root") or concept_lineage(run, rec)[-1]
             replay = {"schema": CONCEPT_STRUCTURAL_SCHEMA, "finding_root": root,
                       "finding_id": i.get("replay_of") or concept_finding_id(root, rec, d.get("words"), blocks.get("rendered", "")),
-                      "words": d.get("words"), "why": d.get("why"), "contract_digest": _digest(_ws(rec.get("contract"))),
+                      "words": d.get("words"), "why": d.get("why"), "contract_digest": contract_digest(rec),
                       "body_digest": body_digest, "obligation": "open" if ruling == "upheld" else None,
                       **({"legacy_of": i["legacy_of"]} if i.get("legacy_of") else {})}
         else:
             replay = {
                 "schema": CONCEPT_CASE_SCHEMA, "case_id": concept_case_id(rec.id, d),
                 **{x: d.get(x) for x in CONCEPT_CASE_FIELDS}, "verdict": i.get("verdict"), "value": i.get("value"),
-                "contract_digest": _digest(_ws(rec.get("contract"))), "body_digest": body_digest,
+                "contract_digest": contract_digest(rec), "body_digest": body_digest,
                 "obligation": "open" if ruling == "upheld" else None}
             if i.get("replay_of"):
                 replay["case_id"] = i["replay_of"]
+            elif i.get("lineage_of"):                     # renewed content (an extension, or a recheck's answer): its own id
+                replay["lineage"] = i["lineage_of"].get("case_id")
+            if i.get("recheck"):
+                replay["recheck"] = i["recheck"]
         append_ruling(run, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
-                            "ruling": ruling, "reason": _ws(why)[:600], **replay})
+                            "ruling": ruling, "reason": _ws(why)[:600], **replay}, supersedes=(i.get("lineage_of") or {}).get("ruling_id"))
     return out
 
 
@@ -3328,22 +3381,300 @@ def concept_finding_id(root: str, rec, words: str, rendering: str = "") -> str:
 @dataclass
 class ConceptReplay:
     """What a concept's replay found: `items` for the adjudicator (executed challenges the body still
-    confirms, and open structural findings), `notes`, and `carry` (upheld challenges that cannot be
-    run on this body, each `{case_id, row, why}`): obligations the reviewer must carry over."""
+    confirms against the contract they were decided under, challenges renewed under the current
+    contract that the body departs from, and open structural findings), `notes`, and `carry` (upheld
+    challenges that cannot be run on this body, or whose effective claim is `undecided`, each
+    `{case_id, row, reason, why}`): obligations the reviewer must carry over."""
     items: list = field(default_factory=list)
     notes: list = field(default_factory=list)
     carry: list = field(default_factory=list)
 
+    def undecided(self) -> dict[str, int]:
+        """The carried challenges the current contract leaves `undecided`, counted apart by why: the
+        facts it turns on are missing, the contract does not decide, or the answer did not say."""
+        out = {by: 0 for by in (*UNDECIDED_BY, "unstated")}
+        for c in self.carry:
+            if c.get("reason") == "undecided":
+                out[c.get("undecided_by", "unstated")] = out.get(c.get("undecided_by", "unstated"), 0) + 1
+        return out
 
-def satisfied_on(run: Run, rec, old: dict, evidence: dict, body_digest: str) -> dict:
-    """The row recording that this concept's body meets an upheld challenge: on this concept's
-    identity (its key and subject), with the evidence it was met on (the grounding, instance and
-    trace that continue the challenge), the case's identity and lineage, and the version it came
-    from. Its rows of an earlier version are superseded by it; a later version finds it through the
-    lineage."""
+
+#: Why a saved challenge cannot be run on the current record: its formals do not correspond (their
+#: names, sorts, literal spellings, nats or parameters, or a claim of the other kind of concept); its
+#: trace no longer admits (its shape, `at`, decoding, the trace check); its recorded history is
+#: incomplete (the body is unknown only because the trace does not cover what it reads); a unit is
+#: incompatible (a parameter's or the interval's dimension); a grounding is missing (a track or region
+#: formal without an id). Such a challenge is carried to the reviewer, never discharged.
+R0_REASONS = ("formals", "admission", "history", "units", "grounding")
+#: A recheck's answer for a formula concept; a quantity's is an interval, or `undecided`.
+RECHECK_VERDICTS = {"holds", "fails", "undecided"}
+#: Why a recheck's answer is `undecided`, when it says: the facts leave a fact the answer turns on
+#: unobserved, or the contract's words do not decide on the facts given.
+UNDECIDED_BY = {"facts": "the facts it turns on are missing", "contract": "the contract's words do not decide it"}
+PLACEHOLDERS_RECHECK_CONCEPT = ("contract", "contracts", "parameters", "facts", "question")
+_SITUATION_NOTE = re.compile(r"\s*The reviewer's situation above is the reviewer's prose, unverified; these facts are what was executed\.")
+
+
+def r0_reason(defect: str) -> str:
+    """The reason (`R0_REASONS`) a schema defect of a saved challenge (`concept_divergence_defects`)
+    names, read from the field the defect is about; the execution reports its own reason codes."""
+    if re.search(r"grounding must map|regions must map", defect):
+        return "grounding"
+    if re.search(r"parameter `[^`]*` must be \[value, unit\]|contract_value: (?:the value is in|`lo` and `hi` are)", defect):
+        return "units"
+    if re.search(r"trace must be|every scene is|`at` must be", defect):
+        return "admission"
+    return "formals"
+
+
+def contract_digest(rec) -> str:
+    """The digest of a concept's contract, as a ruling records the contract it was decided under."""
+    return _digest(_ws(rec.get("contract")))
+
+
+def contract_block(rec, posted: dict[str, str] | None = None) -> str:
+    """The contract as a concept's judges read it: its words, and the definition it quotes, by its id
+    and, where `posted` holds it, with its posted text."""
+    did = rec.get("definition")
+    text = (posted or {}).get(str(did)) if did else None
+    definition = (f"\n\nThe definition it quotes: `{did}`" + (f" — {_ws(text)}" if text else "")) if did else ""
+    return f"### Contract\n\n`{rec.id}`: {_ws(rec.get('contract'))}{definition}\n"
+
+
+def recheck_blocks(run: Run, rec, instance: dict, facts: str, result_dim: tuple | None) -> dict[str, str]:
+    """What a recheck is shown, and nothing else: the current contract with the definition it quotes
+    (its posted text, from the run's corpus);
+    the contracts of the atoms and concepts its words map to (the record's elements) or name; each
+    parameter the concept names, with its meaning and this instance's value; the executed facts; and
+    the question the concept's kind asks. Never the body, its verdict or value, its rendering, the
+    record's narrowings, a recorded claim or contract words, the reviewer's situation, or a ruling."""
+    onto = ontology.load(run.opts.ontology)
+    concepts = run.all_concepts()
+    contract = _ws(rec.get("contract"))
+    names = {a.split("=")[0] for a in rec.claimed_atoms()} | set(rec.refs())
+    names |= {n for n in onto.atom_ids | set(concepts) if re.search(rf"(?<![\w.]){re.escape(n)}(?!\w)", contract)}
+    glosses = {n: _ws((concepts.get(n) or {}).get("contract")) if n in concepts else onto.contract(n) for n in sorted(names)}
+    given = (instance or {}).get("params") or {}
+    params = [f"- `{p['name']}` ({p.get('unit')}): {_ws(p.get('meaning')) or 'no meaning stated'}; its value here: "
+              + (f"{given[p['name']][0]} {given[p['name']][1]}" if isinstance(given.get(p["name"]), list) and len(given[p["name"]]) == 2 else "none given")
+              for p in rec.params()]
+    if rec.get("kind") == "quantity":
+        dim = surface.render_dim(result_dim) if result_dim is not None else "the unit its contract's words state"
+        question = (f"The concept is a quantity: a value in {dim}. Answer the interval the contract's words put its value in at the "
+                    "observation judged, on these facts, or `undecided`.")
+    else:
+        question = ("The concept is a formula. Answer whether the contract's words, read on these facts at the observation judged, "
+                    "hold, fail, or leave it undecided.")
+    posted = {str(x.get("id")): str(x.get("text", "")) for x in corpus.load_definitions(Path(run.opts.laws))} if rec.get("definition") else {}
+    return {"contract": contract_block(rec, posted),
+            "contracts": "### The contracts of the names the contract's words use\n\n" + validate_phase.contracts_table(glosses),
+            "parameters": "### Parameters\n\n" + ("\n".join(params) if params else "(none)") + "\n",
+            "facts": _SITUATION_NOTE.sub("", facts),
+            "question": "### The question\n\n" + question + "\n"}
+
+
+def recheck_defects(a, rec, result_dim: tuple | None) -> list[str]:
+    """Defects of a recheck's answer: a formula's `verdict` one of holds, fails, undecided; a
+    quantity's `interval` (`lo` and `hi` as [value, unit], of the value's dimension, `lo` at most
+    `hi`) or the verdict `undecided`, one of them; a `reason`; a `quote` verbatim from the contract."""
+    if not isinstance(a, dict):
+        return ["the answer must be a JSON object"]
+    errs = []
+    if rec.get("kind") == "quantity":
+        if ("interval" in a) == (a.get("verdict") == "undecided"):
+            errs.append('a quantity\'s answer states either `interval` or `"verdict": "undecided"`, and only one of them')
+        elif "interval" in a:
+            errs += [e.replace("divergence 0: contract_value", "`interval`") for e in _interval_defects(0, a["interval"], result_dim)]
+    elif "interval" in a or not _member(a.get("verdict"), RECHECK_VERDICTS):
+        errs.append(f"a formula's answer states `verdict`, one of {sorted(RECHECK_VERDICTS)}, and no `interval`")
+    if "undecided_by" in a and (a.get("verdict") != "undecided" or not _member(a["undecided_by"], set(UNDECIDED_BY))):
+        errs.append(f"`undecided_by` is given only with the verdict `undecided`, and is one of {sorted(UNDECIDED_BY)}")
+    if not _is_str(a.get("reason")) or not _ws(a.get("reason")):
+        errs.append("the answer needs a `reason`")
+    if not _is_str(a.get("quote")) or not _in(a["quote"], _ws(rec.get("contract"))):
+        errs.append("`quote` must be verbatim from the contract")
+    return errs
+
+
+def recheck_cache_file(run: Run) -> Path:
+    """The run's recheck answers, one row per valid answer (`key`, the concept, the iteration, the
+    answer): kept across iterations and restarts of the run, and never a ruling."""
+    return run.dir / "recheck_answers.jsonl"
+
+
+def recheck_concept(run: Run, rec, instance: dict, facts: str, out_dir: Path, result_dim: tuple | None,
+                    label: str = "recheck") -> dict:
+    """What the current contract decides on a saved challenge's executed facts, asked of
+    `recheck_concept.md` with `recheck_blocks` alone: `verdict` or, for a quantity, `interval`, with
+    `reason` and `quote` (and, for `undecided`, optionally `undecided_by`). An answer that stays
+    invalid after the re-ask decides nothing: the replay defers, as an invalid concept adjudication
+    does. A valid answer is kept in the run's recheck answers under the digest of the full prompt,
+    the model and the effort (`validate.answer_digest`): the same recheck asked again in any later
+    iteration or after a restart takes the latest kept answer that the current answer check admits,
+    without a session; any change to what the prompt shows, to the prompt file, the model or the
+    effort is another key."""
+    prompt = render.render("recheck_concept.md", recheck_blocks(run, rec, instance, facts, result_dim))
+    key = validate_phase.answer_digest(run, prompt)
+    if not run.opts.dry_run:
+        kept = [r for r in jsonl.read_strict(recheck_cache_file(run)) if r.get("key") == key and isinstance(r.get("answer"), dict)]
+        for row in reversed(kept):
+            if not recheck_defects(row["answer"], rec, result_dim):
+                out_dir.mkdir(parents=True, exist_ok=True)
+                (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
+                jsonl.write_atomic(out_dir / f"{label}_kept.json",
+                                   json.dumps({"key": key, "iteration": row.get("iteration"), "answer": row["answer"]}, ensure_ascii=False, indent=1))
+                return row["answer"]
+    answer, errs = validate_phase._session(run, out_dir, label, prompt, check=lambda a: recheck_defects(a, rec, result_dim),
+                                           usage_label=f"{label}:{rec.id}")
+    if answer is None and not errs:
+        raise Deferred("concept_adjudication", "dry run: the concept's challenge was not rechecked")
+    if errs:
+        raise Deferred("concept_adjudication", f"the concept recheck stayed invalid: {'; '.join(errs)[:300]}")
+    jsonl.append_atomic(recheck_cache_file(run), {"key": key, "concept": rec.id, "iteration": run.iteration, "answer": answer})
+    return answer
+
+
+def _core_interval(iv: dict) -> tuple:
+    """An interval's ends in Core units, exactly: ((unit, value), (unit, value))."""
+    from ..model import units
+    return tuple(units.to_core(*iv[e]) for e in ("lo", "hi"))
+
+
+def recheck_claim(rec, answer: dict) -> dict | None:
+    """The claim a recheck's answer states, in a recorded case's fields; None when it is `undecided`."""
+    if answer.get("verdict") == "undecided":
+        return None
+    return {"contract_value": answer["interval"]} if rec.get("kind") == "quantity" else {"contract_verdict": answer["verdict"]}
+
+
+def same_claim(rec, claim: dict, row: dict) -> bool:
+    """Whether a claim is the one a case records: the same verdict; for a quantity, the same interval
+    once both are converted to Core units."""
+    if rec.get("kind") != "quantity":
+        return claim.get("contract_verdict") == row.get("contract_verdict")
+    try:
+        return _core_interval(claim["contract_value"]) == _core_interval(row.get("contract_value"))
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def body_within(rec, claim: dict, obs: dict) -> bool:
+    """Whether the body, as executed (`obs`), gives a claim: a formula's verdict equal to it; a
+    quantity's value contained in the interval, both ends included, compared exactly once the value
+    and the interval are in one unit (Core's)."""
+    if rec.get("kind") != "quantity":
+        return {"compliant": "holds", "violated": "fails"}.get(obs.get("tag")) == claim.get("contract_verdict")
+    from fractions import Fraction
+    raw = obs.get("value")
+    if not isinstance(raw, str) or not re.fullmatch(r"-?\d+/\d+", raw):
+        return False
+    num, den = raw.split("/", 1)
+    (_, lo), (_, hi) = _core_interval(claim["contract_value"])
+    return lo <= Fraction(int(num), int(den)) <= hi
+
+
+def _claim_text(claim: dict | None) -> str:
+    if claim is None:
+        return "undecided"
+    if "contract_value" in claim:
+        lo, hi = claim["contract_value"]["lo"], claim["contract_value"]["hi"]
+        return f"from {lo[0]} {lo[1]} to {hi[0]} {hi[1]}"
+    return str(claim.get("contract_verdict"))
+
+
+#: Why a challenge whose recheck left the current contract undecided is carried, not compared.
+UNDECIDED = "the current contract does not decide the recorded claim"
+
+
+def _undecided_why(by: str) -> str:
+    return f" ({UNDECIDED_BY[by]})" if by in UNDECIDED_BY else ""
+
+
+def undecided_under(r: dict, current: str) -> bool:
+    """Whether a case's effective claim is `undecided`: its last recheck, made under the current
+    contract (`current`, its digest), found the contract deciding nothing on its facts."""
+    rc = r.get("recheck") if isinstance(r.get("recheck"), dict) else {}
+    return (rc.get("answer") or {}).get("verdict") == "undecided" and rc.get("contract_digest") == current == r.get("contract_digest")
+
+
+def renewed_content(rec, old: dict, d: dict, claim: dict, quote: str) -> dict:
+    """The content of a case renewed under the current contract: the recorded trace, instance,
+    grounding, regions and instant, with the recheck's answer as its claim, its quote as the contract
+    words, the kind that claim makes, and a situation that names the case it was renewed from."""
+    quantity = rec.get("kind") == "quantity"
+    fields = {x: d.get(x) for x in CONCEPT_CASE_FIELDS if d.get(x) is not None and x not in ("contract_verdict", "contract_value")}
+    return {**fields, **claim, "contract_words": quote,
+            "kind": "value_wrongly" if quantity else {"holds": "fails_wrongly", "fails": "holds_wrongly"}[claim["contract_verdict"]],
+            "situation": f"renewed from {old.get('case_id')} under the current contract"}
+
+
+def recheck_case(run: Run, rec, r: dict, d: dict, obs: dict, out: ConceptReplay, out_dir: Path, result_dim: tuple | None,
+                 body_digest: str) -> None:
+    """A saved challenge that runs on this body, recorded under another contract than the current one
+    (or under no recorded contract): the current contract is rechecked on its executed facts, and
+    the answer is compared with the body.
+    - `undecided`: one row, the same id, `open`, the current digest and the `recheck`; that answer is
+      the case's effective claim from then on, so it is carried to the reviewer (`UNDECIDED`) and
+      never compared, on this replay and every later one under the same contract.
+    - The body within the answer: one row, `satisfied`, the current digest and the `recheck`; under
+      the same id when the answer is the recorded claim, else as a renewed case (`renewed_content`)
+      under its own id, with `lineage` the old case and superseding its ruling.
+    - The body outside the answer: the renewed case goes to the concept adjudicator as a confirmed
+      divergence (`lineage_of`, with the `recheck`), whose ruling is its row: upheld returns the
+      concept, dismissed records it dismissed."""
+    cid = str(r.get("case_id") or "")
+    quantity = rec.get("kind") == "quantity"
+    answer = recheck_concept(run, rec, d.get("instance") or {}, obs.get("facts") or executed_facts(d), out_dir / f"recheck_{cid[:12]}", result_dim)
+    claim = recheck_claim(rec, answer)
+    body = _core_value(obs.get("value"), result_dim) if quantity else {"compliant": "holds", "violated": "fails"}.get(obs.get("tag"), obs.get("tag"))
+    current = contract_digest(rec)
+    said = _claim_text(claim)
+    recheck = {"answer": {k: answer[k] for k in ("verdict", "interval", "undecided_by") if k in answer}, "quote": answer["quote"],
+               "contract_digest": current}
+    reason = _ws(f"rechecked under the current contract: {said} — {_ws(answer.get('reason'))} — \"{_ws(answer.get('quote'))[:160]}\"; "
+                 f"the body: {body}")[:600]
+    if claim is not None and not body_within(rec, claim, obs):
+        content = renewed_content(rec, r, d, claim, answer["quote"])
+        head = (f"divergence (renewed from {cid[:12]}) at t={d.get('at')} ms — contract: {said}; "
+                + (f"the body's value there: {body}" if quantity else f"body: {body}"))
+        out.items.append({"line": head + f'; contract: "{_ws(answer["quote"])[:120]}"', "div": content, "rule": body,
+                          "key": content["kind"], "verdict": obs.get("tag"), "value": body if quantity else None,
+                          "facts": obs.get("facts") or executed_facts(d), "lineage_of": r, "recheck": recheck})
+        return
+    fields = {x: d.get(x) for x in CONCEPT_CASE_FIELDS if d.get(x) is not None}
+    renewed = claim is not None and not same_claim(rec, claim, r)
+    if renewed:
+        fields = renewed_content(rec, r, d, claim, answer["quote"])
+    row = satisfied_on(run, rec, r, fields, body_digest, "open" if claim is None else "satisfied")
+    if renewed:
+        row = {k: v for k, v in row.items() if k not in ("contract_verdict", "contract_value") or k in fields}
+    row.update({"contract_digest": current, "verdict": obs.get("tag"), "value": body if quantity else None, "recheck": recheck, "reason": reason})
+    if renewed:
+        row.update({"case_id": concept_case_id(rec.id, row), "lineage": cid,
+                    "item": _ws(f"recheck of {cid[:12]} (t={d.get('at')} ms): the current contract decides {said}, the case recorded "
+                                f"{_claim_text({k: r.get(k) for k in ('contract_verdict', 'contract_value') if r.get(k) is not None})}; "
+                                f"the body: {body}")[:400]})
+        written = append_ruling(run, row, supersedes=r.get("ruling_id"))
+    else:
+        written = append_ruling(run, row)
+    if claim is None:
+        by = answer.get("undecided_by", "unstated")
+        out.carry.append({"case_id": written["case_id"], "row": written, "reason": "undecided", "undecided_by": by,
+                          "why": f"{UNDECIDED}{_undecided_why(by)}: {_ws(answer.get('reason'))[:300]}"})
+    else:
+        out.notes.append("an upheld challenge is met by this body under the current contract; it stays an obligation: "
+                         f"challenge {written['case_id'][:12]} (t={d.get('at')} ms), rechecked: the current contract: {said}; the body: {body}")
+
+
+def satisfied_on(run: Run, rec, old: dict, evidence: dict, body_digest: str, obligation: str = "satisfied") -> dict:
+    """The row recording that this concept's body meets an upheld challenge (or, with `obligation`
+    `open`, that it does not): on this concept's identity (its key and subject), with the evidence it
+    was met on (the grounding, instance and trace that continue the challenge), the case's identity
+    and lineage, and the version it came from. Its rows of an earlier version are superseded by it; a
+    later version finds it through the lineage."""
     row = {k: v for k, v in old.items() if k not in ("ruling_id", "supersedes", "inherited_from")}
     row.update(evidence)
-    row.update({"key": f"concept:{rec.id}", "subject": rec.id, "iteration": run.iteration, "obligation": "satisfied",
+    row.update({"key": f"concept:{rec.id}", "subject": rec.id, "iteration": run.iteration, "obligation": obligation,
                 "ruling": "upheld", "body_digest": body_digest, "lineage": old.get("lineage") or old.get("case_id"),
                 "predecessor": old.get("subject") if old.get("subject") != rec.id else old.get("predecessor")})
     return row
@@ -3351,20 +3682,28 @@ def satisfied_on(run: Run, rec, old: dict, evidence: dict, body_digest: str) -> 
 
 def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_digest: str) -> ConceptReplay:
     """The upheld challenges and structural findings of this concept, and of the concept it
-    supersedes, before any reviewer:
-    - a challenge whose formals correspond (the same names and sorts) runs again on the current body,
-      its saved trace with the supplied relations Core computes left to Core: one the body still
-      confirms goes to the adjudicator (`replay_of`); one it meets stays an obligation, `satisfied`;
-    - a challenge that cannot be run on this body (its formals do not correspond, its record fails
-      today's schema, its trace or its contract words no longer serve) is an obligation of
-      insufficient evidence, carried over to the reviewer with what does not correspond: never
-      dropped, never discharged by default;
-    - an open structural finding, and an older upheld structural row without a schema, goes back to
-      the adjudicator against the current contract and rendering."""
+    supersedes, before any reviewer. Each challenge is read from its effective row (the last of its
+    supersession chain), whose claim and `contract_digest` decide its path:
+    - R0: it cannot be run on this body (its formals do not correspond, its trace no longer admits,
+      its recorded history is incomplete, a unit is incompatible, a grounding is missing), or its
+      effective claim is `undecided` under the current contract (`undecided_under`): it is an
+      obligation of insufficient evidence, carried over to the reviewer with its reason, never
+      compared, never discharged by default, never rechecked again, and no row is written;
+    - R1: it runs, and its row was decided under the current contract (the same digest): the body
+      giving the recorded claim leaves it `satisfied`; one that does not goes to the adjudicator
+      (`replay_of`);
+    - R2: it runs, and its row was decided under another contract, or records none: the current
+      contract is rechecked on its executed facts (`recheck_case`), never shown the body or the
+      recorded claim, and the answer is compared with the body; a body that departs from the answer
+      goes to the adjudicator as a renewed case. What R2 records carries the current digest, so the
+      next replay of the same contract takes R1 (or R0, for `undecided`) and pays no recheck.
+    An open structural finding, and an older upheld structural row without a schema, goes back to
+    the adjudicator against the current contract and rendering."""
     keys = {f"concept:{c}" for c in concept_lineage(run, rec)}
     rows = [r for r in effective_rows(_all_rows(run)) if r.get("key") in keys and r.get("ruling") == "upheld"]
     out = ConceptReplay()
     contract = " ".join(str(rec.get("contract", "")).split())
+    current = contract_digest(rec)
     formals = {a["name"]: a.get("sort") for a in rec.args()}
     divs, by_k = {}, {}
     for r in [r for r in rows if r.get("schema") == CONCEPT_CASE_SCHEMA and r.get("obligation") in ("open", "satisfied", None)]:
@@ -3373,30 +3712,43 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
         named = {**{f: "literal" for f in inst.get("literals") or {}}, **{f: "nat" for f in inst.get("nats") or {}}, **{f: "track" for f in g},
                  **{f: "region" for f in r.get("regions") or {}}}
         if any(formals.get(f) != sort for f, sort in named.items()) or set(named) != set(formals):
-            out.carry.append({"case_id": r.get("case_id"), "row": r,
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": "formals",
                               "why": f"its formals {sorted(named)} do not correspond to {sorted(formals)}"})
             continue
         bad = concept_divergence_defects(1, d, rec, contract, result_dim, saved=True)
         if bad:
-            out.carry.append({"case_id": r.get("case_id"), "row": r, "why": "its record fails today's schema: " + "; ".join(bad)[:300]})
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": r0_reason(bad[0]),
+                              "why": "its record fails today's schema: " + "; ".join(bad)[:300]})
+            continue
+        if undecided_under(r, current):                   # the contract decides nothing here: carried, never compared
+            by = ((r.get("recheck") or {}).get("answer") or {}).get("undecided_by", "unstated")
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": "undecided", "undecided_by": by,
+                              "why": f"{UNDECIDED}{_undecided_why(by)}: {_ws((r.get('recheck') or {}).get('quote'))[:200]}"})
             continue
         k = len(divs) + 1
         divs[k], by_k[k] = d, r
+    runs: dict[int, dict] = {}
     confirmed, unconfirmed, errors, incomplete = execute_concept_divergences(
         rec, {"divergences": list(divs.values())}, out_dir, result_dim, Reading(run.reading_file), saved=True,
-        registry=_registry(run, rec.id, concept_dir(run, rec.id))) if divs else ([], [], [], [])
+        registry=_registry(run, rec.id, concept_dir(run, rec.id)), runs=runs) if divs else ([], [], [], [])
     k_of = lambda line: int(m.group(1)) if (m := re.match(r"divergence (\d+)", line)) else None
-    for c in confirmed:
-        out.items.append({**c, "replay_of": by_k[k_of(c["line"])].get("case_id")})
-    for line in unconfirmed:
-        r = by_k.get(k_of(line))
-        if r is not None and (r.get("obligation") != "satisfied" or r.get("subject") != rec.id):
-            append_ruling(run, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
-        out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {line[:240]}")
     for line in errors + incomplete:
-        r = by_k.get(k_of(line))
+        k = k_of(line)
+        r = by_k.pop(k, None)
         if r is not None:
-            out.carry.append({"case_id": r.get("case_id"), "row": r, "why": f"it cannot be run on this body: {line[:300]}"})
+            out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": (runs.get(k) or {}).get("reason") or "admission",
+                              "why": f"it cannot be run on this body: {line[:300]}"})
+    confirms = {k_of(c["line"]): c for c in confirmed}
+    meets = {k_of(line): line for line in unconfirmed}
+    for k, r in by_k.items():
+        if r.get("contract_digest") != current and (k in confirms or k in meets):
+            recheck_case(run, rec, r, divs[k], runs.get(k) or {}, out, out_dir, result_dim, body_digest)
+        elif k in confirms:
+            out.items.append({**confirms[k], "replay_of": r.get("case_id")})
+        elif k in meets:
+            if r.get("obligation") != "satisfied" or r.get("subject") != rec.id:
+                append_ruling(run, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
+            out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {meets[k][:240]}")
     # structural findings: typed rows, and older rows written before they had a schema
     migrated = {r.get("legacy_of") for r in _all_rows(run) if r.get("legacy_of")}     # any row that ever took an older row over
     typed = [r for r in rows if r.get("schema") == CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)
@@ -3422,18 +3774,22 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
 
 def carry_over_block(carry: list[dict]) -> str:
     """The upheld challenges the reviewer must carry over to this body: each with its recorded
-    instance, grounding, trace, instant and claim, and what does not correspond."""
+    instance, grounding, trace, instant and claim, and why it cannot be judged as recorded."""
     if not carry:
         return ""
     out = ["### Challenges to carry over", "",
-           "Each challenge below was upheld against an earlier body of this concept and stays an obligation, but it cannot be run "
+           "Each challenge below was upheld against an earlier body of this concept and stays an obligation, but it cannot be judged "
            "on this body as recorded. For each, submit a divergence with `\"extends\": \"<case id>\"` that continues it: every scene "
-           "of its trace, with every field it states, and the same instant, contract words and claimed verdict or interval; every "
-           "recorded formal keeps its value, under the same name or the one formal it became; only a formal the challenge did not "
-           "have takes a value of yours. A challenge left without such a divergence keeps the review open.", ""]
+           "of its trace, with every field it states, and the same instant, contract words and claimed verdict or interval; where "
+           "the recorded contract words are no longer verbatim in the contract, quote the contract's words that decide the same claim "
+           "instead; where it is marked `undecided` (the current contract does not decide the recorded claim), state the claim the "
+           "current contract's words decide there, quoting them; every recorded formal keeps its value, under the same name or the "
+           "one formal it became; only a formal the challenge did not have takes a value of yours. A challenge left without such a "
+           "divergence keeps the review open.", ""]
     for c in carry:
         r = c.get("row") or {}
-        out += [f"#### Challenge `{c.get('case_id')}`", "", _ws(r.get("item"))[:400], "", f"What does not correspond: {c.get('why')}", "",
+        out += [f"#### Challenge `{c.get('case_id')}`", "", _ws(r.get("item"))[:400], "",
+                f"Why it cannot be judged as recorded ({c.get('reason', 'formals')}): {c.get('why')}", "",
                 "Its record: ```json " + json.dumps({k: r.get(k) for k in CONCEPT_CASE_FIELDS if r.get(k) is not None}, ensure_ascii=False)[:6000] + "```", ""]
     return "\n".join(out) + "\n"
 
@@ -3441,9 +3797,14 @@ def carry_over_block(carry: list[dict]) -> str:
 def concept_blocks(run: Run, rec, extras: dict) -> tuple[dict[str, str], str, str]:
     """What a concept's reviewer and adjudicator are shown: (the prompt blocks, the rendering of the
     body, the contract). `extras` carries the body (`body_json`), the atoms it reads and the
-    readings its coder chose. Raises `render_formula.Unrendered`."""
+    readings its coder chose: the gate's extras for a concept under review, or the accepted record
+    itself, which keeps them. The body is the gate's export, every call of another concept expanded
+    into that concept's body, and it is what the rendering shows; the contracts shown are those of
+    the atoms it reads, of every primitive that body calls, at any depth, with its ontology
+    contract, and of the catalogue's concepts. Raises `render_formula.Unrendered`."""
     onto = ontology.load(run.opts.ontology)
     glosses = {aid: onto.contract(aid) for aid in extras.get("reads", [])}
+    glosses.update(validate_phase.glosses_of(primitives_called(extras.get("body_json")), onto, run))
     for cid, crec in run.all_concepts().items():
         glosses[cid] = " ".join(str(crec.get("contract", "")).split())
     rendering = render_formula.render_concept({"args": [{"name": a["name"], "sort": {"sort": a["sort"], "values": a.get("values", [])}} for a in rec.args()],
@@ -3452,9 +3813,8 @@ def concept_blocks(run: Run, rec, extras: dict) -> tuple[dict[str, str], str, st
     contract = " ".join(str(rec.get("contract", "")).split())
     record = {k: v for k, v in rec.raw.items() if k not in ("scenarios", "used_by")}
     record["narrowings_by_the_coder"] = [n for n in extras.get("narrowings_added", []) if isinstance(n, dict)]
-    definition = f"\n\nThe definition it quotes: `{rec.get('definition')}`" if rec.get("definition") else ""
     blocks = {
-        "contract": f"### Contract\n\n`{rec.id}`: {contract}{definition}\n",
+        "contract": contract_block(rec),
         "record": "### Record\n\n```json\n" + json.dumps(record, ensure_ascii=False, indent=1) + "\n```\n\n" + literal_formals_line(rec) + "\n",
         "rendered": "### Rendering\n\n" + rendering + "\n",
         "atoms_read": atoms_read_block(extras.get("body_json") or {}, run.all_concepts(), what="concept"),
@@ -3583,15 +3943,27 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     extension = {k: d["extends"] for k, d in enumerate(listed, 1)
                  if isinstance(d, dict) and isinstance(d.get("extends"), str) and d["extends"] in carry
                  and not concept_divergence_defects(k, d, rec, contract, result_dim) and not tools.extension_defects(k, d)}
+    # an extension whose contract words (no longer verbatim) or claim (the challenge's was `undecided`) are not the recorded ones
+    # is new content: a new id with lineage
+    renewed = {k for k, cid in extension.items() if _ws(listed[k - 1].get("contract_words")) != _ws(carry[cid].get("contract_words"))
+               or any(listed[k - 1].get(f) != carry[cid].get(f) for f in ("contract_verdict", "contract_value"))}
     k_of = lambda line: int(m.group(1)) if (m := re.match(r"divergence (\d+)", line)) else None
     for c in confirmed:                                   # an extension continues its challenge's lineage
-        if k_of(c["line"]) in extension:
+        if k_of(c["line"]) in renewed:
+            c["lineage_of"] = carry[extension[k_of(c["line"])]]
+        elif k_of(c["line"]) in extension:
             c["replay_of"] = extension[k_of(c["line"])]
-    for line in unconfirmed:                              # an extension the body meets: the challenge stays an obligation, satisfied
-        old = carry.get(extension.get(k_of(line)))
+    for line in unconfirmed:                              # an extension the body meets: the challenge stays an obligation, satisfied,
+        old = carry.get(extension.get(k_of(line)))       # decided under the current contract, which it was evaluated under
         if old is not None:
             d = listed[k_of(line) - 1]
-            append_ruling(run, satisfied_on(run, rec, old, {x: d.get(x) for x in CONCEPT_CASE_FIELDS if d.get(x) is not None}, body_digest))
+            row = satisfied_on(run, rec, old, {x: d.get(x) for x in CONCEPT_CASE_FIELDS if d.get(x) is not None}, body_digest)
+            row = {**{k: v for k, v in row.items() if k != "recheck"}, "contract_digest": contract_digest(rec)}
+            if k_of(line) in renewed:
+                row.update({"case_id": concept_case_id(rec.id, row), "lineage": old.get("case_id")})
+                append_ruling(run, row, supersedes=old.get("ruling_id"))
+            else:
+                append_ruling(run, row)
     ran = {k_of(x["line"]) for x in confirmed} | {k_of(x) for x in unconfirmed}
     unextended = sorted(cid for cid in carry if cid not in {extension[k] for k in extension if k in ran})
     tuned_all = answer.get("not_general") if isinstance(answer.get("not_general"), list) else []
@@ -3610,7 +3982,7 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     unusable = concept_review_defects(answer, rec, contract, rendering, result_dim) + errors + incomplete \
         + [e for k, d in enumerate(listed, 1) for e in tools.extension_defects(k, d)]
     _write_outcome(out_dir, {"reviewer_verdict": answer.get("verdict"), "rulings": [{"item": i["line"], "ruling": r, "why": w} for i, r, w in rulings],
-                             "unconfirmed": unconfirmed, "unusable": unusable, "schema_defects": errs})
+                             "unconfirmed": unconfirmed, "unusable": unusable, "schema_defects": errs, "undecided": rep.undecided()})
     if upheld:
         return ReviewOutcome("returned", reasons=upheld, advisories=notes)
     if unusable:

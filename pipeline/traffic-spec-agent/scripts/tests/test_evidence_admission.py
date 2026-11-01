@@ -63,6 +63,19 @@ class SuppliedRelations(unittest.TestCase):
         self.assertNotIn("visible", names)           # Core never computes visibility
         self.assertNotIn("no_geometry", names)       # nothing to compute it from: it may be supplied
 
+    def test_a_surface_gap_is_checked_against_both_footprints(self):
+        """Core computes the gap between two bodies from both footprints: a supplied gap is a defect
+        where both bodies' position, heading and extent are in the scene, and may be supplied where
+        the other body's heading is not."""
+        def body(track, x, heading):
+            return {"track": track, "kin": {"position": [x, 0], "extent": [2, 1, 0.5], **({"heading": heading} if heading else {})}}
+        gap = [{"a": 1, "b": 2, "surface_gap": [7, 0]}]
+        out = lint({"both": {"scenes": [{"t": 0, "users": [body(1, 0, [1, 0]), body(2, 10, [0, 1])], "relations": gap}]},
+                    "no_heading_b": {"scenes": [{"t": 0, "users": [body(1, 0, [1, 0]), body(2, 10, None)], "relations": gap}]}})
+        names = [l.split("\t")[1] for l in out]
+        self.assertIn("both", names)
+        self.assertNotIn("no_heading_b", names)
+
     def test_every_computed_field_is_covered(self):
         """Every field of a measured relation is either one Core computes (checked) or `visible`: a
         relation Core later learns to compute fails this test until the check covers it."""

@@ -78,7 +78,8 @@ def errs (φ : Formula) (entities : List (String × Val) := [("lane", .region 7)
   | .ok j => match Decode.term "t" j with | .ok (.lit q .perMetre) => q.num == 1 && q.den == 500 | _ => false
   | .error _ => false
 #guard errs (.and (.atom "rel_occupies" [.var "v", .var "lane"] []) (.cmp (.measure "rel_centre_distance" [.var "v", .var "other"]) .lt (lit 20 .metre))) = []
-#guard has (errs (.asm "asm.a")) "never an assumption"
+#guard errs (.asm "asm.a") = []
+#guard errs (.not (.asm "asm.a")) = []
 #guard has (errs (.cmp speed .gt (.param "p.limit"))) "never a parameter"
 #guard has (errs (.rule "r/x" [("a", "v")])) "names no other rule"
 #guard has (errs (.derived "drv_motion_stop" [.var "v"] [])) "names no concept"

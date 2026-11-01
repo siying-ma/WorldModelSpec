@@ -20,7 +20,8 @@ words and the contracts alone. You do not edit the rule.
 
 - **The law** — its verbatim text and the node's segmentation of it (span ids, texts, roles). A
   span of role `sibling` is another duty of the law, formalized and reviewed on its own node: a
-  situation only that duty decides is not a divergence of this rule.
+  situation only that duty decides is not a divergence of this rule. Words of this duty that refer
+  to it keep their condition, and it is no condition of this duty unless such words make it one.
 - **The definitions** — the posted definitions that apply to the law's words, and the definitions
   they use: a defined word means what its definition says, and the law's verdict follows it.
 - **The record** — the plan's node record: which spans map to which atoms, the standards and
@@ -87,6 +88,11 @@ words and the contracts alone. You do not edit the rule.
    every atom, in which the rule returns no verdict — a look-back that cannot be covered by any
    trace of ordinary length, a branch no trace can reach, a parameter that makes the antecedent
    unsatisfiable at the reading's values? Write it as a trace in which the law decides.
+   A condition that refers to an act, state, party or place stated elsewhere refers to it with
+   every qualification its words retain: resolve that referent from the law. Under questions 1 to
+   3, look both for a situation in which a weaker fact holds and the qualified one does not, and
+   for one in which the qualified fact holds and the rule excludes it, with unrelated conditions
+   held fixed, within the same check budget.
 4. Each trace is minimal: the fewest road users, regions, devices and observations that realize
    the situation, at the reading's parameter values, with the atoms the rule reads present.
    Give the grounding (which track is each binder) and the law's verdict with the words of the
@@ -119,7 +125,10 @@ words and the contracts alone. You do not edit the rule.
    the record discloses each such reading as an `observable_reading`. Words that a road user intends,
    or is preparing, to turn are read from the intention the trace declares (`intent`), a fact of the
    trace like any other: a situation that turns on a declared intention is a divergence where the
-   rule decides it otherwise than the words. A situation that turns only on what the subject
+   rule decides it otherwise than the words. Words the rule reads through an assumption (`asm`) are
+   read the same way from the assumption the trace declares: a case whose verdict turns on it states
+   it, declared true or, negated, declared false, and its judges are shown it as the source's
+   declaration. A situation that turns only on what the subject
    intended apart from what the trace declares, on what it perceived or knew apart from that
    conduct, on whether a feature present in the scene is official, or on whether a person, an
    automated system or no one controls a road user in motion, is an advisory, never a divergence. A
