@@ -14,3 +14,7 @@ lean_lib «TrafficSpec» where
 -- The monitor: decodes a trace at run time and evaluates the registered rules.
 lean_exe «monitor» where
   root := `Main
+
+-- Why a rule has its verdict at one observation: the obligation walked with the monitor's evaluator.
+lean_exe «explain» where
+  root := `Explain

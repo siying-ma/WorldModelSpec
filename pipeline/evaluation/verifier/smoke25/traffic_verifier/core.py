@@ -23,6 +23,8 @@ from . import normalize
 PKG = Path(__file__).resolve().parents[1]
 DATA = PKG / "data"
 MONITOR = PKG / "lean" / ".lake" / "build" / "bin" / "monitor"
+EXPLAIN = PKG / "lean" / ".lake" / "build" / "bin" / "explain"
+MAX_EXPLAINED = 2          # violated groundings explained per rule
 ORDER = ("violated", "undecided", "unknown", "compliant", "not_applicable")
 
 
@@ -82,8 +84,50 @@ def _run_rule(rule: str, trace: Path, manifest: Path, timeout: float) -> tuple[d
     return rep, next((d for d in lines if d.get("kind") == "source"), None)
 
 
+def _explain(rep: dict, trace: Path, manifest: Path, timeout: float) -> None:
+    """Attach to each violated grounding (at most MAX_EXPLAINED) why the rule is violated at the
+    first observation of its first violated interval, as the explain program reports it."""
+    for g in [g for g in rep.get("groundings", []) if g["violated_ms"]][:MAX_EXPLAINED]:
+        at = g["violated_ms"][0][0]
+        cmd = [str(EXPLAIN), "--manifest", str(manifest), "--reading", str(DATA / "reading.json"),
+               "--rule", rep["rule"], "--at", str(at)]
+        for name, track in g["binding"].items():
+            cmd += ["--bind", f"{name}={track}"]
+        try:
+            p = subprocess.run(cmd + [str(trace)], capture_output=True, text=True, timeout=timeout)
+            g["explanation"] = p.stdout.splitlines() if p.returncode == 0 else [f"(explain failed: {p.stderr.strip()[-300:]})"]
+        except subprocess.TimeoutExpired:
+            g["explanation"] = [f"(explain did not finish within {timeout:g} s)"]
+        g["explained_at_ms"] = at
+
+
+def _scan(rep: dict, trace: Path, manifest: Path, timeout: float) -> None:
+    """Attach to every grounding of the rule (`scan`) the observations the explain program chooses
+    itself, each with why it was chosen, the verdict there, the walked binder classes,
+    applicability and obligation as trees, and their text: the first observation of each violated
+    interval; else the first unknown and the engaged observation closest to a comparison's
+    boundary; else, never engaged, the observation closest to applying."""
+    for g in rep.get("groundings", []):
+        cmd = [str(EXPLAIN), "--manifest", str(manifest), "--reading", str(DATA / "reading.json"),
+               "--rule", rep["rule"], "--scan", "--json"]
+        for name, track in g["binding"].items():
+            cmd += ["--bind", f"{name}={track}"]
+        try:
+            p = subprocess.run(cmd + [str(trace)], capture_output=True, text=True, timeout=timeout)
+            if p.returncode == 0:
+                out = json.loads(p.stdout)
+                g["scan"] = out["groundings"][0]["explanations"] if out["groundings"] else []
+                g["scan_notes"] = out["groundings"][0]["choice_notes"] if out["groundings"] else [f"support {out['support']}"]
+            else:
+                g["scan_error"] = p.stderr.strip()[-300:]
+        except subprocess.TimeoutExpired:
+            g["scan_error"] = f"explain did not finish within {timeout:g} s"
+        except (ValueError, IndexError, KeyError) as e:
+            g["scan_error"] = f"explain printed no readable JSON: {e}"
+
+
 def verify(trace, manifest=None, *, rules=None, law_ids=None, timeout: float = 600, jobs: int = 2,
-           normalize_input: bool = True, workdir=None) -> dict:
+           normalize_input: bool = True, explain=True, workdir=None) -> dict:
     """Verify one trace. Returns {"violated_laws": [...], "laws": {law: {...}}, "source": ..., "notes": [...]}.
 
     trace, manifest   paths; without a manifest every atom is taken as observed (`exact`)
@@ -91,6 +135,9 @@ def verify(trace, manifest=None, *, rules=None, law_ids=None, timeout: float = 6
     timeout           seconds per rule; a rule past it is `undecided`
     jobs              rules monitored at once (each process holds the decoded trace in memory)
     normalize_input   align the manifest and trace with the packaged ontology first (default on)
+    explain           True: for each violated grounding, say why the rule fails at its first violated
+                      observation; "all": also, for every grounding whatever its verdict, explain the
+                      observations the explain program chooses (`scan`); False: explain nothing
     """
     if not MONITOR.exists():
         raise VerifierError(f"the monitor is not built: run {PKG / 'install.sh'}")
@@ -112,6 +159,10 @@ def verify(trace, manifest=None, *, rules=None, law_ids=None, timeout: float = 6
             notes += more
         with ThreadPoolExecutor(max_workers=max(1, jobs)) as pool:
             done = list(pool.map(lambda r: _run_rule(r, trace, manifest, timeout), chosen))
+            if explain and EXPLAIN.exists():
+                list(pool.map(lambda d: _explain(d[0], trace, manifest, timeout), [d for d in done if d[0]["verdict"] == "violated"]))
+            if explain == "all" and EXPLAIN.exists():
+                list(pool.map(lambda d: _scan(d[0], trace, manifest, timeout), done))
         source = next((s for _, s in done if s), None)
         by_law: dict[str, dict] = {}
         for rep, _ in done:

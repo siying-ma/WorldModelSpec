@@ -3,7 +3,6 @@
   do not edit.
 -/
 import TrafficSpec.Core
-import TrafficSpec.Rules.NRS_484B.NRS_484B_253_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1e
 import TrafficSpec.Concepts.interaction.behind_in_lane
 import TrafficSpec.Concepts.interaction.travels_in_succession_with
@@ -20,7 +19,6 @@ import TrafficSpec.Concepts.road.barrier_separated_way
 namespace TrafficSpec
 /-- Every registered rule, in file order. -/
 def allRules : List Rule := [
-  TrafficSpec.Rules.NRS_484B_253_o2.rule,
   TrafficSpec.Rules.NRS_484B_600_1e.rule
 ]
 /-- Every registered concept, in file order. -/

@@ -45,13 +45,19 @@ def main (args : List String) : IO UInt32 := do
     let ρ ← match opts.reading with
       | some p => readJson Decode.reading p
       | none => pure ({} : Reading)
-    let rules := match opts.rules with
-      | some ids => allRules.filter fun r => ids.contains r.id
+    -- the rules reported, and the rules registered for their evaluation: each reported rule with
+    -- every rule it composes, so a composition is evaluated as with the whole rule set
+    let targets : List Rule := match opts.rules with
+      | some ids => allRules.filter fun (r : Rule) => ids.contains r.id
       | none => allRules
+    let rules := (targets.flatMap (Rule.closure allRules)).foldl (fun (acc : List Rule) (r : Rule) => if acc.any (fun (x : Rule) => x.id == r.id) then acc else acc ++ [r]) []
+    let reported := targets.map (fun (r : Rule) => r.id)
     for path in opts.traces do
       let τ ← readJson Decode.trace path
       match Monitor.check rules τ ρ m allConcepts with
-      | .ok rep => IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)
+      | .ok rep =>
+        let rep := { rep with rules := rep.rules.filter (fun (l : Monitor.RuleLine) => reported.contains l.rule), rows := rep.rows.filter (fun (w : Monitor.Row) => reported.contains w.rule) }
+        IO.print (if opts.json then Monitor.renderJsonLines rep else Monitor.renderText rep)
       | .error ds =>
         IO.eprintln s!"monitor: {path}: the trace is not admitted: {"; ".intercalate ds}"
         return (2 : UInt32)

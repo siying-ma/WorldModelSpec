@@ -1,4 +1,4 @@
-"""verify TRACE [--manifest M] [--law ID ...] [--rule ID ...] [--timeout S] [--jobs N] [--json]
+"""verify TRACE [--manifest M] [--law ID ...] [--rule ID ...] [--timeout S] [--jobs N] [--json] [--explain-all]
 
 Exit status: 0 when no law is violated, 1 when at least one is, 2 on an error."""
 from __future__ import annotations
@@ -24,6 +24,9 @@ def main(argv=None) -> int:
     ap.add_argument("--jobs", type=int, default=2, help="rules monitored at once (default 2)")
     ap.add_argument("--no-normalize", action="store_true", help="pass trace and manifest to the monitor as given")
     ap.add_argument("--json", action="store_true", help="print the full report as JSON")
+    ap.add_argument("--no-explain", action="store_true", help="do not explain violations")
+    ap.add_argument("--explain-all", action="store_true",
+                    help="also explain every grounding whatever its verdict, at observations the explainer chooses")
     ap.add_argument("--list", action="store_true", help="list the packaged laws and rules, then exit")
     a = ap.parse_args(argv)
     if a.list:
@@ -34,7 +37,8 @@ def main(argv=None) -> int:
         ap.error("a trace is required")
     try:
         rep = verify(a.trace, a.manifest, rules=a.rules, law_ids=a.law_ids, timeout=a.timeout, jobs=a.jobs,
-                     normalize_input=not a.no_normalize)
+                     normalize_input=not a.no_normalize,
+                     explain=False if a.no_explain else ("all" if a.explain_all else True))
     except (VerifierError, ValueError, OSError) as e:
         print(f"verify: {e}", file=sys.stderr)
         return 2
@@ -58,8 +62,21 @@ def main(argv=None) -> int:
                     if g["violated_ms"]:
                         spans = "; ".join(f"t={_secs(a_)}–{_secs(b)} s" for a_, b in g["violated_ms"])
                         print(f"        {who}: violated at {spans}")
+                        if g.get("explanation"):
+                            print(f"          why, at t={_secs(g['explained_at_ms'])} s:")
+                            for x in g["explanation"]:
+                                print("          " + x)
                     elif g["verdict"] == "unknown" and g["unknown_reasons"]:
                         print(f"        {who}: unknown ({', '.join(g['unknown_reasons'])})")
+                    elif a.explain_all:
+                        print(f"        {who}: {g['verdict']}")
+                    if a.explain_all and not g["violated_ms"]:
+                        if g.get("scan_error"):
+                            print(f"          (explain failed: {g['scan_error']})")
+                        for x in g.get("scan", []):
+                            print(f"          at t={_secs(x['at_ms'])} s ({x['chosen_because']}):")
+                            for line in x["text"][1:]:
+                                print("          " + line)
                 if r.get("absent_atoms"):
                     kind = "unsupported" if r.get("support") == "unsupported" else "partially supported"
                     print(f"        {kind}: the manifest declares absent {', '.join(r['absent_atoms'])}")

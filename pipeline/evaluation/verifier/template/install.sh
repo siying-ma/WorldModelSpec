@@ -7,6 +7,6 @@ if ! command -v lake >/dev/null 2>&1; then
   echo "== installing elan (the Lean toolchain manager) into ~/.elan"
   curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
 fi
-echo "== building the monitor with $(cat lean-toolchain) (first build: a few minutes)"
-lake build monitor
+echo "== building the monitor and the explainer with $(cat lean-toolchain) (first build: a few minutes)"
+lake build monitor explain
 echo "== done: ./verify --help"

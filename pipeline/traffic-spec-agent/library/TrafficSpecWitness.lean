@@ -4,7 +4,6 @@
 -/
 import TrafficSpec
 import TrafficSpec.Core.Evidence.Builders
-import TrafficSpecWitness.NRS_484B.NRS_484B_253_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_600_1e
 import TrafficSpecWitness.Concepts.interaction.behind_in_lane
 import TrafficSpecWitness.Concepts.interaction.travels_in_succession_with
@@ -21,8 +20,7 @@ import TrafficSpecWitness.Concepts.road.barrier_separated_way
 namespace TrafficSpecWitness
 open TrafficSpec
 /-- Every registered node scenario, in file order. -/
-def allScenarios : List Scenario := TrafficSpecWitness.NRS_484B_253_o2.scenarios ++
-  TrafficSpecWitness.NRS_484B_600_1e.scenarios
+def allScenarios : List Scenario := TrafficSpecWitness.NRS_484B_600_1e.scenarios
 /-- Every registered concept instance and its scenarios, in file order. -/
 def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.interaction.behind_in_lane.instances ++
   TrafficSpecWitness.Concepts.interaction.travels_in_succession_with.instances ++
@@ -52,7 +50,6 @@ def allConceptScenarios : List Scenario := TrafficSpecWitness.Concepts.interacti
 def witnessRules : List Rule := allRules ++ allInstances.filterMap (Concept.asRule allConcepts)
 /-- Every registered witness list, under the id of the node or concept that owns it. -/
 def taggedScenarios : List (String × List Scenario) := [
-  ("NRS_484B_253_o2", TrafficSpecWitness.NRS_484B_253_o2.scenarios),
   ("NRS_484B_600_1e", TrafficSpecWitness.NRS_484B_600_1e.scenarios),
   ("drv.interaction.behind_in_lane", TrafficSpecWitness.Concepts.interaction.behind_in_lane.scenarios),
   ("drv.interaction.travels_in_succession_with", TrafficSpecWitness.Concepts.interaction.travels_in_succession_with.scenarios),
