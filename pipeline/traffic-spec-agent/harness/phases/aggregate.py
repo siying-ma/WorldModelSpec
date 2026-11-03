@@ -14,10 +14,12 @@ admission by one independent semantic gate, before any node may claim one.
    replacement. Supported classes are admitted as proposed; underdetermined ones become
    `unresolved`. A contradiction returns the whole mapping once to the planner with the gate's
    feedback; the new mapping is checked and verified again, and a class still contradicted becomes
-   `unresolved` (`gate_contradiction`). A verifier answer malformed after its re-ask, like a verifier
-   session that cannot be launched, raises `SessionUnavailable`: nothing is admitted, and the
-   resume verifies again under the session's retry budget. No admission is ever made from a
-   transport or protocol failure.
+   `unresolved` (`gate_contradiction`). A covered class is checked again on the final statuses:
+   every class it names in `covered_by` must still be `included`, otherwise it becomes `unresolved`
+   (`cover_target_not_admitted`), since its coverage rested on that class's admission. A verifier
+   answer malformed after its re-ask, like a verifier session that cannot be launched, raises
+   `SessionUnavailable`: nothing is admitted, and the resume verifies again under the session's
+   retry budget. No admission is ever made from a transport or protocol failure.
 3. Persist: `aggregate_certificates.jsonl` keeps the proposal, any retry, the admitted record, the
    exact verifier requests and responses, the model and effort and every input digest; only the
    admitted record enters the run's reading, and `aggregate_input_manifest.json` records, per
@@ -316,7 +318,8 @@ def select_and_derive(run: Run, table: dict, defs: list[dict], onto: Ontology, w
                                                                         for r in existing.values()) or "(none)") + "\n",
         "aggregate_gate_feedback": feedback or "(none)"})
     check = lambda a: _answer_defects(a, pairs, table, defs_by_id, onto, set(pairs))
-    answer, errs = validate_phase._session(run, out_dir, label, prompt, check=check, model=run.opts.model, effort=run.opts.plan_effort)
+    answer, errs = validate_phase._session(run, out_dir, label, prompt, check=check, model=run.opts.model, effort=run.opts.plan_effort,
+                                           role="work")
     if answer is None:
         return {}, [], errs or ["dry run: no selection"]
     sub = {"laws": {law: [r for r in rs if (r.get("definition"), r.get("term")) in set(pairs)] for law, rs in table.get("laws", {}).items()}}
@@ -386,8 +389,8 @@ def gate(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: 
         raise SessionUnavailable(f"the aggregate gate's answer for `{aid}` stayed malformed; nothing is admitted")
     contradicted = [c for c, v in verdicts.items() if v["verdict"] == "contradicted"]
     if contradicted:
-        feedback = "\n".join(f"- `{aid}` class `{c}`: proposed {_statuses(rec)[c]}; the gate found the posted words support the "
-                             f"opposite: {_ws(verdicts[c]['reason'])}" for c in contradicted)
+        feedback = "\n".join(f"- `{aid}` class `{c}`: proposed {_statuses(rec)[c]}; the gate found the posted words support "
+                             f"another decided status: {_ws(verdicts[c]['reason'])}" for c in contradicted)
         new = retry(rec, feedback)
         cert["retry"] = {"feedback": feedback, "record": new, "model": run.opts.model, "effort": run.opts.plan_effort}
         if new is not None:
@@ -406,6 +409,13 @@ def gate(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: 
             if s != "unresolved":
                 cert["downgrades"].append({"class": c, "why": "gate_contradiction" if v == "contradicted" else "underdetermined",
                                            "reason": _ws(verdicts.get(c, {}).get("reason"))})
+    by_class = {x["class"]: x for x in current["classifications"]}
+    for c in sorted(c for c, s in statuses.items() if s == "covered"):    # a downgrade here changes no included class
+        lost = [t for t in by_class[c].get("covered_by") or [None] if statuses.get(t) != "included"]
+        if lost:
+            statuses[c] = "unresolved"
+            cert["downgrades"].append({"class": c, "why": "cover_target_not_admitted",
+                                       "reason": f"its covering class(es) {lost} are not admitted as included"})
     return _finish(cert, current, statuses, digests)
 
 
@@ -453,7 +463,7 @@ def admit(run: Run, recs: list[dict], table: dict, defs: list[dict], onto: Ontol
         _record_admission(run, cert, inputs_of(run, rec, table, defs_by_id, onto, laws))
         entries.append(entry)
         down = cert["downgrades"]
-        notes.append(f"aggregate `{aid}` admitted: included {len(entry['included'])}, unresolved {len(entry['unresolved'])}"
+        notes.append(f"aggregate `{aid}` admitted: included {len(entry['included'])}, covered {len(entry.get('covered', []))}, unresolved {len(entry['unresolved'])}"
                      + (f"; downgraded to unresolved: {', '.join(d['class'] + ' (' + d['why'] + ')' for d in down)}" if down else ""))
     return entries, notes, to_user
 

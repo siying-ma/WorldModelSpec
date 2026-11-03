@@ -72,8 +72,139 @@ class ReturnedNodes(unittest.TestCase):
         self.assertEqual(n.claimed_atoms(), {"kin.speed", "drv.motion.halt", "drv.motion.turn"})
 
 
+def _clean_record(comp: dict) -> dict:
+    """A caller record whose one defect the real validator can find is its composition's target."""
+    from scripts.tests.test_definition_references import record
+    raw = record(compositions=[comp])
+    raw["elements"][0].pop("source_spans")
+    raw["elements"][0]["atoms"] = ["st.turn_lane", "rel.occupies"]
+    raw["scenarios"] = [{"name": k, "expected": v} for k, v in (("forbid", "violated"), ("permit", "compliant"), ("idle", "not_applicable"), ("blind", "unknown"))]
+    raw["scenarios"][3]["masked"] = ["st.turn_lane"]
+    return raw
+
+
+class UnavailableProvider(unittest.TestCase):
+    """A plan that composes a node of a law waiting for the operator (blocked, failed, or held only on
+    such laws) is not coded and not charged: its record, the composition and its map stand, and the
+    law is blocked on what the provider waits on — a blocked provider's gaps, `decision:<law>` for a
+    failed one — and reopens with it. The caller's own defects are still charged."""
+
+    COMPLIANCE = {"span": "r1", "as": "compliance", "rule": "STA_900A_200_2", "map": {"veh": "veh"}}
+
+    def world(self, t, st, provider_state: str, comp: dict | None = None, extra: list[str] | None = None, real: bool = True):
+        from harness.store.ledger import Entry
+        from harness.model.reading import Reading
+        from harness.model.mapping import MappingIndex
+        from harness.model import ontology
+        from scripts.tests.test_definition_references import LAW, SRC, SRC_ID, SOURCES
+        raw = _clean_record(comp or dict(self.COMPLIANCE))
+        if real:                                       # the real validator, with no record of the provider anywhere
+            onto = ontology.load(Path("ontology/ATOMS_train.md"))
+            (Path(t) / "reading.json").write_text('{"params":[],"aggregates":[]}')
+            outcomes = validate_a.validate([Node(json.loads(json.dumps(raw)))], {LAW.id: LAW, SRC_ID: SRC}, onto,
+                                           Reading(Path(t) / "reading.json"), MappingIndex(Path(t) / "none.json"), {}, sources=SOURCES)
+            verdicts = [validate_phase.NodeVerdict(o.node, o.kind, o.reasons + (extra or [])) for o in outcomes]
+        else:
+            verdicts = [validate_phase.NodeVerdict(Node(raw), "return", validate_a.check_compositions(Node(json.loads(json.dumps(raw))), {}, SOURCES) + (extra or []))]
+        run, opts, prog, led, cl, nl, _law, _n, _bad = _iteration_world(t, st)
+        led.entries = {LAW.id: Entry(LAW.id), SRC_ID: Entry(SRC_ID)}
+        led.mark_planned(LAW.id, ["STA_900A_100_1"], 1)
+        if provider_state == "blocked":
+            led.block(SRC_ID, ["g1"], ["gap g1"])
+        elif provider_state == "failed":
+            led.fail(SRC_ID, ["closed"])
+        (run.iter / "plan" / "blueprint.jsonl").write_text(json.dumps(raw) + "\n"); prog["batch_laws"] = [LAW.id]
+        return run, opts, prog, led, cl, nl, LAW, raw, verdicts
+
+    def route(self, provider_state: str, comp: dict | None = None, extra: list[str] | None = None, real: bool = True):
+        with tempfile.TemporaryDirectory() as t, ExitStack() as st:
+            run, opts, prog, led, cl, nl, law, raw, verdicts = self.world(t, st, provider_state, comp, extra, real)
+            _to_validated(run, opts, prog, led, cl, nl, law, verdicts, [])
+            return led, law.id, raw, verdicts, prog
+
+    def test_the_real_validator_finds_only_the_unknown_target(self):
+        _led, _l, _raw, verdicts, _p = self.route("failed")
+        self.assertEqual([(v.kind, v.reasons) for v in verdicts],
+                         [("return", ["STA_900A_100_1: composes `STA_900A_200_2`, which is neither accepted nor in this plan"])])
+
+    def test_a_blocked_provider_holds_the_law_uncharged_and_keeps_the_dependency(self):
+        led, law, raw, verdicts, _p = self.route("blocked")
+        e = led.entries[law]
+        self.assertEqual((e.state, e.attempts, e.gaps), ("blocked", 0, ["g1"]))
+        self.assertEqual(Node(raw).dependencies(), [self.COMPLIANCE])          # dependency and map as planned
+        self.assertEqual(verdicts[0].node.dependencies(), [self.COMPLIANCE])
+        self.assertEqual(Node(raw).definition_references(), [])
+
+    def test_a_failed_provider_holds_the_law_on_its_decision_uncharged(self):
+        led, law, raw, _v, prog = self.route("failed")
+        e = led.entries[law]
+        self.assertEqual((e.state, e.attempts, e.gaps), ("blocked", 0, ["decision:STA-900A-200-2"]))
+        self.assertEqual(Node(raw).dependencies(), [self.COMPLIANCE])
+        self.assertFalse(any("state in full" in r or "another rule" in r for r in e.reasons), e.reasons)
+        self.assertTrue(any("reopen" in x and "STA-900A-200-2" in x for x in prog["to_user"]), prog["to_user"])
+
+    def test_the_provider_recovers_and_the_caller_resumes(self):
+        led, law, _raw, _v, _p = self.route("failed")
+        self.assertEqual(sorted(led.reopen(["STA-900A-200-2"])), sorted([law, "STA-900A-200-2"]))
+        self.assertEqual((led.entries[law].state, led.entries[law].attempts), ("open", 0))
+        led, law, _raw, _v, _p = self.route("blocked")
+        self.assertEqual(sorted(l for l, _ in led.reopen_for_gaps({"g1": ("retired", "")})), sorted([law, "STA-900A-200-2"]))
+        self.assertEqual([e.law for e in led.plannable()], [law, "STA-900A-200-2"])
+
+    def test_the_callers_own_defect_is_charged_and_the_dependency_stays(self):
+        own = "STA_900A_100_1: composition of `STA_900A_200_2` maps ['x'], its binders are ['veh']"
+        led, law, _raw, _v, _p = self.route("failed", extra=[own])
+        e = led.entries[law]
+        self.assertEqual((e.state, e.attempts), ("returned", 1))
+        self.assertIn(own, e.reasons)
+        self.assertFalse(any("neither accepted nor in this plan" in r for r in e.reasons), e.reasons)
+        self.assertTrue(any("that composition stands" in r for r in e.reasons), e.reasons)
+
+    def test_a_target_of_an_available_law_is_the_callers_error(self):
+        led, law, _raw, _v, _p = self.route("open")
+        self.assertEqual((led.entries[law].state, led.entries[law].attempts), ("returned", 1))
+
+    def test_a_composition_naming_no_rule_is_returned(self):
+        led, law, _raw, verdicts, _p = self.route("blocked", {"span": "r1", "as": "compliance", "map": {"veh": "veh"}}, real=False)
+        self.assertTrue(any("names no `rule`" in r for r in verdicts[0].reasons))
+        self.assertEqual((led.entries[law].state, led.entries[law].attempts), ("returned", 1))
+
+    def test_coding_readiness_holds_a_node_whose_provider_failed_since_planning(self):
+        """The validator accepted the composition (the provider's node was planned beside it); the
+        provider failed before the caller was coded."""
+        from scripts.tests.test_definition_references import LAW
+        with tempfile.TemporaryDirectory() as t, ExitStack() as st:
+            run, opts, prog, led, cl, nl, law, raw, _v = self.world(t, st, "failed", real=False)
+            n = Node(raw)
+
+            def persist():
+                if n.id in prog.get("nodes", {}):
+                    raise Stop()
+            with mock.patch.object(loop.validate_phase, "run_validate", return_value=([validate_phase.NodeVerdict(n, "accept", [])], [])):
+                try:
+                    loop._iteration(run, opts, prog, persist, led, cl, nl, None, {LAW.id: LAW}, [LAW], [], ONTO, [])
+                except Stop:
+                    pass
+            e = led.entries[LAW.id]
+            self.assertEqual((e.state, e.attempts, e.gaps), ("blocked", 0, ["decision:STA-900A-200-2"]))
+            self.assertEqual(prog["nodes"][n.id], "HELD")
+
+    def test_a_repair_composing_an_unavailable_provider_waits(self):
+        from harness.store.ledger import Ledger as L
+        with tempfile.TemporaryDirectory() as t:
+            led = L(Path(t) / "l", ["STA-900A-100-1", "STA-900A-200-2"], 3); led.fail("STA-900A-200-2", ["closed"])
+            run = NS(all_nodes=lambda: {})
+            rec = Node(_clean_record(dict(self.COMPLIANCE)))
+            msg = validate_a.unknown_target(rec.id, "STA_900A_200_2")
+            self.assertEqual(loop._repair_waits(run, led, [], NS(records=[rec], validation=[msg])), {"STA_900A_200_2": {"STA-900A-200-2"}})
+            self.assertEqual(loop._repair_waits(run, led, [], NS(records=[rec], validation=[msg, "STA_900A_100_1: scenario `idle` missing"])), {})
+            led.reopen(["STA-900A-200-2"])
+            self.assertEqual(loop._repair_waits(run, led, [], NS(records=[rec], validation=[msg])), {})
+
+
 class PlanWaits(unittest.TestCase):
-    """Failure closes over every law first and takes precedence; waiting closes over what is left."""
+    """Waiting closes over the reference chain; a named law closed as failed stops nothing: the law
+    naming it is planned and reported, and its plan answers for what it composes."""
 
     def batches(self, laws: dict[str, str], states: dict[str, str]):
         with tempfile.TemporaryDirectory() as t:
@@ -94,15 +225,16 @@ class PlanWaits(unittest.TestCase):
         laws = {"S-1": "[S-2] and [P-1]", "S-2": "[F-1]", "P-1": "", "F-1": ""}
         for order in itertools.permutations(laws):
             b, waiting, failed = self.batches({k: laws[k] for k in order}, {"P-1": "planned", "F-1": "failed"})
-            self.assertEqual(set(failed), {"S-1", "S-2"}, order)
-            self.assertNotIn("S-1", waiting)
-            self.assertEqual(b, [])
+            self.assertEqual(failed, {"S-2": ["F-1"]}, order)
+            self.assertEqual(waiting, {"S-1": ["P-1"]}, order)
+            self.assertEqual(b, [["S-2"]])
 
-    def test_a_failure_reached_through_a_waiting_law(self):
+    def test_a_failed_law_reached_through_a_waiting_law(self):
         laws = {"A-1": "[A-2]", "A-2": "[A-3] and [P-1]", "A-3": "[F-1]", "P-1": "", "F-1": ""}
         b, waiting, failed = self.batches(laws, {"P-1": "planned", "F-1": "failed"})
-        self.assertEqual(set(failed), {"A-1", "A-2", "A-3"})
-        self.assertEqual(waiting, {})
+        self.assertEqual(failed, {"A-3": ["F-1"]})
+        self.assertEqual(waiting, {"A-2": ["P-1"], "A-1": ["A-2"]})
+        self.assertEqual(b, [["A-3"]])
 
     def test_controls(self):
         laws = {"C-1": "[C-2]", "C-2": "[P-1]", "P-1": "", "D-1": "[E-1]", "E-1": ""}
@@ -110,6 +242,111 @@ class PlanWaits(unittest.TestCase):
         self.assertEqual(set(waiting), {"C-1", "C-2"})
         self.assertEqual(failed, {})
         self.assertEqual(b, [["D-1"]])
+
+
+class FirstPlanWaits(unittest.TestCase):
+    """A law with no record yet waits on a named law that progresses by itself, never on one waiting
+    for the operator (blocked, failed, or waiting only on such laws, directly or through a chain); a
+    law with a record waits on both. Chain closure and order are otherwise unchanged."""
+
+    def batches(self, laws: dict[str, str], states: dict[str, str], unrecorded: set[str] | None,
+                held: dict[str, set[str]] | None = None, borrowed: dict | None = None):
+        with tempfile.TemporaryDirectory() as t:
+            by_id = {k: Law(k, "", v, "") for k, v in laws.items()}
+            led = Ledger(Path(t) / "l", list(laws), 3)
+            for k, s in states.items():
+                if s == "planned":
+                    led.mark_planned(k, [k.replace("-", "_")], 1)
+                elif s == "returned":
+                    led.mark_planned(k, [k.replace("-", "_")], 1); led.return_law(k, ["r"], 1)
+                elif s == "blocked":
+                    led.block(k, ["g1"], ["gap"])
+                elif s == "paused":
+                    led.block(k, [f"decision:{k}"], ["held for the operator"])
+                elif s == "failed":
+                    led.fail(k, ["closed"])
+            b, waiting, unavailable = loop.plan_batches(led.plannable(), led, by_id, 8, borrowed or {}, unrecorded, held)
+            return [[x.id for x in xs] for xs in b], waiting, unavailable
+
+    def test_the_operator_probe_states(self):
+        """Provider blocked, caller with no record: one batch, nothing waits."""
+        laws = {"C-1": "Duty under [P-1].", "P-1": "Duty."}
+        self.assertEqual(self.batches(laws, {"P-1": "blocked"}, None), ([], {"C-1": ["P-1"]}, {}))
+        for state in ("blocked", "paused", "failed"):
+            self.assertEqual(self.batches(laws, {"P-1": state}, {"C-1"}), ([["C-1"]], {}, {"C-1": ["P-1"]}), state)
+
+    def test_a_text_only_source_blocked_or_failed_never_stops_the_first_plan(self):
+        laws = {"C-1": "As described in [P-1].", "P-1": "Duty."}
+        for state in ("blocked", "failed"):
+            self.assertEqual(self.batches(laws, {"P-1": state}, {"C-1"})[0], [["C-1"]], state)
+            self.assertEqual(self.batches(laws, {"P-1": state}, set(), borrowed={"C-1": {"P-1"}})[0], [["C-1"]], state)
+
+    def test_a_planned_provider_still_makes_a_first_plan_wait(self):
+        laws = {"C-1": "Duty under [P-1].", "P-1": "Duty."}
+        self.assertEqual(self.batches(laws, {"P-1": "planned"}, {"C-1"}), ([], {"C-1": ["P-1"]}, {}))
+
+    def test_a_provider_held_only_on_a_blocked_law_is_passed_by_a_first_plan(self):
+        laws = {"C-1": "Duty under [P-1].", "P-1": "Duty.", "Q-1": "Duty."}
+        for q in ("blocked", "failed"):
+            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, {"C-1"}, {"P-1": {"Q-1"}}), ([["C-1"]], {}, {"C-1": ["P-1"]}), q)
+            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, set(), {"P-1": {"Q-1"}}), ([], {"C-1": ["P-1"]}, {}), q)
+        laws["R-1"] = "Duty."                            # held on a blocked law and on one that progresses: it may still move
+        self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": "blocked", "R-1": "planned"}, {"C-1"}, {"P-1": {"Q-1", "R-1"}})[1], {"C-1": ["P-1"]})
+
+    def test_a_returned_provider_waiting_only_on_a_blocked_law_is_passed_by_a_first_plan(self):
+        laws = {"C-1": "Duty under [P-1].", "P-1": "Duty under [Q-1].", "Q-1": "Duty."}
+        self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "blocked"}, {"C-1"}), ([["C-1"]], {"P-1": ["Q-1"]}, {"C-1": ["P-1"]}))
+        self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "blocked"}, set()), ([], {"P-1": ["Q-1"], "C-1": ["P-1"]}, {}))
+        self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "planned"}, {"C-1"}), ([], {"P-1": ["Q-1"], "C-1": ["P-1"]}, {}))
+
+    def test_an_ordinary_provider_awaiting_repair_advances_by_itself(self):
+        """A planned provider whose held node waits on no other law (a repair, a concept) is no
+        unavailable law: a caller waits on it, and is planned once it is accepted."""
+        carried = [Node({"node_id": "P_1", "law_refs": ["P-1"], "compositions": []})]
+        with tempfile.TemporaryDirectory() as t:
+            led = Ledger(Path(t) / "l", ["C-1", "P-1"], 3); led.mark_planned("P-1", ["P_1"], 1)
+            held = loop.held_waits(carried, led, set())
+            self.assertEqual((held, loop.unavailable_roots(led, held)), ({}, {}))
+            by_id = {"C-1": Law("C-1", "", "Duty under [P-1].", ""), "P-1": Law("P-1", "", "Duty.", "")}
+            self.assertEqual(loop.plan_batches(led.plannable(), led, by_id, 8, {}, {"C-1"}, held)[1], {"C-1": ["P-1"]})
+            led.accept("P-1", ["P_1"])
+            self.assertEqual([[l.id for l in b] for b in loop.plan_batches(led.plannable(), led, by_id, 8, {}, {"C-1"}, held)[0]], [["C-1"]])
+
+    def test_held_waits_reads_the_held_nodes(self):
+        with tempfile.TemporaryDirectory() as t:
+            led = Ledger(Path(t) / "l", ["P-1", "Q-1"], 3); led.mark_planned("P-1", ["P_1_o1", "P_1_o2"], 1)
+            on_q = Node({"node_id": "P_1_o1", "law_refs": ["P-1"], "compositions": [{"span": "r", "as": "compliance", "rule": "Q_1", "map": {}}]})
+            free = Node({"node_id": "P_1_o2", "law_refs": ["P-1"], "compositions": []})
+            self.assertEqual(loop.held_waits([on_q], led, set()), {"P-1": {"Q-1"}})
+            self.assertEqual(loop.held_waits([on_q, free], led, set()), {})
+            self.assertEqual(loop.held_waits([on_q], led, {"Q_1"}), {})
+
+    def test_the_chain_through_a_first_plan(self):
+        laws = {"S-1": "[S-2]", "S-2": "[S-3]", "S-3": ""}
+        self.assertEqual(self.batches(laws, {"S-3": "blocked"}, {"S-2"}), ([["S-2", "S-1"]], {}, {"S-2": ["S-3"]}))
+        self.assertEqual(self.batches(laws, {"S-3": "blocked"}, {"S-1"}), ([["S-1"]], {"S-2": ["S-3"]}, {"S-1": ["S-2"]}))
+        self.assertEqual(self.batches(laws, {"S-3": "blocked"}, set()), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}))
+        self.assertEqual(self.batches(laws, {"S-3": "planned"}, {"S-1", "S-2"}), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}))
+
+    def test_a_first_plan_naming_a_blocked_and_a_planned_law_waits(self):
+        laws = {"C-1": "[B-1] and [P-1]", "B-1": "", "P-1": ""}
+        self.assertEqual(self.batches(laws, {"B-1": "blocked", "P-1": "planned"}, {"C-1"}), ([], {"C-1": ["P-1"]}, {}))
+
+    def test_a_cycle_of_waits_reaching_no_root_is_no_unavailable_law(self):
+        with tempfile.TemporaryDirectory() as t:
+            led = Ledger(Path(t) / "l", ["A-1", "B-1", "Q-1"], 3)
+            self.assertEqual(loop.unavailable_roots(led, {"A-1": {"B-1"}, "B-1": {"A-1"}}), {})
+            led.block("Q-1", ["g1"], ["gap"])
+            self.assertEqual(loop.unavailable_roots(led, {"A-1": {"B-1", "Q-1"}, "B-1": {"Q-1"}}),
+                             {"Q-1": {"Q-1"}, "B-1": {"Q-1"}, "A-1": {"Q-1"}})
+
+    def test_reference_records_marks_a_law_without_records(self):
+        from harness.phases import plan as plan_phase
+        laws = {"C-1": Law("C-1", "", "Duty under [P-1].", ""), "P-1": Law("P-1", "", "Duty.", ""), "D-1": Law("D-1", "", "Duty.", "")}
+        for history, expected in (((None, [], []), {"C-1"}), ((None, [], ["the plan of iteration 1 could not be read"]), set()),
+                                  ((1, [NS(versions=[("as planned", {"node_id": "C_1", "law_refs": ["C-1"]})])], []), set())):
+            with mock.patch.object(plan_phase, "law_history", lambda _r, _l, h=history: h):
+                self.assertEqual(loop.reference_records(NS(), list(laws), laws), ({}, expected))
 
 
 class Takeover(unittest.TestCase):

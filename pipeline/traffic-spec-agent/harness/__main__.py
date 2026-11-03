@@ -134,7 +134,7 @@ class Cli:
         launches); `plan_attempts`, `concept_attempts`, `node_attempts` (the attempt budgets);
         `repeat_limit` (consecutive open counts of one upheld case that block its law for the
         operator); `gate_budget`; `plan_batch`, `workers`, `plan_turns`, `max_turns`, `session_timeout`;
-        `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `session_retries`, `retry_wait`; `reviewer_model`
+        `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `repair_budget_usd`, `judge_budget_usd` (each role's cap), `session_retries`, `retry_wait`; `reviewer_model`
         (required), `review_effort`, `allow_same_vendor`, `review_checks`, `review_submissions`,
         `review_passes`, `max_divergences`, `reviewer_max_output_tokens`, `openai_budget_usd`,
         `model_prices`; `definition_precedence`; `restart` (discard an interrupted iteration);

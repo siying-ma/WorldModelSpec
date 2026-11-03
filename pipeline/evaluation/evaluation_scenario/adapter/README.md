@@ -321,6 +321,12 @@ reach one junction, with its entrance end at that junction.
   rule concerns, never from the road user's velocity or heading. So `occupies` and
   `enters_intersection` must be right for every carrier a body touches.
 
+**Alley junctions.** A junction where an alley meets another way (a street, road, highway or alley)
+is no intersection (`st.intersection`): write it as `driveway_or_alley_entrance`, never as
+`intersection`. No carrier's `enters_intersection` names it, and no stop line or crosswalk lists a
+carrier in `entrance_of` for its entrance into that junction: both keys name an entrance into an
+intersection. The entrance's kind does not tell an alley's from a private road's or driveway's.
+
 **Kind refinement.** Some kinds refine another (`StructureKind.parent?` in
 `library/TrafficSpec/Core/Vocab/Ontology/Structure.lean`):
 
@@ -457,10 +463,15 @@ authority. The ones CARLA needs:
 - **Full split only** (held out of the training split): DeviceKind `school_bus_signal`; SignCode
   (`code`) `lane_use_arrow` and `turn_course_marker`
 
-A class carries no implied membership. A CARLA car is `["motor_vehicle"]`. A CARLA bicycle is
-`["bicycle"]`, not a motor vehicle. When the blueprint does not settle a class (is this car a
-taxicab?), put that class in `unobserved_classes`. Legal words such as "vehicle" or "traffic" are never
-written in a trace: the reading maps them to classes.
+List every class whose contract the road user meets, the general one and each specific one: a truck
+is `["motor_vehicle", "truck"]`, never `["truck"]` alone. A class carries no implied membership:
+listing one class never stands for another, so a class left out of both lists is observed not to
+apply. A CARLA car is `["motor_vehicle"]`. A CARLA bicycle is `["bicycle"]`, not a motor vehicle.
+When the blueprint does not settle a class (is this car a taxicab? is this van a truck?), put that
+class in `unobserved_classes`. An aggregate's reading relies on this: a class it marks covered is
+taken as no evidence of membership, because every qualifying road user also carries one of the
+included classes named with it. Legal words such as "vehicle" or "traffic" are never written in a
+trace: the reading maps them to classes.
 
 ### 4.7 Example: the canonical trace
 

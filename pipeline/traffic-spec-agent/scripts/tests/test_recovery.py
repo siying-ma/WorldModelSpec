@@ -15,6 +15,7 @@ import contextlib
 import json
 import shutil
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -83,23 +84,26 @@ class World:
         self.dead = False
         self.uncommitted = collections.Counter()   # at the stop: the session calls whose outcome was not committed
         self.before_stop = collections.Counter()   # the session calls made before the stop
+        self.lock = threading.RLock()              # tasks run in worker threads: one tick at a time
 
     def tick(self, *label):
-        if self.dead:
-            raise Crash("dead")
-        self.ticks += 1
-        self.log.append(label)
-        if self.crash_at == self.ticks:
-            self.uncommitted = uncommitted_calls(self.log, self.ticks)
-            self.before_stop = collections.Counter(self.calls)
-            self.dead = True
-            raise Crash(label)
+        with self.lock:
+            if self.dead:
+                raise Crash("dead")
+            self.ticks += 1
+            self.log.append(label)
+            if self.crash_at == self.ticks:
+                self.uncommitted = uncommitted_calls(self.log, self.ticks)
+                self.before_stop = collections.Counter(self.calls)
+                self.dead = True
+                raise Crash(label)
 
     def call(self, kind, ident, it):
-        if self.dead:
-            raise Crash("dead")
-        self.calls[(kind, ident, it)] += 1
-        self.tick("call", kind, ident, it)
+        with self.lock:
+            if self.dead:
+                raise Crash("dead")
+            self.calls[(kind, ident, it)] += 1
+            self.tick("call", kind, ident, it)
 
     def plan_for(self, law, it):
         return self.plans.get((law, it), self.plans.get(law, []))
@@ -152,6 +156,12 @@ class Fixture:
             s.enter_context(mock.patch.object(paths, k, self.dirs[k]))
         real_write = jsonl.write_atomic
 
+        def locked(fn):                          # an effect and its tick are one step: no task runs past the stop
+            def run(*a, **k):
+                with w.lock:
+                    return fn(*a, **k)
+            return run
+
         def write_atomic(path, text):
             name = Path(path).name
             if w.dead:
@@ -165,7 +175,7 @@ class Fixture:
                 w.tick("commit")
             elif name in PROJECTIONS:
                 w.tick("projection", name)
-        s.enter_context(mock.patch.object(jsonl, "write_atomic", write_atomic))
+        s.enter_context(mock.patch.object(jsonl, "write_atomic", locked(write_atomic)))
         s.enter_context(mock.patch.object(jsonl.os, "fsync", lambda fd: None))      # durability is not what is tested here
         real_append = jsonl.append_atomic
 
@@ -173,7 +183,7 @@ class Fixture:
             if w.dead:
                 raise Crash("dead")
             real_append(path, row)
-        s.enter_context(mock.patch.object(jsonl, "append_atomic", append_atomic))
+        s.enter_context(mock.patch.object(jsonl, "append_atomic", locked(append_atomic)))
         fake_onto = mock.Mock(atom_ids=sorted(ATOMS), primitive_ids=[])
         s.enter_context(mock.patch.object(ontology, "load", lambda p: fake_onto))
         s.enter_context(mock.patch.object(ontology, "anchors_text", lambda *a, **k: ""))
@@ -249,6 +259,8 @@ class Fixture:
         s.enter_context(mock.patch.object(code_phase, "write_concept_skeletons", write_concept_skeletons))
 
         def session_run(prompt, cwd=None, out_dir=None, opts=None, **kw):
+            if w.dead:
+                raise Crash("dead")
             d = Path(out_dir)
             it = _iteration_of(d)
             if d.name.startswith("concept__"):
@@ -263,7 +275,7 @@ class Fixture:
             write_files(rels, f"coded {ident} {it}\n")
             w.call("code", ident, it)
             return {}
-        s.enter_context(mock.patch.object(session, "run", session_run))
+        s.enter_context(mock.patch.object(session, "run", locked(session_run)))
 
         def admitted(ident, d):                  # an admission recheck at a loop start, not a coding task
             if "admission" not in Path(d).parts:
@@ -289,9 +301,11 @@ class Fixture:
         real_restore = code_phase._restore
 
         def restore(work, baseline, rels, keep_final=True):
+            if w.dead:                           # a task beside the one that stopped the process does no more
+                raise Crash("dead")
             real_restore(work, baseline, rels, keep_final)
             w.tick("restore", Path(work).name)
-        s.enter_context(mock.patch.object(code_phase, "_restore", restore))
+        s.enter_context(mock.patch.object(code_phase, "_restore", locked(restore)))
 
         def outcome(o, ident):
             if o == "outage":
@@ -391,6 +405,9 @@ class Fixture:
         keys = ("iteration", "ledger", "concept_ledger", "node_ledger", "accepted_nodes", "accepted_concepts",
                 "deferred_nodes", "deferred_concepts", "aggregate_failures", "fenced")
         out = {k: st.get(k) for k in keys}
+        if self.opt.get("workers", 1) > 1:                       # tasks end in any order: a ledger's rows are a set
+            for k in ("ledger", "concept_ledger", "node_ledger"):
+                out[k] = sorted(out[k] or [], key=lambda d: json.dumps(d, sort_keys=True))
         for k in ("deferred_nodes", "deferred_concepts"):        # held records are a set
             out[k] = sorted(out[k] or [], key=lambda d: json.dumps(d, sort_keys=True))
         out["stage"] = st["prog"].get("stage")
@@ -428,19 +445,30 @@ def reference(build) -> tuple[dict, list[tuple], collections.Counter, list[str]]
 
 def uncommitted_calls(log: list[tuple], upto: int) -> collections.Counter:
     """The session calls whose outcome is not yet committed at tick `upto` (1-based): those after
-    the last snapshot commit, less the coding sessions whose saved verdict a resume reuses (a
+    the last snapshot commit, and the coding and review calls of an item of the snapshot's
+    iteration whose decision the snapshot does not hold (a task running beside others whose outcome
+    was committed after its call), less the coding sessions whose saved verdict a resume reuses (a
     failing verdict, or a passing one whose files are still in the library). An outcome the
     snapshot does not hold did not happen, and is redone."""
     last_commit = max([i for i, e in enumerate(log[:upto]) if e[0] == "commit"] or [-1])
+    sf = paths.RESULTS / "r" / "state.json"
+    snap = json.loads(sf.read_text()) if sf.exists() else {}
+    prog = snap.get("prog") or {}
+    decided = set(prog.get("nodes", {})) | set(prog.get("concepts", {}))
     out = collections.Counter()
-    for e in log[last_commit + 1:upto]:
+    for i, e in enumerate(log[:upto]):
         if e[0] == "call":
             _, kind, ident, it = e
+            if i <= last_commit and not (kind in ("code", "review") and it == snap.get("iteration") and ident not in decided):
+                continue
             if kind == "code":                     # a saved verdict the resume can still reuse is committed
                 is_c = nodeid.is_concept_id(ident)
                 d = paths.RESULTS / "r" / f"iter-{it:03d}" / "code" / (code_phase.concept_dirname(ident) if is_c else ident)
                 rels = (nodeid.concept_path(ident), nodeid.concept_witness_path(ident)) if is_c else (nodeid.rule_path(ident), nodeid.witness_path(ident))
-                saved = json.loads((d / "verdict.json").read_text()).get("extras", {}).get("context") if (d / "verdict.json").exists() else None
+                try:                                # a verdict another task is writing at the stop is not yet saved
+                    saved = json.loads((d / "verdict.json").read_text()).get("extras", {}).get("context") if (d / "verdict.json").exists() else None
+                except json.JSONDecodeError:
+                    saved = None
                 if code_phase._finished_verdict(d, rels, saved) is not None:     # a resume on an unchanged context reuses it
                     continue
             out[(kind, ident, it)] += 1
@@ -459,7 +487,8 @@ def concepts_and_dependencies() -> World:
 
 
 def compositions() -> World:
-    """L-4 fails at validation, so L-5, whose node composes L-4's, fails; L-6's node composes L-7's,
+    """L-4 fails at validation; L-5, whose node composes L-4's, is not coded and not charged: it waits
+    on the operator's decision on L-4 (`decision:L-4`), its record unchanged. L-6's node composes L-7's,
     which the gate returns and a repair fixes, so L-6's node is held one iteration (no attempt)."""
     w = World({"L-4": "shall signal.", "L-5": "shall wait.", "L-6": "shall merge.", "L-7": "shall slow."})
     w.plans = {"L-4": [node("L_4", "shall signal.", "L-4")], "L-5": [node("L_5", "shall wait.", "L-5", compositions=["L_4"])],
@@ -575,7 +604,7 @@ class Interruptions:
                 prepare(build, w, f)
                 statuses = f.drive(launches=6)
                 where = f"a stop at tick {k}/{n} {log[k - 1]}"
-                self.assertIn("crash", statuses, where)
+                self.assertTrue("crash" in statuses or k > w.ticks, where)   # tasks side by side may end in fewer ticks
                 got = f.state()
             for key in ref:
                 if key == "to_user":                  # no notice is lost; a session retried after the stop may add its own
@@ -657,7 +686,10 @@ class Recovery(Interruptions, unittest.TestCase):
     def test_compositions(self):
         ref, n = self.interrupt_everywhere(compositions)
         led = {e["law"]: (e["state"], e["attempts"]) for e in ref["ledger"]}
-        self.assertEqual(led, {"L-4": ("failed", 0), "L-5": ("failed", 0), "L-6": ("accepted", 0), "L-7": ("accepted", 0)})
+        self.assertEqual(led, {"L-4": ("failed", 0), "L-5": ("blocked", 0), "L-6": ("accepted", 0), "L-7": ("accepted", 0)})
+        l5 = next(e for e in ref["ledger"] if e["law"] == "L-5")
+        self.assertEqual(l5["gaps"], ["decision:L-4"])
+        self.assertIn("composes ['L_4'], whose law(s) wait for the operator", l5["reasons"][0])
 
     def test_integration(self):
         ref, n = self.interrupt_everywhere(integration)
@@ -714,6 +746,53 @@ class Recovery(Interruptions, unittest.TestCase):
                 self.assertEqual(notices(to_user), 1, f"the operator's notice after {where}")
                 self.assertEqual(notices(auto), 1, f"the next plan's note after {where}")
 
+
+
+def with_workers(build, workers: int = 4):
+    """The scenario with `workers` tasks running side by side."""
+    def b() -> World:
+        return build()
+    b.__name__ = build.__name__
+    b.opts = {**getattr(build, "opts", {}), "workers": workers}
+    if hasattr(build, "before"):
+        b.before = build.before
+    return b
+
+
+def decisions(st: dict) -> dict:
+    """What a run decided, whatever order its tasks ended in."""
+    return {"ledger": {e["law"]: (e["state"], e["attempts"], e.get("gaps")) for e in st["ledger"]},
+            "nodes": sorted(st["accepted_nodes"]), "concepts": sorted(st["accepted_concepts"]), "fenced": sorted(st["fenced"] or {}),
+            "held": sorted(json.dumps(d, sort_keys=True) for d in st["deferred_nodes"] + st["deferred_concepts"]),
+            **{k: st[k] for k in ("gaps", "library", "iterations_allocated", "status")}}
+
+
+class ConcurrentRecovery(Interruptions, unittest.TestCase):
+    """The interruption check with four tasks running side by side: an uninterrupted run decides as
+    one task at a time does, and a stop at any point, resumed, ends where it ends, with no session
+    whose outcome was committed launched again."""
+
+    def check(self, build, never=()):
+        ref, _ = self.interrupt_everywhere(with_workers(build), never=never)
+        self.assertEqual(decisions(ref), decisions(reference(build)[0]))
+
+    def test_life_cycle(self):
+        self.check(life_cycle)
+
+    def test_concepts_and_dependencies(self):
+        self.check(concepts_and_dependencies)
+
+    def test_compositions(self):
+        self.check(compositions)
+
+    def test_outages(self):
+        self.check(outages)
+
+    def test_siblings(self):
+        self.check(siblings, never=[("node_repair", "L_11_o2", 2)])
+
+    def test_integration(self):
+        self.check(integration)
 
 def tree_bytes(root: Path) -> dict[str, bytes]:
     return {str(f.relative_to(root)): f.read_bytes() for f in sorted(root.rglob("*")) if f.is_file()}

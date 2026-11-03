@@ -186,6 +186,129 @@ class ClaimedAnywhere(unittest.TestCase):
         self.assertTrue(C({"concept_id": "drv.motion.turn", "used_by": ["N_1"]}).used_by())
 
 
+class HeldNodeFeedback(unittest.TestCase):
+    """A held node is described by the state it is held in, not as waiting on the run."""
+
+    def test_a_deferred_review_is_named_by_its_stage(self):
+        w = rec.World({"L-1": "shall stop."})
+        w.plans = {"L-1": [rec.node("L_1", "shall stop.", "L-1")]}
+        w.review[("L_1", 1)] = ("deferred", "evidence")
+        with rec.Fixture(w, max_iterations=1) as f:
+            f.drive(launches=1)
+            notes = (paths.RESULTS / "r" / "AUTO_NOTES.md").read_text(encoding="utf-8")
+        self.assertIn("- `L_1` held: its behaviour review was deferred at stage `evidence`: scripted deferral", notes)
+        self.assertNotIn("waits on the run", notes)
+
+
+class RepairReask(unittest.TestCase):
+    """A node repair whose first record the validator returns keeps both attempts (records, verdicts,
+    the re-ask's prompt), and a resume during the re-ask continues from it: the first session is not
+    launched again."""
+
+    def test_both_attempts_are_kept_and_a_resume_continues_from_the_reask(self):
+        from scripts.tests.test_operator_decisions import record, LAW, ONTO
+        n = record({"span": "s2", "why": "w"})
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        d0 = Path(tmp.name) / "run"
+        run = NS(iter=d0, dir=d0, iteration=2, mapping_file=d0 / "mapping.json",
+                 opts=NS(dry_run=False, plan_turns=1, plan_effort="low", run_id="t", laws=d0 / "laws.jsonl"),
+                 all_nodes=lambda: {}, all_concepts=lambda: {})
+        last = d0 / "last"; last.mkdir(parents=True)
+        launched: list[tuple[str, str]] = []
+        crash = {"again": True}
+
+        class Stop(BaseException):
+            pass
+
+        def session_run(prompt, cwd=None, out_dir=None, label="session", **_k):
+            launched.append((label, prompt))
+            if label == "session_again" and crash["again"]:
+                crash["again"] = False
+                raise Stop()                               # the process ends during the re-ask
+            body = {k: v for k, v in n.raw.items() if k not in ("node_id", "law_refs", "segmentation")}
+            (Path(cwd) / "record.jsonl").write_text(json.dumps({**body, "obligation": label}))
+            (Path(out_dir) / f"{label}_result.json").write_text(json.dumps({"attempt": 1, "result": {}, "failure": None, "stopped": False}))
+            return {}
+
+        def validate(nodes, *a, **k):
+            first = nodes[0].get("obligation") == "session"
+            return [NS(node=nodes[0], reasons=["L_9_o1: scripted defect"] if first else [])]
+        patches = [mock.patch.object(plan_phase.session, "run", session_run), mock.patch.object(validate_a, "validate", validate),
+                   mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"),
+                   mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []),
+                   mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: "")]
+        reading = NS(data={"params": []}, params=[], pending_aggregates=False)
+        with ExitStack() as st:
+            for p_ in patches:
+                st.enter_context(p_)
+            with self.assertRaises(Stop):
+                plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], reading, ONTO)
+            d = plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], reading, ONTO)
+        self.assertEqual([l for l, _ in launched], ["session", "session_again", "session_again"])
+        reask = (d / "prompt_again.md").read_text()
+        self.assertIn("scripted defect", reask)
+        self.assertEqual(launched[2][1], reask)
+        self.assertEqual((d / "validation_first.txt").read_text(), "L_9_o1: scripted defect")
+        self.assertEqual(json.loads((d / "record_first.jsonl").read_text())["obligation"], "session")
+        self.assertEqual((d / "validation.txt").read_text(), "accept")
+        self.assertTrue(plan_phase.read_repair(d, concept=False).accepted)
+
+    def test_a_finished_first_session_is_validated_not_launched_again(self):
+        from scripts.tests.test_operator_decisions import record, LAW, ONTO
+        n = record({"span": "s2", "why": "w"})
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        d0 = Path(tmp.name) / "run"
+        run = NS(iter=d0, dir=d0, iteration=2, mapping_file=d0 / "mapping.json",
+                 opts=NS(dry_run=False, plan_turns=1, plan_effort="low", run_id="t", laws=d0 / "laws.jsonl"),
+                 all_nodes=lambda: {}, all_concepts=lambda: {})
+        last = d0 / "last"; last.mkdir(parents=True)
+        d = d0 / "repair" / n.id; d.mkdir(parents=True)
+        body = {k: v for k, v in n.raw.items() if k not in ("node_id", "law_refs", "segmentation")}
+        (d / "record.jsonl").write_text(json.dumps(body))
+        (d / "session_result.json").write_text(json.dumps({"attempt": 1, "result": {}, "failure": None, "stopped": False}))
+        launched = []
+        with mock.patch.object(plan_phase.session, "run", lambda *a, **k: launched.append(k.get("label"))), \
+                mock.patch.object(validate_a, "validate", lambda nodes, *a, **k: [NS(node=nodes[0], reasons=[])]), \
+                mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"), \
+                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []), \
+                mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: ""):
+            plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], NS(data={"params": []}, params=[], pending_aggregates=False), ONTO)
+        self.assertEqual(launched, [])
+        self.assertEqual((d / "validation.txt").read_text(), "accept")
+
+
+class ReopenDecidesTokens(unittest.TestCase):
+    """A law blocked on `decision:<law>` reopens when that law is reopened; a law waiting on a gap and a
+    decision token reopens with the last of them, in either order."""
+
+    def ledger(self):
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        led = Ledger(Path(tmp.name) / "ledger.jsonl", ["L", "F", "B"], 3)
+        led.fail("F", ["closed"]); led.block("B", ["g1"], ["gap"])
+        return led
+
+    def test_reopening_the_failed_provider_reopens_its_caller(self):
+        led = self.ledger()
+        led.block("L", ["decision:F"], ["waits on F"])
+        self.assertEqual(led.reopen(["L-other"]), [])
+        self.assertEqual(sorted(led.reopen(["F"])), ["F", "L"])
+        self.assertEqual((led.entries["L"].state, led.entries["L"].attempts, led.entries["L"].gaps), ("open", 0, []))
+
+    def test_a_gap_and_a_token_in_either_order(self):
+        for order in ("gap_first", "token_first"):
+            led = self.ledger()
+            led.block("L", ["decision:F", "g1"], ["waits on F and B"])
+            if order == "gap_first":
+                self.assertEqual([l for l, _ in led.reopen_for_gaps({"g1": ("rejected", "")})], ["B"])
+                self.assertEqual((led.entries["L"].state, led.entries["L"].gaps), ("blocked", ["decision:F"]))
+                self.assertIn("L", led.reopen(["F"]))
+            else:
+                self.assertEqual(led.reopen(["F"]), ["F"])
+                self.assertEqual((led.entries["L"].state, led.entries["L"].gaps), ("blocked", ["g1"]))
+                self.assertEqual(sorted(l for l, _ in led.reopen_for_gaps({"g1": ("retired", "")})), ["B", "L"])
+            self.assertEqual(led.entries["L"].state, "open", order)
+
+
 class Chains(unittest.TestCase):
     def plan(self, root_state):
         with tempfile.TemporaryDirectory() as t:
@@ -202,12 +325,12 @@ class Chains(unittest.TestCase):
             batches, waiting, dead = loop.plan_batches(led.plannable(), led, laws, 8)
             return [[l.id for l in b] for b in batches], waiting, dead
 
-    def test_a_wait_and_a_failure_close_over_the_chain(self):
+    def test_a_wait_closes_over_the_chain_and_a_failed_root_stops_nothing(self):
         for state in ("pending", "blocked"):
             batches, waiting, dead = self.plan(state)
             self.assertEqual((batches, waiting, dead), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}), state)
         batches, waiting, dead = self.plan("failed")
-        self.assertEqual((batches, waiting, dead), ([], {}, {"S-2": ["S-3"], "S-1": ["S-2"]}))
+        self.assertEqual((batches, waiting, dead), ([["S-2", "S-1"]], {}, {"S-2": ["S-3"]}))
 
     def test_providers_accepted_or_in_an_earlier_batch_are_planned(self):
         batches, waiting, dead = self.plan("accepted")

@@ -308,7 +308,8 @@ class RegionFormalPlaces(unittest.TestCase):
 
     def test_a_region_found_by_the_body_still_needs_its_kind(self):
         found = {**self.rec, "args": [a for a in self.rec["args"] if a["sort"] != "region"]}
-        self.assertTrue(any("is a property of a region" in r for r in self.reasons(found)), self.reasons(found))
+        self.assertTrue(any("a region quantifier names its kind" in r and "`st.lane_direction` (region argument 1)" in r
+                            for r in self.reasons(found)), self.reasons(found))
 
 
 class RegionPersistence(unittest.TestCase):

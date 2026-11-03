@@ -6,7 +6,7 @@ from pathlib import Path
 from ..checks import aggregates
 from ..model import corpus, definitions as definitions_mod, nodeid, ontology
 from ..agents import render, session
-from ..store import paths
+from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..model.mapping import MappingIndex
 from ..model.reading import Reading
@@ -94,10 +94,10 @@ def concept_catalogue(run: Run) -> str:
 def library_summary(run: Run, pending: list[dict] | None = None) -> str:
     rows = []
     for n in run.all_nodes().values():
-        atoms = sorted({a for e in n.get("elements", []) for a in e.get("atoms", []) + e.get("derived", [])})
+        atoms = sorted(Node(n).claimed_atoms())
         rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} | accepted |")
     for n in pending or []:
-        atoms = sorted({a for e in n.get("elements", []) for a in e.get("atoms", []) + e.get("derived", [])})
+        atoms = sorted(Node(n).claimed_atoms())
         rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n.get('binders', []))} | {', '.join(atoms)} | planned this iteration, not yet accepted |")
     if not rows:
         return "(the library carries no accepted node yet)\n"
@@ -190,6 +190,8 @@ def _task_state(task: Path) -> str:
     o = _read_json(task / "review" / "review_outcome.json")
     if not isinstance(o, dict):
         return out + (", the review outcome could not be read" if o is _UNREAD else ", not reviewed")
+    if "inputs" in o and "outcome" not in o:
+        return out + ", the review did not finish"
     if o.get("deferred"):
         return out + ", review deferred"
     return out + (f", the review returned it ({len(o['upheld'])} upheld case(s))" if o.get("upheld") else ", the review upheld no case")
@@ -354,6 +356,10 @@ def _composes(run: Run, raw: dict, entries: list[_Entry], laws: dict[str, corpus
     for c in raw.get("compositions") or []:
         if not isinstance(c, dict):
             continue
+        if c.get("as") == blueprint.DEFINITION:
+            out.append(f"- span `{c.get('span')}` “{_ws(spans.get(c.get('span'), ''))}” borrows from `{c.get('source')}` the words "
+                       f"“{_ws(c.get('quote'))}” (as definition: no rule is composed)")
+            continue
         rid = str(c.get("rule"))
         same = [e for e in entries if e.id == rid]
         hit = None if same else _latest_elsewhere(run, rid)
@@ -489,7 +495,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
     onto = ontology.load(run.opts.ontology)
     values = {
         "laws": corpus.render_laws(laws),
-        "definitions": definitions_block(run, laws),
+        "definitions": definitions_block(run, laws) + definitions_mod.render_sources(definitions_mod.cited_sources(run, laws), definitions_mod.CITED_HEADING),
         "ontology": onto.text,
         "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(),
@@ -568,12 +574,9 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         return d
     from ..checks import validate_a
     from ..model.blueprint import Node
-    ask = prompt
-    for attempt in ("", "_again"):
-        session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
-                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan", run.opts.run_id),
-                    tools=session.REPAIR_TOOLS, env=session.harness_env(),
-                    relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
+    ask, attempts = _repair_attempts(d, prompt)
+    for attempt in attempts:
+        _repair_session(run, d, ask, attempt)
         rep = read_repair(d, concept=True)
         if rep.kind == "malformed":
             errs = [f"record.jsonl could not be read: {rep.message}"]
@@ -585,8 +588,43 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         (d / "validation.txt").write_text("\n".join(errs) or "accept", encoding="utf-8")
         if not errs or attempt:
             return d
-        ask = prompt + "\n\n## Defects of your previous record\n\nThe validator returned it. Write `record.jsonl` again without these defects:\n" + "".join(f"- {e}\n" for e in errs)
+        ask = _reask(d, prompt + "\n\n## Defects of your previous record\n\nThe validator returned it. Write `record.jsonl` again without these defects:\n" + "".join(f"- {e}\n" for e in errs))
     return d
+
+
+def _repair_attempts(d: Path, prompt: str) -> tuple[str, tuple[str, ...]]:
+    """Where a repair task starts: with its prompt and both attempts, or, when its re-ask was
+    already decided (`prompt_again.md`, written before the second session), with that prompt and
+    the second attempt only, so a resume never runs the first session again."""
+    again = d / "prompt_again.md"
+    if again.exists():
+        return again.read_text(encoding="utf-8"), ("_again",)
+    return prompt, ("", "_again")
+
+
+def _repair_session(run: Run, d: Path, ask: str, attempt: str) -> None:
+    """The repair session of one attempt (`""`, then `"_again"`), unless that attempt's session
+    already ran to its end: a resume validates the record it left instead of launching it again."""
+    if session.finished(d, "session" + attempt):
+        return
+    session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, role="repair",
+                label="session" + attempt,
+                allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan", run.opts.run_id),
+                tools=session.REPAIR_TOOLS, env=session.harness_env(),
+                relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
+
+
+def _reask(d: Path, ask: str) -> str:
+    """The re-ask of a repair, recorded before it runs: the first attempt's record and verdict are
+    kept (`record_first.jsonl`, `validation_first.txt`) and the re-ask's prompt is written
+    (`prompt_again.md`), the checkpoint a resume continues from; `validation.txt` is left to the
+    verdict on the second record."""
+    for name, kept in (("record.jsonl", "record_first.jsonl"), ("validation.txt", "validation_first.txt")):
+        if (d / name).exists():
+            jsonl.write_atomic(d / kept, (d / name).read_text(encoding="utf-8"))
+    (d / "validation.txt").unlink(missing_ok=True)
+    jsonl.write_atomic(d / "prompt_again.md", ask)
+    return ask
 
 
 def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: corpus.Law, defs: list[dict],
@@ -597,7 +635,8 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     files, the ontology, the catalogue and the reading, and writes a revised record (segmentation unchanged) or a
     withdrawal to `record.jsonl` in its own directory. The record is validated in the plan's
     context (the law's accepted and held siblings) with one re-ask; `validation.txt` records the
-    outcome. Returns the directory."""
+    outcome, and a re-ask keeps the first attempt's record, verdict and the re-ask's prompt beside
+    it (`_reask`). Returns the directory."""
     from ..checks import validate_a
     from ..model.blueprint import Node
     d = run.iter / "repair" / node.id
@@ -628,7 +667,8 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
     prompt = render.render("node_repair.md", {
         "law": f"## The law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans (the segmentation; fixed, not part of the record you write):\n{seg}\n",
-        "definitions": "## Definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, [law])),
+        "definitions": "## Definitions that apply\n\n" + corpus.render_definitions(definitions_for(run, [law]))
+                       + definitions_mod.render_sources(definitions_mod.cited_sources(run, [law], [node]), definitions_mod.CITED_HEADING),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
         "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
@@ -649,18 +689,15 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     index = MappingIndex(run.mapping_file)
     reading.pending_aggregates = True            # an aggregate the selection did not admit is the loop's to correct, not this session's
     accepted = {k: Node(v) for k, v in run.all_nodes().items()}
-    ask = prompt
-    for attempt in ("", "_again"):
-        session.run(ask, cwd=d, out_dir=d, opts=run.opts, max_turns=run.opts.plan_turns, effort=run.opts.plan_effort, label="session" + attempt,
-                    allow=[f"{t}({session._abs(d)}/**)" for t in ("Read",) + session.WRITE_TOOLS], deny=session.deny_rules("plan", run.opts.run_id),
-                    tools=session.REPAIR_TOOLS, env=session.harness_env(),
-                    relaunch=lambda: (d / "record.jsonl").unlink(missing_ok=True))
+    ask, attempts = _repair_attempts(d, prompt)
+    for attempt in attempts:
+        _repair_session(run, d, ask, attempt)
         rep = read_repair(d, concept=False)
         if rep.kind == "withdrawn" and (rep.withdrawal or {}).get("kind") == "concept" and not attempt:
             from ..loop import concept_deps, reached_concepts
             _d, bad = review_phase.report_form(run, d, reached_concepts(run, concept_deps(node)))
             if bad:                                       # a report in the wrong form is returned once, before anything is run
-                ask = prompt + "\n\n## Defects of your report\n\nWrite `dependency_defect.json` again without these defects:\n" + "".join(f"- {e}\n" for e in bad)
+                ask = _reask(d, prompt + "\n\n## Defects of your report\n\nWrite `dependency_defect.json` again without these defects:\n" + "".join(f"- {e}\n" for e in bad))
                 continue
         if rep.kind in ("withdrawn", "missing"):
             return d
@@ -669,13 +706,14 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
             (d / "validation.txt").write_text("\n".join(errs), encoding="utf-8")
             if attempt:
                 return d
-            ask = prompt + "\n\n## Defects of your previous record\n\nWrite `record.jsonl` again as one JSON object:\n" + "".join(f"- {e}\n" for e in errs)
+            ask = _reask(d, prompt + "\n\n## Defects of your previous record\n\nWrite `record.jsonl` again as one JSON object:\n" + "".join(f"- {e}\n" for e in errs))
             continue
         rec2 = rep.records[0]
         errs = []
         others = [s for s in siblings if s.id != node.id]
         outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [],
-                                       rejected_gaps=GapLedger.for_run(paths.GAPS_DIR, run).rejected())
+                                       rejected_gaps=GapLedger.for_run(paths.GAPS_DIR, run).rejected(),
+                                       sources=definitions_mod.source_texts(run))
         errs += [r for o in outcomes if o.node.id == node.id for r in o.reasons]
         # a mapping the repair changed on words a sibling also carries: the same-words rule lands on the sibling, and is the repair's to keep or dispute
         errs += [f"{node.id}: your mapping of shared words differs from the held sibling's — {r}" for o in outcomes if o.node.id != node.id
@@ -683,7 +721,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         (d / "validation.txt").write_text("\n".join(errs) or "accept", encoding="utf-8")
         if not errs or attempt:
             return d
-        ask = prompt + "\n\n## Defects of your previous record\n\nThe validator returned it. Write `record.jsonl` again without these defects:\n" + "".join(f"- {e}\n" for e in errs)
+        ask = _reask(d, prompt + "\n\n## Defects of your previous record\n\nThe validator returned it. Write `record.jsonl` again without these defects:\n" + "".join(f"- {e}\n" for e in errs))
     return d
 
 

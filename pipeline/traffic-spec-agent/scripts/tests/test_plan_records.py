@@ -224,6 +224,97 @@ class SmallerChecks(unittest.TestCase):
         self.assertEqual(unanchored_variables(groups + [["w", "$"]], ["v"]), [])
 
 
+class AllRequirementsAtOnce(unittest.TestCase):
+    """A returned record learns every requirement of the item it misses in the first message: an
+    early return never hides a further requirement of the same item."""
+    PARAMS = {"drv.motion.turn": [{"name": "window", "unit": "s"}]}
+
+    def occasion_node(self, **occasion):
+        rec = copy.deepcopy(NODE)
+        rec["segmentation"].append({"id": "c1", "role": "condition", "text": "x"})
+        rec["elements"] = [{"span": "s1", "atoms": [], "derived": ["drv.motion.turn"], "justification": "j"},
+                           {"span": "c1", "atoms": ["kin.speed"], "derived": [], "justification": "j"}]
+        rec["params"] = ["p.turn_window"]
+        if occasion:
+            rec["occasion"] = occasion
+        return Node(rec)
+
+    def requirements_named(self, msg):
+        for part in ("`occasion`", "`window`", "`spans`", "`under_way`", "motion", "`occasion_<span>`", "`occasion_<span>_outside`",
+                     "different verdicts"):
+            self.assertIn(part, msg, part)
+
+    def test_the_first_occasion_message_names_every_requirement(self):
+        errs = validate_a.check_occasion(self.occasion_node(), self.PARAMS, ONTO, set(self.PARAMS), {})
+        self.assertEqual(len(errs), 1)
+        self.requirements_named(errs[0])
+        errs = validate_a.check_occasion(self.occasion_node(act="drv.motion.turn", window="p.turn_window", spans={"c1": "some_moment"},
+                                                            under_way={"words": "w", "atoms": ["st.lane"], "justification": "j"}),
+                                         self.PARAMS, ONTO, set(self.PARAMS), {})
+        self.requirements_named(errs[0])
+        self.assertTrue(any("reads no motion" in e for e in errs) and any("`occasion_c1`" in e for e in errs)
+                        and any("`occasion_c1_outside`" in e for e in errs))
+        errs = validate_a.check_occasion(self.occasion_node(act="drv.motion.turn", window="p.turn_window", spans=["c1"]),
+                                         self.PARAMS, ONTO, set(self.PARAMS), {})
+        self.requirements_named(errs[0])
+
+    def test_a_complete_occasion_passes(self):
+        n = self.occasion_node(act="drv.motion.turn", window="p.turn_window", spans={"c1": "some_moment"},
+                               under_way={"words": "w", "atoms": ["kin.yaw_rate"], "justification": "j"})
+        n.raw["scenarios"] += [{"name": "occasion_c1", "expected": "violated"}, {"name": "occasion_c1_outside", "expected": "compliant"}]
+        self.assertEqual(validate_a.check_occasion(n, self.PARAMS, ONTO, set(self.PARAMS), {}), [])
+
+    def test_a_history_boundary_scenario_names_both_defects(self):
+        rec = copy.deepcopy(NODE)
+        rec["scenarios"].append({"name": "history_boundary", "expected": "violated", "boundary": " "})
+        errs = [e for e in validate_a.check_scenarios(Node(rec), ONTO) if "history" in e]
+        self.assertEqual(len(errs), 2)
+
+    def test_a_malformed_declaration_still_has_its_span_checked(self):
+        rec = copy.deepcopy(NODE)
+        rec["intentions"] = [{"span": "s1", "id": "turn", "meaning": "m"}]
+        errs = validate_a.check_declarations(Node(rec), {})
+        self.assertTrue(any("is not `int." in e for e in errs) and any("trigger, subject, condition or exception span" in e for e in errs))
+
+    def test_a_gap_names_every_defect(self):
+        rec = {**copy.deepcopy(NODE), "gaps": [{"span": "s1", "kind": "atom", "proposal": "`kin.speed` for the words"}]}
+        errs, gaps = validate_a.check_closed_set(Node(rec), ONTO)
+        self.assertTrue(any("nearest" in e for e in errs) and any("already has" in e for e in errs))
+        self.assertEqual(gaps, [])
+
+
+class FormulaRestrictions(unittest.TestCase):
+    """The planner and the coder read one block of what a formula may not say, cut from Core's own
+    comments: the static checks' contracts and the restricted constructors' doc comments."""
+    def test_the_block_is_in_the_formula_language_both_roles_read(self):
+        from harness.lean import surface
+        block = surface.formula_restrictions()
+        for name in ("`Rule.check`", "`Concept.check`", "`Term.div`", "`ArgSort.literal`"):
+            self.assertIn(name, block)
+        self.assertIn("measured atom", block)
+        self.assertIn("only where a spelling is expected", block)
+        language = surface.formula_language()
+        self.assertIn(block, language)
+        self.assertIn(language, surface.core_surface({}))
+        listing = language.split("### What a formula may not say")[0]
+        self.assertIn("| div (a b : Term)", listing)
+        self.assertNotIn("bound on a product", listing)            # stated once, in the block
+        self.assertNotIn("only where a spelling is expected", surface.concept_language())
+
+
+class ClaimedAtoms(unittest.TestCase):
+    def test_binder_classes_are_claimed(self):
+        rec = {**copy.deepcopy(NODE), "subject": {"binder": "v", "class_elements": ["ru.subject", "ru.aggregate=D::vehicle"]},
+               "binders": [{"name": "v", "class_elements": ["ru.subject", "ru.aggregate=D::vehicle"]},
+                           {"name": "w", "class_elements": ["ru.pedestrian"]}]}
+        n = Node(rec)
+        self.assertTrue({"ru.subject", "ru.aggregate=D::vehicle", "ru.pedestrian", "kin.speed"} <= n.claimed_atoms())
+        self.assertIn("ru_aggregate", n.claimed_names())
+        rec["binders"][1]["class_elements"] = ["ru.no_such_class"]
+        errs, _ = validate_a.check_closed_set(Node(rec), ONTO)
+        self.assertTrue(any("ru.no_such_class" in e for e in errs))
+
+
 # --- the earlier records a law planned again and a node repair are shown ---
 
 TEXT = ("When a vehicle enters a junction, the driver shall stop at the line. After making such a stop, the driver "

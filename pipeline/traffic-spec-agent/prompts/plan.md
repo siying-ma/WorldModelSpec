@@ -23,8 +23,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 - **Definitions** — per law, each defined term its words use, the posted definition that applies
   to it (resolved mechanically by the operator's declared precedence: you never choose between
   competing definitions), the representation the run selected for it and, for a legal aggregate,
-  its admitted id; then the definitions' texts. Definitions are not obligations and are never a
-  node (rule 0).
+  its admitted id; then the definitions' texts; then, whole, each other law the laws name in
+  brackets, with the definitions that apply to it (what a `definition` reference quotes, rule 5).
+  Definitions are not obligations and are never a node (rule 0).
 - **Ontology** — every atom (id, contract, scope), every attribute value, and every primitive
   with its parameters. With the concept catalogue, this is the **closed set**.
 - **Formula language** — every operator a rule or a concept is written with: what a formula can
@@ -149,6 +150,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    that relate two regions, read the contracts of the relation atoms in the contracts table: where
    none of them relates the two, the span is an `atom` gap.
 
+   A word a posted definition defines is read with that definition's inclusions and exclusions: the
+   element's justification quotes, for each atom or concept it maps the word to, the definition's
+   words that include it, and an exclusion that the contract of the atom or concept does not already
+   make is carried by the rule as a condition beside it. The law's own words that qualify the word
+   (in place, in operation, facing the road user, controlling a place) limit which of its members the
+   duty reads: the justification quotes them and names the members they leave out.
    A defined place word keeps its definition's whole extent; a qualification the law's own words state
    narrows it explicitly; a narrower kind never stands in for the defined word without such words.
 
@@ -256,8 +263,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    atoms named — never an approximation by a neighbouring atom. Two consequences:
    - **An aggregate is one atom.** An admitted aggregate, and a law-local one your
      `aggregates.jsonl` writes, is claimed as `{aggregate_atom}=<id>` — in `class_elements` and in
-     the span's element alike. Never expand an aggregate into the classes it covers; a class the
-     text names on its own is its own atom among the classes of road users.
+     the span's element alike. Never expand an aggregate into the classes it covers. A class named
+     on its own uses its class atom only as rule 0 permits; an admitted aggregate is never
+     replaced by a class atom, even when it contains only one class.
    - **A duty covers its domain.** An obligation's elements decide the duty wherever its words
      apply. An atom or a concept that is decided only inside a narrower domain than the words name
      (a place, a class of road user or a state the words do not require) leaves the duty unjudged
@@ -274,7 +282,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
      quantifies over that kind) and an anchoring relation — {anchors} — so that the rule reads the
      subject's own feature and not any feature of the scene. A relation claimed without the kind
      it ranges over leaves the coder a quantifier it cannot type, and the gate returns the rule
-     for an unclaimed atom. The validator returns a node that claims a feature and no anchor.
+     for an unclaimed atom. A region quantifier names a kind: claim the kind of every region a
+     claimed relation reads, for each of its region arguments a kind whose regions that argument
+     admits. The validator returns a node that claims a feature and no anchor, and one that
+     claims no such kind for a region argument, naming the kinds it admits.
    - **A feature named without a measure is its presence.** A trigger, condition or subject span
      that names a feature and no size of it (any bend, any slope) is carried by the feature
      itself: where its atom is a magnitude, by the magnitude standing clear of zero, with a
@@ -359,7 +370,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    require the act or state itself, a suitable concept or the qualified fact in full carries it.
    That the node stating it is not yet coded is no reason to weaken it. A
    reference to a law of this corpus is a composition, never a residue; a reference to a
-   law outside the corpus may be a residue. A `standard` span whose bound an accepted rule of the
+   law outside the corpus may be a residue. A reference that only borrows the words another text
+   of the corpus defines or sets forth, needing none of its rules to apply, hold or be complied
+   with, is a `definition` reference instead: it names that source and quotes the borrowed words,
+   composes no rule and waits on nothing, and each element whose words use them carries their
+   meaning with its own atoms, every qualification the quoted words keep, naming the reference
+   span in `source_spans`. A `standard` span whose bound an accepted rule of the
    library already states as its own obligation is carried by composing that rule (`as:
    compliance`), not by an operationalization that restates it. The composed rule's every binder is mapped to one of this
    node's binders or to a road user the coding agent will quantify over. `rule` names the **node**
@@ -444,9 +460,9 @@ again, why their representation or the qualifications kept changed), and `## For
 
 ```
 node_id, law_refs, subject{binder, class_elements}, segmentation[{id, text, role}],
-elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
+elements[{span, atoms, derived, justification, source_spans (only on an element whose words are borrowed: the `definition` reference spans they come from, each one's quote repeated in the justification)}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list), boundary (history_boundary only: the approach its trace lacks)}],
 occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
@@ -483,9 +499,15 @@ differs_from{concept, why} (when the sorts and atoms match an accepted concept's
 
 ```
 aggregate_id: "<law id>:<span id>::<term>", term, definition: null,
-classifications[{class: "<class id>", status: "included" | "excluded" | "unresolved",
-                 quotes[{definition: "<law id>", words: "<verbatim words of the law>"}], reason}]
+classifications[{class: "<class id>", status: "included" | "excluded" | "covered" | "unresolved",
+                 quotes[{definition: "<law id>", words: "<verbatim words of the law>"}], reason,
+                 covered_by[<class ids>], basis[{class, words}]}]
 ```
+
+A covered class is one the law's words admit only as members of classes the record includes:
+`covered_by` names them (each `included`, never the class itself), `basis` quotes verbatim the
+class contracts that make the coverage complete, and `reason` says why; only a covered class
+carries `covered_by` and `basis`. `excluded` means the words leave the class out.
 
 ## Self-check before you finish
 
@@ -509,7 +531,8 @@ Run the validator on the finished file and fix what it names; then confirm by re
   while the act is under way;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the
   obligations the law's nodes carry, in text order;
-- every composition's `rule` is a node id; every `masked` is a list;
+- every composition's `rule` is a node id, except a `definition` reference's, which has none and is
+  named in the `source_spans` of the elements that carry its words; every `masked` is a list;
 - every node has the four scenarios; the `blind` one masks a claimed atom;
 - a node of rule 4c states its trigger, place and history bound in full in `obligation`, and plans
   the `history_boundary` scenario with its `boundary` where the missing past decides the verdict;

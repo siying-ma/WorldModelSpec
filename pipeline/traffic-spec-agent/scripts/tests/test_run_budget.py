@@ -226,6 +226,105 @@ class ClaudeSessions(unittest.TestCase):
         self.assertEqual(launched, [])
 
 
+class SessionRoles(unittest.TestCase):
+    """A Claude session is capped and reserved by its role: plan and coding sessions at
+    `session_budget_usd`, repairs at `repair_budget_usd`, tool-less answers at `judge_budget_usd`."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.d = Path(self.tmp.name)
+        self.saved = (paths.RESULTS, runner.run_claude, dict(budget._BUDGETS), owner._RECORD)
+        paths.RESULTS = self.d
+        (self.d / "t").mkdir()
+        self.opts = Options(run_id="t", laws=self.d / "l", ontology=ONTO, reading=self.d / "r", model="opus", session_retries=0,
+                            retry_wait=0, session_budget_usd=20.0, repair_budget_usd=8.0, judge_budget_usd=2.0, claude_budget_usd=30.0)
+        budget._BUDGETS.clear()
+        owner.STOP.clear()
+        owner._RECORD = {"nonce": "gen-1"}
+        self.caps: list = []
+
+    def tearDown(self):
+        paths.RESULTS, runner.run_claude, b, owner._RECORD = self.saved
+        budget._BUDGETS.clear(); budget._BUDGETS.update(b)
+        self.tmp.cleanup()
+
+    def answer(self, result):
+        def fake(prompt, cwd, stream_path, max_budget_usd=None, **kw):
+            stream_path.write_text("")
+            self.caps.append(max_budget_usd)
+            return 0, result, False
+        runner.run_claude = fake
+
+    def task(self) -> Path:
+        t = self.d / f"task{len(list(self.d.glob('task*')))}"; t.mkdir()
+        return t
+
+    def pending(self) -> list[float]:
+        return [r["reserved_usd"] for r in jsonl.read_strict(self.d / "t" / "usage.jsonl") if r.get("state") == "pending"]
+
+    def test_the_defaults_are_the_documented_caps(self):
+        o = Options(run_id="t", laws=self.d / "l", ontology=ONTO, reading=self.d / "r")
+        self.assertEqual((o.session_budget_usd, o.repair_budget_usd, o.judge_budget_usd), (20.0, 8.0, 2.0))
+
+    def test_each_role_is_capped_and_reserved_at_its_own_cap(self):
+        self.answer({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "total_cost_usd": 0.5,
+                     "usage": {"output_tokens": 3}, "result": "{}"})
+        for role in ("work", "repair", "judge"):
+            session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role=role)
+        session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None)      # a caller that names no role plans or codes
+        self.assertEqual(self.caps, [20.0, 8.0, 2.0, 20.0])
+        self.assertEqual(self.pending(), [20.0, 8.0, 2.0, 20.0])
+        with self.assertRaises(ValueError):
+            session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="reviewer")
+
+    def test_the_tool_less_answer_takes_the_judge_cap_and_a_planning_answer_the_work_cap(self):
+        self.answer({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "total_cost_usd": 0.3,
+                     "usage": {"output_tokens": 3}, "result": '{"ok": true}'})
+        run = SimpleNamespace(opts=self.opts)
+        self.assertEqual(validate._session(run, self.task(), "stage_a", "p"), ({"ok": True}, []))
+        self.assertEqual(validate._session(run, self.task(), "plan_aggregates", "q", role="work"), ({"ok": True}, []))
+        self.assertEqual(self.caps, [2.0, 20.0])
+
+    def test_near_the_limit_a_role_launches_only_while_its_own_cap_fits(self):
+        b = budget.for_run(self.opts, self.d / "t")
+        b.settle(b.reserve_session("opus", 20.0, "earlier"), claude_row(21.0))             # $21 of $30 spent, nothing in flight
+        self.answer({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "total_cost_usd": 0.5,
+                     "usage": {"output_tokens": 3}, "result": "{}"})
+        session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="judge")     # 21.5 + 2 fits
+        session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="repair")    # 22 + 8 fits
+        self.assertEqual(self.caps, [2.0, 8.0])
+        with self.assertRaises(BudgetPaused):
+            session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="work")  # 22.5 + 20 does not
+        b.settle(b.reserve_session("opus", 2.0, "more"), claude_row(5.0))                   # $27.5 spent
+        with self.assertRaises(BudgetPaused):
+            session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="repair")
+        session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="judge")     # 27.5 + 2 still fits
+        self.assertEqual(self.caps, [2.0, 8.0, 2.0])
+
+    def test_an_unknown_cost_counts_at_the_role_reservation(self):
+        self.answer({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "usage": {"output_tokens": 3}, "result": "{}"})
+        session.run("p", self.task(), self.task(), self.opts, max_turns=1, effort=None, role="judge")
+        self.assertEqual(round(budget.for_run(self.opts, self.d / "t").by_vendor["anthropic"], 6), 2.0)
+
+    def test_a_judge_past_its_cap_is_asked_again_then_deferred(self):
+        """A judge the CLI stops at its budget cap left no answer: it is asked once more, and an answer
+        that stays missing defers the review (`Deferred`), as a judge without an answer always did."""
+        self.answer({"type": "result", "subtype": "error_max_budget_usd", "is_error": True, "num_turns": 1, "total_cost_usd": 2.4,
+                     "usage": {"output_tokens": 9000}})
+        run = SimpleNamespace(opts=self.opts)
+        out = self.task()
+        answer, errs = validate._session(run, out, "stage_a", "p")
+        self.assertIsNone(answer)
+        self.assertEqual(errs, ["stage_a: no JSON object in the answer, twice"])
+        self.assertEqual(self.caps, [2.0, 2.0])
+        self.assertEqual([json.loads((out / f).read_text())["cut_off"] for f in ("stage_a_result.json", "stage_a_again_result.json")],
+                         ["the session stopped at its budget cap"] * 2)
+        self.assertEqual(round(budget.for_run(self.opts, self.d / "t").by_vendor["anthropic"], 6), 4.8)   # settled at its actual cost
+        ctx = SimpleNamespace(law=SimpleNamespace(text="t"), definitions=[], record={"node_id": "N"})
+        with self.assertRaises(review.Deferred):
+            review.run_stage_a(run, ctx, "p2", self.task(), "stage_a")
+
+
 class ResumedReview(unittest.TestCase):
     """A review resumed after a pause runs only the passes and the judgments it does not have."""
 
@@ -254,12 +353,12 @@ class ResumedReview(unittest.TestCase):
         review.session.run_tools = fake
         n = SimpleNamespace(id="N", raw={"node_id": "N"})
         with self.assertRaises(BudgetPaused):
-            review.run_passes(self.run, n, "prompt", self.d, self.passes(), context="ctx")
+            review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx")
         pause[0] = False
         again = self.passes()
-        review.run_passes(self.run, n, "prompt", self.d, again, context="ctx")
-        # the two passes of the first review run at once, in either order; the resumed review runs p2 alone
-        self.assertEqual((sorted(calls[:2]), calls[2:]), (["review_behaviour_p1", "review_behaviour_p2"], ["review_behaviour_p2"]))
+        review.run_passes(self.run, n, lambda _k: "prompt", self.d, again, context="ctx")
+        # the passes run one after another; the resumed review runs p2 alone
+        self.assertEqual(calls, ["review_behaviour_p1", "review_behaviour_p2", "review_behaviour_p2"])
         self.assertEqual(again[0].answer, {"verdict": "accept", "divergences": []})
 
     def test_a_changed_context_or_no_context_runs_every_pass(self):
@@ -270,9 +369,9 @@ class ResumedReview(unittest.TestCase):
             t.done, t.answer = True, {"verdict": "accept", "divergences": []}
         review.session.run_tools = fake
         n = SimpleNamespace(id="N", raw={"node_id": "N"})
-        review.run_passes(self.run, n, "prompt", self.d, self.passes(), context="ctx")
-        review.run_passes(self.run, n, "prompt", self.d, self.passes(), context="ctx-changed")
-        review.run_passes(self.run, n, "prompt", self.d, self.passes(), context=None)
+        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx")
+        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx-changed")
+        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context=None)
         self.assertEqual(len(calls), 6)
 
     def test_a_judgment_already_given_on_the_same_prompt_is_taken_back(self):

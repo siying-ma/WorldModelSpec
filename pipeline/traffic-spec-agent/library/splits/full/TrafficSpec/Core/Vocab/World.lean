@@ -102,6 +102,10 @@ structure RoadUser where
     intersection. -/
 def StructureKind.entranceCarriers : List StructureKind := [.lane, .roadway, .shoulder, .bicycleLaneOrPath]
 
+/-- The kinds of a way along which a road user's sight is given (`sight_along_way`): these and every
+    kind refining them. -/
+def StructureKind.sightWays : List StructureKind := [.highway]
+
 /-- Lane attributes (ATOMS.md `st.lane_*`). -/
 structure LaneInfo where
   direction : Option Vec := none
@@ -308,7 +312,7 @@ def references (s : Scene) : List Reference :=
   ++ (s.devices.flatMap fun d => d.onTrack.toList.map fun t => { place := s!"device {d.id} on_track", kind := .track, id := t })
   ++ (s.structures.flatMap Structure.references)
   ++ (s.users.flatMap fun u => (u.sightAlongWay.getD []).map fun (w, _) =>
-       { place := s!"user {u.track} sight_along_way", kind := .region, id := w, structureKinds := [.highway] })
+       { place := s!"user {u.track} sight_along_way", kind := .region, id := w, structureKinds := StructureKind.sightWays })
 end Scene
 
 namespace Device

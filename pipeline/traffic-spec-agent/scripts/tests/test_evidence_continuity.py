@@ -214,8 +214,8 @@ class MeasuredRelations(Stubs, unittest.TestCase):
         self.assertEqual(review.node_extension_defects(geo_prior, {**div(), "trace": stripped}, cert(), ["v"]), [])
 
 
-class NodeExtensionOutcome(unittest.TestCase):
-    """Through `review_behaviour`: an extension that changes a measured relation discharges nothing."""
+class ExtensionReview:
+    """`review_behaviour` with one case to extend (`c1`), the certificate, the judges and the rulings file stubbed."""
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.run = FakeRun(Path(self.tmp.name))
@@ -243,12 +243,83 @@ class NodeExtensionOutcome(unittest.TestCase):
          review.session.run_tools, review.obligations_of) = self.saved
         self.tmp.cleanup()
 
+
+class NodeExtensionOutcome(ExtensionReview, unittest.TestCase):
+    """Through `review_behaviour`: an extension that changes a measured relation discharges nothing."""
     def test_a_changed_measured_relation_is_refused(self):
         changed = copy.deepcopy(NO_GEOMETRY); changed["scenes"][0]["relations"][0]["same_direction"] = False
         answer = {"verdict": "return", "divergences": [div(extends="c1", trace=changed)], "advisories": [], "gap_candidates": []}
         review.session.run_tools = scripted_reviewer([submit(answer)] * 3)
         out = review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
         self.assertEqual((out.status, self.judged), ("deferred", []))
+
+
+class CheckIsSubmission(ExtensionReview, unittest.TestCase):
+    """The status the reviewer's check reports is what the submitted answer's review does with the
+    same divergence: `certifiable` is judged, `refuted` is an advisory, `unusable` comes back to the
+    reviewer and leaves the review undecided."""
+    def setUp(self):
+        super().setUp()
+        self.rule = "compliant"
+        review.certify = lambda _run, _n, divs, _reading, _out, **_k: {k: cert(rule=self.rule) for k in divs}
+
+    def check_then_submit(self, d, rule):
+        self.rule, self.judged[:] = rule, []
+        seen = []
+        answer = {"verdict": "return", "divergences": [d], "advisories": [], "gap_candidates": []}
+        review.session.run_tools = scripted_reviewer([("check_divergence", {"divergence": d})] + [submit(answer)] * 3, seen)
+        where = Path(tempfile.mkdtemp(dir=self.tmp.name))           # no pass is restored from an earlier review
+        out = review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], where)
+        return seen[0]["status"], seen[1], out
+
+    def test_one_decision(self):
+        changed = copy.deepcopy(NO_GEOMETRY); changed["scenes"][0]["relations"][0]["same_direction"] = False
+        cases = [("an extension the rule now meets", div(extends="c1", trace=NO_GEOMETRY), "violated", "certifiable"),
+                 ("an extension the rule still misses", div(extends="c1", trace=NO_GEOMETRY), "compliant", "certifiable"),
+                 ("an extension that does not continue the case", div(extends="c1", trace=changed), "violated", "unusable"),
+                 ("a new case the rule meets", div(trace=NO_GEOMETRY), "violated", "refuted"),
+                 ("`extends` naming no case to extend", div(extends="zz", trace=NO_GEOMETRY), "violated", "refuted"),
+                 ("a new case the rule misses", div(trace=NO_GEOMETRY), "compliant", "certifiable")]
+        for what, d, rule, expected in cases:
+            with self.subTest(what):
+                status, first_submission, out = self.check_then_submit(d, rule)
+                self.assertEqual(status, expected)
+                self.assertEqual(first_submission["accepted"], status != "unusable")
+                self.assertEqual(len(self.judged), int(status == "certifiable"))
+                self.assertEqual(any("refuted by execution" in a for a in out.advisories), status == "refuted")
+                if status == "unusable":
+                    self.assertEqual((out.status, out.defer_stage), ("deferred", "reviewer"))
+
+    def test_an_extension_the_rule_meets_is_recorded_satisfied(self):
+        status, _sub, out = self.check_then_submit(div(extends="c1", trace=NO_GEOMETRY), "violated")
+        self.assertEqual((status, out.status, out.satisfied), ("certifiable", "accepted", ["k"]))
+
+
+class PassesInOrder(ExtensionReview, unittest.TestCase):
+    """The passes of a rule review run one after another: a later pass is shown, as already filed,
+    what the earlier ones filed, and a case they extended is no longer one to extend."""
+    def test_pass_two_sees_what_pass_one_filed(self):
+        self.run.opts.review_passes = 2
+        answers = {"review_behaviour_p1": [div(extends="c1", trace=NO_GEOMETRY, situation="FIRST-SITUATION")],
+                   "review_behaviour_p2": [div(trace=NO_GEOMETRY, situation="SECOND-SITUATION")]}
+        prompts = []
+
+        def run_tools(prompt, out_dir, opts, tools, label, **_kw):
+            prompts.append(prompt)
+            tools.reset()
+            tools.call("submit_review", {"answer": {"verdict": "return", "divergences": answers[label], "advisories": [], "gap_candidates": []}})
+            return {"code": 0, "result": {"submitted": tools.done}}
+        review.session.run_tools = run_tools
+        out = review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("## Cases to extend", prompts[0])
+        self.assertNotIn("## Already filed", prompts[0])
+        filed = prompts[1].split("## Already filed", 1)[1].split("## Questions", 1)[0]
+        self.assertIn("FIRST-SITUATION", filed)
+        self.assertIn("extending case `c1`", filed)
+        self.assertNotIn("SECOND-SITUATION", filed)
+        self.assertNotIn("## Cases to extend", prompts[1])
+        self.assertEqual((len(self.judged), out.status), (2, "accepted"))
 
 
 class Containers(unittest.TestCase):

@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 from ..checks import gate
 from ..lean import index_sync, lean, skeleton, surface
-from ..model import nodeid, ontology
-from ..store import paths
+from ..model import definitions as definitions_mod, nodeid, ontology
+from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..agents import render, session
 from ..model.blueprint import Node, ConceptRecord
@@ -58,7 +58,8 @@ def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None
     the task is finished and a resume applies its outcome instead of coding it again. A failing
     verdict rolled its files back already. A verdict is reused only on the context its gate ran on
     (`context`, the task's admission key); `OK` only while both candidate files are in the library
-    as the gate passed them; `SESSION_FAILED` (the session never ran) is retried."""
+    as the gate passed them. `SESSION_FAILED` (the session never ran) and `INFRA` (the toolchain or the
+    run's own stop kept the gate from judging the candidate) decide nothing, and are not reused."""
     f = d / "verdict.json"
     if not f.exists():
         return None
@@ -66,7 +67,7 @@ def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None
         v = json.loads(f.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return None
-    if v.get("verdict") == SESSION_FAILED:
+    if v.get("verdict") in (SESSION_FAILED, gate.INFRA):
         return None
     extras = v.get("extras", {})
     if extras.get("context") != context:
@@ -90,10 +91,11 @@ def last_task(run: Run, ident: str) -> Path | None:
     return max(done, key=lambda p: p.parent.parent.name) if done else None
 
 
-def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | None) -> Path | None:
-    """`saved` when it holds a candidate whose gate ended on the evaluation's cost (a deadline, or a
-    resource failure reproduced in isolation; not a panic) on this same context, with both files kept:
-    gated again as it is, it needs no new coding session. Its context is the task's admission key (the
+def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | None, verdict: str = gate.GATE_TIMEOUT) -> Path | None:
+    """`saved` when it holds a candidate whose gate ended with `verdict` on this same context, with both
+    files kept: gated again as it is, it needs no new coding session. `GATE_TIMEOUT`: the evaluation's
+    cost (a deadline, or a resource failure reproduced in isolation; not a panic), in an earlier task;
+    `INFRA`: a gate the toolchain or the run's stop kept from judging, in the task's own directory. Its context is the task's admission key (the
     record, what it calls and composes, the reading values it reads, Core, the ontology and the gate's
     implementation), so any change to those codes the record again."""
     if saved is None or context is None:
@@ -102,7 +104,7 @@ def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | N
         v = json.loads((saved / "verdict.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-    ok = (v.get("verdict") == gate.GATE_TIMEOUT and not v.get("extras", {}).get("panic")
+    ok = (v.get("verdict") == verdict and not v.get("extras", {}).get("panic")
           and v.get("extras", {}).get("context") == context and all((saved / "final" / r).is_file() for r in rels))
     return saved if ok else None
 
@@ -206,13 +208,20 @@ def _cut_off_relaunch(work: Path, rels: tuple[str, ...], budget: int) -> str:
     return note
 
 
-def _task_files(work: Path, registry: dict | None, concurrent: list[str] | None) -> None:
-    """What a gate run from this task directory registers and tolerates: the accepted ids plus
-    this task's, and the files of the sessions coding beside it."""
+def _task_files(work: Path, registry: dict | None) -> None:
+    """What a gate run from this task directory registers: the accepted ids plus this task's."""
     if registry is not None:
         (work / "registry.json").write_text(json.dumps(registry), encoding="utf-8")
-    if concurrent is not None:
-        (work / "concurrent.json").write_text(json.dumps(sorted(concurrent)), encoding="utf-8")
+
+
+def tolerate(work: Path, files: list[str], fresh: bool = False) -> None:
+    """Files of the pipeline that a gate run from this task directory does not count as changed by
+    its session (`concurrent.json`, keyed as the repository digest keys them): those of the other
+    tasks running beside it, and those the loop writes for them. `fresh` replaces what an earlier
+    launch left; otherwise `files` are added to the list, which the gate reads afresh at every run."""
+    work.mkdir(parents=True, exist_ok=True)
+    have = set() if fresh else gate.task_concurrent(work)
+    jsonl.write_atomic(work / "concurrent.json", json.dumps(sorted(have | set(files))))
 
 
 def rollback(node_id: str, baseline: dict[str, str], work: Path) -> None:
@@ -283,12 +292,12 @@ def write_skeletons(node: Node) -> tuple[str, str]:
     return r, w
 
 
-def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None,
-             saved: Path | None = None) -> gate.Verdict:
+def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, saved: Path | None = None) -> gate.Verdict:
     """One coding session for a node, then the harness's own gate call. `registry` names the ids
-    the gate registers (the accepted ones and this node); `concurrent` the files of the sessions
-    running beside this one, which its scope check does not count; `saved` an earlier task whose
-    candidate is gated again instead of a session when `_saved_candidate` admits it."""
+    the gate registers (the accepted ones and this node); `saved` an earlier task whose candidate is
+    gated again instead of a session when `_saved_candidate` admits it, and so is a candidate the task's
+    own directory keeps from a gate that did not judge it (`INFRA`). The files its scope check does
+    not count are the caller's to record (`tolerate`)."""
     d = node_dir(run, node.id)
     d.mkdir(parents=True, exist_ok=True)
     rels = (nodeid.rule_path(node.id), nodeid.witness_path(node.id))
@@ -298,11 +307,11 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
         print(f"[code] {node.id}: reusing the {done.verdict} verdict of the finished session")
         return done
     (d / "node.json").write_text(json.dumps(node.raw, ensure_ascii=False, indent=1), encoding="utf-8")
-    _task_files(d, registry, concurrent)
+    _task_files(d, registry)
     only_nodes = None if registry is None else sorted(set(registry.get("nodes", [])) | {node.id})
     only_concepts = None if registry is None else registry.get("concepts")
     baseline = _start(d, rels)
-    again = _saved_candidate(saved, rels, context)
+    again = _saved_candidate(saved, rels, context) or _saved_candidate(d, rels, context, gate.INFRA)
     if again is not None:
         return _gate_saved(d, rels, again, context, lambda: gate.run_gate(node, reading, baseline, d, budget_used=0, budget=run.opts.gate_budget + 1,
                                                                            accepted_concepts=run.all_concepts()),
@@ -326,7 +335,8 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     gate_text = (f"Run exactly this command, nothing more and nothing else:\n\n```\n{gate_cli(run, node.id)}\n```\n\nIt prints the verdict and its details. The verdicts on your files: "
                  + ", ".join(gate.VERDICTS) + f". `{gate.INFRA}` is not one: the toolchain or the run did not let the gate judge your files. Budget: {run.opts.gate_budget} runs; the harness re-runs the gate itself after you stop, on the files as they are then.\n")
     prompt = render.render("code.md", {
-        "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw),
+        "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw)
+                + definitions_mod.render_sources(definitions_mod.source_records(run, node.definition_sources()), definitions_mod.SOURCES_HEADING),
         "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "contracts": contracts_block(run, node),
         "reading": reading_table(node, reading),
         "example": worked_example(run), "skeletons": skeletons, "gate": gate_text,
@@ -431,7 +441,7 @@ def write_concept_skeletons(rec: ConceptRecord) -> tuple[str, str]:
     return c, w
 
 
-def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: dict | None = None, concurrent: list[str] | None = None,
+def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: dict | None = None,
                      saved: Path | None = None) -> gate.Verdict:
     d = concept_dir(run, rec.id)
     d.mkdir(parents=True, exist_ok=True)
@@ -442,11 +452,11 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
         print(f"[code] {rec.id}: reusing the {done.verdict} verdict of the finished session")
         return done
     (d / "concept.json").write_text(json.dumps(rec.raw, ensure_ascii=False, indent=1), encoding="utf-8")
-    _task_files(d, registry, concurrent)
+    _task_files(d, registry)
     only_nodes = None if registry is None else registry.get("nodes")
     only_concepts = None if registry is None else sorted(set(registry.get("concepts", [])) | {rec.id})
     baseline = _start(d, rels)
-    again = _saved_candidate(saved, rels, context)
+    again = _saved_candidate(saved, rels, context) or _saved_candidate(d, rels, context, gate.INFRA)
     if again is not None:
         return _gate_saved(d, rels, again, context, lambda: gate.run_concept_gate(rec, reading, baseline, d, budget_used=0,
                                                                                    budget=run.opts.gate_budget + 1, mode=run.opts.mode,

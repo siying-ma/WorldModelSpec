@@ -4,11 +4,7 @@
 
   `verdicts` combines the binder classes, the applicability and the obligation per instant
   (Kleene, `verdictAt`). `check` finds from the syntax every defect the evaluator would otherwise
-  report as `malformed` or `unboundVariable`: unknown names, arities, literals no codec decodes,
-  variables of the wrong sort, non-constant parameters, undeclared assumptions and intentions, a
-  declared intention read ahead of the judged observation, the distance travelled since the trace
-  began read inside a search into the past, compositions of rules not in the set or mapping to
-  names that are not the composed rule's binders. `checkReading`
+  report as `malformed` or `unboundVariable`; its doc comment lists them. `checkReading`
   names the parameters the reading lacks, over the rule and the rules it composes.
 
   `Concept.check` holds a concept to the same standard on every admissible instantiation of
@@ -259,9 +255,21 @@ end
 def readsPath (rules : List Rule) (r : Rule) : Bool :=
   (closure rules r).any fun x => x.formulas.any fun φ => !(pathReads (fun _ => false) true φ).isEmpty
 
-/-- Every defect a rule has before any trace. Empty for a rule the evaluator will never report
-    `malformed` or `unboundVariable` on. `regions` names variables the caller binds to regions:
-    the region formals of a concept's instance, which alone may then have no binder. -/
+/-- Every defect a rule has before any trace; empty for a rule the evaluator will never report
+    `malformed` or `unboundVariable` on: an empty id; no binder, or one unnamed or named twice;
+    an assumption or intention read but not declared, or an intention id ill-formed; an
+    operationalization bounded by nothing, or by a name that is no atom, primitive or concept; a
+    name no table knows; an atom, measure, primitive or concept given the wrong number of
+    arguments; an unbound variable, or one of the wrong sort where a track, region or device is
+    read (such a position takes a variable, never a spelling or a number; a literal position
+    takes no variable); a spelling no enumeration decodes; a quantifier kind that is not a
+    spelling; a parameter of an atom or a call, or a window's length, that is not a constant
+    term (a literal, a reading parameter, or arithmetic over them); a declared intention read
+    ahead of the judged observation; the distance travelled since the trace began read inside a
+    search into the past; a composed rule not in the set, or a map that names a variable not
+    bound to a track, misses one of its binders or names one it does not have. `regions` names
+    variables the caller binds to regions: the region formals of a concept's instance, which
+    alone may then have no binder. -/
 def check (rules : List Rule) (r : Rule) (regions : List String := []) : List String :=
   let scope : Scope := r.binderNames.map (fun n => (n, EntityKind.track)) ++ regions.map fun n => (n, EntityKind.region)
   let formed := if regions.isEmpty then r.wellFormed else r.wellFormedBody
@@ -367,9 +375,12 @@ def ruleCallDefects (cs : List Concept) (r : Rule) : List String :=
   callDefects cs scope s!"{r.id} obligation" r.obligation
 
 
-/-- Every defect a concept has before any trace: formals named once, parameters that are formal
-    (never a reading's), no composition, every referenced concept known and no cycle, and the
-    body well-formed on every admissible instantiation with its calls expanded. -/
+/-- Every defect a concept has before any trace: an empty id; a formal or a parameter named
+    twice; a parameter named as a reading's, or a body parameter that is no formal parameter; a
+    literal formal that admits no value; a composed rule or a declared intention in the body (a
+    concept reads neither); a referenced concept unknown, or a reference cycle; and, on every
+    admissible instantiation of its literal formals with its calls expanded, every defect
+    `Rule.check` finds in a formula and a call whose arguments do not fit the callee's formals. -/
 def check (cs : List Concept) (c : Concept) : List String :=
   let names := c.args.map (·.1)
   let pnames := c.paramNames

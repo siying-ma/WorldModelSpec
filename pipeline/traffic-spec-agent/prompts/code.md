@@ -12,7 +12,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
 
 ## Inputs (injected below)
 
-- **The node** — its blueprint record.
+- **The node** — its blueprint record, then, whole, each source text its `definition` references
+  borrow words from, with the definitions that apply to it.
 - **Files** — the rule file and the witness file you own; nothing else may change. Both exist
   already: the harness wrote them from the node, they build, and every declaration the gate
   compares (id, laws, binders, assumptions, operationalizations, residues, surrogate), every
@@ -53,10 +54,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
   it. Nothing else is readable: not the harness, not other nodes' files beyond the example above,
   not the readings, the ontology or the law corpus. The gate is the interface to the harness; the
   node is the interface to the law.
-- The **shell runs exactly one command**, the gate command below, as written. Any other command —
-  `cat`, `sed`, `grep`, `lake`, `python`, a redirection, a second command after `&&` — is denied
-  and wastes a turn. If the gate's behaviour surprises you, report it in `task_result.md`; do not
-  re-implement the gate.
+- The **shell runs exactly one command**, the gate command below, as written: it runs from your
+  working directory, so it needs no `cd`. Any other command — `cat`, `sed`, `grep`, `lake`,
+  `python`, a redirection, a second command after `&&` — is denied and wastes a turn. If the
+  gate's behaviour surprises you, report it in `task_result.md`; do not re-implement the gate.
 
 ## How evaluation reads a built scene
 
@@ -98,7 +99,11 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    second such declaration on the same span files the gap with your words; a reading written
    around a missing operator is not a narrowing. Where the record carries a gap on a span, the
    plan doubts the atoms it maps that span to: write the span with them if they carry its words,
-   and otherwise declare `no_atom` or `no_operator` on it, which files the plan's gap at once. The gate holds every narrowing to a span of the
+   and otherwise declare `no_atom` or `no_operator` on it, which files the plan's gap at once.
+   `no_atom` means no atom of the surface can carry the words. Words that an atom of the surface
+   can carry, but which the node does not claim, are a defect of the node's mapping, whether or not
+   the record carries a gap on the span: you never declare `no_atom` on them and never write them
+   with that atom; the node is wrong, and you report it. The gate holds every narrowing to a span of the
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed, nor written with a weaker fact than the qualified one
    the record states: it is carried as the node maps it, or the node is wrong and you report it. The review judges the rule with your narrowings in view; a choice
@@ -129,11 +134,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    is the record's defect: report it.
 4. **Parameters, not values.** A quantity enters as `.param "<name>"` from the node's `params`.
    The only literals are zero, enumeration spellings, and the node's declared `literals`, each
-   written through the `Units` constructor of its unit (`Units.<unit> <figure>`). Never divide by a term that reads a measurement:
-   a measured quantity can be zero (a curvature where the way runs straight, a speed at rest), and
-   a division by zero is unknown, not a verdict; write the comparison with products (a ratio
-   below a bound is the dividend below the bound times the divisor). The gate returns
-   `CHECK_FAIL` on such a division.
+   written through the `Units` constructor of its unit (`Units.<unit> <figure>`). What a formula
+   may not say is listed with the formula language; the gate returns `CHECK_FAIL` on it.
 5. **Standards are the node's operationalizations**, nothing else: the concept and parameters
    named there, no substitute.
 6. **Compositions follow the node's `as`.** `exception`: `.not (.ruleApplies "<id>" map)` in the
@@ -143,7 +145,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    span's content does not hold where that rule applies and the applicability as a whole is
    untouched. `map` binds every binder of the composed rule; a
    binder the node has no variable for is bound by `.existsUser "<var>" (…)` around the
-   composition. You never inline another rule's content.
+   composition. You never inline another rule's content. A `definition` composition is no call:
+   it records words borrowed from a source text, shown whole below the node, and the elements
+   naming its span in `source_spans` write their meaning with their own atoms; never write
+   `.rule` or `.ruleApplies` for it.
 6a. **Observable readings.** A span the node reads through conduct (`kind: "observable_reading"`
    in its narrowings) is written from its element's atoms as any span is. It is the plan's
    narrowing, already on record: you do not restate it, and you never declare one the node does not.

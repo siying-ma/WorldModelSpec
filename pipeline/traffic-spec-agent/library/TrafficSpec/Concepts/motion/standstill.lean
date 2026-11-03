@@ -1,5 +1,5 @@
 /-
-  drv.motion.standstill — The road user is at a complete halt at this observation: the magnitude of its ground velocity is at or below speed_tolerance, the bound within which a sampled speed reading counts as no movement. The definition this renders requires, where a stop is required, "complete cessation from movement"; an absolute halt is observed over sampled measurements only within a bound the observer sets, and that bound is this parameter, so no figure appears in the contract. The concept denotes the state of the body itself and not an actuation or a control input: a lit brake lamp, a pressed service brake, a set parking brake, a gear selection and a stopped engine are none of them this concept, and a vehicle that rolls with its engine off is not at a standstill. It is a state at an observation, not a duration of halting: how long the halt has lasted is the caller's to state.
+  drv.motion.standstill — The road user's body is not moving at the observation: it has come to rest. The corpus definition this contract quotes requires "complete cessation from movement", and over sampled measurements an absolute rest is observed only within a bound the caller sets, so the concept holds at an observation where the measured speed of the road user is at or below the parameter speed_max, which is that bound and nothing more. The concept is read at the observation itself, not over a window: it states rest here, not a halt of any duration. Not a stand-in for: a halt of a required duration, a parked or standing vehicle, the reason the road user is at rest, a brake input or a brake lamp, or a place at which the rest occurred -- the place is the caller's.
 
   The contract is the definition `DEF-NRS-484A-255`, verbatim.
 
@@ -7,17 +7,18 @@
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    the magnitude of its ground velocity is at or below: atoms ['kin.speed'], concepts []
-      written `kin_speed u ≤ speed_tolerance`. `kin.speed` is "magnitude of velocity", so the
-      magnitude is the atom itself and no `abs` is taken; "at or below" is `.le`, the bound
-      included. The comparison is at the observation being judged: no temporal operator, since
-      the contract makes the halt a state and leaves its duration to the caller.
+    the measured speed of the road user is at or below the parameter speed_max: atoms ['kin.speed'], concepts []
+      written `kin_speed(u) ≤ speed_max`: the atom is the "magnitude of velocity" of the road user in
+      m/s, read at the judged observation, and the comparison is `.le` because the contract's words
+      are "at or below", so the bound itself counts as rest. Nothing else stands in the body: the
+      contract states rest here and nothing more -- no window, no duration, no brake, no place -- so
+      the body is this one comparison and carries no temporal operator and no other atom. Where the
+      atom is unobserved the comparison is unknown, which is what the contract's "measured speed"
+      requires: unobserved rest is not motion.
 
-  Nothing the contract excludes is read: no lamp, pedal, parking brake, gear or engine state
-  enters the body, which is what makes a vehicle rolling with its engine off not a standstill.
-
-  No reading was chosen that the contract leaves open, so `narrowings` is empty: the one element
-  dictates the atom, the direction of the comparison and the inclusion of the bound.
+  Nothing the contract leaves open had to be chosen: "at or below the parameter speed_max" fixes the
+  operator and the bound, and "at the observation" fixes the absence of a window. `narrowings` is
+  therefore empty.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -29,25 +30,22 @@ namespace TrafficSpec.Concepts.motion.standstill
 def aU : Arg := .var "u"
 
 /-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/
-def pSpeedTolerance : Term := .param "speed_tolerance"
+def pSpeedMax : Term := .param "speed_max"
 
-/-- `the magnitude of its ground velocity is at or below` speed_tolerance: `kin.speed` is that
-    magnitude in m/s, compared with `.le` to the formal parameter — "at or below" includes the
-    bound. Nothing else is read: the actuations and control inputs the contract excludes
-    (`sig.brake_lamp`, `kin.service_brake`, `kin.parking_brake`, `kin.gear`, `kin.engine_running`)
-    appear nowhere, so a rolling vehicle with its engine off is not at a standstill here, and a
-    halt is judged at this observation alone, with no lookback over how long it has lasted. -/
-def body : Formula :=
-  .cmp (.measure "kin_speed" [aU]) .le pSpeedTolerance
+/-- The measured speed of the road user at the observation, in m/s. -/
+def speedOfU : Term := .measure "kin_speed" [aU]
+
+/-- Rest at the observation: the measured speed is at or below the caller's resolution for rest. -/
+def body : Formula := .cmp speedOfU .le pSpeedMax
 
 def concept : Concept :=
   { id := "drv.motion.standstill"
-    contract := "The road user is at a complete halt at this observation: the magnitude of its ground velocity is at or below speed_tolerance, the bound within which a sampled speed reading counts as no movement. The definition this renders requires, where a stop is required, \"complete cessation from movement\"; an absolute halt is observed over sampled measurements only within a bound the observer sets, and that bound is this parameter, so no figure appears in the contract. The concept denotes the state of the body itself and not an actuation or a control input: a lit brake lamp, a pressed service brake, a set parking brake, a gear selection and a stopped engine are none of them this concept, and a vehicle that rolls with its engine off is not at a standstill. It is a state at an observation, not a duration of halting: how long the halt has lasted is the caller's to state."
+    contract := "The road user's body is not moving at the observation: it has come to rest. The corpus definition this contract quotes requires \"complete cessation from movement\", and over sampled measurements an absolute rest is observed only within a bound the caller sets, so the concept holds at an observation where the measured speed of the road user is at or below the parameter speed_max, which is that bound and nothing more. The concept is read at the observation itself, not over a window: it states rest here, not a halt of any duration. Not a stand-in for: a halt of a required duration, a parked or standing vehicle, the reason the road user is at rest, a brake input or a brake lamp, or a place at which the rest occurred -- the place is the caller's."
     definition := some "DEF-NRS-484A-255"
     args := [("u", .track)]
-    params := [⟨"speed_tolerance", .metrePerSecond⟩]
+    params := [⟨"speed_max", .metrePerSecond⟩]
     body := .formula body
-    residues := ["DEF-NRS-484A-255 confines its meaning to a stop 'when required'; which stops are required is a matter for the rules that call the concept, not for the physical state it denotes. The companion definition DEF-NRS-484A-260, the halt that is prohibited, is a different notion and would be a separate record."]  -- the record's, verbatim; not yours to change
+    residues := ["the definition's scope clause says which laws use this sense of the word rather than stating a fact of the scene; it is a condition on the law that calls the concept, and the caller carries it by calling this concept only where a stop is required."]  -- the record's, verbatim; not yours to change
     narrowings := []  -- one { span := "<words of the contract>", why := "<why>", kind := "reading" } per reading you chose that the contract leaves open, explained in the header
     supersedes := none }
 

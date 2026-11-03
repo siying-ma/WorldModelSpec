@@ -37,6 +37,36 @@ written once, in the ontology's section on what is not an atom, where every role
 it; it is never made by editing one atom's contract for the words of one law. No abstraction relaxes
 the checks of the distinctions above.
 
+### Training and testing (operator, 2026-11-02)
+
+The pipeline runs in two modes, as a learned model does.
+- **Training.** A rule is aligned with the meaning the downstream task needs by running it on
+  labelled recordings of the training laws and comparing its verdict with each recording's label.
+  The training recordings are the labelled cases of
+  `demo-accepted-191-core-v2` whose split is `demo-train` (189 of 191). A mismatch goes back to the
+  planner as evidence, and the rule is repaired until its verdicts agree with the labels. This is
+  how the formalization is aligned with the CARLA domain.
+- **What is trusted.** Lean's evaluation is deterministic: the verdict Core computes for a rule on a
+  trace is what that rule says about that trace. A disagreement with a label is therefore never a
+  defect of the evaluator. It lies in the library (a rule, a concept, a reading), in the trace (the
+  adapter misreports the scene), or in the label (the operator decides).
+- **What training builds.** The product of training is the library as a whole, not one rule at a
+  time: the rules and concepts of the run are built and repaired until their verdicts agree with the
+  training recordings of every law they serve. Where a mismatch cannot be removed inside its own
+  node, the repair session may change any rule, concept, witness or reading of the run's library
+  (see "Who does what"). Every change is gated, and the label check then runs again on every law
+  whose rules read the changed file, so a repair that fixes one law and breaks another is not
+  accepted.
+- **Testing.** The finished rules are run once on recordings no training session has seen: the
+  package's `demo-test` cases and every other dataset under `pipeline/datasets/`. Nothing learned
+  from a test recording changes the pipeline.
+
+The downstream task is to decide whether a real autonomous-driving scene breaks a traffic rule.
+Where agreement with labelled real scenes and word-level fidelity to the statute pull apart, the
+labelled scenes decide; some statutory precision may be given up for it. Agreement is never bought
+by a condition that singles out a recording, a scene or a law: a mismatch is answered by a reading
+that would decide every recording of its kind the same way.
+
 ### Change discipline
 
 **The repository is incomplete by design and updated continuously.** Only the artifacts named
@@ -52,6 +82,15 @@ small: a feature is not better for being there; every agent, script and check mu
 to exist that can be stated in one sentence; two checks that catch the same defect are one too
 many; a fix that removes a cause beats one that adds a mechanism. A part found without a reason is
 removed, not kept.
+
+**Where not to spend (operator, 2026-11-02).** Three things are not done to raise acceptance:
+- the behaviour reviewer is not re-tuned: it is suspended while training runs on labelled
+  recordings (see "Training and testing"), and it is not reinstated without the operator;
+- no judge layer is added: a doubtful ruling is fixed at its cause (a convention, a prompt rule,
+  a precedent), never by another judge over the judges;
+- no exemption is written for a law: a mismatch (a label the rule disagrees with, or a reviewer's
+  case) is answered by fixing the rule or the convention it exposes, never by a reading that
+  excuses that one law or that one recording.
 
 Before changing anything, in this order:
 
@@ -102,14 +141,29 @@ feature is not better for being there, and one whose use cannot be stated is rem
   contract. It decides law-local readings, and derives aggregate membership from posted
   definitions: an aggregate denotes an extensional set of tracked road-user classes, not a
   relational role such as who controls a vehicle; for an aggregate it classifies every road-user
-  class of the active ontology split as included, excluded or unresolved, quoting the controlling
-  definition words, and marks a class unresolved where those words do not decide it. Only a
-  planning session proposes that mapping.
+  class of the active ontology split as included, excluded, covered or unresolved, quoting the
+  controlling definition words, and marks a class unresolved where those words do not decide it.
+  Only a planning session proposes that mapping.
+  In training mode the repair session answers label mismatches with the whole run library in reach:
+  it may revise the record of any node or concept and edit the Lean of any rule, concept or witness
+  of the run, and propose reading values, wherever the mismatch's cause lies. It may not change
+  Core, the ontology, the prompts or the corpus: those stay frozen, and a cause that lies there is
+  filed for the operator.
 - **The coder** (a node or a concept coding session) writes the Lean the record states. Where the
   record leaves the writing open it may choose only among meanings the words already allow, and
   discloses each choice as a `reading`. A span it cannot write with the planned atoms and operators
-  it reports (`no_atom`, `no_operator`) and stops; it never approximates, re-maps or plans.
-- **The reviewer** (a second vendor's model) shows, as executable traces, situations in which the
+  it reports (`no_atom`, `no_operator`) and stops; it never approximates, re-maps or plans. Words
+  an atom of the ontology can carry but the record does not claim are a defect of the plan's
+  mapping, which it reports for the planner, never as `no_atom`.
+- **The label check** (training mode; deterministic, no model) runs each rule that passed the gate
+  on the training recordings of its law, joins the rule's verdicts per recording, and compares
+  them with the labels. It trusts Lean's verdict on the trace and never second-guesses it. It
+  sends every mismatch to the planner as evidence: the recording's label, the rule's verdict and
+  the instants and unknown reasons that decided it, never the trace, the video or a mapping. A recording whose source declares absent an atom the rule needs, a label
+  marked a judgment call, and a run past the monitor's deadline are reported, never counted as a
+  mismatch. A disputed label is the operator's to decide.
+- **The reviewer** (suspended since 2026-11-02, while training runs on labelled recordings; the
+  judges below are suspended with it) shows, as executable traces, situations in which the
   code and the words it formalizes (the law for a node, the contract for a concept) decide
   differently. It supplies certified cases that challenge a rule or a disclosed reading. It
   proposes neither a fix nor a replacement mapping. The one exception to traces is **structural
@@ -180,12 +234,14 @@ feature is not better for being there, and one whose use cannot be stated is rem
   around a test law. The held-out atoms' rows of `ontology/ATOMS.md` are
   frozen in `laws/audit_and_scripts/split_atoms.json` and the doctor fails when one changes; they
   change only by regenerating the split. The harness defaults to the training split.
-  The driving data a run is evaluated on (`pipeline/datasets/**`, read only by
-  `pipeline/evaluation/` after a run) is test data in the same sense: no pipeline session reads
-  it, and no change to the prompts, the ontology, Core or the harness is made because of what a
-  dataset contains or lacks. A defect an evaluation reveals is fixed where it lies: in the adapter
-  when the trace misreports the scene, in the pipeline only when the defect holds whatever the
-  data.
+  The driving data under `pipeline/datasets/**` is test data in the same sense, with one
+  exception: the training recordings named in "Training and testing" are read by the label check,
+  and only by it. No model session reads a recording, a trace, a video or a label; it sees only the
+  mismatch the label check renders. No change to the prompts, the ontology or Core is made because
+  of what one recording contains; a change the training mismatches call for holds for every
+  recording of its kind. Every other dataset is read only by `pipeline/evaluation/` after a run.
+  A defect a recording reveals is fixed where it lies: in the adapter when the trace misreports the
+  scene, in the pipeline when the rule misreads it.
 - Everything that evaluates a run lives in `pipeline/evaluation/`, outside the pipeline: the
   scripts that run the monitor on driving data, and `evaluation_scenario/`, the instruction set for
   the developers of the adapter (what a trace must show before each law can be judged). Nothing in
@@ -213,7 +269,13 @@ feature is not better for being there, and one whose use cannot be stated is rem
     A defined term used inside that definition is resolved mechanically by the same precedence
     from the definition's own place; its posted definition joins the mapping evidence and digest.
   - **Every class is classified.** Every road-user class of the active ontology split is included,
-    excluded or unresolved, quoting the deciding definition words.
+    excluded, covered or unresolved, quoting the deciding definition words. Excluded means the
+    definition leaves the class out. Covered means the definition admits members of the class only
+    as members of named included classes, which a trace lists beside it: the class's own label adds
+    no membership evidence. A covered class names its covering classes and quotes the class
+    contracts that make the coverage complete; it is never inferred from a class's name. The
+    evaluator reads only the included and unresolved classes. A covered class is in neither list, and
+    becomes unresolved when a class covering it is not finally admitted as included.
   - **Digests.** The accepted mapping records its definition and ontology digests. A change to
     either invalidates the mapping and every affected review, including the witnesses of accepted
     nodes that reference it.
@@ -229,8 +291,11 @@ feature is not better for being there, and one whose use cannot be stated is rem
 **What they are for.** Every smoke and demo is part of the training phase: its purpose is to
 find the pipeline's defects and remove them, until the pipeline is complete enough to run on the
 whole training split and then on the held-out and test splits. A development run's acceptance
-count is a diagnostic, not a result. demo14 is a fresh run (`init --fresh`): no record built by an
-earlier pipeline enters it.
+count is a diagnostic, not a result. In training mode a node is accepted when the gate passes and
+its verdicts agree with the labels of its law's training recordings; a law with no usable labelled
+recording is accepted on the gate alone and reported as not aligned. The figures a run reports are
+agreement with the training labels (training fit) and, once, agreement on the test recordings.
+demo14 is a fresh run (`init --fresh`): no record built by an earlier pipeline enters it.
 
 To save budget, a restart between full runs reruns only a subset, until the pipeline issues it
 exposes are fixed:
@@ -327,7 +392,8 @@ at build time (`lake build`) and pin the arithmetic and semantics with `#guard`.
 
 The CARLA dataset is built top-down and problem-driven: its scenarios are designed from the laws
 the pipeline formalizes, not collected and then matched to laws, and they are added gradually
-until the dataset covers most of the corpus. Its parts so far are `pipeline/datasets/carla_new/`
+until the dataset covers most of the corpus. The labelled package `demo-accepted-191-core-v2` (191 recordings of 22 demo laws, 189
+`demo-train`, 2 `demo-test`) carries the training recordings. Its other parts so far are `pipeline/datasets/carla_new/`
 (407, 600-1a), `pipeline/datasets/demo-thirteen-latest-share-20261010/` (13 demo lines) and
 `pipeline/datasets/held-out-v1-intent-laws/` (three LVMC lines).
 Other sources (nuPlan, filtered SAVeD) are added the same way.

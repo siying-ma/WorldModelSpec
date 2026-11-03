@@ -80,7 +80,7 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 #: them change), and any log or pid file. The jail denies a session these paths already.
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
-                         "rulings.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
+                         "rulings.jsonl", "recheck_answers.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
                          "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md",
                          "gaps_measured.jsonl"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
@@ -150,9 +150,18 @@ def task_keep(work: Path) -> set[str]:
 
 
 def task_concurrent(work: Path) -> set[str]:
-    """Files other sessions of the same wave own, which this task's scope check does not count."""
+    """Files other tasks running beside this one own, or the loop writes for them, which this task's
+    scope check does not count."""
     f = work / "concurrent.json"
     return set(json.loads(f.read_text(encoding="utf-8"))) if f.exists() else set()
+
+
+def scope_stray(baseline: dict[str, str], own: set[str], work: Path) -> list[str]:
+    """The files of the pipeline changed since `baseline` that are neither the task's `own` nor
+    tolerated by its task directory (`task_concurrent`)."""
+    now = repo_digest()
+    changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
+    return sorted(changed - own - task_concurrent(work))
 
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
@@ -477,11 +486,9 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if bad_reading:
         return bad_reading
 
-    # 1. scope: nothing in the pipeline changed but the node's two files (and the files of the
-    # sessions coding beside it); the registries carry the accepted nodes and this one
-    now = repo_digest()
-    changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    stray = sorted(changed - {lib_rel(rule_rel), lib_rel(wit_rel)} - task_concurrent(work))
+    # 1. scope: nothing in the pipeline changed but the node's two files (and the files the tasks
+    # running beside it own or the loop writes for them); the registries carry the accepted nodes and this one
+    stray = scope_stray(baseline, {lib_rel(rule_rel), lib_rel(wit_rel)}, work)
     if stray:
         return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
     if not rule_file.exists() or not wit_file.exists():
@@ -1139,9 +1146,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         return bad_reading
 
     # 1. scope
-    now = repo_digest()
-    changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    stray = sorted(changed - {lib_rel(c_rel), lib_rel(w_rel)} - task_concurrent(work))
+    stray = scope_stray(baseline, {lib_rel(c_rel), lib_rel(w_rel)}, work)
     if stray:
         return Verdict("SCOPE_VIOLATION", [f"changed outside the concept's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
     if not c_file.exists() or not w_file.exists():

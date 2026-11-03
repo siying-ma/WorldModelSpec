@@ -234,8 +234,22 @@ def _retry(label: str, why: str, spent: int, opts: Options, relaunch: Optional[C
         relaunch()
 
 
+#: The kinds of Claude session by what they cost: `work` (a plan session, the aggregate selection, a
+#: coding session), `repair` (a concept or node repair session) and `judge` (a tool-less answer: a
+#: stage A or stage B judge, an adjudication, a recheck). Each kind has its own cap, an option.
+ROLES = ("work", "repair", "judge")
+
+
+def session_cap(opts: Options, role: str) -> Optional[float]:
+    """The cap a Claude session of `role` runs under (the CLI's `--max-budget-usd`) and is reserved
+    at: `session_budget_usd`, `repair_budget_usd` or `judge_budget_usd`; None is uncapped."""
+    if role not in ROLES:
+        raise ValueError(f"unknown session role `{role}`; one of {ROLES}")
+    return {"work": opts.session_budget_usd, "repair": opts.repair_budget_usd, "judge": opts.judge_budget_usd}[role]
+
+
 def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int, effort: Optional[str],
-        label: str = "session", timeout: Optional[float] = None, allow: Optional[list[str]] = None,
+        role: str = "work", label: str = "session", timeout: Optional[float] = None, allow: Optional[list[str]] = None,
         deny: Optional[list[str]] = None, tools: Optional[list[str]] = None,
         env: Optional[dict[str, str]] = None, model: Optional[str] = None, usage_label: Optional[str] = None,
         relaunch: Optional[Callable[[], None]] = None, relaunch_cut_off: Optional[Callable[[], str]] = None) -> dict:
@@ -244,7 +258,8 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
     `relaunch_cut_off`, one cut off, calling it before the relaunch and adding what it returns to the
     relaunch's prompt. Returns the record of the launch that ran, its `cut_off` set when it was cut off. `usage_label` (default: the
     session's directory under the run and its label) names its row in `usage.jsonl`, with the launch. `cwd` is the session's jail: it may read anything under it, so it
-    holds only the session's own files; `allow` names everything else it may do."""
+    holds only the session's own files; `allow` names everything else it may do. `role` (`ROLES`) sets
+    a Claude session's cap and its reservation."""
     chosen = model or opts.model
     if vendor_of(chosen) == "openai" and tools:
         raise RuntimeError(f"{label}: an OpenAI model ({chosen}) runs here only tool-less sessions (readers, judges); a reviewer's "
@@ -287,12 +302,13 @@ def run(prompt: str, cwd: Path, out_dir: Path, opts: Options, *, max_turns: int,
                     raise BadRequest(f"{label}: the API rejected the request — a harness input to fix: {failure}")
             cut = None
         else:
-            token = ledger.reserve_session(chosen or "", opts.session_budget_usd, row_label)   # raises BudgetPaused when it does not fit
+            cap_usd = session_cap(opts, role)
+            token = ledger.reserve_session(chosen or "", cap_usd, row_label)   # raises BudgetPaused when it does not fit
             _started(out_dir, label, suffix, launched)
             try:
                 code, result, timed_out = runner.run_claude(
                     text, cwd=cwd, stream_path=stream, max_turns=max_turns,
-                    model=chosen, effort=effort, max_budget_usd=opts.session_budget_usd,
+                    model=chosen, effort=effort, max_budget_usd=cap_usd,
                     timeout_seconds=timeout if timeout is not None else opts.session_timeout,
                     env_overrides=env, allow=allow, deny=deny, tools=tools)
             except BaseException:                          # the session may have run: its cost is not known

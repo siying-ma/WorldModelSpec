@@ -13,6 +13,7 @@ from harness.phases import feedback, review
 from harness.phases import validate as validate_phase
 from harness.store import paths
 from harness.store.state import Options
+from harness.store.budget import BudgetPaused
 from harness.store.ledger import ConceptLedger, Ledger
 
 ONTO = ontology.load(paths.REPO / "ontology" / "ATOMS_train.md")
@@ -337,6 +338,19 @@ class RunStatus(unittest.TestCase):
         self.assertEqual((s["status"], s["stop_reason"]), ("infrastructure_failure", "a session could not be launched"))
         tmp.cleanup()
 
+    def test_laws_never_planned_are_listed(self):
+        """A law still open that no plan was registered or returned for is named; a law planned once
+        and reopened, or returned, is not."""
+        with tempfile.TemporaryDirectory() as t:
+            run = FakeRun(Path(t))
+            led = Ledger(Path(t) / "l.jsonl", ["L-1", "L-2", "L-3", "L-4"], 2)
+            led.mark_planned("L-2", ["L_2"], 1); led.fail("L-2", ["closed"]); led.reopen(["L-2"])
+            led.mark_planned("L-3", ["L_3"], 1); led.return_law("L-3", ["r"], 1)
+            led.block("L-4", ["g1"], ["gap"])
+            s = feedback.write_status(run, led, "incomplete", "the iteration bound (1) was reached")
+            self.assertEqual(s["never_planned"], ["L-1"])
+            self.assertEqual(led.entries["L-2"].state, "open")
+
 
 
 
@@ -455,6 +469,45 @@ class FailClosed(unittest.TestCase):
         self.certs, self.route = {"s": cert(rule="compliant")}, "dismissed_permitted_reading"
         out = self.review([div()])
         self.assertEqual((out.status, len(self.judged)), ("accepted", 1))
+
+
+class PrecedentsGrow(unittest.TestCase):
+    """A node's stage B judgments are made one after another, each shown the rulings the review has
+    already made, as the rulings file will hold them."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.run = FakeRun(Path(self.tmp.name))
+        self.run.opts.max_divergences = 3
+        self.saved = (review.build_context, review.replay_obligations, review.certify, review.append_ruling,
+                      review.session.run_tools, validate_phase._session)
+        review.build_context = lambda *_a, **_kw: ctx()
+        review.replay_obligations = lambda *_a, **_kw: review.Replayed()
+        review.append_ruling = lambda *_a, **_kw: None
+        review.certify = lambda _run, _n, divs, _reading, _out, **_k: {k: cert(rule="compliant") for k in divs}
+        self.prompts, self.b = [], [B("dismissed_permitted_reading") | {"reason": "FIRST-RULING"}, B("upheld") | {"reason": "SECOND"}]
+
+        def judge(run, out_dir, label, prompt, check=None, **_kw):
+            ans = A_VIOLATED if label.endswith("stage_a") else self.b.pop(0)
+            if label.endswith("stage_b"):
+                self.prompts.append(prompt)
+            return ans, list(check(ans)) if check else []
+        validate_phase._session = judge
+
+    def tearDown(self):
+        (review.build_context, review.replay_obligations, review.certify, review.append_ruling,
+         review.session.run_tools, validate_phase._session) = self.saved
+        self.tmp.cleanup()
+
+    def test_a_later_stage_b_prompt_holds_the_earlier_ruling(self):
+        two = [div(), div(situation="t", trace={"scenes": [{"t": 0}, {"t": 100}]})]
+        answer = {"verdict": "return", "divergences": two, "advisories": [], "gap_candidates": []}
+        review.session.run_tools = scripted_reviewer([submit(answer)] * 3)
+        out = review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
+        self.assertEqual((out.status, len(self.prompts)), ("returned", 2))
+        earlier = lambda p: p.split("### Earlier rulings", 1)[1]
+        self.assertNotIn("FIRST-RULING", earlier(self.prompts[0]))
+        self.assertIn("FIRST-RULING", earlier(self.prompts[1]))
+        self.assertIn("dismissed_permitted_reading", earlier(self.prompts[1]))
 
 
 class ConceptFailClosed(unittest.TestCase):
@@ -630,11 +683,12 @@ class CaseLanguageMeanings(unittest.TestCase):
 
 
 class RegionPlaces(unittest.TestCase):
-    """A record that reads a region's property claims the kind of region it is read on; how the region
-    is tied to the road user is the formula's, which the gate checks."""
+    """A record claims, for every region argument of each atom it claims, a kind that can bind it:
+    one whose regions include a kind Core admits there, or any kind where Core admits any. How the
+    region is tied to the road user is the formula's, which the gate checks."""
     def test_a_property_without_its_kind_returns(self):
         from harness.checks import validate_a
-        self.assertIn("st.crest", validate_a.region_atoms(ONTO)[1])                # a kind: claiming it names the place
+        self.assertIn("st.crest", validate_a.region_kinds(ONTO))                   # a kind: claiming it names the place
         errs = validate_a.check_region_places("N", {"st.curvature", "st.sight_distance", "st.region_geometry"}, ONTO)
         self.assertTrue(errs and "kind of region" in errs[0] and "st.curvature" in errs[0])
 
@@ -646,12 +700,364 @@ class RegionPlaces(unittest.TestCase):
         from harness.checks import validate_a
         self.assertEqual(validate_a.check_region_places("N", {"st.crest", "st.region_geometry", "kin.speed"}, ONTO), [])
 
-    def test_a_kind_is_not_a_property(self):
+    def test_core_states_the_carriers(self):
+        from harness.lean import surface
+        kinds = surface.region_argument_kinds(ONTO)
+        carriers = kinds["st_lane_enters"][1][0][0]
+        self.assertTrue({"lane", "turn_lane", "roadway", "shoulder", "bicycle_lane_or_path"} <= carriers)
+        self.assertNotIn("intersection", carriers)
+        self.assertIsNone(kinds["st_lane_enters"][1][0][1])                       # the intersection it enters: any kind
+        self.assertEqual(kinds["st_entrance_of"][1][0], [frozenset({"stop_line", "crosswalk"}), carriers])
+        self.assertNotIn("highway", kinds["dev_governs"][1][0][0])
+        self.assertEqual(kinds["st_sight_along_way"][1][0], [frozenset({"highway"})])
+        # a direction carrier: the primitive reads it through `st_lane_direction`, as the atom does
+        self.assertEqual(kinds["prim_region_offset_along"][1][0], [None, kinds["st_lane_direction"][1][0][0]])
+        self.assertNotIn("centre_turn_lane", kinds["st_lane_direction"][1][0][0])
+        self.assertEqual(kinds["st_curvature"][1], [[None]])
+        self.assertEqual(kinds["st_lane"][1], [[None]])                           # a class atom reads the label: any
+
+    def test_the_constraints_read_no_trace_check_text(self):
+        """The constraints come from running Core, never from TraceLint's messages: with the trace
+        check's source unreadable, the reader still gives them."""
+        from harness.lean import surface
+        surface.region_argument_kinds(ONTO)                                       # the export exists
+        saved, cached = surface._read, dict(surface._ARGUMENT_KINDS)
+        surface._ARGUMENT_KINDS.clear(); surface._REGION_KINDS.clear()
+
+        def read(name):
+            if "TraceLint" in name:
+                raise AssertionError("the trace check's source was read")
+            return saved(name)
+        surface._read = read
+        try:
+            self.assertIn("st_lane_enters", surface.region_argument_kinds(ONTO))
+        finally:
+            surface._read = saved
+            surface._ARGUMENT_KINDS.update(cached)
+
+    def _with_table(self, edit):
+        """A library whose cached export is Core's table changed by `edit` (entries → entries)."""
+        from harness.lean import surface
+        _key, _inputs, cache = surface.region_kinds_cache()
+        surface.region_kinds_export()
+        data = json.loads(cache.read_text())
+        data["entries"] = edit(data["entries"])
+        tmp = tempfile.TemporaryDirectory()
+        lib = Path(tmp.name)
+        (lib / ".lake" / "region_kinds").mkdir(parents=True)
+        (lib / ".lake" / "region_kinds" / cache.name).write_text(json.dumps(data))
+        return tmp, lib
+
+    def _without(self, name, position=None):
+        return self._with_table(lambda es: [x for x in es if not (x["name"] == name and position in (None, x["position"]))])
+
+    def _in_library(self, lib, body):
+        from harness.lean import surface
+        saved = (paths.LIBRARY, dict(surface._ARGUMENT_KINDS), dict(surface._REGION_KINDS))
+        paths.LIBRARY = lib
+        surface._ARGUMENT_KINDS.clear(); surface._REGION_KINDS.clear()
+        try:
+            body()
+        finally:
+            paths.LIBRARY = saved[0]
+            surface._ARGUMENT_KINDS.clear(); surface._ARGUMENT_KINDS.update(saved[1])
+            surface._REGION_KINDS.clear(); surface._REGION_KINDS.update(saved[2])
+
+    def _concept(self, atom):
         from harness.checks import validate_a
-        props, kinds = validate_a.region_atoms(ONTO)
-        self.assertIn("st.roadway", kinds)
-        self.assertIn("st.sight_distance", props)
-        self.assertNotIn("st.roadway", props)
+        from harness.model.blueprint import ConceptRecord
+        rec = ConceptRecord({"concept_id": "drv.test.c", "contract": "c holds", "kind": "formula",
+                             "args": [{"name": "u", "sort": "track"}], "params": [], "scenarios": [],
+                             "elements": [{"span": "c holds", "atoms": [atom]}]})
+        self.assertEqual(validate_a.schema_errors("c", rec.raw, validate_a.CONCEPT_SCHEMA), [])
+        return rec
+
+    def _faults(self, lib, atom, name):
+        from harness.checks import validate_a
+        rec = self._concept(atom)
+
+        def body():
+            with self.assertRaises(validate_a.ValidatorFault) as e:
+                validate_a.validate_concepts([rec], [], ONTO, {}, [])
+            self.assertIn(name, e.exception.trace)
+            self.assertIn("RegionKindsUnavailable", e.exception.trace)
+        self._in_library(lib, body)
+
+    def test_a_deleted_entry_is_a_validator_fault(self):
+        tmp, lib = self._without("st_lane_enters")
+        with tmp:
+            self._faults(lib, "st.lane_enters", "st_lane_enters")
+
+    def test_one_missing_argument_is_a_validator_fault(self):
+        """The entry of the first region argument does not stand for the second."""
+        tmp, lib = self._without("st_lane_enters", 1)
+        with tmp:
+            self._faults(lib, "st.lane_enters", "argument 1 of st_lane_enters")
+
+    def test_explicit_any_is_not_a_missing_entry(self):
+        """`any` declares that any kind may stand there: the check asks for some kind, and runs; the
+        same argument with no entry stops the validator."""
+        from harness.checks import validate_a
+        tmp, lib = self._with_table(lambda es: es)
+
+        def body():
+            errs = validate_a.check_region_places("N", {"st.curvature"}, ONTO)
+            self.assertTrue(errs and "any kind of region" in errs[0])
+            self.assertEqual(validate_a.check_region_places("N", {"st.curvature", "st.crest"}, ONTO), [])
+        with tmp:
+            self._in_library(lib, body)
+        tmp, lib = self._without("st_curvature", 0)
+        with tmp:
+            self._faults(lib, "st.curvature", "st_curvature")
+
+    def test_the_table_is_read_as_declared(self):
+        """A kind list in the table is the constraint: narrowed there, the check narrows with it."""
+        from harness.checks import validate_a
+        from harness.lean import surface
+
+        def narrow(es):
+            return [{**x, "admitted": ["roadway"]} if (x["name"], x["position"]) == ("st_lane_direction", 0) else x for x in es]
+        tmp, lib = self._with_table(narrow)
+
+        def body():
+            self.assertEqual(surface.region_argument_kinds(ONTO)["st_lane_direction"][1], [[frozenset({"roadway"})]])
+            self.assertTrue(validate_a.check_region_places("N", {"st.lane_direction", "st.lane"}, ONTO))
+        with tmp:
+            self._in_library(lib, body)
+        self.assertEqual(validate_a.check_region_places("N", {"st.lane_direction", "st.lane"}, ONTO), [])
+
+    def test_a_failed_export_is_a_validator_fault(self):
+        from harness.checks import validate_a
+        from harness.lean import lean
+        with tempfile.TemporaryDirectory() as t:
+            saved = lean.lean_run
+            lean.lean_run = lambda *_a, **_k: (1, "error: the exporter did not elaborate")
+
+            def body():
+                with self.assertRaises(validate_a.ValidatorFault) as e:
+                    validate_a._guarded("N", validate_a.check_region_places, "N", {"st.lane_enters"}, ONTO)
+                self.assertIn("did not elaborate", e.exception.trace)
+            try:
+                self._in_library(Path(t), body)
+            finally:
+                lean.lean_run = saved
+
+    def test_every_region_argument_needs_a_kind_that_binds_it(self):
+        from harness.checks import validate_a
+        # the carrier of an entry relation is no intersection
+        errs = validate_a.check_region_places("N", {"st.lane_enters", "st.intersection", "rel.occupies"}, ONTO)
+        self.assertTrue(errs and "`st.lane_enters` (region argument 1)" in errs[0] and "`st.travel_region`" in errs[0]
+                        and "`st.intersection`" not in errs[0].split("claim, on")[1])
+        # an abstract kind binds it through the kinds refining it, a lane-family kind directly
+        for carrier in ("st.travel_region", "st.lane", "st.turn_lane", "st.roadway"):
+            self.assertEqual(validate_a.check_region_places("N", {"st.lane_enters", "st.intersection", carrier}, ONTO), [], carrier)
+        # every argument at once: the mark and the carrier of an entrance
+        errs = validate_a.check_region_places("N", {"st.entrance_of", "st.intersection"}, ONTO)
+        self.assertEqual(len(errs), 1)
+        self.assertIn("(region argument 1)", errs[0]); self.assertIn("(region argument 2)", errs[0])
+        self.assertEqual(validate_a.check_region_places("N", {"st.entrance_of", "st.stop_line", "st.lane"}, ONTO), [])
+        # a device governs no highway
+        self.assertTrue(validate_a.check_region_places("N", {"dev.governs", "dev.speed_limit_sign", "st.highway"}, ONTO))
+        self.assertEqual(validate_a.check_region_places("N", {"dev.governs", "dev.speed_limit_sign", "st.highway", "st.travel_region"}, ONTO), [])
+
+
+def _trace(same_direction: bool) -> dict:
+    return {"scenes": [{"t": 0, "users": [{"track": 1}, {"track": 2}], "relations": [{"a": 1, "b": 2, "same_direction": same_direction}]}]}
+
+
+class RegionKindsProbe(unittest.TestCase):
+    """Core's declared region-argument kinds against a probe of Core over admitted traces
+    (`scripts/tests/region_kinds_probe.lean`). The probe only refutes: a kind read at an argument
+    outside its list (the table too narrow), or a listed kind on which the trace check rejects every
+    field the name reads there, set alone (too broad). A kind the probe does not read is never
+    removed. The probe is no proof that the table and every evaluation path agree."""
+    PROBE = paths.REPO / "scripts" / "tests" / "region_kinds_probe.lean"
+    probe: dict = {}
+
+    @classmethod
+    def setUpClass(cls):
+        from harness.lean import lean, surface
+        sigs = [{"name": n, "args": a} for n, _aid, a in surface._region_signatures(ONTO)]
+        with tempfile.TemporaryDirectory() as t:
+            inp = Path(t) / "signatures.json"
+            inp.write_text(json.dumps({"signatures": sigs}))
+            code, out = lean.lean_run(paths.LIBRARY, cls.PROBE, args=(str(inp),))
+        assert code == 0, out[-2000:]
+        cls.probe = json.loads(out.strip().splitlines()[-1])
+
+    @staticmethod
+    def table():
+        from harness.lean import surface
+        return {(e["name"], e["position"]): e["admitted"] for e in surface.region_kinds_export()}
+
+    def refute(self, table):
+        """(outside, rejected, unexercised, unshown): (name, position, kind) read outside the list;
+        listed but rejected on every target field; listed, neither read nor rejected; a label kind
+        left out of the list that no target field's rejection shows."""
+        labels = set(self.probe["labels"])
+        outside, rejected, unexercised, unshown = set(), set(), set(), set()
+        for e in self.probe["entries"]:
+            for r in e["regions"]:
+                key = (e["name"], r["position"])
+                self.assertIn(key, table, f"the table has no entry for a probed argument {key}")
+                ks = table[key]
+                if ks == "any":
+                    continue
+                ks, read = set(ks), set(r["read"])
+                rej = {x["kind"] for x in r["rejected"]}
+                outside |= {(*key, k) for k in read - ks}
+                rejected |= {(*key, k) for k in ks & rej}
+                unexercised |= {(*key, k) for k in ks - read - rej}
+                unshown |= {(*key, k) for k in labels - ks - rej}
+        return outside, rejected, unexercised, unshown
+
+    def region(self, name, position):
+        return next(r for e in self.probe["entries"] if e["name"] == name for r in e["regions"] if r["position"] == position)
+
+    def test_the_declared_table_survives_the_probe(self):
+        outside, rejected, unexercised, unshown = self.refute(self.table())
+        self.assertEqual(outside, set())
+        self.assertEqual(rejected, set())
+        self.assertEqual(unexercised, set(), "the probe no longer exercises a listed kind")
+        self.assertEqual(unshown, set(), "a kind left out of a list is not rejected by the field read there")
+
+    def test_a_narrowed_list_is_refuted(self):
+        t = self.table()
+        t[("st_lane_direction", 0)] = [k for k in t[("st_lane_direction", 0)] if k != "shoulder"]
+        self.assertIn(("st_lane_direction", 0, "shoulder"), self.refute(t)[0])
+
+    def test_a_widened_list_is_refuted_on_the_field_read_there(self):
+        t = self.table()
+        t[("st_lane_direction", 0)] = t[("st_lane_direction", 0)] + ["centre_turn_lane"]
+        t[("dev_governs", 1)] = t[("dev_governs", 1)] + ["highway"]
+        t[("prim_region_offset_along", 2)] = t[("prim_region_offset_along", 2)] + ["centre_turn_lane"]
+        rejected = self.refute(t)[1]
+        self.assertEqual(rejected, {("st_lane_direction", 0, "centre_turn_lane"), ("dev_governs", 1, "highway"),
+                                    ("prim_region_offset_along", 2, "centre_turn_lane")})
+        self.assertEqual(self.region("st_lane_direction", 0)["targets"], ["region 1 lane.direction"])
+        self.assertEqual(self.region("dev_governs", 1)["targets"], ["device governs region 1"])
+        self.assertEqual(self.region("prim_region_offset_along", 2)["targets"], ["region 2 lane.direction"])
+
+    def test_an_unrestricted_argument_is_not_refuted(self):
+        """The region the offset is measured to reads only geometry: no field is rejected there, so a
+        list would show every label kind as unexercised or read, never as rejected."""
+        r = self.region("prim_region_offset_along", 1)
+        self.assertEqual(set(r["read"]), set(self.probe["labels"]))
+        self.assertEqual(r["rejected"], [])
+
+
+class EvidenceIdentity(unittest.TestCase):
+    """Two passes' challenges are one evidence only when their case, its trace included, is one. A
+    judge's answer is taken again only for a byte-identical request, stage A and stage B each on its
+    own digest. A review paused while judging resumes without asking a judge twice, its rows
+    appended after the rows already recorded, and a recorded case is replayed on its digests."""
+    ONE, OTHER = _trace(True), _trace(False)
+    FLIP = [{"aggregate_id": "D-1::vehicle", "track": 1, "original": "false", "override": True, "rule_verdict": "violated"}]
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.run = FakeRun(Path(self.tmp.name))
+        self.run.opts.max_divergences, self.run.opts.review_passes = 3, 2
+        self.saved = (review.build_context, review.replay_obligations, review.certify, review._pass_context,
+                      review.session.run_tools, review.session.run)
+        review.build_context = lambda *_a, **_kw: review.Context(**{**ctx().__dict__, "precedents": review.precedent_rows(self.run, "law:L-1")})
+        review.certify = lambda _run, _n, divs, _reading, _out, **_k: {k: cert(rule="compliant") for k in divs}
+        review._pass_context = lambda *_a, **_kw: "the rule and its gate's context"
+        self.asked, self.reviewed, self.pause, self.b = [], [], set(), {}
+
+        def judge(prompt, cwd, out_dir, opts, *, label, **_kw):     # a judge session: its answer by the label's stage
+            if label in self.pause:
+                self.pause.discard(label)
+                raise BudgetPaused("no budget left")
+            self.asked.append(label)
+            ans = A_VIOLATED if label.endswith("stage_a") else B(self.b.get(label, "dismissed_permitted_reading"))
+            return {"result": {"result": json.dumps(ans)}}
+        review.session.run = judge
+
+    def tearDown(self):
+        (review.build_context, review.replay_obligations, review.certify, review._pass_context,
+         review.session.run_tools, review.session.run) = self.saved
+        self.tmp.cleanup()
+
+    def review(self, first: dict, second: dict):
+        answers = {"review_behaviour_p1": [first], "review_behaviour_p2": [second]}
+
+        def run_tools(prompt, out_dir, opts, tools, label, **_kw):
+            self.reviewed.append(label)
+            tools.reset()
+            tools.call("submit_review", {"answer": {"verdict": "return", "divergences": answers[label], "advisories": [], "gap_candidates": []}})
+            return {"code": 0, "result": {"submitted": tools.done}}
+        review.session.run_tools = run_tools
+        return review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name) / "review")
+
+    def rows(self) -> list[dict]:
+        return [json.loads(x) for x in (self.run.dir / "rulings.jsonl").read_text().splitlines()]
+
+    def joined(self, first: dict, second: dict) -> list[dict]:
+        tool = lambda d: SimpleNamespace(answer={"verdict": "return", "divergences": [d], "advisories": [], "gap_candidates": []},
+                                         attempts=[], certs_of=lambda _a: {1: cert()}, judgeable=lambda *_a: [])
+        return review.join_passes([tool(first), tool(second)], LAW, ["v"], 3)[0]["divergences"]
+
+    def test_the_merge_key_holds_the_trace(self):
+        self.assertEqual(len(self.joined(div(trace=self.ONE), div(trace=self.ONE, situation="told otherwise"))), 1)
+        self.assertEqual(len(self.joined(div(trace=self.ONE), div(trace=self.OTHER))), 2)
+        region = lambda name: {name: {"kind": "region", "id": 3}}       # entities renamed: the same case in canonical names
+        self.assertEqual(len(self.joined(div(trace=self.ONE, entities=region("r")), div(trace=self.ONE, entities=region("lane")))), 1)
+
+    def test_a_truly_identical_input_is_judged_once(self):
+        out = self.review(div(trace=self.ONE), div(trace=self.ONE))
+        self.assertEqual(out.status, "accepted")
+        self.assertEqual(self.asked, ["divergence_1_stage_a", "divergence_1_stage_b"])
+        self.assertEqual(len(self.rows()), 1)
+
+    def test_one_formula_on_two_traces_is_two_evidences_each_judged(self):
+        out = self.review(div(trace=self.ONE), div(trace=self.OTHER))
+        self.assertEqual(out.status, "accepted")
+        rows = self.rows()
+        self.assertEqual(len({r["case_id"] for r in rows}), 2)
+        self.assertEqual([r["trace"] for r in rows], [self.ONE, self.OTHER])
+        self.assertTrue(all(r["stage_a"] and r["stage_b"] for r in rows))
+        # one stage A request, byte-identical for both (the rendered case shows no relation): answered once;
+        # the second stage B is shown the first ruling, so it is another request
+        self.assertEqual(self.asked, ["divergence_1_stage_a", "divergence_1_stage_b", "divergence_2_stage_b"])
+        self.assertEqual(rows[0]["stageA_digest"], rows[1]["stageA_digest"])
+        self.assertNotEqual(rows[0]["stageB_digest"], rows[1]["stageB_digest"])
+
+    def test_stage_b_is_shared_only_on_the_same_sensitivity(self):
+        context = lambda: ctx(aggregates=[{"id": "D-1::vehicle", "included": ["ru.motor_vehicle"], "unresolved": []}])
+        out = Path(self.tmp.name) / "judged"
+        js = [review.judge_divergence(self.run, node(), context(), ONTO, div(trace=t), c, out, label)
+              for t, c, label in ((self.ONE, cert(), "d1"), (self.OTHER, cert(overrides=self.FLIP), "d2"), (self.OTHER, cert(), "d3"))]
+        self.assertEqual([j.row["sensitive"] for j in js], [False, True, False])
+        self.assertEqual(self.asked, ["d1_stage_a", "d1_stage_b", "d2_stage_b"])
+        self.assertEqual(len({j.row["stageA_digest"] for j in js}), 1)
+        self.assertEqual([j.row["stageB_digest"] == js[0].row["stageB_digest"] for j in js], [True, False, True])
+
+    def test_a_restart_appends_after_the_recorded_rows_and_replays_them(self):
+        review.append_ruling(self.run, {"schema": review.CASE_SCHEMA, "key": "law:L-0", "subject": "L_0", "case_id": "c0",
+                                        "ruling": "upheld", "iteration": 0})
+        before = (self.run.dir / "rulings.jsonl").read_bytes()
+        self.pause, self.b = {"divergence_2_stage_b"}, {"divergence_2_stage_b": "upheld"}
+        with self.assertRaises(BudgetPaused):
+            self.review(div(trace=self.ONE), div(trace=self.OTHER))
+        self.assertEqual((self.run.dir / "rulings.jsonl").read_bytes(), before)
+        self.assertEqual(self.asked, ["divergence_1_stage_a", "divergence_1_stage_b"])
+        self.asked = []
+        out = self.review(div(trace=self.ONE), div(trace=self.OTHER))       # resumed: the passes and the answers kept are taken back
+        self.assertEqual(out.status, "returned")
+        self.assertEqual(self.reviewed, ["review_behaviour_p1", "review_behaviour_p2"])
+        self.assertEqual(self.asked, ["divergence_2_stage_b"])
+        after = (self.run.dir / "rulings.jsonl").read_bytes()
+        self.assertTrue(after.startswith(before))
+        self.assertEqual([r["ruling"] for r in self.rows()[1:]], ["dismissed_permitted_reading", "upheld"])
+        self.asked = []
+        review.replay_obligations = self.saved[1]
+        self.run.iteration = 2                                              # a later review of the same record: the obligation is replayed
+        out = self.review(div(trace=self.ONE), div(trace=self.OTHER))
+        self.assertEqual(out.status, "returned")
+        self.assertTrue(any("still decided otherwise" in r for r in out.reasons))
+        self.assertEqual((self.asked, len(self.reviewed)), ([], 2))         # neither judge nor reviewer is asked again
+        self.assertEqual((self.run.dir / "rulings.jsonl").read_bytes(), after)
 
 
 class ParameterQuestion(unittest.TestCase):
@@ -1051,7 +1457,7 @@ class Obligations(unittest.TestCase):
         review.certify, review.judge_divergence = self.saved
         self.tmp.cleanup()
 
-    CTX = SimpleNamespace(law=LAW)
+    CTX = SimpleNamespace(law=LAW, decided=lambda _row: None)
 
     def replay(self, run=None, pending=None, questions=None):
         n = Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}]})

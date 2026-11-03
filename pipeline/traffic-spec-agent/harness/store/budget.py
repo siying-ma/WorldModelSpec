@@ -12,8 +12,9 @@ Every request is reserved before it is sent, under one lock shared by every work
 written to `usage.jsonl` as a `pending` row naming its vendor and its reservation:
 - an OpenAI call reserves its worst case: the prompt's tokens at the input price plus the call's
   output-token limit at the output price (the input part is an estimate, three characters a token);
-- a Claude session reserves the session's own cap (`session_budget_usd`), which the CLI checks after
-  each turn, so a session may pass its reservation by up to one turn.
+- a Claude session reserves its own cap, which its role sets (`session_budget_usd` for a plan or
+  coding session, `repair_budget_usd` for a repair, `judge_budget_usd` for a tool-less answer) and
+  which the CLI checks after each turn, so a session may pass its reservation by up to one turn.
 What became of the request is written as one more row naming it, before the spend is counted:
 - `settled`, with its actual cost: an answer with its cost, or a request known not to have been
   executed (refused before execution: zero);
@@ -185,7 +186,7 @@ class Budget:
         """Reserve a Claude session at its own cap (zero when uncapped) and record it as pending; raises
         `BudgetPaused` when it does not fit. A limit on Claude's spend needs a capped session."""
         if cap_usd is None and (self.limits["anthropic"] is not None or self.total_limit is not None):
-            raise BudgetPaused("a limit on Claude's spend needs `session_budget_usd`: an uncapped session cannot be reserved")
+            raise BudgetPaused("a limit on Claude's spend needs a capped session: an uncapped session cannot be reserved")
         return self._reserve("anthropic", model, float(cap_usd or 0.0), label)
 
     def settle(self, token: str | None, row: dict) -> None:

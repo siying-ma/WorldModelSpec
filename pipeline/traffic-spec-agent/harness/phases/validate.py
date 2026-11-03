@@ -59,8 +59,11 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
     concept_outcomes = validate_a.validate_concepts(concepts, defs, onto, accepted_concepts, users, mode)
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
     rejected = GapLedger.for_run(paths.GAPS_DIR, run).rejected()
+    from ..model import definitions as definitions_mod
+    sources = (definitions_mod.source_texts(run) if run is not None
+               else {**{str(d.get("id")): str(d.get("text", "")) for d in defs}, **{i: l.text for i, l in laws.items()}})
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
-                                   known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes)
+                                   known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes, sources=sources)
     return nodes, concepts, outcomes, concept_outcomes
 
 
@@ -93,7 +96,8 @@ def answer_digest(run: Run, prompt: str, model: str | None = None, effort: str |
 
 
 def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model: str | None = None,
-             effort: str | None = None, usage_label: str | None = None) -> tuple[dict | None, list[str]]:
+             effort: str | None = None, usage_label: str | None = None, role: str = "judge",
+             shared: bool = False) -> tuple[dict | None, list[str]]:
     """One tool-less session: its JSON and the schema defects that remain. `check(parsed)` names the
     defects of an answer; an answer with defects is asked for once more with the defects appended,
     and the second answer stands whole, with whatever defects it keeps (the caller decides what
@@ -102,25 +106,33 @@ def _session(run: Run, out_dir: Path, label: str, prompt: str, check=None, model
     defect, which the caller counts against the node. An answer without defects is kept with the
     digest of the prompt, model and effort (`<label>_answer.json`), and the same session asked again
     in the same directory on the same inputs takes it back without a call: a review resumed after a
-    pause pays for no judgment it already has. `usage_label` names the session's rows in
-    `usage.jsonl` (its subject included), `label` its files. In a dry run `(None, [])`."""
+    pause pays for no judgment it already has. With `shared`, an answer kept in the same directory
+    under another label on the same digest is taken back too (and kept under this label), so one
+    complete input is answered once however many items ask it. `usage_label` names the session's rows in
+    `usage.jsonl` (its subject included), `label` its files; `role` sets a Claude session's cap
+    (`session.ROLES`: a judge's unless the caller plans). In a dry run `(None, [])`."""
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{label}_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
         return None, []
     digest = answer_digest(run, prompt, model, effort)
     kept_file = out_dir / f"{label}_answer.json"
-    try:
-        kept = json.loads(kept_file.read_text(encoding="utf-8"))
+    others = sorted(f for f in out_dir.glob("*_answer.json") if f != kept_file) if shared else []
+    for f in [kept_file] + others:
+        try:
+            kept = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
         if kept.get("digest") == digest and isinstance(kept.get("answer"), dict) and not (check and list(check(kept["answer"]))):
+            if f != kept_file:
+                jsonl.write_atomic(kept_file, json.dumps({"digest": digest, "answer": kept["answer"], "taken_from": f.name},
+                                                         ensure_ascii=False, indent=1))
             return kept["answer"], []
-    except (OSError, json.JSONDecodeError):
-        pass
     ask = prompt
     parsed, errs = None, []
     for attempt in ("", "_again"):
         record = session.run(ask, cwd=out_dir, out_dir=out_dir, opts=run.opts, max_turns=6,
-                             effort=effort or run.opts.judge_effort, label=label + attempt, timeout=900,
+                             effort=effort or run.opts.judge_effort, role=role, label=label + attempt, timeout=900,
                              allow=[], tools=[], model=model or run.opts.model,
                              usage_label=(usage_label + attempt) if usage_label else None)
         text = ((record.get("result") or {}).get("result", "") or "")
@@ -188,7 +200,7 @@ def glosses_for(node: Node, onto: ontology.Ontology, run: Run) -> dict[str, str]
             ids |= set(rec.get("reads", []))
     ids |= {d.get("id") for d in node.get("assumptions", []) + node.get("intentions", []) if d.get("id")}
     out = glosses_of(sorted(ids), onto, run)
-    for c in node.compositions():
+    for c in node.dependencies():
         out[c.get("rule", "")] = "another rule of the library; its verdict, or whether it applies, is read here"
     return out
 

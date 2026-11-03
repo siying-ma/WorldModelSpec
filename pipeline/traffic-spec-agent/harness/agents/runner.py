@@ -250,7 +250,7 @@ def session_failure(code: int, result: Optional[dict], timed_out: bool, stream_p
         return f"session refused: {text[:200]}"
     if result.get("subtype") == "error_during_execution":
         return f"session crashed: {text[:200]}"
-    if result.get("is_error") and turns <= 1 and result.get("subtype") != "error_max_turns":
+    if result.get("is_error") and turns <= 1 and result.get("subtype") not in ("error_max_turns", "error_max_budget_usd"):
         return f"session errored before working: {text[:200]}"
     if turns <= 1 and not int(usage.get("output_tokens", 0) or 0):
         return f"session produced nothing: {text[:200] or result.get('subtype')}"

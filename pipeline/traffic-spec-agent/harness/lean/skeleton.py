@@ -62,7 +62,8 @@ def rule_skeleton(node: Node) -> str:
     residues = node.get("residues", [])
     surrogate = any(o.get("surrogate") for o in ops)
     elements = node.get("elements", [])
-    comps = node.compositions()
+    comps = node.dependencies()
+    borrowed = node.definition_references()
 
     head = ["/-", f"  {node.id} — {', '.join(node.get('law_refs', []))}", "",
             "  THE READING (the blueprint's; the coding session records here, per span, how each element,",
@@ -73,11 +74,16 @@ def rule_skeleton(node: Node) -> str:
     if elements:
         head += ["", "  Elements (span → atoms, derived):"]
         for e in elements:
-            head.append(f"    {e.get('span')}: atoms {e.get('atoms', [])}, derived {e.get('derived', [])}")
+            head.append(f"    {e.get('span')}: atoms {e.get('atoms', [])}, derived {e.get('derived', [])}"
+                        + (f", borrowing {e.get('source_spans')}" if e.get("source_spans") else ""))
     if comps:
         head += ["", "  Compositions (span → node, as, map):"]
         for c in comps:
             head.append(f"    {c.get('span')}: {c.get('rule')} as {c.get('as')} map {c.get('map')}" + (f" scopes {c.get('scopes')}" if c.get("scopes") else ""))
+    if borrowed:
+        head += ["", "  Borrowed words (span → source: the words; no rule is composed, the elements naming the span carry them):"]
+        for c in borrowed:
+            head.append(f"    {c.get('span')}: {c.get('source')}: {' '.join(str(c.get('quote', '')).split())}")
     if node.literals():
         head += ["", "  Literals the text states (each written through its Units constructor):"]
         for l in node.literals():

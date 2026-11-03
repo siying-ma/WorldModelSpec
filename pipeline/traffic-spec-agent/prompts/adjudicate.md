@@ -22,7 +22,9 @@ may name the law's words the rule ignores, but not a replacement for them.
 - **The parameters** — each parameter the rule names, with its value, unit, convention and whether
   the operator has reviewed it.
 - **The admitted aggregates** — each legal aggregate the rule reads, with the classes its
-  definition includes and leaves unresolved, as the independent gate admitted them.
+  definition includes and leaves unresolved, and the classes it covers (admitted only as members of
+  the named included classes, so their own label adds no membership evidence), as the independent
+  gate admitted them; every other class is excluded.
 - **The item** — the certified case, the law's verdict on it and its deciding words, the rule's
   verdict, whether an aggregate membership mechanically explains the difference, and the outcomes
   available for this item; or structural evidence: a word-level claim no trace can show.
@@ -77,8 +79,8 @@ A structural evidence item is `upheld` or `dismissed_permitted_reading` only.
    case. If no such value could, without changing the measure, unit, window, comparison direction
    or formula, the defect is structural.
 2. The aggregate certificate is an admitted input, not a membership question. Never decide whether
-   one of its classes should be included, excluded or unresolved, and never propose a replacement
-   mapping.
+   one of its classes should be included, excluded, covered or unresolved, and never propose a
+   replacement mapping.
 3. **Open magnitudes.** Where the words leave a magnitude open (near, sufficient, safe, a
    tolerance, a reasonable rate), the rule bounds it with a parameter; a mismatch that only that
    magnitude's size decides is size-dependent (outcomes 3 and 4). Where no value its convention

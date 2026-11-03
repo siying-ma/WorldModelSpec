@@ -13,13 +13,23 @@ as who controls another entity is not an aggregate even though it may name a roa
 A mapping record classifies every road-user class of the active ontology:
   {"aggregate_id": "<definition>::<term slug>" | "<law id>:<span>::<term slug>", "term": …,
    "definition": "DEF-…" | null, "classifications": [{"class": "ru.<class>", "status": "included" |
-   "excluded" | "unresolved", "quotes": [{"definition": "DEF-…" | "<law id>", "words": "…"}],
-   "reason": "…"}]}
+   "excluded" | "covered" | "unresolved", "quotes": [{"definition": "DEF-…" | "<law id>", "words": "…"}],
+   "reason": "…", "covered_by": ["ru.<class>", …], "basis": [{"class": "ru.<class>", "words": "…"}]}]}
 Each class exactly once; no class that is not a road-user class of the ontology, and no other
 aggregate (no nesting); an included or excluded status quotes words that decide it, an
 unresolved one the closest words and a reason; every quote verbatim in the posted text it names,
 which is the controlling definition, a definition its cross-references or nested defined terms
 reach, or, for a law-local aggregate, the law itself.
+
+`excluded` means the definition leaves the class out. `covered` means the definition admits members
+of the class only as members of other classes the same mapping includes, so the class's own label
+adds no membership evidence: a covered class names those classes in `covered_by` (at least one,
+never itself, each proposed `included`), quotes in `basis`, verbatim, the class contracts that make
+the coverage complete (of the covered class or of a covering one), and gives a reason. Only a
+covered class carries `covered_by` and `basis`. A reading entry lists the classes included and
+unresolved, which is all the evaluator reads, and the covered ones with their covering classes for
+audit; a covered class is in neither executable list, so it never makes a road user a member nor
+its membership unknown.
 """
 from __future__ import annotations
 
@@ -32,10 +42,11 @@ from ..model import definitions as definitions_mod
 from ..model.ontology import Ontology
 
 REPRESENTATIONS = ("aggregate", "not_aggregate", "gap")
-STATUSES = ("included", "excluded", "unresolved")
+STATUSES = ("included", "excluded", "covered", "unresolved")
 SELECTION_KEYS = {"definition", "term", "representation", "target", "quote", "reason"}
 RECORD_KEYS = {"aggregate_id", "term", "definition", "classifications"}
-CLASS_KEYS = {"class", "status", "quotes", "reason"}
+CLASS_KEYS = {"class", "status", "quotes", "reason", "covered_by", "basis"}
+COVER_KEYS = {"covered_by", "basis"}
 #: `ru.*` atoms that are attributes or relations of a road user, not classes.
 NOT_CLASSES = {"ru.occupant_count", "ru.rider_posture", "ru.subject", "ru.aggregate"}
 
@@ -175,9 +186,13 @@ def record_defects(rec: dict, onto: Ontology, allowed_sources: dict[str, str]) -
             errs.append(f"aggregate `{aid}`: a classification is an object"); continue
         where = f"aggregate `{aid}` {c.get('class')}"
         if set(c) - CLASS_KEYS or not {"class", "status", "quotes"} <= set(c):
-            errs.append(f"{where}: keys are class, status, quotes and (for unresolved) reason")
+            errs.append(f"{where}: keys are class, status, quotes, (for unresolved and covered) reason and (for covered) covered_by and basis")
         if c.get("status") not in STATUSES:
             errs.append(f"{where}: status is one of {list(STATUSES)}")
+        if c.get("status") == "covered":
+            errs += _cover_defects(c, where, cls, onto, set(want))
+        elif COVER_KEYS & set(c):
+            errs.append(f"{where}: only a covered class carries `covered_by` and `basis`")
         qs = c.get("quotes")
         if not isinstance(qs, list) or not qs:
             errs.append(f"{where}: quotes the controlling words"); continue
@@ -192,6 +207,40 @@ def record_defects(rec: dict, onto: Ontology, allowed_sources: dict[str, str]) -
     return errs
 
 
+def _cover_defects(c: dict, where: str, cls: list, onto: Ontology, classes: set[str]) -> list[str]:
+    """A covered classification's own fields: `covered_by` names at least one other road-user class,
+    each proposed `included` in the same mapping (so no covered class rests on another covered one);
+    `basis` quotes, verbatim, the contract of the covered class or of a covering one; a reason."""
+    errs = []
+    by = c.get("covered_by")
+    proposed = {x.get("class"): x.get("status") for x in cls if isinstance(x, dict)}
+    if not isinstance(by, list) or not by or not all(isinstance(t, str) for t in by):
+        errs.append(f"{where}: `covered_by` is a non-empty list of the included classes that cover it")
+        by = []
+    if len(set(by)) != len(by):
+        errs.append(f"{where}: `covered_by` names a class twice")
+    for t in by:
+        if t == c.get("class"):
+            errs.append(f"{where}: `covered_by` names the class itself")
+        elif t not in classes:
+            errs.append(f"{where}: `covered_by` names `{t}`, which is not a road-user class of the ontology")
+        elif proposed.get(t) != "included":
+            errs.append(f"{where}: `covered_by` names `{t}`, which the mapping does not include (it is {proposed.get(t)})")
+    basis = c.get("basis")
+    if not isinstance(basis, list) or not basis:
+        errs.append(f"{where}: `basis` quotes the class contracts that make the coverage complete")
+        basis = []
+    for b in basis:
+        k = b.get("class") if isinstance(b, dict) else None
+        if k != c.get("class") and k not in by:
+            errs.append(f"{where}: `basis` quotes `{k}`, which is neither the class nor one of its covering classes")
+        elif not _verbatim(b.get("words", ""), onto.contract(k)):
+            errs.append(f"{where}: the basis \"{_ws(b.get('words'))[:80]}\" is not verbatim in the contract of `{k}`")
+    if not _ws(c.get("reason")):
+        errs.append(f"{where}: a covered status explains why every member the words admit carries a covering class")
+    return errs
+
+
 def digest(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
 
@@ -201,11 +250,19 @@ def ontology_digest(onto: Ontology) -> str:
 
 
 def admitted(rec: dict, statuses: dict[str, str]) -> dict:
-    """The reading entry of an admitted mapping: the classes included and unresolved after the
-    gate's downgrades (`statuses`: class → admitted status)."""
-    return {"id": rec["aggregate_id"], "term": rec.get("term"), "definition": rec.get("definition"),
-            "included": sorted(c for c, s in statuses.items() if s == "included"),
-            "unresolved": sorted(c for c, s in statuses.items() if s == "unresolved")}
+    """The reading entry of an admitted mapping (`statuses`: class → final admitted status, after the
+    gate's downgrades): the classes included and unresolved, which the evaluator reads, and, when
+    any, the covered classes with their covering classes, definition words and contract basis,
+    which it does not."""
+    entry = {"id": rec["aggregate_id"], "term": rec.get("term"), "definition": rec.get("definition"),
+             "included": sorted(c for c, s in statuses.items() if s == "included"),
+             "unresolved": sorted(c for c, s in statuses.items() if s == "unresolved")}
+    by_class = {c["class"]: c for c in rec["classifications"]}
+    covered = [{"class": c, "covered_by": sorted(by_class[c]["covered_by"]), "quotes": by_class[c]["quotes"],
+                "basis": by_class[c]["basis"]} for c in sorted(statuses) if statuses[c] == "covered"]
+    if covered:
+        entry["covered"] = covered
+    return entry
 
 
 def _term(row: dict) -> str:

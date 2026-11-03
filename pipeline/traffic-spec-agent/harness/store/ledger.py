@@ -243,20 +243,25 @@ class Ledger:
 
     def reopen(self, laws: list[str] | None = None) -> list[str]:
         """Operator action: failed laws, and laws blocked for the operator's decision (every token
-        `decision:<law>`), back to open with a fresh budget — and with a decided law, every law
-        blocked on its token. A law blocked on a gap waits for the gap's decision instead."""
+        `decision:<law>`), back to open with a fresh budget. Reopening a law decides its token
+        `decision:<law>` and the tokens it was blocked on: every blocked law loses the decided tokens,
+        and one left with none reopens too. A law blocked on a gap waits for the gap's decision instead."""
         def decided_only(e: Entry) -> bool:
             return e.state == BLOCKED and bool(e.gaps) and all(g.startswith("decision:") for g in e.gaps)
         out, tokens = [], set()
         for e in self.entries.values():
             if (laws is None or e.law in laws) and (e.state not in (ACCEPTED, BLOCKED) or decided_only(e)):
-                tokens |= {g for g in e.gaps if g.startswith("decision:")}
+                tokens |= {g for g in e.gaps if g.startswith("decision:")} | {f"decision:{e.law}"}
                 self._fresh(e, [])
                 out.append(e.law)
         for e in self.entries.values():
-            if decided_only(e) and set(e.gaps) <= tokens:
-                self._fresh(e, [f"reopened with {sorted(tokens)}"])
-                out.append(e.law)
+            if e.state == BLOCKED and set(e.gaps) & tokens:
+                left = [g for g in e.gaps if g not in tokens]
+                if left:
+                    e.gaps = left
+                else:
+                    self._fresh(e, [f"reopened with {sorted(tokens & set(e.gaps))}"])
+                    out.append(e.law)
         return out
 
     @staticmethod
@@ -270,11 +275,16 @@ class Ledger:
         """A blocked law reopens once the operator has decided every gap it waits on: retired (the
         ontology or the reading now carries the span) or rejected (the span can be carried as it is;
         the decision is the reason the next plan is shown), its nodes' gate-cost counts cleared as by
-        `reopen`. Returns (law, reasons)."""
+        `reopen`. A decided gap of a law that still waits on others (a gap or a decision token) is
+        struck from its list, so the law reopens with the last one. Returns (law, reasons)."""
         out = []
         for e in self.entries.values():
-            if e.state == BLOCKED and e.gaps and all(g in decided for g in e.gaps):
-                reasons = [f"gap {g} {decided[g][0]}" + (f": {decided[g][1]}" if decided[g][1] else "") for g in e.gaps]
+            if e.state == BLOCKED and any(g in decided for g in e.gaps):
+                reasons = [f"gap {g} {decided[g][0]}" + (f": {decided[g][1]}" if decided[g][1] else "") for g in e.gaps if g in decided]
+                left = [g for g in e.gaps if g not in decided]
+                if left:                                   # a decided gap is struck; the law waits on the rest
+                    e.gaps, e.reasons = left, e.reasons + [r for r in reasons if r not in e.reasons]
+                    continue
                 e.state, e.gaps, e.reasons = OPEN, [], reasons
                 e.cost_failures, e.core_panics = {}, []
                 out.append((e.law, reasons))

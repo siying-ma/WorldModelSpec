@@ -74,11 +74,53 @@ def _one_line_def(text: str, name: str) -> str:
 
 # ---------------------------------------------------------------------------------------------
 
+_CTOR_DOC = re.compile(r"^[ \t]*/--((?:(?!-/).)*)-/[ \t]*\n(?=[ \t]*\| (\w+))", re.S | re.M)
+
+
+def _constructor_docs(listing: str) -> list[tuple[str, str]]:
+    """(`Inductive.constructor`, doc) for each constructor of an inductive listing that carries a
+    doc comment."""
+    def owner(pos: int) -> str:
+        found = re.findall(r"\binductive (\w+)", listing[:pos])
+        return found[-1] + "." if found else ""
+    return [(owner(m.start()) + m.group(2), " ".join(m.group(1).split())) for m in _CTOR_DOC.finditer(listing)]
+
+
+def _without_constructor_docs(listing: str) -> str:
+    """The listing with its constructors' doc comments taken out: they are shown in
+    `formula_restrictions`, once."""
+    return _CTOR_DOC.sub("", listing)
+
+
+def _language_listing() -> str:
+    return _block(_read("Language/Formula.lean"), "mutual\n  /-- A quantity. -/", r"^end\b")
+
+
+def formula_restrictions() -> str:
+    """What a formula may not say, in Core's own words: the contracts of the static checks
+    (`Rule.check`, `Concept.check` in `Language/RuleEval.lean`) and the doc comments Core puts on
+    the constructors of `Term`, `Formula` and `ArgSort` it restricts. Part of the formula language,
+    so the planner and the coder read the same text."""
+    ev = _read("Language/RuleEval.lean")
+
+    def check_doc(ns: str) -> str:
+        i = ev.index(f"namespace {ns}\n")
+        j = ev.index(f"\nend {ns}", i)
+        m = re.search(r"^def check\b", ev[i:j], re.M)
+        return " ".join(_doc_before(ev, i + m.start()).removeprefix("/--").removesuffix("-/").split())
+    rows = [f"- `Rule.check`: {check_doc('Rule')}", f"- `Concept.check`: {check_doc('Concept')}"]
+    rows += [f"- `{n}`: {d}" for n, d in _constructor_docs(_language_listing())]
+    rows += [f"- `{n}`: {d}" for n, d in _constructor_docs(_inductive(_read("Language/Concept.lean"), "ArgSort"))]
+    return ("### What a formula may not say (`Language/RuleEval.lean`, `Language/Formula.lean`, `Language/Concept.lean`)\n"
+            "The static checks a rule and a concept are held to before any trace, and what Core states a formula may not do with "
+            "the constructors it restricts:\n" + "\n".join(rows) + "\n")
+
+
 def formula_language() -> str:
     t = _read("Language/Formula.lean"); time = _read("Foundations/Time.lean")
     return ("### Formula language (`library/TrafficSpec/Core/Language/Formula.lean`; `Measure` from `Foundations/Time.lean`)\n```lean\n"
             + _inductive(t, "Arg") + "\n" + _inductive(t, "CmpOp") + "\n" + _inductive(time, "Measure") + "\n"
-            + _block(t, "mutual\n  /-- A quantity. -/", r"^end\b") + "end\n```\n"
+            + _without_constructor_docs(_language_listing()) + "end\n```\n"
             "Notes. `Arg.var` names a binder or a quantifier variable; `Arg.lit` an enumeration spelling or an\n"
             "attribute selector (`\"x\"`, `\"y\"`, `\"width\"`, `\"length\"`, `\"lateral\"`, `\"longitudinal\"`, a side);\n"
             "`Arg.nat` a count. Quantifiers `existsRegion k v φ`/`forallRegion` range over the scene's structures of\n"
@@ -97,7 +139,7 @@ def formula_language() -> str:
             "`within` looks ahead; `atLast m d s ψ φ`: φ at the last observation in the window behind at which ψ held\n"
             "(false where ψ held nowhere in a covered window). A window that reaches past the start of the trace is unknown (`windowTruncated`),\n"
             "so a witness of a rule that looks back names `window`. `rule id map` / `ruleApplies id map`: `map` pairs\n"
-            "the composed rule's binder names with this rule's variables.\n")
+            "the composed rule's binder names with this rule's variables.\n\n" + formula_restrictions())
 
 
 def rule_and_scenario() -> str:
@@ -210,6 +252,110 @@ def abstract_kinds() -> set[str]:
     return {spell[c] for c in re.findall(r"\| \.(\w+) => true", body.group(1)) if c in spell} if body else set()
 
 
+#: The exporter of Core's declared region-argument kinds (`TraceLint.regionArgKinds`), and the
+#: version of the JSON this module reads from it.
+REGION_KINDS_EXPORTER = paths.REPO / "scripts" / "RegionKinds.lean"
+REGION_KINDS_SCHEMA = 2
+
+
+class RegionKindsUnavailable(RuntimeError):
+    """The export failed, or lacks an entry a signature needs: the region-kind check cannot run."""
+
+
+def _signature_args(sig: str) -> list:
+    """A case-vocabulary signature `name(track, region, 'a' | 'b')` as a list of arguments: each a
+    sort, or the list of literal spellings the position takes."""
+    inner = sig.split(" params ")[0]
+    inner = inner[inner.index("(") + 1:inner.rindex(")")]
+    return [a if a in ("track", "region", "device") else re.findall(r"'([^']*)'", a)
+            for a in (x.strip() for x in inner.split(",")) if a]
+
+
+def _region_signatures(onto) -> list[tuple[str, str, list]]:
+    """(Lean name, atom id, arguments) of every dispatch signature that takes a region."""
+    out = []
+    for row in case_catalogue(onto):
+        for sig in row["signatures"]:
+            args = _signature_args(sig)
+            if "region" in args:
+                out.append((row["name"], row["atom"], args))
+    return out
+
+
+def region_kinds_cache() -> tuple:
+    """The export's cache key, what it is computed from, and the cache file it names."""
+    import hashlib
+    from ..tools import split
+    h = hashlib.sha256()
+    for f in sorted(paths.CORE.rglob("*.lean")):
+        h.update(str(f.relative_to(paths.CORE)).encode()); h.update(f.read_bytes())
+    key_inputs = {"schema": REGION_KINDS_SCHEMA, "split": split.active(), "core": h.hexdigest(),
+                  "exporter": hashlib.sha256(REGION_KINDS_EXPORTER.read_bytes()).hexdigest()}
+    key = hashlib.sha256(json.dumps(key_inputs, sort_keys=True).encode()).hexdigest()[:24]
+    return key, key_inputs, paths.LIBRARY / ".lake" / "region_kinds" / f"{key}.json"
+
+
+def region_kinds_export() -> list[dict]:
+    """Core's declared region-argument kinds (`TraceLint.regionArgKinds`, printed by
+    `scripts/RegionKinds.lean`): one entry `{name, position, admitted}` per region argument of a
+    dispatch name, `position` its index in the full argument list, `admitted` a list of kind
+    spellings or `any`. Cached under `library/.lake/region_kinds/`, keyed on the active split, the
+    digest of Core, the exporter's text and the schema version; a failed export raises
+    `RegionKindsUnavailable`, and no fallback is read."""
+    from . import lean
+    key, key_inputs, cache = region_kinds_cache()
+    if key in _REGION_KINDS:
+        return _REGION_KINDS[key]
+    if not cache.exists():
+        with lean.evaluation_lock(paths.LIBRARY):
+            code, out = lean.lean_run(paths.LIBRARY, REGION_KINDS_EXPORTER)
+        if code != 0:
+            raise RegionKindsUnavailable(f"the region-kind export failed (exit {code}): {out.strip()[-2000:]}")
+        try:
+            entries = json.loads(out.strip().splitlines()[-1])["entries"]
+        except (ValueError, KeyError, IndexError) as e:
+            raise RegionKindsUnavailable(f"the region-kind export printed no entries ({e}): {out.strip()[-2000:]}")
+        from ..store import jsonl
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        jsonl.write_atomic(cache, json.dumps({"key": key_inputs, "entries": entries}, ensure_ascii=False))
+    try:
+        entries = json.loads(cache.read_text(encoding="utf-8"))["entries"]
+    except (ValueError, KeyError) as e:
+        raise RegionKindsUnavailable(f"the cached region-kind export {cache} is unreadable: {e}")
+    _REGION_KINDS[key] = entries
+    return entries
+
+
+_REGION_KINDS: dict[str, list[dict]] = {}
+
+
+def region_argument_kinds(onto) -> dict[str, tuple[str, list[list[frozenset[str] | None]]]]:
+    """Lean name of every atom or primitive with a region argument → (its atom id, for each of its
+    signatures, for each region argument in order the kind spellings Core declares there, `None`
+    where it declares any), from `region_kinds_export`, looked up by the name and the argument's
+    index in the full argument list. A region argument the table has no entry for raises
+    `RegionKindsUnavailable`: a missing entry is never read as any."""
+    stamp = (id(onto), tuple((str(f), f.stat().st_mtime_ns, f.stat().st_size)
+                             for f in sorted(paths.CORE.rglob("*.lean")) + [REGION_KINDS_EXPORTER]))
+    if stamp in _ARGUMENT_KINDS:
+        return _ARGUMENT_KINDS[stamp]
+    table = {(e.get("name"), e.get("position")): e.get("admitted") for e in region_kinds_export()}
+    out: dict[str, tuple[str, list[list[frozenset[str] | None]]]] = {}
+    for name, aid, args in _region_signatures(onto):
+        row = []
+        for i in (i for i, a in enumerate(args) if a == "region"):
+            admitted = table.get((name, i))
+            if not admitted:
+                raise RegionKindsUnavailable(f"Core declares no region kinds for argument {i} of {name}{args}")
+            row.append(None if admitted == "any" else frozenset(admitted))
+        out.setdefault(name, (aid, []))[1].append(row)
+    _ARGUMENT_KINDS[stamp] = out
+    return out
+
+
+_ARGUMENT_KINDS: dict[tuple, dict] = {}
+
+
 def enumeration_spellings() -> dict[str, set[str]]:
     """Enumeration name → the `Arg.lit` spellings its `ofString` accepts (`Vocab/Ontology/*.lean`);
     a parametrized one is spelt `ctor(<Enumeration>)`, its parameter one of that enumeration's spellings."""
@@ -246,7 +392,7 @@ def builders() -> str:
 def concept_language() -> str:
     c = _read("Language/Concept.lean")
     return ("### Concepts (`Language/Concept.lean`): the `Concept` a concept file declares, the `Instance` its witnesses build\n```lean\n"
-            + _inductive(c, "ArgSort") + "\n" + _structure(c, "ConceptParam") + "\n" + _inductive(c, "ConceptBody") + "\n"
+            + _without_constructor_docs(_inductive(c, "ArgSort")) + "\n" + _structure(c, "ConceptParam") + "\n" + _inductive(c, "ConceptBody") + "\n"
             + _structure(c, "Concept where") + "\n" + _structure(c, "Instance") + "```\n"
             "A rule calls a concept by its Lean name (the id with `.` → `_`): `.derived \"drv_<family>_<name>\" args params`\n"
             "for a formula concept, `Term.quantity \"drv_<family>_<name>\" args params` for a quantity; `args` fill the\n"

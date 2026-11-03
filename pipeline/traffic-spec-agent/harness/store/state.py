@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 from . import jsonl, paths
 from ..model import corpus
+from ..model.blueprint import Node
 
 
 @dataclass
@@ -27,11 +28,13 @@ class Options:
     plan_effort: Optional[str] = "high"      # `claude --effort` for the plan session (low|medium|high|xhigh|max)
     code_effort: Optional[str] = "high"      # for each coding session
     judge_effort: Optional[str] = "medium"   # for a concept's judge and the adjudicator
-    session_budget_usd: Optional[float] = None   # `--max-budget-usd` per session; None = uncapped
+    session_budget_usd: Optional[float] = 20.0   # `--max-budget-usd` of a plan or coding session, and its reservation; None = uncapped
+    repair_budget_usd: Optional[float] = 8.0     # the same for a concept or node repair session
+    judge_budget_usd: Optional[float] = 2.0      # the same for a tool-less answer: a judge, an adjudication, a recheck
     session_retries: int = 2       # relaunches per task and attempt of a session that did not run or was cut off
     retry_wait: float = 900.0      # seconds between those relaunches
     plan_batch: int = 8            # laws per plan session; a law is planned after the laws it names are accepted or in its batch
-    workers: int = 1               # coding sessions run at once (concepts, then nodes, in dependency waves)
+    workers: int = 1               # coding tasks run at once (concepts, then nodes, each once its dependencies are accepted)
     plan_turns: int = 80           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
     restart: bool = False          # discard an interrupted iteration instead of resuming it
     reviewer_model: Optional[str] = None   # a second vendor's model for the behaviour review, every node's acceptance check (required)
@@ -41,15 +44,15 @@ class Options:
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
     definition_precedence: Optional[Path] = None   # the operator's declared definition precedence (default config/definition_precedence.json)
     openai_budget_usd: Optional[float] = None      # the run-wide limit on the second vendor's calls; reached, the run pauses (`paused_budget`)
-    claude_budget_usd: Optional[float] = None      # the run-wide limit on Claude's sessions, each reserved at `session_budget_usd` (required with it)
-    total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires `session_budget_usd`)
+    claude_budget_usd: Optional[float] = None      # the run-wide limit on Claude's sessions, each reserved at its role's cap (required with it)
+    total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires every role's cap)
     budget_peers: list = field(default_factory=list)   # the runs sharing this run's limits, the same group named by each; reservations take one lock
     reviewer_max_output_tokens: int = 64000        # the output-token limit of every OpenAI call, reasoning included
     max_divergences: int = 3                       # the most divergences one reviewer answer may carry
     model_prices: Optional[Path] = None            # the operator's price table (default config/model_prices.json)
     review_checks: int = 8                         # check calls of one reviewer session (each runs one divergence through Core)
     review_submissions: int = 3                    # submissions of one reviewer session; the last one stands
-    review_passes: int = 2                         # independent reviewer sessions per rule review, their challenges joined
+    review_passes: int = 2                         # reviewer sessions per rule review, one after another, their challenges joined
     force_takeover: bool = False                   # end the live child process groups an earlier owner of the library left, instead of refusing
 
 
@@ -186,7 +189,7 @@ class Run:
             nodes = view["nodes"]
             self.base_nodes = {k: d for k, d in nodes.items() if d["law_refs"][0] not in listed}
             dropped = set(nodes) - set(self.base_nodes)
-            broken = sorted(k for k, d in self.base_nodes.items() if {c.get("rule") for c in d.get("compositions", [])} & dropped)
+            broken = sorted(k for k, d in self.base_nodes.items() if {c.get("rule") for c in Node(d).dependencies()} & dropped)
             if broken:
                 raise SystemExit(f"base run `{self.opts.base_run}`: node(s) {broken} compose a node of a law this run plans again "
                                  f"({sorted(dropped)}); list their laws too")
@@ -269,8 +272,10 @@ class Run:
         return self._annotated({**self.base_concepts, **self.accepted_concepts})
 
     def _annotated(self, records: dict[str, dict]) -> dict[str, dict]:
+        """`records` with each fenced version's fence; read over a copy of the fences, which the loop's
+        own thread may add to while a task's thread reads the view."""
         out = dict(records)
-        for ident, ev in self.fenced.items():
+        for ident, ev in list(self.fenced.items()):
             if ident in out:
                 out[ident] = {**out[ident], "fenced": ev}
         return out

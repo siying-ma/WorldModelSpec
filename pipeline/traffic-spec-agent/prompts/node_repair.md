@@ -19,7 +19,8 @@ You are a one-shot session. Nothing waits for a reply.
 
 - **The law** — its text and the segmentation, with each span's role: fixed.
 - **The definitions** — the posted definitions that apply to the law's words, and the definitions
-  they use: a defined word means what its definition says.
+  they use: a defined word means what its definition says; then, whole, each text the law names in
+  brackets or the node borrows words from, with the definitions that apply to it.
 - **The node** — the record as it was planned, without the parts that are not yours (its id, its
   law and the segmentation); then, read-only, the law's other nodes in the records your revision is
   validated with, each with its state, and the nodes the records compose. You revise this node
@@ -97,8 +98,13 @@ You are a one-shot session. Nothing waits for a reply.
    object, place, event, time, order and logical force), whichever node states it and whether or
    not that node was returned; no weaker fact replaces it. Its representation (a composition, a
    concept, the fact in full) may change where the words warrant it, and the revised prose and
-   justifications then state the referent and the qualifications kept. An earlier record's error is
-   corrected, not kept because a record held it.
+   justifications then state the referent and the qualifications kept. A reference that only
+   borrows the words another text of the corpus defines or sets forth, needing none of its rules
+   to apply, hold or be complied with, is a `definition` reference: it names that source and quotes
+   the borrowed words, composes no rule and waits on nothing, and each element whose words use them
+   carries their meaning with its own atoms, every qualification the quoted words keep, naming the
+   reference span in `source_spans`. An earlier record's error is corrected, not kept because a
+   record held it.
 3b. **A narrowing the coder declared is decided by its span.** On a trigger, subject, condition
    or exception span it is never adopted: the span is re-mapped to what its words say, assumed,
    or withdrawn as a gap. A narrowing of kind `no_atom` or `no_operator` (the gate's
@@ -110,7 +116,9 @@ You are a one-shot session. Nothing waits for a reply.
 4. **A feature the subject is on is anchored, and named**: a span that places the subject on, at
    or under a feature of the scene claims the feature's own kind atom (the kind a quantifier in
    the rule ranges over) and an anchoring relation — {anchors} — and an aggregate is claimed
-   as `{aggregate_atom}=<admitted id>` and never expanded.
+   as `{aggregate_atom}=<admitted id>` and never expanded. A region quantifier names a kind: claim
+   the kind of every region a claimed relation reads, for each of its region arguments a kind whose
+   regions that argument admits.
 4b. **A binder is a party the duty cannot exist without.** A road user the duty refers to only
    when one is present is quantified inside the applicability or the obligation; a record that
    binds it is re-cast so, since a binder no scene supplies leaves the subject's duty unjudged when
@@ -130,7 +138,13 @@ You are a one-shot session. Nothing waits for a reply.
    same. The re-bound region keeps the quantifier the words give it: where the words require the duty at
    each region they select, the formula is written for every selected region; where they allow a
    choice among them, the choice is kept. Where the words speak of different regions, each keeps its own role and
-   its own relations. A defined place word keeps its definition's whole extent; a qualification the law's own words state
+   its own relations. A word a posted definition defines is read with that definition's inclusions
+   and exclusions: the element's justification quotes, for each atom or concept it maps the word to,
+   the definition's words that include it, and an exclusion that the contract of the atom or concept
+   does not already make is carried by the rule as a condition beside it. The law's own words that
+   qualify the word (in place, in operation, facing the road user, controlling a place) limit which
+   of its members the duty reads: the justification quotes them and names the members they leave
+   out. A defined place word keeps its definition's whole extent; a qualification the law's own words state
    narrows it explicitly; a narrower kind never stands in for the defined word without such words.
    A line, crossing or device *of* a region is tied to it by relation atoms, directly or through a
    chain of them (a marked line on the approach lane that runs into the junction); distance never
@@ -154,6 +168,33 @@ You are a one-shot session. Nothing waits for a reply.
    the observation the words fix; a manoeuvre, a state of motion or a relation over time that no
    catalogued concept carries is withdrawn with kind `plan`, naming the concept the span needs and
    the region it must take.
+4e. **The occasion of an act.** An obligation span mapped to a concept observed over a stretch of
+   time (one with a parameter in a unit of time: a manoeuvre recognized only once it has been
+   carried out) is judged where the act is recognized, which is after it began. The act is the
+   observation at which its concept rises: the concept holds from there until its window has
+   passed, and those later observations are not the act again. A span the words place in time
+   relative to an act ("prior to", "after", "while"), whatever its role, is measured from that
+   rise, never from a later observation at which the concept still holds. Each trigger,
+   condition and exception span the node maps is then read at an occasion of the act you declare
+   in `occasion`: `at_recognition` (where the act is recognized), `some_moment` (at some moment
+   while the act is under way) or `throughout` (at every moment while it is under way). The
+   words decide; where they say nothing of time, a trigger or condition is read at `some_moment`,
+   since reading one instant drops situations the words cover, and an exception `throughout`, so
+   that it excuses only an act it covers whole. Reading a trigger or condition only
+   `at_recognition` where the words do not place it there narrows where the rule applies, and the
+   review holds it to that like any narrowed trigger or condition, whichever span the record
+   discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
+   and they share one occasion: the window, `under_way` and the scenarios. `window` names the
+   act's window parameter. Where a span is read while the act is under way, `under_way` is an
+   element `{words, atoms, derived, justification}` saying what tells an observation inside the
+   act from one before it began: it reads the road user's motion (a kinematic atom such as the
+   heading's rate of change, a primitive, or a concept that reads one) and never a place or a
+   region alone, since the road user occupied the same region before the act began; its atoms are claimed and
+   coded like any element. Spans the rule joins by "and" are read at one and the same moment of the
+   act. Each span read while the act is under way has two scenarios with different verdicts:
+   `occasion_<span>`, in which it holds for part of the act only, and `occasion_<span>_outside`, in
+   which it holds only before the act began (`some_moment`) or throughout the act but not before it
+   (`throughout`). An occasion the formula language cannot state is an `operator` gap.
 5. **Parameters come from the catalogue or are proposed** (`param_proposals`: name, unit, a
    provisional value, convention, source); never a value in the record or the prose. A value the
    catalogue marks proposed by a node of this law, not yet reviewed, may be proposed again with
@@ -216,14 +257,14 @@ that keeps a defect returns the law to the planner.
 
 ```
 subject{binder, class_elements},
-elements[{span, atoms, derived, justification}], operationalizations[{span, standard, concepts,
+elements[{span, atoms, derived, justification, source_spans (only on an element whose words are borrowed: the `definition` reference spans they come from, each one's quote repeated in the justification)}], operationalizations[{span, standard, concepts,
 params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{span, id, meaning}],
-compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)}], residues[{span, why, scope}],
+compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}], residues[{span, why, scope}],
 narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}] (a `reading` on obligation or standard spans the record carries; an `observable_reading` also on a trigger, subject, condition or exception span),
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected, narrative, masked (blind only, a list), boundary (history_boundary only)}],
-occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (an obligation that is an act observed over time),
+occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4e only),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 

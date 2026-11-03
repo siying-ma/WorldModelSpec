@@ -23,7 +23,11 @@ words and the contracts alone. You do not edit the rule.
   situation only that duty decides is not a divergence of this rule. Words of this duty that refer
   to it keep their condition, and it is no condition of this duty unless such words make it one.
 - **The definitions** — the posted definitions that apply to the law's words, and the definitions
-  they use: a defined word means what its definition says, and the law's verdict follows it.
+  they use: a defined word means what its definition says, and the law's verdict follows it; then,
+  whole, each source text the record's `definition` references borrow words from, with the
+  definitions that apply to it. Borrowed words mean what that text says of them, every qualification
+  kept; the source's own duties are not this rule's, and a situation only they decide is no
+  divergence.
 - **The record** — the plan's node record: which spans map to which atoms, the standards and
   their parameters, the assumptions, the compositions, the residues (words the rule does not
   capture at all) and the narrowings (readings the plan or the coder chose on spans the rule
@@ -47,6 +51,9 @@ words and the contracts alone. You do not edit the rule.
 - **Cases to extend** (when there are any) — cases upheld against earlier rules of this duty whose
   evidence no longer suffices to judge this rule: each must come back in your answer as a divergence
   that `extends` it, its trace extended as the case says.
+- **Already filed** (when there are any) — the divergences an earlier session of this review filed,
+  each of which will be judged: a situation already filed is not filed again; look for a different
+  one.
 
 {law_and_segmentation}
 
@@ -71,6 +78,8 @@ words and the contracts alone. You do not edit the rule.
 {not_atoms}
 
 {obligations}
+
+{filed}
 
 ## Questions
 

@@ -1,16 +1,16 @@
 /-
   Witnesses for NRS_484B_600_1e.
 
-  The geometry. A straight rural highway running east: a highway region 1000 m long and 20 m wide
-  about the origin (region 10), with one eastbound travel lane 4 m wide on its north half
-  (region 11). The subject is track 1, a body 4 m long and 1.8 m wide carried at y = 2 m, inside
-  the lane; in `idle` the same place carries a bicycle (1.8 m by 0.6 m). Each trace is three
-  instants a second apart and the body advances by its own speed between them, its path length
-  counted from the first instant. No device is posted anywhere: this paragraph's cap is the
-  statute's own and no witness reads a sign. `branch_2` drops the structures too, so the subject
-  is the only thing in the scene.
+  The scene is 2 km of open highway running east: one region of kind `highway`, 16 m wide
+  (y from −8 m to +8 m, x from 0 to 2000 m), and one eastbound lane inside it (y from −4 m to 0 m).
+  One road user, track 1, is the subject `v`; it travels east along the middle of that lane
+  (y = −2 m) from x = 100 m, a body 4.8 m long and 1.8 m wide. Each trace is three observations
+  one second apart, the body advancing by its own speed each second; no other road user is present.
 
-  Every figure here is the witness's own and appears nowhere in the rule.
+  The figures: 41 m/s (about 92 mph) breaks the stated 80 miles per hour (35.7632 m/s) by a clear
+  margin, 31 m/s (about 69 mph) keeps it by one, 9 m/s is the bicycle's pace, and 0 m/s is the
+  halted vehicle whose velocity is the zero vector. Every figure here is the witness's own and
+  appears nowhere in the rule.
 -/
 import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1e
 import TrafficSpec.Core.Evidence.Builders
@@ -22,62 +22,49 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
--- Binders ↦ tracks: veh ↦ 1
+-- Binders ↦ tracks: v ↦ 1
 
-/-- Half-extents: a passenger car, 4 m by 1.8 m by 1.5 m. -/
-def carHalf : Q × Q × Q := (m 2, cm 90, cm 75)
+/-- The highway itself: the way the road user travels on. -/
+def highway : Structure := Build.rect 10 .highway (m 0) (m (-8)) (m 2000) (m 8)
 
-/-- Half-extents: a bicycle, 1.8 m by 0.6 m by 1.2 m. -/
-def bikeHalf : Q × Q × Q := (cm 90, cm 30, cm 60)
+/-- The eastbound lane of that highway. -/
+def eastLane : Structure :=
+  Build.lane 11 [(m 0, m (-4)), (m 2000, m (-4)), (m 2000, m 0), (m 0, m 0)] Build.east
+    (ordinal := some 1) (count := some 1)
 
-/-- The highway region: 1000 m of rural way, 20 m wide. -/
-def highway : Structure := Build.rect 10 .highway (m (-500)) (m (-10)) (m 500) (m 10)
+/-- Track 1 at the `k`-th observation: east along the lane at a constant speed, from x = 100 m. -/
+def mover (classes : List RoadUserClass) (speed : Q) (k : Nat) : RoadUser :=
+  let travelled := Q.mul (Q.ofInt (Int.ofNat k)) speed
+  Build.user 1 classes (Q.add (m 100) travelled, m (-2)) Build.east speed (cm 240, cm 90, cm 75)
+    (some travelled)
 
-/-- The eastbound travel lane, 4 m wide on the north half of the way. -/
-def travelLane : Structure :=
-  Build.lane 11
-    [ (m (-500), Q.zero), (m 500, Q.zero), (m 500, m 4), (m (-500), m 4) ]
-    Build.east (ordinal := some 1) (count := some 1)
+def sceneOf (t : Timestamp) (u : RoadUser) : Scene :=
+  Build.scene t (some 1) [u] [highway, eastLane] []
 
-def ways : List Structure := [highway, travelLane]
+/-- A three-second run of one road user of these classes at this speed. -/
+def runOf (classes : List RoadUserClass) (speed : Q) : Trace :=
+  Build.trace 3 0 (Units.seconds 1) fun k t => sceneOf t (mover classes speed k)
 
-/-- How far the body has run from the first instant, at its own speed, a second apart. -/
-def along (k : Nat) (v : Q) : Q := Q.mul (Q.ofInt (Int.ofNat k)) v
+/-- `forbid` (violated): A vehicle travels along an open highway at about 41 m/s, some 92 miles per hour, above the 80 miles per hour the paragraph states. No other road user is in the scene and the verdict is decided: violated. -/
+def forbidTrace : Trace := runOf [.motorVehicle] (Units.metresPerSecond 41)
 
-/-- The subject at the `k`-th instant: a body of `classes` in the lane, running east at `v`. -/
-def subjectAt (classes : List RoadUserClass) (halfExtent : Q × Q × Q) (v : Q) (k : Nat) : RoadUser :=
-  Build.user 1 classes (along k v, m 2) Build.east v halfExtent (pathLength := some (along k v))
+/-- `permit` (compliant): The same vehicle on the same highway travels at about 31 m/s, some 70 miles per hour, below the stated bound, with no other road user in the scene: compliant. -/
+def permitTrace : Trace := runOf [.motorVehicle] (Units.metresPerSecond 31)
 
-/-- A three-instant trace of the subject alone on the way, at speed `v`. -/
-def wayTrace (classes : List RoadUserClass) (halfExtent : Q × Q × Q) (v : Q) : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1) [ subjectAt classes halfExtent v k ] ways [ ]
+/-- `idle` (not_applicable): The road user travelling at about 9 m/s on the highway is a bicycle,
+    which DEF-NRS-484A-320 leaves out of the vehicle aggregate, so it is no member of
+    DEF-NRS-484A-320::vehicle and the paragraph does not engage. (The node's narrative names an
+    electric scooter; the run's reading leaves that class unresolved under this aggregate, which
+    is unknown rather than false — see task_result.md.) -/
+def idleTrace : Trace := runOf [.bicycle] (Units.metresPerSecond 9)
 
-/-- `forbid` (violated): A passenger car, a class included in DEF-NRS-484A-320::vehicle, travels on a rural highway at kin.speed 40 m/s, about 90 miles per hour: above the statute's cap, so violated, whatever is posted for that stretch. -/
-def forbidTrace : Trace :=
-  wayTrace [.motorVehicle] carHalf (Units.metresPerSecond 40)
+/-- `blind` (unknown): A vehicle is driven along the highway on a source whose capability manifest declares kin.speed absent, so its rate of speed is unobserved at every observation and the comparison with 80 miles per hour cannot be decided. -/
+def blindTrace : Trace := runOf [.motorVehicle] (Units.metresPerSecond 31)
 
-/-- `permit` (compliant): The same car travels at kin.speed 33 m/s, about 74 miles per hour: at or below the cap, so compliant under this paragraph. -/
-def permitTrace : Trace :=
-  wayTrace [.motorVehicle] carHalf (Units.metresPerSecond 33)
-
-/-- `idle` (not_applicable): The subject is a bicycle, a device moved by human power, which NRS 484A.320 excludes and the reading classes as excluded from DEF-NRS-484A-320::vehicle; it runs downhill at kin.speed 14 m/s. ru.aggregate is false for the subject, so the cap does not engage: not_applicable. -/
-def idleTrace : Trace :=
-  wayTrace [.bicycle] bikeHalf (Units.metresPerSecond 14)
-
-/-- `blind` (unknown): A passenger car is present on the highway but the source's capability manifest declares kin.speed absent, so no speed is observed for it. The cap cannot be compared with anything, and the rule reports unknown rather than compliance. -/
-def blindTrace : Trace :=
-  wayTrace [.motorVehicle] carHalf (Units.metresPerSecond 40)
-
-/-- `branch_1` (compliant): The car travels at kin.speed 35.76 m/s, exactly 80 miles per hour, on an unposted rural highway: the law forbids a rate 'greater than' the figure, so equalling it complies. -/
-def branch_1Trace : Trace :=
-  wayTrace [.motorVehicle] carHalf (Units.mph 80)
-
-/-- `branch_2` (violated): The subject is the only road user in the scene, on an unposted highway with no device and no other party anywhere, at kin.speed 40 m/s: violated, so the cap is shown to bind the subject alone. -/
-def branch_2Trace : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ subjectAt [.motorVehicle] carHalf (Units.metresPerSecond 40) k ] [ ] [ ]
+/-- `branch_1` (not_applicable): the vehicle stands still on the same lane — its velocity is the
+    zero vector, so it is driven or operated at no rate of speed and the paragraph does not
+    engage, whatever its speed would be measured against. -/
+def haltedTrace : Trace := runOf [.motorVehicle] Q.zero
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) (boundary : String := "") : Scenario :=
@@ -86,7 +73,7 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     trace := τ
     reading := {}          -- ignored by the gate: the run's reading is substituted
     manifest := Build.manifest absent
-    grounding := [("veh", 1)]
+    grounding := [("v", 1)]
     expected := expected
     boundary := boundary }
 
@@ -95,7 +82,6 @@ def scenarios : List Scenario :=
   , witness "permit" permitTrace .compliant
   , witness "idle" idleTrace .notApplicable
   , witness "blind" blindTrace (.unknown []) ["kin.speed"]
-  , witness "branch_1" branch_1Trace .compliant
-  , witness "branch_2" branch_2Trace .violated ]
+  , witness "branch_1" haltedTrace .notApplicable ]
 
 end TrafficSpecWitness.NRS_484B_600_1e

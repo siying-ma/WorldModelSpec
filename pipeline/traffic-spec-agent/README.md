@@ -61,7 +61,7 @@ removed, not kept.
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
 | `prompts/*.md` | thirteen templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code`, `review_concept` and `verify_aggregate`, and the judges `judge_case`, `adjudicate`, `adjudicate_concept` and `recheck_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
-| `scripts/gen_ontology.py`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
+| `scripts/gen_ontology.py`, `scripts/RegionKinds.lean`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the exporter of the region kinds Core declares at each region argument, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
 | `library/TrafficSpec/Gaps/proposals.jsonl`, `decisions.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
 | `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
 
@@ -147,7 +147,8 @@ python -m harness verify --run_id <run>                    # today's gates on ev
 python -m harness index                                    # regenerate the registries
 python -m harness status --run_id <run>
 python -m harness reopen --run_id <run> --laws <id>[,<id>]   # a law not accepted and not blocked on a gap back to open with a fresh
-                                                             # budget; its held nodes, node-ledger entries and failed concepts are dropped
+                                                             # budget; its held nodes, node-ledger entries and failed concepts are dropped;
+                                                             # a law blocked only on its `decision:<id>` reopens with it
 
 # the monitor: decide accepted rules on a capture (a Core trace and its manifest); run it with the full split active
 python -m harness split --use full
@@ -191,11 +192,16 @@ and one whose library cannot be told is named and never ended. No session may wr
 and the gate's scope check ignores them. SIGTERM or SIGINT stops every launch and relaunch and ends every
 child. The doctor runs at every loop start and refuses a run on a failure.
 
-**Parallel coding.** `--workers N` codes up to N independent concepts, then N independent nodes, at
-once, in dependency waves (a node is coded after every node it composes is accepted). Every gate
+**Parallel coding.** `--workers N` runs up to N concepts, then up to N nodes, at once. Each item's
+coding session, gate, review and outcome are one task; when a task ends its outcome is applied and
+committed at once, and every item that has become ready starts, so a slow session holds up only
+the items that depend on it. An item is ready only when every concept it calls and every node it
+composes is accepted; a provider returned or failed in the iteration holds or returns its
+dependents by the usual routes, and nothing is coded on an unaccepted provider. Every gate
 and skeleton build holds a library-wide lock while it regenerates the registries and builds, and
 a gate registers only the accepted ids plus its own, so a half-written sibling never enters its
-build; the scope check tolerates the files of the sessions coding beside it. A gate's evaluation,
+build; the scope check tolerates the files of every task whose run overlaps the session's, and the
+files the loop writes for another node meanwhile (the operator's reading and the gap ledger). A gate's evaluation,
 and every Lean program of a review, runs after that lock is released, beside the others: each
 imports Core and the modules of its own registry (those its gate registered) instead of the
 generated one, which another gate may be rewriting, so one slow evaluation holds no other gate up.
@@ -229,18 +235,24 @@ certified again, invalid when it rested on the supplied value), the witness chec
 the user. The reviewer runs this program itself before it answers. Its session has two function
 tools and no other:
 - `check_divergence` runs one divergence, in a directory of its own under `review/checks/`, and
-  returns what the harness would make of it, with the messages. No judge is asked.
+  returns what the harness would make of it, with the messages. No judge is asked. The check and
+  the submitted answer decide each divergence by one function (`divergence_status`), so the status
+  a check reports is what the review does with that divergence.
 - `submit_review` runs the schema checks and the same program on the exact answer. An answer with
   a schema defect, or a divergence that cannot be evaluated, comes back while submissions remain;
   the last submission stands.
 
-A rule is reviewed by `--review_passes` (2) such sessions at once, independent of each other: the
-same prompt, each its own checks, submissions and evidence (`review/pass<k>/`). Their challenges
-are joined, and one whose certified case repeats an earlier one is judged once. A pass that
+A rule is reviewed by `--review_passes` (2) such sessions, one after another, each with its own
+checks, submissions and evidence (`review/pass<k>/`). A later session's prompt shows, as already
+filed, the divergences the earlier ones filed that the review will judge (their certified ones), and
+no longer lists as a case to extend one they extended; a situation already filed is not filed again
+(`review_behaviour_prompt_p<k>.md` keeps a later session's prompt). Their challenges are joined, and
+one whose case (its identity below, the trace included) and claims repeat an earlier one's is the
+same evidence, judged once; a challenge on another trace is its own evidence. A pass that
 submitted no usable answer, or whose answer cannot be evaluated, defers the review at stage
 `reviewer` unless an item of the other pass is upheld; its items are kept as evidence, never
 truncated. A single session misses a real defect about one time in five, whatever its effort, so a
-second sample is what lowers the miss rate. A concept is reviewed by one session.
+second session, sent away from what the first filed, is what lowers the miss rate. A concept is reviewed by one session.
 
 `--review_checks` (8) and `--review_submissions` (3) are counted apart, so a submission is always
 possible once the checks are spent; a session may make up to four requests more than its checks and
@@ -255,7 +267,8 @@ API failed a request, a 5xx, a timeout or a lost answer, comes after a minute); 
 is kept in the session's stream. A certificate program that does not run defers at stage
 `certificate`, for a rule or a concept; the diagnosis of a case that is not true is an aid only,
 and when it does not run the certificate stands without it. A case whose execution refutes the
-reviewer (the rule already gives the verdict claimed for the law) is an advisory; a challenge that
+reviewer (the rule already gives the verdict claimed for the law) is an advisory, unless it extends a
+case to extend: that one is judged again; a challenge that
 is still defective leaves the review undecided, and unless another case is upheld it defers the law at stage
 `reviewer`, as an invalid judge does below. Before the reviewer is asked, the harness computes the
 history the rule's verdict at an observation reads (nested windows added up, one observation more
@@ -277,7 +290,8 @@ when the forced memberships mechanically show it). A rule unknown only because a
 aggregate leaves a class unresolved is an advisory before either judge. A judge whose answer stays
 invalid after one re-ask defers the law (its node is coded again next iteration, no attempt
 counted); a second consecutive deferral closes it (`judge_protocol_failure`). Each digest hashes
-the exact request a judge was sent.
+the exact request a judge was sent; within a review, a stage A or stage B request identical to one
+already answered takes that answer back instead of a new session, each stage on its own digest.
 
 **Duties, rulings and obligations.** A *duty* is an occurrence of words in the law (its span
 offsets and the law's content digest), not a node id: stage A is shown which occurrence it judges,
@@ -297,8 +311,9 @@ users the binders do not correspond to) stays, and the reviewer is shown it unde
 (a divergence that `extends` it; the harness accepts it as the same case only when its trace keeps
 every old scene and field, its binders keep their tracks, its instant is the same and it states
 every old fact, and the review defers at stage `evidence` when no such extension comes back); one still upheld returns the node without a review; one the rule now meets stays as a
-`satisfied` obligation. Stage B is shown the earlier rulings on the same duty, a snapshot without
-the case's own lineage, and decides a situation they decided the same way unless the record changed
+`satisfied` obligation. Stage B is shown the earlier rulings on the same duty, without the case's
+own lineage: those recorded when the review began, and each ruling the review has made since (its
+judgments are made one after another), and decides a situation they decided the same way unless the record changed
 on the point they turned on. A *structural evidence* item (the law's verbatim words and the clause of
 a broader contract the record carries for them, where no contract makes the distinction, so no trace
 can show it) is judged by stage B on the words and the contracts alone, labelled as such in the
@@ -307,8 +322,8 @@ record. A case's streak counts consecutive reviews in which it stays upheld (key
 or by the finding) and resets when it is satisfied; `--repeat_limit` consecutive counts block the law
 for the operator. The plan and node repair sessions are shown these cases as regression
 obligations, never as mapping instructions. An operator who finds a ruling wrongly upheld sets its
-`ruling` to `retired`. The reviews of a coding wave run in parallel, and their outcomes are applied
-once all have finished. `--review_effort` (high) sets the reviewer's reasoning effort.
+`ruling` to `retired`. A review runs as part of its node's task, beside the other tasks, and its
+outcome is applied as soon as it finishes. `--review_effort` (high) sets the reviewer's reasoning effort.
 
 **The concept review.** A concept the gate accepts is reviewed the way a rule is: the second vendor
 (`prompts/review_concept.md`) reads the contract, the record with the coder's readings, and the body
@@ -354,7 +369,7 @@ It rules by the contract's words and by its own earlier rulings on the concept, 
 returns the concept to concept repair. An upheld `not_general` item is a structural obligation
 (`concept_structural/1`), decided again before every later review of the concept's lineage. The
 dismissed items and the reviewer's advisories are recorded on the accepted concept and shown in the
-catalogue beside its contract. The reviews of a concept wave run in parallel. A concept that has
+catalogue beside its contract. A concept's review runs as part of its task, beside the others. A concept that has
 failed in a run stays failed: a plan that names it again is returned
 and charged, and only `reopen` of the laws that used it clears it.
 
@@ -415,7 +430,7 @@ at start are kept in the snapshot until `TO_USER.md` receives them.
 - **A pending candidate that uses a fenced record** is not coded, or is held at integration. Its law
   returns to the planner, uncharged.
 
-Plan validation returns a node or concept record that claims a region's property (an atom of regions only, other than a region kind) without claiming the kind of region it is read on; how the region is tied to the road user is the formula's, checked at the gate (`UNANCHORED_VARIABLE`). Validator A returns a concept
+Plan validation returns a node or concept record that claims an atom or primitive reading a region (other than a region kind) without claiming, for each of its region arguments, a kind that can bind it: one whose regions include a kind Core declares there (`TraceLint.regionArgKinds`: per atom or primitive and argument index, the named kind lists the trace check holds the field read there to, or any; printed by `scripts/RegionKinds.lean`, cached in `library/.lake/region_kinds/` on the split, Core, the exporter and its schema; a build-time `#guard` holds the table to exactly one entry per region argument of the dispatch tables; a failed export or a missing entry stops the run as a validator fault, never read as any; a probe of Core over admitted traces, `scripts/tests/region_kinds_probe.lean`, is a regression test that refutes a table too narrow or too broad and never supplies a constraint). A concept with a region formal is exempt, its caller's quantifier naming that kind. How the region is tied to the road user is the formula's, checked at the gate (`UNANCHORED_VARIABLE`). Validator A returns a concept
 whose contract states a figure its `literals` do not declare, and one with a literal formal whose
 values are region or device kinds that does not claim the kind atom of each (the body reads them all).
 
@@ -463,8 +478,11 @@ them. The doctor's `core matches split` check fails when Core drifts from its so
 
 `--dry_run` renders every prompt and runs the deterministic phases without launching a session.
 Session options: `--plan_effort`, `--code_effort` (default `high`), `--judge_effort` (default
-`medium`) set `claude --effort` per phase; `--max_turns` (80), `--session_budget_usd` (uncapped)
-cap a session; `--session_retries` (2) is each task's operational retry budget within one loop
+`medium`) set `claude --effort` per phase; `--max_turns` (80) caps a session's turns, and its cost
+is capped by its role: `--session_budget_usd` ($20) a plan or coding session and the aggregate
+selection, `--repair_budget_usd` ($8) a concept or node repair, `--judge_budget_usd` ($2) a tool-less
+answer (a stage A or B judge, an adjudication, a recheck); a session past its cap is cut off like one
+past its turns; `--session_retries` (2) is each task's operational retry budget within one loop
 launch: at most `session_retries + 1` launches per task, counted from the launch records kept in its
 directory, each recorded before its call starts; a new loop launch grants a fresh allowance. The
 relaunches are of a session the account or the API refused (a usage limit, an API error, a
@@ -510,10 +528,15 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    which blocks nothing); a node repair's withdrawn span files a gap. Laws whose
    nodes wait on a repair stay `planned` on hold, uncharged. A repair that keeps a defect returns the
    law with the reasons that sent the node to repair ahead of the repair's own, and the law's held
-   nodes go back with it. The sessions run in parallel (`--workers`); a law's own node repairs run
-   in order, each seeing its siblings' revised records.
+   nodes go back with it. A revised record the validator returns is asked for once more, with the
+   defects; the first attempt's record and verdict (`record_first.jsonl`, `validation_first.txt`)
+   and the re-ask's prompt (`prompt_again.md`) stay beside the final `validation.txt`, and a resume
+   continues from the re-ask, never launching a repair session that already ran to its end. The
+   sessions run in parallel (`--workers`); a law's own node repairs run in its plan's order, each seeing its
+   siblings' revised records.
 1. **Plan** (one session per batch of at most `--plan_batch` laws, root laws before the laws whose
-   text names them; a law naming a planned or blocked law waits, one naming a failed law fails; the
+   text names them; a law naming a planned law waits, and so does one naming a law that waits for the
+   operator unless it has no record yet; one naming a failed law is planned (see Composition order); the
    prompt carries the definitions the batch's laws cite or whose defined term they use, not the
    folder's): segments each plannable law's verbatim text into spans with roles,
    maps every substantive span to atoms or derived concepts by quoting their contracts,
@@ -549,7 +572,7 @@ holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
    filed only when the coder declares the span unexpressible (`UNEXPRESSED`). The same check,
    in the run's context, is the draft validator the planner runs (`python -m harness validate
    --run_id <run>`).
-3. **Code** (one session per concept, then per node, in dependency waves of `--workers`): a node's
+3. **Code** (one session per concept, then per node, up to `--workers` at once, each once what it calls and composes is accepted): a node's
    session starts from the two files the harness wrote from the
    node (`harness/lean/skeleton.py`: every declaration the gate compares, the parameters as terms,
    every planned scenario with its verdict and masked atoms — they build as written), with the generated
@@ -647,7 +670,8 @@ evidence that the rule says what the law says — that is the review's job.
 by the model name the run requests; a name without a price launches no call).
 `--openai_budget_usd` limits the second vendor's calls run-wide: each call's worst case (its input
 estimated at three characters a token) is reserved and written as a `pending` row before it is
-sent. A request's rows fold into one state:
+sent. `--claude_budget_usd` limits Claude's sessions the same way, each reserved at its role's cap
+(above), and `--total_budget_usd` both vendors together; a limit needs every role capped. A request's rows fold into one state:
 - **`settled`:** its actual cost, idempotent.
 - **`unknown`:** a request that may have run (a timeout after sending, a dropped connection, an
   ambiguous server error, a response without usage), kept at its reservation.
@@ -678,10 +702,12 @@ inside each reached definition from that definition's own place; this finite dep
 shown to planning and judgment and is part of every aggregate's invalidation digest. Before any law is planned, one planner session
 (`prompts/plan_aggregates.md`) marks each (definition, term) `aggregate`, `not_aggregate` or `gap`
 (`aggregate_selection.jsonl`) and classifies every road-user class under each aggregate as included,
-excluded or unresolved, with quotes; one second-vendor session per aggregate
+excluded, covered (admitted only as members of named included classes, so its label adds no
+membership evidence) or unresolved, with quotes; one second-vendor session per aggregate
 (`prompts/verify_aggregate.md`) checks each class (supported, contradicted, underdetermined), a
-contradiction goes back to the planner once, and what it cannot support is admitted as unresolved
-(`aggregate_certificates.jsonl`). A selection still defective after its re-ask holds the laws that
+contradiction goes back to the planner once, and what it cannot support is admitted as unresolved,
+as is a covered class whose covering classes are not all finally included
+(`aggregate_certificates.jsonl`). Core reads the included and unresolved classes only. A selection still defective after its re-ask holds the laws that
 use the pair for the iteration, uncharged, and is asked again next iteration; a verifier answer that
 stays malformed admits nothing and is verified again, like a session that did not run. The admitted aggregate enters the run's reading under its id,
 `<definition id>::<term>`; a plan claims `ru.aggregate=<id>` and never expands it, and writes a
@@ -702,11 +728,31 @@ magnitude enters the bound, a condition selects among bounds — never by one fi
 factor switches on. A gap is only `atom` or `operator`: the
 frozen vocabulary cannot carry the span.
 
-**Composition order.** A node is coded only after every node it composes is accepted; a node whose
+**Composition order.** A `definition` reference (`as: "definition"`: a reference span that only
+borrows the words another law or posted definition of the run's corpus defines or sets forth) names
+its source and the quoted words, never a rule: the validator checks the quote verbatim in the
+source, the elements carrying the borrowed words name the span in `source_spans`, and nothing below
+applies to it — it is not ordered, held, returned, blocked or fenced with its source, and a re-plan
+of a law whose latest records only borrow from a named law does not wait on that law. The source,
+fetched whole from the corpus with the definitions that apply to it, is shown to the planner, the
+repair, the coder, the reviewer and both judges, and joins the node's dependency context.
+Every other composition is an execution dependency. A node is coded only after every node it composes is accepted; a node whose
 composed node is not accepted yet is held in the run's state and coded in a
 later iteration without re-planning and without an attempt counted, its law staying `planned`
-until every node it was planned with is accepted; a node composing a law closed as failed is
-closed as failed too, and one composing a law blocked on a gap is blocked on that gap. A node
+until every node it was planned with is accepted. A law waits for the operator when it is blocked, closed as
+failed, or waits only on such laws (a returned law naming them, a planned law whose held nodes compose
+them), directly or through a chain. A node composing a node of such a law, found at validation, at
+coding or in a repair's revised record, is not coded and no attempt is counted: its record, the
+composition and its map stand, and its law is blocked on what the provider waits on — a blocked
+law's gaps or decision tokens, and `decision:<law>` for a law closed as failed. It reopens with them:
+a gap decision strikes the gap, and `reopen` of a law decides its `decision:<law>` token, reopening
+every law left waiting on nothing. The caller's own defects (a wrong map, a target of a law that
+does not wait) are charged as usual. A law with no record yet is planned past a named law that waits
+for the operator, with that law's text, since its reference may only borrow words; a law that never
+entered planning is listed in `summary.json` (`never_planned`).
+Once a law is returned or closed in an iteration, none of its nodes is coded in that iteration; a
+sibling's repaired record stays in its repair directory and is shown to the next plan as the
+latest version. A node
 whose concept was returned is held while the concept is repaired, uncharged; when the concept
 fails or cannot be repaired, its law is returned with the concept's reasons. An accepted node is never coded again: a returned law re-plans its
 returned nodes only.
@@ -715,7 +761,7 @@ returned nodes only.
 defect; one attempt per law per iteration, however many of its nodes fail; a law returned because a
 concept its nodes use failed is charged once per such concept, not once per iteration it waits) → `accepted` | `blocked`
 (a gap; waits for the operator, and reopens when every gap is retired or rejected) | `failed`
-(budget spent, the obligation itself is not expressible, or a named law failed). The same review
+(budget spent, the obligation itself is not expressible, or a later plan composed a failed law again). The same review
 outcome drawn `--repeat_limit` times in a row across a law's plans and repairs (one upheld case,
 followed by its lineage, or one upheld structural finding, counted once per review and reset when
 the case is satisfied) blocks the law on `decision:<law>`

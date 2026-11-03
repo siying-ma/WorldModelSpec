@@ -17,8 +17,15 @@ VERDICT_SPELLINGS = {"violated": "violated", "violation": "violated", "violates"
 #: How a composed rule enters this node: its applicability negated (exception), its applicability
 #: (condition), its compliance (compliance: "lawfully", "in the manner prescribed"), or its
 #: applicability negated inside one exception or condition span of this node (unless: that span's
-#: content does not hold where the composed rule applies; `scopes` names the span).
-AS_KINDS = {"exception", "condition", "compliance", "unless"}
+#: content does not hold where the composed rule applies; `scopes` names the span). These four are
+#: execution dependencies: the node is coded, integrated and fenced with the rule it names.
+EXECUTION_KINDS = {"exception", "condition", "compliance", "unless"}
+#: A reference span that borrows words: `definition` names the source (a law or a posted definition
+#: of the run's corpus) and the words quoted from it (`source`, `quote`), and never a rule. The
+#: elements whose words are the borrowed ones name the span in `source_spans` and carry its meaning
+#: with their own atoms; nothing of the source is executed, so it is no dependency.
+DEFINITION = "definition"
+AS_KINDS = EXECUTION_KINDS | {DEFINITION}
 #: The kinds of a narrowing, one schema at the blueprint and the gate: a plan declares `reading` (the
 #: default) or `observable_reading`; a coder adds `reading`, or `no_atom` / `no_operator` (the words
 #: cannot be stated), and accounts for a planned `observable_reading`. A concept knows no
@@ -79,14 +86,18 @@ class Node:
         return {s["id"]: s for s in self.raw.get("segmentation", [])}
 
     def claimed_atoms(self) -> set[str]:
-        """The ids the record claims. Only string ids are collected: a record whose fields are of
-        another shape is the validator's to return, and reading it here never raises."""
+        """The ids the record claims: its elements', its operationalizations', what marks its
+        occasion's act under way, and the class elements of its subject and its binders (each
+        binder's class is a formula the rule reads). Only string ids are collected: a record whose
+        fields are of another shape is the validator's to return, and reading it here never raises."""
         out: set[str] = set()
 
         def add(ids: Any) -> None:
             if isinstance(ids, (list, tuple)):
                 out.update(i for i in ids if isinstance(i, str))
         dicts = lambda xs: [x for x in xs if isinstance(x, dict)] if isinstance(xs, list) else []
+        for b in dicts(self.raw.get("binders")) + dicts([self.raw.get("subject")]):
+            add(b.get("class_elements"))
         for e in dicts(self.raw.get("elements")):
             add(e.get("atoms"))
             add(e.get("derived"))
@@ -109,7 +120,22 @@ class Node:
         return {c.split("=")[0].replace(".", "_") for c in self.claimed_atoms()}
 
     def compositions(self) -> list[dict]:
+        """Every composition entry, the `definition` references included: what accounting, source
+        validation, rendering and digests read."""
         return self.raw.get("compositions", [])
+
+    def dependencies(self) -> list[dict]:
+        """The compositions that are execution dependencies (every kind but `definition`): what
+        ordering, scheduling, routing, integration, fencing and rule resolution follow."""
+        return [c for c in self.compositions() if isinstance(c, dict) and c.get("as") != DEFINITION]
+
+    def definition_references(self) -> list[dict]:
+        """The `definition` references: the spans that borrow words from a source text."""
+        return [c for c in self.compositions() if isinstance(c, dict) and c.get("as") == DEFINITION]
+
+    def definition_sources(self) -> list[str]:
+        """The source ids the record's `definition` references name, each once, in order."""
+        return list(dict.fromkeys(str(c.get("source")) for c in self.definition_references() if c.get("source")))
 
     def params(self) -> list[str]:
         ps = list(self.raw.get("params", []))

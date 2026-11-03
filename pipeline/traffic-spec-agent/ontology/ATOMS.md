@@ -98,19 +98,20 @@ ontology change request.
 | `ru.pedestrian` | a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot **Not a stand-in for:** a person on a bicycle or scooter | general |
 | `ru.pedestrian_with_white_cane_or_guide_animal` | pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person | general |
 | `ru.child` | pedestrian who is visibly a child | general |
-| `ru.emergency_vehicle` | vehicle of a class the jurisdiction designates as emergency; **kind** ∈ {police, fire, ambulance, other} **Not a stand-in for:** a responding emergency vehicle — the class alone is not responding; use `drv.responding_emergency`, and an unobserved lamp or siren makes the rule unknown, not satisfied | general |
+| `ru.emergency_vehicle` | vehicle of a class the jurisdiction designates as emergency; **kind** ∈ {police, fire, ambulance, other} **Not a stand-in for:** a responding emergency vehicle — the class alone is not responding; its responding is conduct, carried by a concept, and an unobserved lamp or siren makes the rule unknown, not satisfied | general |
 | `ru.fire_apparatus` | a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own) | general |
 | `ru.official_vehicle` | a vehicle in official or contracted road service, identifiable by livery or equipment; **kind** ∈ {tow, utility, highway_maintenance, incident_management, regulatory_agency, coroner, armored_car, municipal, other} **Not a stand-in for:** an emergency vehicle | general (kinds `incident_management`, `regulatory_agency`, `armored_car`: local) |
 | `ru.rail_vehicle` | a train, tram, streetcar or other on-track equipment | general |
 | `ru.occupant_count` | the number of persons in or on a vehicle (an integer attribute of a road user). A source that observes a change in it — a person arriving at or leaving a vehicle — but not a total, declares the count absent: what it observes then is the arrival or the departure, which is not this atom | general |
 | `ru.rider_posture` | how a rider sits and holds the machine: **on_seat**, **hands_on_controls** (count), **standing_on_deck**, **holding_another_vehicle**, **stunt** (a wheel off the ground, a person on the handlebars). The fields are independent: a source declares each on its own, and one that renders a rider as part of the machine, so that no field can vary, declares all of them absent. **hands_on_controls** is a count and is the field a source is least likely to carry **Not a stand-in for:** a manoeuvre, or an arm signal, which is `sig.hand_signal` | general |
 | `ru.subject` | the road user whose conduct a rule judges (the ego) | general |
-| `ru.aggregate` | membership of a legal aggregate: the atom's literal argument is an aggregate id, `<definition id>::<term>` for the posted definition that applies, or `<law id>:<span>::<term>` for a definition the law itself makes, and the run's reading classifies every road-user class under that id as included, excluded or unresolved by the definition's words; true when the user carries an included class, unknown when no included class holds and the user carries an unresolved class or a class it might carry is unobserved, false otherwise **Not a stand-in for:** a class the text names on its own (a bus, a taxicab) — a named class is its own atom; nor for a role the text describes (responding, overtaking) — a role is a derived concept | general |
+| `ru.aggregate` | membership of a legal aggregate: the atom's literal argument is an aggregate id, `<definition id>::<term>` for the posted definition that applies, or `<law id>:<span>::<term>` for a definition the law itself makes, and the run's reading classifies every road-user class under that id by the definition's words as included, excluded (the definition leaves it out), covered (the definition admits its members only as members of named included classes, which a road user carries beside it, so its own label adds no membership evidence) or unresolved; true when the user carries an included class, unknown when no included class holds and the user carries an unresolved class or an included or unresolved class it might carry is unobserved, false otherwise: a covered or excluded class decides nothing **Not a stand-in for:** a named road-user class for which the applicable definitions and the run's representation decisions permit its own class atom — that class's own atom; an admitted aggregate stays an aggregate even when it contains only one class; a relational role such as who drives or controls a vehicle — never membership; nor a role the text describes by conduct (responding, overtaking) — a role is a derived concept | general |
 
-"Vehicle", "traffic" and "driver" as legal aggregates are carried by `ru.aggregate` with the word
-as its argument: which classes a jurisdiction counts under each is declared by the reading, never
-expanded into a class list by a rule. A responding emergency
-vehicle is the derived concept `drv.responding_emergency`.
+Legal aggregate words ("vehicle", "traffic") are carried by `ru.aggregate` with the definition-scoped
+id as its argument, never the word: which classes the posted definition counts under that id is
+derived from its words and recorded in the reading, never expanded into a class list by a rule.
+"Driver" is no aggregate: it names who controls a vehicle, a relational role read as the section on
+what is not an atom states. A responding emergency vehicle is a role the words describe by conduct, carried by a concept, not by the class.
 
 ## 2. Kinematics and control state (`kin`) — measurements on any road user, and the inputs to a vehicle's controls
 
@@ -160,10 +161,10 @@ A kind whose contract ends in **Refines:** names the kind it refines: every regi
 | `st.sidewalk` | area for pedestrians between roadway and property line **Not a stand-in for:** a crosswalk | general |
 | `st.median_or_divider` | physical barrier or dividing section between roadways; **opening** attribute where a crossover exists | general |
 | `st.one_way_roadway` | roadway on which traffic is restricted to one direction **Refines:** `st.roadway` | general |
-| `st.intersection` | the region where two roadways meet, bounded by the prolongation of their edges **Not a stand-in for:** a crosswalk or a stop line — a stop before the crossing is earlier than a stop before the intersection **Refines:** `st.travel_region` | general |
-| `st.crosswalk` | marked crossing, or the unmarked prolongation of sidewalks at an intersection; **marked** attribute | general |
+| `st.intersection` | the region where two roadways meet, bounded by the prolongation of their edges; a junction where an alley meets another way (a street, road, highway or alley) is no intersection but a `st.driveway_or_alley_entrance` **Not a stand-in for:** a crosswalk or a stop line — a stop before the crossing is earlier than a stop before the intersection **Refines:** `st.travel_region` | general |
+| `st.crosswalk` | marked crossing, or the unmarked prolongation of sidewalks at an intersection (`st.intersection`); **marked** attribute | general |
 | `st.stop_line` | the transverse line marking where vehicles halt for a device | general |
-| `st.driveway_or_alley_entrance` | private road, alley or driveway meeting the highway | general |
+| `st.driveway_or_alley_entrance` | private road, alley or driveway meeting the highway **Not a stand-in for:** which of them meets the highway there — the kind does not tell an alley's entrance from a private road's or driveway's | general |
 | `st.alley` | a narrow way within a block serving the rear of properties | general |
 | `st.curvature` | horizontal curvature of the roadway at a point, as a magnitude (1/m, never negative): a bend to either hand has the same value | general |
 | `st.grade` | longitudinal slope of the roadway at a point **Not a stand-in for:** the place of a crest (`st.crest`) — the slope where a road user is says nothing of a crest ahead of it | general |
@@ -253,7 +254,7 @@ declares it absent, and every specification that reads it then reports unknown.
 | `rel.surface_gap` | distance between the nearest points of two bodies, each body's footprint read with its own heading and extent: zero when they touch or overlap, never negative; its longitudinal and lateral components are the lengths of the vector between those nearest points along and across the subject's heading, and a read without a component is the distance; a supplied gap with a negative component reads unknown, never as its magnitude, as zero or as contact | general |
 | `rel.ahead_behind_in_lane` | a is ahead of / behind b in the same lane, along the lane direction | general |
 | `rel.longitudinal_overlap` | the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share, negative for the gap between the projections; a projection, so neither a contact nor a distance between the bodies | general |
-| `rel.oncoming` | headings opposed and closing: the cosine of the angle between the headings is below the negative of its tolerance, which is the cosine of the largest angle off exactly opposed allowed, a ratio between -1 and 1 | general |
+| `rel.oncoming` | headings opposed and closing: the cosine of the angle between the headings is below the negative of its tolerance, which is the cosine of the largest angle off exactly opposed allowed, a ratio between -1 and 1 **Not a stand-in for:** the direction a road user approaches from — that is read through the carrier it approaches through, any carrier `st.lane_enters` admits (a lane or a kind refining it, or a roadway, one-way roadway, shoulder or bicycle lane or path recorded as a directed approach segment), whose entrance end is the intersection, and through that carrier's direction (`st.lane_direction`) at the same instant; where that evidence is unobserved, the direction is unknown, never a reason a duty does not arise. A turn can make the current headings cease to satisfy this relation while the vehicle's approach direction remains unchanged. | general |
 | `rel.same_direction` | headings aligned: the cosine of the angle between the headings is above its tolerance, which is the cosine of the largest angle allowed, a ratio between -1 and 1 | general |
 | `rel.bearing` | direction of b from a in a's frame (for "on the right of", "immediately to the rear") | general |
 | `rel.contact` | the bodies of two road users, or a road user and a structure, touch or overlap (a collision) **Not a stand-in for:** a near miss — that is `drv.time_to_conflict` | general |
@@ -382,7 +383,10 @@ user's heading; every distance to the mark, the tolerance and the zone's bound i
 distance between the road user's body and the mark (`st.region_geometry`). The stop-point tolerance is
 one parameter the reading sets: the bound within which the act counts at the place is the bound
 beyond which the road user is outside the zone, and a halt that lies within measurement noise of
-that bound may be read on either side of it, the expected limit of this approximation. A search for
+that bound may be read on either side of it, the expected limit of this approximation. Where the
+words place the act before the road user enters a region, a halt at which its footprint already
+overlaps that region (`rel.occupies`) is not at the place, and the stop-point tolerance applies
+outside that region only. A search for
 the act runs back from the event and ends only at that approach start or at the previous occurrence
 of the same event for the same road user and the same place; nothing else ends it: not another
 intersection or mark, not the start of the recording, not a first observation, not a distance

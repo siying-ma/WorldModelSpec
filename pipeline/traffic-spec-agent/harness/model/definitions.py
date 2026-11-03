@@ -429,3 +429,95 @@ def applicable(run, law_id: str) -> list[dict]:
 
 def precedence_hash(run) -> str:
     return load_table(run).get("precedence", {}).get("sha256", "")
+
+
+# ---------------------------------------------------------------------------------------------
+# Definition sources: the posted text a `definition` reference borrows words from
+# ---------------------------------------------------------------------------------------------
+def active_corpus(run) -> tuple[dict[str, corpus.Law], dict[str, dict]]:
+    """The run's active corpus: the laws of its corpus file and of its base chain's (every law a
+    record of the run may be planned from or inherited with), and the posted definitions beside its
+    corpus file. A source is read from nothing else."""
+    from ..store.state import chain_laws
+    laws = {**chain_laws(run), **{l.id: l for l in corpus.load_laws(run.opts.laws)}}
+    return laws, {str(d.get("id")): d for d in corpus.load_definitions(run.opts.laws)}
+
+
+def source_texts(run) -> dict[str, str]:
+    """Every id of the active corpus with its posted text: what a `definition` reference may name."""
+    laws, defs = active_corpus(run)
+    return {**{i: str(d.get("text", "")) for i, d in defs.items()}, **{i: l.text for i, l in laws.items()}}
+
+
+def _definition_closure(defs: dict[str, dict], definition: str, config: dict) -> list[str]:
+    """The posted records a posted definition's words reach by the declared precedence: its
+    cross-reference chain and every resolved nested definition, itself left out."""
+    cands = extract(list(defs.values()), config)
+    posted = set(defs)
+    chain, _broken = _chain(definition, _indexes(cands)[1], posted)
+    deps = _dependencies(chain, defs, cands, config, posted)
+    out = [d for d in chain + [d for dep in deps if dep.get("status") == "resolved" for d in dep.get("chain", [])] if d != definition]
+    return list(dict.fromkeys(out))
+
+
+def source_record(run, ident: str) -> dict | None:
+    """A definition source exactly as the harness takes it from the active corpus: the whole law or
+    the whole posted definition (`kind`, `id`, `title`, `source`, `text`), with the posted
+    definitions that apply to its words (`definitions`). None when the id is in neither."""
+    laws, defs = active_corpus(run)
+    if ident in laws:
+        law = laws[ident]
+        return {"kind": "law", "id": law.id, "title": law.title, "source": law.source, "text": law.text,
+                "definitions": applicable(run, law.id)}
+    if ident in defs:
+        d = defs[ident]
+        reached = _definition_closure(defs, ident, load_precedence(precedence_path(run)))
+        return {"kind": "definition", "id": ident, "title": d.get("title", ""), "source": d.get("source", ""),
+                "text": str(d.get("text", "")), "definitions": [defs[i] for i in reached if i in defs]}
+    return None
+
+
+def source_records(run, ids) -> list[dict]:
+    """The definition sources named by `ids`, each once, those outside the active corpus left out."""
+    out = []
+    for i in dict.fromkeys(ids):
+        rec = source_record(run, i)
+        if rec is not None:
+            out.append(rec)
+    return out
+
+
+def source_digest(rec: dict) -> str:
+    """The identity of a definition source as fetched: its text and the definitions that apply to it."""
+    return hashlib.sha256(json.dumps([rec.get("id"), rec.get("text"), [[d.get("id"), d.get("text")] for d in rec.get("definitions", [])]],
+                                     ensure_ascii=False).encode("utf-8")).hexdigest()[:24]
+
+
+def render_sources(recs: list[dict], heading: str) -> str:
+    """The definition sources under `heading`, each in full with the definitions that apply to it;
+    empty when there is none."""
+    if not recs:
+        return ""
+    out = [heading, ""]
+    for r in recs:
+        out += [f"#### `{r['id']}` — {r.get('title', '')}", f"_{r.get('source', '')}_", "", " ".join(str(r.get("text", "")).split()), ""]
+        if r.get("definitions"):
+            out += ["Posted definitions that apply to its words:", ""]
+            out += [f"- `{d.get('id')}` — {' '.join(str(d.get('text', '')).split())}" for d in r["definitions"]] + [""]
+    return "\n".join(out) + "\n"
+
+
+#: How each role is told what a definition source is.
+SOURCES_HEADING = ("### Definition sources (posted text the harness took from the corpus, whole, with the definitions that apply "
+                   "to it: a `definition` reference of the record borrows words from it; its own duties are not judged here)")
+CITED_HEADING = ("### Texts these words name (posted text the harness took from the corpus, whole, with the definitions that apply "
+                 "to it: a `definition` reference quotes the words it borrows from here; their own duties are not planned here)")
+
+
+def cited_sources(run, laws: list[corpus.Law], records: list | None = None) -> list[dict]:
+    """What a planning session may borrow from: every law of the active corpus that the laws' texts
+    name in brackets, outside `laws` themselves, and every source the `records` already borrow from."""
+    own = {l.id for l in laws}
+    ids = [i for l in laws for i in corpus.cited_law_ids(l.text) if i not in own]
+    ids += [i for r in records or [] for i in r.definition_sources()]
+    return source_records(run, ids)

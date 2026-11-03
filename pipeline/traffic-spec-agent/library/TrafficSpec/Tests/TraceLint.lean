@@ -1,4 +1,5 @@
 import TrafficSpec.Core.Evidence.TraceLint
+import TrafficSpec.Core.Language.Semantics
 namespace TrafficSpec.Tests.TraceLint
 open TrafficSpec Units TrafficSpec.TraceLint
 
@@ -105,5 +106,32 @@ def withGov (k : StructureKind) : Trace := [scene 0 (car 10 0) (structures := [l
 #guard has (checkTrace (withGov .sidewalk)) "device 9 governs structure 8"
 -- a device whose control is not observed is not checked, and governs nothing decided
 #guard checkTrace [scene 0 (car 10 0) (structures := [lane7, region8 .highway]) (devs := [{ signal .circularGreen [] with governsObserved := false }])] = []
+
+-- the region-argument table: one entry per region argument of every name of the dispatch tables
+-- (Boolean and measured atoms, class atoms, primitives), at its index in the full argument list,
+-- the expected keys derived from the dispatch names and their argument sorts
+def dispatchSorts (n : String) : Option (List (Option EntityKind)) :=
+  if n.startsWith "prim_" then Primitives.argSorts n else Semantics.atomArgSorts n
+def dispatchNames : List String :=
+  (Semantics.evalAtomE.boolAtomNames ++ Semantics.evalMeasure.measureNames
+    ++ StructureKind.all.map (fun k => s!"st_{k}") ++ Primitives.primitiveNames).eraseDups
+-- every dispatch name declares its argument sorts, so a name without them is not read as taking none
+def sortsDeclared (names : List String) (sorts : String → Option (List (Option EntityKind))) : Bool :=
+  names.all fun n => (sorts n).isSome
+#guard sortsDeclared dispatchNames dispatchSorts
+#guard !sortsDeclared dispatchNames (fun n => if n == "st_lane_enters" then none else dispatchSorts n)
+#guard !sortsDeclared (dispatchNames ++ ["st_no_such_atom"]) dispatchSorts
+def regionArgKeys : List (String × Nat) :=
+  dispatchNames.flatMap fun n =>
+    let ss := (dispatchSorts n).getD []
+    (List.range ss.length).filterMap fun i => if ss[i]? == some (some EntityKind.region) then some (n, i) else none
+def regionTableOk (t : List ((String × Nat) × Option (List StructureKind))) : Bool :=
+  let ks := t.map (·.1)
+  ks.eraseDups.length == ks.length && ks.all regionArgKeys.contains && regionArgKeys.all ks.contains
+#guard regionTableOk regionArgKinds
+#guard !regionTableOk (regionArgKinds.drop 1)
+#guard !regionTableOk (regionArgKinds ++ regionArgKinds.take 1)
+#guard !regionTableOk (regionArgKinds.map fun ((n, i), v) => if (n, i) == ("st_lane_adjacency", 2) then ((n, 1), v) else ((n, i), v))
+#guard !regionTableOk (((("st_no_such_atom", 0), none)) :: regionArgKinds)
 
 end TrafficSpec.Tests.TraceLint

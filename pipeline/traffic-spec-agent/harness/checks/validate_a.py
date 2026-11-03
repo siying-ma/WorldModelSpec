@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from ..model import nodeid
-from ..model.blueprint import (Node, ConceptRecord, span_offsets, PLANNED_NARROWING_KINDS, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, concepts_of,
+from ..model.blueprint import (Node, ConceptRecord, span_offsets, PLANNED_NARROWING_KINDS, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, DEFINITION, concepts_of,
                         normalize_verdict, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
 from ..model.units import FACTORS, stated_figures, to_core, unsupported_figures
 from ..model import corpus
@@ -83,7 +83,8 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
                 named = [i for i in corpus.cited_law_ids(s.get("text", "")) if i in corpus_ids]
                 if named:
                     errs.append(f"{node.id}: reference span {sid} names {named}, law(s) of this corpus, and is carried by a residue; "
-                                "a reference to a law of the corpus is a composition (`as` exception, condition, compliance or unless)")
+                                "a reference to a law of the corpus is a composition (`as` exception, condition, compliance or unless), or a "
+                                "`definition` reference where it only borrows that law's words")
         elif role in SUBSTANTIVE and n != 1:
             errs.append(f"{node.id}: span {sid} ({role}) is carried by {n} entries, must be exactly one"
                         + (" — words that need two carriers need another cut of the text: a repair withdraws the record as a plan defect "
@@ -128,6 +129,10 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
                     errs.append(f"{node.id}: concept `{ident}` is neither accepted nor proposed in this plan (a concept record for span {e.get('span')})")
                 else:
                     errs.append(f"{node.id}: `{ident}` is not in the ontology and no gap is proposed for span {e.get('span')}")
+    for b in [node.get("subject") or {}] + list(node.get("binders", [])):     # a binder's class is claimed like an element
+        for ident in b.get("class_elements", []):
+            if not ident.startswith("ru.aggregate") and not onto.knows(ident) and ident not in concept_ids:
+                errs.append(f"{node.id}: the class of binder `{b.get('binder', b.get('name'))}` names `{ident}`, which is not in the ontology")
     claims = node.claimed_atoms()
     fenced = fenced or {}
     errs += [f"{node.id}: concept `{c}` is {fence_words(fenced[c])}: supersede it or map the words around it"
@@ -143,20 +148,19 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
     for g in node.gaps():
         if g.get("kind") not in GAP_KINDS:
             errs.append(f"{node.id}: gap kind {g.get('kind')!r} not in {sorted(GAP_KINDS)}")
+        before = len(errs)                      # a gap with a defect below is not filed; every defect is named
         if not g.get("proposal") or not g.get("nearest"):
             errs.append(f"{node.id}: gap for span {g.get('span')} lacks a proposal or its nearest atoms")
-            continue
-        proposal = str(g.get("proposal"))
+        proposal = str(g.get("proposal") or "")
         named = re.match(r"\s*\|?\s*`((?:ru|kin|st|dev|sig|env|rel|prim)\.[a-z_]+)`", proposal)
         if g.get("kind") == "atom" and named and onto.knows(named.group(1)):
             errs.append(f"{node.id}: the gap on span {g.get('span')} proposes `{named.group(1)}`, which the ontology already has: map the span to it")
-            continue
         op = re.match(r"\s*`(?:Formula\.|Term\.|Measure\.)?\.?(\w+)", proposal)
         if g.get("kind") == "operator" and op and op.group(1) in constructors:
             errs.append(f"{node.id}: the gap on span {g.get('span')} proposes `{op.group(1)}`, which the formula language already has: "
                         "write the span with it")
-            continue
-        gaps.append(g)
+        if len(errs) == before:
+            gaps.append(g)
     return errs, gaps
 
 
@@ -380,9 +384,10 @@ def check_scenarios(node: Node, onto: Ontology, concept_atoms: dict[str, set[str
             continue
         if name in SCENARIOS:
             errs.append(f"{node.id}: scenario `{name}` declares a history boundary; only a scenario beside the four standard ones may")
-        elif normalize_verdict(s.get("expected")) != "unknown":
+            continue
+        if normalize_verdict(s.get("expected")) != "unknown":
             errs.append(f"{node.id}: scenario `{name}` declares a history boundary and expects {s.get('expected')!r}; a history-boundary scenario expects unknown")
-        elif not str(s.get("boundary")).strip():
+        if not str(s.get("boundary")).strip():
             errs.append(f"{node.id}: scenario `{name}` declares an empty history boundary; it names the history its trace lacks")
     return errs
 
@@ -422,6 +427,22 @@ def reads_motion(ids: list[str], onto: Ontology, concept_atoms: dict[str, set[st
     return False
 
 
+def occasion_requirements(acts: list[str], scoped: list[str]) -> str:
+    """Everything the occasion of an act observed over time requires, stated at once, so that a
+    record returned for one part of it learns every other part in the same message."""
+    return (f"declare `occasion` {{act, window, under_way, spans}}: `act` the obligation's concept observed over time "
+            f"({', '.join(f'`{a}`' for a in acts) or 'none found'}), or the list of them where the obligation names alternative acts; "
+            "`window` the act's window parameter, which the node names; `spans` saying, for each trigger, condition and exception span "
+            f"the node maps ({', '.join(f'`{k}`' for k in scoped) or 'none'}), whether it is read `at_recognition` (where the act is "
+            "recognized), `some_moment` (at some moment while the act is under way) or `throughout` (at every moment while it is under "
+            "way). Where a span is read `some_moment` or `throughout`, also: `under_way`, an element {words, atoms, derived, "
+            "justification} whose atoms or concepts read the road user's motion (a kinematic atom other than the clock or the body's "
+            "size, a primitive, or a concept that reads one), never a place or a region alone; and, for each such span, the scenarios "
+            "`occasion_<span>`, in which it holds for part of the act only, and `occasion_<span>_outside`, in which it holds only "
+            "before the act began (read `some_moment`) or throughout the act but not before it (read `throughout`), the two expecting "
+            "different verdicts")
+
+
 def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Ontology | None = None,
                    concept_ids: set[str] | None = None, concept_atoms: dict[str, set[str]] | None = None) -> list[str]:
     """A node whose obligation names an act observed over time, and whose rule reads trigger,
@@ -436,7 +457,8 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     only, and `occasion_<span>_outside`, in which it holds only before the act began (read
     `some_moment`) or throughout the act but not before it (read `throughout`). The two must expect
     different verdicts: a rule that cannot tell the act from the stretch before it decides them
-    alike."""
+    alike. The first message of a returned record states all of these requirements
+    (`occasion_requirements`); the messages after it name each one the record misses."""
     spans = node.spans()
     acts = acts_over_time(node, concept_params)
     scoped = sorted({e.get("span") for e in node.get("elements", []) if spans.get(e.get("span"), {}).get("role") in OCCASION_ROLES})
@@ -444,11 +466,10 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     if occ is None:
         if acts and scoped:
             return [f"{node.id}: the obligation names `{acts[0]}`, an act observed over time, and the rule reads span(s) {scoped}: "
-                    "declare `occasion` — for each of those spans, whether it is read where the act is recognized, at some "
-                    "moment while the act is under way, or throughout it"]
+                    + occasion_requirements(acts, scoped)]
         return []
     if not isinstance(occ, dict):
-        return [f"{node.id}: `occasion` must be an object {{act, window, under_way, spans}}"]
+        return [f"{node.id}: `occasion` must be an object; " + occasion_requirements(acts, scoped)]
     errs = []
     act = occ.get("act")
     named = act if isinstance(act, list) else [act]       # alternatives the obligation names share one occasion
@@ -459,7 +480,8 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
         errs.append(f"{node.id}: occasion `window` must be a parameter the node names (the act's window), got {occ.get('window')!r}")
     read = occ.get("spans")
     if not isinstance(read, dict):
-        return errs + [f"{node.id}: occasion `spans` must map each trigger, condition or exception span to one of {sorted(OCCASIONS)}"]
+        errs.append(f"{node.id}: occasion `spans` must map each trigger, condition or exception span to one of {sorted(OCCASIONS)}")
+        read = {}
     errs += [f"{node.id}: occasion names span `{k}`, which is not a trigger, condition or exception span the node maps" for k in read if k not in scoped]
     errs += [f"{node.id}: occasion does not say when span `{k}` is read" for k in scoped if k not in read]
     errs += [f"{node.id}: occasion of span `{k}` is {v!r}, not one of {sorted(OCCASIONS)}" for k, v in read.items() if v not in OCCASIONS]
@@ -474,8 +496,9 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
             unknown = [i for i in ids if onto is not None and not onto.knows(i) and i not in (concept_ids or set())]
             if unknown:
                 errs.append(f"{node.id}: occasion `under_way` names {unknown}, neither atoms of the ontology nor concepts of the catalogue or this plan")
-            elif onto is not None and not reads_motion(ids, onto, concept_atoms or {}):
-                errs.append(f"{node.id}: occasion `under_way` reads no motion of the road user ({ids or 'nothing'}): a place, a region "
+            known = [i for i in ids if i not in unknown]
+            if onto is not None and not reads_motion(known, onto, concept_atoms or {}):
+                errs.append(f"{node.id}: occasion `under_way` reads no motion of the road user ({known or 'nothing'}): a place, a region "
                             "or a constant cannot tell the act from the stretch before it — map it to a kinematic atom, a primitive, "
                             "or a concept that reads one")
     scs = {sc.get("name"): sc for sc in node.get("scenarios", [])}
@@ -488,6 +511,8 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
             errs.append(f"{node.id}: span `{k}` is read `{read[k]}`; add scenario `{b_}`, in which it holds {where}")
         if a_ in scs and b_ in scs and normalize_verdict(scs[a_].get("expected")) == normalize_verdict(scs[b_].get("expected")):
             errs.append(f"{node.id}: scenarios `{a_}` and `{b_}` expect the same verdict; the reading of span `{k}` must decide them apart")
+    if errs:
+        return [f"{node.id}: the occasion of the act is incomplete. It requires: " + occasion_requirements(acts, scoped)] + errs
     return errs
 
 
@@ -546,9 +571,10 @@ def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
     for key, prefix in (("assumptions", "asm."), ("intentions", "int.")):
         for d in node.get(key, []):
             cid, meaning = d.get("id"), _ws(d.get("meaning"))
-            if not DECLARED_ID.match(cid or "") or not cid.startswith(prefix):
-                errs.append(f"{node.id}: {key} id `{cid}` is not `{prefix}<snake_case name>`"); continue
-            if cid in catalogue:
+            well_formed = bool(DECLARED_ID.match(cid or "")) and cid.startswith(prefix)
+            if not well_formed:
+                errs.append(f"{node.id}: {key} id `{cid}` is not `{prefix}<snake_case name>`")
+            if well_formed and cid in catalogue:
                 if meaning and not same_meaning(meaning, catalogue[cid]):
                     errs.append(f"{node.id}: `{cid}` means {catalogue[cid]!r} in the catalogue, here {meaning!r}: reuse the id without a "
                                 "meaning, or propose a new id for another meaning")
@@ -563,7 +589,7 @@ def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
             elif cited := meaning_citations(meaning):
                 errs.append(f"{node.id}: the meaning of `{cid}` cites {', '.join(cited)}: a declared fact's meaning states the fact or "
                             "state the source supplies, never a law, a defined word's reading or whether a duty applies")
-            else:
+            elif well_formed:
                 catalogue[cid] = meaning
             if key == "intentions":
                 role = spans.get(d.get("span"), {}).get("role")
@@ -710,9 +736,10 @@ def check_segment_roles(node: Node, index: MappingIndex) -> list[str]:
 
 
 def resolve_rule_ids(node: Node, known: dict[str, Node]) -> list[str]:
-    """`rule` names a node; a law id (dashes) is rewritten to its node when the law has one node."""
+    """`rule` names a node; a law id (dashes) is rewritten to its node when the law has one node. A
+    `definition` reference names no rule and is left as it is."""
     errs = []
-    for c in node.compositions():
+    for c in node.dependencies():
         rid = str(c.get("rule", ""))
         if rid in known:
             continue
@@ -727,11 +754,29 @@ def resolve_rule_ids(node: Node, known: dict[str, Node]) -> list[str]:
     return errs
 
 
-def check_compositions(node: Node, known: dict[str, Node]) -> list[str]:
+UNKNOWN_TARGET = re.compile(r"^(?P<node>\S+): composes `(?P<rule>[^`]*)`, which is neither accepted nor in this plan$")
+
+
+def unknown_target(node_id: str, rule) -> str:
+    """The defect of an execution composition whose rule is no node the validator knows (accepted, or
+    in this plan); `UNKNOWN_TARGET` reads the rule back from it."""
+    return f"{node_id}: composes `{rule}`, which is neither accepted nor in this plan"
+
+
+def check_compositions(node: Node, known: dict[str, Node], sources: dict[str, str] | None = None) -> list[str]:
+    """Each composition's kind and target: an execution dependency names a rule that resolves; a
+    `definition` reference is checked against its source (`check_definition_reference`)."""
     errs = resolve_rule_ids(node, known)
     for c in node.compositions():
         if c.get("as") not in AS_KINDS:
             errs.append(f"{node.id}: composition on span {c.get('span')} has `as` {c.get('as')!r}; must be one of {sorted(AS_KINDS)}")
+        if c.get("as") == DEFINITION:
+            errs += check_definition_reference(node, c, sources or {})
+            continue
+        if not c.get("rule"):
+            errs.append(f"{node.id}: composition on span {c.get('span')} (as {c.get('as')}) names no `rule`; an execution "
+                        "dependency names the node it composes")
+            continue
         scopes = c.get("scopes")
         if c.get("as") == "unless":
             role = node.spans().get(scopes, {}).get("role")
@@ -742,7 +787,7 @@ def check_compositions(node: Node, known: dict[str, Node]) -> list[str]:
             errs.append(f"{node.id}: composition on span {c.get('span')} has `scopes` {scopes!r}; only an `unless` composition scopes a span")
         target = known.get(c.get("rule"))
         if target is None:
-            errs.append(f"{node.id}: composes `{c.get('rule')}`, which is neither accepted nor in this plan")
+            errs.append(unknown_target(node.id, c.get("rule")))
             continue
         if target.get("fenced"):
             errs.append(f"{node.id}: composes `{target.id}`, {fence_words(target.get('fenced'))}: its law is planned again, compose its new node")
@@ -753,8 +798,68 @@ def check_compositions(node: Node, known: dict[str, Node]) -> list[str]:
     return errs
 
 
+def check_definition_reference(node: Node, c: dict, sources: dict[str, str]) -> list[str]:
+    """A `definition` reference names a source and the words it borrows, never a rule: no `rule`,
+    `map` or `scopes`; its span is a `reference` span; `source` is a law or a posted definition of the
+    run's active corpus (`sources`: id → posted text; nothing outside it is read), one the span names
+    in brackets when it names any; `quote` occurs verbatim in that text (whitespace aside)."""
+    errs, at = [], f"{node.id}: definition reference on span {c.get('span')}"
+    for key in ("rule", "map", "scopes"):
+        if c.get(key) is not None:
+            errs.append(f"{at} has `{key}`; a definition reference names a source and its quoted words, never a rule — a reference "
+                        "whose rule must apply, hold or be complied with is an exception, condition, compliance or unless composition")
+    span = node.spans().get(c.get("span"), {})
+    if span and span.get("role") != "reference":
+        errs.append(f"{at}: the span's role is {span.get('role')}; a definition reference is carried on a `reference` span")
+    src, quote = c.get("source"), _ws(c.get("quote"))
+    if not isinstance(src, str) or not src.strip():
+        return errs + [f"{at} names no `source` (the law or posted definition whose words it borrows)"]
+    if not quote:
+        errs.append(f"{at} quotes nothing: `quote` holds the borrowed words, verbatim from `{src}`")
+    named = corpus.bracketed_ids(span.get("text", ""))
+    if named and src not in named:
+        errs.append(f"{at} names source `{src}`, which the span does not name; it names {named}")
+    if src not in sources:
+        return errs + [f"{at}: `{src}` is no law or posted definition of this run's corpus, so its words cannot be borrowed; "
+                       "carry the words as this law's own, or propose a gap"]
+    if quote and quote not in _ws(sources[src]):
+        errs.append(f"{at}: the quote “{quote[:120]}” does not occur verbatim in `{src}`")
+    return errs
+
+
+def check_source_spans(node: Node) -> list[str]:
+    """The pairing of borrowed words with the elements that carry them: every `source_spans` entry
+    is a span of this record carried by a `definition` reference, the element's justification quotes
+    the words each one borrows, and every `definition` reference is used by some element."""
+    errs = []
+    refs: dict[str, list[dict]] = {}
+    for c in node.definition_references():
+        refs.setdefault(c.get("span"), []).append(c)
+    used: set[str] = set()
+    for e in node.get("elements", []):
+        listed = e.get("source_spans")
+        if listed is None:
+            continue
+        if not listed:
+            errs.append(f"{node.id}: element on span {e.get('span')} has an empty `source_spans`; leave it out where the element borrows no words")
+        for sid in listed:
+            if sid not in refs:
+                what = "no span of this record" if sid not in node.spans() else "not carried by a `definition` reference"
+                errs.append(f"{node.id}: element on span {e.get('span')} names `{sid}` in `source_spans`, {what}")
+                continue
+            used.add(sid)
+            for c in refs[sid]:
+                if _ws(c.get("quote")) and _ws(c.get("quote")) not in _ws(e.get("justification")):
+                    errs.append(f"{node.id}: element on span {e.get('span')} draws on `{sid}` but its justification does not quote the "
+                                f"borrowed words “{_ws(c.get('quote'))[:120]}” of `{c.get('source')}`")
+    for sid in sorted(set(refs) - used, key=str):
+        errs.append(f"{node.id}: definition reference on span {sid} is used by no element: the element whose words are the "
+                    "borrowed ones names it in `source_spans`, or the span is no definition reference")
+    return errs
+
+
 def acyclic(nodes: dict[str, Node]) -> list[str]:
-    graph = {n.id: [c.get("rule") for c in n.compositions()] for n in nodes.values()}
+    graph = {n.id: [c.get("rule") for c in n.dependencies()] for n in nodes.values()}
     state: dict[str, int] = {}
     cycles = []
 
@@ -812,9 +917,11 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
              index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
              known_nodes: list[Node] | None = None, rejected_gaps: dict[str, dict] | None = None,
-             prior_nodes: list[Node] | None = None) -> list[Outcome]:
+             prior_nodes: list[Node] | None = None, sources: dict[str, str] | None = None) -> list[Outcome]:
     """`known_nodes` are nodes of the same iteration's other plan batches: a composition may name
-    them, they are not validated here. `prior_nodes` are those of them validated before these (the
+    them, they are not validated here. `sources` holds the posted text of every law and posted
+    definition of the run's active corpus, by id: what a `definition` reference may borrow from
+    (absent, the laws given here). `prior_nodes` are those of them validated before these (the
     earlier batches): the ids they declare are in the catalogue these nodes reuse. `rejected_gaps` maps each rejected gap of the ledger to the
     laws it was decided on and the occurrence it was filed on (`{laws, occurrence}`)."""
     outcomes: list[Outcome] = []
@@ -845,6 +952,8 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         if a.law in by_law and a.id not in plan_ids:
             by_law[a.law].append(a)
     cycle_errs = _guarded("the plan's compositions", acyclic, known)
+    if sources is None:
+        sources = {i: l.text for i, l in laws.items()}
     catalogue = {i: _ws(d.get("meaning")) for i, d in (reading.declarations() if hasattr(reading, "declarations") else {}).items()}
     for m in prior_nodes or []:                          # nodes of earlier batches were validated before these
         for d in m.get("assumptions", []) + m.get("intentions", []):
@@ -880,7 +989,8 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_identity(n, by_law[law.id], law)
         errs += [e for e in check_decomposition(by_law[law.id], law) if re.search(rf"(?<![\w]){re.escape(n.id)}(?![\w])", e)]   # law-wide, each error to the nodes it names
         errs += check_segment_roles(n, index)
-        errs += check_compositions(n, known)
+        errs += check_compositions(n, known, sources)
+        errs += check_source_spans(n)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps, law.text)
         errs += check_declarations(n, catalogue)
@@ -957,7 +1067,7 @@ def concept_refs_acyclic(plan: list[ConceptRecord], accepted: dict[str, dict]) -
 #: (`[t, n]`: of at least `n` entries), `{...}` an object with those fields (`*` any key), and a
 #: tuple the alternatives. A record that
 #: does not match is returned with every mismatch named by its path, before any check reads it.
-_ELEMENT = {"span": "id", "atoms?": ["id"], "derived?": ["id"], "justification?": "str"}
+_ELEMENT = {"span": "id", "atoms?": ["id"], "derived?": ["id"], "justification?": "str", "source_spans?": ["id"]}
 _SCENARIO = {"name": "id", "expected": "str", "narrative?": "str", "masked?": ["id"]}
 #: A node's scenario may also name the history its trace lacks (`boundary`), for a witness that stays unknown for it.
 _NODE_SCENARIO = {**_SCENARIO, "boundary?": "str"}
@@ -970,7 +1080,7 @@ NODE_SCHEMA = {
                               "convention?": "str", "surrogate?": "bool"}],
     "assumptions?": [{"span": "id", "id": "id", "meaning?": "str"}],
     "intentions?": [{"span": "id", "id": "id", "meaning?": "str"}],
-    "compositions?": [{"span": "id", "rule": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id"}],
+    "compositions?": [{"span": "id", "rule?": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id", "source?": "id", "quote?": "str"}],
     "residues?": [{"span": "id", "why?": "str", "scope?": "str"}],
     "binders": [{"name": "id", "class_elements?": ["str"]}],
     "params?": ["id"],
@@ -1119,44 +1229,66 @@ def kind_claim_errors(c: ConceptRecord, formal: str, values: list[str]) -> list[
     return []
 
 
-_REGION_ATOMS: dict[int, tuple[frozenset, frozenset]] = {}
+_REGION_KINDS: dict[int, frozenset] = {}
 
 
-def region_atoms(onto: Ontology) -> tuple[frozenset, frozenset]:
-    """(the region properties, the region kinds) of the active ontology, from the atoms' signatures:
-    an atom read true or false of one region is a region kind; any other atom whose arguments are
-    all regions (with at least one) is a region property."""
+def region_kinds(onto: Ontology) -> frozenset:
+    """The region kinds of the active ontology, from the atoms' signatures: an atom read true or
+    false of one region."""
     key = id(onto)
-    if key not in _REGION_ATOMS:
+    if key not in _REGION_KINDS:
         from ..lean import surface
-        rows = [r for r in surface.case_catalogue(onto) if r.get("atom")]
-        def regions_only(sig: str) -> bool:
-            inner = sig[sig.index("(") + 1:sig.rindex(")")] if "(" in sig else ""
-            args = [a.strip() for a in inner.split(",") if a.strip()]
-            return "region" in args and all(a == "region" or a.startswith("'") for a in args)
-        sigs: dict[str, list[dict]] = {}
-        for r in rows:
-            sigs.setdefault(r["atom"], []).append(r)
-        kinds = {a for a, rs in sigs.items() if any(r["unit"] == "true / false" and re.fullmatch(r"\w+\(region\)", s)
-                                                   for r in rs for s in r["signatures"])}
-        props = {a for a, rs in sigs.items() if a not in kinds and any(regions_only(s) for r in rs for s in r["signatures"])
-                 and not any("track" in s for r in rs for s in r["signatures"]) and a != "st.region_geometry"}
-        _REGION_ATOMS[key] = (frozenset(props), frozenset(kinds))
-    return _REGION_ATOMS[key]
+        _REGION_KINDS[key] = frozenset(r["atom"] for r in surface.case_catalogue(onto) if r.get("atom") and r["unit"] == "true / false"
+                                       and any(re.fullmatch(r"\w+\(region\)", s) for s in r["signatures"]))
+    return _REGION_KINDS[key]
 
 
 def check_region_places(ident: str, claims: set[str], onto: Ontology) -> list[str]:
-    """A record that reads a region's property claims the kind of region it is read on, since a
-    region quantifier names its kind. How the region is tied to the road user (occupancy, distance,
-    a device governing it) is the formula's, and the gate checks that every quantified region is
-    anchored to a binder (`UNANCHORED_VARIABLE`). A concept that takes a region formal is not held
-    to it: the caller's quantifier names that region's kind."""
-    props, kinds = region_atoms(onto)
-    read = sorted(claims & props)
-    if not read or claims & kinds:
+    """A record that reads a region claims, for every region argument of each atom or primitive it
+    claims, a kind that can bind that argument, since a region quantifier names its kind: a kind
+    whose regions (its own and those of every kind refining it) include one Core admits at that
+    argument (`surface.region_argument_kinds`: the kinds Core declares a region there may have,
+    `TraceLint.regionArgKinds`), and any kind where Core declares any. An export that fails or
+    lacks an argument raises, so the validator faults. A region
+    kind is not held to it: it names its own region. How the region is tied to the road user
+    (occupancy, distance, a device governing it) is the formula's, and the gate checks that every
+    quantified region is anchored to a binder (`UNANCHORED_VARIABLE`). A concept that takes a region
+    formal is not held to it: the caller's quantifier names that region's kind."""
+    from ..lean import surface
+    kinds = region_kinds(onto)
+    parent = surface.kind_refinements()
+
+    def covers(k: str) -> set[str]:             # what a quantifier over `k` ranges over: `k` and every kind refining it
+        def under(j: str | None) -> bool:
+            while j and j != k:
+                j = parent.get(j)
+            return j == k
+        return {j.removeprefix("st.") for j in kinds if under(j.removeprefix("st."))}
+    claimed_kinds = sorted(c.removeprefix("st.") for c in claims & kinds)
+    ids = {c.split("=")[0] for c in claims}
+    by_atom: dict[str, list[list[frozenset[str] | None]]] = {}
+    for _name, (aid, signatures) in surface.region_argument_kinds(onto).items():
+        if aid in ids and aid not in kinds:
+            by_atom.setdefault(aid, []).extend(signatures)
+    needs = []
+    for aid in sorted(by_atom):
+        best = None
+        for admitted in by_atom[aid]:            # an atom read through any of its names and signatures
+            missing = [(i, adm) for i, adm in enumerate(admitted)
+                       if not any(adm is None or covers(k) & adm for k in claimed_kinds)]
+            if best is None or len(missing) < len(best):
+                best = missing
+        for i, adm in best or []:
+            if adm is None:
+                needs.append(f"`{aid}` (region argument {i + 1}): any kind of region it is read on (for example `st.roadway`)")
+            else:
+                fit = sorted(f"`{k}`" for k in kinds if covers(k.removeprefix("st.")) & adm)
+                needs.append(f"`{aid}` (region argument {i + 1}): one of {', '.join(fit)}")
+    if not needs:
         return []
-    return [f"{ident}: {', '.join(f'`{a}`' for a in read)} {'is a property' if len(read) == 1 else 'are properties'} of a region: claim "
-            "the kind of region it is read on (for example `st.roadway`) on the span that names the place"]
+    return [f"{ident}: a region quantifier names its kind, so every region a claimed atom reads needs a claimed kind that can bind it "
+            f"(claimed kinds: {', '.join(f'`st.{k}`' for k in claimed_kinds) or 'none'}); claim, on the span that names each place: "
+            + "; ".join(needs)]
 
 
 def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accepted: dict[str, dict],

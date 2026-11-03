@@ -74,6 +74,12 @@ def sceneCtl : Scene := { scene0 with users := [ctlCar, ub, uc, ped], structures
 #guard kin_engine_running sceneCtl 2 = none                 -- not observed on the other car
 #guard st_lane_enters sceneCtl 7 = some 20
 #guard st_lane_enters scene0 7 = none
+-- a vehicle that has begun to turn: no longer oncoming by its heading, still on the same approach
+def turningCar : RoadUser := { ctlCar with kin := { ctlCar.kin with heading := some (Q.zero, Q.ofInt 1), velocity := some (metres 0, metresPerSecond 5) } }
+def sceneTurning : Scene := { sceneCtl with users := [turningCar, ub, uc, ped] }
+#guard rel_oncoming sceneCtl 1 3 (Q.mk' 9 10) = some true
+#guard rel_oncoming sceneTurning 1 3 (Q.mk' 9 10) = some false
+#guard (rel_occupies sceneTurning 1 7, st_lane_enters sceneTurning 7) = (some true, some 20)
 #guard rel_visible sceneCtl 1 3 = some false
 #guard rel_visible sceneCtl 1 2 = none                      -- never computed from kinematics
 -- region geometry: distance to a boundary is zero inside, the nearest edge outside

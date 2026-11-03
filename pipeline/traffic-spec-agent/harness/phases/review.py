@@ -35,7 +35,7 @@ import json
 import shutil
 import re
 import threading
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from ..agents import render, session
@@ -51,7 +51,7 @@ from . import validate as validate_phase
 from .code import concept_dir, node_dir
 
 PLACEHOLDERS_REVIEW_CODE = ("law_and_segmentation", "definitions", "record", "rendered", "atoms_read", "contracts", "parameters", "trace_format",
-                            "case_language", "case_vocabulary", "not_atoms", "obligations", "max_divergences", "review_checks",
+                            "case_language", "case_vocabulary", "not_atoms", "obligations", "filed", "max_divergences", "review_checks",
                             "review_submissions")
 PLACEHOLDERS_JUDGE_CASE = ("law", "definitions", "case", "contracts")
 PLACEHOLDERS_ADJUDICATE = ("law_and_segmentation", "definitions", "record", "rendered", "contracts", "parameters", "aggregates",
@@ -192,10 +192,13 @@ class ReviewTools:
 
 
 class BehaviourTools(ReviewTools):
+    """A rule reviewer's session. Its check and its submission decide each divergence by
+    `divergence_status`, as the review acts on it, with the cases to extend (`extendable`, each case
+    id with its recorded row)."""
     def __init__(self, run: Run, n: Node, law: corpus.Law, reading: Reading, binders: list[str], windows: str, history: str,
-                 out_dir: Path, checks: int, submissions: int, need: "_Need | None" = None):
+                 out_dir: Path, checks: int, submissions: int, need: "_Need | None" = None, extendable: dict[str, dict] | None = None):
         self.run, self.n, self.law, self.reading, self.binders = run, n, law, reading, binders
-        self.windows, self.history, self.need = windows, history, need
+        self.windows, self.history, self.need, self.extendable = windows, history, need, dict(extendable or {})
         self.specs = [
             _fn("check_divergence", "Run one divergence through the harness's checks and Core: the trace check, the case check, "
                 "the case's value at `at` (and, when it is not true, which of its facts are not), and the rule's verdict at `at`. "
@@ -220,18 +223,17 @@ class BehaviourTools(ReviewTools):
         bad = cert_unusable(k, d, c, self.windows, self.history, self.need)
         return bad if bad or c.get("rule_result") is not None else [f"divergence {k}: the certificate printed no verdict of the rule"]
 
+    def status(self, k: int, d, where: Path) -> Status:
+        return divergence_status(k, d, lambda: self.cert(d, where), self.law.text, self.binders, self.extendable,
+                                 self.windows, self.history, self.need)
+
     def _check(self, d, where: Path) -> dict:
-        schema = divergence_schema_defects(1, d, self.law.text, self.binders)
-        if not schema and "unstatable" in d:
-            return {"status": "unstatable", "messages": ["recorded as a gap candidate when submitted; nothing is run"]}
-        if schema or not isinstance(d, dict) or not _certifiable(d, self.binders):     # nothing is run on a malformed divergence
-            return {"status": "schema defects", "messages": schema or ["the divergence cannot be run"]}
-        c = self.cert(d, where)
-        bad = self.judgeable(1, d, c)
-        refuted = cert_refutations(1, d, c) if c is not None else []
-        status = "unusable" if bad else "refuted" if refuted else "certifiable"
-        return {"status": status, "messages": schema + bad + refuted, "case_value": (c or {}).get("case_value"),
-                "rule_verdict": (c or {}).get("rule_result")}
+        s = self.status(1, d, where)
+        out = {"status": s.status, "messages": s.messages}
+        if s.status in ("unusable", "refuted", "certifiable"):
+            c = self.cert(d, where) or {}
+            out.update(case_value=c.get("case_value"), rule_verdict=c.get("rule_result"))
+        return out
 
     def _submit(self, a: dict, number: int) -> list[str]:
         cap = self.run.opts.max_divergences
@@ -240,9 +242,10 @@ class BehaviourTools(ReviewTools):
         unusable, certified = [], 0
         if not (cap and len(divs) > cap):
             for k, d in enumerate(divs, 1):
-                if isinstance(d, dict) and _certifiable(d, self.binders) and not divergence_schema_defects(k, d, self.law.text, self.binders):
-                    bad = self.judgeable(k, d, self.cert(d, self.out_dir / "submissions" / f"L{self.launch}" / f"{number:03d}" / f"d{k}"))
-                    unusable += bad; certified += not bad
+                s = self.status(k, d, self.out_dir / "submissions" / f"L{self.launch}" / f"{number:03d}" / f"d{k}")
+                if s.status == "unusable":
+                    unusable += s.messages
+                certified += s.status in ("refuted", "certifiable")
         self.attempts.append({"divergences": len(divs), "certified": certified, "schema_defects": len(errs), "certificate_defects": len(unusable),
                               "checks_before": self.used_checks})
         return errs + unusable
@@ -1013,6 +1016,59 @@ def cert_refutations(k: int, d: dict, c: dict) -> list[str]:
     return out
 
 
+@dataclass
+class Status:
+    """What a rule review does with one divergence (`divergence_status`): its `status`, the messages
+    the reviewer is shown, and the case to extend it continues (`prior`), if any."""
+    status: str
+    messages: list[str]
+    prior: dict | None = None
+
+
+def divergence_status(k: int, d, cert, law_text: str, binders: list[str], extendable: dict[str, dict],
+                      windows: str = "", history: str = "", need: "_Need | None" = None) -> Status:
+    """The one decision on divergence `k` that the reviewer's check reports and the submitted answer
+    acts on. `cert()` gives its certificate record (None when the program printed none) and is
+    called only for a divergence that can be run; `extendable` maps each case to extend to its
+    recorded row. The status is:
+    - `unstatable`: recorded as a gap candidate, nothing run;
+    - `schema defects`: nothing run;
+    - `unusable`: not certified, a defect `cert_unusable` names, no verdict of the rule, or an
+      extension of a case to extend that does not continue its evidence (`node_extension_defects`);
+    - `refuted`: the rule gives at `at` the verdict claimed for the law (`cert_refutations`) and
+      the divergence extends no case to extend: an advisory;
+    - `certifiable`: judged. An extension of a case to extend is judged whatever the rule gives,
+      and is recorded as satisfied where the rule gives the law's verdict and that verdict is the
+      one the case was upheld for."""
+    schema = divergence_schema_defects(k, d, law_text, binders)
+    if not schema and "unstatable" in d:
+        return Status("unstatable", [f"divergence {k}: recorded as a gap candidate when submitted; nothing is run"])
+    if schema or not _certifiable(d, binders):
+        return Status("schema defects", schema or [f"divergence {k}: the divergence cannot be run"])
+    c = cert()
+    if c is None:
+        return Status("unusable", [f"divergence {k}: not certified"])
+    bad = cert_unusable(k, d, c, windows, history, need)
+    if not bad and c.get("rule_result") is None:
+        bad = [f"divergence {k}: the certificate printed no verdict of the rule"]
+    refuted = cert_refutations(k, d, c)
+    if bad:
+        return Status("unusable", bad + refuted)
+    ext = d.get("extends")
+    prior = extendable.get(ext) if isinstance(ext, str) else None
+    if prior is None:
+        note = [f"divergence {k}: `extends` names no case to extend, so it is judged as a new case"] if "extends" in d else []
+        return Status("refuted", refuted + note) if refuted else Status("certifiable", note)
+    broken = node_extension_defects(prior, d, c, binders)
+    if broken:
+        return Status("unusable", [f"divergence {k} extends case {ext[:12]} but does not continue it: " + "; ".join(broken)])
+    if refuted:
+        return Status("certifiable", [f"divergence {k} extends case {ext[:12]}, and the rule gives at `at` the verdict you claim for the "
+                                      "law: when submitted it is judged again, and recorded as satisfied where the law's verdict is still "
+                                      "the one the case was upheld for — keep it"], prior)
+    return Status("certifiable", [f"divergence {k} extends case {ext[:12]}: when submitted it is judged again"], prior)
+
+
 # ---------------------------------------------------------------------------------------------
 # Rendering a case for the judges
 # ---------------------------------------------------------------------------------------------
@@ -1281,8 +1337,35 @@ class Context:
     precedence_hash: str
     duty: dict = field(default_factory=dict)              # the duty occurrence the node formalizes (`duty_of`)
     duty_block: str = ""                                  # what stage A is shown of it (`duty_block`)
-    precedents: list[dict] = field(default_factory=list)  # the effective rulings on this duty, as they stood when the review began
+    precedents: list[dict] = field(default_factory=list)  # the rulings on this duty, as they stand (`decided`)
     not_atoms: str = ""                                   # the ontology's section on what is not an atom, verbatim
+    sources: list[dict] = field(default_factory=list)     # the definition sources the record borrows from, as fetched (`definitions.source_record`)
+    rulings: list[dict] | None = None                     # the run's rulings as the review began (`ReviewRulings.base`); None: as they stand
+
+    def decided(self, row: dict) -> None:
+        """A ruling this review has made joins the precedents its later judges are shown, as it
+        will stand once recorded: it replaces the precedent of the same identity, and an advisory
+        row is no precedent."""
+        ident = ruling_identity(row)
+        if ident is not None:
+            self.precedents = [r for r in self.precedents if ruling_identity(r) != ident]
+        if row.get("ruling") and row["ruling"] not in ("advisory", "retired"):
+            self.precedents.append(row)
+
+
+def context_definitions(ctx) -> str:
+    """What every role of a node's review is shown of definitions: those that apply to the law, then
+    each definition source the record borrows from, whole, with its own."""
+    from ..model import definitions as definitions_mod
+    return definitions_block(ctx.definitions) + definitions_mod.render_sources(getattr(ctx, "sources", []), definitions_mod.SOURCES_HEADING)
+
+
+def context_haystack(ctx) -> str:
+    """The words a judge may quote: the law's, the applicable definitions', and each definition
+    source's with the definitions that apply to it."""
+    texts = [d.get("text") for d in ctx.definitions]
+    texts += [t for s in getattr(ctx, "sources", []) for t in [s.get("text")] + [d.get("text") for d in s.get("definitions", [])]]
+    return ctx.law.text + "\n" + "\n".join(_ws(t) for t in texts)
 
 
 def definitions_block(defs: list[dict]) -> str:
@@ -1305,8 +1388,10 @@ def aggregates_block(aggs: list[dict]) -> str:
         return "### Admitted aggregates\n\n(the rule reads no legal aggregate)\n"
     out = ["### Admitted aggregates (verified by the independent aggregate gate; not open to membership review)", ""]
     for a in aggs:
+        covered = "".join(f"; covered {c['class']} by {', '.join(c.get('covered_by', []))} (its label adds no membership evidence: "
+                          "every member the definition admits within it carries a covering class)" for c in a.get("covered", []))
         out.append(f"- `{a['id']}` from `{a.get('definition')}`: included {', '.join(a.get('included', [])) or '(none)'}; "
-                   f"unresolved {', '.join(a.get('unresolved', [])) or '(none)'}; every other class excluded"
+                   f"unresolved {', '.join(a.get('unresolved', [])) or '(none)'}{covered}; every other class excluded"
                    + (f"; certificate {a['certificate_digest'][:16]}" if a.get("certificate_digest") else ""))
     return "\n".join(out) + "\n"
 
@@ -1334,7 +1419,7 @@ def stage_a_defects(a: dict, haystack: str) -> list[str]:
 def stage_a_prompt(ctx: Context, rendered_case: str, case_glosses: dict[str, str]) -> str:
     return render.render("judge_case.md", {
         "law": f"### The law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n" + (f"\n{ctx.duty_block}" if ctx.duty_block else ""),
-        "definitions": definitions_block(ctx.definitions),
+        "definitions": context_definitions(ctx),
         "case": "### The case\n\n" + rendered_case + "\n",
         "contracts": validate_phase.contracts_table(case_glosses)})
 
@@ -1344,9 +1429,9 @@ def stage_a_digest(run: Run, prompt: str, ctx: Context) -> str:
 
 
 def run_stage_a(run: Run, ctx: Context, prompt: str, out_dir: Path, label: str) -> dict:
-    hay = ctx.law.text + "\n" + "\n".join(_ws(d.get("text")) for d in ctx.definitions)
+    hay = context_haystack(ctx)
     answer, errs = validate_phase._session(run, out_dir, label, prompt, check=lambda a: stage_a_defects(a, hay),
-                                           usage_label=f"{label}:{ctx.record.get('node_id', '')}")
+                                           usage_label=f"{label}:{ctx.record.get('node_id', '')}", shared=True)
     if answer is None and not errs:
         raise Deferred("stage_a", "dry run: stage A was not asked")
     if errs:
@@ -1403,7 +1488,7 @@ def word_level_item(item: dict) -> str:
 def stage_b_prompt(run: Run, ctx: Context, item: str, contracts: dict[str, str], lineage: str = "") -> str:
     return render.render("adjudicate.md", {
         "law_and_segmentation": f"### Law\n\n**{ctx.law.id}** — {ctx.law.title}\n\n{ctx.law.text}\n\nSpans:\n{ctx.seg}\n",
-        "definitions": definitions_block(ctx.definitions),
+        "definitions": context_definitions(ctx),
         "record": "### Record\n\n```json\n" + json.dumps(ctx.record, ensure_ascii=False, indent=1) + "\n```\n\n"
                   + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(ctx.record),
         "rendered": "### Rendering\n\n" + ctx.rendering + "\n",
@@ -1420,9 +1505,9 @@ def stage_b_digest(run: Run, prompt: str) -> str:
 
 
 def run_stage_b(run: Run, ctx: Context, prompt: str, allowed: set[str], out_dir: Path, label: str) -> dict:
-    hay = ctx.law.text + "\n" + "\n".join(_ws(d.get("text")) for d in ctx.definitions)
+    hay = context_haystack(ctx)
     answer, errs = validate_phase._session(run, out_dir, label, prompt, check=lambda a: stage_b_defects(a, hay, allowed),
-                                           usage_label=f"{label}:{ctx.record.get('node_id', '')}")
+                                           usage_label=f"{label}:{ctx.record.get('node_id', '')}", shared=True)
     if answer is None and not errs:
         raise Deferred("stage_b", "dry run: stage B was not asked")
     if errs:
@@ -1461,7 +1546,16 @@ def _rulings_file(run: Run) -> Path:
 def _all_rows(run: Run) -> list[dict]:
     """Every row, read strictly: a line that does not parse stops the run (`DataIntegrityError`).
     The run's own rows follow the rows it inherits (`inherited_rows`)."""
-    return inherited_rows(run) + _named(jsonl.read_strict(_rulings_file(run)))
+    return rulings_as_of(run)[1]
+
+
+def rulings_as_of(run: Run, at: int | None = None) -> tuple[int, list[dict]]:
+    """The run's rulings as they stood when its file held `at` rows (all of them when None), read in
+    one pass: `(at, the rows)`, the inherited rows first. The file is only ever appended to, so its
+    first `at` rows are what a review that began at `at` read, however many rows came after."""
+    own = jsonl.read_strict(_rulings_file(run))
+    at = len(own) if at is None else at
+    return at, inherited_rows(run) + _named(own[:at])
 
 
 _UNBOUND = re.compile(r"is not bound|is not a bound track")
@@ -1598,26 +1692,74 @@ def ruling_identity(row: dict) -> tuple | None:
     return None
 
 
-def append_ruling(run: Run, row: dict, supersedes: str | None = None) -> dict:
+def _superseding(row: dict, effective: list[dict], supersedes: str | None) -> dict:
+    """The row with the ruling it supersedes: the effective ruling of its identity, else `supersedes`."""
+    ident = ruling_identity(row)
+    if ident is not None:
+        prev = next((r for r in effective if ruling_identity(r) == ident), None)
+        row["supersedes"] = prev.get("ruling_id") if prev else supersedes
+    return row
+
+
+def append_ruling(run: Run, row: dict, supersedes: str | None = None, ruling_id: str | None = None) -> dict:
     """Append a row with a fresh `ruling_id`; an earlier ruling of the same identity is superseded by it.
     A row of a new identity may name the ruling it supersedes (`supersedes`: a concept case whose
-    recorded content changed, under a new id, supersedes the ruling of the case it came from)."""
+    recorded content changed, under a new id, supersedes the ruling of the case it came from). A row
+    given its `ruling_id` (a review's ruling, `ReviewRulings`) is appended once: when the run's file
+    holds that id, the row recorded under it is returned and nothing is written."""
     with _RULINGS_LOCK:
         row = dict(row)
-        row["ruling_id"] = _digest({"row": row, "n": len(_all_rows(run))})[:20]
-        ident = ruling_identity(row)
-        if ident is not None:
-            prev = next((r for r in effective_rows(_all_rows(run)) if ruling_identity(r) == ident), None)
-            row["supersedes"] = prev.get("ruling_id") if prev else supersedes
+        if ruling_id:
+            kept = next((r for r in jsonl.read_strict(_rulings_file(run)) if r.get("ruling_id") == ruling_id), None)
+            if kept is not None:
+                return kept
+            row["ruling_id"] = ruling_id
+        else:
+            row["ruling_id"] = _digest({"row": row, "n": len(_all_rows(run))})[:20]
+        _superseding(row, effective_rows(_all_rows(run)), supersedes)
         jsonl.append_atomic(_rulings_file(run), row)
         return row
 
 
-def precedent_rows(run: Run, key: str, duty: dict | None = None) -> list[dict]:
+class ReviewRulings:
+    """The rulings one review decides, kept in order until its outcome is saved (`finish_review`),
+    then recorded. Each has the id it is recorded under, fixed by the review's inputs, the rulings
+    it began from and the row itself, so recording them again appends nothing. What the review
+    reads of the rulings is `rows()`: the run's rulings as they stood when it began (`base`, the
+    first `at` rows of the run's file), then its own."""
+    def __init__(self, inputs: str | None, at: int, base: list[dict]):
+        self.inputs, self.at, self.base = inputs, at, base
+        self.items: list[dict] = []
+
+    def rows(self) -> list[dict]:
+        return self.base + [x["row"] for x in self.items]
+
+    def add(self, row: dict, supersedes: str | None = None) -> dict:
+        """The row as it will be recorded: its id, and the ruling it supersedes among `rows()`."""
+        row = dict(row)
+        content = _digest(row)
+        again = sum(1 for x in self.items if x["content"] == content)
+        row["ruling_id"] = _digest({"review": self.inputs, "at": self.at, "row": content, "again": again})[:20]
+        _superseding(row, effective_rows(self.rows()), supersedes)
+        self.items.append({"id": row["ruling_id"], "row": row, "supersedes": supersedes, "content": content})
+        return row
+
+    def saved(self) -> list[dict]:
+        return [{"id": x["id"], "row": x["row"], "supersedes": x["supersedes"]} for x in self.items]
+
+
+def _ruled(run: Run, rulings: ReviewRulings | None, row: dict, supersedes: str | None = None) -> dict:
+    """A ruling decided: kept with its review's rulings, or, outside a review, recorded at once."""
+    return rulings.add(row, supersedes) if rulings is not None else append_ruling(run, row, supersedes)
+
+
+def precedent_rows(run: Run, key: str, duty: dict | None = None, rows: list[dict] | None = None) -> list[dict]:
     """The effective rulings under `key` (a law, or a concept), and for a law those on the duty
-    occurrence judged (or one overlapping it): what was decided before. Taken once when a review
-    begins, so the review's own rulings never change what its judges are shown."""
-    rows = [r for r in effective_rows(_all_rows(run)) if r.get("key") == key and r.get("ruling") != "advisory"]
+    occurrence judged (or one overlapping it): what was decided before, among `rows` (the run's
+    rulings as they stand when None). A node's review takes them when it begins and adds each
+    ruling it makes (`Context.decided`), so its judges rule one after another, each shown the
+    earlier ones."""
+    rows = [r for r in effective_rows(_all_rows(run) if rows is None else rows) if r.get("key") == key and r.get("ruling") != "advisory"]
     if duty:
         rows = [r for r in rows if r.get("duty") == duty.get("id")
                 or (r.get("law_digest") == duty.get("law_digest") and overlaps(r.get("duty_ranges") or [], duty.get("ranges") or []))]
@@ -1639,25 +1781,27 @@ def precedents_block(rows: list[dict]) -> str:
 OBLIGATIONS = {None, "open", "satisfied"}
 
 
-def upheld_rows(run: Run, laws: set[str], structural: bool = False) -> list[dict]:
+def upheld_rows(run: Run, laws: set[str], structural: bool = False, rows: list[dict] | None = None) -> list[dict]:
     """The obligations on these laws' duties: effective rulings upheld on a certified case, open or
-    satisfied, oldest first (with `structural`, the upheld word-level findings, open). A case leaves
-    only when it is invalidated (it can no longer be evaluated), re-adjudicated (a judge's changed
-    input no longer upholds it) or retired; a finding when it is re-adjudicated or retired."""
+    satisfied, oldest first (with `structural`, the upheld word-level findings, open), among `rows`
+    (the run's rulings as they stand when None). A case leaves only when it is invalidated (it can
+    no longer be evaluated), re-adjudicated (a judge's changed input no longer upholds it) or
+    retired; a finding when it is re-adjudicated or retired."""
     keys = {f"law:{law}" for law in laws}
     schema = WORD_LEVEL_SCHEMA if structural else CASE_SCHEMA
-    return [r for r in effective_rows(_all_rows(run))
+    return [r for r in effective_rows(_all_rows(run) if rows is None else rows)
             if r.get("key") in keys and r.get("ruling") == "upheld" and r.get("schema") == schema
             and r.get("obligation") in (OBLIGATIONS - {"satisfied"} if structural else OBLIGATIONS)]
 
 
-def obligations_of(run: Run, n: Node, law: corpus.Law, structural: bool = False) -> list[tuple[dict, bool]]:
+def obligations_of(run: Run, n: Node, law: corpus.Law, structural: bool = False, rows: list[dict] | None = None) -> list[tuple[dict, bool]]:
     """The obligations this node answers for, each with whether it is the node's own duty (True) or a
     candidate correspondence (False: an earlier duty whose occurrence overlaps this node's, after a
     merge, a split or a changed qualifying context; judged for this duty and kept only if upheld).
-    A candidate already carried to this duty by an earlier review is not taken again."""
+    A candidate already carried to this duty by an earlier review is not taken again. Read from
+    `rows` (the run's rulings as they stand when None)."""
     duty = duty_of(n, law)
-    rows = upheld_rows(run, {law.id}, structural)
+    rows = upheld_rows(run, {law.id}, structural, rows)
     carried = {(r.get("lineage_from") or "") for r in rows if r.get("duty") == duty["id"]}
     out = []
     for r in rows:
@@ -2151,8 +2295,8 @@ def replay_obligations(run: Run, n: Node, ctx: Context, onto: ontology.Ontology,
                        out_dir: Path, pending: list | None = None, questions: list | None = None) -> Replayed:
     """Each obligation of the node's duty (an upheld case, open or satisfied; an open structural
     finding), and each candidate correspondence from an earlier duty whose occurrence overlaps it,
-    is judged again under the current Core, rule and reading, by the admission standard fresh
-    evidence meets (`admission`):
+    as the rulings stood when the review began (`ctx.rulings`), is judged again under the current
+    Core, rule and reading, by the admission standard fresh evidence meets (`admission`):
     - a case that is `invalid` (it does not decode, fails a check, or is not true) is `invalidated`:
       it leaves the obligations, and a note starting "obligation invalidated" goes to the operator;
     - a case whose evidence is `insufficient` (a window it does not cover when the history is
@@ -2166,14 +2310,21 @@ def replay_obligations(run: Run, n: Node, ctx: Context, onto: ontology.Ontology,
     A candidate correspondence is kept, under this duty and with its lineage, only when it is
     upheld or satisfied here; otherwise a note says so. A row is appended only when the state or a
     judge's digest changes, so a replay of an unchanged rule adds none. With `pending`, the rows
-    are collected there, and recorded only when the review reaches its outcome. A case that stage B
+    are collected there, and recorded only when the review reaches its outcome. Each row joins the
+    precedents the review's later judges are shown (`Context.decided`). A case that stage B
     now rules a parameter question keeps its state, and its question goes to `questions`. Raises
     `Deferred` when a judge's answer stays invalid or the certificate program fails."""
     out = Replayed()
-    record = pending.append if pending is not None else (lambda row: append_ruling(run, row))
+
+    def record(row: dict) -> None:
+        if pending is not None:
+            pending.append(row)
+        else:
+            append_ruling(run, row)
+        ctx.decided(row)
     binders = [b["name"] for b in n.get("binders", [])]
     divs, by_k = {}, {}
-    for r, own in obligations_of(run, n, ctx.law):
+    for r, own in obligations_of(run, n, ctx.law, False, getattr(ctx, "rulings", None)):
         d, why = _to_node(r, binders)
         if d is None:
             if own:
@@ -2248,7 +2399,7 @@ def replay_obligations(run: Run, n: Node, ctx: Context, onto: ontology.Ontology,
         else:
             out.notes.append(f"case {str(r.get('case_id'))[:12]} of the earlier duty overlapping `{n.id}` is not upheld for this duty "
                              f"({j.route}); it is not carried over — {j.line[:200]}")
-    for i, (r, own) in enumerate(obligations_of(run, n, ctx.law, structural=True), 1):
+    for i, (r, own) in enumerate(obligations_of(run, n, ctx.law, True, getattr(ctx, "rulings", None)), 1):
         item = _words_span(n, ctx.law, r.get("item_data") or {}, r.get("words_at"))
         bad = word_level_defects(n, ctx.law, item)
         if bad:
@@ -2311,7 +2462,9 @@ def rule_aggregate_ids(rule_json: dict | None, concepts: dict[str, dict] | None 
 
 
 def build_context(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, reading: Reading, rule_json: dict,
-                  coder_narrowings: list[dict]) -> Context:
+                  coder_narrowings: list[dict], rulings: list[dict] | None = None) -> Context:
+    """What the judges of a node's review are shown, its precedents taken from `rulings` (the run's
+    rulings as the review began; as they stand when None)."""
     from ..model import definitions as definitions_mod
     from . import aggregate as aggregate_phase
     glosses = validate_phase.glosses_for(n, onto, run)
@@ -2329,7 +2482,8 @@ def build_context(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology, r
     duty = duty_of(n, law)
     return Context(law, seg, definitions_mod.applicable(run, law.id), record, rendering, glosses, params, aggs,
                    definitions_mod.precedence_hash(run), duty=duty, duty_block=duty_block(n, law),
-                   precedents=precedent_rows(run, f"law:{law.id}", duty), not_atoms=ontology.not_atoms_text(onto))
+                   precedents=precedent_rows(run, f"law:{law.id}", duty, rulings), not_atoms=ontology.not_atoms_text(onto),
+                   sources=definitions_mod.source_records(run, n.definition_sources()), rulings=rulings)
 
 
 def evidence_block(items: list[dict]) -> str:
@@ -2340,7 +2494,9 @@ def evidence_block(items: list[dict]) -> str:
            "Each case below was upheld against an earlier rule of this duty and stays an obligation, but its evidence no longer "
            "suffices to judge this rule. For each, submit a divergence with `\"extends\": \"<case id>\"` whose trace extends this "
            "one (earlier scenes, denser scenes, the missing observations) and whose case states the same facts, grounding the "
-           "node's binders. The law's verdict is judged again on what you submit; nothing is assumed.", ""]
+           "node's binders. The law's verdict is judged again on what you submit; nothing is assumed. An extension on which this rule "
+           "gives the verdict you claim for the law is no advisory: it is judged again, and recorded as satisfied where the "
+           "law's verdict is unchanged.", ""]
     for x in items:
         out += [f"### Case `{x['case_id']}`", "", _ws(x.get("case_rendered")), "", f"What it lacks: {x.get('remedy')}", "",
                 "Its trace: ```json " + json.dumps(x.get("trace"), ensure_ascii=False)[:6000] + "```", ""]
@@ -2358,19 +2514,32 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     (stage `reviewer`) when a challenge could not be evaluated or a pass gave no usable answer,
     (stage `evidence`) when an obligation's evidence was not extended; else
     `proceed_with_question` or `accepted`. Operator questions are carried on every outcome. A case
-    whose execution refutes the reviewer is an advisory. Raises `SessionUnavailable` when a session
-    could not be launched."""
+    whose execution refutes the reviewer is an advisory. The review reads the rulings as they stood
+    when it began, and its outcome is saved with its rulings before they are recorded
+    (`resume_review`, `finish_review`), so a review stopped at any point and resumed on the same
+    inputs gives the same outcome, asks no judge twice and records each ruling once. Raises
+    `SessionUnavailable` when a session could not be launched."""
     if not enabled(run):
         if run.opts.dry_run:
             return ReviewOutcome("accepted", advisories=["dry run"])
         raise RuntimeError("a reviewer_model is required for a rule review")
     if rule_json is None:
         return ReviewOutcome("returned", reasons=["the gate exported no rule to review"])
-    try:
-        ctx = build_context(run, n, law, onto, reading, rule_json, coder_narrowings)
-    except render_formula.Unrendered as e:
-        raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
+    built: dict = {}
+
+    def inputs_of(rows: list[dict]) -> str | None:
+        try:
+            built["ctx"] = build_context(run, n, law, onto, reading, rule_json, coder_narrowings, rows)
+        except render_formula.Unrendered as e:
+            raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
+        return review_inputs(run, n, law, reading, rule_json, built["ctx"], rows)
     out_dir.mkdir(parents=True, exist_ok=True)
+    rulings, decided = resume_review(run, out_dir, inputs_of)
+    if decided is not None:
+        return outcome_of(decided)
+    ctx = built["ctx"]
+    ctx.rulings = rulings.base
+    done = lambda data, outcome: finish_review(run, out_dir, rulings, data, outcome, outcome.status != "deferred")
     (out_dir / "rendered_rule.md").write_text(ctx.rendering, encoding="utf-8")
     rj = rule_json or {}
     need = history_of([b.get("cls") for b in rj.get("binders", [])] + [rj.get("applicability"), rj.get("obligation")],
@@ -2380,16 +2549,14 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     try:
         rep = replay_obligations(run, n, ctx, onto, reading, need, out_dir, pending, replay_questions)
     except Deferred as e:
-        return ReviewOutcome("deferred", reasons=[f"replay of the obligations: {e}"], defer_stage=e.stage, questions=replay_questions)
-
-    def commit() -> None:                                 # the replay's states, recorded only with a final outcome
+        return done({"deferred": e.why}, ReviewOutcome("deferred", reasons=[f"replay of the obligations: {e}"], defer_stage=e.stage,
+                                                       questions=replay_questions))
+    if rep.reasons:                                       # the replay's states, recorded only with a final outcome
         for row in pending:
-            append_ruling(run, row)
-    if rep.reasons:
-        commit()
-        _write_outcome(out_dir, {"replayed": rep.reasons, "notes": rep.notes})
-        return ReviewOutcome("returned", reasons=rep.reasons, advisories=rep.notes, keys=sorted(set(rep.keys)),
-                             questions=replay_questions, satisfied=sorted(set(rep.satisfied)))
+            rulings.add(row)
+        return done({"replayed": rep.reasons, "notes": rep.notes},
+                    ReviewOutcome("returned", reasons=rep.reasons, advisories=rep.notes, keys=sorted(set(rep.keys)),
+                                  questions=replay_questions, satisfied=sorted(set(rep.satisfied))))
     binders = [b["name"] for b in n.get("binders", [])]
     blocks = {
         "law_and_segmentation": f"### Law\n\n**{law.id}** — {law.title}\n\n{law.text}\n\nSpans:\n{ctx.seg}\n",
@@ -2401,33 +2568,46 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
         "parameters": _parameters_block(reading, set(n.params())) + (f"\nHistory: {history}.\n" if history else ""),
         "trace_format": trace_format_block(),
         "case_language": surface.case_language(),
-        "definitions": definitions_block(ctx.definitions),
+        "definitions": context_definitions(ctx),
         "case_vocabulary": surface.case_vocabulary(onto),
         "not_atoms": ctx.not_atoms,
-        "obligations": evidence_block(rep.evidence),
         "max_divergences": str(run.opts.max_divergences),
         "review_checks": str(run.opts.review_checks),
         "review_submissions": str(run.opts.review_submissions),
     }
-    prompt = render.render("review_code.md", blocks)
     windows = window_params([p for p in reading.data.get("params", []) if p.get("name") in set(n.params())])
     cap = run.opts.max_divergences
     n_passes = max(1, int(run.opts.review_passes or 1))
+    by_case = {r.get("case_id"): r for r, _own in obligations_of(run, n, law, False, rulings.base)}
+    extendable = {x["case_id"]: by_case[x["case_id"]] for x in rep.evidence if x["case_id"] in by_case}
     passes = [BehaviourTools(run, n, law, reading, binders, windows, history, out_dir / f"pass{k}",
-                             run.opts.review_checks, run.opts.review_submissions, need)
+                             run.opts.review_checks, run.opts.review_submissions, need, extendable)
               for k in range(1, n_passes + 1)]
-    (out_dir / "review_behaviour_prompt.md").write_text(prompt, encoding="utf-8")
+
+    def prompt_of(k: int) -> str:
+        """Pass `k`'s prompt, once the passes before it have ended: what they filed is shown as
+        already filed, and a case one of them extended is no longer a case to extend (for its tool too)."""
+        filed = [x for t in passes[:k - 1] for x in filed_divergences(t, cap)]
+        taken = {d.get("extends") for d, _c in filed if isinstance(d.get("extends"), str)}
+        passes[k - 1].extendable = {cid: p for cid, p in extendable.items() if cid not in taken}
+        text = render.render("review_code.md", {**blocks, "obligations": evidence_block([x for x in rep.evidence if x["case_id"] not in taken]),
+                                                "filed": filed_block(filed)})
+        (out_dir / ("review_behaviour_prompt.md" if k == 1 else f"review_behaviour_prompt_p{k}.md")).write_text(text, encoding="utf-8")
+        return text
+    prompt_of(1)
     if run.opts.dry_run:
-        return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])
+        return finish_review(run, out_dir, rulings, {}, ReviewOutcome("accepted", advisories=["review skipped (dry run)"]), False)
     try:
-        run_passes(run, n, prompt, out_dir, passes, context=_pass_context(run, n, reading, rule_json))
+        run_passes(run, n, prompt_of, out_dir, passes, context=_pass_context(run, n, reading, rule_json))
         answer, certs, pass_notes, pass_summary, errs, unusable_passes = join_passes(passes, law, binders, cap)
     except HarnessFailure as e:
-        return ReviewOutcome("deferred", reasons=[f"the certificate harness: {e}"], defer_stage="certificate", questions=replay_questions)
+        return done({"deferred": str(e)}, ReviewOutcome("deferred", reasons=[f"the certificate harness: {e}"], defer_stage="certificate",
+                                                        questions=replay_questions))
     attempts = [a for t in passes for a in t.attempts]
     if answer is None:
-        return ReviewOutcome("deferred", reasons=["behaviour review: no pass submitted a usable answer — " + "; ".join(pass_notes)[:600]],
-                             defer_stage="reviewer", questions=replay_questions)
+        why = "behaviour review: no pass submitted a usable answer — " + "; ".join(pass_notes)[:600]
+        return done({"deferred": why, "passes": pass_summary}, ReviewOutcome("deferred", reasons=[why], defer_stage="reviewer",
+                                                                            questions=replay_questions))
     divs = answer.get("divergences") or []
     advisories = list(rep.notes) + [f"behaviour review, {x}" for x in pass_notes] + [str(x) for x in answer.get("advisories", [])]
     for g in gap_candidate_lines(answer.get("gap_candidates", [])):
@@ -2437,36 +2617,27 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     upheld, keys, questions, judged_rows, unusable, status_of = [], [], list(replay_questions), [], [], {}
     unusable += [f"pass {k}: {why}" for k, why in unusable_passes]
     extended: dict[str, dict] = {x["case_id"]: x for x in rep.evidence}
-    by_case = {r.get("case_id"): r for r, _own in obligations_of(run, n, law)}
     if answer.get("verdict") == "return" and not divs:
         unusable.append("the reviewer returned the rule with no divergence")
     deferred: Deferred | None = None
     try:
         for k, d in enumerate(divs, 1):
             status_of[k] = "not evaluated, unverified"
-            schema = divergence_schema_defects(k, d, law.text, binders)
-            if not schema and "unstatable" in d:
+            # a case already extended by an earlier divergence of the answer is no longer one to extend
+            s = divergence_status(k, d, lambda: certs.get(k), law.text, binders,
+                                  {cid: p for cid, p in extendable.items() if cid in extended}, windows, history, need)
+            if s.status == "unstatable":
                 advisories.append(f"gap candidate: divergence {k} is unstatable in the vocabulary — \"{_ws(d.get('unstatable'))[:240]}\" "
                                   f"(law: \"{_ws(d.get('law_words'))[:160]}\")")
                 continue
-            c = certs.get(k)
-            bad = schema or (cert_unusable(k, d, c, windows, history, need) if c is not None else [f"divergence {k}: not certified"])
-            if not bad and c.get("rule_result") is None:
-                bad = [f"divergence {k}: the certificate printed no verdict of the rule"]
-            if bad:
-                unusable.append("; ".join(bad)[:600])
+            if s.status in ("schema defects", "unusable"):
+                unusable.append("; ".join(s.messages)[:600])
                 continue
-            prior = by_case.get(d.get("extends")) if isinstance(d.get("extends"), str) and d.get("extends") in extended else None
-            if prior is not None:                         # an extension counts only where it continues the recorded evidence
-                broken = node_extension_defects(prior, d, c, binders)
-                if broken:
-                    unusable.append(f"divergence {k} extends case {d['extends'][:12]} but does not continue it: " + "; ".join(broken)[:500])
-                    continue
-            refuted = cert_refutations(k, d, c)
-            if refuted and prior is None:
+            if s.status == "refuted":
                 status_of[k] = "refuted by execution"
-                advisories.append(f"divergence {k}: refuted by execution — " + "; ".join(refuted)[:400])
+                advisories.append(f"divergence {k}: refuted by execution — " + "; ".join(s.messages)[:400])
                 continue
+            c, prior = certs[k], s.prior
             j = judge_divergence(run, n, ctx, onto, d, c, out_dir, f"divergence_{k}",
                                  lineage=(prior.get("lineage") or prior.get("case_id")) if prior else "")
             status_of[k] = f"certified, judged {j.route}"
@@ -2480,9 +2651,11 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
                 j.key = j.row["outcome"]
                 pending.append({**prior, "iteration": run.iteration, "obligation": "extended", "route": "extended",
                                 "reason": f"its evidence was extended as case {j.row['case_id'][:12]}"})
+                ctx.decided(pending[-1])
                 if state == "satisfied":
                     rep.satisfied.append(j.key)
             judged_rows.append(j)
+            ctx.decided(j.row)
             if j.route == "upheld":
                 upheld.append(j.line); keys.append(j.key)
             elif j.route == "parameter_question":
@@ -2496,6 +2669,7 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
                 continue
             j = judge_word_level(run, n, ctx, item, out_dir, f"word_level_{i}")
             judged_rows.append(j)
+            ctx.decided(j.row)
             if j.route == "upheld":
                 upheld.append(j.line); keys.append(j.key)
             else:
@@ -2503,33 +2677,34 @@ def review_behaviour(run: Run, n: Node, law: corpus.Law, onto: ontology.Ontology
     except Deferred as e:
         deferred = e
     for j in judged_rows:                                 # what was decided stands, whatever failed after it
-        append_ruling(run, j.row)
+        rulings.add(j.row)
+    if upheld or (deferred is None and not unusable):     # the replay's states, recorded only with a final outcome
+        for row in pending:
+            rulings.add(row)
     notes = param_notes(n, reading, answer, status_of, run.iteration)
     missing = [f"case {cid[:12]}: its evidence was not extended ({_ws(x.get('remedy'))[:200]})" for cid, x in extended.items()]
-    _write_outcome(out_dir, {"reviewer_verdict": answer.get("verdict"), "upheld": upheld, "questions": questions,
-                             "unusable": unusable, "evidence_missing": missing, "advisories": advisories, "schema_defects": errs,
-                             "attempts": attempts, "param_notes": notes, "passes": pass_summary,
-                             "deferred": deferred.why if deferred else None})
+    data = {"reviewer_verdict": answer.get("verdict"), "upheld": upheld, "questions": questions,
+            "unusable": unusable, "evidence_missing": missing, "advisories": advisories, "schema_defects": errs,
+            "attempts": attempts, "param_notes": notes, "passes": pass_summary,
+            "deferred": deferred.why if deferred else None}
     if upheld:
-        commit()
-        return ReviewOutcome("returned", reasons=upheld, advisories=advisories + ([f"pending: {deferred.why}"] if deferred else []),
-                             keys=sorted(set(keys)), questions=questions, param_notes=notes, satisfied=sorted(set(rep.satisfied)))
+        return done(data, ReviewOutcome("returned", reasons=upheld, advisories=advisories + ([f"pending: {deferred.why}"] if deferred else []),
+                                        keys=sorted(set(keys)), questions=questions, param_notes=notes, satisfied=sorted(set(rep.satisfied))))
     if deferred is not None:
-        return ReviewOutcome("deferred", reasons=[str(deferred.why)], advisories=advisories, defer_stage=deferred.stage,
-                             questions=questions, param_notes=notes)
-    if not unusable:
-        commit()
+        return done(data, ReviewOutcome("deferred", reasons=[str(deferred.why)], advisories=advisories, defer_stage=deferred.stage,
+                                        questions=questions, param_notes=notes))
     if unusable:
-        return ReviewOutcome("deferred", reasons=[f"behaviour review: {len(unusable)} challenge(s) could not be evaluated: " + " | ".join(unusable)[:900]],
-                             advisories=advisories, defer_stage="reviewer", questions=questions, param_notes=notes)
+        return done(data, ReviewOutcome("deferred", reasons=[f"behaviour review: {len(unusable)} challenge(s) could not be evaluated: "
+                                                             + " | ".join(unusable)[:900]],
+                                        advisories=advisories, defer_stage="reviewer", questions=questions, param_notes=notes))
     if missing:
-        return ReviewOutcome("deferred", reasons=["obligations whose evidence the reviewer did not extend: " + " | ".join(missing)[:900]],
-                             advisories=advisories, defer_stage="evidence", questions=questions, param_notes=notes,
-                             satisfied=sorted(set(rep.satisfied)))
+        return done(data, ReviewOutcome("deferred", reasons=["obligations whose evidence the reviewer did not extend: " + " | ".join(missing)[:900]],
+                                        advisories=advisories, defer_stage="evidence", questions=questions, param_notes=notes,
+                                        satisfied=sorted(set(rep.satisfied))))
     if questions:
-        return ReviewOutcome("proceed_with_question", advisories=advisories, questions=questions, param_notes=notes,
-                             satisfied=sorted(set(rep.satisfied)))
-    return ReviewOutcome("accepted", advisories=advisories, param_notes=notes, satisfied=sorted(set(rep.satisfied)))
+        return done(data, ReviewOutcome("proceed_with_question", advisories=advisories, questions=questions, param_notes=notes,
+                                        satisfied=sorted(set(rep.satisfied))))
+    return done(data, ReviewOutcome("accepted", advisories=advisories, param_notes=notes, satisfied=sorted(set(rep.satisfied))))
 
 
 def pass_digest(run: Run, n: Node, prompt: str, k: int, context: str) -> str:
@@ -2564,41 +2739,25 @@ def restore_pass(t, digest: str) -> bool:
     return True
 
 
-def run_passes(run: Run, n: Node, prompt: str, out_dir: Path, passes: list, context: str | None = None) -> None:
-    """The independent reviewer sessions of one rule review, run at the same time: the same prompt,
-    each its own tool state, evidence directory (`pass<k>/`) and stream (`review_behaviour_p<k>`).
-    With a `context` (the rule as built and its gate's context), a pass that submitted keeps its
-    submission with the digest of its inputs, and a pass that already submitted on the same inputs
-    is not run again, so a review interrupted after one pass ended reruns only the others. A budget pause in either pauses the run and a session that never
-    ran makes the review one that never ran, as for a single session; a certificate program that
-    does not run defers at `certificate`. Each is raised once every pass has ended."""
-    from concurrent.futures import ThreadPoolExecutor
-    from ..store.budget import BudgetPaused
-    digests = {k: pass_digest(run, n, prompt, k, context) for k in range(1, len(passes) + 1)} if context else {}
-
-    def one(k: int, t) -> None:
-        if digests and restore_pass(t, digests[k]):
-            return
+def run_passes(run: Run, n: Node, prompt_of, out_dir: Path, passes: list, context: str | None = None) -> None:
+    """The reviewer sessions of one rule review, one after another: pass `k` is asked `prompt_of(k)`,
+    taken once the passes before it have ended, and has its own tool state, evidence directory
+    (`pass<k>/`) and stream (`review_behaviour_p<k>`). With a `context` (the rule as built and its
+    gate's context), a pass that submitted keeps its submission with the digest of its inputs, its
+    prompt among them, and a pass that already submitted on the same inputs is not run again, so a
+    review interrupted after a pass ended reruns only the later ones. A budget pause, a session that
+    never ran or a certificate program that does not run is raised at once: no later pass runs."""
+    for k, t in enumerate(passes, 1):
+        prompt = prompt_of(k)
+        digest = pass_digest(run, n, prompt, k, context) if context else None
+        if digest and restore_pass(t, digest):
+            continue
         session.run_tools(prompt, out_dir, run.opts, t, label=f"review_behaviour_p{k}",
                           effort=run.opts.review_effort, model=run.opts.reviewer_model, subject=n.id)
-        if digests and t.done and isinstance(t.answer, dict):
+        if digest and t.done and isinstance(t.answer, dict):
             t.out_dir.mkdir(parents=True, exist_ok=True)
-            jsonl.write_atomic(t.out_dir / "answer.json", json.dumps({"digest": digests[k], "answer": t.answer, "attempts": t.attempts},
+            jsonl.write_atomic(t.out_dir / "answer.json", json.dumps({"digest": digest, "answer": t.answer, "attempts": t.attempts},
                                                                      ensure_ascii=False, indent=1))
-    with ThreadPoolExecutor(max_workers=len(passes)) as ex:
-        futures = [ex.submit(one, k, t) for k, t in enumerate(passes, 1)]
-        errors = []
-        for f in futures:
-            try:
-                f.result()
-            except BaseException as e:                       # every pass ends before any is acted on
-                errors.append(e)
-    for kind in (BudgetPaused, session.SessionUnavailable, HarnessFailure):
-        for e in errors:
-            if isinstance(e, kind):
-                raise e
-    if errors:
-        raise errors[0]
 
 
 def _answer_of(t) -> dict | None:
@@ -2612,6 +2771,50 @@ def _answer_of(t) -> dict | None:
     return a if isinstance(a, dict) else None
 
 
+def pass_answer(t, cap: int | None) -> tuple:
+    """A pass's answer and its divergences, with why the pass is unusable: `why` when it submitted
+    nothing or no review, `broken` when its review returned the rule with no divergence or exceeds
+    the cap (its items kept as evidence)."""
+    a = _answer_of(t)
+    divs = a.get("divergences") if isinstance(a, dict) else None
+    why = ("submitted no answer" if t.answer is None else
+           "submitted an answer that is not a review" if a is None or not _member(a.get("verdict"), VERDICTS) or not isinstance(divs, list) else None)
+    broken = None if why else ("returned the rule with no divergence" if a.get("verdict") == "return" and not divs else
+                               divergence_limit_defect(divs, cap))
+    return a, divs, why, broken
+
+
+def filed_divergences(t, cap: int | None) -> list[tuple[dict, dict]]:
+    """What a pass filed: each divergence of its usable answer that the review will judge (status
+    `certifiable`), with its certificate record."""
+    a, divs, why, broken = pass_answer(t, cap)
+    if why or broken:
+        return []
+    out = []
+    for k, d in enumerate(divs, 1):
+        where = t.out_dir / "final" / f"d{k}"
+        if t.status(k, d, where).status == "certifiable":
+            out.append((d, t.cert(d, where)))
+    return out
+
+
+def filed_block(filed: list[tuple[dict, dict]]) -> str:
+    """The divergences earlier sessions of the review filed, shown to a later one as already filed."""
+    if not filed:
+        return ""
+    out = ["## Already filed", "",
+           "An earlier session of this review filed the divergences below; each will be judged.", ""]
+    for i, (d, c) in enumerate(filed, 1):
+        ext = f", extending case `{d['extends']}`" if isinstance(d.get("extends"), str) else ""
+        out += [f"### Filed {i} ({d.get('kind')}{ext})", "",
+                f"Situation: {_ws(d.get('situation'))}", "",
+                f"The law's words: \"{_ws(d.get('law_words'))}\"; the verdict claimed for the law: {d.get('lawful_verdict')}; "
+                f"the rule's verdict at t={d.get('at')} ms: {((c or {}).get('rule_result') or {}).get('verdict')}.", "",
+                "Its case: ```json " + json.dumps({"case": d.get("case"), "entities": d.get("entities"), "grounding": d.get("grounding")},
+                                                  ensure_ascii=False) + "```", ""]
+    return "\n".join(out) + "\n"
+
+
 def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | None) -> tuple:
     """The review's answer, joined from its passes: `(answer, certificates by number, notes on the
     passes, a summary per pass, the schema defects of the usable answers, the passes whose answer
@@ -2620,18 +2823,14 @@ def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | No
     cap, makes the review unusable, every item kept as evidence: an answer is never truncated. The
     usable passes' divergences are joined in pass order. Only a divergence that can be judged
     (certified, its case true, the rule's verdict decided) is ever merged, and only with one from
-    another pass whose canonical case, entities, `at`, grounding, rule verdict and claimed lawful
-    verdict are the same: it is judged once. Every other divergence is kept as submitted.
+    another pass of the same case (`case_id`: its trace, case, entities, `at` and grounding), rule
+    verdict, claimed lawful verdict and `extends`: it is the same evidence, judged once. A
+    divergence on another trace is its own evidence. Every other divergence is kept as submitted.
     Advisories and gap candidates are joined, exact repeats dropped; the verdict is `return` when
     any usable pass returned. With no usable pass the answer is None."""
     usable, notes, summary, errs, unusable = [], [], [], [], []
     for k, t in enumerate(passes, 1):
-        a = _answer_of(t)
-        divs = a.get("divergences") if isinstance(a, dict) else None
-        why = ("submitted no answer" if t.answer is None else
-               "submitted an answer that is not a review" if a is None or not _member(a.get("verdict"), VERDICTS) or not isinstance(divs, list) else None)
-        broken = None if why else ("returned the rule with no divergence" if a.get("verdict") == "return" and not divs else
-                                   divergence_limit_defect(divs, cap))
+        a, divs, why, broken = pass_answer(t, cap)
         summary.append({"pass": k, "submitted": t.answer is not None, "verdict": (a or {}).get("verdict") if isinstance(a, dict) else None,
                         "divergences": len(divs) if isinstance(divs, list) else None, "attempts": t.attempts, "unusable": why or broken})
         if why:
@@ -2655,9 +2854,9 @@ def join_passes(passes: list, law: corpus.Law, binders: list[str], cap: int | No
             key = None
             if isinstance(d, dict) and c is not None and not divergence_schema_defects(local, d, law.text, binders) \
                     and not t.judgeable(local, d, c):
-                key = _canon({"case": c.get("canonical_case"), "entities": d.get("entities"), "at": d.get("at"),
-                              "grounding": d.get("grounding"), "rule": (c.get("rule_result") or {}).get("verdict"),
-                              "lawful": d.get("lawful_verdict"), "extends": d.get("extends")})
+                key = _canon({"case_id": case_id(law, d, canonical_case(d, c.get("canonical_case"), binders)),
+                              "rule": (c.get("rule_result") or {}).get("verdict"), "lawful": d.get("lawful_verdict"),
+                              "extends": d.get("extends")})
                 if key in seen and seen[key] != k:              # the same judgeable challenge from another pass: judged once
                     continue
                 seen.setdefault(key, k)
@@ -2697,8 +2896,98 @@ def questioned_parameters(params: list[dict], reason) -> list[str]:
 
 
 def _write_outcome(out_dir: Path, data: dict) -> None:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "review_outcome.json").write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    jsonl.write_atomic(out_dir / "review_outcome.json", json.dumps(data, ensure_ascii=False, indent=1))
+
+
+#: The prompt files a node's review renders, and those a concept's review renders.
+NODE_REVIEW_PROMPTS = ("review_code.md", "judge_case.md", "adjudicate.md")
+CONCEPT_REVIEW_PROMPTS = ("review_concept.md", "adjudicate_concept.md", "recheck_concept.md")
+
+
+def _inputs_digest(obj) -> str:
+    return hashlib.sha256(json.dumps(obj, sort_keys=True, ensure_ascii=False, default=str).encode("utf-8")).hexdigest()
+
+
+def review_settings(run: Run, prompts: tuple[str, ...]) -> dict:
+    """What a review's outcome depends on besides its record and the rulings: the iteration its
+    rulings are recorded under, the prompt files it renders, and its sessions' models, efforts and
+    limits."""
+    o = run.opts
+    return {"iteration": run.iteration, "prompts": {t: _digest((paths.PROMPTS / t).read_text(encoding="utf-8")) for t in prompts},
+            "opts": {k: getattr(o, k, None) for k in ("model", "judge_effort", "reviewer_model", "review_effort", "review_passes",
+                                                      "review_checks", "review_submissions", "max_divergences")}}
+
+
+def review_inputs(run: Run, n: Node, law: corpus.Law, reading: Reading, rule_json: dict | None, ctx: Context, rows: list[dict]) -> str | None:
+    """The identity of what a node's review decides on: the law, the record and the rule as built,
+    the context its gate ran on (`_pass_context`), everything its judges are shown but the rulings,
+    the reading, the operator's decisions on the gaps the record cites, the law's rulings as the
+    review began (`rows`), and `review_settings`. None when the gate's context cannot be computed:
+    then nothing the review saved is taken back."""
+    context = _pass_context(run, n, reading, rule_json)
+    if context is None:
+        return None
+    return _inputs_digest({"law": [law.id, law.title, law.text], "record": n.raw, "rule": rule_json, "context": context,
+                           "shown": {k: v for k, v in vars(ctx).items() if k not in ("law", "precedents", "rulings")},
+                           "reading": reading.data, "gaps": GapLedger.for_run(paths.GAPS_DIR, run).cited_block(ctx.record),
+                           "rulings": [r for r in effective_rows(rows) if r.get("key") == f"law:{law.id}"],
+                           **review_settings(run, NODE_REVIEW_PROMPTS)})
+
+
+def saved_review(out_dir: Path) -> dict | None:
+    """The record a review left in `out_dir` (`review_outcome.json`): its inputs, the number of the
+    run's rulings it began from and, once it reached an outcome, the outcome (`final` unless it was
+    deferred) and its rulings. None for anything else."""
+    try:
+        saved = json.loads((out_dir / "review_outcome.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(saved, dict) or "inputs" not in saved or not isinstance(saved.get("rulings_at"), int):
+        return None
+    return saved
+
+
+def record_rows(run: Run, saved: dict) -> None:
+    """The rulings a saved review decided, recorded in order, each once (`append_ruling` by its id)."""
+    for x in saved.get("rows") or []:
+        append_ruling(run, x["row"], x.get("supersedes"), ruling_id=x["id"])
+
+
+def resume_review(run: Run, out_dir: Path, inputs_of) -> tuple[ReviewRulings, dict | None]:
+    """Where a review begins. A review stopped before the loop applied its outcome left its record
+    in `out_dir` (`saved_review`): its rulings are recorded first, each once, whatever follows.
+    When the record's inputs are this review's (`inputs_of`, computed on the run's rulings as they
+    stood when it began, so its own rulings change nothing), the review goes on from it: a final
+    outcome is returned as it was decided, without a judge; any other (deferred, or not reached) is
+    decided again on the same rulings, every judgment already given taken back by its digest.
+    Otherwise the review begins on the rulings as they stand, its inputs saved before any session.
+    Returns the review's rulings and the final outcome, if any."""
+    saved = saved_review(out_dir)
+    if saved is not None:
+        at, rows = rulings_as_of(run, saved["rulings_at"])
+        inputs = inputs_of(rows)
+        record_rows(run, saved)
+        if inputs is not None and inputs == saved["inputs"]:
+            return ReviewRulings(inputs, at, rows), (saved.get("outcome") if saved.get("final") else None)
+    at, rows = rulings_as_of(run)
+    inputs = inputs_of(rows)
+    _write_outcome(out_dir, {"inputs": inputs, "rulings_at": at})
+    return ReviewRulings(inputs, at, rows), None
+
+
+def finish_review(run: Run, out_dir: Path, rulings: ReviewRulings, data: dict, outcome, final: bool):
+    """A review's outcome: saved whole with its inputs and its rulings in one write, then its
+    rulings recorded; a review stopped between the two is completed from the record
+    (`resume_review`). A deferred outcome is not `final`: it is decided again."""
+    saved = {**data, "inputs": rulings.inputs, "rulings_at": rulings.at, "final": final, "outcome": asdict(outcome),
+             "rows": rulings.saved()}
+    _write_outcome(out_dir, saved)
+    record_rows(run, saved)
+    return outcome
+
+
+def outcome_of(saved: dict) -> ReviewOutcome:
+    return ReviewOutcome(**{**saved, "param_notes": [tuple(x) for x in saved.get("param_notes") or []]})
 
 
 def gap_candidate_lines(gaps: list) -> list[str]:
@@ -3197,10 +3486,12 @@ def executed_facts(d: dict, read_paths: list[str] | None = None, occupancy: dict
 
 
 def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict], out_dir: Path, body_digest: str = "",
-                       label: str = "adjudicate") -> list[tuple[dict, str, str]]:
+                       label: str = "adjudicate", rulings: ReviewRulings | None = None) -> list[tuple[dict, str, str]]:
     """Each confirmed divergence and `not_general` item of a concept with its ruling. An item left
     unruled, or ruled with a defect the adjudicator keeps after the re-ask, is never upheld by
-    default: the adjudication raises `Deferred` (`concept_adjudication`)."""
+    default: the adjudication raises `Deferred` (`concept_adjudication`). Within a review, the
+    precedents and the rulings are its own (`rulings`)."""
+    known = rulings.rows() if rulings is not None else None
     listing = "\n\n".join(
         (f"{k}. ({i['div'].get('kind')}) {_ws(i['div'].get('situation'))}" + (" [an item upheld before, run again]" if i.get("replay_of") else "") + "\n"
          f"   the contract's words, per the reviewer: \"{_ws(i['div'].get('contract_words'))}\"\n"
@@ -3217,7 +3508,7 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
         for k, i in enumerate(items, 1))
     key = f"concept:{rec.id}"
     prompt = render.render("adjudicate_concept.md", {**{k: blocks[k] for k in ("contract", "record", "rendered", "contracts")},
-                                                      "items": "### Items\n\n" + listing + "\n", "precedents": precedents_block(precedent_rows(run, key))})
+                                                      "items": "### Items\n\n" + listing + "\n", "precedents": precedents_block(precedent_rows(run, key, None, known))})
     hay = "\n".join(blocks[k] for k in ("contract", "record", "rendered", "contracts")) + "\n" + "\n".join(_strings(rec.raw))
 
     def defects(a: dict) -> list[str]:
@@ -3251,7 +3542,7 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
     for i, ruling, why in out:
         d = i["div"]
         if d.get("kind") == "not_general":                # a structural finding: an obligation by its identity, re-adjudicated later
-            root = i.get("finding_root") or concept_lineage(run, rec)[-1]
+            root = i.get("finding_root") or concept_lineage(run, rec, known)[-1]
             replay = {"schema": CONCEPT_STRUCTURAL_SCHEMA, "finding_root": root,
                       "finding_id": i.get("replay_of") or concept_finding_id(root, rec, d.get("words"), blocks.get("rendered", "")),
                       "words": d.get("words"), "why": d.get("why"), "contract_digest": contract_digest(rec),
@@ -3269,8 +3560,8 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
                 replay["lineage"] = i["lineage_of"].get("case_id")
             if i.get("recheck"):
                 replay["recheck"] = i["recheck"]
-        append_ruling(run, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
-                            "ruling": ruling, "reason": _ws(why)[:600], **replay}, supersedes=(i.get("lineage_of") or {}).get("ruling_id"))
+        _ruled(run, rulings, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
+                              "ruling": ruling, "reason": _ws(why)[:600], **replay}, (i.get("lineage_of") or {}).get("ruling_id"))
     return out
 
 
@@ -3352,15 +3643,16 @@ CONCEPT_STRUCTURAL_SCHEMA = "concept_structural/1"
 _LEGACY_ITEM = re.compile(r'^not general: "(.*)" — (.*)$', re.S)
 
 
-def concept_lineage(run: Run, rec) -> list[str]:
+def concept_lineage(run: Run, rec, rows: list[dict] | None = None) -> list[str]:
     """The concept and every version it supersedes, newest first: through the accepted records (the
-    run's and its base chain's) and, where a version is not among them, through the rulings that
-    name its predecessor. A cycle stops the walk."""
+    run's and its base chain's) and, where a version is not among them, through the rulings (`rows`;
+    the run's as they stand when None) that name its predecessor. A cycle stops the walk."""
     try:
         records = run.all_concepts()
     except AttributeError:
         records = {}
-    preds = {r.get("subject"): r.get("predecessor") for r in _all_rows(run) if r.get("predecessor") and r.get("subject")}
+    preds = {r.get("subject"): r.get("predecessor") for r in (_all_rows(run) if rows is None else rows)
+             if r.get("predecessor") and r.get("subject")}
     out, cur = [rec.id], rec.get("supersedes")
     while isinstance(cur, str) and cur and cur not in out:
         out.append(cur)
@@ -3609,7 +3901,7 @@ def renewed_content(rec, old: dict, d: dict, claim: dict, quote: str) -> dict:
 
 
 def recheck_case(run: Run, rec, r: dict, d: dict, obs: dict, out: ConceptReplay, out_dir: Path, result_dim: tuple | None,
-                 body_digest: str) -> None:
+                 body_digest: str, rulings: ReviewRulings | None = None) -> None:
     """A saved challenge that runs on this body, recorded under another contract than the current one
     (or under no recorded contract): the current contract is rechecked on its executed facts, and
     the answer is compared with the body.
@@ -3654,9 +3946,9 @@ def recheck_case(run: Run, rec, r: dict, d: dict, obs: dict, out: ConceptReplay,
                     "item": _ws(f"recheck of {cid[:12]} (t={d.get('at')} ms): the current contract decides {said}, the case recorded "
                                 f"{_claim_text({k: r.get(k) for k in ('contract_verdict', 'contract_value') if r.get(k) is not None})}; "
                                 f"the body: {body}")[:400]})
-        written = append_ruling(run, row, supersedes=r.get("ruling_id"))
+        written = _ruled(run, rulings, row, r.get("ruling_id"))
     else:
-        written = append_ruling(run, row)
+        written = _ruled(run, rulings, row)
     if claim is None:
         by = answer.get("undecided_by", "unstated")
         out.carry.append({"case_id": written["case_id"], "row": written, "reason": "undecided", "undecided_by": by,
@@ -3680,7 +3972,8 @@ def satisfied_on(run: Run, rec, old: dict, evidence: dict, body_digest: str, obl
     return row
 
 
-def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_digest: str) -> ConceptReplay:
+def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_digest: str,
+                   rulings: ReviewRulings | None = None) -> ConceptReplay:
     """The upheld challenges and structural findings of this concept, and of the concept it
     supersedes, before any reviewer. Each challenge is read from its effective row (the last of its
     supersession chain), whose claim and `contract_digest` decide its path:
@@ -3698,9 +3991,11 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
       goes to the adjudicator as a renewed case. What R2 records carries the current digest, so the
       next replay of the same contract takes R1 (or R0, for `undecided`) and pays no recheck.
     An open structural finding, and an older upheld structural row without a schema, goes back to
-    the adjudicator against the current contract and rendering."""
-    keys = {f"concept:{c}" for c in concept_lineage(run, rec)}
-    rows = [r for r in effective_rows(_all_rows(run)) if r.get("key") in keys and r.get("ruling") == "upheld"]
+    the adjudicator against the current contract and rendering. Within a review, the rulings read
+    and written are its own (`rulings`: those the run had when it began, then its own)."""
+    every = (lambda: rulings.rows()) if rulings is not None else (lambda: _all_rows(run))
+    keys = {f"concept:{c}" for c in concept_lineage(run, rec, every())}
+    rows = [r for r in effective_rows(every()) if r.get("key") in keys and r.get("ruling") == "upheld"]
     out = ConceptReplay()
     contract = " ".join(str(rec.get("contract", "")).split())
     current = contract_digest(rec)
@@ -3742,15 +4037,15 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
     meets = {k_of(line): line for line in unconfirmed}
     for k, r in by_k.items():
         if r.get("contract_digest") != current and (k in confirms or k in meets):
-            recheck_case(run, rec, r, divs[k], runs.get(k) or {}, out, out_dir, result_dim, body_digest)
+            recheck_case(run, rec, r, divs[k], runs.get(k) or {}, out, out_dir, result_dim, body_digest, rulings)
         elif k in confirms:
             out.items.append({**confirms[k], "replay_of": r.get("case_id")})
         elif k in meets:
             if r.get("obligation") != "satisfied" or r.get("subject") != rec.id:
-                append_ruling(run, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
+                _ruled(run, rulings, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
             out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {meets[k][:240]}")
     # structural findings: typed rows, and older rows written before they had a schema
-    migrated = {r.get("legacy_of") for r in _all_rows(run) if r.get("legacy_of")}     # any row that ever took an older row over
+    migrated = {r.get("legacy_of") for r in every() if r.get("legacy_of")}     # any row that ever took an older row over
     typed = [r for r in rows if r.get("schema") == CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)
              and r.get("ruling_id") not in migrated]
     for r in typed:
@@ -3880,9 +4175,40 @@ def dependency_report(run: Run, task_dir: Path, reached: set[str]) -> Dependency
     if not confirmed:
         return DependencyReport("protocol", cid, errors + incomplete + [f"the concept gives the verdict the report claims for its contract: {x}" for x in agrees])
     blocks, _rendering, _contract = concept_blocks(run, rec, acc)
-    ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report")
+    rulings, decided = resume_review(run, out, lambda rows: concept_inputs(run, rec, acc, blocks, rows, {"report": d}))
+    if decided is not None:
+        return DependencyReport(**decided)
+    ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report", rulings)
     item, ruling, why = ruled[0]
-    return DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"])
+    return finish_review(run, out, rulings, {}, DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"]), True)
+
+
+def _concept_context(run: Run, rec, extras: dict) -> str | None:
+    """The body as built and the context its gate ran on, or None when that context cannot be
+    computed (`_pass_context`, for a concept)."""
+    from . import code as code_phase
+    try:
+        task = code_phase.task_context(run, "concept", rec.id, rec.raw, Reading(run.reading_file))
+    except Exception:
+        return None
+    return _digest({"body": extras.get("body_json"), "task": task}) if task else None
+
+
+def concept_inputs(run: Run, rec, extras: dict, blocks: dict[str, str], rows: list[dict], more: dict | None = None) -> str | None:
+    """The identity of what a concept's review (or the adjudication of a defect reported against
+    it, with the report in `more`) decides on: the record, the body, what it reads and the coder's
+    readings, the context its gate ran on (`_concept_context`), everything its reviewer and judges
+    are shown but the rulings, the reading, the lineage's rulings as the review began (`rows`), and
+    `review_settings`. None when the gate's context cannot be computed: then nothing the review
+    saved is taken back."""
+    context = _concept_context(run, rec, extras)
+    if context is None:
+        return None
+    keys = {f"concept:{c}" for c in concept_lineage(run, rec, rows)}
+    return _inputs_digest({"record": rec.raw, "body": extras.get("body_json"), "reads": extras.get("reads"),
+                           "narrowings": extras.get("narrowings_added"), "context": context, "shown": blocks,
+                           "reading": Reading(run.reading_file).data, "rulings": [r for r in effective_rows(rows) if r.get("key") in keys],
+                           **(more or {}), **review_settings(run, CONCEPT_REVIEW_PROMPTS)})
 
 
 def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
@@ -3892,8 +4218,10 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     item, goes to the adjudicator, which rules by the contract's words. `returned` with the upheld
     items; else `deferred` when a challenge could not be evaluated (stage `reviewer`), the
     adjudication stays invalid or the harness does not run; else `accepted`, its advisories recorded
-    on the concept as what it computes as built. Raises `SessionUnavailable` when a session could
-    not be launched."""
+    on the concept as what it computes as built. As a node's review, it reads the rulings as they
+    stood when it began and saves its outcome with its rulings before they are recorded
+    (`resume_review`, `finish_review`). Raises `SessionUnavailable` when a session could not be
+    launched."""
     if not enabled(run):
         if run.opts.dry_run:
             return ReviewOutcome("accepted", advisories=["dry run"])
@@ -3903,21 +4231,25 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
     except render_formula.Unrendered as e:
         raise session.SessionUnavailable(f"the renderer has no phrasing for the {e} (harness/lean/render_formula.py)") from e
     out_dir.mkdir(parents=True, exist_ok=True)
+    rulings, decided = resume_review(run, out_dir, lambda rows: concept_inputs(run, rec, extras, blocks, rows))
+    if decided is not None:
+        return outcome_of(decided)
+    done = lambda data, outcome: finish_review(run, out_dir, rulings, data, outcome, outcome.status != "deferred")
     (out_dir / "rendered_body.md").write_text(rendering, encoding="utf-8")
     result_dim = body_dim(rec, extras.get("body_json")) if rec.get("kind") == "quantity" else None
     body_digest = _digest(extras.get("body_json"))
     replay_notes: list[str] = []
     try:
-        rep = replay_concept(run, rec, out_dir / "replay", result_dim, body_digest)
+        rep = replay_concept(run, rec, out_dir / "replay", result_dim, body_digest, rulings)
         replay_notes = rep.notes
-        replayed = adjudicate_concept(run, rec, blocks, rep.items, out_dir, body_digest, "adjudicate_replay") if rep.items else []
+        replayed = adjudicate_concept(run, rec, blocks, rep.items, out_dir, body_digest, "adjudicate_replay", rulings) if rep.items else []
     except HarnessFailure as e:
-        return ReviewOutcome("deferred", reasons=[f"replay: {e}"], defer_stage="certificate")
+        return done({"deferred": str(e)}, ReviewOutcome("deferred", reasons=[f"replay: {e}"], defer_stage="certificate"))
     except Deferred as e:
-        return ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage, advisories=replay_notes)
+        return done({"deferred": e.why}, ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage, advisories=replay_notes))
     still = [f"{i['line']} — upheld again: {w}" for i, r, w in replayed if r == "upheld"]
     if still:
-        return ReviewOutcome("returned", reasons=still, advisories=replay_notes)
+        return done({"replayed": still}, ReviewOutcome("returned", reasons=still, advisories=replay_notes))
     carry = {c["case_id"]: c["row"] for c in rep.carry if c.get("case_id")}
     prompt = render.render("review_concept.md", {**blocks, "carry_over": carry_over_block(rep.carry)})
     tools = ConceptTools(rec, contract, rendering, result_dim, out_dir, run.opts.review_checks,
@@ -3925,19 +4257,20 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
                          registry=_registry(run, rec.id, concept_dir(run, rec.id)))
     (out_dir / "review_concept_prompt.md").write_text(prompt, encoding="utf-8")
     if run.opts.dry_run:
-        return ReviewOutcome("accepted", advisories=["review skipped (dry run)"])
+        return finish_review(run, out_dir, rulings, {}, ReviewOutcome("accepted", advisories=["review skipped (dry run)"]), False)
     try:
         session.run_tools(prompt, out_dir, run.opts, tools, label="review_concept", effort=run.opts.review_effort,
                           model=run.opts.reviewer_model, subject=rec.id)
     except HarnessFailure as e:
-        return ReviewOutcome("deferred", reasons=[str(e)], defer_stage="certificate")
+        return done({"deferred": str(e)}, ReviewOutcome("deferred", reasons=[str(e)], defer_stage="certificate"))
     answer = tools.answer
     if answer is None:
-        return ReviewOutcome("deferred", reasons=[f"concept review: the reviewer submitted no answer in {tools.max_requests} requests"],
-                             defer_stage="reviewer")
+        why = f"concept review: the reviewer submitted no answer in {tools.max_requests} requests"
+        return done({"deferred": why}, ReviewOutcome("deferred", reasons=[why], defer_stage="reviewer"))
     errs = concept_review_defects(answer, rec, contract, rendering, result_dim)
     if not _member(answer.get("verdict"), VERDICTS):
-        return ReviewOutcome("deferred", reasons=["concept review: the answer is not a review: " + "; ".join(errs)], defer_stage="reviewer")
+        why = "concept review: the answer is not a review: " + "; ".join(errs)
+        return done({"deferred": why}, ReviewOutcome("deferred", reasons=[why], defer_stage="reviewer"))
     confirmed, unconfirmed, errors, incomplete = tools.final         # the submitted answer's divergences, as run
     listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
     extension = {k: d["extends"] for k, d in enumerate(listed, 1)
@@ -3961,9 +4294,9 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
             row = {**{k: v for k, v in row.items() if k != "recheck"}, "contract_digest": contract_digest(rec)}
             if k_of(line) in renewed:
                 row.update({"case_id": concept_case_id(rec.id, row), "lineage": old.get("case_id")})
-                append_ruling(run, row, supersedes=old.get("ruling_id"))
+                rulings.add(row, old.get("ruling_id"))
             else:
-                append_ruling(run, row)
+                rulings.add(row)
     ran = {k_of(x["line"]) for x in confirmed} | {k_of(x) for x in unconfirmed}
     unextended = sorted(cid for cid in carry if cid not in {extension[k] for k in extension if k in ran})
     tuned_all = answer.get("not_general") if isinstance(answer.get("not_general"), list) else []
@@ -3971,25 +4304,26 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
               "key": "not_general"} for k, t in enumerate(tuned_all, 1) if not structural_item_defects(k, t, contract, rendering)]
     items = confirmed + tuned
     try:
-        rulings = adjudicate_concept(run, rec, blocks, items, out_dir, body_digest) if items else []
+        ruled = adjudicate_concept(run, rec, blocks, items, out_dir, body_digest, "adjudicate", rulings) if items else []
     except Deferred as e:
-        return ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage)
-    upheld = [f"{i['line']} — upheld: {w}" for i, r, w in rulings if r == "upheld"]
-    notes = replay_notes + [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in rulings if r == "dismissed"]
+        return done({"deferred": e.why}, ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage))
+    upheld = [f"{i['line']} — upheld: {w}" for i, r, w in ruled if r == "upheld"]
+    notes = replay_notes + [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in ruled if r == "dismissed"]
     # a challenge the harness could not evaluate (a schema defect of the final answer, a trace that
     # does not decode or run, an incomplete trace) leaves the review undecided: without an upheld
     # item it defers the concept; a trace on which the body gives the contract's verdict is advisory
     unusable = concept_review_defects(answer, rec, contract, rendering, result_dim) + errors + incomplete \
         + [e for k, d in enumerate(listed, 1) for e in tools.extension_defects(k, d)]
-    _write_outcome(out_dir, {"reviewer_verdict": answer.get("verdict"), "rulings": [{"item": i["line"], "ruling": r, "why": w} for i, r, w in rulings],
-                             "unconfirmed": unconfirmed, "unusable": unusable, "schema_defects": errs, "undecided": rep.undecided()})
+    data = {"reviewer_verdict": answer.get("verdict"), "rulings": [{"item": i["line"], "ruling": r, "why": w} for i, r, w in ruled],
+            "unconfirmed": unconfirmed, "unusable": unusable, "schema_defects": errs, "undecided": rep.undecided()}
     if upheld:
-        return ReviewOutcome("returned", reasons=upheld, advisories=notes)
+        return done(data, ReviewOutcome("returned", reasons=upheld, advisories=notes))
     if unusable:
-        return ReviewOutcome("deferred", reasons=[f"concept review: {len(unusable)} challenge(s) could not be evaluated: " + " | ".join(unusable)[:900]],
-                             advisories=notes, defer_stage="reviewer")
+        return done(data, ReviewOutcome("deferred", reasons=[f"concept review: {len(unusable)} challenge(s) could not be evaluated: "
+                                                             + " | ".join(unusable)[:900]], advisories=notes, defer_stage="reviewer"))
     if unextended:
         why = {c["case_id"]: c["why"] for c in rep.carry}
-        return ReviewOutcome("deferred", reasons=["challenges carried over but not extended: " + " | ".join(f"{cid[:12]}: {why.get(cid, '')}" for cid in unextended)[:900]],
-                             advisories=notes, defer_stage="evidence")
-    return ReviewOutcome("accepted", advisories=notes + [f"refuted by execution: {x}" for x in unconfirmed])
+        return done(data, ReviewOutcome("deferred", reasons=["challenges carried over but not extended: "
+                                                             + " | ".join(f"{cid[:12]}: {why.get(cid, '')}" for cid in unextended)[:900]],
+                                        advisories=notes, defer_stage="evidence"))
+    return done(data, ReviewOutcome("accepted", advisories=notes + [f"refuted by execution: {x}" for x in unconfirmed]))

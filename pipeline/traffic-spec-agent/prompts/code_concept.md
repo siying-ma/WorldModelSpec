@@ -48,8 +48,8 @@ Run mode: `{mode}`.
   around it. Nothing else is readable: not the harness, not other concepts' or nodes' files beyond
   the example, not the readings, the ontology or the law corpus. The gate is the interface to the
   harness; the record is the interface to the contract.
-- The **shell runs exactly one command**, the gate command below, as written. Any other command
-  is denied and wastes a turn.
+- The **shell runs exactly one command**, the gate command below, as written: it runs from your
+  working directory, so it needs no `cd`. Any other command is denied and wastes a turn.
 
 ## What a concept is
 
@@ -100,11 +100,8 @@ Run mode: `{mode}`.
    body never quantifies over a region the contract names as an argument.
 5. **Parameters, not values.** A magnitude enters the body as `.param "<formal>"`. The only
    literals are zero, enumeration spellings, and the record's declared `literals`, each written
-   through the `Units` constructor of its unit. Never divide by a term that reads a measurement:
-   a measured quantity can be zero (a curvature where the way runs straight, a speed at rest), and
-   a division by zero is unknown, not a verdict; write the comparison with products (a ratio
-   below a bound is the dividend below the bound times the divisor). The gate returns
-   `CHECK_FAIL` on such a division.
+   through the `Units` constructor of its unit. What a formula may not say is listed with the
+   formula language; the gate returns `CHECK_FAIL` on it.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict. A scenario of an

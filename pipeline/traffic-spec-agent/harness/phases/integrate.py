@@ -116,7 +116,7 @@ def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baseline
     deps: dict[str, set[str]] = {c: set(concept_refs.get(c, set())) & set(concepts_now) for c in concepts_now}
     for n in accepted_now:
         from ..loop import concept_deps
-        deps[n.id] = ({c.get("rule") for c in n.compositions()} & set(nodes)) | (concept_deps(n) & set(concepts_now))
+        deps[n.id] = ({c.get("rule") for c in n.dependencies()} & set(nodes)) | (concept_deps(n) & set(concepts_now))
     snap = work / "candidates"
     for ident, k in kind.items():                      # the immutable snapshot of every candidate, taken once
         for rel in _files(k, ident):
@@ -257,7 +257,9 @@ def context_parts(run: Run, kind: str, ident: str, reading: Reading, base: dict,
     binders, applicability and obligation, or the body), the versions of the concepts it calls and
     the rules it composes (each with its own context) and whether each is fenced, the reading values
     and units it reads with whether each is reviewed or still proposed, the admitted aggregates it
-    claims with their entries, and `base` (Core, the ontology, the review configuration). `record`
+    claims with their entries, the definition sources it borrows words from as the corpus posts them
+    now (each with the definitions that apply to it; a node that borrows none has no such part), and
+    `base` (Core, the ontology, the review configuration). `record`
     and `catalogue` (`{"nodes", "concepts"}`) give a candidate not yet accepted and the records it
     may use; a candidate's own files are left out (its session writes them; the gate's candidate
     digest holds them). With `semantic`, the obligations recorded on it are part of it too. A cycle
@@ -273,7 +275,7 @@ def context_parts(run: Run, kind: str, ident: str, reading: Reading, base: dict,
         n = Node(rec)
         from ..loop import concept_deps
         files = (nodeid.rule_path(ident), nodeid.witness_path(ident))
-        calls, composed = concept_deps(n), [c.get("rule") for c in n.compositions() if c.get("rule") in nodes]
+        calls, composed = concept_deps(n), [c.get("rule") for c in n.dependencies() if c.get("rule") in nodes]
         params, claims = n.params(), n.claimed_atoms()
         own = {"record": _digest(semantic_record(rec))}
     else:
@@ -294,8 +296,26 @@ def context_parts(run: Run, kind: str, ident: str, reading: Reading, base: dict,
            "reading": {p: [(reading.params.get(p) or {}).get("value"), (reading.params.get(p) or {}).get("unit"),
                            "proposed" if (reading.params.get(p) or {}).get("proposed") else "reviewed"] for p in sorted(set(params))},
            "aggregates": {a: _digest(reading.aggregate(a)) for a in aggs}, **base}
+    if kind == "node" and Node(rec).definition_sources():
+        from ..model import definitions as definitions_mod
+        out["sources"] = {s: (definitions_mod.source_digest(r) if (r := definitions_mod.source_record(run, s)) else None)
+                          for s in Node(rec).definition_sources()}
     if semantic:
         out["obligations"] = obligations_version(run, ident)
+    return out
+
+
+def borrowed_words_defects(run: Run, n: Node) -> list[str]:
+    """A node's `definition` references whose source is no longer in the active corpus, or no longer
+    holds the quoted words: the meaning its elements carry is no longer the source's."""
+    from ..model import definitions as definitions_mod
+    out = []
+    for c in n.definition_references():
+        rec = definitions_mod.source_record(run, str(c.get("source")))
+        if rec is None:
+            out.append(f"the definition source `{c.get('source')}` of span {c.get('span')} is no longer in the run's corpus")
+        elif " ".join(str(c.get("quote", "")).split()) not in " ".join(rec["text"].split()):
+            out.append(f"the definition source `{c.get('source')}` of span {c.get('span')} no longer holds the quoted words")
     return out
 
 
@@ -386,6 +406,7 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
                     unresolved.append(f"`{ident}`: its law `{n.law}` is in no corpus of the run or its base chain, so its "
                                       "obligations cannot be read; nothing was decided")
                     continue
+                problems += borrowed_words_defects(run, n)
                 cases = [r for r, own_row in review_phase.obligations_of(run, n, law) if own_row]
                 divs = {}
                 for k, r in enumerate(cases, 1):
@@ -453,7 +474,7 @@ def unavailable_candidates(run: Run, nodes: list[Node], concepts: dict[str, set[
     {id: why}; each waits, uncharged, until its provider has a usable successor."""
     from ..loop import concept_deps
     uses = {cid: set(refs) for cid, refs in concepts.items()}
-    uses.update({n.id: concept_deps(n) | {c.get("rule") for c in n.compositions()} for n in nodes})
+    uses.update({n.id: concept_deps(n) | {c.get("rule") for c in n.dependencies()} for n in nodes})
     out: dict[str, str] = {}
     grown = True
     while grown:
@@ -475,7 +496,7 @@ def fence_closure(run: Run) -> list[str]:
     from ..loop import concept_deps
     concepts, nodes = run.all_concepts(), run.all_nodes()
     uses = {cid: set(ConceptRecord(r).refs()) for cid, r in concepts.items()}
-    uses.update({nid: concept_deps(Node(r)) | {c.get("rule") for c in Node(r).compositions()} for nid, r in nodes.items()})
+    uses.update({nid: concept_deps(Node(r)) | {c.get("rule") for c in Node(r).dependencies()} for nid, r in nodes.items()})
     added, grown = [], True
     while grown:
         grown = False
@@ -504,7 +525,7 @@ def admission_selection(run: Run, kind: str, ident: str) -> dict:
     seen, frontier = set(), {ident}
     while frontier:
         seen |= frontier
-        frontier = {c.get("rule") for i in frontier if i in nodes for c in Node(nodes[i]).compositions()} - seen
+        frontier = {c.get("rule") for i in frontier if i in nodes for c in Node(nodes[i]).dependencies()} - seen
     used = {c for i in seen if i in nodes for c in concept_deps(Node(nodes[i]))}
     return {"nodes": sorted(seen & (set(nodes) | {ident})), "concepts": sorted(concept_closure(used, refs) & set(concepts)), "keep": [ident]}
 

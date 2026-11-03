@@ -6,15 +6,18 @@ Format (JSON; `Decode.reading` in Core decodes the same fields):
  "params": [{"name": "p.<name>", "value": 1.5, "unit": "s", "convention": "<where the value comes from>"}],
    (a param whose value equals a figure a law of the corpus states also carries "figure_review": "<why it is a
     convention, not that figure>"; the doctor lists every such param until it does)
- "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...], ...}],
+ "aggregates": [{"id": "<definition id>::<term>", "included": ["ru.*", ...], "unresolved": ["ru.*", ...],
+                 "covered": [{"class": "ru.*", "covered_by": ["ru.*", ...], "quotes": [...], "basis": [...]}]?, ...}],
  "declarations": [{"id": "asm.<name>" | "int.<name>", "meaning": "<what the id states>", "proposed": "<origin>"?}]}
 A declaration is a fact a trace supplies and no camera observes, an assumption (`asm.*`) or a declared
 intention (`int.*`): one catalogue for both, so an id has one meaning and an adapter can read every id
 it must supply. A plan proposes an id with its meaning; the harness enters it `proposed` when the node
 is coded, and the operator reviews it by removing the marker.
 An aggregate is admitted per run by the aggregate gate (`harness/phases/aggregate.py`) into
-results/<run>/reading.json, keyed by its legal source; every class it lists neither as included nor
-as unresolved is excluded. The operator's base reading declares parameters, never aggregates.
+results/<run>/reading.json, keyed by its legal source. Core reads only `included` and `unresolved`. A
+`covered` class (present only when the mapping has one) is one the definition admits only as members
+of the classes it names, all included: its label adds no membership evidence, so it is in neither
+list. Every other class is excluded. The operator's base reading declares parameters, never aggregates.
 Units: m, s, m/s, m/s2, deg, deg/s, ratio, count.
 """
 from __future__ import annotations
@@ -35,7 +38,8 @@ TEMPLATE = {
     "_fields": {
         "params": "name (p.<name>), value (number), unit (one of Core's spellings: " + "|".join(_spellings()) + "), convention (text), "
                   "figure_review (optional: why a value that equals a figure some law states is a convention, not that figure)",
-        "aggregates": "admitted by the run's aggregate gate, never written by hand: id (<definition id>::<term>), included and unresolved ru.* classes",
+        "aggregates": "admitted by the run's aggregate gate, never written by hand: id (<definition id>::<term>), included and unresolved ru.* classes, "
+                      "and the covered classes with their covering classes (for audit; not read by Core)",
         "declarations": "id (asm.<name> or int.<name>), meaning (what the id states); proposed (the run, iteration and node that proposed it, until reviewed)",
     },
 }
