@@ -82,7 +82,7 @@ DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.js
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "recheck_answers.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
                          "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md",
-                         "gaps_measured.jsonl"}
+                         "gaps_measured.jsonl", "candidate_journal.json"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
 
@@ -103,9 +103,9 @@ def repo_digest(root: Path | None = None) -> dict[str, str]:
     per-iteration task directories are left out, and so are the harness's own files in the library
     (the owner's record and the inactive records, with their crash-safe writes' temporary files),
     by name: the owner rewrites them while sessions run, and no session may write them. The scope
-    check compares two of these."""
+    check compares two of these. Inside a candidate scope the root is the candidate's tree."""
     from ..store import owner
-    root = (root or paths.REPO).resolve()
+    root = (root or (_CANDIDATE.root if _CANDIDATE is not None else paths.REPO)).resolve()
     harness_own = {f"library/{n}" for n in owner.HARNESS_FILES}
     harness_tmp = tuple(f"library/.{n}.tmp-" for n in owner.HARNESS_FILES)
     out: dict[str, str] = {}
@@ -156,12 +156,47 @@ def task_concurrent(work: Path) -> set[str]:
     return set(json.loads(f.read_text(encoding="utf-8"))) if f.exists() else set()
 
 
+@dataclass(frozen=True)
+class CandidateScope:
+    """The scope of a gate run inside a candidate transaction: `root` is the candidate's tree (its
+    library at `root/library`), `write_set` every file the transaction declared it writes, keyed as
+    the repository digest keys them."""
+    root: Path
+    write_set: frozenset
+
+
+_CANDIDATE: CandidateScope | None = None
+
+
+@contextmanager
+def candidate_scope(scope: CandidateScope):
+    """Gate inside a candidate for the duration: the scope check digests the candidate's tree and
+    tolerates its declared write set, and nothing else. Set by the harness's own process only (a
+    session cannot), while no other gate runs in it."""
+    global _CANDIDATE
+    saved, _CANDIDATE = _CANDIDATE, scope
+    try:
+        yield
+    finally:
+        _CANDIDATE = saved
+
+
 def scope_stray(baseline: dict[str, str], own: set[str], work: Path) -> list[str]:
     """The files of the pipeline changed since `baseline` that are neither the task's `own` nor
-    tolerated by its task directory (`task_concurrent`)."""
-    now = repo_digest()
+    tolerated by its task directory (`task_concurrent`). Inside a candidate (`candidate_scope`) the
+    files are the candidate's tree and the only ones that may change are its declared write set (a
+    record's own files among them only when declared); a gate there whose library is not the
+    candidate's is out of scope as a whole."""
+    if _CANDIDATE is None:
+        now = repo_digest()
+        tolerated = own | task_concurrent(work)
+    else:
+        if paths.LIBRARY.resolve() != (_CANDIDATE.root / "library").resolve():
+            return [f"the gate runs in the candidate scope of {_CANDIDATE.root}, but its library is {paths.LIBRARY}"]
+        now = repo_digest(_CANDIDATE.root)
+        tolerated = set(_CANDIDATE.write_set)
     changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    return sorted(changed - own - task_concurrent(work))
+    return sorted(changed - tolerated)
 
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it
@@ -652,11 +687,12 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     refs = {}
     for name, msg in col("REF"):
         refs.setdefault(name, []).append(msg)
+    manifests = {r[0]: [a for a in r[1].split(",") if a] for r in col("MANIFEST") if len(r) > 1}
     for name, expected, got, status in scen:
         if name in refs:                  # a trace no adapter can write: its verdict is not considered
             fails.append(f"{name}: its trace is not one the adapter can produce: {'; '.join(refs[name][:3])}")
         elif status != "ok":
-            fails.append(f"{name}: {status}")
+            fails.append(witness_failure(name, status, manifests.get(name) if expected == "unknown" else None))
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")
         elif name in planned and expected != (SCENARIOS.get(name) or normalize_verdict(planned[name].get("expected", ""))):
@@ -754,6 +790,23 @@ def slot_range_defects(tree, reading: Reading, concepts: dict[str, dict] | None 
                 walk(v, env, depth + 1)
     walk(tree, {})
     return sorted(set(out))
+
+
+#: How `Scenario.run` states a verdict other than the expected one: the tag and its unknown reasons.
+_GOT = re.compile(r"expected (\S+), got (\S+) \[(.*)\]")
+
+
+def witness_failure(name: str, error: str, masked: list[str] | None = None) -> str:
+    """A witness `Scenario.run` rejected, as the repair reads it: the witness's name once, the result
+    the rule reached with its unknown reasons (none is listed for a decided verdict), and for a
+    witness expecting unknown what its manifest masks (`masked`; None leaves it out)."""
+    msg = error[len(name) + 2:] if error.startswith(f"{name}: ") else error
+    m = _GOT.fullmatch(msg)
+    if m:
+        msg = f"expected {m[1]}, got {m[2]}" + (f" for [{m[3]}]" if m[3] else "")
+    if masked is not None:
+        msg += f"; the manifest masks {', '.join(masked) if masked else 'no atom'}"
+    return f"{name}: {msg}"
 
 
 def boundary_defects(declared: set[str], planned: set[str]) -> list[str]:
@@ -1297,7 +1350,7 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
         if (name, _rule) in refs:         # a trace no adapter can write: its verdict is not considered
             fails.append(f"{name} ({_rule}): its trace is not one the adapter can produce: {'; '.join(refs[(name, _rule)][:3])}")
         elif status != "ok":
-            fails.append(f"{name}: {status}")
+            fails.append(witness_failure(name, status))
         elif expected != got:
             fails.append(f"{name}: expected {expected}, got {got}")
         elif name in wanted and expected != wanted[name]:

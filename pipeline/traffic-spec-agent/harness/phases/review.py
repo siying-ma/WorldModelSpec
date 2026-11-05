@@ -1540,7 +1540,8 @@ class RulingsError(jsonl.DataIntegrityError):
 
 
 def _rulings_file(run: Run) -> Path:
-    return run.dir / "rulings.jsonl"
+    """The rulings a review reads and appends to: the run's, or a candidate's own copy of them."""
+    return getattr(run, "rulings_file", None) or run.dir / "rulings.jsonl"
 
 
 def _all_rows(run: Run) -> list[dict]:
@@ -4126,13 +4127,37 @@ def concept_blocks(run: Run, rec, extras: dict) -> tuple[dict[str, str], str, st
 # ---------------------------------------------------------------------------------------------
 @dataclass
 class DependencyReport:
-    """What became of a task's `dependency_defect.json`: `none` (no report), `protocol` (malformed,
-    an unknown or unreached concept, a trace that does not run, or no disagreement on it: the
-    session's defect, uncharged), `upheld` or `dismissed` (by the concept adjudication)."""
+    """What became of a task's `dependency_defect.json`, the stage it reached, and what it costs.
+
+    `status`, by stage:
+    - `none`: no report was written.
+    - `protocol`: a report was written and refused before any ruling: malformed, naming a concept
+      the task does not reach, a trace that does not run, or no disagreement when the concept is
+      run on it. No ruling exists and the concept takes no obligation from it. The session produced
+      its output, so its attempt is counted as any finished but invalid output is: a repair spends
+      one of its attempts, a coding task is charged by its own gate verdict.
+    - `upheld` or `dismissed`: the concept adjudication ruled on a confirmed disagreement; the
+      attempt is counted as a finished one.
+    - `deferred` (a judge's answer stayed invalid) or `unavailable` (a session or a program did not
+      run): the ruling is not finished (`NOT_JUDGED`); no attempt is counted, the task waits and its
+      report is judged again.
+    Whatever the status, the API cost of every session that ran is booked: an attempt not counted
+    is not free.
+
+    `execution` is what running the reported trace showed, kept apart from the ruling: `not_run`
+    (refused on its form), `not_confirmed` (run; no disagreement shown), `confirmed` (run; the
+    concept gives what the report says its contract excludes) or `unknown` (the stage was not
+    recorded, as when the run itself stopped). `concept` is the concept the report names, once read."""
     status: str
     concept: str = ""
     reasons: list[str] = field(default_factory=list)
     line: str = ""
+    execution: str = "unknown"
+
+
+#: A report no one could decide (`loop.report_of`): its task waits, uncharged and unpublished, and
+#: the report is judged again; every caller routes these two the same way.
+NOT_JUDGED = ("deferred", "unavailable")
 
 
 def report_form(run: Run, task_dir: Path, reached: set[str]) -> tuple[dict, list[str]]:
@@ -4165,22 +4190,30 @@ def dependency_report(run: Run, task_dir: Path, reached: set[str]) -> Dependency
     d, bad = report_form(run, task_dir, reached)
     cid = d.get("concept_id") if isinstance(d, dict) else ""
     if bad:
-        return DependencyReport("protocol", str(cid or ""), bad)
-    acc = run.all_concepts()[cid]
-    rec = ConceptRecord(acc)
-    result_dim = body_dim(rec, acc.get("body_json")) if rec.get("kind") == "quantity" else None
-    out = task_dir / "dependency_defect"
-    confirmed, agrees, errors, incomplete = execute_concept_divergences(rec, {"divergences": [d]}, out, result_dim, Reading(run.reading_file),
-                                                                        registry=_registry(run, rec.id, task_dir))
-    if not confirmed:
-        return DependencyReport("protocol", cid, errors + incomplete + [f"the concept gives the verdict the report claims for its contract: {x}" for x in agrees])
-    blocks, _rendering, _contract = concept_blocks(run, rec, acc)
-    rulings, decided = resume_review(run, out, lambda rows: concept_inputs(run, rec, acc, blocks, rows, {"report": d}))
-    if decided is not None:
-        return DependencyReport(**decided)
-    ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report", rulings)
-    item, ruling, why = ruled[0]
-    return finish_review(run, out, rulings, {}, DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"]), True)
+        return DependencyReport("protocol", str(cid or ""), bad, execution="not_run")
+    reached_stage = DependencyReport("unavailable", cid)       # what a stage that stops leaves known (`loop.report_of`)
+    try:
+        acc = run.all_concepts()[cid]
+        rec = ConceptRecord(acc)
+        result_dim = body_dim(rec, acc.get("body_json")) if rec.get("kind") == "quantity" else None
+        out = task_dir / "dependency_defect"
+        confirmed, agrees, errors, incomplete = execute_concept_divergences(rec, {"divergences": [d]}, out, result_dim, Reading(run.reading_file),
+                                                                            registry=_registry(run, rec.id, task_dir))
+        if not confirmed:
+            return DependencyReport("protocol", cid, errors + incomplete + [f"the concept gives the verdict the report claims for its contract: {x}" for x in agrees],
+                                    execution="not_confirmed")
+        reached_stage.execution = "confirmed"
+        blocks, _rendering, _contract = concept_blocks(run, rec, acc)
+        rulings, decided = resume_review(run, out, lambda rows: concept_inputs(run, rec, acc, blocks, rows, {"report": d}))
+        if decided is not None:
+            return DependencyReport(**{"execution": "confirmed", **decided})
+        ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report", rulings)
+        item, ruling, why = ruled[0]
+        return finish_review(run, out, rulings, {}, DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"],
+                                                                     execution="confirmed"), True)
+    except (Deferred, HarnessFailure, session.SessionUnavailable) as e:
+        e.reached = reached_stage
+        raise
 
 
 def _concept_context(run: Run, rec, extras: dict) -> str | None:

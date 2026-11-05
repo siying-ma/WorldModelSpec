@@ -44,19 +44,22 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   they were rejected.
 - **Parameters** — the reading's parameter catalogue: every named parameter a node may use, with
   its unit and the convention its value comes from. Values are not shown and are not yours.
-- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, review divergences and gate verdicts.
-- **Situations decided against earlier records** — every certified case the review upheld against
+- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, review divergences or label-check
+  results, and gate verdicts.
+- **The evidence** — one of two blocks, by the run's feedback. Under review feedback,
+  **Situations decided against earlier records**: every certified case the review upheld against
   an earlier rule of a node of these laws, rendered as the judges saw it, with the law's verdict and
   the reason it was upheld. The harness runs every later rule of that node on it before any review.
   Treat each certified case as a regression obligation: the rule must give the law's verdict on it.
   It is not a mapping instruction. Do not copy an atom from the case into a record merely because
   the case used it. Every changed mapping is justified by the law's span and the chosen atom's or
-  concept's contract.
+  concept's contract. Under label feedback, **Label mismatches**: per law planned again, its label
+  contract, its repair goal and the cases its rules, checked together, did not meet (rule 11b).
 - **Your previous record of these laws** (for a law planned again) — every node of its latest
   plan, those never coded included, with each later repaired or coded version and its state (the
-  validator's, the gate's and the review's verdicts, accepted or not), and the nodes each composes.
-  They are context, not authority. Keep what met its cases. Restructure only where a failing case,
-  a validator defect, an upheld structural finding or another returned reason requires it, or where
+  validator's, the gate's, and the review's or the label check's verdicts, accepted or not), and the
+  nodes each composes. They are context, not authority. Keep what met its cases. Restructure only
+  where a failing case, a label mismatch, a validator defect, an upheld structural finding or another returned reason requires it, or where
   the words show an earlier record wrong; the harness runs every recorded case on the new record.
 - **User hints** — `USER_HINTS.md`.
 
@@ -71,7 +74,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 {parameters}
 {gaps}
 {feedback}
-{upheld}
+{evidence}
 {previous_records}
 {user_hints}
 
@@ -141,7 +144,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    over which a manoeuvre is recognized, the reach within which a region is the road user's own —
    and never decide how much is enough: a speed that is reasonable, a clearance that is safe, a
    distance that is near enough. Such a bound is the standard's, and it belongs to the rule's
-   operationalization (rule 4), where the review judges it against the law; the concepts it calls
+   operationalization (rule 4), where it answers to the law; the concepts it calls
    compute the observable magnitudes the bound is compared with (a stopping distance, a time
    headway, a closest approach). The test: a concept answers the same for the same motion whatever
    law calls it; one whose answer would change with the standard of the law calling it carries a
@@ -198,7 +201,9 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    reason to propose one, not a requirement.
 
    A body that an accepted concept already computes is rejected by the gate. An accepted concept is never
-   edited: a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
+   edited (one exception: a training repair transaction may correct a body of this run under its
+   id, keeping its contract text word for word, its formals and its parameters, and the concept
+   review passes it before it is committed): a body that contradicts its contract is superseded by a record `<name>_v<n+1>` with
    the **same contract**, `supersedes`, and a `counterexample` scenario on which the old body
    gives the wrong verdict; a version the catalogue lists as fenced is superseded the same way
    without a counterexample: its fence stands for it. A different contract is a new concept under
@@ -252,11 +257,11 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    or obligation span it reads. It is only for these five kinds of word: a feature or a quantity
    the vocabulary lacks is still a gap. The one exception is a span that adds no restriction: the
    duty is the same whether or not its words hold. Carry it as a residue with `"scope": "none"`
-   and say why; the review holds it to that. A span that restricts the duty through a word with no
+   and say why; the record is held to that. A span that restricts the duty through a word with no
    observable counterpart is no such residue: it takes the declared reading above, or it is a gap. A reading you choose on a span you do carry, where the words
    leave it open and the atoms state it more narrowly, is a **narrowing** `{span, why}` on an
-   obligation or standard span; the review holds the rule to it and returns a narrowing that drops
-   what the words require.
+   obligation or standard span; the rule is held to it, and a narrowing that drops what the words
+   require is a defect.
 3. **Map by contract, and quote it.** An element's justification quotes the clause of the atom's
    contract that denotes the span and says why each "not a stand-in for" exclusion does not
    apply. If no contract denotes the span, the span is a **gap** with a proposal and the nearest
@@ -322,7 +327,7 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    since reading one instant drops situations the words cover, and an exception `throughout`, so
    that it excuses only an act it covers whole. Reading a trigger or condition only
    `at_recognition` where the words do not place it there narrows where the rule applies, and the
-   review holds it to that like any narrowed trigger or condition, whichever span the record
+   rule is held to that like any narrowed trigger or condition, whichever span the record
    discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
    and they share one occasion: the window, `under_way` and the scenarios. `window` names the
    act's window parameter. Where a span is read while the act is under way, `under_way` is an
@@ -396,8 +401,8 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    named (`p.<name>`) and **proposed** in the node's `param_proposals`: its unit, a provisional
    `value` taken from the named engineering `convention` (what the value bounds and how), and the
    `source` such figures come from. A value the catalogue marks proposed by a node of this
-   law, not yet reviewed, may be proposed again with another value; any other catalogued value
-   is named as it is. The harness enters the proposal in the reading as a value
+   law, not yet reviewed, may be proposed again with another value, never to change a verdict on a
+   labelled recording; any other catalogued value is named as it is. The harness enters the proposal in the reading as a value
    awaiting the operator's review, so the node is coded and gated at once; the operator may change
    the value later, and the rule, which names the parameter and never carries the value, is
    unaffected. Choose the least committal parameters the words require: one tolerance where one
@@ -425,6 +430,15 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 11. **A returned law is fixed, not re-read.** Address the returned reason, and keep every mapping
     the reason does not concern and the words do not show wrong. An obligation span that only a
     residue can carry means the duty is not expressible: say so in `PLAN.md` and do not weaken it.
+11b. **A label mismatch is evidence of meaning, not a target.** Each shows how a label reads the
+    law's words on a scene of its kind; answer it with a reading of the words that decides every
+    scene of that kind the same way, and meet the repair goal the evidence states without losing a
+    match. No condition singles out a recording, a scene, a source or a law, and no rule reads which
+    road user a label judges: the check applies the label contract itself. A law planned again
+    inside a repair transaction needs a new cut of its text: write the new segmentation and every
+    node of the law in full. A cause outside the records (Core, the ontology, a trace that
+    misreports the scene, a label, a parameter's value) goes under `## For the operator`, and the
+    words are planned as they read.
 12. **Decide.** No options menus, no "awaiting", no questions. Record each decision with the
     cheapest signal that would reverse it.
 

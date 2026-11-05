@@ -15,12 +15,52 @@
   for evaluation, shared with Semantics.lean.
 -/
 import TrafficSpec.Core.Vocab.Atoms
+import TrafficSpec.Core.Vocab.RegionTable
 import TrafficSpec.Core.Vocab.Params
 import TrafficSpec.Core.Foundations.Temporal
 
 namespace TrafficSpec
 namespace Primitives
 open Temporal
+
+/-- Whether two boundaries are the same list of vertices, each coordinate compared by its
+    numerator and denominator. -/
+def sameBoundary : List Vec → List Vec → Bool
+  | [], [] => true
+  | a :: as, b :: bs =>
+    a.1.num == b.1.num && a.1.den == b.1.den && a.2.num == b.2.num && a.2.den == b.2.den && sameBoundary as bs
+  | _, _ => false
+
+theorem sameBoundary_eq : ∀ {a b : List Vec}, sameBoundary a b = true → a = b
+  | [], [], _ => rfl
+  | a :: as, b :: bs, h => by
+    simp only [sameBoundary, Bool.and_eq_true, beq_iff_eq] at h
+    obtain ⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩ := h
+    rcases a with ⟨⟨an1, ad1, _⟩, ⟨an2, ad2, _⟩⟩
+    rcases b with ⟨⟨bn1, bd1, _⟩, ⟨bn2, bd2, _⟩⟩
+    simp only at h1 h2 h3 h4
+    subst h1 h2 h3 h4
+    rw [sameBoundary_eq h5]
+  | [], _ :: _, h => by simp [sameBoundary] at h
+  | _ :: _, [], h => by simp [sameBoundary] at h
+
+/-- A region's boundary with its simple-polygon flag, computed the first time it is read; the flag
+    is the direct check of that boundary by construction. -/
+structure SimpleEntry where
+  id : RegionId
+  boundary : List Vec
+  flag : Thunk Bool
+  ok : flag.get = Geom.simplePolygon boundary
+
+/-- One entry per region and distinct boundary in the trace: a map's boundaries do not change from
+    scene to scene, so each is checked once however many scenes and calls read it. -/
+def simpleTable (scenes : Array Scene) : List SimpleEntry :=
+  scenes.foldl (fun acc s => s.structures.foldl (fun acc st =>
+      match st.boundary with
+      | none => acc
+      | some b =>
+        if acc.any (fun e => e.id == st.id && sameBoundary e.boundary b) then acc
+        else ⟨st.id, b, Thunk.mk (fun _ => Geom.simplePolygon b), rfl⟩ :: acc) acc) []
 
 /-- The trace indexed for evaluation, with the run's reading. `aggregateOverrides` fixes the
     membership of a track in an aggregate to a value, for the sensitivity of a verdict to that
@@ -30,6 +70,29 @@ structure Ctx where
   times : Array Q
   ρ : Reading
   aggregateOverrides : List (TrackId × String × Bool) := []
+  /-- The simple-polygon flags of the trace's boundaries (`simpleIn`). -/
+  simple : List SimpleEntry := simpleTable scenes
+  /-- What a region quantifier reads of these scenes, built once and shared by every evaluation of
+      this context (`RegionTable`). -/
+  regions : RegionTable.Tables scenes := RegionTable.Tables.build scenes
+
+/-- Whether a region's boundary is a simple polygon, read from the trace's table when the region and
+    its boundary are there, checked directly otherwise. -/
+def simpleIn (c : Ctx) (r : RegionId) (poly : List Vec) : Bool :=
+  match c.simple.find? (fun e => e.id == r && sameBoundary e.boundary poly) with
+  | some e => e.flag.get
+  | none => Geom.simplePolygon poly
+
+/-- The table never changes the answer: a hit is the direct check of the same boundary, a miss (a
+    region or boundary not in the table, a boundary changed since) is the direct check. -/
+theorem simpleIn_eq (c : Ctx) (r : RegionId) (poly : List Vec) : simpleIn c r poly = Geom.simplePolygon poly := by
+  unfold simpleIn
+  split
+  · rename_i e h
+    have hp := List.find?_some h
+    simp only [Bool.and_eq_true] at hp
+    rw [e.ok, sameBoundary_eq hp.2]
+  · rfl
 
 def Ctx.mk' (τ : Trace) (ρ : Reading) : Ctx :=
   { scenes := τ.toArray, times := (τ.map fun s => Time.ofTimestamp s.t).toArray, ρ := ρ }
@@ -216,7 +279,7 @@ def prim_region_offset_along (c : Ctx) (x : TrackId) (r l : RegionId) : Array QR
     let some p := kin_position s x | throw (.absentAtom "kin_position")
     let some u := (st_lane_direction s l).bind Geom.unit | throw (.absentAtom "st_lane_direction")
     let some poly := st_region_geometry_boundary s r | throw (.absentAtom "st_region_geometry")
-    if !Geom.simplePolygon poly then throw (.undefined "prim_region_offset_along")
+    if !simpleIn c r poly then throw (.undefined "prim_region_offset_along")
     let ts := Geom.lineCrossings p u poly
     if Geom.inPolygon p poly || Geom.onBoundary p poly then pure Q.zero
     else match ts with
@@ -291,6 +354,35 @@ def evalQ (name : String) (c : Ctx) (args : List DArg) (ps : List Q) : Except Un
   | "prim_region_lateral_offset", [x, r], [] => do pure (prim_region_lateral_offset c (← tid x) (← tid r))
   | "prim_region_offset_along", [x, r, l], [] => do pure (prim_region_offset_along c (← tid x) (← tid r) (← tid l))
   | n, _, _ => .error (unknownName n)
+
+
+-- ---------------------------------------------------------------------------------------------
+-- Lengths: a primitive returns one value per observation.
+-- ---------------------------------------------------------------------------------------------
+theorem size_each (c : Ctx) (f : Scene → R) : (each c f).size = c.n := by simp [each, Ctx.n]
+theorem size_eachQ (c : Ctx) (f : Scene → QR) : (eachQ c f).size = c.n := by simp [eachQ, Ctx.n]
+theorem size_prim_heading_change (c : Ctx) (x : TrackId) (w : Q) : (prim_heading_change c x w).size = c.n := by
+  simp [prim_heading_change, yawChange]
+theorem size_distanceWhile (c : Ctx) (x : TrackId) (holds : Array R) :
+    (distanceWhile c x holds).size = holds.size := by
+  simp [distanceWhile, Temporal.size_distanceWhileAll]
+
+/-- A Boolean primitive that returns an array returns one value per observation. -/
+theorem size_evalB (name : String) (c : Ctx) (args : List DArg) (ps : List Q) (a : Array R)
+    (h : evalB name c args ps = .ok a) : a.size = c.n := by
+  unfold evalB at h
+  split at h <;> (try simp only [bind, Except.bind, pure, Except.pure] at h) <;> (repeat' split at h) <;>
+    first | (cases h; simp [prim_closest_approach_within, prim_conditions_hold, size_each]) | cases h
+
+/-- A quantity primitive that returns an array returns one value per observation. -/
+theorem size_evalQ (name : String) (c : Ctx) (args : List DArg) (ps : List Q) (a : Array QR)
+    (h : evalQ name c args ps = .ok a) : a.size = c.n := by
+  unfold evalQ at h
+  split at h <;> (try simp only [bind, Except.bind, pure, Except.pure] at h) <;> (repeat' split at h) <;>
+    first
+    | (cases h; simp [prim_heading_change, yawChange, prim_closest_approach_time, prim_closest_approach_distance,
+                      prim_region_lateral_offset, prim_region_offset_along, size_eachQ, Ctx.n])
+    | cases h
 
 end Primitives
 end TrafficSpec

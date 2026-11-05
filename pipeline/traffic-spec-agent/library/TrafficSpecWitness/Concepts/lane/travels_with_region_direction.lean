@@ -1,23 +1,32 @@
 /-
   Witnesses for drv.lane.travels_with_region_direction.
 
-  The geometry, one scene repeated at three instants one second apart (the body reads the
-  observation only, so nothing varies in time):
+  One body, track 1, a car 5 m long and 2 m wide, and one region, 100, a straight roadway rectangle
+  180 m long and 12 m wide (x from −60 m to 120 m, y from −6 m to 6 m) whose designated direction
+  points east. The car runs along the middle of it, on the line y = 0, so its 5 m × 2 m footprint
+  lies inside the roadway; occupancy is derived from the geometry, though the concept does not read
+  it. No device is built and no other region: the concept reads the body's velocity and the
+  region's designated direction alone.
 
-  - Region 100 is a roadway, the rectangle from (-100 m, -6 m) to (100 m, 6 m), carrying the
-    direction designated for travel: east, (1, 0) in the world frame, a unit vector already.
-  - Track 1 is a motor vehicle at the origin, 4.4 m long and 1.8 m wide (half-extents
-    2.2 m / 0.9 m / 0.75 m), travelling at 8 m/s: in `holds` and `blind` heading east, in `fails`
-    heading west, so its velocity is (8, 0) m/s east and (-8, 0) m/s west respectively. Occupancy
-    follows the geometry; the concept does not read it.
+  Each trace is three instants a second apart (t = 0, 1000, 2000 ms) and every scenario speaks about
+  all of them: the body reads the instant it judges only, with no window behind, so no instant of
+  any trace is truncated and no `window` is set.
 
-  The figures of the instance are this witness's own: cos_min = 0.9 (an angle of about 25 degrees
-  either side of the designated direction still counts as travelling with it) and
-  speed_floor = 0.1 m/s (a tenth of a metre per second, below which the velocity's direction is
-  noise). At 8 m/s east the component along the direction is 8 m/s, above zero and above
-  0.9 x 8 = 7.2 m/s, so `holds` is compliant; at 8 m/s west it is -8 m/s, below both, so `fails`
-  is violated. `blind` is the `holds` scene with `st.lane_direction` declared unobserved: the
-  component is then unknown while the speed still clears the floor, so the body is unknown.
+  The instance's own figure: a tolerance of 0.5 m/s, the magnitude below which a velocity component
+  counts as no travel, so that a body at rest or drifting across the designated direction is not
+  read as travelling against it. It is written through `Units.micrometresPerSecond` (500 000 µm/s),
+  the constructor of a fractional speed.
+
+    holds — the designated direction is east; the car travels at 15 m/s due east, so its velocity
+            is (15, 0) m/s and the component along the direction is +15 m/s, far above −0.5 m/s, at
+            each of the three instants.
+    fails — the same roadway, designated east; the car travels at 7 m/s due west, so its velocity
+            is (−7, 0) m/s and the component along the direction is −7 m/s, below −0.5 m/s, at each
+            instant.
+    blind — the westward car again, on the same roadway rectangle, for which the source records no
+            designated direction: the carrier's `lane.direction` is `none` and the manifest declares
+            st.lane_direction absent, so both components of the direction are unknown and the
+            component of the velocity along it is unknown with them.
 -/
 import TrafficSpec.Concepts.lane.travels_with_region_direction
 import TrafficSpec.Core.Evidence.Builders
@@ -30,47 +39,58 @@ def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
 -- Formals ↦ tracks: u ↦ 1
--- Formals ↦ regions: r ↦ 100 (the roadway of every trace below)
+-- Formals ↦ regions: r ↦ 100 (the roadway of every trace)
 
-/-- The instance every scenario speaks about: every parameter given a value through a `Units`
-    constructor. -/
+/-- The instance every scenario speaks about: the tolerance below which a velocity component counts
+    as no travel, 0.5 m/s. -/
 def inst : Concept.Instance :=
   { name := "drv.lane.travels_with_region_direction@w"
     concept := "drv.lane.travels_with_region_direction"
     literals := []
     nats := []
-    params :=
-      [ ("cos_min", .lit (Units.ratio 9 10) .ratio)
-      , ("speed_floor", .lit (Units.micrometresPerSecond 100000) .metrePerSecond) ]
+    params := [("motion_speed_tolerance", .lit (Units.micrometresPerSecond 500000) .metrePerSecond)]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The roadway, region 100, with the direction it designates for travel: east. -/
-def roadway : Structure :=
-  { Build.rect 100 .roadway (m (-100)) (m (-6)) (m 100) (m 6) with
-      lane := some { direction := some Build.east } }
+/-- The roadway, 180 m by 12 m, carrying the designated direction given (`none` where the source
+    records none). -/
+def roadway (direction : Option Vec) : Structure :=
+  { Build.rect 100 .roadway (m (-60)) (m (-6)) (m 120) (m 6) with
+    lane := some { direction := direction } }
 
-/-- The car, 4.4 m by 1.8 m, at the origin, at 8 m/s on the given heading. -/
-def car (heading : Vec) : RoadUser :=
-  Build.user 1 [.motorVehicle] (m 0, m 0) heading (Units.metresPerSecond 8)
-    (Units.centimetres 220, Units.centimetres 90, Units.centimetres 75)
+/-- The car at an instant: 5 m long, 2 m wide, on the line y = 0 at the given x, travelling with
+    the heading and speed given (its velocity is that heading times that speed). -/
+def car (x : Q) (heading : Vec) (speed : Q) : RoadUser :=
+  Build.user 1 [.motorVehicle] (x, Q.zero) heading speed (cm 250, cm 100, cm 100)
 
-/-- `holds` (compliant): A car travels east at 8 m/s on a roadway whose designated direction points east. -/
+/-- Three instants a second apart: the car at `x k`, travelling as given, on the roadway whose
+    designated direction is `direction`. -/
+def runTrace (direction : Option Vec) (x : Nat → Q) (heading : Vec) (speed : Q) : Trace :=
+  Build.trace 3 0 (Units.seconds 1) fun k t =>
+    Build.scene t (some 1)
+      [ car (x k) heading speed ]
+      [ roadway direction ]
+      [ ]  -- devices
+
+/-- Eastward travel at 15 m/s: x = 0, 15, 30 m. -/
+def eastX (k : Nat) : Q := m (15 * (k : Int))
+
+/-- Westward travel at 7 m/s: x = 30, 23, 16 m. -/
+def westX (k : Nat) : Q := m (30 - 7 * (k : Int))
+
+/-- `holds` (compliant): A car on a roadway whose designated direction points east travels at 15 m/s due east: the component of its velocity along the designated direction is strongly positive. -/
 def holdsTrace : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun _k t =>
-    Build.scene t (some 1) [ car Build.east ] [ roadway ] [ ]
+  runTrace (some Build.east) eastX Build.east (Units.metresPerSecond 15)
 
-/-- `fails` (violated): A car travels west at 8 m/s on the same roadway, its velocity opposed to the designated direction. -/
+/-- `fails` (violated): The same roadway, designated east; the car travels at 7 m/s due west, so the component along the designated direction is about -7 m/s, below the negative of the tolerance. -/
 def failsTrace : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun _k t =>
-    Build.scene t (some 1) [ car Build.west ] [ roadway ] [ ]
+  runTrace (some Build.east) westX Build.west (Units.metresPerSecond 7)
 
-/-- `blind` (unknown): A car travels at 8 m/s on a roadway for which the source declares the designated direction absent. -/
+/-- `blind` (unknown): The car travels westward on a mapped roadway region for which the source records no designated direction: st.lane_direction is absent, so the sense of its travel along that region is unknown. -/
 def blindTrace : Trace :=
-  Build.trace 3 0 (Units.seconds 1) fun _k t =>
-    Build.scene t (some 1) [ car Build.east ] [ roadway ] [ ]
+  runTrace none westX Build.west (Units.metresPerSecond 7)
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=

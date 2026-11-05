@@ -1,0 +1,361 @@
+{
+ "case": {
+  "and": [
+   {
+    "args": [
+     {
+      "var": "v"
+     }
+    ],
+    "atom": "ru_motor_vehicle",
+    "params": []
+   },
+   {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "track1"
+       }
+      ],
+      "atom": "ru_motor_vehicle",
+      "params": []
+     },
+     {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "region1"
+         }
+        ],
+        "atom": "st_highway",
+        "params": []
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "v"
+           },
+           {
+            "var": "region1"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "track1"
+             },
+             {
+              "var": "region1"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "forall_user": "x1",
+              "body": {
+               "or": [
+                {
+                 "same": [
+                  {
+                   "var": "x1"
+                  },
+                  {
+                   "var": "v"
+                  }
+                 ]
+                },
+                {
+                 "same": [
+                  {
+                   "var": "x1"
+                  },
+                  {
+                   "var": "track1"
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "cmp": "eq",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "v"
+                  },
+                  {
+                   "lit": "x"
+                  }
+                 ],
+                 "measure": "kin_position"
+                },
+                "rhs": {
+                 "lit": {
+                  "den": 1,
+                  "num": 0
+                 },
+                 "unit": "metre"
+                }
+               },
+               {
+                "and": [
+                 {
+                  "cmp": "eq",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "track1"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "kin_position"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 5
+                   },
+                   "unit": "metre"
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "cmp": "eq",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "v"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "kin_position"
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "metre"
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "cmp": "eq",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "track1"
+                        },
+                        {
+                         "lit": "y"
+                        }
+                       ],
+                       "measure": "kin_position"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     },
+                     {
+                      "forall_user": "x2",
+                      "body": {
+                       "and": [
+                        {
+                         "cmp": "eq",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "x2"
+                           },
+                           {
+                            "lit": "x"
+                           }
+                          ],
+                          "measure": "kin_heading"
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 1,
+                           "num": 1
+                          },
+                          "unit": "ratio"
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "cmp": "eq",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "x2"
+                             },
+                             {
+                              "lit": "y"
+                             }
+                            ],
+                            "measure": "kin_heading"
+                           },
+                           "rhs": {
+                            "lit": {
+                             "den": 1,
+                             "num": 0
+                            },
+                            "unit": "ratio"
+                           }
+                          },
+                          {
+                           "and": [
+                            {
+                             "cmp": "eq",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "x2"
+                               },
+                               {
+                                "lit": "x"
+                               }
+                              ],
+                              "measure": "kin_velocity"
+                             },
+                             "rhs": {
+                              "lit": {
+                               "den": 1,
+                               "num": -5
+                              },
+                              "unit": "metre_per_second"
+                             }
+                            },
+                            {
+                             "and": [
+                              {
+                               "cmp": "eq",
+                               "lhs": {
+                                "args": [
+                                 {
+                                  "var": "x2"
+                                 },
+                                 {
+                                  "lit": "y"
+                                 }
+                                ],
+                                "measure": "kin_velocity"
+                               },
+                               "rhs": {
+                                "lit": {
+                                 "den": 1,
+                                 "num": 0
+                                },
+                                "unit": "metre_per_second"
+                               }
+                              },
+                              {
+                               "and": [
+                                {
+                                 "cmp": "eq",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "x2"
+                                   }
+                                  ],
+                                  "measure": "kin_speed"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 5
+                                  },
+                                  "unit": "metre_per_second"
+                                 }
+                                },
+                                {
+                                 "cmp": "eq",
+                                 "lhs": {
+                                  "args": [
+                                   {
+                                    "var": "x2"
+                                   },
+                                   {
+                                    "lit": "length"
+                                   }
+                                  ],
+                                  "measure": "kin_extent"
+                                 },
+                                 "rhs": {
+                                  "lit": {
+                                   "den": 1,
+                                   "num": 4
+                                  },
+                                  "unit": "metre"
+                                 }
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "entities": {
+  "track1": {
+   "kind": "track",
+   "id": 2
+  },
+  "region1": {
+   "kind": "region",
+   "id": 101
+  }
+ },
+ "at": 0
+}

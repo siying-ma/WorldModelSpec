@@ -146,17 +146,16 @@ rep["laws"]["NRS-484B-600-1e"]["rules"][0]["groundings"][0]["scan"]   # the expl
 python3 ../verifier_tools/make_package.py <run> --out <dir>        # then <dir>/install.sh
 ```
 
-The package takes the run's accepted rules and concepts, its reading, the full split's Core and
-`template/`. One caveat applies while the pipeline library's `Main.lean` (the monitor) is older than
-the one in `smoke25`: a newly built package registers composed rules the old way. Deliver
-`smoke25` as it is until the library's copy is updated.
+The package takes the run's accepted rules and concepts, its reading, the full split's Core,
+the monitor and the explainer from the pipeline library, and `template/`.
 
 ### 1.6 Time and memory
 
 - **Run time depends on the rule, not only on the trace.**
   - A speed cap takes about 16 ms per observation.
   - A rule that nests quantifiers over many regions can take far longer. NRS-484A-450-2 on a
-    recording with 34 regions did not finish 20 observations in 30 minutes.
+    recording with 34 regions takes 22 minutes for 300 observations and 42 minutes for 408; two
+    other recordings of it did not finish in an hour.
   - Use `--timeout`: such a rule reports `undecided`, which is not a match.
 - **Memory grows with the trace.** Each rule's process holds the decoded trace: about 2 GB for
   1,600 observations, and 11 GB for 4,500. Lower `--jobs` for long traces.

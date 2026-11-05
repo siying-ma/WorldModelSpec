@@ -32,6 +32,7 @@ layer or of the layers above it, and every file imports only files above it in t
 |  | `Vocab/World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
 |  | `Vocab/Assumptions.lean` | `asm.*` ids: legal region and calendar classes a scene supplies true, false or not at all. |
 |  | `Vocab/Atoms.lean` | One accessor per atom id (§2). |
+|  | `Vocab/RegionTable.lean` | What a region quantifier reads of a trace, built once per trace and kind and shared by the context: each scene's structures by id, each kind's candidate regions and kind rows; proved equal to the direct reading. |
 |  | `Vocab/Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |
 |  | `Vocab/Primitives.lean` | The evaluation context and one definition per primitive (§2): computations the language cannot express. |
 | `Language/` | `Language/Formula.lean` | The specification language as data: `Term` (with `sinceRise`, `aggregate`), `Formula` (with `rises`, `definedWhen`, `same`, quantifiers whose kind is an `Arg`), `Arg`, `CmpOp`, `AggOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |

@@ -2,412 +2,292 @@
  "run": "<run id>",
  "params": [
   {
-   "name": "p.standstill_speed_max",
-   "value": 0.1,
+   "name": "p.reverse_speed_tolerance",
+   "value": 0.3,
    "unit": "m/s",
-   "convention": "rest-detection resolution: the speed below which sampled position differences are indistinguishable from sensor noise at typical trace rates, so that the measurement counts as complete cessation from movement",
-   "source": "vehicle-dynamics instrumentation practice for zero-velocity detection (zero-velocity update thresholds in odometry and INS literature)",
-   "proposed": "smoke26/iter-001 NRS_484A_450_2"
+   "convention": "motion-detection convention: the magnitude below which a velocity component is measurement noise rather than travel, taken from the noise floor of positioning-derived speed",
+   "source": "stationarity thresholds used in vehicle-trajectory datasets (NGSIM, highD processing: 0.2–0.5 m/s)",
+   "proposed": "smoke27/iter-001 NRS_484B_113_2"
   },
   {
-   "name": "p.stop_point_tolerance",
+   "name": "p.yaw_rate_tolerance",
    "value": 1.0,
+   "unit": "deg/s",
+   "convention": "yaw-rate resolution convention: the magnitude below which a rate-of-turn reading is sensor noise or the jitter of keeping a straight course; it names the source's resolution only",
+   "source": "automotive-grade IMU yaw-rate noise and bias specifications (about 1 deg/s)",
+   "proposed": "smoke27/iter-001 NRS_484B_113_2"
+  },
+  {
+   "name": "p.corner_reach",
+   "value": 10.0,
    "unit": "m",
-   "convention": "stop-point tolerance: the distance from the required stopping place within which a halt counts as made at that place, set from stop-line placement and positioning accuracy",
-   "source": "MUTCD stop-line placement practice together with map-matching position accuracy",
-   "proposed": "smoke26/iter-001 NRS_484A_450_2"
-  },
-  {
-   "name": "p.intersection_view_sight_min",
-   "value": 60,
-   "unit": "m",
-   "convention": "intersection sight-distance model: the length of the intersecting approach that must be visible from the stopping place for a driver to see approaching traffic, computed for the intersecting way's prevailing speed and a driver's gap-acceptance time",
-   "source": "AASHTO Green Book intersection sight distance (Case B, stop-controlled approach)",
-   "proposed": "smoke26/iter-001 NRS_484A_450_2"
-  },
-  {
-   "name": "p.backing_speed_min",
-   "value": 0.1,
-   "unit": "m/s",
-   "convention": "rearward-motion resolution: the speed above which a measured velocity opposed to the heading is distinguishable from sensor noise at typical trace rates, so that the motion counts as motion",
-   "source": "vehicle-dynamics instrumentation practice for zero-velocity detection",
-   "proposed": "smoke26/iter-001 NRS_484B_113_2"
-  },
-  {
-   "name": "p.same_direction_cos_min",
-   "value": 0.95,
-   "unit": "ratio",
-   "convention": "heading-alignment tolerance: the cosine of the largest angle between headings still counted as the same direction, set to cover lane-keeping yaw and heading noise within a lane",
-   "source": "trajectory-analysis practice for same-direction classification (about 18 degrees)",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.following_time_headway_min",
-   "value": 2.0,
-   "unit": "s",
-   "convention": "time-headway convention on a dry surface: perception-reaction time plus the margin by which a follower's braking distance must not exceed the leader's, expressed as a time multiplied by the measured speed",
-   "source": "driver-behaviour and car-following literature; the two-second rule in driver training and highway capacity practice",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.following_time_headway_adverse_min",
-   "value": 4.0,
-   "unit": "s",
-   "convention": "time-headway convention on a degraded surface or in crowded traffic: the same stopping-distance model with the reduced friction coefficient of a wet, icy or snow-covered surface, and with the reduced escape room of dense traffic",
-   "source": "stopping-distance models with wet and icy friction coefficients (AASHTO Green Book deceleration rates)",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.adverse_curvature_min",
-   "value": 0.004,
-   "unit": "1/m",
-   "convention": "curvature above which the highway's alignment restricts the view and the available friction enough to call for the adverse headway, taken from the minimum radius of a design speed in the highway range",
-   "source": "AASHTO Green Book horizontal-curve design (a 250 m radius)",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.adverse_grade_min",
-   "value": 0.05,
-   "unit": "ratio",
-   "convention": "grade magnitude above which the slope changes braking distance enough to call for the adverse headway",
-   "source": "AASHTO Green Book grade-corrected stopping-sight-distance tables",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.traffic_vicinity_range",
-   "value": 100,
-   "unit": "m",
-   "convention": "the reach within which other road users count as the traffic upon the highway about the subject, set from the length of road a driver is responding to at highway speed",
-   "source": "traffic-flow practice for local density estimation over a road segment",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.traffic_crowded_count",
-   "value": 5,
-   "unit": "count",
-   "convention": "the number of road users within the vicinity range at or above which the traffic upon the highway counts as dense, so that the adverse headway applies",
-   "source": "Highway Capacity Manual level-of-service density bands converted to a count over the vicinity range",
-   "proposed": "smoke26/iter-001 NRS_484B_127_1"
-  },
-  {
-   "name": "p.caravan_min_count",
-   "value": 3,
-   "unit": "count",
-   "convention": "the number of other members, within the procession gap and travelling in the subject's direction, at or above which a close succession of motor vehicles counts as a caravan or motorcade rather than ordinary following",
-   "source": "traffic-flow practice for platoon identification (platoon size thresholds in arterial progression studies)",
-   "proposed": "smoke26/iter-001 NRS_484B_127_3"
-  },
-  {
-   "name": "p.caravan_member_gap_max",
-   "value": 60,
-   "unit": "m",
-   "convention": "the largest body gap within which two motor vehicles count as members of one close succession, taken from platoon headway criteria at highway speeds",
-   "source": "platoon-identification practice (headway thresholds of about three seconds at highway speed)",
-   "proposed": "smoke26/iter-001 NRS_484B_127_3"
-  },
-  {
-   "name": "p.procession_space_min",
-   "value": 10,
-   "unit": "m",
-   "convention": "gap-acceptance convention: the length of a design passenger vehicle plus a standing clearance at each end -- the space a vehicle must occupy at rest once it has entered the line",
-   "source": "design-vehicle lengths and standing clearances (AASHTO Green Book passenger-car design vehicle, about 6 m, with about 2 m of clearance at each end)",
-   "proposed": "smoke26/iter-002 NRS_484B_127_3"
-  },
-  {
-   "name": "p.procession_space_time_min",
-   "value": 1.0,
-   "unit": "s",
-   "convention": "gap-acceptance convention: the time headway an entering vehicle needs at the two ends of the space it occupies, taken together, multiplied by the measured speed of the line, so the required space grows with speed; about half a second at each end, the headway accepted at the small relative speeds of a merge into a line of traffic, and set so that a close succession within p.caravan_member_gap_max can still leave the required space at ordinary highway speeds",
-   "source": "gap-acceptance studies for merging into a traffic stream (lag and gap acceptance at low relative speed; critical-gap practice in the Highway Capacity Manual)",
-   "proposed": "smoke26/iter-002 NRS_484B_127_3"
-  },
-  {
-   "name": "p.motion_speed_min",
-   "value": 0.1,
-   "unit": "m/s",
-   "convention": "motion resolution: the speed above which a measured velocity is distinguishable from sensor noise, so that the road user counts as moving and so as being driven",
-   "source": "vehicle-dynamics instrumentation practice for zero-velocity detection",
-   "proposed": "smoke26/iter-001 NRS_484B_127_3"
-  },
-  {
-   "name": "p.direction_alignment_cos_min",
-   "value": 0.0,
-   "unit": "ratio",
-   "convention": "direction-agreement tolerance: the cosine of the largest angle between a road user's velocity and a region's designated direction still counted as travelling with that direction, set at a right angle so that any forward component counts as with the direction and only a component against it counts as against",
-   "source": "trajectory-analysis practice for wrong-way detection (sign of the along-direction velocity component)",
-   "proposed": "smoke26/iter-001 NRS_484B_220_1"
-  },
-  {
-   "name": "p.signal_lead_time",
-   "value": 2.0,
-   "unit": "s",
-   "convention": "signal-lead convention: the time before a lateral movement throughout which the indicator must have shown the side of the movement, taken from the lead time a following driver needs to perceive and react to the signal",
-   "source": "driver perception-reaction time practice and jurisdictional signalling-distance rules converted to a time at urban speeds",
-   "proposed": "smoke26/iter-001 NRS_484B_223_1b"
-  },
-  {
-   "name": "p.lane_change_clearance_min",
-   "value": 5,
-   "unit": "m",
-   "convention": "gap-acceptance convention: the smallest clearance between bodies at which a lane change is accepted, and the closest approach the movement must leave within the horizon",
-   "source": "lane-change gap-acceptance studies (minimum accepted clearances in naturalistic driving data)",
-   "proposed": "smoke26/iter-001 NRS_484B_223_1b"
-  },
-  {
-   "name": "p.lane_change_horizon",
-   "value": 3.0,
-   "unit": "s",
-   "convention": "the horizon over which the closest approach under the current velocities is computed for the movement, taken from time-to-collision practice for lane changes",
-   "source": "surrogate-safety-measure practice (time-to-collision horizons for lane-change conflicts)",
-   "proposed": "smoke26/iter-001 NRS_484B_223_1b"
-  },
-  {
-   "name": "p.lane_change_time_gap_min",
-   "value": 1.5,
-   "unit": "s",
-   "convention": "gap-acceptance convention: the time gap a following vehicle in the target lane must retain, the body gap being required to be at least the closing speed multiplied by this time",
-   "source": "lane-change gap-acceptance studies (critical time gaps for merging)",
-   "proposed": "smoke26/iter-001 NRS_484B_223_1b"
-  },
-  {
-   "name": "p.cautious_speed_max",
-   "value": 4.5,
-   "unit": "m/s",
-   "convention": "the cap on the speed of a cautious crossing of an uncontrolled conflict area: the crawl from which a vehicle halts within a few metres, above which no amount of visibility makes the crossing cautious",
-   "source": "low-speed crawl conventions for restricted-visibility junctions (MUTCD/AASHTO guidance on stop-controlled and signal-failure operation)",
-   "proposed": "smoke26/iter-001 NRS_484B_250_4_o2"
-  },
-  {
-   "name": "p.cautious_clearing_time_max",
-   "value": 4.0,
-   "unit": "s",
-   "convention": "stopping-sight-distance model: the perception-reaction plus braking time within which the visible stretch of the intersecting way must be clearable, so that the permitted speed falls with the distance that can be seen",
-   "source": "AASHTO stopping-sight-distance model (perception-reaction 2.5 s plus braking)",
-   "proposed": "smoke26/iter-001 NRS_484B_250_4_o2"
-  },
-  {
-   "name": "p.yield_clearance_min",
-   "value": 3.0,
-   "unit": "m",
-   "convention": "gap-acceptance and conflict-margin convention: the smallest clearance between the two bodies, at the closest approach their current velocities give, at which the subject counts as having granted precedence rather than proceeded in preference to the other; one design-vehicle width of lateral margin",
-   "source": "surrogate-safety and critical-gap practice (TRB gap-acceptance studies; conflict-margin thresholds)",
-   "proposed": "smoke26/iter-001 NRS_484B_250_4_o2"
+   "convention": "reach convention: the distance within which a junction region counts as the road user's own corner, set to the corner radius of an urban street junction plus a passenger-car length",
+   "source": "AASHTO Green Book minimum corner radii for urban intersections (4.5–9 m) and the P design vehicle length (5.8 m)",
+   "proposed": "smoke27/iter-001 NRS_484B_113_2"
   },
   {
    "name": "p.yield_conflict_horizon",
-   "value": 4.0,
+   "value": 3.0,
    "unit": "s",
-   "convention": "the horizon over which the closest approach of two bodies under their current velocities is computed for a junction conflict, taken from time-to-collision conventions for intersection conflicts",
-   "source": "surrogate-safety-measure practice (time-to-collision thresholds for intersection conflicts)",
-   "proposed": "smoke26/iter-001 NRS_484B_250_4_o2"
+   "convention": "conflict-prediction convention of surrogate safety measures: the look-ahead within which the closest approach of two bodies is predicted from the velocities observed at the instant",
+   "source": "FHWA Surrogate Safety Assessment Model (SSAM) time-to-collision thresholds (1.5–3 s)",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
-   "name": "p.immediate_hazard_arrival_max",
-   "value": 4.0,
-   "unit": "s",
-   "convention": "critical-gap convention: the time for an approaching vehicle, at its measured speed, to reach the intersection, at or below which it is so close as to constitute an immediate hazard to a manoeuvre across its path; the critical gap for a left turn across opposing traffic",
-   "source": "gap-acceptance practice (HCM critical-gap figures for permitted left turns; AASHTO intersection sight distance)",
-   "proposed": "smoke26/iter-001 NRS_484B_253_o1"
+   "name": "p.yield_min_clearance",
+   "value": 5.0,
+   "unit": "m",
+   "convention": "conflict-prediction convention: the centre-to-centre distance at the predicted closest approach below which the two bodies would be in conflict, set to the sum of two passenger-car half-diagonals plus a margin, since centre distance overstates a body clearance by about the two half-extents",
+   "source": "SSAM conflict thresholds with AASHTO P design-vehicle dimensions (5.8 m by 2.1 m)",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
-   "name": "p.opposed_direction_cos_min",
-   "value": 0.95,
+   "name": "p.opposite_direction_tolerance",
+   "value": 0.5,
    "unit": "ratio",
-   "convention": "direction-opposition tolerance: the cosine of the largest angle off exactly opposed between two designated directions of travel, or between a designated direction and a road user's heading, still counted as opposite directions",
-   "source": "lane-geometry tolerance practice (heading-alignment tolerances used for same-direction and oncoming tests)",
-   "proposed": "smoke26/iter-001 NRS_484B_253_o1"
-  },
-  {
-   "name": "p.turn_left_heading_change_min",
-   "value": 60,
-   "unit": "deg",
-   "convention": "turn-recognition convention: the leftward heading change over the recognition window above which a course change counts as a turn rather than a curve of the road or a lane change",
-   "source": "turning-movement geometry (AASHTO intersection turning paths)",
-   "proposed": "smoke26/iter-001 NRS_484B_253_o2"
+   "convention": "heading-opposition convention: two designated carrier directions count as opposed when the cosine of the angle between them is below the negative of this ratio, that is when they differ by more than 120 degrees",
+   "source": "the cosine tolerance the ontology's rel.oncoming contract uses for opposed headings",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
    "name": "p.turn_window",
-   "value": 8,
+   "value": 10.0,
    "unit": "s",
-   "convention": "the window behind the observation over which the heading change of a turn is integrated, taken from the duration of a turning movement at junction speeds",
-   "source": "turning-movement duration practice (intersection operations studies)",
-   "proposed": "smoke26/iter-001 NRS_484B_253_o2"
+   "convention": "manoeuvre-recognition convention: the window behind the observation over which a turn's course change is taken, set to the time a passenger car takes to complete a junction turn at turning speed",
+   "source": "AASHTO turning-path templates for the P design vehicle (a 90-degree turn at 15 km/h takes about 6 s)",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
-   "name": "p.yield_sign_approach_speed_max",
-   "value": 2.5,
-   "unit": "m/s",
-   "convention": "the speed at or below which an approach to a yield sign counts as “slowed” in the subsection's own words “slowed or stopped”: a walking-pace crawl at the place, from which a halt is immediate and from which the driver can take in the through highway",
-   "source": "yield-sign approach practice (MUTCD yield-sign operation; low-speed crawl conventions)",
-   "proposed": "smoke26/iter-001 NRS_484B_257_1_o1"
-  },
-  {
-   "name": "p.reversal_heading_change_min",
-   "value": 150,
+   "name": "p.turn_min_course_change",
+   "value": 45.0,
    "unit": "deg",
-   "convention": "reversal-recognition convention: the magnitude of heading change over the window above which the road user proceeds in the opposite direction, set below a half turn to allow for the alignment of the two directions of a way and for integration error",
-   "source": "manoeuvre-recognition practice for U-turn detection in trajectory data",
-   "proposed": "smoke26/iter-002 NRS_484B_227_1_o2"
+   "convention": "manoeuvre-recognition convention: the smallest course change read as a turn rather than a bend taken or a lane change, set below the course change of the most skewed junction leg",
+   "source": "AASHTO intersection design guidance (legs within 60–120 degrees of each other)",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
-   "name": "p.reversal_window",
-   "value": 20,
+   "name": "p.turn_max_course_change",
+   "value": 135.0,
+   "unit": "deg",
+   "convention": "manoeuvre-recognition convention: the largest course change still read as a turn, set below a half turn so that a reversal of direction is not read as a turn to the left",
+   "source": "AASHTO intersection design guidance and turning-path templates",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "value": 0.3,
+   "unit": "m/s",
+   "convention": "motion-detection convention: the speed below which a reading counts as no travel rather than movement",
+   "source": "stationarity thresholds used in vehicle-trajectory datasets (0.2–0.5 m/s)",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
+  },
+  {
+   "name": "p.direction_reversal_window",
+   "value": 20.0,
    "unit": "s",
-   "convention": "the window behind the observation over which the heading change of a reversal is integrated, long enough to cover a reversal made in several movements as the definition allows",
-   "source": "turning-path and multi-point-turn timing practice for design vehicles",
-   "proposed": "smoke26/iter-002 NRS_484B_227_1_o2"
+   "convention": "manoeuvre-recognition convention: the window behind the observation over which the course change of a reversal is taken, set to the time a passenger car takes to turn about at low speed, a multi-point turn included",
+   "source": "AASHTO turning-path templates for the P design vehicle and observed U-turn durations (10–20 s)",
+   "proposed": "smoke27/iter-001 NRS_484B_407"
   },
   {
-   "name": "p.centreline_proximity_max",
-   "value": 3.6,
-   "unit": "m",
-   "convention": "lane-width convention: the width, measured from the centreline, of the portion of the right half of the highway counted as nearest the centreline — one design lane width, so that on a two-lane two-directional road the single lane beside the line qualifies and on a wider road only the innermost lane does",
-   "source": "AASHTO design lane width (12 ft)",
-   "proposed": "smoke26/iter-002 NRS_484B_400_2a"
+   "name": "p.direction_reversal_opposition_tolerance",
+   "value": 30.0,
+   "unit": "deg",
+   "convention": "heading-opposition convention: the largest departure from an exact half turn still read as travelling back the way the road user came; the band is two-sided, a course change well beyond a half turn no longer leaving the vehicle in the opposite direction",
+   "source": "lane-level map heading tolerances and the skew of opposing roadway alignments",
+   "proposed": "smoke27/iter-001 NRS_484B_407"
   },
   {
-   "name": "p.standstill_yaw_rate_max",
-   "value": 2.0,
-   "unit": "deg/s",
-   "convention": "rotation-detection resolution at rest: the rate of change of heading below which a sampled heading difference is indistinguishable from heading noise on a standing body, so that a measured rotation at or below it leaves the halt a complete cessation from movement",
-   "source": "sensor-resolution practice for heading estimation of halted vehicles",
-   "proposed": "smoke26/iter-002 NRS_484B_250_4_o1"
-  },
-  {
-   "name": "p.approximately_same_time_window",
-   "value": 2.0,
-   "unit": "s",
-   "convention": "the largest interval between the two entry observations within which the entries count as made at approximately the same time: the critical gap practice uses for two conflicting approaches at an uncontrolled junction, within which the later entrant could not have cleared the conflict area before the earlier one arrived",
-   "source": "critical-gap practice for uncontrolled intersections (HCM gap-acceptance figures)",
-   "proposed": "smoke26/iter-002 NRS_484B_250_2"
-  },
-  {
-   "name": "p.curvature_resolution_min",
-   "value": 0.0005,
+   "name": "p.curvature_resolution",
+   "value": 0.001,
    "unit": "1/m",
-   "convention": "curvature-measurement resolution: the curvature magnitude at or above which a measured value is distinguishable from the zero of a straight alignment, taken from the lateral-position noise of a mapped centreline over one sampling interval; it states when a bend is measured at all and nothing about how sharp a bend must be",
-   "source": "road-geometry surveying and map-matching error practice",
-   "proposed": "smoke26/iter-002 NRS_484B_407"
+   "convention": "map-resolution convention: the curvature below which a roadway alignment is recorded as a tangent; it names the source's resolution only and sets no bound on how sharp a bend must be",
+   "source": "highway alignment practice, where radii above about 1000 m are treated as tangent",
+   "proposed": "smoke27/iter-001 NRS_484B_407"
   },
   {
-   "name": "p.crest_vicinity_max",
-   "value": 150,
+   "name": "p.crest_approach_reach",
+   "value": 170.0,
    "unit": "m",
-   "convention": "sight-distance model: the length of the approach to a crest within which the crest's vertical curve restricts the view ahead, taken from the stopping sight distance at highway speeds, so that a vehicle within that distance of the crest region is on the approach to or near it",
-   "source": "AASHTO Green Book crest vertical curve and stopping sight distance tables",
-   "proposed": "smoke26/iter-002 NRS_484B_407"
+   "convention": "stopping-sight-distance model: the reach from a crest region within which the crest withholds the view of the roadway beyond it, set to the stopping sight distance at ordinary highway design speed",
+   "source": "AASHTO Green Book stopping sight distance (about 170 m at 60 mph)",
+   "proposed": "smoke27/iter-001 NRS_484B_407"
   },
   {
-   "name": "p.turning_yaw_rate_min",
-   "value": 1.0,
-   "unit": "deg/s",
-   "convention": "yaw-rate resolution: the rate of change of heading at or above which a turning body is distinguishable from one holding a straight course, taken from the noise floor of a vehicle-grade yaw sensor",
-   "source": "inertial-sensor specification practice",
-   "proposed": "smoke26/iter-002 NRS_484B_407"
+   "name": "p.stop_point_tolerance",
+   "value": 1.5,
+   "unit": "m",
+   "convention": "stop-point convention of the ontology's approach reading: the bound within which a halt counts as made at the named place, and beyond which the road user is outside the mark's stopping zone upstream; set to about half a passenger-car length so that a halt with the body at the mark counts and a halt a vehicle-length short of it does not.",
+   "source": "stop-line and stop-bar placement practice in highway marking manuals (MUTCD-style stop-line setback), with the body-to-mark distance measured from the footprint.",
+   "proposed": "smoke28/iter-001 NRS_484A_450_2"
   },
   {
-   "name": "p.course_change_heading_min",
-   "value": 10,
-   "unit": "deg",
-   "convention": "course-change recognition convention: the heading change over the recognition window at or above which a vehicle has turned from a direct course, set from the heading excursion of a single lane change at highway speed, so that a departure from a direct course short of a junction turn is recognized",
-   "source": "lane-change kinematics studies",
-   "proposed": "smoke26/iter-002 NRS_484B_413_2"
+   "name": "p.intersection_view_sight_distance",
+   "value": 120.0,
+   "unit": "m",
+   "convention": "intersection-sight-distance model: the length of view along the intersecting way a halted driver needs before entering, taken as the departure sight distance for a passenger car entering a two-lane highway at ordinary arterial speed.",
+   "source": "AASHTO Green Book intersection sight distance tables (Case B departure sight distance).",
+   "proposed": "smoke28/iter-001 NRS_484A_450_2"
   },
   {
-   "name": "p.course_change_window",
-   "value": 6,
+   "name": "p.following_headway_min",
+   "value": 2.0,
    "unit": "s",
-   "convention": "the window behind the observation over which the heading change of a course change is integrated, taken from the measured duration of a completed lane change or junction turn at urban speeds",
-   "source": "lane-change and turn duration measurements",
-   "proposed": "smoke26/iter-002 NRS_484B_413_2"
+   "convention": "headway convention: the time headway a following driver needs to perceive the leader's deceleration and brake, so that the gap required is this time times the speed travelled; set to the two-second rule of driver-training and car-following practice for dry conditions.",
+   "source": "car-following and perception-reaction practice (AASHTO 2.5 s brake-reaction time; the two-second headway rule of driver education).",
+   "proposed": "smoke28/iter-001 NRS_484B_127_1"
   },
   {
-   "name": "p.reasonable_speed_base_max",
-   "value": 29,
-   "unit": "m/s",
-   "convention": "stopping-sight-distance model: the speed on a dry surface, full lane width, clear air and free flow at which the design stopping distance is still covered by the sight distance ordinarily available on an open highway; the base bound the other factors reduce",
-   "source": "AASHTO Green Book stopping sight distance tables",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.wet_surface_speed_factor",
-   "value": 0.8,
-   "unit": "ratio",
-   "convention": "friction-reduction convention: the fraction of the dry-surface bound left by the reduced tyre-pavement friction of a wet surface, from the ratio of wet to dry braking distances",
-   "source": "pavement friction and wet-weather speed studies",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.ice_surface_speed_factor",
-   "value": 0.5,
-   "unit": "ratio",
-   "convention": "friction-reduction convention for an icy or snow-covered surface: the fraction of the dry-surface bound left by the ratio of icy to dry braking distances",
-   "source": "winter-maintenance friction measurements",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.precipitation_speed_factor",
-   "value": 0.9,
-   "unit": "ratio",
-   "convention": "the fraction of the clear-weather bound left while rain or snow is falling, from the measured reduction in sight distance and in available friction during precipitation",
-   "source": "adverse-weather speed and visibility studies",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.darkness_speed_factor",
-   "value": 0.8,
-   "unit": "ratio",
-   "convention": "the fraction of the daylight bound left by headlamp-limited sight distance in darkness, from the low-beam illuminated distance against the stopping distance",
-   "source": "night-driving sight distance practice",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.steep_grade_speed_factor",
-   "value": 0.8,
-   "unit": "ratio",
-   "convention": "grade-braking convention: the fraction of the level-road bound left where the slope lengthens the braking distance, from the grade-corrected stopping distance formula",
-   "source": "AASHTO Green Book stopping distance on grades",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.crowded_traffic_speed_factor",
-   "value": 0.7,
-   "unit": "ratio",
-   "convention": "the fraction of the free-flow bound left where other members of the traffic are close enough that their manoeuvres bear on the subject, from the speed-density relation of a crowded stream",
-   "source": "traffic-flow speed-density relations",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.nominal_lane_width",
-   "value": 3.6,
-   "unit": "m",
-   "convention": "design lane width: the width at and above which the lane imposes no reduction on the bound; below it the bound falls in proportion to the measured width",
-   "source": "AASHTO Green Book lane width standards",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.clearing_time_min",
+   "name": "p.following_headway_adverse_surface",
    "value": 4.0,
    "unit": "s",
-   "convention": "stopping-distance model: the perception-reaction plus braking time within which the vehicle must be able to halt inside the distance it can see, so the bound is that distance divided by the time, written as a product",
-   "source": "AASHTO Green Book perception-reaction and braking times",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
+   "convention": "headway convention for adverse conditions: the time headway required where the surface, the weather or the road's alignment lengthens the stopping distance or shortens the view, taken as double the dry-condition headway, the customary wet-weather allowance.",
+   "source": "wet-pavement stopping-distance allowances in highway design practice and the doubled-headway rule for rain, snow and ice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.following_traffic_density_count",
+   "value": 5,
+   "unit": "count",
+   "convention": "traffic-density convention: the number of traffic members present on the same highway at the observation at or above which the stream counts as dense, so that the adverse headway applies; set to the platoon size at which interaction between successive road users is continuous.",
+   "source": "platoon and car-following density thresholds in traffic-flow practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.same_direction_tolerance",
+   "value": 0.866,
+   "unit": "ratio",
+   "convention": "heading-alignment convention: two headings count as aligned when the cosine of the angle between them is above this ratio, that is when they differ by less than thirty degrees, the departure a lane change or a bend produces without ending travel in the same direction.",
+   "source": "heading-tolerance practice for same-direction relations in trajectory analysis.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_1"
+  },
+  {
+   "name": "p.free_flow_min_speed",
+   "value": 8.0,
+   "unit": "m/s",
+   "convention": "traffic-stream convention: the speed at or above which the stream a road user travels in runs freely, so that a follower can open and hold a long space; below it the stream is queued and the space cannot be kept. Set to about a third of an ordinary rural highway speed, the breakdown speed of a congested stream.",
+   "source": "speed-flow breakdown values in highway capacity practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_2"
+  },
+  {
+   "name": "p.pass_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "manoeuvre-recognition convention: the window behind the observation within which the subject must have been behind the road user it is now going by for the movement to be read as one pass; set to the time a heavy vehicle takes to draw level with a vehicle it overtakes at a modest speed difference.",
+   "source": "overtaking-manoeuvre durations in passing sight-distance practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_2"
+  },
+  {
+   "name": "p.gap_acceptance_headway",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "gap-acceptance convention: the time headway a merging driver accepts in front of and behind itself, so that the space a third vehicle needs is its length plus twice this time at the speed of the stream; set to the headway a driver accepts when entering a moving stream.",
+   "source": "critical-gap values for merging and lane-changing in highway capacity and gap-acceptance studies.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_3"
+  },
+  {
+   "name": "p.entering_vehicle_length",
+   "value": 5.0,
+   "unit": "m",
+   "convention": "gap-acceptance convention: the length allowed for the vehicle that is to enter and occupy the space, set to the design length of a passenger car, the shortest road user the words admit as entering.",
+   "source": "passenger-car design-vehicle dimensions in highway geometric design practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_3"
+  },
+  {
+   "name": "p.procession_window",
+   "value": 10.0,
+   "unit": "s",
+   "convention": "configuration-recognition convention: the window behind the observation over which close succession must have held for a line of road users to be read as travelling together rather than as one vehicle momentarily catching another; set to a few car-following cycles.",
+   "source": "platoon-identification windows in traffic-flow measurement practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_3"
+  },
+  {
+   "name": "p.procession_gap_max",
+   "value": 30.0,
+   "unit": "m",
+   "convention": "configuration-recognition convention: the largest longitudinal body gap at which successive road users are still read as travelling in one succession; set to the gap beyond which a following vehicle is no longer coupled to the stream ahead of it at ordinary rural speeds. It recognizes the configuration and sets no bound on how much space the duty requires.",
+   "source": "platoon headway criteria in traffic-flow practice.",
+   "proposed": "smoke28/iter-001 NRS_484B_127_3"
+  },
+  {
+   "name": "p.cautious_entry_speed_max",
+   "value": 4.5,
+   "unit": "m/s",
+   "convention": "intersection-entry speed convention: the crawl speed at or below which a driver entering a junction with no working control can halt within the short length of road it can see across the junction; set to about ten miles per hour, the speed highway practice treats as a cautious entry.",
+   "source": "uncontrolled-intersection and limited-sight-distance entry speed practice in highway design and driver-training material.",
+   "proposed": "smoke28/iter-001 NRS_484B_250_4_o2"
+  },
+  {
+   "name": "p.simultaneous_entry_window",
+   "value": 2.0,
+   "unit": "s",
+   "convention": "simultaneity convention of junction conflict analysis: the largest interval between two entries into one junction at which the two are still read as made at approximately the same time, set to the time a passenger car takes to clear a small junction from its entry at ordinary entry speed, since entries farther apart than that leave no conflict for the right-of-way rule to resolve",
+   "source": "junction capacity and conflict-analysis practice, where the critical headway for a crossing conflict at a minor junction is of the order of a couple of seconds",
+   "proposed": "smoke28/iter-001 NRS_484B_250_2"
+  },
+  {
+   "name": "p.immediate_hazard_arrival_time",
+   "value": 5.0,
+   "unit": "s",
+   "convention": "gap-acceptance convention: the time within which an approaching vehicle's arrival at the junction leaves a driver crossing or turning across its path no acceptable gap, set to the time a passenger car needs to complete a turn or a crossing through an ordinary junction from a standing start",
+   "source": "critical-gap values of junction gap-acceptance practice, where the critical gap for a left turn across opposing traffic is of the order of five seconds",
+   "proposed": "smoke28/iter-001 NRS_484B_253_o1"
+  },
+  {
+   "name": "p.yield_approach_speed_max",
+   "value": 4.5,
+   "unit": "m/s",
+   "convention": "yield-sign approach convention: the speed at or below which a vehicle approaching a yield sign counts as having slowed for the traffic it must yield to, set to the crawl speed from which a passenger car can halt within the stop-point tolerance of the place the sign governs",
+   "source": "yield-control approach-speed practice, where a yielding vehicle is expected to approach at a speed from which it can stop within a car length, of the order of ten miles per hour",
+   "proposed": "smoke28/iter-001 NRS_484B_257_1_o1"
+  },
+  {
+   "name": "p.centreline_proximity_reach",
+   "value": 3.6,
+   "unit": "m",
+   "convention": "lane-width convention: the lateral reach from a road user within which the centreline counts as the mark its own half's innermost portion abuts, set to one urban traffic lane width, since a vehicle farther than a lane's width from the centreline has another line of vehicles' width of road between it and the centre",
+   "source": "urban geometric design practice, where a through traffic lane is of the order of twelve feet wide",
+   "proposed": "smoke28/iter-001 NRS_484B_400_2a"
+  },
+  {
+   "name": "p.speed_reaction_time",
+   "value": 1.5,
+   "unit": "s",
+   "convention": "stopping-distance model: the perception and reaction time allowed before braking begins, during which the vehicle travels at its current speed",
+   "source": "geometric design practice for stopping sight distance, which allows about two and a half seconds for an unexpected hazard and shorter times for an attentive driver anticipating one",
+   "proposed": "smoke28/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_stopping_deceleration_dry",
+   "value": 3.5,
+   "unit": "m/s2",
+   "convention": "stopping-distance model: the deceleration a passenger car achieves in a controlled emergency stop on a dry paved surface, which with the reaction time fixes the distance within which it can halt",
+   "source": "geometric design practice for stopping sight distance, which uses a deceleration of about 3.4 m/s2 on a dry surface",
+   "proposed": "smoke28/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.speed_stopping_deceleration_adverse",
+   "value": 1.8,
+   "unit": "m/s2",
+   "convention": "stopping-distance model: the deceleration a passenger car achieves in a controlled stop on a wet, icy or snow-covered surface or in falling precipitation, about half the dry value",
+   "source": "wet and winter friction-factor practice, where available friction falls to roughly half of the dry value",
+   "proposed": "smoke28/iter-001 NRS_484B_600_1a"
+  },
+  {
+   "name": "p.reference_lane_width",
+   "value": 3.6,
+   "unit": "m",
+   "convention": "narrow-highway speed convention: the lane width at or above which the stopping and curvature bounds apply in full, below which they are reduced in the ratio of the width available to this reference",
+   "source": "urban and rural geometric design practice, where a full through traffic lane is of the order of twelve feet wide",
+   "proposed": "smoke28/iter-001 NRS_484B_600_1a"
   },
   {
    "name": "p.lateral_acceleration_max",
-   "value": 2.0,
-   "unit": "m/s^2",
-   "convention": "side-friction convention: the lateral acceleration a curve may impose on the vehicle at the bound, from the comfortable side-friction factors of horizontal curve design",
-   "source": "AASHTO Green Book side friction factors",
-   "proposed": "smoke26/iter-002 NRS_484B_600_1a"
-  },
-  {
-   "name": "p.following_lateral_offset_max",
-   "value": 1.8,
-   "unit": "m",
-   "convention": "same-line-of-travel tolerance: the largest offset across the subject's heading, between the two vehicles' reference points, within which the two travel in one line of travel, set at half the width of a standard lane so that a vehicle in the line beside the subject lies beyond it while a vehicle offset within its own line lies within it",
-   "source": "AASHTO Green Book lane widths (a 3.6 m lane) and design-vehicle widths",
-   "proposed": "smoke26/iter-002 NRS_484B_127_1"
+   "value": 3.0,
+   "unit": "m/s2",
+   "convention": "side-friction convention: the lateral acceleration a bend may impose on a passenger car at a reasonable speed, speed squared times curvature being that acceleration",
+   "source": "horizontal-curve design practice, where the side friction factor assumed for comfort at highway speeds is of the order of 0.3 g",
+   "proposed": "smoke28/iter-001 NRS_484B_600_1a"
   }
  ],
  "aggregates": [],
@@ -417,19 +297,24 @@
  },
  "declarations": [
   {
-   "id": "asm.outside_business_district",
-   "meaning": "The place the road user occupies at the observation lies outside any business district: no territory contiguous to and including the highway there is declared, for this map or trace, to have buildings in use for business or industrial purposes occupying the frontage a business district requires. The source declares it per map or per trace; where it is not declared, the fact is unknown.",
-   "proposed": "smoke26/iter-001 NRS_484B_127_3"
+   "id": "asm.way_within_city_limits",
+   "meaning": "the highway the road user is on lies inside the territorial limits of an incorporated city",
+   "proposed": "smoke27/iter-001 NRS_484B_113_2"
   },
   {
-   "id": "int.turn_left",
-   "meaning": "The source's current plan for the road user is to turn to the left at the target region: the declaration is true where that plan includes a left turn there, false where the plan decides otherwise for that target (another manoeuvre, passing through, a left turn cancelled or already completed), left out where the plan does not decide it, and absent where the source has no plan for that road user at that target. It follows the source's declaration and not the road user's motion, so a left turn that is blocked, delayed or under way stays true while the plan holds it.",
-   "proposed": "smoke26/iter-001 NRS_484B_253_o1"
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for this road user at the named region is to turn to the left there",
+   "proposed": "smoke27/iter-001 NRS_484B_250_1"
   },
   {
-   "id": "asm.in_business_or_residential_district",
-   "meaning": "The place the road user occupies at the observation lies within a business or a residential district: the territory contiguous to and including the highway there is declared, for this map or trace, to have buildings in use for business or industrial purposes, or dwellings or dwellings combined with such buildings, occupying the frontage such a district requires. The source declares it per map or per trace; where it is not declared, the fact is unknown.",
-   "proposed": "smoke26/iter-002 NRS_484B_413_2"
+   "id": "asm.way_outside_business_district",
+   "meaning": "the stretch of highway the road user is on is not bordered by buildings in business or industrial use occupying a continuous frontage along it",
+   "proposed": "smoke28/iter-001 NRS_484B_127_3"
+  },
+  {
+   "id": "asm.way_within_business_or_residential_district",
+   "meaning": "the stretch of highway the road user is on is bordered by buildings in business use occupying a continuous frontage along it, or by dwellings and other residential buildings occupying such a frontage",
+   "proposed": "smoke28/iter-001 NRS_484B_413_2"
   }
  ]
 }

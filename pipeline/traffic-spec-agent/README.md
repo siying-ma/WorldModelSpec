@@ -134,6 +134,24 @@ python -m harness loop --run_id <run> --laws laws/example/<subset>/laws.jsonl \
     --reviewer_model <model> --review_effort high \
     --plan_batch <n> --max_iterations <n> --workers <n>
 
+# a training run (operator, 2026-11-03): the node behaviour review and its Stage A/B are suspended,
+# the concept review and the aggregate verifier stay; once the loop has stopped, the frozen library
+# is scored on the labelled training recordings
+python -m harness loop --run_id <run> --laws <subset> --feedback labels \
+    --reviewer_model <model> --aggregate_verifier_model <model> [--aggregate_verifier_budget_usd <usd>] ...
+python -m harness label_check <run>
+
+# a training run with label repair inside the loop: each law whose plan is gated is checked on the
+# training recordings in a candidate library and routed by its outcome (a mismatch, or an unknown the
+# rule can remove, goes to a label repair; aligned and unverified are accepted); at most
+# --label_repair_attempts repairs per law and --label_repair_budget over the run
+python -m harness loop --run_id <run> --laws <subset> --feedback labels --label_repair \
+    --label_dataset ../datasets/demo-accepted-191-core-v2-train \
+    [--label_repair_attempts 2] [--label_repair_budget 10] ...
+
+# the report-only source check of a dataset: each recording's declarations against its trace
+python -m recorded.source_check <dataset> [--out <file>] [--laws <id>,<id>] [--jobs <n>]
+
 # a test run on top of a training run: add-only, the training run's nodes and concepts read-only
 python -m harness loop --run_id <test run> --laws laws/example/test/laws.jsonl --mode test --base_run <training run> \
     --ontology_file ontology/ATOMS_train.md --reading library/TrafficSpec/Readings/lasvegas.json --max_iterations <n>
@@ -144,6 +162,7 @@ python -m harness validate --blueprint_file <blueprint.jsonl> --laws <laws.jsonl
 python -m harness gate --run_id <run> --node_id <node>   # the gate for one node or concept id (what a coding session runs)
 python -m harness surface                                  # the generated Core surface a coding session is shown
 python -m harness verify --run_id <run>                    # today's gates on every record of the run and its base chain, the active library's witnesses, changed contexts; fenced records reported apart
+python -m harness label_check <run>                       # once the loop has stopped: the frozen library scored on the labelled training recordings (pipeline/datasets/demo-accepted-191-core-v2-train); writes results/<run>/label_check/
 python -m harness index                                    # regenerate the registries
 python -m harness status --run_id <run>
 python -m harness reopen --run_id <run> --laws <id>[,<id>]   # a law not accepted and not blocked on a gap back to open with a fresh
@@ -209,7 +228,27 @@ They share an evaluation lock that only the isolated rerun of a resource failure
 Integration holds the library-wide lock throughout. `--plan_turns` caps a plan or
 repair session.
 
-**The behaviour review and its two judges.** `--reviewer_model <model>` is required (a model of
+**Labels, intervals and unknowns.** A label judges the ego (the trace's subject). The dataset's
+label contract says what it covers: under v1 the whole recording; under v2 the closed interval
+`scoring_interval` (`start_ms`, `end_ms` on the trace's clock, each on an observation, a `source` in
+the scenario design and `confirmed: true` from the data producer). Under v2 the whole trace is
+evaluated and only the verdicts inside the interval are joined (`monitor --json --segments` exports
+the timeline with its reasons, and `explain --scan --from --to` chooses its observations inside the
+interval); a label without a valid confirmed interval is `label_unverified`, kept in the fixed set
+and never compared. The fixed set, the interval set (`label_set`), the label contract, the scoring
+code and the limits are bound at the run's start; a change refuses resumption. An unknown recording
+keeps its reasons as blockers, each with a class and a handling: only `library` sends the law to a
+coverage repair (outcome `undecided`); `data`, `time_contract`, `harness`, `aggregate` and
+`investigate` are reported. The source check is computed once with the fixed set and stored in
+`results/<run>/source_check.json`; it changes no status, and only a label repair is shown it, as
+diagnostics. A Smoke 1 run (`--feedback labels` without `--label_repair`) freezes the library and
+scores it after the loop; a Smoke 2 run adds the repairs.
+
+**The behaviour review and its two judges.** Under `--feedback labels` (training) the node behaviour
+review and its two judges are not run: a gated node is accepted, and the run is scored afterwards by
+`label_check`; the concept review below is unchanged, and the aggregate verifier takes its own
+`--aggregate_verifier_model`, `--aggregate_verifier_effort` and `--aggregate_verifier_budget_usd`.
+Under `--feedback review` (the default) everything below applies. `--reviewer_model <model>` is required (a model of
 another vendor than the agents', such as an OpenAI model; `--allow_same_vendor` overrides the check;
 `OPENAI_API_KEY` must be set in the loop's shell, and no Claude session is launched with it; only
 `--dry_run` runs without it). The *behaviour review*, one per node the gate accepts, writes each
@@ -433,6 +472,10 @@ at start are kept in the snapshot until `TO_USER.md` receives them.
 Plan validation returns a node or concept record that claims an atom or primitive reading a region (other than a region kind) without claiming, for each of its region arguments, a kind that can bind it: one whose regions include a kind Core declares there (`TraceLint.regionArgKinds`: per atom or primitive and argument index, the named kind lists the trace check holds the field read there to, or any; printed by `scripts/RegionKinds.lean`, cached in `library/.lake/region_kinds/` on the split, Core, the exporter and its schema; a build-time `#guard` holds the table to exactly one entry per region argument of the dispatch tables; a failed export or a missing entry stops the run as a validator fault, never read as any; a probe of Core over admitted traces, `scripts/tests/region_kinds_probe.lean`, is a regression test that refutes a table too narrow or too broad and never supplies a constraint). A concept with a region formal is exempt, its caller's quantifier naming that kind. How the region is tied to the road user is the formula's, checked at the gate (`UNANCHORED_VARIABLE`). Validator A returns a concept
 whose contract states a figure its `literals` do not declare, and one with a literal formal whose
 values are region or device kinds that does not claim the kind atom of each (the body reads them all).
+It also returns a node scenario other than `blind` that expects unknown without a history boundary:
+only `blind` carries masked atoms into its witness, and `Scenario.run` admits an unknown witness only for
+an atom its manifest masks or, on a history-boundary witness, a window truncated at the trace start. Whether
+a `blind` mask leaves the rule unknown is the gate's, on the built witness.
 
 **Do not edit the pipeline tree while a loop runs.** The gate digests the whole tree; an edit to the
 harness or the prompts during a coding session is a scope violation charged to that law.
@@ -622,7 +665,9 @@ literal for a parameter that is no figure the record declares in the unit the co
 literal zero included; the units of what a call passes are the dimension check's), `WITNESS_FAIL` (a planned scenario
 has no witness, a verdict differs from the planned one, `idle` grounds a binder to a track that never appears, `blind` is unknown for
 anything but its masked atoms, or its manifest masks something other than the node's `masked`; a measured relation a witness
-supplies that Core, computing it from the same scene, contradicts; a window holding no observation),
+supplies that Core, computing it from the same scene, contradicts; a window holding no observation; a witness
+`Scenario.run` rejects is reported once by name, with the verdict the rule reached and its unknown reasons, and for a
+witness expecting unknown what its manifest masks),
 `VACUOUS` (a leaf no decided witness exercises; `blind` does not count), `GATE_TIMEOUT` (the harness
 ran out of time evaluating the formulas, the details giving the part it was stopped in, the witnesses
 that passed, did not pass or never ran with their times, and for the adequacy check its size, or a

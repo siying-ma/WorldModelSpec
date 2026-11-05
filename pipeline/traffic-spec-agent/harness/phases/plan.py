@@ -14,7 +14,27 @@ from ..lean import surface
 from . import review as review_phase
 from ..model import blueprint
 from ..model.blueprint import ConceptRecord, Node
-from ..store.state import Run
+from ..store.state import Run, node_reviews
+
+
+
+def node_upheld_block(run: Run, laws: set[str]) -> str:
+    """The node obligations earlier behaviour reviews upheld against these laws, for a planning or
+    repair session; none under `feedback: labels`, where no node review runs and no node ruling is read."""
+    if not node_reviews(run.opts):
+        return "## Situations decided against earlier records\n\n(none)\n"
+    return review_phase.upheld_block(run, laws)
+
+def evidence_block(run: Run, laws: list[corpus.Law]) -> str:
+    """The evidence a planning session is shown: under `label_repair`, the label evidence of each of
+    these laws that awaits its label repair (the block its last committed label check rendered);
+    otherwise the node obligations earlier reviews upheld (`node_upheld_block`)."""
+    if not getattr(run.opts, "label_repair", False):
+        return node_upheld_block(run, {l.id for l in laws})
+    states = getattr(run, "label_states", {}) or {}
+    blocks = [(run.dir / states[l.id]["evidence"]).read_text(encoding="utf-8") for l in laws
+              if states.get(l.id, {}).get("state") == "awaiting_label_repair" and (run.dir / states[l.id].get("evidence", "")).is_file()]
+    return "\n".join(blocks) or "## Label mismatches\n\n(none: no law of this plan awaits a label repair)\n"
 
 
 def parameter_catalogue(reading: Reading) -> str:
@@ -46,10 +66,10 @@ def declaration_catalogue(reading: Reading, pending: list[dict] | None = None) -
 
 
 PLACEHOLDERS = ("laws", "definitions", "ontology", "formula_language", "concept_language", "library_summary", "concepts", "mapping_index",
-                "parameters", "gaps", "feedback", "upheld", "previous_records", "user_hints", "anchors", "aggregate_atom")
+                "parameters", "gaps", "feedback", "evidence", "previous_records", "user_hints", "anchors", "aggregate_atom")
 PLACEHOLDERS_REPAIR = ("concept", "verdict", "task_result", "final_files", "ontology", "formula_language", "concept_language", "concepts",
                        "definition", "users")
-PLACEHOLDERS_NODE_REPAIR = ("law", "definitions", "node", "verdict", "upheld", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
+PLACEHOLDERS_NODE_REPAIR = ("law", "definitions", "node", "verdict", "evidence", "coder_narrowings", "task_result", "final_files", "ontology", "formula_language",
                             "concept_language", "concepts", "parameters", "anchors", "aggregate_atom")
 
 
@@ -506,7 +526,7 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
                       + declaration_catalogue(Reading(run.reading_file), pending),
         "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
-        "upheld": review_phase.upheld_block(run, {l.id for l in laws}),
+        "evidence": evidence_block(run, laws),
         "previous_records": previous_records(run, laws),
         "user_hints": run.read_hints(),
         "anchors": ontology.anchors_text(onto),
@@ -538,6 +558,12 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
 PLAN_OUTPUTS = ("blueprint.jsonl", "aggregates.jsonl", "PLAN.md")
 
 
+def concept_state_line(run: Run, cid: str) -> str:
+    """The concept's state as its repair is shown it: what it may change under its id follows from it."""
+    from .candidate import concept_state
+    return f"\n\nThe concept is {concept_state(run, cid)}.\n"
+
+
 def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path, defs: list[dict],
                users: list[dict]) -> Path:
     """One repair session for a concept the gate or the review returned: it sees the record, the
@@ -563,7 +589,7 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
         "ontology": onto.text, "formula_language": surface.formula_language(), "concept_language": surface.concept_language(),
         "concepts": surface.concepts_table(run.all_concepts()), "definition": definition,
-        "users": ", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)"})
+        "users": (", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)") + concept_state_line(run, rec.id)})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object per line — the revised concept record with the same `concept_id`; or a split, `{\"concept_id\": \"<id>\", "
                "\"withdraw\": \"<why the notion is two notions>\", \"replaced_by\": [\"<new id>\", ...]}` followed by one line per "
@@ -671,7 +697,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
                        + definitions_mod.render_sources(definitions_mod.cited_sources(run, [law], [node]), definitions_mod.CITED_HEADING),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
-        "verdict": verdict, "upheld": review_phase.upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
+        "verdict": verdict, "evidence": node_upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + declaration_catalogue(reading),

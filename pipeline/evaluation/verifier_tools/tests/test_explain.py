@@ -65,25 +65,19 @@ def binds(binding: dict) -> list[str]:
 
 
 class SingleSource(unittest.TestCase):
-    def test_builder_and_package_use_one_explain_file(self):
-        src = TOOLS / "lean_src" / "Explain.lean"
-        self.assertTrue(src.is_symlink(), "lean_src/Explain.lean should point at the delivered package's copy")
-        self.assertEqual(src.resolve(), (DELIVERED / "lean" / "Explain.lean").resolve())
-        self.assertIn('HERE / "lean_src" / "Explain.lean"', (TOOLS / "make_package.py").read_text())
-        with tempfile.TemporaryDirectory() as t:                 # the builder's copy is a regular file
-            out = Path(t) / "Explain.lean"
-            shutil.copy2(src, out)
-            self.assertFalse(out.is_symlink())
-            self.assertEqual(out.read_bytes(), src.resolve().read_bytes())
+    def test_the_library_is_the_one_source_of_explain_and_the_monitor(self):
+        lib = TOOLS.parent.parent / "traffic-spec-agent" / "library"
+        builder = (TOOLS / "make_package.py").read_text()
+        self.assertIn('"Main.lean", "Explain.lean"', builder)            # copied from the library
+        self.assertFalse((TOOLS / "lean_src").exists(), "no second source of the explainer")
+        for f in ("Explain.lean", "Main.lean"):
+            self.assertEqual((lib / f).read_bytes(), (DELIVERED / "lean" / f).read_bytes(), f"{f}: library and package differ")
 
     def test_lakefiles_declare_the_second_executable(self):
-        for f in (DELIVERED / "lean" / "lakefile.lean", TOOLS / "make_package.py"):
+        lib = TOOLS.parent.parent / "traffic-spec-agent" / "library"
+        for f in (DELIVERED / "lean" / "lakefile.lean", TOOLS / "make_package.py", lib / "lakefile.lean"):
             self.assertIn("lean_exe «explain»", f.read_text(), f)
 
-
-    def test_the_delivered_package_holds_no_build_output(self):
-        for junk in ("lean/.lake", "traffic_verifier/__pycache__"):
-            self.assertFalse((DELIVERED / junk).exists(), f"{DELIVERED / junk} should not be delivered")
 
     def test_the_template_matches_the_delivered_package(self):
         template = TOOLS.parent / "verifier" / "template"

@@ -108,6 +108,9 @@ def harness_env(shell_timeout: float | None = None) -> dict[str, str]:
     shell command may run that long in the foreground: a gate waits for the library lock behind
     other sessions' gates and then runs, and only the session's own limit bounds both."""
     env = {"PYTHONPATH": str(paths.REPO.resolve())}
+    if paths.LIBRARY.resolve() != (paths.REPO / "library").resolve():   # a session coding in a candidate: its gate runs there
+        from ..phases.candidate import CANDIDATE_ENV
+        env[CANDIDATE_ENV] = str(paths.LIBRARY.parent.parent.resolve())
     if shell_timeout:
         ms = str(int(shell_timeout * 1000))
         env.update({"BASH_DEFAULT_TIMEOUT_MS": ms, "BASH_MAX_TIMEOUT_MS": ms})

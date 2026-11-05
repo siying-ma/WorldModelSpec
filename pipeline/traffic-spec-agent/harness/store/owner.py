@@ -34,8 +34,11 @@ STOP = threading.Event()
 ENV = "TRAFFIC_SPEC_OWNER"
 LIB_ENV = "TRAFFIC_SPEC_LIBRARY"
 #: The harness's own files in the library besides the lock: rewritten while sessions run (the
-#: owner's record) or between registry builds (the inactive records), never by a session.
-HARNESS_FILES = (".run.owner.json", ".inactive.json")
+#: owner's record), between registry builds (the inactive records) or at a candidate's commit (its
+#: pointer to the journal), never by a session.
+HARNESS_FILES = (".run.owner.json", ".inactive.json", ".candidate_pending.json")
+#: The library's pointer to a committed candidate transaction not yet applied: completed by the next owner.
+PENDING_FILE = ".candidate_pending.json"
 _FD = None
 _RECORD: dict = {}
 _LOCK = threading.Lock()
@@ -216,6 +219,10 @@ def acquire(run_id: str, force: bool = False) -> str:
         os.ftruncate(fd.fileno(), 0)
     os.environ[ENV] = _RECORD["nonce"]
     os.environ[LIB_ENV] = library_id()
+    from ..phases.candidate import recover_pending        # a transaction a stopped owner committed is completed before any use
+    done = recover_pending()
+    if done:
+        print(f"[owner] {done}")
     return _RECORD["nonce"]
 
 
@@ -235,6 +242,17 @@ def unregister(pgid: int) -> None:
     with _LOCK:
         if _FD is not None and pgid in _RECORD["pgids"]:
             _RECORD["pgids"].remove(pgid); _write()
+
+
+def holds() -> bool:
+    """Whether this process owns the library."""
+    return _FD is not None
+
+
+def children() -> list[int]:
+    """The process groups this owner has started and not yet seen end (sessions and toolchain runs)."""
+    with _LOCK:
+        return list(_RECORD.get("pgids", [])) if _FD is not None else []
 
 
 def check_delegated() -> None:

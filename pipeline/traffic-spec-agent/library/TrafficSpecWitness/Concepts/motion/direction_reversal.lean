@@ -1,31 +1,32 @@
 /-
   Witnesses for drv.motion.direction_reversal.
 
-  The instance. `heading_change_min` is 150 degrees — a bound near a half turn, set below 180 as
-  the parameter's meaning asks; `window` is 9 seconds, the length of the window behind over which
-  the heading change is accumulated. Both figures are this witness's own.
+  One car, track 1, half-extents 2 m × 1 m × 1 m, travelling at 6 m/s throughout, observed every
+  second for eighteen observations (t = 0 … 17000 ms). The scenes carry no region and no device:
+  the concept reads the yaw rate (through prim.heading_change) and the speed, and nothing else.
+  The instance gives the formal parameters the figures of this witness:
+    reversal_window        12 s
+    opposition_tolerance   10 deg   — the band is |heading change| in [170, 190] degrees
+    motion_speed_tolerance  1 m/s
 
-  The geometry. One car (track 1, a motor vehicle, half-extents 2 m × 1 m × 0.75 m) at 5 m/s, on
-  a trace of 21 observations one second apart, t = 0 … 20000 ms. In every scenario it runs east
-  along y = 0 with no yaw for the first six observations, turns over the next nine, and runs
-  straight afterwards; the headings are written as thousandths of a unit vector and turn by exactly
-  the angle the yaw rate integrates to over each second, so the heading and the yaw rate tell the
-  same story.
+  The car runs north for the first five seconds (yaw rate zero), then turns left at 22 deg/s for a
+  number of seconds, then runs straight again. The heading change over the 12 s window behind an
+  observation of the final straight leg is therefore 22 deg/s × (the seconds of turning), and the
+  speed is 6 m/s at every observation of that window. Every witness is judged over the window
+  [14000, 17000] ms, the final straight leg: there the 12 s lookback is covered (an observation
+  lies exactly 12 s behind, or earlier) and adequately sampled (the observations are 1 s apart,
+  well under half the window), and it contains the whole turn.
 
-  - `holds`: the yaw rate is +19 deg/s at the observations k = 6 … 14 (left, so positive), the
-    heading turning 0° → 19° → … → 171°. At t = 14000 the window behind of 9 s carries
-    19 × 9 = 171 degrees of heading change, at or above the 150-degree bound, and the car heads
-    the way it came from.
-  - `fails`: the yaw rate is −10 deg/s at k = 6 … 13 and −9 deg/s at k = 14 (right, so negative),
-    the heading turning 0° → −10° → … → −89°. At t = 14000 the window carries −89 degrees, of
-    magnitude 89: an ordinary corner, below the reversal bound.
-  - `blind`: the reversal of `holds`, with `kin.yaw_rate` masked, so the heading change cannot be
-    integrated and the primitive is unknown for the absent atom.
+    holds  eight seconds of turning: 22 × 8 = 176 deg, inside the band — the concept holds;
+    fails  four seconds of turning: 22 × 4 = 88 deg, far below the band — the car turned into a
+           side road and did not turn about;
+    blind  the `holds` trace with kin.yaw_rate declared absent: prim.heading_change is unknown over
+           the window, while the speed conjunct is true, so the reversal cannot be read.
 
-  Each scenario is judged at t = 14000, the observation its narrative speaks about: the window
-  behind it is covered (nine seconds of observations precede it) and sampled one second apart, so
-  the primitive is truncated nowhere in the judged window and the masked yaw rate alone leaves
-  `blind` unknown.
+  Position and heading are a coarse polyline — the turn's points step round an arc by chords of
+  about 5 m (the second's 6 m of path is the arc, never less than the chord) and the heading vector
+  is the nearest cardinal direction at each observation. Neither is read by the concept: the course
+  change comes from the yaw rate and the motion from the speed.
 -/
 import TrafficSpec.Concepts.motion.direction_reversal
 import TrafficSpec.Core.Evidence.Builders
@@ -37,103 +38,103 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
-/-- A heading, as thousandths of a unit vector (a direction, not a length). -/
-def dir (x y : Int) : Vec := (Units.millimetres x, Units.millimetres y)
-/-- A yaw rate in degrees per second, left positive. -/
-def dps (n : Int) : Q := Units.degrees n
-
 -- Formals ↦ tracks: u ↦ 1
 -- Formals ↦ regions: (no region formal)
 
-/-- The instance every scenario speaks about: the bound near a half turn and the window behind,
-    each a figure of this witness. -/
+/-- The instance every scenario speaks about: no literal formal, the three formal parameters given
+    this witness's figures through `Units` constructors. -/
 def inst : Concept.Instance :=
   { name := "drv.motion.direction_reversal@w"
     concept := "drv.motion.direction_reversal"
     literals := []
     nats := []
-    params := [("heading_change_min", .lit (Units.degrees 150) .degree),
-               ("window", .lit (Units.seconds 9) .second)]
+    params :=
+      [ ("reversal_window", .lit (Units.seconds 12) .second)
+      , ("opposition_tolerance", .lit (Units.degrees 10) .degree)
+      , ("motion_speed_tolerance", .lit (Units.metresPerSecond 1) .metrePerSecond) ]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The car at observation `k`: its position, heading and yaw rate from the scenario's lists. -/
-def car (poss : List Vec) (hds : List Vec) (yaws : List Q) (k : Nat) : RoadUser :=
+/-- The car at one observation: 6 m/s, the yaw rate the source measured there, the path length it
+    has travelled since the start of the trace. -/
+def car (pos : Vec) (heading : Vec) (yaw : Q) (path : Q) : RoadUser :=
   Build.withKin
-    (Build.user 1 [.motorVehicle] (poss.getD k (m 0, m 0)) (hds.getD k (dir 1000 0))
-      (Units.metresPerSecond 5) (m 2, m 1, cm 75))
-    fun kn => { kn with yawRate := some (yaws.getD k Q.zero) }
+    (Build.user 1 [.motorVehicle] pos heading (Units.metresPerSecond 6) (m 2, m 1, m 1) (some path))
+    (fun k => { k with yawRate := some yaw })
 
--- ---------------------------------------------------------------------------------------------
--- `holds`: a left reversal, 19 deg/s over nine seconds
--- ---------------------------------------------------------------------------------------------
-def holdsPos : List Vec :=
-  [ (cm (-4000), cm 0), (cm (-3500), cm 0), (cm (-3000), cm 0), (cm (-2500), cm 0)
-  , (cm (-2000), cm 0), (cm (-1500), cm 0)
-  , (cm (-1030), cm 160), (cm (-630), cm 470), (cm (-360), cm 890), (cm (-240), cm 1370)
-  , (cm (-280), cm 1870), (cm (-490), cm 2330), (cm (-830), cm 2690), (cm (-1270), cm 2930)
-  , (cm (-1760), cm 3000)
-  , (cm (-2250), cm 3080), (cm (-2750), cm 3160), (cm (-3240), cm 3240), (cm (-3730), cm 3320)
-  , (cm (-4230), cm 3390), (cm (-4720), cm 3470) ]
+/-- Eighteen observations one second apart, from the three per-observation tables. -/
+def leg (poss : List Vec) (heading : Nat → Vec) (yaw : Nat → Q) : Trace :=
+  Build.trace 18 0 (Units.seconds 1) fun k t =>
+    Build.scene t (some 1)
+      [ car (poss.getD k (m 0, m 0)) (heading k) (yaw k) (m (6 * Int.ofNat k)) ]
+      [ ]   -- no structure: the concept reads no region
+      [ ]   -- no device
 
-def holdsHd : List Vec :=
-  [ dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0
-  , dir 945 326, dir 788 616, dir 545 839, dir 242 970, dir (-87) 996, dir (-407) 914
-  , dir (-682) 731, dir (-883) 469, dir (-988) 156
-  , dir (-988) 156, dir (-988) 156, dir (-988) 156, dir (-988) 156, dir (-988) 156
-  , dir (-988) 156 ]
+/-- The reversal: north to k = 5, a left turn through 176 degrees over the next eight seconds,
+    then south. The turning points step round an arc by chords of about 5 m — the car travels 6 m
+    of path in each second, which is the arc, never less than the chord. -/
+def reversalPath : List Vec :=
+  [ (m 0, m 0), (m 0, m 6), (m 0, m 12), (m 0, m 18), (m 0, m 24), (m 0, m 30)
+  , (m (-1), m 35), (m (-4), m 39), (m (-8), m 42), (m (-13), m 43)
+  , (m (-18), m 42), (m (-22), m 39), (m (-25), m 35), (m (-26), m 30)
+  , (m (-26), m 24), (m (-26), m 18), (m (-26), m 12), (m (-26), m 6) ]
 
-def holdsYaw : List Q :=
-  [ dps 0, dps 0, dps 0, dps 0, dps 0, dps 0
-  , dps 19, dps 19, dps 19, dps 19, dps 19, dps 19, dps 19, dps 19, dps 19
-  , dps 0, dps 0, dps 0, dps 0, dps 0, dps 0 ]
+/-- A unit heading from a Pythagorean triple: (a/d, b/d) with a² + b² = d². -/
+def dir (a b : Int) (d : Nat) : Vec := (Units.ratio a d, Units.ratio b d)
 
-/-- `holds` (compliant): A car turns left out of its lane and back across the road, accumulating 171 degrees of heading change over the window, and now heads the way it came from. -/
-def holdsTrace : Trace :=
-  Build.trace 21 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1) [ car holdsPos holdsHd holdsYaw k ] [ ] [ ]
+/-- The heading at each observation of the reversal: north while the car runs straight, then a
+    heading that turns left at every observation of the turn, ending south. -/
+def reversalHeading (k : Nat) : Vec :=
+  match k with
+  | 6 => dir (-5) 12 13      -- about 23° west of north
+  | 7 => dir (-3) 4 5        -- about 37°
+  | 8 => dir (-15) 8 17      -- about 62°
+  | 9 => dir (-24) 7 25      -- about 74°
+  | 10 => dir (-24) (-7) 25  -- about 106°
+  | 11 => dir (-15) (-8) 17  -- about 118°
+  | 12 => dir (-3) (-4) 5    -- about 143°
+  | k => if k ≤ 5 then Build.north else Build.south
 
--- ---------------------------------------------------------------------------------------------
--- `fails`: a right turn, 89 degrees over the window
--- ---------------------------------------------------------------------------------------------
-def failsPos : List Vec :=
-  [ (cm (-4000), cm 0), (cm (-3500), cm 0), (cm (-3000), cm 0), (cm (-2500), cm 0)
-  , (cm (-2000), cm 0), (cm (-1500), cm 0)
-  , (cm (-1007), cm (-87)), (cm (-537), cm (-258)), (cm (-104), cm (-508)), (cm 279, cm (-829))
-  , (cm 600, cm (-1212)), (cm 850, cm (-1645)), (cm 1021, cm (-2115)), (cm 1108, cm (-2608))
-  , (cm 1117, cm (-3108))
-  , (cm 1126, cm (-3608)), (cm 1135, cm (-4108)), (cm 1144, cm (-4608)), (cm 1153, cm (-5108))
-  , (cm 1162, cm (-5608)), (cm 1171, cm (-6108)) ]
+/-- 22 deg/s (left) at the eight observations k = 6 … 13, zero elsewhere: 176 degrees of turning. -/
+def reversalYaw (k : Nat) : Q :=
+  if 6 ≤ k && k ≤ 13 then Units.degrees 22 else Q.zero
 
-def failsHd : List Vec :=
-  [ dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0, dir 1000 0
-  , dir 985 (-174), dir 940 (-342), dir 866 (-500), dir 766 (-643), dir 643 (-766)
-  , dir 500 (-866), dir 342 (-940), dir 174 (-985), dir 17 (-1000)
-  , dir 17 (-1000), dir 17 (-1000), dir 17 (-1000), dir 17 (-1000), dir 17 (-1000)
-  , dir 17 (-1000) ]
+/-- The side road: the same approach, a left turn through 88 degrees over four seconds, then west. -/
+def sideRoadPath : List Vec :=
+  [ (m 0, m 0), (m 0, m 6), (m 0, m 12), (m 0, m 18), (m 0, m 24), (m 0, m 30)
+  , (m (-1), m 35), (m (-4), m 39), (m (-8), m 42), (m (-13), m 43)
+  , (m (-19), m 43), (m (-25), m 43), (m (-31), m 43), (m (-37), m 43)
+  , (m (-43), m 43), (m (-49), m 43), (m (-55), m 43), (m (-61), m 43) ]
 
-def failsYaw : List Q :=
-  [ dps 0, dps 0, dps 0, dps 0, dps 0, dps 0
-  , dps (-10), dps (-10), dps (-10), dps (-10), dps (-10), dps (-10), dps (-10), dps (-10)
-  , dps (-9)
-  , dps 0, dps 0, dps 0, dps 0, dps 0, dps 0 ]
+/-- The heading at each observation of the turn into the side road: north, four observations of
+    turning left, then west. -/
+def sideRoadHeading (k : Nat) : Vec :=
+  match k with
+  | 6 => dir (-5) 12 13      -- about 23° west of north
+  | 7 => dir (-3) 4 5        -- about 37°
+  | 8 => dir (-15) 8 17      -- about 62°
+  | k => if k ≤ 5 then Build.north else Build.west
 
-/-- `fails` (violated): A car turns right at a junction, accumulating 89 degrees of heading change over the window: below the reversal bound. -/
-def failsTrace : Trace :=
-  Build.trace 21 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1) [ car failsPos failsHd failsYaw k ] [ ] [ ]
+/-- 22 deg/s (left) at the four observations k = 6 … 9, zero elsewhere: 88 degrees of turning. -/
+def sideRoadYaw (k : Nat) : Q :=
+  if 6 ≤ k && k ≤ 9 then Units.degrees 22 else Q.zero
 
-/-- `blind` (unknown): A car reverses its direction at a junction in a scene whose source declares the yaw rate absent, so the heading change cannot be integrated. -/
+/-- `holds` (compliant): A car travelling north at 6 m/s turns left through 176 degrees over 12 s
+    and travels south; its speed never falls below the motion tolerance. -/
+def holdsTrace : Trace := leg reversalPath reversalHeading reversalYaw
+
+/-- `fails` (violated): The same car turns left through 88 degrees into a side road: the course
+    change is far below the band, so it has not turned about. -/
+def failsTrace : Trace := leg sideRoadPath sideRoadHeading sideRoadYaw
+
+/-- `blind` (unknown): The source declares kin.yaw_rate absent, so prim.heading_change is unknown
+    over the window and the reversal cannot be read. -/
 def blindTrace : Trace := holdsTrace
 
-/-- Every scenario is judged at t = 14000 ms, the observation whose window behind carries the
-    heading change its narrative states. -/
-def judged : Timestamp × Timestamp := (14000, 14000)
-
 def witness (name : String) (τ : Trace) (expected : Verdict)
-    (absent : List String := []) : Scenario :=
+    (from_ to_ : Timestamp) (absent : List String := []) : Scenario :=
   { name := name
     rule := inst.name
     trace := τ
@@ -141,11 +142,11 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     manifest := Build.manifest absent
     grounding := [("u", 1)]
     expected := expected
-    window := some judged }
+    window := some (from_, to_) }
 
 def scenarios : List Scenario :=
-  [ witness "holds" holdsTrace .compliant
-  , witness "fails" failsTrace .violated
-  , witness "blind" blindTrace (.unknown []) ["kin.yaw_rate"] ]
+  [ witness "holds" holdsTrace .compliant 14000 17000
+  , witness "fails" failsTrace .violated 14000 17000
+  , witness "blind" blindTrace (.unknown []) 14000 17000 ["kin.yaw_rate"] ]
 
 end TrafficSpecWitness.Concepts.motion.direction_reversal

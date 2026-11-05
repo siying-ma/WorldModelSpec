@@ -1,25 +1,22 @@
 /-
   Witnesses for drv.motion.rearward_motion.
 
-  One van (track 1, a motor vehicle, half-extents 2 m × 0.9 m × 1 m, so a body 4 m long) on open
-  ground, three
-  instants one second apart (t = 0, 1000, 2000 ms); no region and no device is needed, since the
-  concept reads only the van's own kinematics. The instance gives `speed_floor` the value
-  0.2 m/s — a plausible source resolution, this witness's own figure, not the concept's.
+  One body: track 1, a motor vehicle 4 m long and 2 m wide (half-extents 2 m, 1 m, 1 m), pointing
+  east (heading (1, 0), which the heading atom delivers exactly as the unit vector) at every
+  instant of every trace. No region and no device: the concept reads kinematics alone. Each trace
+  is three scenes a second apart, from t = 0; the body's position advances with its velocity, so
+  the scenes are a consistent motion.
 
-  `holds`: the van points east and its velocity points west at 1.2 m/s, so it rolls backwards; its
-  position moves 1.2 m west per second, consistent with that velocity, and its speed 1.2 m/s is
-  well above the 0.2 m/s floor. The component along the heading is −1.2 m/s < 0: compliant at every
-  instant.
+  The instance's own figure: `reverse_speed_tolerance` = 0.1 m/s (100000 micrometres per second),
+  the magnitude below which a velocity component counts as no travel.
 
-  `fails`: the van points east and travels east at 3 m/s (velocity along the heading, as
-  `Build.user` builds it), so the component along the heading is +3 m/s: violated.
-
-  `blind`: the van points east and travels at 1.2 m/s, but the manifest declares `kin.velocity`
-  absent, so the direction of its motion cannot be read and the first conjunct is unknown while the
-  second (speed 1.2 m/s ≥ 0.2 m/s) is true: unknown. The narrative's van is given a speed above the
-  floor on purpose — with a speed below the resolution the speed conjunct alone would decide the
-  concept false, and the scene would witness nothing about the unreadable velocity.
+  - `holds`: the velocity is 1.4 m/s due west — (−1.4, 0) m/s, speed 1.4 m/s — while the body
+    points east, so the component along the heading is −1.4 m/s: negative, and 1.4 m/s is above
+    the 0.1 m/s tolerance. The body backs up 1.4 m a second: x = 0, −1.4, −2.8 m.
+  - `fails`: the same body, velocity 8 m/s due east — (8, 0) m/s — so the component along the
+    heading is +8 m/s, not negative: it is travelling forward, not rearward. x = 0, 8, 16 m.
+  - `blind`: the `holds` scenes with kin.velocity declared absent by the manifest; the heading is
+    still observed, but the component along it cannot be computed, so the concept is unknown.
 -/
 import TrafficSpec.Concepts.motion.rearward_motion
 import TrafficSpec.Core.Evidence.Builders
@@ -30,65 +27,57 @@ open TrafficSpec
 
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
-def mps (n : Int) : Q := Units.micrometresPerSecond n
 
-/-- The resolution this witness's source has: 0.2 m/s. -/
-def floorSpeed : Q := mps 200000
-/-- The van's speed in the `holds` and `blind` scenes: 1.2 m/s. -/
-def slow : Q := mps 1200000
-/-- The van's speed in the `fails` scene: 3 m/s. -/
-def fast : Q := mps 3000000
+/-- 1.4 m/s, the rearward speed of the `holds` scenes. -/
+def backSpeed : Q := Units.micrometresPerSecond 1400000
+/-- 8 m/s, the forward speed of the `fails` scenes. -/
+def fwdSpeed : Q := Units.metresPerSecond 8
 
-/-- The distance (m) covered in `k` seconds at `v` m/s: the instants are one second apart. -/
-def covered (k : Nat) (v : Q) : Q := Q.mul (Q.ofInt (Int.ofNat k)) v
+/-- The half-extents of the car: 2 m half-length, 1 m half-width, 1 m half-height. -/
+def carExtent : Q × Q × Q := (m 2, m 1, m 1)
 
-/-- The van's half-extents: half-length, half-width, half-height. -/
-def vanExtent : Q × Q × Q := (m 2, cm 90, m 1)
+/-- The car at scene `k`: pointing east, displaced by `k` seconds of the velocity `v`, with that
+    velocity and its magnitude `spd`. -/
+def car (k : Nat) (v : Vec) (spd : Q) : RoadUser :=
+  let step : Q := Q.ofInt (Int.ofNat k)
+  let pos : Vec := (Q.mul v.1 step, Q.mul v.2 step)
+  Build.withKin (Build.user 1 [.motorVehicle] pos Build.east spd carExtent)
+    fun kin => { kin with velocity := some v }
 
 -- Formals ↦ tracks: u ↦ 1
 -- Formals ↦ regions: (no region formal)
 
-/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a
-    value through a `Units` constructor, a quantity concept given its expected bounds. -/
+/-- The instance every scenario speaks about: the one formal parameter given 0.1 m/s. -/
 def inst : Concept.Instance :=
   { name := "drv.motion.rearward_motion@w"
     concept := "drv.motion.rearward_motion"
     literals := []
     nats := []
-    params := [("speed_floor", .lit floorSpeed .metrePerSecond)]
+    params := [("reverse_speed_tolerance", .lit (Units.micrometresPerSecond 100000) .metrePerSecond)]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- `holds` (compliant): A van points east and its velocity points west at 1.2 m/s: the projection on its heading is negative and the speed is above the floor. -/
+/-- The velocity of the `holds` (and `blind`) scenes: 1.4 m/s due west. -/
+def backVelocity : Vec := Build.scale Build.west backSpeed
+/-- The velocity of the `fails` scenes: 8 m/s due east. -/
+def fwdVelocity : Vec := Build.scale Build.east fwdSpeed
+
+/-- `holds` (compliant): A car points east and its velocity is 1.4 m/s to the west: the component along its heading is −1.4 m/s, whose magnitude is above the tolerance. -/
 def holdsTrace : Trace :=
   Build.trace 3 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ Build.withKin
-          (Build.user 1 [.motorVehicle] (Q.neg (covered k slow), m 0) Build.east slow vanExtent
-            (some (covered k slow)))
-          (fun kin => { kin with velocity := some (Build.scale Build.west slow) }) ]
-      [ ]  -- structures: none; the concept reads the van's kinematics only
-      [ ]  -- devices
+    Build.scene t (some 1) [ car k backVelocity backSpeed ] [ ] [ ]
 
-/-- `fails` (violated): A van points east and travels east at 3 m/s: the projection on its heading is positive, so it is in no rearward motion. -/
+/-- `fails` (violated): The same car's velocity is 8 m/s to the east: the component along its heading is positive, so it is not travelling rearward. -/
 def failsTrace : Trace :=
   Build.trace 3 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ Build.user 1 [.motorVehicle] (covered k fast, m 0) Build.east fast vanExtent
-          (some (covered k fast)) ]
-      [ ]  -- structures
-      [ ]  -- devices
+    Build.scene t (some 1) [ car k fwdVelocity fwdSpeed ] [ ] [ ]
 
-/-- `blind` (unknown): A van stands in a scene whose source declares velocity absent, so the direction of its motion cannot be read. -/
+/-- `blind` (unknown): The source declares kin.velocity absent for the car, so the component along its heading cannot be computed. -/
 def blindTrace : Trace :=
   Build.trace 3 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ Build.user 1 [.motorVehicle] (covered k slow, m 0) Build.east slow vanExtent
-          (some (covered k slow)) ]
-      [ ]  -- structures
-      [ ]  -- devices
+    Build.scene t (some 1) [ car k backVelocity backSpeed ] [ ] [ ]
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=

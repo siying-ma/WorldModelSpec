@@ -1,35 +1,32 @@
 /-
   Witnesses for drv.motion.leftward_course_change.
 
-  The instance: window = 4 s, heading_change_min = 45° — a quarter turn of course is well above what
-  lane-keeping or a highway curve accumulates in four seconds, and well below the 88° the junction
-  turn of the `holds` scene carries out.
+  One body, track 1, a car 5 m long and 2 m wide travelling at 5 m/s, in an empty world: no region
+  and no device is read, because the concept reads the body's own heading change and its speed
+  alone. Each trace is seven instants one second apart (t = 0 … 6000 ms), the car running through a
+  junction turn; every scenario speaks about the last instant (`window` = [6000, 6000]), the one
+  whose six-second window behind is covered by the trace — at the earlier instants the window
+  reaches past the start of the trace and the heading change is unknown for that reason alone.
 
-  The geometry. One road user, track 1, a motor vehicle 4.8 m long and 1.8 m wide (half-extents
-  2.4 m, 0.9 m, 0.75 m), alone in an empty scene: the body reads the user's yaw rate and nothing
-  else, so no region and no device is built. Every trace is sampled once a second, from t = 0 s to
-  t = 5 s; one second is half of the 4 s window, so every window inside the trace is adequately
-  sampled. Each scenario is judged over t ∈ [4 s, 5 s]: those are the two observations whose 4 s
-  window of history the trace covers (the oldest observation of the window at t = 4 s is exactly
-  4 s behind, and at t = 5 s an observed instant precedes the window), and at the earlier
-  observations the window would reach past the start of the trace.
+  The heading change the concept reads is integrated from the yaw rate (the rate at a scene is held
+  over the interval before it), so the yaw rates at t = 1000 … 6000 ms are what the manoeuvre
+  amounts to. The heading written at each instant is the nearest exact rational unit vector to the
+  course the integrated yaw rate gives (no rotation by a whole number of degrees has rational
+  components); the positions follow an arc of about 18 m radius, the radius 5 m/s and a turn of
+  about 15 deg/s make.
 
-  `holds`: the car enters the junction at 6 m/s heading east and yaws left at 22°/s over the four
-  intervals t = 1 … 4 s — 88° of accumulated course change, a junction left turn on a 15.6 m
-  radius — then runs straight on its new heading. Over the window behind t = 4 s the change is
-  88°, behind t = 5 s it is 66° (the first second of the turn has dropped out of the window);
-  both are at least 45°, so the concept holds at both judged observations.
+  The instance's own figures: a window of 6 s, the time within which such a manoeuvre is completed;
+  a smallest course change of 30 deg, below which a change of heading is lane-keeping or a bend
+  taken; a largest of 135 deg, above which the road user has turned about; and a motion tolerance
+  of 1 m/s, below which a reading counts as no travel.
 
-  `fails`: the car runs a gentle left-hand curve at 15 m/s on a 382 m radius, yawing left at
-  2.25°/s throughout — 9° of accumulated course change over the 4 s window at every observation,
-  below the bound, so the concept is false at both judged observations.
-
-  `blind`: the junction turn of `holds`, in a scene whose source does not observe `kin.yaw_rate`:
-  the manifest declares the atom absent and the trace carries no yaw rate, so the heading change
-  cannot be integrated and the body is unknown, for that atom and nothing else.
-
-  Headings are written as rational vectors of unit length to four decimal places; positions to the
-  centimetre, on the arc the yaw rate and the speed describe.
+    holds — the car turns left: yaw rates 16, 16, 16, 16, 14, 14 deg/s over the six seconds behind,
+            a heading change of +92 deg, inside [30, 135]; its speed is 5 m/s, above the
+            tolerance, at every observation of the window.
+    fails — the same car turns right: yaw rates −15 deg/s throughout, a heading change of −90 deg,
+            which is below the smallest leftward change, so no leftward change of course is read.
+    blind — the left turn again with kin.yaw_rate unobserved (the field is `none` and the manifest
+            declares the atom absent), so prim.heading_change is unknown over the window.
 -/
 import TrafficSpec.Concepts.motion.leftward_course_change
 import TrafficSpec.Core.Evidence.Builders
@@ -41,92 +38,80 @@ open TrafficSpec
 def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
-/-- A heading as a unit vector, its components written to four decimal places. -/
-def dir (x y : Int) : Vec := (Units.ratio x 10000, Units.ratio y 10000)
-
-/-- The half-extents of the car: 2.4 m, 0.9 m, 0.75 m. -/
-def carExtent : Q × Q × Q := (cm 240, cm 90, cm 75)
-
 -- Formals ↦ tracks: u ↦ 1
 -- Formals ↦ regions: (no region formal)
 
-/-- The instance every scenario speaks about: a 4 s window of history, and a quarter turn (45°) of
-    accumulated leftward course change as the bound a turn must reach. -/
+/-- The instance every scenario speaks about: the literal formals chosen, every parameter given a
+    value through a `Units` constructor, a quantity concept given its expected bounds. -/
 def inst : Concept.Instance :=
   { name := "drv.motion.leftward_course_change@w"
     concept := "drv.motion.leftward_course_change"
     literals := []
     nats := []
-    params := [("heading_change_min", .lit (Units.degrees 45) .degree),
-               ("window", .lit (Units.seconds 4) .second)]
+    params :=
+      [ ("turn_window", .lit (Units.seconds 6) .second)
+      , ("min_course_change", .lit (Units.degrees 30) .degree)
+      , ("max_course_change", .lit (Units.degrees 135) .degree)
+      , ("motion_speed_tolerance", .lit (Units.metresPerSecond 1) .metrePerSecond) ]
     bounds := none
   }
 
 def instances : List Concept.Instance := [inst]
 
-/-- The instants each scenario is judged over: the two observations whose 4 s window of history the
-    trace covers. -/
-def judged : Timestamp × Timestamp := (4000, 5000)
+/-- The car at an instant: 5 m long, 2 m wide, travelling at 5 m/s with the pose given, and the
+    yaw rate this scenario observes of it. -/
+def car (pos : Vec) (heading : Vec) (yaw : Option Q) : RoadUser :=
+  Build.withKin
+    (Build.user 1 [.motorVehicle] pos heading (Units.metresPerSecond 5) (cm 250, cm 100, cm 100))
+    fun k => { k with yawRate := yaw }
 
-/-- The junction turn, once a second: position (on a 15.6 m arc at 6 m/s) and heading. The course
-    swings 22° per second from east over t = 0 … 4 s and holds afterwards. -/
-def turnPose : Nat → Vec × Vec
-  | 0 => ((cm 0,    cm 0),    dir 10000 0)
-  | 1 => ((cm 586,  cm 114),  dir 9272 3746)
-  | 2 => ((cm 1086, cm 439),  dir 7193 6947)
-  | 3 => ((cm 1428, cm 927),  dir 4067 9135)
-  | 4 => ((cm 1562, cm 1508), dir 349 9994)
-  | 5 => ((cm 1583, cm 2108), dir 349 9994)
-  | _ => ((cm 1604, cm 2708), dir 349 9994)
+/-- The pose of the left turn at instant `k`: position on the arc and heading, the courses
+    0, 16, 31, 46, 62, 77, 90 deg from east (the nearest exact rational unit vectors to the
+    courses the yaw rates below integrate to). -/
+def leftPose (k : Nat) : Vec × Vec :=
+  match k with
+  | 0 => ((cm 0, cm 0), (Units.ratio 1 1, Units.ratio 0 1))
+  | 1 => ((cm 504, cm 72), (Units.ratio 24 25, Units.ratio 7 25))
+  | 2 => ((cm 914, cm 249), (Units.ratio 56 65, Units.ratio 33 65))
+  | 3 => ((cm 1303, cm 559), (Units.ratio 20 29, Units.ratio 21 29))
+  | 4 => ((cm 1588, cm 953), (Units.ratio 8 17, Units.ratio 15 17))
+  | 5 => ((cm 1756, cm 1405), (Units.ratio 9 41, Units.ratio 40 41))
+  | _ => ((cm 1800, cm 1800), (Units.ratio 0 1, Units.ratio 1 1))
 
-/-- The yaw rate of the junction turn: 22°/s to the left over the four intervals ending at
-    t = 1 … 4 s, straight running before and after. -/
-def turnYaw : Nat → Q
-  | 0 => Q.zero
-  | 1 => Units.degrees 22
-  | 2 => Units.degrees 22
-  | 3 => Units.degrees 22
-  | 4 => Units.degrees 22
-  | _ => Q.zero
+/-- The pose of the right turn at instant `k`: the left turn's, mirrored about the car's first
+    course, so the courses run 0, −16, −31, −46, −62, −77, −90 deg from east. -/
+def rightPose (k : Nat) : Vec × Vec :=
+  let (p, h) := leftPose k
+  ((p.1, Q.neg p.2), (h.1, Q.neg h.2))
 
-/-- The gentle curve, once a second: position (on a 382 m arc at 15 m/s) and heading, turning 2.25°
-    per second from east. -/
-def curvePose : Nat → Vec × Vec
-  | 0 => ((cm 0,    cm 0),   dir 10000 0)
-  | 1 => ((cm 1501, cm 29),  dir 9992 393)
-  | 2 => ((cm 2999, cm 118), dir 9969 785)
-  | 3 => ((cm 4489, cm 264), dir 9931 1175)
-  | 4 => ((cm 5974, cm 470), dir 9877 1564)
-  | _ => ((cm 7453, cm 733), dir 9808 1951)
+/-- The yaw rates of the left turn: none before the manoeuvre, then 16, 16, 16, 16, 14, 14 deg/s
+    over the six seconds of the window, a heading change of +92 deg. -/
+def leftYaw (k : Nat) : Option Q :=
+  if k == 0 then some (Units.degrees 0)
+  else if k ≤ 4 then some (Units.degrees 16)
+  else some (Units.degrees 14)
 
-/-- The car of a scene: its pose, its speed, and its yaw rate where the source observes one. -/
-def car (pose : Vec × Vec) (speed : Q) (yaw : Option Q) : RoadUser :=
-  Build.withKin (Build.user 1 [.motorVehicle] pose.1 pose.2 speed carExtent)
-    (fun k => { k with yawRate := yaw })
+/-- The yaw rates of the right turn: −15 deg/s over each of the six seconds of the window, a
+    heading change of −90 deg. -/
+def rightYaw (k : Nat) : Option Q :=
+  if k == 0 then some (Units.degrees 0) else some (Units.degrees (-15))
 
-/-- `holds` (compliant): A car approaching a junction yaws left for four seconds, accumulating 88 degrees of leftward heading change over the window, above the turn bound. -/
-def holdsTrace : Trace :=
-  Build.trace 6 0 (Units.seconds 1) fun k t =>
+/-- Seven instants a second apart, the car in the pose and with the yaw rate given. -/
+def turnTrace (pose : Nat → Vec × Vec) (yaw : Nat → Option Q) : Trace :=
+  Build.trace 7 0 (Units.seconds 1) fun k t =>
     Build.scene t (some 1)
-      [ car (turnPose k) (Units.metresPerSecond 6) (some (turnYaw k)) ]
-      [ ]  -- no structure: the body reads the user's yaw rate only
+      [ car (pose k).1 (pose k).2 (yaw k) ]
+      [ ]  -- no structure is read
       [ ]  -- devices
 
-/-- `fails` (violated): A car follows a gentle left-hand curve, accumulating 9 degrees of leftward heading change over the window, below the turn bound. -/
-def failsTrace : Trace :=
-  Build.trace 6 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ car (curvePose k) (Units.metresPerSecond 15) (some (Units.millidegrees 2250)) ]
-      [ ]  -- no structure: the body reads the user's yaw rate only
-      [ ]  -- devices
+/-- `holds` (compliant): A car travelling at 5 m/s turns left through 92 degrees over 6 s at a junction, its speed above the motion tolerance throughout. -/
+def holdsTrace : Trace := turnTrace leftPose leftYaw
 
-/-- `blind` (unknown): A car turns at a junction in a scene whose source declares the yaw rate absent, so the heading change cannot be integrated. -/
-def blindTrace : Trace :=
-  Build.trace 6 0 (Units.seconds 1) fun k t =>
-    Build.scene t (some 1)
-      [ car (turnPose k) (Units.metresPerSecond 6) none ]
-      [ ]  -- no structure: the body reads the user's yaw rate only
-      [ ]  -- devices
+/-- `fails` (violated): The same car turns right through 90 degrees: the signed heading change is negative, so no leftward change of course is read. -/
+def failsTrace : Trace := turnTrace rightPose rightYaw
+
+/-- `blind` (unknown): The source declares kin.yaw_rate absent, so prim.heading_change is unknown over the window. -/
+def blindTrace : Trace := turnTrace leftPose fun _ => none
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
     (absent : List String := []) : Scenario :=
@@ -137,7 +122,7 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     manifest := Build.manifest absent
     grounding := [("u", 1)]
     expected := expected
-    window := some judged }
+    window := some (6000, 6000) }   -- the one instant whose six-second window behind the trace covers
 
 def scenarios : List Scenario :=
   [ witness "holds" holdsTrace .compliant

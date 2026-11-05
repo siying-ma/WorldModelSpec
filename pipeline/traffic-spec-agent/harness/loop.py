@@ -4,7 +4,7 @@ accepts nothing new."""
 from __future__ import annotations
 import json
 import re
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 import shutil
 from .checks import aggregates, gate, validate_a
@@ -22,7 +22,7 @@ from .store.ledger import TERMINAL, JUDGE_STAGES
 from .store import jsonl
 from .store.budget import BudgetPaused
 from .model.reading import Reading
-from .store.state import Options, Run, commit_state
+from .store.state import Options, Run, commit_state, node_reviews
 from .model.mapping import MappingIndex
 
 
@@ -114,13 +114,14 @@ def report_of(run: Run, task: Path, reached: set[str]):
     """A task's dependency-defect report, judged (`review_phase.dependency_report`). A report no one
     could decide is never the task's defect: a judge whose answer stayed invalid gives status
     `deferred`, a session or certificate program that did not run gives `unavailable`; either way the
-    task waits, uncharged, with the reason."""
+    task waits, uncharged, with the reason, and keeps the concept it names and the execution stage
+    it reached (`execution` stays `unknown` where none was recorded)."""
     try:
         return review_phase.dependency_report(run, task, reached)
     except review_phase.Deferred as e:
-        return review_phase.DependencyReport("deferred", reasons=[f"{e.stage}: {e.why}"])
+        return replace(getattr(e, "reached", None) or review_phase.DependencyReport(""), status="deferred", reasons=[f"{e.stage}: {e.why}"])
     except (session.SessionUnavailable, review_phase.HarnessFailure) as e:
-        return review_phase.DependencyReport("unavailable", reasons=[str(e)])
+        return replace(getattr(e, "reached", None) or review_phase.DependencyReport(""), status="unavailable", reasons=[str(e)])
 
 
 def mark_defective(run: Run, opts: Options, dep, task: Path, to_user: list) -> None:
@@ -157,7 +158,38 @@ def context_base(opts: Options, semantic: dict) -> dict:
     """What every record's dependency context is computed against besides its own inputs: Core, the
     ontology and the review configuration."""
     return {"core": semantic["core"], "ontology": semantic["ontology"],
-            "review": [opts.reviewer_model, opts.review_effort, opts.judge_effort, opts.review_passes]}
+            "review": [opts.reviewer_model, opts.review_effort, opts.judge_effort, opts.review_passes]
+            + ([opts.feedback] if opts.feedback != "review" else [])}
+
+
+def check_options(opts: Options) -> None:
+    """Refuse, before anything is spent, a budget that is not a finite non-negative amount, and an
+    aggregate verifier that shares the planner's vendor (unless allowed) or whose key is not set."""
+    import math
+    for k in ("session_budget_usd", "repair_budget_usd", "judge_budget_usd", "openai_budget_usd", "claude_budget_usd",
+              "total_budget_usd", "aggregate_verifier_budget_usd"):
+        x = getattr(opts, k, None)
+        if x is not None and (isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(float(x)) or float(x) < 0):
+            raise SystemExit(f"--{k} must be a finite, non-negative amount in USD (given {x!r})")
+    if opts.label_repair and (opts.feedback != "labels" or not opts.label_dataset):
+        raise SystemExit("--label_repair needs --feedback labels and the training recordings (--label_dataset)")
+    if opts.aggregate_verifier_model:
+        from .agents import openai_runner
+        if session.vendor_of(opts.aggregate_verifier_model) == session.vendor_of(opts.model) and not opts.allow_same_vendor:
+            raise SystemExit(f"the aggregate verifier ({opts.aggregate_verifier_model}) and the planner ({opts.model}) share a vendor; "
+                             "it is a second vendor's model — pass --allow_same_vendor to override")
+        if session.vendor_of(opts.aggregate_verifier_model) == "openai" and not openai_runner.available() and not opts.dry_run:
+            raise SystemExit("the aggregate verifier is an OpenAI model and OPENAI_API_KEY is not set in the harness's environment")
+
+
+def node_review(run: Run, n: Node, law, onto, reading, v, out_dir: Path):
+    """A gated node's review. Under `feedback: labels` the node behaviour review and its Stage A/B are
+    suspended: the node is accepted on its gate, and its law is scored by the label check once the
+    library is frozen; under `feedback: review` the behaviour review decides."""
+    if run.opts.feedback == "labels":
+        return review_phase.ReviewOutcome("accepted", advisories=["node behaviour review suspended (feedback: labels)"])
+    return review_phase.review_behaviour(run, n, law, onto, reading, v.extras.get("rule_json"),
+                                         list(v.extras.get("narrowings_added", [])), out_dir)
 
 
 def refresh_inactive(run: Run) -> None:
@@ -667,7 +699,7 @@ def _item_task(code, report, review):
         dep = report()
     except BudgetPaused as e:
         return None, None, None, e
-    if v.verdict != "OK" or dep.status in ("deferred", "unavailable", "upheld"):
+    if v.verdict != "OK" or dep.status in review_phase.NOT_JUDGED + ("upheld",):
         return v, dep, None, None
     try:
         return v, dep, review(v), None
@@ -675,7 +707,22 @@ def _item_task(code, report, review):
         return v, dep, None, e
 
 
-def _rolling(pending: list, workers: int, ready_of, start, apply, halted, where, shared: list[str] = ()) -> None:
+def _scheduled(fn):
+    """`fn` counted as a task that may write the production tree (`candidate.SCHEDULING`): counted
+    here, before it is submitted, so a pause never misses it, and released when it ends."""
+    from .phases.candidate import SCHEDULING
+    held = SCHEDULING.task()
+    held.__enter__()
+
+    def run():
+        try:
+            return fn()
+        finally:
+            held.__exit__(None, None, None)
+    return run
+
+
+def _rolling(pending: list, workers: int, ready_of, start, apply, halted, where, shared: list[str] = (), scheduled: bool = False) -> None:
     """A stage's items, each run as one task (`start(item)`, in this thread, returns what a worker
     runs), at most `workers` at once; each task's outcome is applied in this thread as soon as it ends
     (`apply(item, result)`), and then every item that has become ready is submitted, in the order
@@ -686,7 +733,8 @@ def _rolling(pending: list, workers: int, ready_of, start, apply, halted, where,
     A gate's scope check does not count the files of another task whose run overlaps its session:
     `where(item)` gives an item's task directory and its two library files, and before a task starts
     its directory records those of every running task, and `shared` (what the loop writes for
-    another item while sessions run), and each running task's directory adds the new task's."""
+    another item while sessions run), and each running task's directory adds the new task's. With
+    `scheduled`, each task is counted by the scheduling a candidate transaction pauses (`_scheduled`)."""
     from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
     workers = max(1, workers)
     running: dict = {}
@@ -699,7 +747,7 @@ def _rolling(pending: list, workers: int, ready_of, start, apply, halted, where,
                         code_phase.tolerate(where(y)[0], own)
                     code_phase.tolerate(work, [f for y in running.values() for f in where(y)[1]] + list(shared), fresh=True)
                     pending.remove(x)
-                    running[ex.submit(start(x))] = x
+                    running[ex.submit(_scheduled(start(x)) if scheduled else start(x))] = x
             if not running:
                 return
             done, _ = wait(running, return_when=FIRST_COMPLETED)
@@ -796,8 +844,11 @@ def run_loop(opts: Options) -> dict:
     committed what it had decided. A fault of the validator itself
     (an exception inside a check) stops the run as `infrastructure_failure`, uncharged, its traceback
     kept in `validator_fault.txt`."""
+    from .phases import label_check
     try:
-        return _run_loop(opts)
+        result = _run_loop(opts)
+        label_check.freeze(paths.run_dir(opts.run_id))       # the library the run leaves, scored by `label_check`
+        return result
     except (jsonl.DataIntegrityError, BudgetPaused, validate_a.ValidatorFault) as e:
         status = ("data_integrity_failure" if isinstance(e, jsonl.DataIntegrityError) else "paused_budget" if isinstance(e, BudgetPaused)
                   else "infrastructure_failure")
@@ -808,6 +859,8 @@ def run_loop(opts: Options) -> dict:
         snap = run.load_state() if not isinstance(e, jsonl.DataIntegrityError) else None
         run.iteration = int(snap["iteration"]) if snap else max([int(p.name.split("-")[1]) for p in run.dir.glob("iter-*") if p.is_dir()] or [0])
         feedback_phase.write_status(run, ledger, status, str(e))
+        if isinstance(e, BudgetPaused):
+            label_check.freeze(run.dir)
         print(f"[loop] status: {status} — {e}")
         return {"status": status, "stop_reason": str(e), "iterations": run.iteration, "laws": ledger.counts()}
 
@@ -817,6 +870,14 @@ def _run_loop(opts: Options) -> dict:
     run = Run(opts)
     run.dir.mkdir(parents=True, exist_ok=True)
     owner.acquire(opts.run_id, force=opts.force_takeover)
+    from .phases import candidate as candidate_phase           # a candidate's commit a stop cut short is completed first
+    recovered = candidate_phase.recover(run)
+    if recovered:
+        print(f"[loop] {recovered}")
+    training = None
+    if opts.label_repair and opts.label_dataset:         # the training inputs, read from their content, before any state is rewritten
+        from .phases import label_check
+        training = label_check.training_context(run.dir, [l.id for l in corpus.load_laws(opts.laws)], Path(opts.label_dataset))
     gap_gate(run, opts)
     semantic = semantic_inputs(opts)
     saved_opts = jsonl.read_json(run.dir / "options.json", None)
@@ -885,8 +946,16 @@ def _run_loop(opts: Options) -> dict:
         else:
             print(f"[loop] iteration {resume_n} resumes at stage `{snap['prog']['stage']}`")
     check_library_isolation(run)
+    if opts.feedback not in ("review", "labels"):
+        raise SystemExit("--feedback must be `review` or `labels`")
     if not opts.reviewer_model and not opts.dry_run:
-        raise SystemExit("--reviewer_model is required: the behaviour review is a node's acceptance check")
+        raise SystemExit("--reviewer_model is required: the concept review" + (" and the node behaviour review are" if opts.feedback == "review"
+                         else " is") + " run by a second vendor's model")
+    if opts.feedback == "labels" and not opts.aggregate_verifier_model and not opts.dry_run:
+        raise SystemExit("--aggregate_verifier_model is required under --feedback labels: the aggregate verifier is configured on its own")
+    if opts.feedback == "labels":
+        print("[loop] feedback `labels`: the node behaviour review and its Stage A/B are suspended (a gated node is accepted); "
+              "the concept review and the aggregate verifier run; score the frozen library with `harness label_check`")
     uncapped = [k for k in ("session_budget_usd", "repair_budget_usd", "judge_budget_usd") if getattr(opts, k) is None]
     if (opts.claude_budget_usd is not None or opts.total_budget_usd is not None) and uncapped:
         raise SystemExit(f"--claude_budget_usd and --total_budget_usd need {', '.join('--' + k for k in uncapped)}: "
@@ -898,6 +967,7 @@ def _run_loop(opts: Options) -> dict:
         from .agents import openai_runner
         if session.vendor_of(opts.reviewer_model) == "openai" and not openai_runner.available():
             raise SystemExit("the reviewer is an OpenAI model and OPENAI_API_KEY is not set in the harness's environment")
+    check_options(opts)
     # the base chain's admitted aggregates are restored before any record is gated or checked on them
     c_notes, stale = aggregate_phase.check_admissions(run, effective_laws(run, by_id), defs, onto,
                                                       aggregate_claimants(run, node_ledger, prog))
@@ -946,7 +1016,7 @@ def _run_loop(opts: Options) -> dict:
         ledger.attempt = run.iteration
         try:
             status, stop_reason = _iteration(run, opts, prog, persist, ledger, concept_ledger, node_ledger, gap_ledger,
-                                             by_id, laws, defs, onto, reopened)
+                                             by_id, laws, defs, onto, reopened, training)
         except (jsonl.DataIntegrityError, BudgetPaused, validate_a.ValidatorFault):
             persist()
             raise
@@ -963,7 +1033,7 @@ def _run_loop(opts: Options) -> dict:
 
 
 def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, concept_ledger: ConceptLedger, node_ledger: NodeLedger,
-               gap_ledger: GapLedger, by_id: dict, laws: list, defs: list, onto, reopened: list) -> tuple[str, str]:
+               gap_ledger: GapLedger, by_id: dict, laws: list, defs: list, onto, reopened: list, training=None) -> tuple[str, str]:
     """One iteration, from its committed progress on. Returns (status, stop reason) when the run
     stops after it, else ("", "")."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -1224,7 +1294,8 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             if ledger.mark_planned(law, ids, run.iteration):
                 node_ledger.drop_law(law)
                 duties = [review_phase.duty_of(n, by_id[law]) for n in nodes if n.law == law]
-                for r in review_phase.upheld_rows(run, {law}) + review_phase.upheld_rows(run, {law}, structural=True):
+                for r in (review_phase.upheld_rows(run, {law}) + review_phase.upheld_rows(run, {law}, structural=True)
+                          if node_reviews(opts) else []):
                     if not any(r.get("duty") == d["id"] or (r.get("law_digest") == d["law_digest"]
                                                             and review_phase.overlaps(r.get("duty_ranges") or [], d["ranges"])) for d in duties):
                         notes.append(f"`{law}`: no node of the plan holds the duty an obligation of iteration {r.get('iteration')} was "
@@ -1440,7 +1511,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         cdir = code_phase.concept_dir(run, c.id)
         concept_baselines[c.id] = json.loads((cdir / "baseline.json").read_text())
         notes.append(f"concept `{c.id}`: gate {v.verdict}" + (f" — {'; '.join(v.details[:4])}" if v.details else ""))
-        if dep.status in ("deferred", "unavailable"):  # its report could not be judged: the concept is held, uncharged
+        if dep.status in review_phase.NOT_JUDGED:  # its report could not be judged: the concept is held, uncharged
             if v.verdict == "OK":
                 code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
             sessions_down = sessions_down or dep.status == "unavailable"
@@ -1548,7 +1619,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             users = [nid for nid, raw in run.all_nodes().items() if c.get("supersedes") in concept_deps(Node(raw))]
             notes.append(f"migration candidates for `{c.get('supersedes')}` → `{c.id}`: {users or 'none'}")
     _rolling(remaining, opts.workers, concept_ready, start_concept, apply_concept, lambda: sessions_down or bool(budget_paused),
-             lambda c: (code_phase.concept_dir(run, c.id), _files_of("concept", c.id)))
+             lambda c: (code_phase.concept_dir(run, c.id), _files_of("concept", c.id)), scheduled=opts.label_repair)
     if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
         persist(); raise BudgetPaused(budget_paused)
     for c in remaining:                                   # left by an outage: held, coded next iteration
@@ -1685,8 +1756,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         ndir = code_phase.node_dir(run, n.id)
         return lambda: _item_task(lambda: code_phase.run_code(run, n, reading, registry, saved=saved),
                                   lambda: report_of(run, ndir, reached_concepts(run, concept_deps(n))),
-                                  lambda v: review_phase.review_behaviour(run, n, by_id[n.law], onto, reading, v.extras.get("rule_json"),
-                                                                          list(v.extras.get("narrowings_added", [])), ndir / "review"))
+                                  lambda v: node_review(run, n, by_id[n.law], onto, reading, v, ndir / "review"))
 
     def apply_node(n: Node, result) -> None:
         nonlocal sessions_down, budget_paused, to_user
@@ -1696,7 +1766,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         ndir = code_phase.node_dir(run, n.id)
         baselines[n.id] = json.loads((ndir / "baseline.json").read_text())
         notes.append(f"`{n.id}`: gate {v.verdict}" + (f" — {'; '.join(v.details[:4])}" if v.details else ""))
-        if dep.status in ("deferred", "unavailable"):  # its report could not be judged: the node is held, its law keeps its budget
+        if dep.status in review_phase.NOT_JUDGED:  # its report could not be judged: the node is held, its law keeps its budget
             if v.verdict == "OK":
                 code_phase.rollback(n.id, baselines[n.id], ndir)
             sessions_down = sessions_down or dep.status == "unavailable"
@@ -1869,7 +1939,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             persist(); return
         accepted_now.append(n); prog["nodes"][n.id] = "OK"; persist()
     _rolling(remaining_nodes, opts.workers, node_ready, start_node, apply_node, lambda: sessions_down or bool(budget_paused),
-             lambda n: (code_phase.node_dir(run, n.id), _files_of("node", n.id)), shared=_loop_written())
+             lambda n: (code_phase.node_dir(run, n.id), _files_of("node", n.id)), shared=_loop_written(), scheduled=opts.label_repair)
     if budget_paused:                                     # the iteration stays resumable: what is undecided is taken up again
         persist(); raise BudgetPaused(budget_paused)
     run.deferred_nodes = deferred_now
@@ -2007,10 +2077,11 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                                                 if c in result.get("kept_concepts", concepts_now) and c in run.accepted_concepts],
         Reading(run.reading_file), {"core": sem["core"], "ontology": sem["ontology"]}, run.iteration)
     prog["stage"] = "integrated"; persist()
-    # a law is accepted when every node it was planned with is accepted, whichever iteration coded it
-    for e in ledger.entries.values():
-        if e.state == "planned" and e.nodes and all(i in run.all_nodes() for i in e.nodes):
-            ledger.accept(e.law, e.nodes)
+    accept_ready(run, opts, ledger, training, to_user)
+    if opts.label_repair:                                 # each law awaiting its label repair, in a candidate transaction of its own
+        from .phases import label_repair as label_repair_phase
+        persist()
+        label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user)
     # --- feedback
     feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, run.deferred_nodes, coder_narrowings,
                                   held_why=prog.get("held_why"))
@@ -2027,6 +2098,116 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         print("[loop] no progress and nothing returned: stopping")
         return ("complete" if all(e.state in TERMINAL for e in ledger.entries.values()) else "incomplete"), "no progress and nothing returned"
     return "", ""
+
+
+def accept_ready(run: Run, opts: Options, ledger: Ledger, training, to_user: list[str]) -> None:
+    """A law is accepted when every node it was planned with is accepted, whichever iteration coded
+    it; with `label_repair`, once its label check on those nodes routes it there (`label_route`)."""
+    if opts.label_repair:
+        label_route(run, ledger, training, to_user)
+        return
+    for e in ledger.entries.values():
+        if e.state == "planned" and e.nodes and all(i in run.all_nodes() for i in e.nodes):
+            ledger.accept(e.law, e.nodes)
+
+
+#: Where a law's label check routes it (`label_route`), by outcome.
+LABEL_ROUTES = {"aligned": "accepted", "unverified": "accepted", "incomplete": "waiting", "failed": "failed",
+                "mismatch": "awaiting_label_repair", "undecided": "awaiting_label_repair"}
+
+
+def label_ready(run: Run, ledger: Ledger) -> dict[str, list[str]]:
+    """The planned laws whose every node of the final plan is accepted, each with those nodes; a law
+    already awaiting a label repair on the same nodes is not checked again (its repair checks it)."""
+    out = {}
+    for e in ledger.entries.values():
+        st = run.label_states.get(e.law, {})
+        if e.state == "planned" and e.nodes and all(i in run.all_nodes() for i in e.nodes) \
+                and not (st.get("state") == "awaiting_label_repair" and st.get("nodes") == list(e.nodes)):
+            out[e.law] = list(e.nodes)
+    return out
+
+
+def label_state(run: Run, law: str, chk, nodes: list[str], where: Path, candidate: str) -> dict:
+    """The routed state of a law's label check: its outcome, coverage, nodes and versions, the files
+    of the check and its evidence (relative to the run), and the label repairs the law has used."""
+    return {"state": LABEL_ROUTES[chk.outcome], "outcome": chk.outcome, "coverage": chk.coverage, "iteration": run.iteration,
+            "nodes": list(nodes), "versions": chk.versions, "candidate": candidate,
+            "check": str((where / "laws" / f"{law}.json").relative_to(run.dir)),
+            "check_sha": label_check_sha(where / "laws" / f"{law}.json"),
+            "evidence": str((where / "evidence" / f"{law}.md").relative_to(run.dir)),
+            "repairs": run.label_states.get(law, {}).get("repairs", 0)}
+
+
+def label_check_sha(f: Path) -> str | None:
+    import hashlib
+    return hashlib.sha256(f.read_bytes()).hexdigest() if f.is_file() else None
+
+
+def route_law(run: Run, ledger: Ledger, law: str, chk, nodes: list[str], where: Path, candidate: str, to_user: list[str]) -> str:
+    """Route one law by its label check (see `label_route`). Returns the state."""
+    st = run.label_states[law] = label_state(run, law, chk, nodes, where, candidate)
+    return route_entry(run, ledger, law, chk, nodes, st, to_user)
+
+
+def route_entry(run: Run, ledger: Ledger, law: str, chk, nodes: list[str], st: dict, to_user: list[str]) -> str:
+    """The ledger's part of routing a law by its routed label state `st`: a caller that commits the
+    ledger with the state routes its own copy of the ledger before the commit."""
+    cov = f"{chk.coverage['matched']}/{chk.coverage['eligible']} plain label(s) match"
+    if st["state"] == "accepted":
+        ledger.accept(law, list(nodes))
+        to_user.append(f"`{law}`: label check {chk.outcome} ({cov}); accepted" + ("" if chk.outcome == "aligned" else ", not reported aligned"))
+    elif st["state"] == "waiting":
+        ledger.hold(law, run.iteration)
+        to_user.append(f"`{law}`: label check incomplete ({'; '.join(chk.notes[:2])}); the law waits, no attempt counted")
+    elif st["state"] == "failed":
+        counts = {k: v for k, v in chk.summary["counts"].items() if v}
+        ledger.block(law, [f"decision:{law}"], [f"label check failed on performance or infrastructure: {counts}"])
+        to_user.append(f"`{law}`: label check failed ({counts}): a deadline, crash or unscorable report, not a semantic "
+                       f"disagreement; held for you (python -m harness reopen {run.opts.run_id} --laws {law})")
+    else:
+        ledger.hold(law, run.iteration)
+        to_user.append(f"`{law}`: label check mismatch ({cov}); awaiting its label repair, evidence in {st['evidence']}")
+    return st["state"]
+
+
+def label_route(run: Run, ledger: Ledger, training, to_user: list[str]) -> dict[str, str]:
+    """Check every law `label_ready` names on a candidate library with no change, each law's whole plan
+    together, and route each by its outcome; the check, its evidence and its judgment-call table are
+    kept under the iteration (`label/`), the routed state in `run.label_states`:
+    - aligned, unverified: the law is accepted (the outcome and the coverage are kept);
+    - incomplete: an expected rule is not available (fenced); the law waits, no attempt counted;
+    - failed: a deadline, a crash, an incomplete or unscorable report and no mismatch — a question of
+      performance or infrastructure, not a semantic return: the law is held for the operator;
+    - mismatch: the law awaits its label repair, with the evidence block rendered; nothing is re-planned.
+    Nothing of a check reaches the planner's notes. Returns law → routed state."""
+    from .phases import candidate as candidate_phase, label_check
+    ready = label_ready(run, ledger)
+    if not ready:
+        return {}
+    unavailable = {n: "fenced" for nodes in ready.values() for n in nodes if n in run.fenced}
+    known_incomplete = {law: nodes for law, nodes in ready.items() if set(nodes) & set(unavailable)}
+    checks, cid = {}, ""
+    for law, nodes in known_incomplete.items():          # no monitor runs for a law that cannot be complete
+        checks[law] = label_check.unrun_check(law, nodes, unavailable, training)
+        label_check.write_check(checks[law], run.iter / "label")
+    runnable = {law: nodes for law, nodes in ready.items() if law not in known_incomplete}
+    if runnable:
+        try:
+            with candidate_phase.SCHEDULING.pause(timeout=600):
+                txn = candidate_phase.Candidate.open(run, hooks=())
+                try:
+                    checks.update(label_check.check_in_candidate(txn, training, runnable, unavailable, run.iter / "label"))
+                finally:
+                    txn.close("the label check of the laws whose plan is gated")
+                cid = txn.id
+        except (RuntimeError, candidate_phase.NotDrained) as e:      # nothing judged: the laws stay planned and are checked again
+            to_user.append(f"the label check of {sorted(runnable)} did not run ({str(e)[:300]}); the laws wait, no attempt counted")
+            checks = {law: c for law, c in checks.items() if law in known_incomplete}
+    routed = {}
+    for law, chk in checks.items():
+        routed[law] = route_law(run, ledger, law, chk, ready[law], run.iter / "label", cid, to_user)
+    return routed
 
 
 def _file_gap(gap_ledger: GapLedger, proposal: dict, run_id: str, iteration: int, gaps_filed: list) -> tuple[str, tuple[str, str] | None]:
@@ -2132,7 +2313,7 @@ def _apply_repairs(run: Run, opts: Options, prog: dict, ledger: Ledger, concept_
         if rep.kind == "withdrawn" and wd.get("kind") == "concept":
             node = Node(planned_raw) if planned_raw else None
             dep = report_of(run, Path(rdir), reached_concepts(run, concept_deps(node)) if node else set())
-            if dep.status in ("deferred", "unavailable"):  # the report could not be judged: the repair is not applied, nothing is charged
+            if dep.status in review_phase.NOT_JUDGED:  # the report could not be judged: the repair is not applied, nothing is charged
                 to_user.append(f"node repair of `{nid}`: its dependency-defect report could not be judged ({dep.status}: "
                                + "; ".join(dep.reasons)[:300] + "); the node stays held for another repair — rerun the loop later")
                 continue

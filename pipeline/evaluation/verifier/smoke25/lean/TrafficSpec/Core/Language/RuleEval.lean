@@ -16,13 +16,15 @@
 import TrafficSpec.Core.Language.Rule
 import TrafficSpec.Core.Language.Concept
 import TrafficSpec.Core.Language.Semantics
+import TrafficSpec.Core.Language.EvalFast
 
 namespace TrafficSpec
 namespace Rule
 open Semantics
 
-/-- A rule's formula as evaluated: every comparison over a `cond` decided by cases. -/
-def evalRuleFormula (c : SemCtx) (φ : Formula) : Array R := evalAll c (Formula.elimCond φ)
+/-- A rule's formula as evaluated: every comparison over a `cond` decided by cases, through the
+    sub-expression cache (`evalFastAll`, whose every stored value is the one `evalAll` gives). -/
+def evalRuleFormula (c : SemCtx) (φ : Formula) : Array R := evalFastAll c (Formula.elimCond φ)
 
 /-- Every binder's class holds for its bound track and the applicability holds, per instant. -/
 def engagedAll (r : Rule) (c : SemCtx) : Array R :=

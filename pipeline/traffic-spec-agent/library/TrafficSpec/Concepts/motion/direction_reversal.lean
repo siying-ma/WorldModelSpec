@@ -1,29 +1,37 @@
 /-
-  drv.motion.direction_reversal — At the observation the road user has turned so as to proceed in the direction opposite the one it was proceeding in: the magnitude of the heading change it has accumulated over the window behind of length window is at least heading_change_min, a bound near a half turn. The corpus definition this contract quotes speaks of "the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not", so the accumulation runs over a window long enough to cover a reversal made in several movements, and the window length is the caller's parameter; the turn is recognized once the change has been carried out, and a caller that needs the act reads the observation at which the concept rises. Where the window reaches past the start of the trace, is sampled too sparsely, or a yaw rate is missing, it is unknown. Not a stand-in for: a turn to the left or the right short of a reversal, a reversal of the direction of motion without turning (a vehicle backing), the place the turn is made at, the lawfulness of the manoeuvre, or the hand to which the turn is made -- the magnitude is read, so a reversal either way is one.
-
-  The contract is the definition `DEF-NRS-484B-077`, verbatim.
+  drv.motion.direction_reversal — The road user has turned about so as to travel back the way it came: at this observation its direction of travel is the reverse of the one it had at the start of the window behind. It is read at the observation itself, from the signed heading change over the window behind lying in a band about a half turn — at least a half turn less the opposition tolerance and at most a half turn plus it, in either hand — while the road user's speed is above the motion tolerance at every observation of that window, so that the heading change is travel and not a body turning where it stands. The window is the time within which such a manoeuvre is completed, and the tolerance is the largest departure from an exact half turn still read as the opposite direction; the band is two-sided because a course change well beyond a half turn leaves the road user travelling otherwise than back the way it came. The concept denotes the reversal of the direction of travel only: it is not a turn into another road, not the hand the manoeuvre is made with, not the place where it is made, and not its lawfulness.
 
   THE READING (the blueprint's; the session records here, per element, how the contract's words are
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    the magnitude of the heading change it has accumulated over the window behind of length window is at least heading_change_min: atoms ['prim.heading_change'], concepts []
+    the signed heading change over the window behind lying in a band about a half turn: atoms [], concepts ['prim.heading_change']
+    the road user's speed is above the motion tolerance at every observation of that window: atoms ['kin.speed'], concepts []
 
-  How that element is written. `prim.heading_change` is "the signed heading change (degrees, left
-  positive) of a road user over the window behind the observation, integrated from kin.yaw_rate",
-  and its one parameter is the window length: so `window` is that parameter, and nothing else in
-  this file says what the window is. "The magnitude" is `Term.abs` of that signed value — the
-  contract reads the magnitude, so a reversal to either hand is one, and neither sign is preferred.
-  "Is at least" is `.ge`: the bound is inclusive. The primitive is already unknown where the window
-  reaches past the start of the trace, is sampled too sparsely, or a yaw rate is missing, and a
-  comparison over an unknown value is unknown, so the contract's three unknown cases need nothing
-  of their own. The turn is recognized at every observation whose window behind carries the change,
-  not only at the first: the contract says the caller that needs the act reads the observation at
-  which the concept rises, so `rises` is the caller's and not written here.
+  Literals the contract states (declared; written through a `Units` constructor):
+    180 deg — a half turn, the heading change that leaves a body pointing the opposite way: a geometric constant of the notion, not a magnitude the reading sets
 
-  Nothing else of the contract reaches the body: the place ("upon a highway"), the lawfulness and
-  the hand of the turn are residues or exclusions, and the reversal of the direction of motion
-  without turning (a vehicle backing) is excluded by reading a heading change and nothing else.
+  How it is written. The body is the conjunction of the two elements, read at the observation
+  itself.
+
+  The course change: `prim.heading_change u reversal_window` is the signed heading change
+  (degrees, left positive) over the window behind, which is the only thing the first element
+  names; the band about a half turn is two comparisons on it — at least `180 − opposition_tolerance`
+  and at most `180 + opposition_tolerance`. The contract makes the band hold "in either hand", so
+  the comparisons are on the magnitude (`Term.abs`) of the signed change: a turn of the same size
+  made to the left and one made to the right read alike, and the hand of the manoeuvre — which the
+  contract excludes — is nowhere read. 180 deg is the declared literal, written through
+  `Units.degrees`; the tolerance and the window are formal parameters the caller fills.
+
+  The motion: `kin_speed u` above `motion_speed_tolerance` at every observation of the same window
+  behind, written `holdsFor .time reversal_window`, the window measured in time, as the parameter's
+  unit (seconds) states, and over the same length as the course change, since the contract says
+  "that window". The operator reads the window's first observation and the judged one and every one
+  between, and is unknown where the window reaches past the start of the trace or a speed there is
+  unobserved. `kin.path_length` is not read: the concept bounds no distance.
+
+  Nothing of a turn into another road, of the hand, of the place or of its lawfulness enters the
+  body: no atom of a region, a lane or a device is read.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -35,26 +43,48 @@ namespace TrafficSpec.Concepts.motion.direction_reversal
 def aU : Arg := .var "u"
 
 /-- The formal parameters, as `Term`s; no value of any of them lives in this file. -/
-def pHeadingChangeMin : Term := .param "heading_change_min"
-def pWindow : Term := .param "window"
+def pReversalWindow : Term := .param "reversal_window"
+def pOppositionTolerance : Term := .param "opposition_tolerance"
+def pMotionSpeedTolerance : Term := .param "motion_speed_tolerance"
 
-/-- The signed heading change of `u` over the window behind of length `window`, in degrees,
-    left positive: `prim.heading_change`, whose one parameter is the window's length. -/
-def headingChange : Term := .quantity "prim_heading_change" [aU] [pWindow]
+/-- A half turn: the heading change that leaves a body pointing the opposite way. -/
+def halfTurn : Term := .lit (Units.degrees 180) .degree
 
-/-- The magnitude of the heading change accumulated over the window behind is at least
-    `heading_change_min`. -/
-def body : Formula := .cmp (.abs headingChange) .ge pHeadingChangeMin
+/-- The signed heading change (degrees, left positive) over the window behind. -/
+def headingChange : Term := .quantity "prim_heading_change" [aU] [pReversalWindow]
+
+/-- The course change lies in the band about a half turn, in either hand: its magnitude is at
+    least a half turn less the tolerance and at most a half turn plus it. -/
+def inOppositionBand : Formula :=
+  .and (.cmp (.abs headingChange) .ge (.sub halfTurn pOppositionTolerance))
+       (.cmp (.abs headingChange) .le (.add halfTurn pOppositionTolerance))
+
+/-- The road user's speed is above the motion tolerance at this observation. -/
+def travelling : Formula := .cmp (.measure "kin_speed" [aU]) .gt pMotionSpeedTolerance
+
+/-- It travelled throughout the window behind: the heading change is travel, not a body turning
+    where it stands. -/
+def travellingThroughWindow : Formula :=
+  .holdsFor .time pReversalWindow "u" travelling
+
+/-- Turned about: the course change in the band about a half turn, while travelling throughout. -/
+def body : Formula := .and inOppositionBand travellingThroughWindow
 
 def concept : Concept :=
   { id := "drv.motion.direction_reversal"
-    contract := "At the observation the road user has turned so as to proceed in the direction opposite the one it was proceeding in: the magnitude of the heading change it has accumulated over the window behind of length window is at least heading_change_min, a bound near a half turn. The corpus definition this contract quotes speaks of \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\", so the accumulation runs over a window long enough to cover a reversal made in several movements, and the window length is the caller's parameter; the turn is recognized once the change has been carried out, and a caller that needs the act reads the observation at which the concept rises. Where the window reaches past the start of the trace, is sampled too sparsely, or a yaw rate is missing, it is unknown. Not a stand-in for: a turn to the left or the right short of a reversal, a reversal of the direction of motion without turning (a vehicle backing), the place the turn is made at, the lawfulness of the manoeuvre, or the hand to which the turn is made -- the magnitude is read, so a reversal either way is one."
-    definition := some "DEF-NRS-484B-077"
+    contract := "The road user has turned about so as to travel back the way it came: at this observation its direction of travel is the reverse of the one it had at the start of the window behind. It is read at the observation itself, from the signed heading change over the window behind lying in a band about a half turn — at least a half turn less the opposition tolerance and at most a half turn plus it, in either hand — while the road user's speed is above the motion tolerance at every observation of that window, so that the heading change is travel and not a body turning where it stands. The window is the time within which such a manoeuvre is completed, and the tolerance is the largest departure from an exact half turn still read as the opposite direction; the band is two-sided because a course change well beyond a half turn leaves the road user travelling otherwise than back the way it came. The concept denotes the reversal of the direction of travel only: it is not a turn into another road, not the hand the manoeuvre is made with, not the place where it is made, and not its lawfulness."
+    definition := none
     args := [("u", .track)]
-    params := [⟨"heading_change_min", .degree⟩, ⟨"window", .second⟩]
+    params := [⟨"reversal_window", .second⟩, ⟨"opposition_tolerance", .degree⟩, ⟨"motion_speed_tolerance", .metrePerSecond⟩]
     body := .formula body
-    residues := ["the place the definition names is the caller's: this concept states the manoeuvre, and a rule that needs it to have been made upon a highway reads the structure region itself with its own relations.", "a reversal carried out in movements spread over more than the window the caller sets is not recognized; the contract names the window as the parameter that bounds this, and a caller needing a longer reversal sets a longer window."]  -- the record's, verbatim; not yours to change
-    narrowings := []  -- one { span := "<words of the contract>", why := "<why>", kind := "reading" } per reading you chose that the contract leaves open, explained in the header
+    residues := []  -- the record's, verbatim; not yours to change
+    narrowings :=
+      [ { span := "at least a half turn less the opposition tolerance and at most a half turn plus it, in either hand"
+          why := "The band is written on the magnitude of the signed heading change (`abs` of `prim.heading_change`), so a course change of the same size made to the left and one made to the right read alike and the hand of the manoeuvre is nowhere read; the bounds are inclusive, as `at least` and `at most` say."
+          kind := "reading" }
+      , { span := "while the road user's speed is above the motion tolerance at every observation of that window"
+          why := "Written `holdsFor .time reversal_window`: the same window behind as the heading change, measured in time (the parameter's unit is seconds), covering the window's first observation, the judged one and every one between. It is unknown where that window reaches past the start of the trace, where the observations in it are more than half the window apart, or where a speed in it is unobserved."
+          kind := "reading" } ]
     supersedes := none }
 
 end TrafficSpec.Concepts.motion.direction_reversal

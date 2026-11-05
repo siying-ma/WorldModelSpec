@@ -1,1 +1,0 @@
-../../verifier/smoke25/lean/Explain.lean

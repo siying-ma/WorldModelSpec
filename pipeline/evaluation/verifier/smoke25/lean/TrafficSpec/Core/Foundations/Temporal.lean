@@ -263,5 +263,59 @@ def firstTrueAll (vals : Array R) : Array (Except UnknownReason (Option Nat)) :=
         | .u => .error (vals[i]!.why.head?.getD (.malformed "first"))
     (acc.1.push st, st)) (Array.mkEmpty n, .ok none)).1
 
+
+-- ---------------------------------------------------------------------------------------------
+-- Lengths: every operator returns one value per observation of the array it walks.
+-- ---------------------------------------------------------------------------------------------
+section Lengths
+
+/-- A left fold whose step keeps the length of the array it carries keeps the initial length. -/
+theorem size_foldl_carry {α β : Type} (l : List Nat) (f : Array α × β → Nat → Array α × β)
+    (hf : ∀ acc i, (f acc i).1.size = acc.1.size) (init : Array α × β) :
+    (l.foldl f init).1.size = init.1.size := by
+  induction l generalizing init with
+  | nil => rfl
+  | cons x xs ih => simp only [List.foldl]; rw [ih, hf]
+
+theorem size_const (n : Nat) (r : R) : (const n r).size = n := by simp [const]
+theorem size_zipAnd (a b : Array R) : (zipAnd a b).size = min a.size b.size := by simp [zipAnd]
+theorem size_zipOr (a b : Array R) : (zipOr a b).size = min a.size b.size := by simp [zipOr]
+theorem size_zipImplies (a b : Array R) : (zipImplies a b).size = min a.size b.size := by simp [zipImplies]
+theorem size_mapNot (a : Array R) : (mapNot a).size = a.size := by simp [mapNot]
+
+private theorem size_backward (tail : R) (step : R → R → R) (vals : Array R) :
+    (backward tail step vals).size = vals.size := by
+  unfold backward; rw [size_foldl_carry] <;> simp
+
+private theorem size_forward (head : R) (step : R → R → R) (vals : Array R) :
+    (forward head step vals).size = vals.size := by
+  unfold forward; rw [size_foldl_carry] <;> simp
+
+theorem size_alwaysAll (φ : Array R) : (alwaysAll φ).size = φ.size := size_backward _ _ _
+theorem size_eventuallyAll (φ : Array R) : (eventuallyAll φ).size = φ.size := size_backward _ _ _
+theorem size_onceAll (φ : Array R) : (onceAll φ).size = φ.size := size_forward _ _ _
+theorem size_untilAll (φ ψ : Array R) : (untilAll φ ψ).size = ψ.size := by
+  unfold untilAll; rw [size_foldl_carry] <;> simp
+theorem size_sinceAll (φ ψ : Array R) : (sinceAll φ ψ).size = ψ.size := by
+  unfold sinceAll; rw [size_foldl_carry] <;> simp
+theorem size_prevAll (first : R) (φ : Array R) : (prevAll first φ).size = φ.size := by simp [prevAll]
+theorem size_holdsForAll (pos : Array (Option Q)) (d : Q) (op : String) (w : UnknownReason) (φ : Array R) :
+    (holdsForAll pos d op w φ).size = φ.size := by simp [holdsForAll]
+theorem size_atLastAll (pos : Array (Option Q)) (d : Q) (op : String) (w : UnknownReason) (ψ φ : Array R) :
+    (atLastAll pos d op w ψ φ).size = φ.size := by simp [atLastAll]
+theorem size_withinAll (pos : Array (Option Q)) (d : Q) (op : String) (w : UnknownReason) (φ : Array R) :
+    (withinAll pos d op w φ).size = φ.size := by simp [withinAll]
+theorem size_untilWithinAll (pos : Array (Option Q)) (d : Q) (op : String) (w : UnknownReason) (φ ψ : Array R) :
+    (untilWithinAll pos d op w φ ψ).size = φ.size := by simp [untilWithinAll]
+theorem size_distanceWhileAll (pathPos : Array (Option Q)) (holds : Array R) :
+    (distanceWhileAll pathPos holds).size = holds.size := by simp [distanceWhileAll]
+theorem size_countEdgesAll (op : String) (edge sinceφ : Array R) :
+    (countEdgesAll op edge sinceφ).size = edge.size := by simp [countEdgesAll]
+theorem size_risesAll (φ : Array R) : (risesAll φ).size = φ.size := by simp [risesAll]
+theorem size_sinceRiseAll (times : Array Q) (φ : Array R) : (sinceRiseAll times φ).size = φ.size := by
+  simp [sinceRiseAll]
+
+end Lengths
+
 end Temporal
 end TrafficSpec

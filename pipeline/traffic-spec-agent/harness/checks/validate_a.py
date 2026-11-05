@@ -381,6 +381,14 @@ def check_scenarios(node: Node, onto: Ontology, concept_atoms: dict[str, set[str
             errs.append(f"{node.id}: the blind scenario masks {masked}, none of which the node reads (claimed, or read by a claimed concept)")
     for name, s in scs.items():
         if s.get("boundary") is None:
+            # `Scenario.run` admits an unknown witness only for atoms its manifest masks or, on a
+            # history-boundary witness, a window truncated at the trace start; only `blind`
+            # carries masked atoms into its witness, so any other unknown has no admitted reason
+            if name not in SCENARIOS and normalize_verdict(s.get("expected")) == "unknown":
+                errs.append(f"{node.id}: scenario `{name}` expects unknown, but declares no history boundary and is not `blind`: its "
+                            "witness masks no atom, and the gate admits an unknown witness only for an atom its manifest masks or, "
+                            "with a declared `boundary`, a window truncated at the trace start — an undeclared assumption or "
+                            "intention, a missing parameter or an undefined concept leaves no witness that can pass")
             continue
         if name in SCENARIOS:
             errs.append(f"{node.id}: scenario `{name}` declares a history boundary; only a scenario beside the four standard ones may")

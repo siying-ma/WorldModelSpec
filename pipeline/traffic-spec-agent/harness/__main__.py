@@ -7,6 +7,7 @@
   surface       print the generated Core surface a coding session is shown
   index         regenerate Index.lean and TrafficSpecWitness.lean (rules, concepts, witnesses)
   verify        rebuild the library and run every witness, against a run's reading
+  label_check   score a run's frozen library on the labelled training recordings
   status        the run's ledger counts
   reopen        put a run's failed or decision-blocked laws back to open
   gap           list the gaps, or record the operator's decision on one
@@ -29,6 +30,23 @@ from .store.state import Options
 DEFAULT_LAWS = "laws/example/train/laws.jsonl"
 DEFAULT_ONTOLOGY = "ontology/ATOMS_train.md"
 DEFAULT_READING = str((paths.READINGS / "default.json").relative_to(paths.REPO))
+DEFAULT_DATASET = "../datasets/demo-accepted-191-core-v2-train"
+
+
+def _candidate_view(run):
+    """The run as the candidate a session runs in holds it (its environment names the candidate's
+    directory): its records, reading, mapping index and library; the run itself otherwise."""
+    import os
+    from .phases import candidate
+    area = os.environ.get(candidate.CANDIDATE_ENV)
+    if not area:
+        return run
+    sc = json.loads((Path(area) / "scope.json").read_text(encoding="utf-8"))
+    view = candidate._view(run, Path(area), Path(sc["base_reading"]))
+    view.accepted_nodes, view.accepted_concepts = sc["accepted_nodes"], sc["accepted_concepts"]
+    for k, v in paths.library_layout(Path(sc["tree"]) / "library").items():
+        setattr(paths, k, v)                           # this command reads the candidate's library, for its whole life
+    return view
 
 
 def _p(s: str) -> Path:
@@ -137,7 +155,12 @@ class Cli:
         `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `repair_budget_usd`, `judge_budget_usd` (each role's cap), `session_retries`, `retry_wait`; `reviewer_model`
         (required), `review_effort`, `allow_same_vendor`, `review_checks`, `review_submissions`,
         `review_passes`, `max_divergences`, `reviewer_max_output_tokens`, `openai_budget_usd`,
-        `model_prices`; `definition_precedence`; `restart` (discard an interrupted iteration);
+        `model_prices`; `feedback` (`review`: a node is accepted on its behaviour review; `labels`: that review
+        and its Stage A/B are suspended, the concept review stays, the frozen library is scored by `label_check`),
+        `aggregate_verifier_model` (required under `labels`), `aggregate_verifier_effort`,
+        `aggregate_verifier_budget_usd`; `label_repair` (under `labels`: each law whose plan is gated is checked on
+        the training recordings inside the loop and routed by its outcome) with `label_dataset` (those recordings,
+        by default the training package); `definition_precedence`; `restart` (discard an interrupted iteration);
         `dry_run`; `force_takeover`. Returns 0 only when the run ends `complete`."""
         from dataclasses import fields
         from .loop import run_loop
@@ -154,12 +177,16 @@ class Cli:
         kw = {k: v for k, v in saved.items() if k in names and k not in ("run_id", "restart", "force_takeover", "dry_run")}
         kw.update(given)
         kw.setdefault("laws", DEFAULT_LAWS); kw.setdefault("ontology", DEFAULT_ONTOLOGY); kw.setdefault("reading", DEFAULT_READING)
-        for k in ("laws", "ontology", "reading", "definition_precedence", "model_prices"):
+        if kw.get("label_repair") and not kw.get("label_dataset"):
+            kw["label_dataset"] = DEFAULT_DATASET
+        for k in ("laws", "ontology", "reading", "definition_precedence", "model_prices", "label_dataset"):
             if kw.get(k):
                 kw[k] = _p(str(kw[k]))
+        if kw.get("label_dataset"):
+            kw["label_dataset"] = str(kw["label_dataset"])
         kw.setdefault("definition_precedence", _p("config/definition_precedence.json"))
         kw.setdefault("model_prices", _p("config/model_prices.json"))
-        for k in ("plan_effort", "code_effort", "judge_effort", "review_effort"):
+        for k in ("plan_effort", "code_effort", "judge_effort", "review_effort", "aggregate_verifier_effort"):
             if k in kw:
                 kw[k] = kw[k] or None
         opts = Options(run_id=run_id, **kw)
@@ -173,6 +200,8 @@ class Cli:
             setattr(opts, k, max(lo, int(getattr(opts, k))))
         if opts.openai_budget_usd is not None:
             opts.openai_budget_usd = float(opts.openai_budget_usd)
+        if opts.aggregate_verifier_budget_usd is not None:
+            opts.aggregate_verifier_budget_usd = float(opts.aggregate_verifier_budget_usd)
         opts.session_timeout = float(opts.session_timeout)
         result = run_loop(opts)
         print(json.dumps(result, indent=1))
@@ -189,6 +218,7 @@ class Cli:
         from .store.state import Run
         if run_id:
             run = Run.load(run_id)
+            run = _candidate_view(run)                 # a plan session run inside a candidate validates against the candidate
             bp = _p(blueprint_file) if blueprint_file else _latest_blueprint(run)
             plan_dir = bp.parent
             law_list = corpus.load_laws(run.opts.laws)
@@ -280,6 +310,75 @@ class Cli:
         from .store import owner
         owner.acquire_for_command("index")
         index_sync.write_index(); print(f"{len(index_sync.node_ids())} rule(s) registered"); return 0
+
+    def label_check(self, run_id: str, dataset: str = DEFAULT_DATASET, laws: str = "", jobs: int = 4,
+                    deadline_s: float = 900, memory_gb: float = 24, explain_s: float = 300) -> int:
+        """Score a run's frozen library on the training recordings: every law of the run's corpus that
+        the dataset holds, its accepted rules run on each of its recordings (`harness/phases/label_check.py`),
+        each law's outcome (aligned, mismatch, failed, unverified) and the evidence for every eligible
+        recording that does not match. Run once the loop has stopped; nothing it finds reaches a plan,
+        a repair or the run's notes. Writes `results/<run>/label_check/`: `summary.json` (the versions
+        it is bound to and every law's outcome and coverage), `laws/<law>.json`, `evidence/<law>.md`,
+        `judgment_calls.json`, and the whole Explain reports under `explain/`. Each law's record and its
+        summary line also carry the source report of its recordings (`recorded/source_check.py`, kept
+        once per recording in the run's `source_check.json`), which changes no outcome."""
+        import hashlib
+        from .phases import label_check as lc
+        from .store import owner
+        from .store.state import Run
+        from .model.blueprint import Node
+        from .loop import semantic_inputs
+        from recorded import dataset as dataset_mod, source_check
+        owner.acquire_for_command("label_check")
+        run = Run.load(run_id)
+        moved = lc.drift(run.dir)
+        if moved:
+            raise SystemExit("the library is not the one the run left; nothing is scored:\n  " + "\n  ".join(moved[:20])
+                             + (f"\n  … and {len(moved) - 20} more" if len(moved) > 20 else ""))
+        ds = dataset_mod.Dataset(_p(dataset))
+        ledger = {e["law"]: e for e in (json.loads((run.dir / "state.json").read_text(encoding="utf-8")).get("ledger") or [])}
+        accepted = {nid for nid, rec in run.all_nodes().items() if not rec.get("fenced")}
+        corpus_laws = {l.id for l in corpus.load_laws(run.opts.laws)}
+        wanted = [x for x in str(laws).split(",") if x] if laws else sorted({r["law_id"] for r in ds.rows} & corpus_laws)
+        code, out = lean.lake_build(paths.LIBRARY, targets=["monitor", "explain"])
+        if code != 0:
+            raise SystemExit("the monitor or explain does not build:\n" + out[-2000:])
+        bin_ = paths.LIBRARY / ".lake/build/bin"
+        sha = lambda f: hashlib.sha256(Path(f).read_bytes()).hexdigest()
+        out_dir = paths.run_dir(run_id) / "label_check"
+        lim = lc.Limits(deadline_s=float(deadline_s), memory_gb=float(memory_gb), explain_s=float(explain_s), jobs=int(jobs))
+        results, judgment = {}, []
+        rows = [r for r in ds.rows if r["law_id"] in set(wanted)]
+        sources = source_check.ensure(run.dir / "source_check.json", ds, [r["recording_id"] for r in rows],
+                                      {r["recording_id"]: {"trace": r["trace_sha256"], "manifest": r["manifest_sha256"]} for r in rows},
+                                      jobs=lc.SOURCE_CHECK_JOBS)
+        frozen_sha = hashlib.sha256((run.dir / "frozen" / "manifest.json").read_bytes()).hexdigest()
+        for law in wanted:
+            entry = ledger.get(law, {})
+            rules = sorted(entry.get("nodes") or [])                 # the law's final plan, accepted or not
+            unavailable = {r: ("fenced" if r in run.fenced else f"not accepted; the law is {entry.get('state')}")
+                           for r in rules if r not in accepted}
+            chk = lc.check_law(law, rules, {r: law for r in rules}, ds, bin_ / "monitor", bin_ / "explain",
+                               run.reading_file, lim, out_dir / "explain", unavailable)
+            chk.source_check = source_check.summary({r["recording_id"]: sources.get(r["recording_id"]) for r in rows if r["law_id"] == law})
+            (out_dir / "laws").mkdir(parents=True, exist_ok=True)
+            (out_dir / "evidence").mkdir(parents=True, exist_ok=True)
+            (out_dir / "laws" / f"{law}.json").write_text(json.dumps(chk.to_dict(), indent=1) + "\n", encoding="utf-8")
+            (out_dir / "evidence" / f"{law}.md").write_text(lc.render_evidence(chk), encoding="utf-8")
+            judgment += lc.judgment_table(chk)
+            results[law] = {"outcome": chk.outcome, "rules": rules, "not_run": unavailable, **chk.coverage,
+                            "counts": chk.summary["counts"], "notes": chk.notes,
+                            "source_check": {k: v for k, v in chk.source_check.items() if k != "per_recording"}}
+            print(f"{law:22s} {chk.outcome:10s} rules {len(rules)}  plain {chk.coverage['matched']}/{chk.coverage['eligible']} match")
+        summary = {"run": run_id, "data_version": ds.data_version, "dataset": str(_p(dataset)), "frozen_manifest_sha256": frozen_sha,
+                   "semantic_inputs": semantic_inputs(run.opts),
+                   "monitor_sha256": sha(bin_ / "monitor"), "explain_sha256": sha(bin_ / "explain"),
+                   "reading_sha256": sha(run.reading_file), "limits": lim.__dict__,
+                   "outcomes": {k: sum(v["outcome"] == k for v in results.values()) for k in lc.OUTCOMES}, "laws": results}
+        (out_dir / "summary.json").write_text(json.dumps(summary, indent=1) + "\n", encoding="utf-8")
+        (out_dir / "judgment_calls.json").write_text(json.dumps(judgment, indent=1) + "\n", encoding="utf-8")
+        print(json.dumps(summary["outcomes"]))
+        return 0
 
     def verify(self, run_id: str) -> int:
         """Evaluate a run's own context: every accepted record of its effective view (its base

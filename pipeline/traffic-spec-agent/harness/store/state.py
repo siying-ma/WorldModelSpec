@@ -37,8 +37,12 @@ class Options:
     workers: int = 1               # coding tasks run at once (concepts, then nodes, each once its dependencies are accepted)
     plan_turns: int = 80           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
     restart: bool = False          # discard an interrupted iteration instead of resuming it
-    reviewer_model: Optional[str] = None   # a second vendor's model for the behaviour review, every node's acceptance check (required)
+    reviewer_model: Optional[str] = None   # a second vendor's model for the reviews (required): the concept review, and the node behaviour review under `feedback: review`
     review_effort: Optional[str] = "high"  # the reviewer's reasoning effort
+    feedback: str = "review"               # `review`: a node is accepted on its behaviour review; `labels`: the node behaviour review and its Stage A/B are suspended, the concept review stays, and the label check scores the frozen library (`harness label_check`)
+    aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required under `feedback: labels`; else the reviewer's)
+    aggregate_verifier_effort: Optional[str] = None    # its reasoning effort (else the reviewer's)
+    aggregate_verifier_budget_usd: Optional[float] = None   # the run-wide limit on its calls, within the second vendor's limit
     allow_same_vendor: bool = False        # permit a reviewer from the planner's own vendor
     mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
@@ -54,6 +58,17 @@ class Options:
     review_submissions: int = 3                    # submissions of one reviewer session; the last one stands
     review_passes: int = 2                         # reviewer sessions per rule review, one after another, their challenges joined
     force_takeover: bool = False                   # end the live child process groups an earlier owner of the library left, instead of refusing
+    label_repair: bool = False                     # under `feedback: labels`, check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: the library is only scored after the run)
+    label_dataset: Optional[str] = None            # the training recordings the in-loop label check reads (required with `label_repair`)
+    label_repair_attempts: int = 2                 # label repairs per law (a re-planned law keeps its count); each session call of one, its re-ask included, is capped by `repair_budget_usd`, and its planner and coder sessions by `session_budget_usd`
+    label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
+
+
+def node_reviews(opts) -> bool:
+    """Whether the node behaviour review, its Stage A/B and the node obligations it upholds are in
+    use: not under `feedback: labels`, where a node is accepted on its gate and its law is scored by
+    the label check; the concept review is in use either way."""
+    return getattr(opts, "feedback", "review") != "labels"
 
 
 @dataclass
@@ -73,11 +88,21 @@ class Run:
     base_chain: list[str] = field(default_factory=list)       # the base runs, the oldest first
     rechecked: dict[str, str] = field(default_factory=dict)   # an inherited record's id → the context it was last found sound on
     pending_notices: list[str] = field(default_factory=list)  # operator notices from a loop start, delivered by the next iteration
+    label_states: dict[str, dict] = field(default_factory=dict)   # with `label_repair`: each checked law's routed outcome and the check it rests on
 
     @classmethod
     def load(cls, run_id: str) -> "Run":
         """A run as its `options.json` records it, with its accepted nodes and concepts loaded:
-        what a command run outside the loop (the draft validator, the gate) works against."""
+        what a command run outside the loop (the draft validator, the gate) works against. A library
+        left in the middle of a candidate's commit is completed first by an owner, and refused to any
+        other reader."""
+        from ..phases import candidate
+        if candidate.pending() is not None:               # a library in the middle of a commit is never read as a whole
+            from . import owner
+            if not owner.holds():
+                raise SystemExit("the library holds a candidate transaction committed and not yet applied: any command that takes "
+                                 "the library (the loop, verify, index) completes it first")
+            candidate.recover_pending()
         f = paths.run_dir(run_id) / "options.json"
         if not f.exists():
             raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
@@ -106,6 +131,11 @@ class Run:
     def reading_file(self) -> Path:
         """The run's reading: the operator's base reading plus the aggregates the run derived."""
         return self.dir / "reading.json"
+
+    @property
+    def rulings_file(self) -> Path:
+        """The run's rulings: append-only, every review's, judge's and replay's."""
+        return self.dir / "rulings.jsonl"
 
     @property
     def node_ledger_file(self) -> Path:
@@ -140,6 +170,7 @@ class Run:
         self.fence_history = list(snap.get("fence_history", []))
         self.rechecked = dict(snap.get("rechecked", {}))
         self.pending_notices = list(snap.get("pending_notices", []))
+        self.label_states = dict(snap.get("label_states", {}))
         self.iteration = int(snap.get("iteration", 0))
         return snap
 
@@ -426,6 +457,8 @@ def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | Non
                      "aggregate_failures": run.aggregate_failures, "fenced": run.fenced,
                      "fence_history": run.fence_history, "rechecked": run.rechecked, "pending_notices": run.pending_notices})
         snap.pop("defective_concepts", None)
+        if run.label_states:
+            snap["label_states"] = run.label_states
         if prog is not None:
             snap["prog"] = prog
         jsonl.write_atomic(run.state_file, json.dumps(snap, ensure_ascii=False))

@@ -6,6 +6,7 @@
 import TrafficSpec.Tests.Tri
 import TrafficSpec.Tests.Units
 import TrafficSpec.Tests.Time
+import TrafficSpec.Tests.Temporal
 import TrafficSpec.Tests.Atoms
 import TrafficSpec.Tests.SurfaceGap
 import TrafficSpec.Tests.Semantics
@@ -26,3 +27,4 @@ import TrafficSpec.Tests.PathSearch
 import TrafficSpec.Tests.HistoryBoundary
 import TrafficSpec.Tests.RegionOffsetAlong
 import TrafficSpec.Tests.ApproachChain
+import TrafficSpec.Tests.EvalFast

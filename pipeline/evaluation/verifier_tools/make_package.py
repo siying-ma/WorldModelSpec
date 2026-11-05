@@ -3,8 +3,8 @@
     python3 make_package.py <run> [--out DIR] [--no-build] [--tar]
 
 The package's sources: `../verifier/template/` (the `verify` command, its Python API, `install.sh` and
-the package README) and `lean_src/Explain.lean` (a link to the delivered package's copy, the one
-source of the explainer).
+the package README), and from the pipeline library the monitor (`Main.lean`) and the explainer
+(`Explain.lean`).
 
 The package holds: the full split's Core, the rules and concepts the run holds (its accepted
 records and its base chain's, fenced ones left out, as the harness's own view gives them), the
@@ -80,10 +80,9 @@ def main() -> None:
     # 1. The library: root files, the full split's Core, the run's rules and concepts.
     shutil.copytree(TEMPLATE, out, ignore=shutil.ignore_patterns("__pycache__"))
     lean.mkdir()
-    for f in ("Main.lean", "TrafficSpec.lean", "lean-toolchain", "lake-manifest.json"):
+    for f in ("Main.lean", "Explain.lean", "TrafficSpec.lean", "lean-toolchain", "lake-manifest.json"):
         shutil.copy2(LIB / f, lean / f)
     (lean / "lakefile.lean").write_text(LAKEFILE, encoding="utf-8")
-    shutil.copy2(HERE / "lean_src" / "Explain.lean", lean / "Explain.lean")
     # Core as the library holds it, then the full split's variant files over it (the library may
     # hold the training variant; the monitor needs the full one).
     shutil.copytree(LIB / "TrafficSpec" / "Core", lean / "TrafficSpec" / "Core")

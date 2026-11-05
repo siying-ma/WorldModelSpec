@@ -1,32 +1,35 @@
 /-
   Witnesses for drv.lane.exits_region.
 
-  The map, the same in every scene of every trace: two lanes of one laned roadway, both running
-  east (+x), each 3 m wide and 200 m long. Region 100 is the right lane (y ∈ [0, 3]), region 101
-  the centre lane (y ∈ [3, 6]) immediately to its left; 100 is the second lane from the left of
-  two, 101 the first. The region formal `r` is the right lane, 100.
+  One body, track 1, a car 5 m long and 2 m wide (half-extents 2.5 m, 1 m, 0.75 m), on a
+  two-lane one-way carriageway running east: region 100, the right lane, is the strip
+  0 m ≤ y ≤ 3.5 m, and region 101, the left lane beside it, the strip 3.5 m ≤ y ≤ 7 m, both
+  reaching from x = −50 m to x = 50 m and both directed east. The formal region `r` is the right
+  lane, region 100; the left lane is built only so that the car has somewhere to be when it is no
+  longer in the right lane — the concept reads occupancy of `r` alone, so no device and no other
+  structure is built.
 
-  The body, track 1: a car (class motor_vehicle) heading east at 20 m/s, half-extents 2 m long,
-  0.90 m wide, 0.75 m high, so its footprint is a 4 m × 1.8 m rectangle centred on its position.
-  Every trace has three observations a quarter of a second apart (t = 0, 250, 500 ms), the car
-  advancing 5 m along x between them from x = 10 m.
+  Each trace is three instants one second apart (t = 0, 1000, 2000 ms). Occupancy is derived from
+  the geometry: a body at y = 1.75 m lies with its whole 2 m width inside the right lane
+  (0.75 m … 2.75 m), a body at y = 5.25 m with its whole width inside the left lane
+  (4.25 m … 6.25 m) and clear of the right.
 
-  Occupancy is not written here: the admission derives it from the footprint and the lane
-  boundaries as closed sets, so the lateral placement of the car is what decides every reading.
+  The concept reads the previous observation, so the first instant of a trace has nothing to
+  compare with: every scenario's `window` starts at t = 1000 ms, the first instant that has a
+  predecessor inside the trace.
 
-  - `holds`: y = 2.80 m at t = 0 (footprint y ∈ [1.90, 3.70]: both lanes, the right lane among
-    them), y = 3.95 m at t = 250 (footprint y ∈ [3.05, 4.85]: the centre lane only), y = 4.50 m at
-    t = 500. The right lane is left at t = 250, and the witness speaks of that observation alone
-    (`window`): the concept is an event, false at t = 0 (the car still overlaps the right lane)
-    and at t = 500 (it no longer overlapped it at the previous observation either).
-  - `fails`: y = 2.80, 2.90, 3.00 m (footprints y ∈ [1.90, 3.70], [2.00, 3.80], [2.10, 3.90]): the
-    car straddles the two lanes throughout, never ceasing to overlap the right lane, so the body
-    is false at every observation of the trace.
-  - `blind`: the geometry of `holds`, with `rel.occupies` absent from the manifest. The witness
-    speaks of t ∈ [250, 500], the observations whose previous observation the trace holds: there
-    the body is unknown for the masked overlap alone, and not for a past the trace lacks.
+  The instance has no literal formal and no parameter: no figure of the witness's own enters it.
 
-  There are no formal parameters, so the instance gives no magnitude of its own.
+    holds — the car's footprint overlaps the right lane at t = 0 (at (0, 1.75)) and, at t = 1000,
+            lies wholly within the left lane at (10, 5.25) and no longer overlaps the right: the
+            window is the single instant t = 1000, at which it is read as leaving the right lane.
+    fails — the same car is at (0, 5.25), (10, 5.25) and (20, 5.25): wholly in the left lane
+            throughout, overlapping the right lane at neither t = 1000 nor its predecessor and
+            neither at t = 2000 nor its predecessor, so no leaving is read at either instant of
+            the window.
+    blind — the geometry of `holds`, but the source does not observe region occupancy for the car:
+            the manifest declares rel.occupies absent, so the overlap is unknown at t = 1000 and
+            at its predecessor and whether the car left the right lane is unknown.
 -/
 import TrafficSpec.Concepts.lane.exits_region
 import TrafficSpec.Core.Evidence.Builders
@@ -39,9 +42,10 @@ def m (n : Int) : Q := Units.metres n
 def cm (n : Int) : Q := Units.centimetres n
 
 -- Formals ↦ tracks: u ↦ 1
--- Formals ↦ regions: r ↦ 100 (the right lane, a structure of every scene of every trace)
+-- Formals ↦ regions: r ↦ 100  (the right lane, a structure of every trace)
 
-/-- The instance every scenario speaks about: no literal formal, no parameter, a formula body. -/
+/-- The instance every scenario speaks about: the concept has no literal formal, no nat formal and
+    no formal parameter, and it is a formula, so it needs no bounds. -/
 def inst : Concept.Instance :=
   { name := "drv.lane.exits_region@w"
     concept := "drv.lane.exits_region"
@@ -53,52 +57,52 @@ def inst : Concept.Instance :=
 
 def instances : List Concept.Instance := [inst]
 
-/-- The right lane, y ∈ [0, 3] m: the region the formal `r` is bound to. -/
-def rightLane : TrafficSpec.Structure :=
-  Build.lane 100 [(m 0, m 0), (m 200, m 0), (m 200, m 3), (m 0, m 3)] Build.east
-    (left := some 101) (ordinal := some 2) (count := some 2)
+/-- The right lane, region 100: the strip 0 m ≤ y ≤ 3.5 m from x = −50 m to x = 50 m, directed
+    east, with the left lane on its left. -/
+def rightLane : Structure :=
+  Build.lane 100
+    [ (m (-50), m 0), (m 50, m 0), (m 50, cm 350), (m (-50), cm 350) ]
+    Build.east (left := some 101)
 
-/-- The centre lane, y ∈ [3, 6] m, immediately left of the right lane. -/
-def centreLane : TrafficSpec.Structure :=
-  Build.lane 101 [(m 0, m 3), (m 200, m 3), (m 200, m 6), (m 0, m 6)] Build.east
-    (right := some 100) (ordinal := some 1) (count := some 2)
+/-- The left lane, region 101: the strip 3.5 m ≤ y ≤ 7 m beside it, directed east. -/
+def leftLane : Structure :=
+  Build.lane 101
+    [ (m (-50), cm 350), (m 50, cm 350), (m 50, m 7), (m (-50), m 7) ]
+    Build.east (right := some 100)
 
-def lanes : List TrafficSpec.Structure := [rightLane, centreLane]
+/-- The car at an instant: 5 m long, 2 m wide, facing east at the position given, travelling at
+    10 m/s. -/
+def car (pos : Vec) : RoadUser :=
+  Build.user 1 [.motorVehicle] pos Build.east (m 10) (cm 250, m 1, cm 75)
 
-/-- The car at the `k`-th observation, at the lateral offset the scenario gives it. -/
-def car (k : Nat) (y : Q) : RoadUser :=
-  Build.user 1 [.motorVehicle] (m (10 + 5 * (Int.ofNat k)), y) Build.east (m 20) (m 2, cm 90, cm 75)
+/-- Three instants a second apart, the car at the position given, the two lanes beside each other;
+    occupancy is derived from the geometry. -/
+def laneTrace (pos : Nat → Vec) : Trace :=
+  Build.trace 3 0 (Units.seconds 1) fun k t =>
+    Build.scene t (some 1)
+      [ car (pos k) ]
+      [ rightLane, leftLane ]
+      [ ]  -- devices
 
-/-- A scene of the common map, with the car at one lateral offset. -/
-def sceneAt (k : Nat) (t : Timestamp) (y : Q) : Scene :=
-  Build.scene t (some 1) [car k y] lanes []
+/-- Leaving: in the right lane at the first instant, wholly in the left lane afterwards. -/
+def leavingPos (k : Nat) : Vec :=
+  (m (10 * Int.ofNat k), if k = 0 then cm 175 else cm 525)
 
-/-- The lateral offsets of the leaving: the right lane overlapped, then not. -/
-def leavingY : Nat → Q
-  | 0 => cm 280
-  | 1 => cm 395
-  | _ => cm 450
+/-- Never in the right lane: wholly in the left lane at every instant. -/
+def leftLanePos (k : Nat) : Vec := (m (10 * Int.ofNat k), cm 525)
 
-/-- The lateral offsets of the straddle: the right lane overlapped throughout. -/
-def straddlingY : Nat → Q
-  | 0 => cm 280
-  | 1 => cm 290
-  | _ => cm 300
+/-- `holds` (compliant): A car's footprint overlaps the right lane at one observation and, at the next, lies wholly within the left lane and no longer overlaps the right: at that observation it is read as leaving the right lane. -/
+def holdsTrace : Trace := laneTrace leavingPos
 
-/-- `holds` (compliant): A car's footprint overlaps the right lane at one observation and, a quarter of a second later, overlaps only the centre lane: it has left the right lane. -/
-def holdsTrace : Trace :=
-  Build.trace 3 0 (Units.milliseconds 250) fun k t => sceneAt k t (leavingY k)
+/-- `fails` (violated): The same car has been wholly in the left lane for several observations, its footprint overlapping the right lane at neither this observation nor the previous one: no leaving is read. -/
+def failsTrace : Trace := laneTrace leftLanePos
 
-/-- `fails` (violated): A car's footprint straddles the right lane and the centre lane at both observations, still overlapping the right lane: it has not left it. -/
-def failsTrace : Trace :=
-  Build.trace 3 0 (Units.milliseconds 250) fun k t => sceneAt k t (straddlingY k)
-
-/-- `blind` (unknown): A car travels on a laned roadway whose source declares region occupancy absent, so whether it overlapped the lane cannot be read. -/
-def blindTrace : Trace :=
-  Build.trace 3 0 (Units.milliseconds 250) fun k t => sceneAt k t (leavingY k)
+/-- `blind` (unknown): The car moves across the lane line but the source does not observe region occupancy for it: rel.occupies is absent at this observation and the previous one, so whether it left the lane is unknown. -/
+def blindTrace : Trace := laneTrace leavingPos
 
 def witness (name : String) (τ : Trace) (expected : Verdict)
-    (absent : List String := []) (window : Option (Timestamp × Timestamp) := none) : Scenario :=
+    (window : Option (Timestamp × Timestamp) := none)
+    (absent : List String := []) : Scenario :=
   { name := name
     rule := inst.name
     trace := τ
@@ -110,8 +114,8 @@ def witness (name : String) (τ : Trace) (expected : Verdict)
     window := window }
 
 def scenarios : List Scenario :=
-  [ witness "holds" holdsTrace .compliant [] (some (250, 250))
-  , witness "fails" failsTrace .violated
-  , witness "blind" blindTrace (.unknown []) ["rel.occupies"] (some (250, 500)) ]
+  [ witness "holds" holdsTrace .compliant (some (1000, 1000))
+  , witness "fails" failsTrace .violated (some (1000, 2000))
+  , witness "blind" blindTrace (.unknown []) (some (1000, 2000)) ["rel.occupies"] ]
 
 end TrafficSpecWitness.Concepts.lane.exits_region

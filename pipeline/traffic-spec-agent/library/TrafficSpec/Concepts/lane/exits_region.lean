@@ -1,31 +1,33 @@
 /-
-  drv.lane.exits_region — The observation at which the road user leaves the structure region given to it: its footprint overlapped that region at the previous observation and does not overlap it at this one. It is an event, read at the observation at which it occurs and not a state that persists after it; where there is no previous observation of the road user, or the overlap at either observation is unobserved, it is unknown. The region is the caller's: the concept reads the road user's overlap with that region and of no other. Not a stand-in for: the region the road user moves into, a lane change as a manoeuvre, a turn or a signal, the lateral movement within a region that precedes the leaving, or the reason the region was left.
+  drv.lane.exits_region — The road user leaves the given region at this observation: the event, not the state that follows it. It holds exactly at the observation at which the road user's footprint does not overlap the region and did overlap it at the previous observation; at the later observations of the same absence it is false, and it is unknown where either overlap is unknown. The concept denotes the crossing of the region's boundary outward by the body's footprint: it is not absence from the region, not a distance from it, not the direction in which the body left or the region it moved into, and not the lawfulness of leaving.
 
   THE READING (the blueprint's; the session records here, per element, how the contract's words are
   written, and every choice the contract did not dictate).
 
   Elements (contract words → atoms, concepts):
-    its footprint overlapped that region at the previous observation and does not overlap it at this one:
-      atoms ['rel.occupies'], concepts []
-      `rel_occupies u r` is the overlap of the road user's footprint with the caller's region, read
-      at `u` and `r` and at nothing else: no second region, no distance, no boundary, no heading.
-      The fall of that relation between the previous observation and this one is the edge the
-      contract names, which the formula language writes as the rise of its negation:
-      `rises (not (rel_occupies u r))` — not overlapping here, and overlapping at the previous
-      observation. Being a `rises`, it is read at the observation at which it occurs and carries
-      nothing forward, so the event is not a state; and the body says nothing about any other
-      region, so the region moved into, the manoeuvre, the turn, the signal, the lateral movement
-      before the leaving and the reason for it are all outside it.
+    the road user's footprint does not overlap the region and did overlap it at the previous observation: atoms ['rel.occupies'], concepts []
+      written `.rises (.not (.atom "rel_occupies" [aU, aR] []))`: rel.occupies is "a road user's
+      footprint overlaps a lane / region", read of the formal road user `u` and the formal region
+      `r` — the region the caller singles out, never a region the body quantifies over.
+      `rises φ` is Core's only reading of the previous observation: φ here and not at the previous
+      observation. With φ the negation of the overlap, it is exactly the contract's conjunction —
+      no overlap at this observation, overlap at the previous one — and so is false at the later
+      observations of the same absence, as the contract states, rather than true throughout the
+      absence. Nothing else is read: no `st.region_geometry` distance (its distance is "not a
+      stand-in for: occupancy", and a distance standing clear of zero is not the crossing of a
+      boundary), no heading or bearing (the contract excludes "the direction in which the body
+      left"), no second region (it excludes "the region it moved into"), and no rule (it excludes
+      "the lawfulness of leaving").
 
-  Readings chosen (declared as narrowings):
-    - The unobserved past. `rises` is unknown wherever the previous observation is needed and not
-      available: at the first observation of the trace when the road user does not overlap the
-      region there, and at either observation when the overlap is unobserved. It settles `false`
-      in the one remaining case the contract's words would leave unknown — the first observation
-      of the trace at which the road user *does* overlap the region — because overlapping here
-      already denies the leaving whatever the past held, so no previous observation is read. The
-      alternative writing (unknown at every first observation) would have had to read the trace's
-      start as an event of the road user's history, which it is not.
+  Narrowings (choices the contract did not dictate):
+    "does not overlap the region and did overlap it at the previous observation" — written as one
+      `rises` of the negated overlap rather than as a conjunction of two separately timed
+      readings, because `rises` is the formula language's only reading of the previous
+      observation. Its consequence at the first observation of a trace, where there is no previous
+      observation to compare with, is that the event is unknown (`windowTruncated "rises"`) where
+      the overlap is absent there and false where it is present: the contract fixes the value only
+      at observations that have a predecessor, and leaving the start of a trace unknown rather
+      than deciding it is the reading that claims nothing the trace does not show.
 
   No magnitude below is this file's own: parameters are formals the caller fills.
 -/
@@ -37,23 +39,25 @@ namespace TrafficSpec.Concepts.lane.exits_region
 def aU : Arg := .var "u"
 def aR : Arg := .var "r"
 
-/-- The road user's footprint overlaps the caller's region. -/
-def occupies : Formula := .atom "rel_occupies" [aU, aR] []
+/-- The road user's footprint overlaps the given region at this observation. -/
+def overlaps : Formula := .atom "rel_occupies" [aU, aR] []
 
-/-- The leaving: not overlapping here, overlapping at the previous observation. -/
-def body : Formula := .rises (.not occupies)
+/-- The road user leaves the region at this observation: its footprint does not overlap the region
+    here and did overlap it at the previous observation — the rising edge of non-overlap, which is
+    the crossing of the boundary outward and not the absence that follows it. -/
+def body : Formula := .rises (.not overlaps)
 
 def concept : Concept :=
   { id := "drv.lane.exits_region"
-    contract := "The observation at which the road user leaves the structure region given to it: its footprint overlapped that region at the previous observation and does not overlap it at this one. It is an event, read at the observation at which it occurs and not a state that persists after it; where there is no previous observation of the road user, or the overlap at either observation is unobserved, it is unknown. The region is the caller's: the concept reads the road user's overlap with that region and of no other. Not a stand-in for: the region the road user moves into, a lane change as a manoeuvre, a turn or a signal, the lateral movement within a region that precedes the leaving, or the reason the region was left."
+    contract := "The road user leaves the given region at this observation: the event, not the state that follows it. It holds exactly at the observation at which the road user's footprint does not overlap the region and did overlap it at the previous observation; at the later observations of the same absence it is false, and it is unknown where either overlap is unknown. The concept denotes the crossing of the region's boundary outward by the body's footprint: it is not absence from the region, not a distance from it, not the direction in which the body left or the region it moved into, and not the lawfulness of leaving."
     definition := none
     args := [("u", .track), ("r", .region)]
     params := []
     body := .formula body
     residues := []  -- the record's, verbatim; not yours to change
     narrowings :=
-      [ { span := "where there is no previous observation of the road user, or the overlap at either observation is unobserved, it is unknown"
-          why := "Written with `rises`, which is unknown wherever the previous observation is needed and not available (the overlap unobserved at either observation; the first observation of the trace where the road user does not overlap the region), but false at a first observation at which the road user does overlap the region: overlapping here denies the leaving without reading any past, and the start of a recording is no event of the road user's history."
+      [ { span := "does not overlap the region and did overlap it at the previous observation"
+          why := "Written as a single `rises` of the negated `rel_occupies` reading, not as a conjunction of two separately timed readings: `rises φ` is the formula language's only reading of the previous observation (φ here and not at the previous observation), so with φ the negation of the overlap it is exactly the contract's conjunction, false at the later observations of the same absence. At the first observation of a trace, which has no predecessor, the reading is therefore unknown where the overlap is absent there rather than decided: the contract fixes the value only where a previous observation exists."
           kind := "reading" } ]
     supersedes := none }
 

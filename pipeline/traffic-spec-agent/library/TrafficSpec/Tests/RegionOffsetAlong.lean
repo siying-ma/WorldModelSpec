@@ -183,4 +183,28 @@ def env : DimEnv := DimCheck.envOf ρ []
 #guard DimCheck.errors env shortBy.obligation = []
 #guard (DimCheck.errors env (.cmp offsetTerm .ge (.lit (seconds 3) .second))).map DimError.tag = ["mismatch"]
 
+
+-- ---------------------------------------------------------------------------------------------
+-- The simple-polygon table (`simpleIn`): one entry per region and distinct boundary, a hit equal to
+-- the direct check, a miss checked directly.
+-- ---------------------------------------------------------------------------------------------
+-- a bow tie: its two diagonals cross, so it is not simple
+def bowTie : List Vec := [(m 90, m (-9)), (cm 9020, m 6), (cm 9020, m (-9)), (m 90, m 6)]
+def sceneWith (t : Int) (poly : List Vec) : Scene := { t := t, users := [userAt (m 85, cm (-150))], structures := [carrier 2 east, mark poly] }
+def ctxOf (polys : List (Int × List Vec)) : Primitives.Ctx := Primitives.Ctx.mk' (polys.map fun (t, p) => sceneWith t p) {}
+-- a static map: one entry per region, however many scenes
+#guard (ctxOf [(0, bar), (500, bar), (1000, bar)]).simple.length = 2
+-- a boundary that changes between scenes: an entry for each version
+#guard (ctxOf [(0, bar), (500, bowTie)]).simple.length = 3
+-- hits agree with the direct check, for a simple and for a self-intersecting boundary
+#guard Primitives.simpleIn (ctxOf [(0, bar)]) 3 bar = Geom.simplePolygon bar
+#guard Primitives.simpleIn (ctxOf [(0, bowTie)]) 3 bowTie = Geom.simplePolygon bowTie
+#guard Geom.simplePolygon bar && !Geom.simplePolygon bowTie
+-- misses: a region not in the table, and a boundary the table does not hold for that region
+#guard Primitives.simpleIn (ctxOf [(0, bar)]) 7 bowTie = Geom.simplePolygon bowTie
+#guard Primitives.simpleIn (ctxOf [(0, bar)]) 3 bowTie = Geom.simplePolygon bowTie
+-- the primitive reads the table: the bow tie leaves the offset undefined in the scene that carries it
+#guard isWhy ((Primitives.prim_region_offset_along (ctxOf [(0, bar), (500, bowTie)]) 1 3 2)[1]!) undef
+#guard isOffset ((Primitives.prim_region_offset_along (ctxOf [(0, bar), (500, bowTie)]) 1 3 2)[0]!) (m 5)
+
 end TrafficSpec.Tests.RegionOffsetAlong

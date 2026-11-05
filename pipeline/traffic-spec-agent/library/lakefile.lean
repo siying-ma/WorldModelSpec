@@ -29,3 +29,8 @@ lean_lib «TrafficSpecWitness» where
 -- The monitor: decodes traces at run time and evaluates the registered rules.
 lean_exe «monitor» where
   root := `Main
+
+-- Why a rule has its verdict at an observation, and the values its comparisons take there: the
+-- rule run as the monitor runs it, walked with the same evaluator. Not a default target.
+lean_exe «explain» where
+  root := `Explain

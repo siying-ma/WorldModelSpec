@@ -5,80 +5,93 @@
   operationalization and composition below is written, and every choice the text did not dictate).
 
   Spans:
-    s1 (subject): It is unlawful for any person to drive or operate a vehicle of any kind or character at:
-    s2 (condition): In any event,
-    s3 (obligation): a rate of speed greater than 80 miles per hour.
+    s1 (trigger): It is unlawful for any person to drive or operate
+    s2 (subject): a vehicle of any kind or character
+    s3 (boilerplate): at:
+    s4 (condition): In any event,
+    s5 (obligation): a rate of speed greater than 80 miles per hour.
 
   Elements (span → atoms, derived):
-    s1: atoms ['ru.aggregate=DEF-NRS-484A-320::vehicle', 'kin.velocity'], derived []
-    s3: atoms ['kin.speed'], derived []
+    s1: atoms ['kin.velocity'], derived []
+    s2: atoms ['ru.aggregate=DEF-NRS-484A-320::vehicle'], derived []
+    s5: atoms ['kin.speed'], derived []
 
   Literals the text states (each written through its Units constructor):
-    s3: 80 mph — 80 miles per hour
-
-  No magnitude below is this file's own: parameters name the reading, literals are the text's.
+    s5: 80 mph — 80 miles per hour
 
   How each span is written:
-    s1 — the subject. Membership of the vehicle aggregate is the binder's class: the atom
-      `ru_aggregate` of `v` under the id DEF-NRS-484A-320::vehicle, never the classes it covers.
-      "any person to drive or operate" is read, as the record's own narrowing on s1 says, through
-      the vehicle's controlled motion, and the record's atom for it is `kin.velocity`: the
-      applicability is that `v`'s velocity is not the zero vector, written axis-free as
-      |v_x| + |v_y| > 0 over the two components the measure gives (the only components Core reads).
-      A vehicle at a standstill is driven at no rate of speed, so the paragraph does not engage.
-    s2 — residue, as the record states it: "In any event" adds no observable condition.
-    s3 — the duty. `kin.speed`, the magnitude of velocity at the observation, must not exceed the
-      figure the text itself states: `Units.mph 80`, carried as a literal in miles per hour.
-      "greater than 80" violated is exactly `not (speed ≤ 80 mph)`, written as the bound
-      `speed ≤ 80 mph`.
+    s2 (subject) → `clsSubject`: the atom `ru_aggregate` of the binder with the aggregate id
+      `DEF-NRS-484A-320::vehicle` as its literal argument, never the classes the definition covers.
+    s1 (trigger) → `applicability` = `inMotion`: the record reads ‘to drive or operate’ through the
+      vehicle's controlled motion (its own `observable_reading` narrowing on s1, not restated here),
+      and maps the span to kin.velocity alone. The velocity vector is read by its two components and
+      the span holds where the vector is non-zero — the subject is moving — which is decided only
+      where both components are observed, so an unobserved velocity leaves the rule unengaged rather
+      than engaged. The sum of the magnitudes of the components is one comparison, so the span is one
+      leaf: no component is tested on its own. Nothing of ‘on the road’ is added: s1 claims no
+      structure or occupancy atom, and no atom the node does not claim enters a formula.
+    s4 (condition) → nothing: the node carries it as a residue (declared below, verbatim).
+    s5 (obligation) → `obligation`: kin.speed at or below the figure the text itself states,
+      80 miles per hour, carried as a literal through `Units.mph`. The duty is judged at every
+      observation — the episode is violated where any instant is — which is the record's
+      ‘At no observation does the subject's rate of speed exceed 80 miles per hour.’
 
-  No narrowing is declared: s1 and s3 are written with the atoms the record maps to them, and the
-  reading of "drive or operate" through controlled motion is the record's own narrowing, not this
-  session's.
+  No narrowing is declared: s1, s2 and s4 decide when the rule applies and are carried as the node
+  maps them, and s5 is written with the atom and the figure the node states.
+
+  No magnitude below is this file's own: parameters name the reading, literals are the text's.
 -/
 import TrafficSpec.Core.Language.Rule
 
 namespace TrafficSpec.Rules.NRS_484B_600_1e
 
 /-- The binders, as arguments (order and names are the node's). -/
-def vV : Arg := .var "v"
+def vSubject : Arg := .var "subject"
 
-/-- The components of `v`'s velocity, in m/s (`kin.velocity`). -/
-def velX : Term := .measure "kin_velocity" [vV, .lit "x"]
-def velY : Term := .measure "kin_velocity" [vV, .lit "y"]
+def zeroMetres : Term := .lit Q.zero .metre
 
-/-- `v`'s rate of speed at the observation: the magnitude of its velocity (`kin.speed`). -/
-def speedOfV : Term := .measure "kin_speed" [vV]
-
+/-- Zero, in the unit of a velocity component and of a speed. -/
 def zeroSpeed : Term := .lit Q.zero .metrePerSecond
 
-/-- 80 miles per hour: the figure s3 states, through its `Units` constructor. -/
+/-- The east component of the subject's velocity (kin.velocity). -/
+def velocityX : Term := .measure "kin_velocity" [vSubject, .lit "x"]
+
+/-- The north component of the subject's velocity (kin.velocity). -/
+def velocityY : Term := .measure "kin_velocity" [vSubject, .lit "y"]
+
+/-- The subject's rate of speed (kin.speed). -/
+def speed : Term := .measure "kin_speed" [vSubject]
+
+/-- 80 miles per hour, the figure s5 states. -/
 def eightyMilesPerHour : Term := .lit (Units.mph 80) .metrePerSecond
 
-/-- Class of `v`: ru.aggregate=DEF-NRS-484A-320::vehicle -/
-def clsV : Formula := .atom "ru_aggregate" [vV, .lit "DEF-NRS-484A-320::vehicle"] []
+/-- s1: the subject's velocity is non-zero — the vehicle is in controlled motion, so it is being
+    driven or operated. -/
+def inMotion : Formula :=
+  .cmp (.add (.abs velocityX) (.abs velocityY)) .gt zeroSpeed
 
-/-- Applicability: s2 (condition): In any event, — no observable condition of its own (residue);
-    what remains of s1 beside the binder's class is that `v` is in controlled motion: its velocity
-    is not the zero vector. -/
-def applicability : Formula :=
-  .cmp (.add (.abs velX) (.abs velY)) .gt zeroSpeed
+/-- Class of `subject`: ru.aggregate=DEF-NRS-484A-320::vehicle -/
+def clsSubject : Formula :=
+  .atom "ru_aggregate" [vSubject, .lit "DEF-NRS-484A-320::vehicle"] []
 
-/-- Obligation: s3 (obligation): a rate of speed greater than 80 miles per hour. -/
+/-- Applicability: s1 (trigger): It is unlawful for any person to drive or operate; s4 (condition): In any event, -/
+def applicability : Formula := inMotion
+
+/-- Obligation: s5 (obligation): a rate of speed greater than 80 miles per hour. -/
 def obligation : Formula :=
-  .cmp speedOfV .le eightyMilesPerHour
+  .cmp speed .le eightyMilesPerHour
 
 def rule : Rule :=
   { id := "NRS_484B_600_1e"
     laws := ["NRS-484B-600-1e"]
     binders :=
-      [ { name := "v", cls := clsV } ]
+      [ { name := "subject", cls := clsSubject } ]
     applicability := applicability
     obligation := obligation
     assumptions := []
     intentions := []
     operationalizations := []
-    residues := ["\"In any event\" imposes no observable condition: it states that the absolute bound holds whatever the circumstances, so the duty is the same whether or not any condition of the road, the weather or the posted limits holds. Dropping it changes no verdict."]  -- the node's, verbatim; not yours to change
+    residues := ["‘In any event’ says that this bound holds whatever the circumstances the other paragraphs of subsection 1 speak of; it states no observable condition of its own and removes none, so the duty is the same whether or not these words are read."]  -- the node's, verbatim; not yours to change
     narrowings := []  -- one { span := "<span id>", why := "<why>", kind := "reading" } per reading you chose on a carried span (kind no_atom / no_operator where the words cannot be stated), explained in the header; the record's own narrowings are not restated
     surrogate := false }
 

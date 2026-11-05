@@ -109,7 +109,7 @@ def inputs_of(run: Run, rec_or_entry: dict, table: dict, defs_by_id: dict, onto:
             "precedence": definitions_mod.precedence_hash(run), "ontology": checks.ontology_digest(onto), "selection": checks.digest(row),
             "prompts": checks.digest({"plan_aggregates": _prompt_digest("plan_aggregates.md"), "verify_aggregate": _prompt_digest("verify_aggregate.md")}),
             "models": checks.digest({"planner": run.opts.model, "plan_effort": run.opts.plan_effort,
-                                     "verifier": run.opts.reviewer_model, "review_effort": run.opts.review_effort})}
+                                     "verifier": verifier_of(run.opts)[0], "review_effort": verifier_of(run.opts)[1]})}
 
 
 def _load_manifest(run: Run) -> dict:
@@ -354,6 +354,12 @@ def _verify_defects(a: dict, aid: str, classes: list[str]) -> list[str]:
     return errs
 
 
+def verifier_of(opts) -> tuple[str | None, str | None]:
+    """The aggregate verifier's model and effort: its own when given, else the reviewer's."""
+    return (opts.aggregate_verifier_model or opts.reviewer_model,
+            opts.aggregate_verifier_effort or (opts.review_effort if not opts.aggregate_verifier_model else None))
+
+
 def verify(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: Path, label: str) -> tuple[dict | None, dict]:
     """The second-vendor verdicts on a mapping, by class, or None when the answer stayed malformed;
     with the exact request and response for the certificate. `SessionUnavailable` propagates."""
@@ -362,9 +368,10 @@ def verify(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir
         "definition": "### The posted definition(s)\n\n" + "\n".join(f"- `{k}`: {v}" for k, v in sources.items()) + "\n",
         "classes": _classes_block(onto),
         "record": "### The proposed classification\n\n```json\n" + json.dumps(rec, ensure_ascii=False, indent=1) + "\n```\n"})
+    model, effort = verifier_of(run.opts)
     answer, errs = validate_phase._session(run, out_dir, label, prompt, check=lambda a: _verify_defects(a, rec["aggregate_id"], classes),
-                                           model=run.opts.reviewer_model, effort=run.opts.review_effort)
-    exchange = {"request_digest": checks.digest({"prompt": prompt, "model": run.opts.reviewer_model, "effort": run.opts.review_effort}),
+                                           model=model, effort=effort)
+    exchange = {"request_digest": checks.digest({"prompt": prompt, "model": model, "effort": effort}),
                 "prompt_hash": checks.digest(prompt), "response": answer, "defects": errs}
     if answer is None or errs:
         return None, exchange
@@ -381,7 +388,7 @@ def gate(run: Run, rec: dict, sources: dict[str, str], onto: Ontology, out_dir: 
     planner's one re-proposal after a contradiction (None when it wrote no valid mapping)."""
     aid = rec["aggregate_id"]
     cert = {"aggregate_id": aid, "proposal": rec, "retry": None, "exchanges": [], "downgrades": [],
-            "model": run.opts.reviewer_model, "effort": run.opts.review_effort, **digests}
+            "model": verifier_of(run.opts)[0], "effort": verifier_of(run.opts)[1], **digests}
     verdicts, ex = verify(run, rec, sources, onto, out_dir, f"verify_{checks.slug(aid)}")
     cert["exchanges"].append(ex)
     current = rec

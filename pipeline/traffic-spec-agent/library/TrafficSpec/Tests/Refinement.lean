@@ -184,4 +184,36 @@ def turnRule : Rule :=
 #guard support [] turnRule laneAbsent = .partially ["st.lane"]           -- no longer reported supported
 #guard support [] turnRule (Manifest.full "test") = .supported
 
+-- ---------------------------------------------------------------------------------------------
+-- The region tables read as the direct definitions: a repeated id (the first wins), a region absent
+-- from a scene, masked kinds, the abstract kind, and region order that differs between scenes.
+-- ---------------------------------------------------------------------------------------------
+def tScenes : List Scene :=
+  [sceneOf [st 3 .lane, st 1 .sidewalk [.turnLane], st 3 .sidewalk, st 2 .turnLane] [(1, 3), (2, 2)],
+   { sceneOf [st 2 .roadway [.lane], st 4 .lane [.turnLane], st 1 .turnLane] [(1, 4), (2, 1)] with t := 100 },
+   { sceneOf [] [] with t := 200 },
+   { sceneOf [st 4 .sidewalk [.lane], st 3 .lane, st 2 .turnLane [.lane]] [(1, 3), (2, 4)] with t := 300 }]
+def tCtx : SemCtx := SemCtx.mk' tScenes ρ β
+def regionIds : List RegionId := [0, 1, 2, 3, 4, 5]
+def sameRow (a b : Array R) : Bool := a.size == b.size && (a.zip b).all fun (x, y) => x.v == y.v && x.why == y.why
+def stView (o : Option Structure) : Option (RegionId × StructureKind × List StructureKind) :=
+  o.map fun st => (st.id, st.kind, st.unobservedKinds)
+
+#guard stView ((RegionTable.structIndex tScenes[0]!)[3]?) = some (3, .lane, [])
+#guard tScenes.all fun s => regionIds.all fun r => stView ((RegionTable.structIndex s)[r]?) == stView (s.structure? r)
+#guard (List.range tScenes.length).all fun i => regionIds.all fun r =>
+  (tCtx.d.regions.indexAt i).contains r == (tScenes[i]!.structure? r).isSome
+#guard regionsOf tCtx .travelRegion = [3, 2, 4, 1]
+#guard (tCtx.d.regions.rowsOf .travelRegion).ids.toList = [3, 2, 4, 1]
+#guard (tCtx.d.regions.rowsOf .sidewalk).ids.toList = [1, 3, 4]
+#guard structureKinds.all fun k =>
+  let rows := tCtx.d.regions.rowsOf k
+  rows.ids.toList == regionsOf tCtx k && rows.ids.size == rows.isKind.size
+  && (rows.ids.zip rows.isKind).all fun (r, row) => sameRow row (regionIsKind tCtx r k)
+#guard ((tCtx.d.regions.rowsOf .sidewalk).isKind[1]!.map (·.v)).toList = [.f, .u, .u, .f]
+#guard (tCtx.d.regions.rowsOf .lane).isKind[1]!.toList.map (·.why) =
+  [[], [.absentAtom "st_lane"], [.absentAtom "st_lane"], [.absentAtom "st_lane"]]
+#guard (tCtx.d.regions.rowsOf .turnLane).isKind.all fun row => row[2]!.why == [.absentAtom "st_turn_lane"]
+#guard ((SemCtx.mk' [] ρ β).d.regions.rowsOf .lane).ids.size = 0
+
 end TrafficSpec.Tests.Refinement

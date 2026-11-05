@@ -42,12 +42,14 @@ def _files_digest(rels: tuple[str, ...]) -> str | None:
 def task_context(run: Run, kind: str, ident: str, raw: dict, reading: Reading) -> str | None:
     """The admission key a task's gate ran on: the candidate record's context (what it calls and
     composes, the reading values it reads, Core and the ontology) and the gate's implementation,
-    computed from the candidate as given, before it is accepted."""
+    computed from the candidate as given, before it is accepted. In a candidate transaction, Core and
+    the ontology are the production digests it opened on (`base`), so the key does not depend on
+    where the candidate lies."""
     from . import integrate as integrate_phase
     from ..loop import semantic_inputs
     try:
-        sem = semantic_inputs(run.opts)
-        return integrate_phase.admission_key(run, kind, ident, reading, {"core": sem["core"], "ontology": sem["ontology"]},
+        base = getattr(run, "base", None) or {k: v for k, v in semantic_inputs(run.opts).items() if k in ("core", "ontology")}
+        return integrate_phase.admission_key(run, kind, ident, reading, base,
                                              record=raw, catalogue={"nodes": run.all_nodes(), "concepts": run.all_concepts()})
     except (ValueError, KeyError, OSError):
         return None
@@ -372,10 +374,23 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
 def gate_from_cli(run_id: str, node_id: str) -> gate.Verdict:
     """The gate as the coding session calls it: counted against the budget, never authoritative, its
     verdict kept as `last_gate.json` for a relaunch after a cut-off. `node_id` is a node id or a
-    concept id."""
+    concept id. A session coding in a candidate (its environment names the candidate's directory)
+    gates in the candidate: its library, its scope and its task directories."""
+    import os
+    from .candidate import CANDIDATE_ENV, CANDIDATE_ITER
+    area = os.environ.get(CANDIDATE_ENV)
+    if not area:
+        return _gate_from_cli(run_id, node_id, paths.run_dir(run_id))
+    sc = json.loads((Path(area) / "scope.json").read_text(encoding="utf-8"))
+    with paths.at_library(Path(sc["tree"]) / "library"), gate.candidate_scope(gate.CandidateScope(Path(sc["tree"]), frozenset(sc["write_set"]))):
+        return _gate_from_cli(run_id, node_id, Path(area), CANDIDATE_ITER, Path(sc["reading"]), sc["concepts"])
+
+
+def _gate_from_cli(run_id: str, node_id: str, root: Path, pattern: str = "iter-*", reading: Path | None = None,
+                   concepts: dict | None = None) -> gate.Verdict:
     run_root = paths.run_dir(run_id)
     dirname = concept_dirname(node_id) if nodeid.is_concept_id(node_id) else node_id
-    iters = sorted(p for p in run_root.glob("iter-*") if (p / "code" / dirname).exists())
+    iters = sorted(p for p in root.glob(pattern) if (p / "code" / dirname).exists())
     if not iters:
         return gate.Verdict("SCOPE_VIOLATION", [f"no task directory for {node_id} under {run_root}"])
     d = iters[-1] / "code" / dirname
@@ -383,15 +398,15 @@ def gate_from_cli(run_id: str, node_id: str) -> gate.Verdict:
     opts = json.loads((run_root / "options.json").read_text(encoding="utf-8"))
     used = int((d / "gate_runs.txt").read_text().strip() or 0)
     (d / "gate_runs.txt").write_text(str(used + 1), encoding="utf-8")
+    rd = Reading(reading or Path(opts["reading"]))
+    catalogue = concepts if concepts is not None else cli_catalogue(run_id)
     if nodeid.is_concept_id(node_id):
         rec = ConceptRecord(json.loads((d / "concept.json").read_text(encoding="utf-8")))
-        accepted = cli_catalogue(run_id)
-        v = gate.run_concept_gate(rec, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
-                                  mode=opts.get("mode", "train"), accepted=accepted)
+        v = gate.run_concept_gate(rec, rd, baseline, d, used, opts["gate_budget"], mode=opts.get("mode", "train"),
+                                  accepted={k: r for k, r in catalogue.items() if k != node_id} if concepts is not None else catalogue)
     else:
         node = Node(json.loads((d / "node.json").read_text(encoding="utf-8")))
-        v = gate.run_gate(node, Reading(Path(opts["reading"])), baseline, d, used, opts["gate_budget"],
-                          accepted_concepts=cli_catalogue(run_id))
+        v = gate.run_gate(node, rd, baseline, d, used, opts["gate_budget"], accepted_concepts=catalogue)
     (d / "last_gate.json").write_text(json.dumps({"verdict": v.verdict, "details": v.details[:8]}, ensure_ascii=False), encoding="utf-8")
     return v
 

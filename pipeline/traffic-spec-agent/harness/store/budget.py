@@ -26,8 +26,9 @@ the reservation once, and a `settled` row replaces any earlier state with its co
 settlement of a request is final; a later one changes nothing. A pending request with no later row
 (the process ended during the call) counts at its reservation, never as zero.
 
-The limits: one per vendor (`openai_budget_usd`, `claude_budget_usd`) and one over both
-(`total_budget_usd`), each over this run's spend plus that of the runs named in `budget_peers`, whose
+The limits: one per vendor (`openai_budget_usd`, `claude_budget_usd`), one over both
+(`total_budget_usd`), and one per role whose requests a label names (`aggregate_verifier_budget_usd`
+over the aggregate verifier's, labels containing `ROLE_AGGREGATE`; this run's spend only), each over this run's spend plus that of the runs named in `budget_peers`, whose
 usage files are read again at every reservation (their pending rows count as spent: this process
 cannot wait on them). Runs that share a limit name the same group (`budget_peers`, the run itself
 counted or not), and every reservation of the group takes one file lock
@@ -51,6 +52,8 @@ from pathlib import Path
 from . import jsonl, paths
 
 CHARS_PER_TOKEN = 3
+#: The label part that names the aggregate verifier's requests.
+ROLE_AGGREGATE = "/aggregates/verify_"
 VENDORS = ("openai", "anthropic")
 
 
@@ -89,11 +92,14 @@ def fold(rows: list[dict]) -> tuple[dict[str, float], dict[str, float], set[str]
 class Budget:
     def __init__(self, usage_file: Path, limit_usd: float | None, prices: dict, *, claude_limit_usd: float | None = None,
                  total_limit_usd: float | None = None, peers: tuple[Path, ...] = (), max_wait: float = 0.0,
-                 group_lock: Path | None = None):
+                 group_lock: Path | None = None, role_limits: dict[str, float] | None = None):
         self.file, self.prices, self.peers, self.max_wait = usage_file, prices, tuple(peers), float(max_wait)
         self.group_lock = group_lock
         self.limits = {"openai": limit_usd, "anthropic": claude_limit_usd}
         self.total_limit = total_limit_usd
+        #: a label part → the limit over the requests whose label contains it
+        self.role_limits = {k: v for k, v in (role_limits or {}).items() if v is not None}
+        self.labels: dict[str, str] = {}     # requests in flight in this process → their label
         self.lock = threading.Condition()
         #: requests in flight in this process: (vendor, reservation), held, not yet spent
         self.reserved: dict[str, tuple[str, float]] = {}
@@ -131,8 +137,22 @@ class Budget:
                     out[v] = out.get(v, 0.0) + x
         return out
 
-    def _short(self, vendor: str, amount: float) -> str | None:
+    def _role_spend(self, role: str) -> float:
+        """This run's spend on the requests whose label contains `role`, in flight included."""
+        rows = [r for r in jsonl.read_strict(self.file) if role in (r.get("label") or "")]
+        names = {r.get("request") for r in rows if r.get("request")}
+        rows += [r for r in jsonl.read_strict(self.file) if r.get("request") in names and role not in (r.get("label") or "")]
+        done = sum(fold(rows)[0].values())
+        return done + sum(a for tok, (_w, a) in self.reserved.items() if role in self.labels.get(tok, "") and tok not in names)
+
+    def _short(self, vendor: str, amount: float, label: str = "") -> str | None:
         """Why `amount` more of `vendor` does not fit, or None. Called under the lock."""
+        for role, lim in self.role_limits.items():
+            if role in label:
+                held = self._role_spend(role)
+                if held + amount > lim:
+                    return (f"the budget of ${lim:.2f} on requests labelled `{role}` does not admit another request: "
+                            f"held ${held:.2f}, this request's reservation ${amount:.2f}")
         peer = self._peer_spend()
         flight = {v: sum(a for (w, a) in self.reserved.values() if w == v) for v in VENDORS}
         held = {v: self.by_vendor.get(v, 0.0) + peer.get(v, 0.0) + flight.get(v, 0.0) for v in VENDORS}
@@ -164,12 +184,13 @@ class Budget:
         with self.lock:
             while True:
                 with self._group():
-                    why = self._short(vendor, amount)
+                    why = self._short(vendor, amount, label)
                     if why is None:
                         token = uuid.uuid4().hex
                         jsonl.append_atomic(self.file, {"request": token, "state": "pending", "label": label, "vendor": vendor,
                                                         "model": model, "reserved_usd": amount})
                         self.reserved[token] = (vendor, amount)
+                        self.labels[token] = label
                         return token
                 left = deadline - time.monotonic()
                 if not self.reserved or left <= 0:
@@ -201,6 +222,7 @@ class Budget:
             jsonl.append_atomic(self.file, {**row, "state": "settled", **({"request": token} if token else {})})
             if token is not None:
                 self.reserved.pop(token, None)
+                self.labels.pop(token, None)
                 if token in self.unresolved:
                     v = self.unresolved_vendor.pop(token, vendor)
                     self.by_vendor[v] = self.by_vendor.get(v, 0.0) - self.unresolved.pop(token)
@@ -218,6 +240,7 @@ class Budget:
             vendor, worst = self.reserved.get(token, (row.get("vendor") or "openai", 0.0))
             jsonl.append_atomic(self.file, {**row, "state": "unknown", "request": token, "reserved_usd": worst, "cost_usd": None})
             self.reserved.pop(token, None)
+            self.labels.pop(token, None)
             self.unresolved[token], self.unresolved_vendor[token] = worst, vendor
             self.by_vendor[vendor] = self.by_vendor.get(vendor, 0.0) + worst
             self.lock.notify_all()
@@ -240,7 +263,7 @@ def for_run(opts, run_dir: Path) -> Budget:
             lock = paths.RESULTS / f".budget-{hashlib.sha256(json.dumps(group).encode()).hexdigest()[:16]}.lock" if group else None
             b = Budget(run_dir / "usage.jsonl", opts.openai_budget_usd, prices, claude_limit_usd=opts.claude_budget_usd,
                        total_limit_usd=opts.total_budget_usd, peers=peers, max_wait=float(opts.session_timeout or 0),
-                       group_lock=lock)
+                       group_lock=lock, role_limits={ROLE_AGGREGATE: getattr(opts, "aggregate_verifier_budget_usd", None)})
             _BUDGETS[opts.run_id] = b
         return b
 

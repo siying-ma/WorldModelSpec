@@ -84,8 +84,10 @@ many; a fix that removes a cause beats one that adds a mechanism. A part found w
 removed, not kept.
 
 **Where not to spend (operator, 2026-11-02).** Three things are not done to raise acceptance:
-- the behaviour reviewer is not re-tuned: it is suspended while training runs on labelled
-  recordings (see "Training and testing"), and it is not reinstated without the operator;
+- the node behaviour reviewer is not re-tuned: it is suspended, with its Stage A and Stage B
+  judges, while training runs on labelled recordings (see "Training and testing"), and it is not
+  reinstated without the operator. The concept review (reviewer, adjudicator, replay) and the
+  aggregate verifier stay;
 - no judge layer is added: a doubtful ruling is fixed at its cause (a convention, a prompt rule,
   a precedent), never by another judge over the judges;
 - no exemption is written for a law: a mismatch (a label the rule disagrees with, or a reviewer's
@@ -159,11 +161,32 @@ feature is not better for being there, and one whose use cannot be stated is rem
   on the training recordings of its law, joins the rule's verdicts per recording, and compares
   them with the labels. It trusts Lean's verdict on the trace and never second-guesses it. It
   sends every mismatch to the planner as evidence: the recording's label, the rule's verdict and
-  the instants and unknown reasons that decided it, never the trace, the video or a mapping. A recording whose source declares absent an atom the rule needs, a label
-  marked a judgment call, and a run past the monitor's deadline are reported, never counted as a
-  mismatch. A disputed label is the operator's to decide.
-- **The reviewer** (suspended since 2026-11-02, while training runs on labelled recordings; the
-  judges below are suspended with it) shows, as executable traces, situations in which the
+  the instants and unknown reasons that decided it, never the trace, the video or a mapping. A label
+  judges the ego (the trace's subject), so only the groundings that bind a rule's subject binder to
+  the ego are joined. Under the dataset's label contract v1 a label covers the whole recording;
+  under v2 it covers the scoring interval the scenario design states and the data producer
+  confirms for that label: the whole trace is still evaluated, and only the verdicts inside the
+  interval are joined. No rule, reading or repair sets or moves an interval, and a label without a
+  valid confirmed interval stays in the fixed set as `label_unverified`, never compared. The
+  recordings compared are fixed by their labels before the run; a recording that passed its
+  deadline, or whose verdict is unknown, keeps its own status in that fixed set and is never counted
+  as a match or a mismatch. An unknown recording keeps every reason that made it unknown, each
+  classified by what its evidence shows: a reason the rule can remove sends the law to a coverage
+  repair (more recordings decided, none undone); a reason only the data, the time contract or the
+  harness can remove, or one whose cause the tag does not show, is reported and repairs nothing. A
+  report-only check of each recording's source declarations against its trace is computed once with
+  the fixed set; it changes no status, and a label repair sees it only as diagnostics, which prove
+  no adapter defect and oblige no rule change. A judgment-call label (one whose verdict turns on a
+  parameter the pipeline chooses) is reported apart and never drives a repair; it is confirmed by
+  a scenario standard independent of the rules once the parameters are frozen. A disputed label is the operator's to decide.
+- **The reviewer.** For a node it is suspended since 2026-11-02, with Stage A and Stage B below,
+  while training runs on labelled recordings; for a concept it stays, with the concept
+  adjudicator and the replay of upheld items (operator, 2026-11-03), because the labels reach a
+  shared concept only through the laws that use it. It checks that a concept's code meets its
+  contract, never that the contract suits the driving task: that is the label check's and the
+  planner's. Every change to a concept, by a coding session or by a training repair, passes the
+  concept review before it is committed, and its rulings belong to the change that produced them.
+  The reviewer shows, as executable traces, situations in which the
   code and the words it formalizes (the law for a node, the contract for a concept) decide
   differently. It supplies certified cases that challenge a rule or a disclosed reading. It
   proposes neither a fix nor a replacement mapping. The one exception to traces is **structural
@@ -173,7 +196,7 @@ feature is not better for being there, and one whose use cannot be stated is rem
   the contracts alone; it is labelled structural evidence in the rulings and in what the planner
   sees, its words are validated against the law, an upheld item is an obligation decided again on
   every later record of the node, and it is identified by the occurrence of its words in the law.
-- **The judges.**
+- **The judges** (suspended with the node reviewer; the concept adjudicator stays).
   - **Stage A** determines the law's verdict on the canonical case without seeing the rule, the
     record, the reviewer's prose or any proposed repair. It judges the duty occurrence the node
     formalizes, and sees which occurrence that is (its words and qualifying sentence, and the duties
@@ -237,7 +260,14 @@ feature is not better for being there, and one whose use cannot be stated is rem
   The driving data under `pipeline/datasets/**` is test data in the same sense, with one
   exception: the training recordings named in "Training and testing" are read by the label check,
   and only by it. No model session reads a recording, a trace, a video or a label; it sees only the
-  mismatch the label check renders. No change to the prompts, the ontology or Core is made because
+  mismatch the label check renders. The one other use (operator, 2026-11-04): a development or
+  diagnostic session outside the loop may run the monitor on training recordings, only to profile
+  its time and memory and to compare a Core change's output byte for byte with the output before
+  it (deterministic: the same recording, manifest, reading, rule closure and toolchain on both
+  sides, the whole output compared, both logs kept; a side that passed its deadline is a missing
+  control, never a pass; a representative subset first, widened only to cover a gap); what it
+  measures enters no prompt and no repair evidence, and no rule, reading or label is changed
+  because of it. No change to the prompts, the ontology or Core is made because
   of what one recording contains; a change the training mismatches call for holds for every
   recording of its kind. Every other dataset is read only by `pipeline/evaluation/` after a run.
   A defect a recording reveals is fixed where it lies: in the adapter when the trace misreports the
@@ -376,7 +406,7 @@ exposes are fixed:
 ## Commands
 
 From `pipeline/traffic-spec-agent/`: `python -m harness init | doctor | loop | validate | gate |
-surface | verify | index | status | reopen | gap | split | score_split` (see `README.md`). Run `lake` only inside `library/`.
+surface | verify | label_check | index | status | reopen | gap | split | score_split` (see `README.md`). Run `lake` only inside `library/`.
 Regenerate the ontology's Lean files with `python -m scripts.gen_ontology`; regenerate the
 corpus and its split from `pipeline/ontology_provenance/nrs_tools/` (`make_laws`, `publish`,
 `split`, `atoms_train`), never by hand.

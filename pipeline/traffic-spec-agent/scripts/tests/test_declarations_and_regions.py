@@ -443,36 +443,42 @@ class JudgesSeeTheMeaning(unittest.TestCase):
         self.assertTrue(any("in no catalogue" in x for x in out))                  # returned to the reviewer, not judged
 
 
-def _saved(rel: str) -> Path:
-    from harness.store import paths
-    return paths.RESULTS / "smoke22" / rel
+#: A recorded trace (one highway, two cars), its case, the run's reading and one accepted concept,
+#: extracted from a past run; the fixture's README states their sources and hashes.
+FIXTURE = Path(__file__).resolve().parent / "fixtures" / "admission_refusal"
 
 
-RECHECK = "iter-000/recheck/NRS_484B_127_1"
+def _saved(name: str) -> Path:
+    p = FIXTURE / name
+    if not p.exists():
+        raise FileNotFoundError(f"missing test fixture {p}")
+    return p
+
 DOUBLED = {"vehicle": 1, "target": 101, "source": "test", "values": [["int.turn_left", True]]}
 
 
 def _admitted_and_refused() -> tuple[dict, dict]:
     """A recorded trace (one highway, two cars) as it was, and with two intent records for the
     same vehicle and region: a trace the admission refuses."""
-    trace = json.loads(_saved(f"{RECHECK}/trace_1.json").read_text())
+    trace = json.loads(_saved("trace.json").read_text())
     refused = copy.deepcopy(trace)
     refused["scenes"][0]["intents"] = [DOUBLED, dict(DOUBLED)]
     return trace, refused
 
 
-def _have_saved() -> bool:
+def _have_toolchain() -> bool:
     import shutil
-    return bool(shutil.which("lake")) and _saved(f"{RECHECK}/trace_1.json").exists() and _saved("accepted_concepts.jsonl").exists()
+    return bool(shutil.which("lake"))
 
 
-@unittest.skipUnless(_have_saved(), "needs the toolchain and smoke22's records")
+@unittest.skipUnless(_have_toolchain(), "needs the Lean toolchain")
 class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
-    """A trace the admission refuses reaches no verdict on any route, with the real Lean: the node
-    review's certificate, the concept review's harness and the monitor."""
+    """A trace the admission refuses reaches no verdict on any review route, with the real Lean: the
+    node review's certificate and the concept review's harness. (The monitor's refusal is checked in
+    `test_admission_refusal_monitor`, which imports no review module.)"""
 
     def test_the_certificate_returns_it_to_the_reviewer(self):
-        case = json.loads(_saved(f"{RECHECK}/case_1.json").read_text())
+        case = json.loads(_saved("case.json").read_text())
         trace, refused = _admitted_and_refused()
         divs = {k: {"trace": t, "case": case["case"], "entities": case["entities"], "at": case["at"], "grounding": {"v": 1}}
                 for k, t in ((1, trace), (2, refused))}
@@ -486,7 +492,7 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
 
     def test_the_concept_review_counts_it_incomplete(self):
         cid = "drv.control.intersection_signal_inoperative"
-        rows = [json.loads(line) for line in _saved("accepted_concepts.jsonl").read_text().splitlines() if line.strip()]
+        rows = [json.loads(line) for line in _saved("concept.jsonl").read_text().splitlines() if line.strip()]
         rec = ConceptRecord(next(r for r in rows if r["concept_id"] == cid))
         trace, refused = _admitted_and_refused()
         words = "there is a signal head whose faces are not covered"
@@ -506,9 +512,8 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
     def routed(self, review_call, answer):
         """A review run end to end with the real Lean behind it: the reviewer scripted, every judge's
         session (Stage A, Stage B, the adjudicator) recorded instead of asked."""
-        from harness.store.state import base_view
         from scripts.tests.test_review_routing import FakeRun, scripted_reviewer, submit
-        view = base_view("smoke22")
+        view = {"nodes": {}, "concepts": {}, "fenced": {}}                     # no other record is read on these routes
         asked = []
         with tempfile.TemporaryDirectory() as td:
             run = FakeRun(Path(td))
@@ -524,7 +529,7 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
 
     def test_a_node_review_asks_no_judge(self):
         from scripts.tests.test_review_routing import LAW, ctx
-        case = json.loads(_saved(f"{RECHECK}/case_1.json").read_text())
+        case = json.loads(_saved("case.json").read_text())
         _trace, refused = _admitted_and_refused()
         d = {"kind": "rule_permits_unlawful", "situation": "s", "law_words": "shall stop", "lawful_verdict": "violated",
              "grounding": {"v": 1}, "trace": refused, "case": case["case"], "entities": case["entities"], "at": case["at"]}
@@ -541,7 +546,7 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
     def test_a_concept_review_asks_no_adjudicator(self):
         from harness.lean import render_formula as rf
         cid = "drv.control.intersection_signal_inoperative"
-        rows = [json.loads(line) for line in _saved("accepted_concepts.jsonl").read_text().splitlines() if line.strip()]
+        rows = [json.loads(line) for line in _saved("concept.jsonl").read_text().splitlines() if line.strip()]
         rec = ConceptRecord(next(r for r in rows if r["concept_id"] == cid))
         _trace, refused = _admitted_and_refused()
         # the body fails on this highway, so the claim "holds" would reach the adjudicator if the trace were admitted
@@ -553,24 +558,6 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
         self.assertEqual(asked, [])
         self.assertEqual((out.status, out.defer_stage), ("deferred", "reviewer"))
         self.assertIn("more than one intent record", out.reasons[0])
-
-    def test_the_monitor_exits_2(self):
-        import subprocess
-        from harness.store import paths
-        exe = paths.LIBRARY / ".lake/build/bin/monitor"
-        if not exe.exists():
-            self.skipTest("the monitor is not built (`lake build monitor`)")
-        trace, refused = _admitted_and_refused()
-        with tempfile.TemporaryDirectory() as td:
-            m, t, r = Path(td) / "m.json", Path(td) / "t.json", Path(td) / "r.json"
-            m.write_text(json.dumps({"source": "test", "atoms": {}}))
-            t.write_text(json.dumps(trace)); r.write_text(json.dumps(refused))
-            run = lambda p: subprocess.run([str(exe), "--manifest", str(m), "--rules", "NRS_484B_127_1", str(p)], capture_output=True, text=True)
-            ok, bad = run(t), run(r)
-        self.assertEqual(ok.returncode, 0, ok.stderr)
-        self.assertEqual(bad.returncode, 2)
-        self.assertIn("is not admitted", bad.stderr)
-        self.assertIn("more than one intent record", bad.stderr)
 
 
 if __name__ == "__main__":

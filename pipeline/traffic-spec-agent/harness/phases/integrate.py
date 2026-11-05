@@ -22,7 +22,7 @@ from ..checks import gate, validate_a
 from ..model import nodeid
 from ..model.blueprint import Node
 from ..model.reading import Reading
-from ..store.state import Run
+from ..store.state import Run, node_reviews
 from .code import rollback, rollback_concept, node_dir, concept_dir, _files_digest
 
 
@@ -356,7 +356,7 @@ def admission_key(run: Run, kind: str, ident: str, reading: Reading, base: dict,
                     "gate": gate_digest()})[:24]
 
 
-def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tuple[list[str], list[str], list[str]]:
+def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: set[str] | None = None) -> tuple[list[str], list[str], list[str]]:
     """Every accepted record of the run's effective view (its base chain's and its own) whose
     dependency context changed since it was last checked, or that has no recorded context at all (a
     record accepted before contexts were recorded is checked, never assumed sound): every
@@ -372,7 +372,8 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
     `context`), never reused silently. A check that could not be made (a node whose law is in no
     corpus, a certificate or concept program that did not run) decides nothing: the record is
     neither fenced nor given a context, and it is listed as unresolved. Returns (the ids rechecked
-    and found sound; lines for the operator about those fenced; lines about those unresolved)."""
+    and found sound; lines for the operator about those fenced; lines about those unresolved). With
+    `only`, the records checked are those it names."""
     from . import review as review_phase
     from ..model.blueprint import ConceptRecord
     ok, failing, unresolved = [], [], []
@@ -383,7 +384,7 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
     for kind, records in (("concept", run.all_concepts()), ("node", run.all_nodes())):
         own = run.accepted_concepts if kind == "concept" else run.accepted_nodes
         for ident, rec in records.items():
-            if ident in run.fenced:
+            if ident in run.fenced or (only is not None and ident not in only):
                 continue
             try:
                 now = context_version(run, kind, ident, reading, base, semantic=True)
@@ -396,6 +397,8 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
                 continue
             problems, undecided = [], []
             mine = [r for r in rows if r.get("subject") == ident and r.get("ruling") == "upheld"]
+            if kind == "node" and not node_reviews(run.opts):
+                mine = []                                   # no node obligation is in use under `feedback: labels`
             problems += [f"an open structural finding of iteration {r.get('iteration')} was never discharged"
                          for r in mine if r.get("schema") in (review_phase.WORD_LEVEL_SCHEMA, review_phase.CONCEPT_STRUCTURAL_SCHEMA)
                          and r.get("obligation") in ("open", None)]
@@ -407,7 +410,7 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict) -> tupl
                                       "obligations cannot be read; nothing was decided")
                     continue
                 problems += borrowed_words_defects(run, n)
-                cases = [r for r, own_row in review_phase.obligations_of(run, n, law) if own_row]
+                cases = [r for r, own_row in review_phase.obligations_of(run, n, law) if own_row] if node_reviews(run.opts) else []
                 divs = {}
                 for k, r in enumerate(cases, 1):
                     d, why = review_phase._to_node(r, binders)

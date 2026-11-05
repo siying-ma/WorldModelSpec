@@ -28,7 +28,8 @@ You are a one-shot session. Nothing waits for a reply.
   formal may appear) and how a call fills its formals.
 - **The concept catalogue** — accepted concepts a body may call.
 - **The definition** — when the contract quotes a corpus definition, its text; the quote stays.
-- **Users** — the nodes that claim this concept and wait for it.
+- **Users** — the nodes that claim this concept and wait for it, and whether the concept is
+  accepted or an accepted record depends on it.
 
 {concept}
 
@@ -60,14 +61,21 @@ Users: {users}
 
 1. **Fix the record, not the gate.** A claim no faithful body can use is dropped or replaced by the
    atom the body does read; a masked atom that cannot make the body unknown is replaced by one that
-   can; a formal the body cannot honour is retyped. Every change is a change to the record's
+   can; a formal the body cannot honour is retyped where rule 3 allows it, and the record is
+   replaced where it does not. Every change is a change to the record's
    words, and every element keeps a justification that quotes a contract.
 2. **A definition-born contract keeps its quotation of the definition** (at least three
    consecutive words, verbatim, in double quotation marks). The words around the quote state the
    notion as the atoms observe it and name every tolerance and window as a parameter; they may be
    reworded as rule 3 allows.
-3. **A planner's contract may be reworded** only to say what the notion is in neutral, general
-   terms; never to fit one law, and never to name a figure, a place or a device. A reworded
+3. **What changes under the id.** A concept that is accepted, or that an accepted record
+   depends on, keeps its contract text word for word, its formals and its parameters. Any other
+   concept's planner contract may be reworded only to state the same notion in neutral, general
+   terms, and its formals and parameters may change, where the laws that call it are planned again
+   with it before it is coded; never to fit one law or keep a label's match, and never to name a
+   figure, a place or a device. A notion that must change, or any other change to an accepted
+   concept's contract or interface, is a new record under a new id, written as rule 5 writes a
+   split, and the laws that used the concept go back to their planner. A reworded
    contract states what the concept denotes before how it is recognized, bounds an overshoot that
    stops denoting it, and keeps every boundary the concept needs: one the vocabulary cannot tell
    apart is a split, a withdrawal or a gap, never a deletion.
@@ -88,10 +96,12 @@ Users: {users}
 ## Output
 
 `record.jsonl`, one JSON object per line: the revised record in the concept-record schema below;
-or a split, `{"concept_id": "<id>", "withdraw": "<why it is two notions>", "replaced_by": ["<new
-id>", …]}` followed by one line per new record; or a withdrawal, `{"concept_id": "<id>",
-"withdraw": "<why>"}`. The harness validates every record and, if it names a defect, asks you once
-more with the defect; a record that keeps a defect fails the concept.
+or a split or a replacement, `{"concept_id": "<id>", "withdraw": "<why it is two notions, or
+another notion>", "replaced_by": ["<new id>", …]}` followed by one line per new record; or a
+withdrawal, `{"concept_id": "<id>", "withdraw": "<why>"}`. The harness validates every record and,
+if it names a defect, asks you once more with the defect; a record that keeps a defect fails the
+concept. A revised record is coded, gated and passes the concept review again before it is
+accepted.
 
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
