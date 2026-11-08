@@ -374,3 +374,97 @@ can provide them.
 - `speed` differs from |velocity| in 840 of 392,075 user-scenes, mostly at scene 0.
 
 
+## C. New delivery: what is fixed or shows no error (demo-train-20261106T182615Z, 2026-11-07)
+
+**What was checked.** The delivery's README and handoff (`inputs/shared/HANDOFF.md`), and the 55
+recordings whose `trace.json` is whole inside the parts that arrived: 127-1 ×22, 127-2 ×14, 407 ×6,
+113-2 ×4, 250-1 ×4, 250-2 ×3, 450-2 ×2. The other 134 recordings are split into transfer chunks that
+cannot be restored yet (first row), so laws such as 220-1, 223-1b, 227-1, 253, 257-1, 257-2, 307-6a,
+400-2a/b, 413-2 and 600-1a/c/e are not checked here. No rule was evaluated on these traces; the
+checks are on the data alone.
+
+**Status key.** Fixed: the sample shows it fixed. Partly: fixed in some recordings or some fields.
+Not fixed: the sample shows the old defect. Open: the producer declines it, or it needs an answer.
+Not checked: the sample holds no case of it.
+
+Part C lists the items that are fixed, or that showed no error where they could be checked. Part D
+lists what is not fixed or still open.
+
+| Item | What the handoff reports | What the 55 recordings show | Status |
+|---|---|---|---|
+| Manifest (A4, B4) | One shared manifest, `traffic-spec-source-capabilities-v10`, for all recordings | Every recording points to the same manifest (sha256 `d98b84a8…`); no manifest declares every atom absent | Fixed |
+| A6 Signal indications | 1,241 indications recovered in seven recordings | No sampled recording has a traffic signal | Not checked |
+| A7 Entrances, governance, conditions | 9,760 entrance fields recovered in 20 recordings | 450-2: the crosswalk carries `entrance_of`, the stop sign carries `governs` and no `conditions` (correct for a stop sign) | Partly checked |
+| A9 Intersection approaches | Native links projected where supported | 4 lanes per junction map carry `enters_intersection` | Partly checked |
+| A12 Yaw rate | 193,308 yaw-rate fields recovered in 128 recordings | Every other vehicle in the sample has a yaw rate | Fixed |
+| A15 Kinds present but declared absent | Measured one-way roadways and dividers kept | No divider or one-way roadway in the sample | Not checked |
+| B1 Overlapping roadways | 125 duplicate roadways merged in 35 recordings; 20 recordings keep coincident footprints | 127-1 and 127-2 now have 1 roadway (earlier 301); no two roadways share a boundary in any sampled recording | Fixed in the sample |
+| B3 Crests | Crest regions measured in 41 recordings | Crest regions in 127-1, 127-2 and 4 of 6 407 recordings | Fixed in the sample |
+
+## D. New delivery: not fixed or open (demo-train-20261106T182615Z, 2026-11-07)
+
+Same scope and status key as part C.
+
+| Item | What the handoff reports | What the 55 recordings show | Status |
+|---|---|---|---|
+| Transfer | 310 data parts, a provenance part, `package-index.json`, `restore.py` | 204 of 311 parts arrived; parts 0205–0310 and the provenance part are missing; part 0204 does not match its SHA256 and is not a valid zip; `package-index.json` and `restore.py` are missing, so chunked recordings cannot be restored | Not fixed |
+| Labels | Per recording in `metadata.json` (`expected_label`, `judgment_sweep`) | Labels agree with the earlier package for the sampled recordings, in a new vocabulary (`non_compliant`, `violation`, `compliant`). One flag differs: 450-2 cc58ed7ec5ab was a judgment call and is not one now | Open (confirm the flag) |
+| A1 Turn indicator | 386,822 measured indicator fields recovered in 267 recordings; `off` exported | `off` now appears. But the ego's indicator is `off` in every frame of 54 of 55 recordings, other vehicles' too, including the 250-1 left-turn cases; only one 127-2 recording shows `left`/`right` | Open: are these `off` values measured, or a default for missing data? A default would make "no signal given" a false fact |
+| A2 Brake lamp | Recovered in two recordings | The ego's brake lamp is `false` in every frame of all 55, and `sig.brake_lamp` is still declared `exact` | Not fixed |
+| A3 Kind listed as unobserved | Unknown-kind masks kept where the inventory is incomplete | Every one of the 55 recordings lists at least one kind as unobserved on every structure (see the rule below) | Not fixed |
+| A5 Highway and ways | Way memberships added in 220 recordings; highway continuations merged | 127-1, 127-2 and 407 (single-road maps) have a highway region and `ways`. The junction maps of 113-2, 250-1, 250-2 and 450-2 have no highway region, `ways` on 0 structures, and `highway` listed unobserved on every structure | Partly |
+| A8 Lane fields | Links, markings, widths and directions restored | Direction and width on every lane. Markings missing on all 12 lanes in both 450-2 recordings. `leads_to` on 4–8 of 12 lanes at the junction maps and on none of the 2 lanes of the single-road maps | Partly |
+| A10 "None here" versus "cannot see" | Verified empty inventories emit nothing; incomplete ones keep masks | As A3; `st.bicycle_lane_or_path` is declared absent | Not fixed |
+| A11 Hand signal | Omitted from traces and manifest on purpose | No `hand_signal` on any road user; an omitted atom reads as absent, so "turn indicator or hand signal" stays unknown | Open: we asked for `no_signal` |
+| A13 Sight along a way | Not supplied: saved rays do not meet the definition | `st.sight_along_way` and `st.sight_distance` declared absent | Open |
+| A14 Lane-control signals | Kept unsupported | Declared absent | Open |
+| B2a Intentions | 3 canonical declarations kept; 47 of 50 recordings that need `int.left_turn` have none | No intention in any sampled recording, 250-1 and 250-2 included | Not fixed |
+| B2b/B2c Assumptions and catalogue | Catalogue of 5 intentions and 4 premises documented; shortcuts removed in 1 recording | `asm.public_highway` (in the catalogue) in 42 recordings. Still outside the catalogue: `asm.synthetic_intersection_boundary` (113-2 ac561ad43d05), `asm.no_inoperative_signal_exception` and `asm.ordinary_uncontrolled_crossing_context` (250-1 ×2) | Partly |
+| Scenario coverage | Not addressed | — | Open |
+
+### The rule for `unobserved_kinds`, with two examples
+
+**The rule.** `unobserved_kinds` on a structure lists the kinds the source cannot tell for that one
+structure (GUIDE:293). The evaluator reads it as follows (`library/TrafficSpec/Core/Vocab/Atoms.lean:282-304`):
+
+- For a kind with no parent, or only an abstract parent (highway, crosswalk, stop line, crest,
+  sidewalk, median or divider, shoulder), the listing makes that structure an undecided member of
+  the kind: "is this lane a crosswalk?" becomes unknown.
+- For a kind whose parent is a concrete kind (a one-way roadway refines roadway), only structures
+  labelled with that parent or that kind become undecided; every other structure stays known not to
+  be one.
+- A kind declared absent in the manifest acts as if it were listed on every structure (GUIDE:616).
+
+So listing a kind on every structure says "on this map I cannot rule out that any region is one":
+the map's inventory of that kind is incomplete. A rule then cannot conclude "there is none here",
+and every quantifier over the kind scans every structure.
+
+**Use it only where the source cannot tell one structure.** A map the generator built is known
+completely: every kind it contains is emitted, and a kind it does not contain is declared observed
+in the manifest and simply not emitted. Where a kind really cannot be told on some map, state the
+reason for that kind in the handoff.
+
+**Example 1, where it belongs.** A map imported from survey data marks painted areas but does not
+say which painted area across a lane is a crosswalk and which is a hatched no-stopping box. The two
+such areas are emitted as `road_marking` regions with `"unobserved_kinds": ["crosswalk"]`; every
+other structure carries nothing. A rule can still decide that the lanes, roadways and sidewalks are
+not crosswalks, and only those two areas stay undecided.
+
+**Example 2, where it does not belong.** A generated junction map (113-2 64594c77e2ae) has 26
+structures, none of them a crosswalk, a crest, a highway, a median, a shoulder or a sidewalk, and
+every structure lists all six as unobserved. The generator built this map, so it knows there is no
+crosswalk: declare `st.crosswalk` observed, emit no crosswalk, and list nothing. As delivered, 113-2's
+"on or over a crosswalk" stays unknown on every frame, although the map plainly has none.
+
+**How the delivery does it.** All 55 sampled recordings list at least one kind on every structure:
+`median_or_divider` on every single-road map (127-1, 127-2, 407), and `crest`, `highway`,
+`median_or_divider` plus some of `crosswalk`, `shoulder`, `sidewalk` and `stop_line` on every junction
+map. The partial listings are of the same kind: 450-2 lists `crosswalk` and `intersection` on 33 of
+its 34 structures (all but the one crosswalk and the one intersection), and 250-1 lists `shoulder` on
+26 of 30 (all but the four shoulders). Only `one_way_roadway` on roadways alone is the narrow form
+the rule intends, since its parent is concrete.
+
+**What we ask.** For generated maps, drop every `unobserved_kinds` listing and declare the kinds
+observed. For any kind and map where the source really cannot tell, list it only on the structures
+concerned, and give the reason in the handoff kind by kind.
+
