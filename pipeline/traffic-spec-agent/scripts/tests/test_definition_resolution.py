@@ -226,7 +226,6 @@ class SplitUses(unittest.TestCase):
         import json, tempfile
         from types import SimpleNamespace
         from harness.checks import aggregates
-        from harness.phases import review
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
             (tmp / "laws.jsonl").write_text("", encoding="utf-8")
@@ -239,7 +238,6 @@ class SplitUses(unittest.TestCase):
             self.assertEqual([(x["id"], x.get("split")) for x in shown if x["id"] in ("DEF-STA-900B-140", "DEF-STA-900B-060")],
                              [("DEF-STA-900B-060", None), ("DEF-STA-900B-140", "lanes are two-way")])
             note = 'the law\'s words "lanes are two-way" use this defined term in the copular form'
-            self.assertIn(note, review.definitions_block(shown))
             self.assertIn(note, corpus.render_definitions(shown))
             self.assertIn('| STA-900B-200 | two-way lane (found split: "lanes are two-way") | `DEF-STA-900B-140` |',
                           aggregates.render(None, {the_law.id: D.rows_for(run, the_law.id)}, {}))

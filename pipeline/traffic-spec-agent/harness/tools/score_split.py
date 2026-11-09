@@ -9,6 +9,10 @@ from ..store.ledger import Ledger
 
 
 def score(run_id: str, split_atoms: Path) -> dict:
+    from ..store.state import stored_run_refusal
+    why = stored_run_refusal(run_id)                     # its raw version first: another version's run is not scored
+    if why:
+        raise SystemExit(f"run `{run_id}` cannot be scored by this harness: {why}")
     split = json.loads(split_atoms.read_text(encoding="utf-8"))
     test_only = set(split["test_only_atoms"]) | set(split["test_only_values"]) | set(split.get("test_only_primitives", []))
     run_dir = paths.run_dir(run_id)

@@ -151,19 +151,15 @@ class Cli:
         The options: `laws`, `ontology_file`, `reading`, `model`; `mode` (`train`: concepts may
         supersede; `test`: add-only over `base_run`, read-only); `max_iterations` (iterations, not
         launches); `plan_attempts`, `concept_attempts`, `node_attempts` (the attempt budgets);
-        `repeat_limit` (consecutive open counts of one upheld case that block its law for the
-        operator); `gate_budget`; `plan_batch`, `workers`, `plan_turns`, `max_turns`, `session_timeout`;
+        `gate_budget`; `plan_batch`, `workers`, `plan_turns`, `max_turns`, `session_timeout`;
         `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `repair_budget_usd`, `judge_budget_usd` (each role's cap), `session_retries`, `retry_wait`; `reviewer_model`
         (required), `review_effort`, `allow_same_vendor`, `review_checks`, `review_submissions`,
-        `review_passes`, `max_divergences`, `reviewer_max_output_tokens`, `openai_budget_usd`,
-        `model_prices`; `feedback` (required for a new run, refused before anything is spent when left out;
-        `review`: a node is accepted on its behaviour review; `labels`: that review and its Stage A/B are
-        suspended, the concept review stays, the frozen library is scored by `label_check`; a saved run whose
-        options name no mode is `review`),
-        `aggregate_verifier_model` (required under `labels`), `aggregate_verifier_effort`,
-        `aggregate_verifier_budget_usd`; `label_repair` (under `labels`: each law whose plan is gated is checked on
-        the training recordings inside the loop and routed by its outcome) with `label_dataset` (those recordings,
-        by default the training package); `definition_precedence`; `acquisition_profile` (the operator's profile of the
+        `reviewer_max_output_tokens`, `openai_budget_usd`,
+        `model_prices`; `aggregate_verifier_model` (required), `aggregate_verifier_effort`,
+        `aggregate_verifier_budget_usd`; `label_repair` (each law whose plan is gated is checked on the training
+        recordings inside the loop and routed by its outcome; off, a gated node is accepted and the frozen library
+        is scored by `label_check` after the run) with `label_dataset` (those recordings, by default the training
+        package); `definition_precedence`; `acquisition_profile` (the operator's profile of the
         recordings in `config/acquisition_profiles.json`: its reviewed parameter is every `heading_since` step bound; without
         one no rule may read `heading_since`); `restart` (discard an interrupted iteration);
         `dry_run`; `force_takeover`. Returns 0 only when the run ends `complete`."""
@@ -180,13 +176,6 @@ class Cli:
             saved = json.loads(saved_f.read_text(encoding="utf-8")) if saved_f.exists() else {}
         except json.JSONDecodeError:
             saved = {}                                         # the loop refuses a run whose options cannot be read
-        from .store.state import FEEDBACK_MODES, feedback_refusal   # the mode is settled before anything is spent
-        if paths.run_is_new(paths.run_dir(run_id)) and "feedback" not in given:
-            raise SystemExit(f"a new run names its feedback mode: give --feedback {' | '.join(FEEDBACK_MODES)} "
-                             f"(run `{run_id}` has no saved options)")
-        refusal = feedback_refusal(given.get("feedback", saved.get("feedback", Options.__dataclass_fields__["feedback"].default)))
-        if refusal:
-            raise SystemExit(refusal)
         paths.register_roots(saved.get("repo_roots"))          # a run saved at another root (another machine, a clone)
         for k in ("laws", "ontology", "reading", "base_reading", "definition_precedence", "model_prices"):
             if saved.get(k):
@@ -219,8 +208,7 @@ class Cli:
         if opts.mode == "test" and not opts.base_run:
             raise SystemExit("a test run names the training run it starts from: --base_run <run id>")
         for k, lo in (("plan_batch", 1), ("workers", 1), ("plan_turns", 4), ("concept_attempts", 1), ("node_attempts", 1),
-                      ("repeat_limit", 1), ("reviewer_max_output_tokens", 1), ("max_divergences", 1), ("review_checks", 0),
-                      ("review_submissions", 1), ("review_passes", 1)):
+                      ("reviewer_max_output_tokens", 1), ("review_checks", 0), ("review_submissions", 1)):
             setattr(opts, k, max(lo, int(getattr(opts, k))))
         if opts.openai_budget_usd is not None:
             opts.openai_budget_usd = float(opts.openai_budget_usd)
@@ -340,6 +328,7 @@ class Cli:
         import os
         from .phases.code import gate_from_cli
         from .store import owner
+        _refuse_stored_run(run_id, "gated")
         if os.environ.get(owner.ENV):
             owner.check_delegated()
         else:
@@ -378,6 +367,7 @@ class Cli:
         from .model.blueprint import Node
         from .loop import semantic_inputs
         from recorded import dataset as dataset_mod, source_check
+        _refuse_stored_run(run_id, "scored")
         owner.acquire_for_command("label_check")
         run = Run.load(run_id)
         moved = lc.drift(run.dir)
@@ -434,15 +424,24 @@ class Cli:
         chain's and its own) held to today's gates, a record the gate rejects fenced with what calls
         it; then the active selection (every record not fenced) in the registries, every witness
         against the run's reading, the accepted records whose files the library lacks, and those
-        whose dependency context changed (their obligations certified again). The active selection's
-        result and each fenced record's recorded failure are reported apart; a check that could not be
-        made (an obligation whose certificate program did not run) leaves the result incomplete, never
-        OK; exits 0 only when the active selection verifies and nothing is fenced."""
+        whose dependency context changed (a concept's upheld challenges run again on its body, a
+        node's definition references read again). The active selection's result and each fenced
+        record's recorded failure are reported apart; a check that could not be made (a concept
+        program that did not run) leaves the result incomplete, never OK; exits 0 only when the active
+        selection verifies and nothing is fenced. A run that another run version started, or whose
+        base chain holds one, is refused before anything of it is read, recovered or written: nothing
+        is gated or certified, and it exits 1."""
         from .phases.integrate import verify_library, recheck_contexts, admission_recheck, fence_closure, AdmissionUnavailable
         from .store import owner
-        from .store.state import Run
+        from .store.state import Run, stored_run_refusal
         from .loop import semantic_inputs, refresh_inactive, effective_laws, context_base
         from .model import nodeid
+        why = stored_run_refusal(run_id)
+        if why:
+            unreadable = any(x in why for x in ("cannot be read", "is missing", "is not an object"))
+            print(("the run's saved options cannot be read" if unreadable else "unsupported run version")
+                  + f"; certification not executed — `{run_id}`: {why}")
+            return 1
         owner.acquire_for_command("verify")
         run = Run.load(run_id)
         reading = Reading(run.reading_file)
@@ -467,10 +466,9 @@ class Cli:
             status = f"incomplete: {len(unresolved)} check(s) could not be made, so nothing is verified for them"
         print(f"active selection ({len(active_nodes)} node(s), {len(active_concepts)} concept(s)): "
               + ("OK" if good else f"{status}\n" + "\n".join(problems)))
-        from .store.state import node_reviews                  # what an OK covers: no review the run did not run is certified
-        print("node semantic review: " + ("the only check is the old behaviour review's upheld obligations (feedback `review`), "
-                                          "certified again where a record's context changed; no other semantic review is certified"
-                                          if node_reviews(run.opts) else f"not run (feedback `{run.opts.feedback}`); none is certified"))
+        print("checks covered: the gate of every accepted record (admission), the witnesses against the run's reading, and the "
+              "concept review's upheld challenges where a concept's context changed; no node semantic review exists in this "
+              "harness, and none is certified")                 # what an OK covers, and what it does not
         if run.fenced:
             print(f"fenced ({len(run.fenced)}), each with its recorded failure:")
             for ident, ev in sorted(run.fenced.items()):
@@ -486,6 +484,7 @@ class Cli:
         from .store.ledger import Ledger, ConceptLedger, NodeLedger
         from .store.state import Run, commit_state
         from .model import nodeid
+        _refuse_stored_run(run_id, "reopened")
         owner.acquire_for_command("reopen")
         run = Run.load(run_id)                    # the projections are completed from the run's snapshot first
         ledger = Ledger(run.ledger_file, [], run.opts.plan_attempts)
@@ -560,6 +559,15 @@ class Cli:
     def score_split(self, run_id: str, split_atoms: str = "laws/audit_and_scripts/split_atoms.json") -> int:
         from .tools.score_split import score
         print(json.dumps(score(run_id, _p(split_atoms)), indent=1)); return 0
+
+
+def _refuse_stored_run(run_id: str, what: str) -> None:
+    """Stop, before the library is taken or anything of the run is read, when the run (or its base
+    chain) was started by another run version, or its options are missing or cannot be read."""
+    from .store.state import stored_run_refusal
+    why = stored_run_refusal(run_id)
+    if why:
+        raise SystemExit(f"run `{run_id}` cannot be {what} by this harness: {why} — nothing of it was read or rewritten")
 
 
 def _latest_blueprint(run) -> Path:

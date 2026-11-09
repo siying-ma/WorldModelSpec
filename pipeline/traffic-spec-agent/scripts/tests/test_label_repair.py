@@ -252,13 +252,14 @@ class Off(Base):
             self.assertEqual(seen, want)
             self.assertEqual(cand.SCHEDULING._running, 0)
 
-    def test_label_repair_needs_labels_feedback_and_a_dataset(self):
+    def test_label_repair_needs_a_dataset(self):
         base = dict(run_id="t", laws=Path("l"), ontology=Path("o"), reading=Path("r"))
         with self.assertRaisesRegex(SystemExit, "label_repair"):
-            loop.check_options(Options(**base, feedback="review", label_repair=True, label_dataset="d"))
-        with self.assertRaisesRegex(SystemExit, "label_repair"):
-            loop.check_options(Options(**base, feedback="labels", label_repair=True))
-        loop.check_options(Options(**base, feedback="labels", label_repair=True, label_dataset="d"))
+            loop.check_options(Options(**base, label_repair=True))
+        loop.check_options(Options(**base, label_repair=True, label_dataset="d"))
+        for stage in ("label_deferred", "label_stage"):           # a split stage needs label repair
+            with self.subTest(stage=stage), self.assertRaisesRegex(SystemExit, "label_repair"):
+                loop.check_options(Options(**base, **{stage: True}))
 
 
 if __name__ == "__main__":

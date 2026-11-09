@@ -18,7 +18,7 @@ OPEN, PLANNED, RETURNED, ACCEPTED, BLOCKED, FAILED = "open", "planned", "returne
 TERMINAL = {ACCEPTED, BLOCKED, FAILED}
 PLANNABLE = {OPEN, RETURNED}
 SEVERITY = {PLANNED: 1, RETURNED: 2, BLOCKED: 3, FAILED: 4}   # within one attempt, the higher outcome stands
-JUDGE_STAGES = {"stage_a", "stage_b", "concept_adjudication"}  # an invalid judge answer: two in a row close the item
+JUDGE_STAGES = {"concept_adjudication"}  # an invalid judge answer: two in a row close the item
 #: Gates of one node or concept that ended on the evaluation's cost (the deadline reached while its
 #: scenarios were evaluated, or a resource failure reproduced in isolation) before it is held for the
 #: operator: after the first, the saved candidate is gated again (or, when its context changed, the
@@ -72,10 +72,9 @@ class Entry:
 
 
 class Ledger:
-    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int, repeat_limit: int = 3):
+    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int):
         self.path = path
         self.plan_attempts = plan_attempts
-        self.repeat_limit = repeat_limit
         self.attempt = 0            # the current iteration, set by the loop: the attempt outcomes belong to
         self.entries: dict[str, Entry] = _load(path, Entry, "law")
         for lid in law_ids:
@@ -217,26 +216,18 @@ class Ledger:
         if e.state == PLANNED:
             e.iteration = iteration
 
-    def record_outcomes(self, law: str, keys: list[str], limit: int | None = None) -> list[str]:
-        """Count the outcomes a node of the law drew, across its plans and repairs, once per completed
-        review or gate run (the caller applies an outcome once); the keys whose consecutive count
-        reaches the limit (the repeat limit unless given) are returned, each with its count — the law
-        is not converging and the operator decides. A key is an open case's lineage, a structural
-        finding, or an occurrence of the law's words; `reset_outcomes` ends a streak."""
+    def record_outcomes(self, law: str, keys: list[str], limit: int) -> list[str]:
+        """Count the outcomes the law drew, across its plans and repairs, once per completed gate run
+        or plan session (the caller applies an outcome once); the keys whose count reaches `limit` are
+        returned, each with its count — the law is not converging, or the words cannot be stated. A
+        key is an occurrence of the law's words, or the law's own outcome."""
         e = self.entries[law]
         hit = []
         for k in keys:
             e.repeats[k] = e.repeats.get(k, 0) + 1
-            if e.repeats[k] >= (limit or self.repeat_limit):
+            if e.repeats[k] >= limit:
                 hit.append(f"{k} ×{e.repeats[k]}")
         return hit
-
-    def reset_outcomes(self, law: str, keys: list[str]) -> None:
-        """Outcomes that stopped recurring (a case the rule now satisfies): their streaks start again."""
-        e = self.entries.get(law)
-        if e is not None:
-            for k in keys:
-                e.repeats.pop(k, None)
 
     def block(self, law: str, gap_ids: list[str], reasons: list[str]) -> None:
         e = self.entries[law]
@@ -461,7 +452,7 @@ class ConceptLedger:
 
 
 # ---------------------------------------------------------------------------------------------
-# Nodes: one entry per node the gate or the review returned, for the node repair path. A node has
+# Nodes: one entry per node the gate returned, for the node repair path. A node has
 # `attempts` coding sessions (default 2: the first and one after a repair); while it has budget
 # its law is held, not charged. Written by the harness only.
 # ---------------------------------------------------------------------------------------------
@@ -477,7 +468,6 @@ class NodeEntry:
     reasons: list[str] = field(default_factory=list)
     last_task: str = ""          # the task directory of the last coding attempt, for the repair session
     iteration: int = 0
-    judge_failures: dict[str, int] = field(default_factory=dict)   # review stage ↦ consecutive reviews left without a valid answer
 
 
 class NodeLedger:
@@ -527,20 +517,3 @@ class NodeLedger:
         e.state, e.reasons = FAILED, reasons
         e.last_task = last_task or e.last_task
         e.iteration = iteration or e.iteration
-
-    def defer_judge(self, node: str, law: str, stage: str, reasons: list[str], bound: int = 2) -> bool:
-        """The node's review was left without a valid answer at `stage`: only that stage's
-        consecutive count grows (the stages before it answered). Returns True when it reaches
-        `bound`."""
-        e = self.entries.setdefault(node, NodeEntry(node, law, state=PLANNED))
-        e.law = e.law or law
-        e.judge_failures = {stage: e.judge_failures.get(stage, 0) + 1}
-        e.reasons = reasons
-        return e.judge_failures[stage] >= bound
-
-    def clear_judge(self, node: str) -> None:
-        """The node's review ended with valid judgments: no stage's failure is consecutive any longer."""
-        e = self.entries.get(node)
-        if e is not None:
-            e.judge_failures = {}
-

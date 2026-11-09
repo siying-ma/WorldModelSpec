@@ -298,6 +298,7 @@ def _view(run: Run, area: Path, base_reading: Path, base: dict | None = None) ->
     v.base = base                                     # Core and the ontology, copied unchanged: production's digests
     for k in OWNED:
         setattr(v, k, copy.deepcopy(getattr(run, k)))
+    v.unverified_concepts = set()                     # the concepts this candidate adds or changes, not committed
     v.opts = replace(run.opts, reading=base_reading)
     v._candidate_reading, v._candidate_mapping, v._candidate_iter = area / "reading.json", area / "mapping.json", area / CANDIDATE_ITER
     v._candidate_rulings = area / "rulings.jsonl"
@@ -645,6 +646,8 @@ class Candidate:
         with self.inside():
             for ch in changes:
                 records = view.accepted_concepts if ch.kind == "concept" else view.accepted_nodes
+                if ch.kind == "concept":
+                    view.unverified_concepts.add(ch.ident)
                 old = records.get(ch.ident) or {}
                 files = own_files(ch.kind, ch.ident)
                 if ch.record is None:

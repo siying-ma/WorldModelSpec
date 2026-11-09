@@ -21,8 +21,8 @@ scene is a reasonableness. §8 says how a rule gives such a standard a concrete 
 
 ## The termination rule
 
-This file is the whole termination rule. It has six clauses; the harness and the review phase
-enforce them, and nothing else adds to or bypasses them.
+This file is the whole termination rule. It has six clauses; every session and every check of the
+pipeline works within them, and nothing else adds to or bypasses them.
 
 1. **Closed set.** A rule reads the world only through the atoms of §1–§7, the primitives of
    §10, and the concepts the pipeline has accepted (§9). An element a clause needs that none of
@@ -57,9 +57,9 @@ its mappings as *grounding claims* (`elements`: clause element → atoms, with a
 cites the contracts) and its *operationalization claims* (§8). The harness validates them before
 any rule is written: every atom named exists here; the same element maps to the same atoms in
 every node of the run, so a contradiction is rejected; and the run's mapping index, which the
-harness derives from the accepted nodes, is what the review phase and its calibration read. No
-agent writes a shared file, and nothing about a corpus is decided before the run that formalizes
-it.
+harness derives from the accepted nodes, is what the validator checks each later mapping against
+and what the planner is shown. No agent writes a shared file, and nothing about a corpus is decided
+before the run that formalizes it.
 
 This file says nothing about which law refers to which atom and nothing about how any data
 source produces one. Which atoms a source can observe is declared at run time by that source's
@@ -71,7 +71,7 @@ or a simulator reports its own controls and its own line of sight and nobody els
 **Scope column.** `general` marks an element of the ordinary road vocabulary. `local` marks an
 element that exists because the target jurisdiction's own vehicle taxonomy or device catalogue
 names it; its contract still describes what is physically observed, and a source that has no such
-thing declares it `absent`. The flag is information for the manifest author and the reviewer, not
+thing declares it `absent`. The flag is information for the manifest author and the planner, not
 a permission: local atoms are atoms.
 
 Identifier scheme: `family.name`. Families: `ru` road user, `kin` kinematics, `st` road
@@ -278,9 +278,10 @@ with parameters the reading sets, and records an *operationalization claim*: the
 words, the concepts, the parameters, and the engineering convention their values come from (a
 headway convention, a gap-acceptance convention, a stopping-distance model, a sight-distance
 model). The
-harness rejects a node that maps a standard to nothing; the review phase checks that the claim
-bounds the standard rather than replacing an observable the clause states outright. The same
-claim is what a label uses, so specification and label quantify the standard exactly once.
+harness rejects a node that maps a standard to nothing. The claim bounds the standard; it never
+replaces an observable the clause states outright. The claim records the specification's
+operationalization; it does not determine a recording's label. Labels involving judgement calls are
+confirmed independently under operator-reviewed, frozen parameters before they drive repair.
 
 **Two kinds of rule follow.** Where the standard qualifies an otherwise concrete duty (a yield
 that is owed when the other vehicle is "so close as to be a hazard"), the operationalization is a

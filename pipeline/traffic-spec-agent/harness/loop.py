@@ -1,6 +1,7 @@
 """The loop: plan → validate A → code (concepts first, then the rules that use them), each coded
-node reviewed against its law → integrate → feedback, until nothing is plannable or an iteration
-accepts nothing new."""
+concept reviewed against its contract, each node decided by its gate (and, with `label_repair`, its
+law by the label check) → integrate → feedback, until nothing is plannable or an iteration accepts
+nothing new."""
 from __future__ import annotations
 import json
 import re
@@ -23,7 +24,8 @@ from .store import jsonl
 from .store.paths import run_is_new
 from .store.budget import BudgetPaused
 from .model.reading import Reading
-from .store.state import Options, Run, acceptance_by_law, acceptance_policy_refusal, commit_state, feedback_refusal, node_reviews, policy_defects, snapshot_defects
+from .store.state import (Options, Run, RUN_VERSION, acceptance_by_law, acceptance_policy_refusal, chain_version_refusal, commit_state,
+                          policy_defects, saved_version_refusal, snapshot_defects)
 from .model.mapping import MappingIndex
 
 
@@ -69,19 +71,6 @@ def concept_order(concepts: list[ConceptRecord]) -> list[ConceptRecord]:
     for c in concepts:
         visit(c)
     return out
-
-
-def param_notes_to_user(to_user: list[str], notes: list[tuple[str, str]]) -> None:
-    """Each of the reviewer's words on a proposed parameter, placed right after that parameter's
-    review line (and the notes already there), or at the end when the line is not in this list."""
-    for name, text in notes:
-        at = next((i for i, line in enumerate(to_user) if line.startswith(f"parameter `{name}` = ")), None)
-        if at is None:
-            to_user.append(f"parameter `{name}` (proposed, under review): {text}")
-            continue
-        while at + 1 < len(to_user) and to_user[at + 1].startswith("  - "):
-            at += 1
-        to_user.insert(at + 1, f"  - {text}")
 
 
 def dependency_causes(states: dict[str, str], repairable: set[str]) -> list[str]:
@@ -155,19 +144,16 @@ def context_notices(failing: list[str], closed: list[str]) -> list[str]:
             + [f"`{i}` fenced: it calls or composes a fenced record" for i in closed])
 
 
-#: Per feedback mode, the review settings a record's dependency context depends on: those of the
-#: reviews the mode runs. Under `review` the node behaviour review's passes too; under `labels` only
-#: what the concept review and its adjudication use.
-CONTEXT_REVIEW_SETTINGS = {"review": ("reviewer_model", "review_effort", "judge_effort", "review_passes"),
-                           "labels": ("reviewer_model", "review_effort", "judge_effort")}
+#: The review settings a record's dependency context depends on: those the concept review and its
+#: adjudication use.
+CONTEXT_REVIEW_SETTINGS = ("reviewer_model", "review_effort", "judge_effort")
 
 
 def context_base(opts: Options, semantic: dict) -> dict:
     """What every record's dependency context is computed against besides its own inputs: Core, the
-    ontology and the settings of the reviews the run's feedback mode runs."""
+    ontology and the settings of the concept review (`CONTEXT_REVIEW_SETTINGS`)."""
     return {"core": semantic["core"], "ontology": semantic["ontology"],
-            "review": [getattr(opts, k) for k in CONTEXT_REVIEW_SETTINGS[opts.feedback]]
-            + ([opts.feedback] if opts.feedback != "review" else [])}
+            "review": [getattr(opts, k) for k in CONTEXT_REVIEW_SETTINGS]}
 
 
 def check_options(opts: Options) -> None:
@@ -181,12 +167,12 @@ def check_options(opts: Options) -> None:
             raise SystemExit(f"--{k} must be a finite, non-negative amount in USD (given {x!r})")
     if opts.label_deferred and opts.label_stage:
         raise SystemExit("--label_deferred and --label_stage are the two stages of a split run: give one")
-    if (opts.label_deferred or opts.label_stage) and not (opts.label_repair and opts.feedback == "labels"):
-        raise SystemExit("--label_deferred and --label_stage are stages of a run with --feedback labels --label_repair")
+    if (opts.label_deferred or opts.label_stage) and not opts.label_repair:
+        raise SystemExit("--label_deferred and --label_stage are stages of a run with --label_repair")
     if opts.label_deferred and opts.label_dataset:
         raise SystemExit("--label_deferred reads no training recording: do not give --label_dataset")
-    if opts.label_repair and not opts.label_deferred and (opts.feedback != "labels" or not opts.label_dataset):
-        raise SystemExit("--label_repair needs --feedback labels and the training recordings (--label_dataset)")
+    if opts.label_repair and not opts.label_deferred and not opts.label_dataset:
+        raise SystemExit("--label_repair needs the training recordings (--label_dataset)")
     if (opts.label_deferred or opts.label_stage) and (opts.base_run or opts.budget_peers):
         raise SystemExit("a split run (--label_deferred / --label_stage) hands its state between machines, and its handoff does not "
                          "carry a base_run chain or the runs of budget_peers: run it without them")
@@ -197,16 +183,6 @@ def check_options(opts: Options) -> None:
                              "it is a second vendor's model — pass --allow_same_vendor to override")
         if session.vendor_of(opts.aggregate_verifier_model) == "openai" and not openai_runner.available() and not opts.dry_run:
             raise SystemExit("the aggregate verifier is an OpenAI model and OPENAI_API_KEY is not set in the harness's environment")
-
-
-def node_review(run: Run, n: Node, law, onto, reading, v, out_dir: Path):
-    """A gated node's review. Under `feedback: labels` the node behaviour review and its Stage A/B are
-    suspended: the node is accepted on its gate, and its law is scored by the label check once the
-    library is frozen; under `feedback: review` the behaviour review decides."""
-    if run.opts.feedback == "labels":
-        return review_phase.ReviewOutcome("accepted", advisories=["node behaviour review suspended (feedback: labels)"])
-    return review_phase.review_behaviour(run, n, law, onto, reading, v.extras.get("rule_json"),
-                                         list(v.extras.get("narrowings_added", [])), out_dir)
 
 
 def refresh_inactive(run: Run) -> None:
@@ -774,19 +750,19 @@ def _ready(items, key_deps, accepted: set[str]):
     return [x for x in items if all(d in accepted for d in key_deps(x))]
 
 
-def _item_task(code, report, review):
+def _item_task(code, report, review=None):
     """One item's whole pipeline, run in a worker: its coding session and gate (`code`), its coder's
-    dependency-defect report (`report`) and, for a candidate the gate passed that the report leaves
-    standing, its review (`review`). Returns (verdict, report, review outcome, the exception that
-    stopped it): a budget pause stops it at any step, and leaves no verdict when it stops the coding
-    or the report; a review that could not run stops only the review (the coding phase reports its
-    own outage as a verdict)."""
+    dependency-defect report (`report`) and, for a concept the gate passed that the report leaves
+    standing, its review (`review`; a node has none: its gate decides it). Returns (verdict, report,
+    review outcome, the exception that stopped it): a budget pause stops it at any step, and leaves no
+    verdict when it stops the coding or the report; a review that could not run stops only the review
+    (the coding phase reports its own outage as a verdict)."""
     try:
         v = code()
         dep = report()
     except BudgetPaused as e:
         return None, None, None, e
-    if v.verdict != "OK" or dep.status in review_phase.NOT_JUDGED + ("upheld",):
+    if review is None or v.verdict != "OK" or dep.status in review_phase.NOT_JUDGED + ("upheld",):
         return v, dep, None, None
     try:
         return v, dep, review(v), None
@@ -881,24 +857,6 @@ def _lib_files(kind: str, ident: str) -> list[str]:
 def _files_of(kind: str, ident: str) -> list[str]:
     """The same files as the repository digest keys them."""
     return [gate.lib_rel(r) for r in _lib_files(kind, ident)]
-
-
-#: The run version this harness writes into a run's semantic inputs. A run is resumed only by the
-#: version that started it: a change that makes the records, their identities or the meaning of the
-#: saved options of earlier runs unsafe to continue raises it, whether or not any digest changed.
-RUN_VERSION = 2
-
-
-def run_version_refusal(saved_semantic: dict | None) -> str | None:
-    """Why a run whose saved semantic inputs are `saved_semantic` cannot be resumed by this harness,
-    or None when it was started by this run version."""
-    was = (saved_semantic or {}).get("run_version")
-    if was == RUN_VERSION:
-        return None
-    return (f"it was started by harness run version {was if was is not None else '1 (recorded before run versions)'} and this "
-            f"harness is version {RUN_VERSION}: a run is resumed only by the version that started it, and both stages of a split "
-            "run (remote and local) run that same version — start a new run id (a fresh run), or resume from a checkout of the "
-            "code the run started on")
 
 
 def reviewed_reading(reading: Path) -> str:
@@ -1041,18 +999,21 @@ def metadata_refusal(run: Run) -> str | None:
 
 def _run_loop(opts: Options) -> dict:
     from .store import owner
-    if feedback_refusal(opts.feedback):                 # an unknown mode is refused before anything is touched
-        raise SystemExit(feedback_refusal(opts.feedback))
     run = Run(opts)
     new = run_is_new(run.dir)
+    # another run version's run, or a base chain holding one, is refused on its raw saved version before anything is read whole
+    refusal = (None if new else saved_version_refusal(run.dir)) or (chain_version_refusal(opts.base_run, opts.run_id)
+                                                                      if opts.base_run else None)
+    if refusal:
+        raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed or started: {refusal} — nothing of this run was rewritten")
     refusal = None if new else metadata_refusal(run)
     if refusal:
         raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal}; restore its checkpoint, or start a new run id "
                          "— nothing of this run was rewritten")
     run.dir.mkdir(parents=True, exist_ok=True)
     saved_first = None if new else jsonl.read_json(run.dir / "options.json", None)
-    if saved_first is not None:                         # another run version's run, or another policy, is refused before anything is touched
-        refusal = run_version_refusal(saved_first.get("semantic")) or acceptance_policy_refusal(saved_first, opts)
+    if saved_first is not None:                         # another policy is refused before anything is touched (the version was checked above)
+        refusal = acceptance_policy_refusal(saved_first, opts)
         if refusal:
             raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal} — nothing of this run was rewritten")
     saved_roots = (saved_first or {}).get("repo_roots") or []
@@ -1120,7 +1081,7 @@ def _run_loop(opts: Options) -> dict:
     # which posted definition applies to each law's words, once per run: the inherited nodes' laws included,
     # so an aggregate an inherited node claims is admitted against the same definitions as in its base run
     definitions_mod.write_table(run, list(effective_laws(run, by_id).values()), defs)
-    ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts, opts.repeat_limit)
+    ledger = Ledger(run.ledger_file, [l.id for l in laws], opts.plan_attempts)
     concept_ledger = ConceptLedger(run.concept_ledger_file, opts.concept_attempts)
     node_ledger = NodeLedger(run.node_ledger_file, opts.node_attempts)
     run.law_entries = ledger.entries                     # the availability rule reads the live ledger
@@ -1148,13 +1109,9 @@ def _run_loop(opts: Options) -> dict:
             print(f"[loop] iteration {resume_n} resumes at stage `{snap['prog']['stage']}`")
     check_library_isolation(run)
     if not opts.reviewer_model and not opts.dry_run:
-        raise SystemExit("--reviewer_model is required: the concept review" + (" and the node behaviour review are" if opts.feedback == "review"
-                         else " is") + " run by a second vendor's model")
-    if opts.feedback == "labels" and not opts.aggregate_verifier_model and not opts.dry_run:
-        raise SystemExit("--aggregate_verifier_model is required under --feedback labels: the aggregate verifier is configured on its own")
-    if opts.feedback == "labels":
-        print("[loop] feedback `labels`: the node behaviour review and its Stage A/B are suspended (a gated node is accepted); "
-              "the concept review and the aggregate verifier run; score the frozen library with `harness label_check`")
+        raise SystemExit("--reviewer_model is required: the concept review is run by a second vendor's model")
+    if not opts.aggregate_verifier_model and not opts.dry_run:
+        raise SystemExit("--aggregate_verifier_model is required: the aggregate verifier is configured on its own")
     uncapped = [k for k in ("session_budget_usd", "repair_budget_usd", "judge_budget_usd") if getattr(opts, k) is None]
     if (opts.claude_budget_usd is not None or opts.total_budget_usd is not None) and uncapped:
         raise SystemExit(f"--claude_budget_usd and --total_budget_usd need {', '.join('--' + k for k in uncapped)}: "
@@ -1512,13 +1469,6 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         for law, ids in planned_laws.items():
             if ledger.mark_planned(law, ids, run.iteration):
                 node_ledger.drop_law(law)
-                duties = [review_phase.duty_of(n, by_id[law]) for n in nodes if n.law == law]
-                for r in (review_phase.upheld_rows(run, {law}) + review_phase.upheld_rows(run, {law}, structural=True)
-                          if node_reviews(opts) else []):
-                    if not any(r.get("duty") == d["id"] or (r.get("law_digest") == d["law_digest"]
-                                                            and review_phase.overlaps(r.get("duty_ranges") or [], d["ranges"])) for d in duties):
-                        notes.append(f"`{law}`: no node of the plan holds the duty an obligation of iteration {r.get('iteration')} was "
-                                     f"upheld on (`{r.get('subject')}`), so it is not replayed until one does")
         waiting = set(prog.get("waiting", []))
         for law, why in prog.get("id_defects", {}).items():
             if law in ledger.entries and ledger.entries[law].state not in TERMINAL:
@@ -2008,13 +1958,12 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         saved = code_phase.last_task(run, n.id) if ledger.entries[n.law].cost_failures.get(n.id) == 1 else None
         ndir = code_phase.node_dir(run, n.id)
         return lambda: _item_task(lambda: code_phase.run_code(run, n, reading, registry, saved=saved),
-                                  lambda: report_of(run, ndir, reached_concepts(run, concept_deps(n))),
-                                  lambda v: node_review(run, n, by_id[n.law], onto, reading, v, ndir / "review"))
+                                  lambda: report_of(run, ndir, reached_concepts(run, concept_deps(n))))
 
     def apply_node(n: Node, result) -> None:
-        nonlocal sessions_down, budget_paused, to_user
-        v, dep, out, e = result
-        if v is None:                                   # paused before its review: undecided, taken up again on resume
+        nonlocal sessions_down, budget_paused
+        v, dep, _out, e = result
+        if v is None:                                   # paused before its outcome: undecided, taken up again on resume
             budget_paused = str(e); return
         ndir = code_phase.node_dir(run, n.id)
         baselines[n.id] = json.loads((ndir / "baseline.json").read_text())
@@ -2122,74 +2071,6 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         added = list(v.extras.get("narrowings_added", []))
         if added:
             coder_narrowings[n.id] = added
-        if isinstance(e, BudgetPaused):
-            # a pause keeps the work: the gated candidate stays, undecided, and the resumed
-            # iteration reviews it again without coding it
-            budget_paused = str(e); return
-        if e is not None:
-            # an outage keeps the work: the node is held, its law keeps its plan and budget
-            code_phase.rollback(n.id, baselines[n.id], ndir)
-            hold(n, "its behaviour review never ran"); ledger.hold(n.law, run.iteration)
-            failed_ids.add(n.id); prog["nodes"][n.id] = "PAUSED"
-            sessions_down = True
-            to_user.append(f"the behaviour review for `{n.id}` never ran ({e}); the node is held, its law keeps its attempt budget — rerun the loop later")
-            ledger.defer(n.law, [f"behaviour review never ran: {e}"])
-            persist(); return
-        param_notes_to_user(to_user, out.param_notes)
-        for a in out.advisories:
-            if a != "reviewer off":
-                notes.append(f"behaviour review of `{n.id}`, advisory: {a}")
-            if a.startswith("obligation invalidated:"):
-                to_user.append(f"`{n.law}` ({n.id}), {a} — retire the ruling (`ruling: retired`) if the case was wrong; "
-                               "otherwise it is information only")
-            if a.startswith("gap candidate:"):
-                to_user.append(f"`{n.law}` ({n.id}), {a} — file it in the gap ledger, or decide the rule may stand without it")
-        to_user += [q for q in out.questions if q not in to_user]
-        if out.status == "deferred":
-            code_phase.rollback(n.id, baselines[n.id], ndir)
-            failed_ids.add(n.id)
-            stage = out.defer_stage or "review"
-            if stage == "certificate":                # the harness did not run: infrastructure, never counted
-                sessions_down = True
-                hold(n, "the certificate program of its review did not run"); ledger.hold(n.law, run.iteration); prog["nodes"][n.id] = "PAUSED"
-                to_user.append(f"the certificate program for `{n.id}` did not run ({'; '.join(out.reasons[:1])}); rerun the loop later")
-                persist(); return
-            prog["nodes"][n.id] = "DEFERRED"
-            bound = 2 if stage in JUDGE_STAGES else opts.session_retries + 1
-            if node_ledger.defer_judge(n.id, n.law, stage, [f"review of `{n.id}` deferred: {r}" for r in out.reasons], bound=bound):
-                if stage in JUDGE_STAGES:
-                    why = [f"judge_protocol_failure: the {stage} judge left the review of `{n.id}` without a valid answer twice in a row"] + out.reasons[:2]
-                    node_ledger.failed(n.id, n.law, why, str(ndir), run.iteration); ledger.fail(n.law, why)
-                    notes.append(f"`{n.law}`: closed, judge_protocol_failure ({stage}) — " + "; ".join(out.reasons[:2]))
-                else:
-                    why = [f"the review of `{n.id}` stayed unusable {bound} times ({stage}): the operator decides"] + out.reasons[:2]
-                    ledger.block(n.law, [f"decision:{n.law}"], why)
-                    to_user.append(f"`{n.law}` paused: {why[0]} (python -m harness reopen {opts.run_id} --laws {n.law})")
-            else:
-                hold(n, f"its behaviour review was deferred at stage `{stage}`: " + "; ".join(out.reasons[:1])[:200]
-                     + "; coded and reviewed again"); ledger.hold(n.law, run.iteration)
-                notes.append(f"`{n.id}`: review deferred ({stage}) — " + "; ".join(out.reasons[:2]) + "; coded again next iteration, no attempt counted")
-            persist(); return
-        node_ledger.clear_judge(n.id)
-        ledger.reset_outcomes(n.law, [f"behaviour:{k}" for k in out.satisfied])   # a satisfied case ends its streak
-        ok_b, reasons_b, keys_b = out.status != "returned", out.reasons, out.keys
-        if not ok_b:
-            code_phase.rollback(n.id, baselines[n.id], ndir)
-            failed_ids.add(n.id); prog["nodes"][n.id] = "BEHAVIOUR"
-            notes.append(f"`{n.id}`: behaviour review returned it — " + "; ".join(reasons_b[:4]))
-            keys = sorted(f"behaviour:{k}" for k in keys_b)          # the case's lineage: the same case across node ids and repairs
-            repeated = ledger.record_outcomes(n.law, keys)
-            reasons_full = [f"behaviour review of `{n.id}`: {r}" for r in reasons_b]
-            if repeated:
-                why = [f"repeated outcome {', '.join(repeated)} across the law's plans and repairs: the operator decides"] + reasons_full
-                node_ledger.failed(n.id, n.law, why, str(ndir), run.iteration); ledger.block(n.law, [f"decision:{n.law}"], why)
-                to_user.append(f"`{n.law}` waits for a decision: {', '.join(repeated)} (python -m harness reopen {opts.run_id} --laws {n.law})")
-            elif node_ledger.budget_left(n.id):
-                node_ledger.returned(n.id, n.law, reasons_full, str(ndir), run.iteration); ledger.hold(n.law, run.iteration)
-                notes.append(f"`{n.id}`: sent to a node repair session; no attempt counted")
-            else:
-                ledger.return_law(n.law, reasons_full, run.iteration)
-            persist(); return
         accepted_now.append(n); prog["nodes"][n.id] = "OK"; persist()
     _rolling(remaining_nodes, opts.workers, node_ready, start_node, apply_node, lambda: sessions_down or bool(budget_paused),
              lambda n: (code_phase.node_dir(run, n.id), _files_of("node", n.id)), shared=_loop_written(), scheduled=opts.label_repair)

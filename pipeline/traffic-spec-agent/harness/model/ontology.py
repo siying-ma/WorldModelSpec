@@ -47,19 +47,6 @@ def anchors_text(onto: "Ontology", lean: bool = False) -> str:
     return " or ".join(parts) + (" (or an accessor of one)" if lean else "")
 
 
-def not_atoms_text(onto: "Ontology") -> str:
-    """The ontology's section on what is not an atom, verbatim (its heading through the next
-    section's): the readings and conventions every role applies alike, shown to the judges as the
-    planner is shown them."""
-    lines, out = onto.text.splitlines(), []
-    for line in lines:
-        if out and line.startswith("## "):
-            break
-        if out or re.match(r"^## \d+\. Not atoms\b", line):
-            out.append(line)
-    return "\n".join(out).strip() + "\n" if out else ""
-
-
 def load(path: Path) -> Ontology:
     text = path.read_text(encoding="utf-8")
     o = Ontology(path, text)

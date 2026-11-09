@@ -194,12 +194,9 @@ class Reports(Base):
                         (txn.library / rel).write_text(text)
             return {}
 
-        def forbidden(*a, **k):
-            raise AssertionError("a node review or a Stage A/B judge ran on the training path")
         with ctx as (run, ledger, training, by_id), mock.patch.object(review, "dependency_report", lambda *a, **k: dep), \
                 mock.patch.object(plan, "run_repair", concept_session), mock.patch.object(label_repair, "code_in_candidate", coder), \
-                mock.patch.object(review, "review_concept", Reviewer()), mock.patch.object(review, "review_behaviour", forbidden), \
-                mock.patch.object(review, "run_stage_a", forbidden), mock.patch.object(review, "run_stage_b", forbidden):
+                mock.patch.object(review, "review_concept", Reviewer()):
             set_verdict(training, "r5a", N[5], "compliant")
             self.assertEqual(repair(run, ledger, training, by_id), "committed")
             self.assertIn("-- repaired", (label_repair.paths.LIBRARY / cand.own_files("concept", CA)[0]).read_text())

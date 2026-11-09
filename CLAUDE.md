@@ -84,10 +84,11 @@ many; a fix that removes a cause beats one that adds a mechanism. A part found w
 removed, not kept.
 
 **Where not to spend (operator, 2026-11-02).** Three things are not done to raise acceptance:
-- the node behaviour reviewer is not re-tuned: it is suspended, with its Stage A and Stage B
-  judges, while training runs on labelled recordings (see "Training and testing"), and it is not
-  reinstated without the operator. The concept review (reviewer, adjudicator, replay) and the
-  aggregate verifier stay;
+- the old node behaviour review is not brought back: it was removed on 2026-11-09, with its
+  Stage A and Stage B judges and the `feedback` option, and runs it could have touched (run
+  version 2 and earlier) are refused by this harness. A new node reviewer is a separate design that
+  joins a run only after its generation stage. The concept review (reviewer, adjudicator, replay)
+  and the aggregate verifier stay;
 - no judge layer is added: a doubtful ruling is fixed at its cause (a convention, a prompt rule,
   a precedent), never by another judge over the judges;
 - no exemption is written for a law: a mismatch (a label the rule disagrees with, or a reviewer's
@@ -179,38 +180,23 @@ feature is not better for being there, and one whose use cannot be stated is rem
   no adapter defect and oblige no rule change. A judgment-call label (one whose verdict turns on a
   parameter the pipeline chooses) is reported apart and never drives a repair; it is confirmed by
   a scenario standard independent of the rules once the parameters are frozen. A disputed label is the operator's to decide.
-- **The reviewer.** For a node it is suspended since 2026-11-02, with Stage A and Stage B below,
-  while training runs on labelled recordings; for a concept it stays, with the concept
-  adjudicator and the replay of upheld items (operator, 2026-11-03), because the labels reach a
-  shared concept only through the laws that use it. It checks that a concept's code meets its
-  contract, never that the contract suits the driving task: that is the label check's and the
-  planner's. Every change to a concept, by a coding session or by a training repair, passes the
-  concept review before it is committed, and its rulings belong to the change that produced them.
-  The reviewer shows, as executable traces, situations in which the
-  code and the words it formalizes (the law for a node, the contract for a concept) decide
-  differently. It supplies certified cases that challenge a rule or a disclosed reading. It
-  proposes neither a fix nor a replacement mapping. The one exception to traces is **structural
-  evidence**: where no trace can show a difference (a word carried by a contract broader than it,
-  with no contract that makes the distinction), the reviewer may file a word-level item naming the
-  law's verbatim words and the contract clause they contradict. Stage B judges it on the words and
-  the contracts alone; it is labelled structural evidence in the rulings and in what the planner
-  sees, its words are validated against the law, an upheld item is an obligation decided again on
-  every later record of the node, and it is identified by the occurrence of its words in the law.
-- **The judges** (suspended with the node reviewer; the concept adjudicator stays).
-  - **Stage A** determines the law's verdict on the canonical case without seeing the rule, the
-    record, the reviewer's prose or any proposed repair. It judges the duty occurrence the node
-    formalizes, and sees which occurrence that is (its words and qualifying sentence, and the duties
-    judged separately), nothing else of the record. It is shown the posted definitions that apply,
-    never an aggregate mapping.
-  - **Stage B** decides whether a confirmed mismatch:
-    - is a formalization defect;
-    - is permitted by a disclosed law-local reading;
-    - follows an aggregate mapping admitted by the independent aggregate gate;
-    - depends on an operator-owned parameter value;
-    - or is structural: a structural mismatch is reported `upheld`.
-
-    It never chooses a reading, an aggregate member or a parameter value, and never judges the
-    code or re-plans.
+- **The concept reviewer.** No node is reviewed by a model in this pipeline: the node behaviour
+  reviewer and its Stage A and Stage B judges were removed on 2026-11-09, and a new node reviewer
+  is a separate design. The concept reviewer stays, with the concept adjudicator and the replay of
+  upheld items (operator, 2026-11-03), because the labels reach a shared concept only through the
+  laws that use it. It checks that a concept's code meets its contract, never that the contract
+  suits the driving task: that is the label check's and the planner's. Every change to a concept,
+  by a coding session or by a training repair, passes the concept review before it is committed,
+  and its rulings belong to the change that produced them. The reviewer shows, as executable
+  traces, situations in which the concept's code and its contract decide differently. It proposes
+  neither a fix nor a replacement contract. The one exception to traces is a **generality item**
+  (`not_general`): words of the contract or the code's rendering, quoted verbatim, that name a
+  figure, a place, a class list, a device or a side the notion does not need, so that it fits one
+  use and no other; no trace is needed, and the words are validated against the contract and the
+  rendering.
+- **The concept adjudicator** rules each confirmed divergence and each generality item upheld or
+  dismissed, by the contract's words, on the executed facts of each situation and the earlier
+  rulings on the concept. It does not judge the code, propose a fix or look for further items.
 - **The harness** validates, gates, executes and routes each outcome to the role that owns it; it
   decides nothing a role above decides. Before any node may use an aggregate, it validates the
   aggregate's provenance, completeness and representation and obtains an independent semantic

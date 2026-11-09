@@ -25,7 +25,7 @@ from harness.phases import plan, review
 from harness.store import jsonl, paths
 from harness.store.gaps import GapLedger
 from harness.store.ledger import ConceptLedger, Ledger, NodeLedger
-from harness.store.state import Run, commit_state
+from harness.store.state import Run, RUN_VERSION, commit_state
 from scripts.tests.test_candidate import Base, concept_rec, files, node_rec
 from scripts.tests.test_label_repair import L, N, RECS
 from scripts.tests.test_label_repair_session import DIFF5, REQUEST, repair, repairing, set_verdict
@@ -394,7 +394,8 @@ class CandidateValidator(Base):
         from harness.__main__ import _candidate_view
         with repairing() as (run, ledger, training, by_id):
             import dataclasses
-            (run.dir / "options.json").write_text(json.dumps(dataclasses.asdict(run.opts), default=str))
+            (run.dir / "options.json").write_text(json.dumps({**dataclasses.asdict(run.opts), "semantic": {"run_version": RUN_VERSION}},
+                                                             default=str))
             with cand.SCHEDULING.pause(), cand.Candidate.open(run, hooks=()) as txn:
                 txn.apply([cand.Change("node", N[1], None)])
                 txn.write_scope()

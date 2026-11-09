@@ -21,7 +21,7 @@ from harness.model import nodeid
 from harness.phases import code as code_phase, review as review_phase
 from harness.store import paths
 from harness.store.budget import BudgetPaused
-from scripts.tests.test_recovery import Crash, World, Fixture, _iteration_of, compositions, concept, decisions, node, reference
+from scripts.tests.test_recovery import Crash, World, Fixture, _iteration_of, compositions, concept, decisions, node
 
 
 def committed() -> dict:
@@ -106,8 +106,8 @@ class RollingScheduler(unittest.TestCase):
             with mock.patch.object(session, "run", Sessions(before)):
                 self.assertEqual(f.drive(), ["complete"])
         self.assertEqual(seen["provider"], "OK")
-        calls = [e[1:3] for e in w.log if e[0] == "call" and e[1] in ("code", "review")]
-        self.assertLess(calls.index(("review", "L_7")), calls.index(("code", "L_6")))
+        calls = [e[1:3] for e in w.log if e[0] == "call" and e[1] == "code"]
+        self.assertLess(calls.index(("code", "L_7")), calls.index(("code", "L_6")))
 
     def test_a_dependent_of_a_returned_provider_is_held_not_coded(self):
         """L_7's gate returns it in iteration 1: L_6, which composes it, is never coded in that
@@ -253,13 +253,13 @@ class UnlockOnlyAfterApply(unittest.TestCase):
         self.assertEqual(prog["nodes"]["L_1"], "DEPENDENCY")
         self.assertEqual(prog["nodes"]["L_3"], "FENCED_PROVIDER")
         self.assertEqual(w.calls[("code", "L_3", 1)], 0)
-        self.assertEqual((w.calls[("code", "L_2", 1)], w.calls[("review", "L_2", 1)]), (1, 1))     # running when the fence came: it drains
+        self.assertEqual(w.calls[("code", "L_2", 1)], 1)     # running when the fence came: it drains
         self.assertIn("drv.motion.slow", st["fenced"])
         self.assertEqual({e["law"]: e["attempts"] for e in st["ledger"]}["L-3"], 0)
 
     def test_a_sibling_failure_stops_the_unstarted_siblings_and_drains_the_running(self):
         """L-5's first node is returned by its gate (a scope violation: the law goes back to its
-        planner, charged once); the second, already running, ends with its review; the third, not
+        planner, charged once); the second, already running, ends with its gate; the third, not
         started, is never coded."""
         w = World({"L-5": "shall stop. shall yield. shall slow."})
         w.plans = {"L-5": [node(f"L_5_o{i}", "shall stop. shall yield. shall slow.", "L-5") for i in (1, 2, 3)]}
@@ -274,45 +274,43 @@ class UnlockOnlyAfterApply(unittest.TestCase):
             prog, st = committed(), f.state()
         self.assertEqual((prog["nodes"]["L_5_o1"], prog["nodes"]["L_5_o2"], prog["nodes"]["L_5_o3"]), ("SCOPE_VIOLATION", "OK", "LAW_CLOSED"))
         self.assertEqual(w.calls[("code", "L_5_o3", 1)], 0)
-        self.assertEqual((w.calls[("code", "L_5_o2", 1)], w.calls[("review", "L_5_o2", 1)]), (1, 1))
+        self.assertEqual(w.calls[("code", "L_5_o2", 1)], 1)
         led = {e["law"]: e for e in st["ledger"]}["L-5"]
         self.assertEqual((led["state"], led["attempts"]), ("returned", 1))
 
     def test_a_budget_pause_stops_new_tasks_drains_the_running_and_resumes_the_rest(self):
-        """L_1's review is paused on the budget while L_2 runs and L_3 waits: L_2 ends with its review,
-        L_3 is not started, and the resume reviews L_1 again from its saved verdict (no new coding
-        session) and codes L_3."""
+        """L_1's dependency-defect report is paused on the budget while L_2 runs and L_3 waits: L_2
+        ends with its gate, L_3 is not started, and the resume takes L_1 up again from its saved
+        verdict (no new coding session) and codes L_3."""
         w = laws3()
         state = {}
 
-        def review(run, n, *a, **k):
-            if n.id == "L_1" and not state.get("paused"):
+        def report(run, task, reached):
+            if Path(task).name == "L_1" and not state.get("paused"):
                 state["paused"] = True
                 raise BudgetPaused("scripted: the budget is spent")
-            return scripted(run, n, *a, **k)
+            return scripted(run, task, reached)
 
         def before(ident, it):
             if (ident, it) == ("L_2", 1):
                 wait_for(lambda: state.get("paused"))
         with Fixture(w, workers=2) as f:
-            scripted = review_phase.review_behaviour
-            with mock.patch.object(review_phase, "review_behaviour", review), mock.patch.object(session, "run", Sessions(before)):
+            scripted = loop.report_of
+            with mock.patch.object(loop, "report_of", report), mock.patch.object(session, "run", Sessions(before)):
                 self.assertEqual(f.drive(launches=1), ["paused_budget"])
                 first = committed()
                 self.assertEqual(w.calls[("code", "L_3", 1)], 0)
                 self.assertEqual(f.drive(), ["complete"])
             st = f.state()
         self.assertEqual(first["nodes"], {"L_2": "OK"})                    # L_1 undecided, L_3 not started
-        self.assertEqual((w.calls[("code", "L_1", 1)], w.calls[("review", "L_1", 1)]), (1, 1))
-        self.assertEqual((w.calls[("code", "L_2", 1)], w.calls[("review", "L_2", 1)]), (1, 1))
-        self.assertEqual((w.calls[("code", "L_3", 1)], w.calls[("review", "L_3", 1)]), (1, 1))
+        self.assertEqual((w.calls[("code", "L_1", 1)], w.calls[("code", "L_2", 1)], w.calls[("code", "L_3", 1)]), (1, 1, 1))
         self.assertEqual(sorted(st["accepted_nodes"]), ["L_1", "L_2", "L_3"])
 
     def test_an_outage_stops_new_tasks_and_drains_the_running(self):
-        """L_1's review does not run (the session is unavailable) while L_2 runs and L_3 waits: L_2 ends
-        with its review, L_1 and L_3 are held uncharged and coded in the next iteration."""
+        """L_1's coding session does not run (the session is unavailable) while L_2 runs and L_3 waits:
+        L_2 ends with its gate, L_1 and L_3 are held uncharged and coded in the next iteration."""
         w = laws3()
-        w.review[("L_1", 1)] = "outage"
+        w.gate[("L_1", 1)] = "outage"
 
         def before(ident, it):
             if (ident, it) == ("L_2", 1):
@@ -325,49 +323,55 @@ class UnlockOnlyAfterApply(unittest.TestCase):
             st = f.state()
         self.assertEqual(first["nodes"], {"L_1": "PAUSED", "L_2": "OK", "L_3": "PAUSED"})
         self.assertEqual(w.calls[("code", "L_3", 1)], 0)
-        self.assertEqual((w.calls[("code", "L_2", 1)], w.calls[("review", "L_2", 1)]), (1, 1))
+        self.assertEqual(w.calls[("code", "L_2", 1)], 1)
         self.assertEqual({e["law"]: e["attempts"] for e in st["ledger"]}, {"L-1": 0, "L-2": 0, "L-3": 0})
         self.assertEqual(sorted(st["accepted_nodes"]), ["L_1", "L_2", "L_3"])
 
 
 class ReadingStability(unittest.TestCase):
 
-    def test_a_saved_review_is_reused_after_another_node_started_with_a_proposal(self):
-        """L_1's review is saved, keyed on what it read, and the process stops before its outcome is
-        committed; L_3, which proposes a parameter, started while L_1 ran. The resume finds the same
-        reading and reuses the review: no second review call."""
-        w = laws3()
+    def test_a_saved_concept_review_is_reused_after_another_concept_ran_beside_it(self):
+        """`drv.motion.slow`'s review is saved, keyed on what it read, and the process stops before
+        its outcome is committed, while `drv.motion.halt` is reviewed beside it; L-3's node, which
+        proposes a parameter, is planned in the same iteration. The resume finds the same reading and
+        reuses the review: no second review call, and every record is accepted."""
+        w = World({"L-1": "shall stop.", "L-2": "shall yield.", "L-3": "shall slow."})
+        w.plans = {"L-1": [concept("drv.motion.slow", users=["L_1"]), node("L_1", "shall stop.", "L-1", derived=["drv.motion.slow"])],
+                   "L-2": [concept("drv.motion.halt", users=["L_2"]), node("L_2", "shall yield.", "L-2", derived=["drv.motion.halt"])],
+                   "L-3": [node("L_3", "shall slow.", "L-3")]}
         w.plans["L-3"][0]["params"] = ["p.pause"]
         w.plans["L-3"][0]["param_proposals"] = [{"name": "p.pause", "value": 2.0, "unit": "s", "convention": "c", "source": "s"}]
         seen, state = {}, {}
 
-        def review(run, n, law, onto, reading, rule_json, added, out_dir):
-            key = hashlib.sha256(json.dumps([n.id, reading.data], sort_keys=True).encode()).hexdigest()
+        def review(run, c, extras, out_dir):
+            from harness.model.reading import Reading
+            key = hashlib.sha256(json.dumps([c.id, Reading(run.reading_file).data], sort_keys=True).encode()).hexdigest()
             saved = Path(out_dir) / "stub_outcome.json"
             if saved.exists() and json.loads(saved.read_text()) == key:
                 return review_phase.ReviewOutcome("accepted")           # the saved review, as its inputs match
-            out = scripted(run, n, law, onto, reading, rule_json, added, out_dir)
+            out = scripted(run, c, extras, out_dir)
             Path(out_dir).mkdir(parents=True, exist_ok=True)
             saved.write_text(json.dumps(key))
-            if n.id == "L_1" and not state.get("stopped"):
+            if c.id == "drv.motion.slow" and not state.get("stopped"):
                 state["stopped"] = True
                 w.dead = True
-                raise Crash("stop after L_1's review was saved")
+                raise Crash("stop after the concept's review was saved")
             return out
 
         def before(ident, it):
-            if ident == "L_3":
-                seen["L_3 started"] = True
-            if (ident, it) == ("L_1", 1):
-                seen["waited"] = wait_for(lambda: seen.get("L_3 started"))
+            if ident == "drv.motion.halt":
+                seen["beside started"] = True
+            if (ident, it) == ("drv.motion.slow", 1):
+                seen["waited"] = wait_for(lambda: seen.get("beside started"))
         with Fixture(w, workers=2) as f:
-            scripted = review_phase.review_behaviour
-            with mock.patch.object(review_phase, "review_behaviour", review), mock.patch.object(session, "run", Sessions(before)):
+            scripted = review_phase.review_concept
+            with mock.patch.object(review_phase, "review_concept", review), mock.patch.object(session, "run", Sessions(before)):
                 self.assertEqual(f.drive(), ["crash", "complete"])
             st = f.state()
         self.assertTrue(seen["waited"])
-        self.assertEqual(w.calls[("review", "L_1", 1)], 1)
+        self.assertEqual(w.calls[("review", "drv.motion.slow", 1)], 1)
         self.assertEqual(sorted(st["accepted_nodes"]), ["L_1", "L_2", "L_3"])
+        self.assertEqual(sorted(st["accepted_concepts"]), ["drv.motion.halt", "drv.motion.slow"])
 
 
 class UnjudgedVerdicts(unittest.TestCase):
@@ -420,27 +424,44 @@ class StopBetweenRollbackAndCommit(unittest.TestCase):
     longer describes the library). One task at a time or several, the decisions are those of an
     uninterrupted run."""
 
+    @staticmethod
+    def world():
+        """L-1's node passes its gate in iteration 1, but its coder's dependency-defect report cannot be
+        judged there (`deferred`): its candidate is rolled back and the node held."""
+        w = World({"L-1": "shall stop.", "L-2": "shall yield."})
+        w.plans = {"L-1": [node("L_1", "shall stop.", "L-1")], "L-2": [node("L_2", "shall yield.", "L-2")]}
+
+        def report(run, task, reached):
+            if (Path(task).name, run.iteration) == ("L_1", 1):
+                return review_phase.DependencyReport("deferred", reasons=["scripted: the adjudication stayed invalid"])
+            return review_phase.DependencyReport("none")
+        return w, report
+
     def test_the_resume_codes_the_rolled_back_node_once_more_and_decides_the_same(self):
-        from scripts.tests.test_recovery import life_cycle
+        ref_w, ref_report = self.world()
+        with Fixture(ref_w) as f:
+            with mock.patch.object(loop, "report_of", ref_report):
+                self.assertEqual(f.drive()[-1], "complete")
+            ref = f.state()
         for workers in (1, 4):
             with self.subTest(workers=workers):
-                w = life_cycle()
-                with Fixture(w, workers=workers) as f:
-                    scripted = review_phase.review_behaviour
+                w, report = self.world()
+                real = code_phase.rollback
 
-                    def review(run, n, *a, **k):
-                        out = scripted(run, n, *a, **k)
-                        if (n.id, run.iteration) == ("L_1", 1) and out.status == "returned" and not w.calls[("stopped", "-", 0)]:
-                            w.calls[("stopped", "-", 0)] += 1
-                            with w.lock:
-                                w.crash_at = w.ticks + 1            # the next step is the outcome's rollback of L_1
-                        return out
-                    with mock.patch.object(review_phase, "review_behaviour", review):
+                def rollback(node_id, *a, **k):                # the process stops right after L_1's first rollback
+                    out = real(node_id, *a, **k)
+                    if node_id == "L_1" and not w.calls[("stopped", "-", 0)]:
+                        w.calls[("stopped", "-", 0)] += 1
+                        w.dead = True
+                        raise Crash("stop between the rollback and its commit")
+                    return out
+                with Fixture(w, workers=workers) as f:
+                    with mock.patch.object(loop, "report_of", report), mock.patch.object(code_phase, "rollback", rollback):
                         statuses = f.drive()
                     st = f.state()
                 self.assertEqual(statuses[0], "crash")
                 self.assertEqual(w.calls[("code", "L_1", 1)], 2)
-                self.assertEqual(decisions(st), decisions(reference(life_cycle)[0]))
+                self.assertEqual(decisions(st), decisions(ref))
 
 
 if __name__ == "__main__":

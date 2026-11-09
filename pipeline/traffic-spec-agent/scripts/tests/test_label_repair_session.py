@@ -304,22 +304,21 @@ class SameId(Base):
 
 class Evidence(Base):
 
-    def test_the_review_path_renders_the_upheld_block_as_before(self):
+    def test_a_session_that_is_no_label_repair_renders_the_neutral_block(self):
         with world(*standard()) as (run, _lib):
             laws = [corpus.Law(nodeid.law_of(NN)[0], "t", "text", "s")]
-            with mock.patch.object(plan.review_phase, "upheld_block", lambda run_, laws_: "SENTINEL-UPHELD\n"):
-                self.assertEqual(plan.evidence_block(run, laws), "SENTINEL-UPHELD\n")
-                run.opts.feedback = "labels"                       # no node obligation is rendered: the neutral block
-                self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
+            self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
+            run.opts.label_repair = True                           # the run's option gives the session no label scope
+            self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
             values = {k: f"({k})" for k in plan.PLACEHOLDERS_NODE_REPAIR}
-            values["evidence"] = "SENTINEL-UPHELD"
+            values["evidence"] = "SENTINEL-EVIDENCE"
             text = render.render("node_repair.md", values)
-            self.assertIn("\nSENTINEL-UPHELD\n", text)
+            self.assertIn("\nSENTINEL-EVIDENCE\n", text)
             self.assertNotIn("{upheld}", text)
 
     def test_label_repair_shows_the_label_evidence(self):
         with repairing() as (run, ledger, training, by_id):
-            run.opts.label_repair, run.opts.feedback = True, "labels"
+            run.opts.label_repair = True
             self.assertEqual(plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]]), plan.NO_LABEL_EVIDENCE)   # the option gives no scope
             block = plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]], label_repair=True)
             self.assertTrue(block.startswith("## Label mismatches"))
@@ -444,7 +443,7 @@ class PromptScope(unittest.TestCase):
     def labels_run(self):
         from dataclasses import replace
         with repairing() as (run, ledger, training, by_id):
-            run.opts = replace(run.opts, feedback="labels", label_repair=True, dry_run=True)
+            run.opts = replace(run.opts, label_repair=True, dry_run=True)
             run.law_entries = ledger.entries
             self.assertEqual(run.label_states[L[5]]["state"], "awaiting_label_repair")     # a law of the run awaits its repair
             yield run, ledger, training, by_id

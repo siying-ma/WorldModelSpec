@@ -332,8 +332,9 @@ class Launcher(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         resumed = self.loops()[1]
         for flag in ("--claude_budget_usd", "--openai_budget_usd", "--total_budget_usd", "--label_repair_attempts", "--label_repair_budget",
-                     "--model", "--judge_effort", "--plan_effort", "--session_budget_usd", "--workers", "--feedback"):
+                     "--model", "--judge_effort", "--plan_effort", "--session_budget_usd", "--workers"):
             self.assertNotIn(flag, resumed["argv"])                       # nothing passed that this invocation did not set
+        self.assertFalse(any("--feedback" in l["argv"] for l in self.loops()))   # the harness has no feedback mode
         self.assertIn("--label_stage", resumed["argv"])
         self.assertEqual(resumed["argv"][resumed["argv"].index("--label_dataset") + 1], str(ds))
         eff = resumed["effective"]

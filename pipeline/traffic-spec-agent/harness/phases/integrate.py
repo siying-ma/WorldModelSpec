@@ -22,7 +22,7 @@ from ..checks import gate, validate_a
 from ..model import nodeid
 from ..model.blueprint import Node
 from ..model.reading import Reading
-from ..store.state import Run, node_reviews
+from ..store.state import Run
 from .code import rollback, rollback_concept, node_dir, concept_dir, _files_digest
 
 
@@ -361,19 +361,18 @@ def admission_key(run: Run, kind: str, ident: str, reading: Reading, base: dict,
 def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: set[str] | None = None) -> tuple[list[str], list[str], list[str]]:
     """Every accepted record of the run's effective view (its base chain's and its own) whose
     dependency context changed since it was last checked, or that has no recorded context at all (a
-    record accepted before contexts were recorded is checked, never assumed sound): every
-    obligation recorded on it is certified again on the current rule, body and reading,
-    mechanically:
-    - a node's upheld cases, against the law's verdict a judge recorded; `laws` must hold the posted
-      law of every node of the view, the inherited ones included (`state.chain_laws`);
+    record accepted before contexts were recorded is checked, never assumed sound), mechanically:
+    - a node's `definition` references, against the posted sources they quote
+      (`borrowed_words_defects`); `laws` must hold the posted law of every node of the view, the
+      inherited ones included (`state.chain_laws`);
     - a concept's upheld challenges, run on its body: one the body confirms again, or one that can no
       longer be run as recorded (its record fails today's schema), is a failure;
-    - an open structural finding, on a node or a concept, is a failure (it was never discharged).
+    - a concept's open structural finding is a failure (it was never discharged).
     A record that passes has its context recorded (on the record for the run's own, in
     `run.rechecked` for an inherited one), only then. A record that fails is fenced (`fenced`, reason
     `context`), never reused silently. A check that could not be made (a node whose law is in no
-    corpus, a certificate or concept program that did not run) decides nothing: the record is
-    neither fenced nor given a context, and it is listed as unresolved. Returns (the ids rechecked
+    corpus, a concept program that did not run) decides nothing: the record is neither fenced nor
+    given a context, and it is listed as unresolved. Returns (the ids rechecked
     and found sound; lines for the operator about those fenced; lines about those unresolved). With
     `only`, the records checked are those it names."""
     from . import review as review_phase
@@ -398,44 +397,17 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: s
             if was == now:
                 continue
             problems, undecided = [], []
-            mine = [r for r in rows if r.get("subject") == ident and r.get("ruling") == "upheld"]
-            if kind == "node" and not node_reviews(run.opts):
-                mine = []                                   # no node obligation is in use under `feedback: labels`
-            problems += [f"an open structural finding of iteration {r.get('iteration')} was never discharged"
-                         for r in mine if r.get("schema") in (review_phase.WORD_LEVEL_SCHEMA, review_phase.CONCEPT_STRUCTURAL_SCHEMA)
-                         and r.get("obligation") in ("open", None)]
             if kind == "node":
                 n, law = Node(rec), laws.get(Node(rec).law)
-                binders = [b["name"] for b in n.get("binders", [])]
                 if law is None:
-                    unresolved.append(f"`{ident}`: its law `{n.law}` is in no corpus of the run or its base chain, so its "
-                                      "obligations cannot be read; nothing was decided")
+                    unresolved.append(f"`{ident}`: its law `{n.law}` is in no corpus of the run or its base chain, so it cannot "
+                                      "be checked; nothing was decided")
                     continue
                 problems += borrowed_words_defects(run, n)
-                cases = [r for r, own_row in review_phase.obligations_of(run, n, law) if own_row] if node_reviews(run.opts) else []
-                divs = {}
-                for k, r in enumerate(cases, 1):
-                    d, why = review_phase._to_node(r, binders)
-                    if d is None:
-                        problems.append(f"an obligation of iteration {r.get('iteration')} no longer grounds: {why}")
-                    else:
-                        divs[k] = (d, r)
-                if divs:
-                    try:
-                        certs = review_phase.certify(run, n, {k: d for k, (d, _r) in divs.items()}, reading, run.iter / "recheck" / ident)
-                    except review_phase.HarnessFailure as e:
-                        undecided.append(f"the certificate program did not run: {e}")
-                        certs = None
-                    for k, (d, r) in (divs.items() if certs is not None else []):
-                        c = certs.get(k) or {}
-                        law_says = (r.get("stage_a") or {}).get("verdict")
-                        rule_says = (c.get("rule_result") or {}).get("verdict")
-                        if (c.get("case_value") or {}).get("value") != "true":
-                            problems.append(f"the case of iteration {r.get('iteration')} no longer holds on its trace")
-                        elif not review_phase._equivalent(rule_says or "", law_says or ""):
-                            problems.append(f"the rule now gives {rule_says} where the law's verdict is {law_says} "
-                                            f"(the case of iteration {r.get('iteration')})")
             else:
+                mine = [r for r in rows if r.get("subject") == ident and r.get("ruling") == "upheld"]
+                problems += [f"an open structural finding of iteration {r.get('iteration')} was never discharged"
+                             for r in mine if r.get("schema") == review_phase.CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)]
                 c = ConceptRecord(rec)
                 cases = [r for r in mine if r.get("schema") == review_phase.CONCEPT_CASE_SCHEMA]
                 if cases:

@@ -18,7 +18,7 @@ from pathlib import Path
 from harness.agents import openai_runner, runner, session
 from harness.checks import gate
 from harness.store import budget, jsonl, owner, paths
-from harness.store.state import Options
+from harness.store.state import RUN_VERSION, Options
 
 REPO = Path(__file__).resolve().parents[2]
 ONTO = REPO / "ontology" / "ATOMS_train.md"
@@ -460,8 +460,10 @@ print(c.pid, flush=True); time.sleep(120)""", str(lib_a)], cwd=REPO, env=clean_e
         holder = self.keep(subprocess.Popen([sys.executable, "-c", PRELUDE + "owner.acquire('loop'); print('held', flush=True); time.sleep(60)",
                                              str(self.lib)], cwd=REPO, env=clean_env(), stdout=subprocess.PIPE, text=True))
         self.assertEqual(holder.stdout.readline().strip(), "held")
+        run = self.lib.parent / "results" / "r"; run.mkdir(parents=True)        # a run of this version, so the gate gets as far as the library
+        (run / "options.json").write_text(json.dumps({"semantic": {"run_version": RUN_VERSION}}))
         for call in ("from harness.__main__ import Cli; Cli().index()",
-                     "from harness.__main__ import Cli; Cli().gate('r', 'L_1')"):
+                     "paths.RESULTS = Path(sys.argv[1]).parent / 'results'; from harness.__main__ import Cli; Cli().gate('r', 'L_1')"):
             r = py(call, self.lib)
             self.assertNotEqual(r.returncode, 0, call)
             self.assertIn("another process owns the library", r.stderr, call)

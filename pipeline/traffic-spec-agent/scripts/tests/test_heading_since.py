@@ -37,11 +37,6 @@ class Surfaces(unittest.TestCase):
         self.assertIn("last became true", text)
         self.assertIn("`p.step`", text)
 
-    def test_the_case_language_lists_the_form_with_its_keys_and_meaning(self):
-        line = next(l for l in surface.case_language().splitlines() if l.startswith("- term `heading_since`"))
-        self.assertIn('{"heading_since": string, "max_step": term, "onset": formula}', line)
-        self.assertIn("heading change of subject since ψ last became true", line)
-
     def test_the_formula_language_shows_the_constructor_and_its_restriction(self):
         t = surface.formula_language()
         self.assertIn("| headingSince (subject : String) (maxStep : Term) (ψ : Formula)", t)
@@ -53,20 +48,6 @@ class Surfaces(unittest.TestCase):
         b = render_formula.canonical({"cmp": "ge", "lhs": hs("y", at("ru_motor_vehicle", "y"), {"param": "t"}), "rhs": {"lit": 0}}, ["y"], ["t"])
         self.assertEqual(a, b)
         self.assertIn('"heading_since":"$a0"', a)
-        self.assertIn("heading_since", render_formula._TEMPORAL)
-
-    def test_a_case_renames_the_subject_in_scope(self):
-        case = {"and": [at("ru_motor_vehicle", "v"),
-                        {"cmp": "le", "lhs": hs("v", at("rel_occupies", "v", "lane"), {"lit": {"num": 1, "den": 1}, "unit": "second"}),
-                         "rhs": {"lit": {"num": 90, "den": 1}, "unit": "degree"}},
-                        {"exists_user": "u", "body": {"cmp": "ge", "lhs": hs("u", "tt", {"lit": {"num": 1, "den": 1}, "unit": "second"}),
-                                                      "rhs": {"lit": {"num": 0, "den": 1}, "unit": "degree"}}}]}
-        c = review.canonical_case({"entities": {"lane": {"kind": "region", "id": 10}}, "grounding": {"v": 1}}, case, ["v"])["case"]
-        self.assertEqual(c["and"][1]["lhs"]["heading_since"], "user1")
-        inner = c["and"][2]
-        self.assertEqual(inner["body"]["lhs"]["heading_since"], inner["exists_user"])
-        free, _ = review.case_names(c)
-        self.assertLessEqual(set(free), {"user1", "region1"})
 
     def test_a_case_term_is_in_degrees(self):
         class Rec:

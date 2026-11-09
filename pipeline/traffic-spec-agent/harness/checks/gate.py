@@ -181,12 +181,27 @@ def candidate_scope(scope: CandidateScope):
         _CANDIDATE = saved
 
 
+#: The temporary file a coding session's Edit or Write tool writes beside its target and renames over
+#: it: `<target>.tmp.<pid>.<suffix>`, the pid in decimal and the suffix six random bytes in lowercase
+#: hex. The name says which file is being written, not who writes it.
+ATOMIC_WRITE_SIBLING = re.compile(r"(?P<target>.+)\.tmp\.[1-9][0-9]*\.[0-9a-f]{12}")
+
+
+def _atomic_write_target(rel: str) -> str | None:
+    """The file `rel` is the atomic-write temporary file of, when its name has exactly that form."""
+    m = ATOMIC_WRITE_SIBLING.fullmatch(rel)
+    return m["target"] if m else None
+
+
 def scope_stray(baseline: dict[str, str], own: set[str], work: Path) -> list[str]:
     """The files of the pipeline changed since `baseline` that are neither the task's `own` nor
     tolerated by its task directory (`task_concurrent`). Inside a candidate (`candidate_scope`) the
     files are the candidate's tree and the only ones that may change are its declared write set (a
     record's own files among them only when declared); a gate there whose library is not the
-    candidate's is out of scope as a whole."""
+    candidate's is out of scope as a whole. A changed file that is the atomic-write temporary file
+    (`ATOMIC_WRITE_SIBLING`) of a tolerated file in the same directory is tolerated with it: a session
+    beside this task may be writing that file at the moment of the digest. It tolerates no other file,
+    and nothing is removed."""
     if _CANDIDATE is None:
         now = repo_digest()
         tolerated = own | task_concurrent(work)
@@ -196,7 +211,7 @@ def scope_stray(baseline: dict[str, str], own: set[str], work: Path) -> list[str
         now = repo_digest(_CANDIDATE.root)
         tolerated = set(_CANDIDATE.write_set)
     changed = {p for p in (set(now) | set(baseline)) - GENERATED if now.get(p) != baseline.get(p)}
-    return sorted(changed - tolerated)
+    return sorted(p for p in changed - tolerated if _atomic_write_target(p) not in tolerated)
 
 
 _OCC_DEFS = '''-- Variable connectivity: each atom, derived-concept or measure occurrence groups the variables it

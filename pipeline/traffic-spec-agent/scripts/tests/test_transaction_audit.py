@@ -21,7 +21,7 @@ from harness import loop
 from harness.phases import candidate as cand
 from harness.phases import label_check as lc
 from harness.store import jsonl, paths
-from harness.store.state import Run
+from harness.store.state import Run, RUN_VERSION
 from scripts.tests.test_candidate import CA, CD, NN, Base, Txn, files, node_rec, passing, standard, world
 from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, make_dataset, set_label, write_exe
 from scripts.tests.test_label_repair import L, N, RECS, prior, setting
@@ -230,7 +230,7 @@ class Boundary(Base):
                 txn.commit()
         cand._OPEN.discard(run.opts.run_id)
         import dataclasses
-        (run.dir / "options.json").write_text(json.dumps(dataclasses.asdict(run.opts), default=str))
+        (run.dir / "options.json").write_text(json.dumps({**dataclasses.asdict(run.opts), "semantic": {"run_version": RUN_VERSION}}, default=str))
 
     def test_a_reader_is_refused_and_an_owner_completes_it(self):
         concepts, nodes = standard()

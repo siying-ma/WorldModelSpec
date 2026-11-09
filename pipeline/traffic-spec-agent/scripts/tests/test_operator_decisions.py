@@ -1,8 +1,8 @@
 """Development regression tests for the operator's decisions a record follows, and for what every
 role is shown of them: a narrowing that cites a rejected gap is checked against the gap's law and
-words, the decision reaches the repair, the coder, the reviewer and Stage B in the operator's
-words, the ontology's section on what is not an atom reaches the judges, and a law planned again
-sees the records it was last coded from."""
+words, the decision reaches the repair in the operator's words, the gap-proposing prompts share one
+closed list of driving distinctions, and a law planned again sees the records it was last coded
+from."""
 import json
 import tempfile
 import unittest
@@ -11,12 +11,12 @@ from types import SimpleNamespace
 from unittest import mock
 
 from harness.checks import validate_a
-from harness.model import corpus, ontology
+from harness.model import corpus
 from harness.model.blueprint import Node
-from harness.phases import plan as plan_phase, review
+from harness.phases import plan as plan_phase
 from harness.store import paths
 from harness.store.gaps import GapLedger
-from scripts.tests.test_review_routing import FakeRun, LAW as ONE_LAW, ONTO, ctx, scripted_reviewer, submit
+from scripts.tests.test_review_routing import ONTO
 
 _RESULTS = {}
 
@@ -106,36 +106,6 @@ class DecisionWords(unittest.TestCase):
         self.assertIn("shall stop at a clearly marked line", block)
         self.assertEqual(GapLedger(self.gaps).cited_block({"narrowings": [{"span": "s2"}]}), "")
 
-    def test_stage_b_is_shown_the_decision_and_what_is_not_an_atom(self):
-        c = ctx()
-        c.record = {"node_id": "L_9_o1", "narrowings": [{"span": "s2", "gap": "G1"}]}
-        c.not_atoms = ontology.not_atoms_text(ONTO)
-        prompt = review.stage_b_prompt(FakeRun(Path(self.tmp.name)), c, "the item", {})
-        self.assertIn("paint clarity is not assessed", prompt)
-        self.assertIn("Not atoms", prompt)
-        self.assertIn("Legal region classes", prompt)
-
-    def test_the_reviewer_is_shown_the_decision_and_what_is_not_an_atom(self):
-        run = FakeRun(Path(self.tmp.name))
-        run.all_concepts = lambda: {}
-        c = ctx()
-        c.record = {"node_id": "L_1_o1", "narrowings": [{"span": "s1", "gap": "G1"}]}
-        c.not_atoms = ontology.not_atoms_text(ONTO)
-        seen = []
-        inner = scripted_reviewer([submit({"verdict": "accept", "divergences": [], "advisories": [], "gap_candidates": []})])
-        def run_tools(prompt, *a, **k):
-            seen.append(prompt)
-            return inner(prompt, *a, **k)
-        node = Node({"node_id": "L_1_o1", "law_refs": ["L-1"], "binders": [{"name": "v"}],
-                     "segmentation": [{"id": "s1", "role": "obligation", "text": "shall stop before the line"}]})
-        with mock.patch.object(review, "build_context", lambda *_a, **_k: c), \
-                mock.patch.object(review, "replay_obligations", lambda *_a, **_k: review.Replayed()), \
-                mock.patch.object(review.session, "run_tools", run_tools):
-            review.review_behaviour(run, node, ONE_LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
-        self.assertTrue(seen)
-        self.assertIn("paint clarity is not assessed", seen[0])
-        self.assertIn("Legal region classes", seen[0])
-
     def test_the_node_repair_validates_against_the_rejected_gaps(self):
         seen = {}
         def validate(*a, **k):
@@ -155,8 +125,7 @@ class DecisionWords(unittest.TestCase):
         with mock.patch.object(plan_phase.session, "run", session_run), \
                 mock.patch.object(validate_a, "validate", validate), \
                 mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: blocks.update(b) or "prompt"), \
-                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: defs), \
-                mock.patch.object(review, "upheld_block", lambda *_a, **_k: ""):
+                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: defs):
             reading = SimpleNamespace(data={"params": []}, params=[], pending_aggregates=False)
             plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], reading, ONTO)
         self.assertIn("G1", seen.get("rejected_gaps") or {})
@@ -191,17 +160,13 @@ class PreviousRecord(unittest.TestCase):
 
 
 class DrivingDistinctions(unittest.TestCase):
-    """The prompts that propose a gap or judge structural evidence share one closed list."""
+    """The prompts that propose a gap share one closed list."""
 
     def test_each_prompt_states_the_list(self):
-        for name in ("plan", "node_repair", "concept_repair", "review_code", "adjudicate"):
+        for name in ("plan", "node_repair", "concept_repair"):
             text = " ".join((paths.REPO / "prompts" / f"{name}.md").read_text(encoding="utf-8").split())
             self.assertIn("where it is required, its time or order", text, name)
             self.assertIn("whether a plan can be carried out", text, name)
-
-    def test_the_judges_are_given_what_is_not_an_atom(self):
-        for name in ("review_code", "adjudicate"):
-            self.assertIn("{not_atoms}", (paths.REPO / "prompts" / f"{name}.md").read_text(encoding="utf-8"), name)
 
 
 if __name__ == "__main__":

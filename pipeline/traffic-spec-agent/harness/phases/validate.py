@@ -71,8 +71,8 @@ def run_validate(run: Run, plan_dir: Path, laws: dict[str, corpus.Law], reading:
                  defs: list[dict] | None = None, extra_concepts: list[ConceptRecord] | None = None,
                  extra_nodes: list[Node] | None = None, extra_validate_nodes: list[Node] | None = None) -> tuple[list[NodeVerdict], list[validate_a.ConceptOutcome]]:
     """Validator A over the plan's concepts and nodes (and the repaired concept records, whose
-    users may be nodes held from an earlier iteration). A node's review comes after its code, since
-    the formulas are what is judged."""
+    users may be nodes held from an earlier iteration). A node's gate comes after its code, since
+    the formulas are what is gated."""
     out_dir = run.iter / "validate"
     out_dir.mkdir(parents=True, exist_ok=True)
     _nodes, _concepts, outcomes, concept_outcomes = validate_a_for_run(run, plan_dir, laws, reading, defs or [],

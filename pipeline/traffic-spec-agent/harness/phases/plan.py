@@ -14,35 +14,22 @@ from ..lean import surface
 from . import review as review_phase
 from ..model import blueprint
 from ..model.blueprint import ConceptRecord, Node
-from ..store.state import Run, node_reviews
+from ..store.state import Run
 
 
 
-def node_upheld_block(run: Run, laws: set[str]) -> str:
-    """The node obligations earlier behaviour reviews upheld against these laws, for a planning or
-    repair session; none under `feedback: labels`, where no node review runs and no node ruling is read."""
-    if not node_reviews(run.opts):
-        return "## Situations decided against earlier records\n\n(none)\n"
-    return review_phase.upheld_block(run, laws)
-
-#: The evidence of a session that is no law-level label repair, when no node review runs.
+#: The evidence of a planning or node repair session that is no law-level label repair. A run's
+#: `label_repair` option gives such a session no label scope.
 NO_LABEL_EVIDENCE = "## Repair evidence\n\nNo law-level label-repair evidence is supplied for this session.\n"
-
-
-def repair_evidence(run: Run, laws: set[str]) -> str:
-    """The evidence of a planning or node repair session that is no law-level label repair: the node
-    obligations earlier behaviour reviews upheld where node reviews run (`node_upheld_block`),
-    otherwise `NO_LABEL_EVIDENCE`. A run's `label_repair` option gives such a session no label scope."""
-    return node_upheld_block(run, laws) if node_reviews(run.opts) else NO_LABEL_EVIDENCE
 
 
 def evidence_block(run: Run, laws: list[corpus.Law], label_repair: bool = False) -> str:
     """The evidence a planning session is shown. A law-level label repair's re-plan (`label_repair`,
     set by that entry point only) is shown the label evidence of each of these laws that awaits its
     label repair, the `## Label mismatches` block its last committed label check rendered with the
-    label contract and the repair goal; every other planning session `repair_evidence`."""
+    label contract and the repair goal; every other planning session `NO_LABEL_EVIDENCE`."""
     if not label_repair:
-        return repair_evidence(run, {l.id for l in laws})
+        return NO_LABEL_EVIDENCE
     states = getattr(run, "label_states", {}) or {}
     blocks = [(run.dir / states[l.id]["evidence"]).read_text(encoding="utf-8") for l in laws
               if states.get(l.id, {}).get("state") == "awaiting_label_repair" and (run.dir / states[l.id].get("evidence", "")).is_file()]
@@ -215,23 +202,12 @@ def _law_id(raw: dict) -> str:
     return str(refs[0]) if isinstance(refs, list) and refs else ""
 
 
-def _task_state(task: Path, reviews: bool = True) -> str:
-    """What the gate and, where node reviews run (`reviews`), the review decided on one coding task,
-    as they recorded it."""
+def _task_state(task: Path) -> str:
+    """What the gate decided on one coding task, as it recorded it."""
     v = _read_json(task / "verdict.json")
     if not isinstance(v, dict):
         return "coded: " + ("the gate verdict could not be read" if v is _UNREAD else "no gate verdict recorded")
-    out = f"coded: gate {v.get('verdict', 'not run')}" + (f" ({_ws('; '.join(str(x) for x in (v.get('details') or [])[:2]))[:240]})" if v.get("details") else "")
-    if not reviews:
-        return out
-    o = _read_json(task / "review" / "review_outcome.json")
-    if not isinstance(o, dict):
-        return out + (", the review outcome could not be read" if o is _UNREAD else ", not reviewed")
-    if "inputs" in o and "outcome" not in o:
-        return out + ", the review did not finish"
-    if o.get("deferred"):
-        return out + ", review deferred"
-    return out + (f", the review returned it ({len(o['upheld'])} upheld case(s))" if o.get("upheld") else ", the review upheld no case")
+    return f"coded: gate {v.get('verdict', 'not run')}" + (f" ({_ws('; '.join(str(x) for x in (v.get('details') or [])[:2]))[:240]})" if v.get("details") else "")
 
 
 def _duty(raw: dict, law: corpus.Law) -> dict:
@@ -346,7 +322,7 @@ def law_history(run: Run, law: corpus.Law) -> tuple[int | None, list[_Entry], li
         for nid, (raw, task) in coded.items():
             e = _entry(entries, raw, law)
             e.versions.append((f"as coded in iteration {it}", raw))
-            e.note(it, (f"validator {verdicts[nid].get('kind')}; " if nid in verdicts else "") + _task_state(task, node_reviews(run.opts)))
+            e.note(it, (f"validator {verdicts[nid].get('kind')}; " if nid in verdicts else "") + _task_state(task))
     accepted = run.all_nodes()
     for e in entries:
         if e.id in accepted and e.matches(accepted[e.id], law):
@@ -375,7 +351,7 @@ def _latest_elsewhere(run: Run, rid: str) -> tuple[str, dict, str] | None:
         d = paths.iter_dir(run.opts.run_id, it)
         raw = _read_json(d / "code" / rid / "node.json")
         if isinstance(raw, dict):
-            return f"as coded in iteration {it}", raw, f"not accepted; {_task_state(d / 'code' / rid, node_reviews(run.opts))}"
+            return f"as coded in iteration {it}", raw, f"not accepted; {_task_state(d / 'code' / rid)}"
         try:
             hit = [n.raw for n in blueprint.load(d / "plan" / "blueprint.jsonl") if n.id == rid]
         except ValueError:
@@ -675,7 +651,7 @@ def _reask(d: Path, ask: str) -> str:
 
 def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: corpus.Law, defs: list[dict],
                     siblings: list, reading: Reading, onto) -> Path:
-    """One repair session for a node the gate or the review returned: it sees the law and its
+    """One repair session for a node the gate returned: it sees the law and its
     segmentation, the record, the law's other nodes in the records it is validated with (read-only,
     with their states and what the records compose), the verdict, the coder's result note and final
     files, the ontology, the catalogue and the reading, and writes a revised record (segmentation unchanged) or a
@@ -706,9 +682,6 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
     for f in sorted((last_task / "final").rglob("*.lean")) if (last_task / "final").exists() else []:
         finals.append(f"```lean\n-- {f.relative_to(last_task / 'final')}\n{f.read_text(encoding='utf-8')}\n```")
     verdict = "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)"
-    rendered = last_task / "review" / "rendered_rule.md"
-    if rendered.exists() and node_reviews(run.opts):
-        verdict += f"\n\nThe rule the review read, rendered from the code:\n```\n{rendered.read_text(encoding='utf-8')[-8000:]}\n```"
     seg = "\n".join(f"- `{s['id']}` ({s['role']}): {s['text']}" for s in node.get("segmentation", []))
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
     prompt = render.render("node_repair.md", {
@@ -717,7 +690,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
                        + definitions_mod.render_sources(definitions_mod.cited_sources(run, [law], [node]), definitions_mod.CITED_HEADING),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
-        "verdict": verdict, "evidence": repair_evidence(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
+        "verdict": verdict, "evidence": NO_LABEL_EVIDENCE, "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))

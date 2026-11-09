@@ -8,7 +8,7 @@ from pathlib import Path
 from harness.store import paths
 from harness.store.gaps import GapLedger
 from harness.store.ledger import ConceptLedger, Ledger, NodeLedger
-from harness.store.state import Options, Run, commit_state
+from harness.store.state import Options, Run, RUN_VERSION, commit_state
 _RESULTS = {}
 
 
@@ -173,18 +173,6 @@ class DependencyReturns(unittest.TestCase):
 
 
 class JudgeCounts(unittest.TestCase):
-    def test_counts_are_per_node_and_per_stage(self):
-        with tempfile.TemporaryDirectory() as t:
-            nl = NodeLedger(Path(t) / "n.jsonl", 2)
-            for order in (("a", "b"), ("b", "a")):
-                nl.entries.clear()
-                for nid in order:                                    # two siblings defer in one wave: neither closes the law
-                    self.assertFalse(nl.defer_judge(nid, "L", "stage_a", ["x"]))
-            self.assertFalse(nl.defer_judge("a", "L", "stage_b", ["y"]))   # stage A answered: its count is gone, B's starts
-            self.assertTrue(nl.defer_judge("a", "L", "stage_b", ["y"]))
-            nl.clear_judge("b")
-            self.assertEqual(nl.entries["b"].judge_failures, {})
-            self.assertEqual(nl.entries["a"].judge_failures, {"stage_b": 2})
 
     def test_concept_judge_failure_closes_only_for_judge_stages(self):
         with tempfile.TemporaryDirectory() as t:
@@ -193,8 +181,8 @@ class JudgeCounts(unittest.TestCase):
             self.assertFalse(cl.defer_judge("c", "reviewer", ["unusable"]))
             self.assertTrue(cl.defer_judge("c", "reviewer", ["unusable"]))      # the caller pauses its users
             self.assertNotEqual(cl.entries["c"].state, "failed")
-            self.assertFalse(cl.defer_judge("c", "stage_a", ["invalid"]))
-            self.assertTrue(cl.defer_judge("c", "stage_a", ["invalid"]))
+            self.assertFalse(cl.defer_judge("c", "concept_adjudication", ["invalid"]))
+            self.assertTrue(cl.defer_judge("c", "concept_adjudication", ["invalid"]))
             self.assertEqual(cl.entries["c"].state, "failed")
 
 
@@ -207,7 +195,8 @@ class Snapshot(unittest.TestCase):
                 opts = Options(run_id="r", laws=Path(t) / "laws.jsonl", ontology=ONTO, reading=Path(t) / "reading.json")
                 run = Run(opts); run.dir.mkdir(parents=True)
                 (run.dir / "options.json").write_text(json.dumps({"run_id": "r", "laws": str(opts.laws), "ontology": str(ONTO),
-                                                                  "reading": str(opts.reading)}))
+                                                                  "reading": str(opts.reading), "label_repair": False,
+                                                                  "semantic": {"run_version": RUN_VERSION}}))
                 run.iteration = 3
                 led = Ledger(run.ledger_file, ["L"], 2); led.attempt = 3; led.mark_planned("L", ["n"], 3)
                 cl, nl = ConceptLedger(run.concept_ledger_file, 3), NodeLedger(run.node_ledger_file, 2)
@@ -293,7 +282,6 @@ class IntegrationAttribution(unittest.TestCase):
     def test_infrastructure_charges_no_one(self):
         r = self.run_it([("infrastructure", ["lake did not run"], set())])
         self.assertEqual((r["status"], r["rejected"], r["waiting"]), ("infrastructure", {}, {}))
-
 
 
 class DependencyContext(unittest.TestCase):

@@ -8,20 +8,74 @@ from . import jsonl, paths
 from ..model import corpus
 from ..model.blueprint import Node
 
-#: The feedback modes a run may name. A new run names one explicitly (`--feedback`); the dataclass
-#: default `review` is the meaning of a saved run whose options name none (one started before a new
-#: run had to name its mode), never a choice made for a new run.
-FEEDBACK_MODES = ("review", "labels")
+#: The run version this harness writes into a run's semantic inputs (`options.json` → `semantic` →
+#: `run_version`). A run is read and resumed only by the version that started it: a change that makes
+#: the records, their identities or the meaning of the saved options of earlier runs unsafe to
+#: continue raises it, whether or not any digest changed. Version 3: a run has no feedback mode (a
+#: gated node is accepted on its gate, its law by the label check when `label_repair` is on); a run of
+#: another version, or one that records none, is never taken for this one.
+RUN_VERSION = 3
 
 
-def feedback_refusal(mode) -> str | None:
-    """Why a run cannot be launched with feedback mode `mode`, or None. Only a mode of FEEDBACK_MODES
-    is accepted: every branch that routes by the mode (the node review, law-level acceptance, the
-    record contexts) knows only those, so any other value would run another mode silently. A new mode
-    enters FEEDBACK_MODES together with its routing, acceptance, dependency and run-version wiring."""
-    if mode in FEEDBACK_MODES:
+def run_version_refusal(saved_semantic: dict | None) -> str | None:
+    """Why a run whose saved semantic inputs are `saved_semantic` cannot be read or resumed by this
+    harness, or None when it was started by this run version. A missing or unknown version is refused,
+    never read as this one."""
+    was = (saved_semantic or {}).get("run_version") if isinstance(saved_semantic, dict) else None
+    if was == RUN_VERSION:
         return None
-    return f"--feedback must be one of {' | '.join(FEEDBACK_MODES)} (given {mode!r})"
+    return (f"it was started by harness run version {was if was is not None else '1 (recorded before run versions)'} and this "
+            f"harness is version {RUN_VERSION}: a run is resumed only by the version that started it, and both stages of a split "
+            "run (remote and local) run that same version — start a new run id (a fresh run), or resume from a checkout of the "
+            "code the run started on")
+
+
+def saved_version_refusal(run_dir: Path) -> str | None:
+    """Why the run saved in `run_dir` was not started by this run version, read from its raw
+    `options.json` before anything of it is loaded, recovered, restored or written; None when it was.
+    Options that cannot be read, or that record no version, are refused."""
+    f = Path(run_dir) / "options.json"
+    try:
+        saved = json.loads(f.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return "its options.json, which records the run version that started it, is missing"
+    except (OSError, ValueError) as e:
+        return f"its options.json cannot be read ({e})"
+    if not isinstance(saved, dict):
+        return "its options.json is not an object"
+    why = run_version_refusal(saved.get("semantic"))
+    return f"its options.json records that {why}" if why else None
+
+
+def chain_version_refusal(base_run: str, run_id: str | None = None) -> str | None:
+    """Why a `base_run` chain cannot be read by this harness: a run of the chain, read from its raw
+    `options.json` before any of its records, that another run version started or whose options are
+    missing or unreadable, or a chain that returns to a run; None when every run of the chain was
+    started by this version. The whole chain is checked by version, never by which files a run holds."""
+    seen = {run_id} if run_id else set()
+    rid = base_run
+    while rid:
+        if rid in seen:
+            return f"the base_run chain returns to `{rid}`"
+        seen.add(rid)
+        why = saved_version_refusal(paths.run_dir(rid))
+        if why:
+            return f"the base_run chain names `{rid}`: {why}"
+        rid = json.loads((paths.run_dir(rid) / "options.json").read_text(encoding="utf-8")).get("base_run")
+    return None
+
+
+def stored_run_refusal(run_id: str) -> str | None:
+    """Why the run `run_id`, read from its raw `options.json` and those of its base chain, cannot be
+    read by this harness (`saved_version_refusal`, then `chain_version_refusal`), or None: what every
+    command that reads or writes a stored run checks before it takes the library or reads anything
+    else of the run."""
+    d = paths.run_dir(run_id)
+    why = saved_version_refusal(d)
+    if why is None:
+        base = json.loads((d / "options.json").read_text(encoding="utf-8")).get("base_run")
+        why = chain_version_refusal(base, run_id) if base else None
+    return why
 
 
 @dataclass
@@ -35,7 +89,6 @@ class Options:
     plan_attempts: int = 2
     concept_attempts: int = 3      # coding attempts per concept, the first plus its repairs
     node_attempts: int = 2         # coding attempts per node, the first plus one after a node repair session
-    repeat_limit: int = 3          # the same upheld divergence on the same words of a node, drawn this many times across the law's plans and repairs, blocks the law for the operator
     gate_budget: int = 6
     max_turns: int = 80
     session_timeout: float = 3600.0
@@ -52,10 +105,9 @@ class Options:
     workers: int = 1               # coding tasks run at once (concepts, then nodes, each once its dependencies are accepted)
     plan_turns: int = 80           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
     restart: bool = False          # discard an interrupted iteration instead of resuming it
-    reviewer_model: Optional[str] = None   # a second vendor's model for the reviews (required): the concept review, and the node behaviour review under `feedback: review`
+    reviewer_model: Optional[str] = None   # a second vendor's model for the concept review (required)
     review_effort: Optional[str] = "high"  # the reviewer's reasoning effort
-    feedback: str = "review"               # one of FEEDBACK_MODES, named by every new run (`review` only fills a saved run that names none). `review`: a node is accepted on its behaviour review; `labels`: the node behaviour review and its Stage A/B are suspended, the concept review stays, and the label check scores the frozen library (`harness label_check`)
-    aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required under `feedback: labels`; else the reviewer's)
+    aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required)
     aggregate_verifier_effort: Optional[str] = None    # its reasoning effort (else the reviewer's)
     aggregate_verifier_budget_usd: Optional[float] = None   # the run-wide limit on its calls, within the second vendor's limit
     allow_same_vendor: bool = False        # permit a reviewer from the planner's own vendor
@@ -68,13 +120,11 @@ class Options:
     total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires every role's cap)
     budget_peers: list = field(default_factory=list)   # the runs sharing this run's limits, the same group named by each; reservations take one lock
     reviewer_max_output_tokens: int = 64000        # the output-token limit of every OpenAI call, reasoning included
-    max_divergences: int = 3                       # the most divergences one reviewer answer may carry
     model_prices: Optional[Path] = None            # the operator's price table (default config/model_prices.json)
     review_checks: int = 8                         # check calls of one reviewer session (each runs one divergence through Core)
     review_submissions: int = 3                    # submissions of one reviewer session; the last one stands
-    review_passes: int = 2                         # reviewer sessions per rule review, one after another, their challenges joined
     force_takeover: bool = False                   # end the live child process groups an earlier owner of the library left, instead of refusing
-    label_repair: bool = False                     # under `feedback: labels`, check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: the library is only scored after the run)
+    label_repair: bool = False                     # check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: a gated node is accepted, and the library is only scored after the run)
     label_dataset: Optional[str] = None            # the training recordings the in-loop label check reads (required with `label_repair`)
     label_repair_attempts: int = 2                 # label repairs per law (a re-planned law keeps its count); each session call of one, its re-ask included, is capped by `repair_budget_usd`, and its planner and coder sessions by `session_budget_usd`
     label_deferred: bool = False                   # with `label_repair`: no training recording is read on this machine; a law whose plan is gated is kept, not accepted, and recorded `awaiting_labels` for a later launch with the recordings
@@ -83,15 +133,15 @@ class Options:
 
 
 def acceptance_by_law(opts) -> bool:
-    """Whether a law's formal acceptance waits on more than its nodes' gates: under `feedback: labels`
-    with `label_repair` a law is accepted only once its label check routes it there, so a node accepted
-    on its gate is generated, not formally accepted; otherwise a node's acceptance is formal."""
-    return getattr(opts, "feedback", "review") == "labels" and bool(getattr(opts, "label_repair", False))
+    """Whether a law's formal acceptance waits on more than its nodes' gates: with `label_repair` a law
+    is accepted only once its label check routes it there, so a node accepted on its gate is generated,
+    not formally accepted; otherwise a node's acceptance is formal."""
+    return bool(getattr(opts, "label_repair", False))
 
 
 #: The fields of a run's acceptance policy (what `acceptance_by_law` reads), each with the test of a
 #: legal saved value: a saved contract holds every one, explicitly, with a legal value.
-POLICY_FIELDS = {"feedback": lambda v: v in FEEDBACK_MODES, "label_repair": lambda v: isinstance(v, bool)}
+POLICY_FIELDS = {"label_repair": lambda v: isinstance(v, bool)}
 
 
 def policy_defects(saved) -> list[str]:
@@ -129,13 +179,6 @@ def acceptance_policy_refusal(fixed, opts) -> str | None:
             + "); start a new run id")
 
 
-def node_reviews(opts) -> bool:
-    """Whether the node behaviour review, its Stage A/B and the node obligations it upholds are in
-    use: not under `feedback: labels`, where a node is accepted on its gate and its law is scored by
-    the label check; the concept review is in use either way."""
-    return getattr(opts, "feedback", "review") != "labels"
-
-
 @dataclass
 class Run:
     opts: Options
@@ -163,16 +206,20 @@ class Run:
         left in the middle of a candidate's commit is completed first by an owner, and refused to any
         other reader."""
         from ..phases import candidate
+        f = paths.run_dir(run_id) / "options.json"
+        if not f.exists():
+            raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
+        why = saved_version_refusal(f.parent)              # its raw version, before anything is recovered, restored or written
+        d = json.loads(f.read_text(encoding="utf-8")) if why is None else {}
+        why = why or (chain_version_refusal(d["base_run"], run_id) if d.get("base_run") else None)
+        if why:
+            raise SystemExit(f"run `{run_id}` cannot be read by this harness: {why} — nothing of it was read or rewritten")
         if candidate.pending() is not None:               # a library in the middle of a commit is never read as a whole
             from . import owner
             if not owner.holds():
                 raise SystemExit("the library holds a candidate transaction committed and not yet applied: any command that takes "
                                  "the library (the loop, verify, index) completes it first")
             candidate.recover_pending()
-        f = paths.run_dir(run_id) / "options.json"
-        if not f.exists():
-            raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
-        d = json.loads(f.read_text(encoding="utf-8"))
         paths.register_roots(d.get("repo_roots"))
         fields = {k for k in Options.__dataclass_fields__}
         kw = {k: v for k, v in d.items() if k in fields}
@@ -206,7 +253,7 @@ class Run:
 
     @property
     def node_ledger_file(self) -> Path:
-        """Nodes the gate or the review returned, awaiting a repair session or spent."""
+        """Nodes the gate returned, awaiting a repair session or spent."""
         return self.dir / "node_ledger.jsonl"
 
     @property

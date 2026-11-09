@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from harness.store import jsonl, paths
 from harness.store.gaps import GapLedger, OpenGaps
+from harness.store.state import RUN_VERSION
 
 
 def proposal(span="the words", law="L-1"):
@@ -23,6 +24,7 @@ class Lifecycle(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.gaps, self.results = self.root / "Gaps", self.root / "results"
         (self.results / "r1").mkdir(parents=True)
+        (self.results / "r1" / "options.json").write_text(json.dumps({"run_id": "r1", "semantic": {"run_version": RUN_VERSION}}))
         self.patches = [patch.object(paths, "RESULTS", self.results)]
         for p in self.patches:
             p.start()

@@ -190,40 +190,6 @@ class JudgesAndCases(unittest.TestCase):
         with self.assertRaises(DataIntegrityError):
             validate_phase.glosses_of(["int.u"], ONTO, self.run)
 
-    def test_a_case_naming_an_uncatalogued_intention_is_not_admitted(self):
-        recs = {1: {"case_declarations": [INT_T]}, 2: {"case_declarations": [{"id": "int.u", "kind": "int"}]}}
-        review.undeclared_case_errors(recs, Reading(self.run.reading_file).declarations())
-        self.assertNotIn("case_check_errors", recs[1])
-        self.assertEqual(review.admission({}, recs[2], None)[0], "invalid")
-
-    def test_a_case_naming_an_uncatalogued_assumption_is_not_admitted(self):
-        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
-            {"id": "int.t", "meaning": MEANING}, {"id": "asm.d", "meaning": PREMISE}]}))
-        cat = Reading(self.run.reading_file).declarations()
-        recs = {1: {"case_declarations": [ASM_D, INT_T]}, 2: {"case_declarations": [{"id": "asm.u", "kind": "asm"}]},
-                3: {"case_declarations": [{"id": "int.t", "kind": "asm"}]}}            # an intention's id written as an assumption
-        review.undeclared_case_errors(recs, cat)
-        self.assertNotIn("case_check_errors", recs[1])
-        self.assertEqual(recs[2]["case_check_errors"], ["the case names the assumption `asm.u`, which is in no catalogue of the run: "
-                                                        "a case states only assumptions the run's declarations give a meaning"])
-        self.assertTrue(any("assumption `int.t`" in e for e in recs[3]["case_check_errors"]))
-        for k in (2, 3):
-            self.assertEqual(review.admission({}, recs[k], None)[0], "invalid")
-
-    def test_a_case_the_trace_contradicts_is_not_judged(self):
-        """The trace declares the assumption false and the case states it true: the certificate gives
-        the case false at `at`, which is returned to the reviewer, never judged."""
-        rec = {"case_declarations": [ASM_D], "case_value": {"value": "false", "unknown_reasons": []}, "rule_result": None}
-        review.undeclared_case_errors({1: rec}, {"asm.d": {"id": "asm.d", "meaning": PREMISE}})
-        self.assertEqual(review.admission({}, rec, None)[0], "invalid")
-        self.assertTrue(any("the case is false at `at`" in x for x in review.cert_unusable(1, {}, rec)))
-
-    def test_an_assumption_is_glossed_as_the_source_declaration(self):
-        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
-            {"id": "int.t", "meaning": MEANING}, {"id": "asm.d", "meaning": PREMISE}, {"id": "asm.e", "meaning": "another premise"}]}))
-        g = review._case_glosses(ONTO, [], self.run, [ASM_D, INT_T])
-        self.assertEqual(g, {"asm.d": f"declared by the source: {PREMISE}", "int.t": MEANING})   # asm.e is not stated: not shown
-
     def test_the_leaf_in_prose(self):
         f = {"int": "int.t", "args": [{"var": "v"}, {"var": "j"}]}
         self.assertEqual(render_formula.formula(f, {}), "road user `v` is declared to intend `int.t` at region `j`")
@@ -344,107 +310,8 @@ class RegionPersistence(unittest.TestCase):
         self.assertEqual(self.given[0][0]["regions"], {"j": 7})
 
 
-class JudgesSeeTheMeaning(unittest.TestCase):
-    """D8 end to end: a case stating a declared intention reaches Stage A and Stage B with the id's
-    meaning in their contracts, through `judge_divergence`, stopped at the model call; a changed
-    meaning changes Stage A's digest, so no earlier verdict is reused for it."""
-    def setUp(self):
-        from scripts.tests.test_review_routing import A_VIOLATED, B
-        self.tmp = tempfile.TemporaryDirectory()
-        self.run = FakeRun(Path(self.tmp.name))
-        self.run.all_concepts = lambda: {}
-        self.answers = {"a": A_VIOLATED, "b": B("upheld")}
-        self.prompts = []
-
-    def tearDown(self):
-        self.tmp.cleanup()
-
-    def declare(self, meaning, premise=PREMISE):
-        self.run.reading_file.write_text(json.dumps({"params": [], "aggregates": [], "declarations": [
-            {"id": "int.t", "meaning": meaning}, {"id": "asm.d", "meaning": premise}, {"id": "asm.e", "meaning": "another premise"}]}))
-
-    def judge(self, case=None, declared=(INT_T,), rule_glosses=None):
-        from scripts.tests.test_review_routing import ctx, div, node
-        def session(run, out_dir, label, prompt, check=None, **_kw):
-            self.prompts.append((label, prompt))
-            ans = self.answers["a" if label.endswith("stage_a") else "b"]
-            return ans, (list(check(ans)) if check else [])
-        case = case or {"int": "int.t", "args": [{"var": "v"}, {"var": "j"}]}
-        c = {"schema": review.CERT_SCHEMA, "canonical_case": case, "case_atoms": [], "case_declarations": list(declared),
-             "rule_result": {"verdict": "compliant", "unknown_reasons": []}, "sensitivity_overrides": []}
-        d = div(case=case, entities={"j": {"kind": "region", "id": 20}})
-        cx = ctx()
-        cx.rule_glosses = rule_glosses or {}
-        with patch.object(validate_phase, "_session", session):
-            return review.judge_divergence(self.run, node(), cx, ONTO, d, c, Path(self.tmp.name), "d1")
-
-    def test_stage_a_is_shown_a_stated_premise_as_the_source_declaration(self):
-        """A case stating the assumption `asm.d` (true, or negated): Stage A sees the leaf and the
-        catalogue meaning marked as the source's declaration; never the rule's rendering, its other
-        assumption `asm.e`, its reading or its verdict. Stage B sees the same declaration."""
-        self.declare(MEANING)
-        rule_glosses = {"asm.d": PREMISE, "asm.e": "another premise"}
-        for case, leaf in (({"asm": "asm.d"}, "the assumption `asm.d` is declared true"),
-                           ({"not": {"asm": "asm.d"}}, f"the source declares the assumption `asm.d` [{PREMISE}] false")):
-            with self.subTest(case=case):
-                self.prompts.clear()
-                self.judge(case, (ASM_D,), rule_glosses)
-                [(_, a)] = [x for x in self.prompts if x[0].endswith("stage_a")]
-                [(_, b)] = [x for x in self.prompts if x[0].endswith("stage_b")]
-                self.assertIn(leaf, a)
-                self.assertIn(f"| `asm.d` | declared by the source: {PREMISE} |", a)
-                shown = a[a.index("### The law"):a.index("## Deciding")]                # what is injected: the template aside
-                for absent in ("asm.e", "another premise", "the rendering", "compliant", "narrowing"):
-                    self.assertNotIn(absent, shown)
-                self.assertIn(f"declared by the source: {PREMISE}", b)
-
-    def test_a_negated_premise_inside_a_disjunction_stays_inside_it(self):
-        """`not(asm) OR true` on a trace that declares no assumption: Lean certifies it (the
-        disjunction is true whatever the premise), so the judges are shown the disjunction as one
-        fact, and no line of the prompt states on its own that the premise was declared false."""
-        self.declare(MEANING)
-        case = {"or": [{"not": {"asm": "asm.d"}}, "tt"]}
-        self.judge(case, (ASM_D,))
-        [(_, a)] = [x for x in self.prompts if x[0].endswith("stage_a")]
-        branch = f"the source declares the assumption `asm.d` [{PREMISE}] false"
-        self.assertIn(f"(\n  {branch}\n  OR\n  true\n)", a)                       # the statement, structurally
-        self.assertIn("  - (\n  the source declares the assumption `asm.d` false\n  OR\n  true\n)", a)   # the time-ordered facts: one fact
-        alone = [ln for ln in a.splitlines() if "the source declares" in ln and not ln.startswith("  the source declares")]
-        self.assertEqual(alone, [])                                                 # only ever a branch line, never a fact line of its own
-        self.assertNotIn("is declared false", a)
-
-    def test_a_changed_premise_meaning_changes_the_stage_a_digest(self):
-        self.declare(MEANING)
-        first = self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"]
-        self.declare(MEANING, premise="the way the road user travels on lies in another district the source names")
-        self.assertNotEqual(self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"], first)
-        self.declare(MEANING)
-        self.assertEqual(self.judge({"asm": "asm.d"}, (ASM_D,)).row["stageA_digest"], first)
-
-    def test_both_judges_are_shown_the_meaning(self):
-        self.declare(MEANING)
-        j = self.judge()
-        [(_, a)] = [x for x in self.prompts if x[0].endswith("stage_a")]
-        [(_, b)] = [x for x in self.prompts if x[0].endswith("stage_b")]
-        self.assertIn("is declared to intend `int.t` at region", a)
-        self.assertIn(MEANING, a)
-        self.assertIn(MEANING, b)
-        first = j.row["stageA_digest"]
-        self.declare("the road user's current plan is to turn right at the region")
-        self.prompts.clear()
-        self.assertNotEqual(self.judge().row["stageA_digest"], first)
-
-    def test_an_uncatalogued_intention_never_reaches_a_judge(self):
-        self.declare(MEANING)
-        from scripts.tests.test_review_routing import div
-        recs = {1: {"case_declarations": [{"id": "int.unseen", "kind": "int"}], "case_value": {"value": "true"}, "rule_result": {"verdict": "compliant"}}}
-        review.undeclared_case_errors(recs, Reading(self.run.reading_file).declarations())
-        out = review.cert_unusable(1, div(), recs[1])
-        self.assertTrue(any("in no catalogue" in x for x in out))                  # returned to the reviewer, not judged
-
-
-#: A recorded trace (one highway, two cars), its case, the run's reading and one accepted concept,
-#: extracted from a past run; the fixture's README states their sources and hashes.
+#: A recorded trace (one highway, two cars) and one accepted concept, extracted from a past run; the
+#: fixture's README states their sources and hashes.
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "admission_refusal"
 
 
@@ -471,12 +338,9 @@ def _have_toolchain() -> bool:
     return bool(shutil.which("lake"))
 
 
-#: The Lean modules the routes below run, with the concepts the rule calls (sources and digests in the
-#: fixture's README): built from source in a temporary library, never read from a build cache.
+#: The Lean module the routes below run (its source and digest in the fixture's README): built from
+#: source in a temporary library, never read from a build cache.
 LEAN_SOURCES = {
-    "TrafficSpec/Rules/NRS_484B/NRS_484B_127_1.lean": "68ccb62392d38505336bd22f9f2036d07f08de79c47efd081c281a44fcff1364",
-    "TrafficSpec/Concepts/interaction/follows_in_line_of_travel.lean": "661252d88ec48e8c3b8276930c2e4eb9c1574621d0659986f73ac259a68b186d",
-    "TrafficSpec/Concepts/interaction/travel_gap.lean": "ba67d7eb953e12c5675fd64a65dd4c15fd284332ff9cbf4ee200503c011ca96a",
     "TrafficSpec/Concepts/control/intersection_signal_inoperative.lean": "4af13bb44967a82eb6d8d0a311e39919a0a0fc714441f693698478b98caaf0ff",
 }
 
@@ -517,10 +381,10 @@ def fixture_library(root: Path) -> Path:
 
 @unittest.skipUnless(_have_toolchain(), "needs the Lean toolchain")
 class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
-    """A trace the admission refuses reaches no verdict on any review route, with the real Lean: the
-    node review's certificate and the concept review's harness. (The monitor's refusal is checked in
-    `test_admission_refusal_monitor`, which imports no review module.) The rule and concept modules
-    are built from the fixture's sources in a temporary library; a missing or altered source fails."""
+    """A trace the admission refuses reaches no verdict on the concept review's route, with the real
+    Lean. (The monitor's refusal is checked in `test_admission_refusal_monitor`, which imports no
+    review module.) The concept module is built from the fixture's source in a temporary library; a
+    missing or altered source fails."""
 
     @classmethod
     def setUpClass(cls):
@@ -532,19 +396,6 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
         cls.patcher = patch.multiple(paths, **paths.library_layout(lib))
         cls.patcher.start()
         cls.addClassCleanup(cls.patcher.stop)
-
-    def test_the_certificate_returns_it_to_the_reviewer(self):
-        case = json.loads(_saved("case.json").read_text())
-        trace, refused = _admitted_and_refused()
-        divs = {k: {"trace": t, "case": case["case"], "entities": case["entities"], "at": case["at"], "grounding": {"v": 1}}
-                for k, t in ((1, trace), (2, refused))}
-        with tempfile.TemporaryDirectory() as td:
-            recs = review.certify(None, SimpleNamespace(id="NRS_484B_127_1"), divs, Reading(_saved("reading.json")), Path(td))
-        self.assertEqual(review.admission(divs[1], recs[1], review._Need())[0], "judge")
-        self.assertTrue(any("more than one intent record" in e for e in recs[2]["lint_errors"]), recs[2].get("lint_errors"))
-        cls, why = review.admission(divs[2], recs[2], review._Need())
-        self.assertEqual(cls, "invalid")
-        self.assertTrue(review.cert_unusable(2, divs[2], recs[2]))                 # unusable: no Stage A is asked
 
     def test_the_concept_review_counts_it_incomplete(self):
         cid = "drv.control.intersection_signal_inoperative"
@@ -566,14 +417,13 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
         self.assertFalse(any("divergence 2 " in (c["line"] if isinstance(c, dict) else c) for c in confirmed + unconfirmed))
 
     def routed(self, review_call, answer):
-        """A review run end to end with the real Lean behind it: the reviewer scripted, every judge's
-        session (Stage A, Stage B, the adjudicator) recorded instead of asked."""
+        """A review run end to end with the real Lean behind it: the reviewer scripted, the
+        adjudicator's session recorded instead of asked."""
         from scripts.tests.test_review_routing import FakeRun, scripted_reviewer, submit
         view = {"nodes": {}, "concepts": {}, "fenced": {}}                     # no other record is read on these routes
         asked = []
         with tempfile.TemporaryDirectory() as td:
             run = FakeRun(Path(td))
-            run.opts.max_divergences = 3
             run.opts.ontology = ONTO.path
             run.all_nodes = lambda: {k: v for k, v in view["nodes"].items() if k not in view["fenced"]}
             run.all_concepts = lambda: {k: v for k, v in view["concepts"].items() if k not in view["fenced"]}
@@ -582,22 +432,6 @@ class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
                     patch.object(review, "append_ruling", lambda *_a, **_k: None):
                 out = review_call(run, Path(td))
         return out, asked
-
-    def test_a_node_review_asks_no_judge(self):
-        from scripts.tests.test_review_routing import LAW, ctx
-        case = json.loads(_saved("case.json").read_text())
-        _trace, refused = _admitted_and_refused()
-        d = {"kind": "rule_permits_unlawful", "situation": "s", "law_words": "shall stop", "lawful_verdict": "violated",
-             "grounding": {"v": 1}, "trace": refused, "case": case["case"], "entities": case["entities"], "at": case["at"]}
-        n = Node({"node_id": "NRS_484B_127_1", "law_refs": ["L-1"], "binders": [{"name": "v"}],
-                  "segmentation": [{"id": "s1", "role": "obligation", "text": "shall stop before the line"}]})
-        with patch.object(review, "build_context", lambda *_a, **_k: ctx()), \
-                patch.object(review, "replay_obligations", lambda *_a, **_k: review.Replayed()):
-            out, asked = self.routed(lambda run, td: review.review_behaviour(run, n, LAW, ONTO, Reading(_saved("reading.json")), {}, [], td),
-                                     {"verdict": "return", "divergences": [d], "advisories": [], "gap_candidates": []})
-        self.assertEqual(asked, [])
-        self.assertEqual((out.status, out.defer_stage), ("deferred", "reviewer"))
-        self.assertIn("more than one intent record", out.reasons[0])
 
     def test_a_concept_review_asks_no_adjudicator(self):
         from harness.lean import render_formula as rf

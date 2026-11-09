@@ -39,8 +39,8 @@ from harness.tools import handoff
 from scripts.tests.test_recovery import PATH_NAMES, Fixture, World, concept, node
 
 A, B, C = "L-20", "L-21", "L-22"
-SPLIT = dict(feedback="labels", label_repair=True, aggregate_verifier_model="gpt-test", max_iterations=1)
-TOOLCHAIN = {"python": "3", "lean": "stand-in", "uv_lock": None, "distributions": "d"}
+SPLIT = dict(label_repair=True, max_iterations=1)
+TOOLCHAIN = {"python": "3", "lean": "stand-in", "distributions": "d"}
 
 
 def split_world() -> World:
@@ -150,12 +150,12 @@ class Remote(unittest.TestCase):
                     fn(*args)
 
     def test_options_of_a_split_stage(self):
-        base = dict(run_id="r", laws=Path("l"), ontology=Path("o"), reading=Path("x"), feedback="labels", label_repair=True)
+        base = dict(run_id="r", laws=Path("l"), ontology=Path("o"), reading=Path("x"), label_repair=True)
         for over, msg in (({"label_deferred": True, "label_dataset": "d"}, "reads no training recording"),
                           ({"label_deferred": True, "base_run": "b"}, "base_run"),
                           ({"label_stage": True, "label_dataset": "d", "budget_peers": ["p"]}, "budget_peers"),
                           ({"label_stage": True, "label_deferred": True}, "give one"),
-                          ({"label_deferred": True, "label_repair": False}, "--feedback labels --label_repair")):
+                          ({"label_deferred": True, "label_repair": False}, "with --label_repair")):
             with self.subTest(over=over), self.assertRaisesRegex(SystemExit, msg):
                 loop.check_options(Options(**{**base, **over}))
         loop.check_options(Options(**base, label_deferred=True))           # no dataset needed
@@ -191,13 +191,11 @@ class Remote(unittest.TestCase):
 class Unsplit(unittest.TestCase):
 
     def test_without_the_split_a_composed_node_is_used_on_its_acceptance(self):
-        for opts in ({"feedback": "review"}, {"feedback": "labels", "aggregate_verifier_model": "gpt-test"}):
-            with self.subTest(**opts):
-                w = split_world()
-                with Fixture(w, max_iterations=3, **opts) as f:
-                    self.assertEqual(f.drive(1), ["complete"])
-                    self.assertIn(("L_21", 1), calls(w, "code"))
-                    self.assertEqual({e["law"]: e["state"] for e in f.state()["ledger"]}, {A: "accepted", B: "accepted", C: "accepted"})
+        w = split_world()
+        with Fixture(w, max_iterations=3) as f:
+            self.assertEqual(f.drive(1), ["complete"])
+            self.assertIn(("L_21", 1), calls(w, "code"))
+            self.assertEqual({e["law"]: e["state"] for e in f.state()["ledger"]}, {A: "accepted", B: "accepted", C: "accepted"})
 
     def test_the_usable_nodes_rule(self):
         w = split_world()
@@ -207,7 +205,7 @@ class Unsplit(unittest.TestCase):
             run.restore_state(); run.load_accepted()
             self.assertEqual(sorted(run.usable_nodes(A)), ["L_20_o1", "L_20_o2"])     # its own law's only: C awaits its labels too
             self.assertEqual(sorted(run.usable_nodes(B)), [])
-            unsplit = Run(f.options(feedback="review", label_repair=False))
+            unsplit = Run(f.options(label_repair=False))
             unsplit.restore_state(); unsplit.load_accepted()
             self.assertEqual(sorted(unsplit.usable_nodes(B)), ["L_20_o1", "L_20_o2", "L_22"])
 
@@ -234,7 +232,7 @@ class CrossLawRepair(unittest.TestCase):
             (Path(out_dir or cwd) / f"{label}_result.json").write_text("{}")
         with repairing(outputs={"record.jsonl": json.dumps(rec)}, calls=calls) as (run, ledger, training, by_id), \
                 mock.patch.object(session, "run", recorded):
-            run.opts = replace(run.opts, feedback="labels", label_repair=True)
+            run.opts = replace(run.opts, label_repair=True)
             run.law_entries = ledger.entries
             ledger.entries[L3].state = "planned"                      # generated remotely, awaiting its labels
             run.label_states[L3] = {"state": "awaiting_labels", "nodes": [N3], "repairs": 0}
@@ -588,7 +586,7 @@ class DependencyWaitOutcome(unittest.TestCase):
         for closed in ("failed", "blocked"):
             with self.subTest(provider=closed):
                 w = self.world(False, True)
-                with Fixture(w, feedback="labels", label_repair=True, aggregate_verifier_model="gpt-test", max_iterations=8) as f, \
+                with Fixture(w, label_repair=True, max_iterations=8) as f, \
                         mock.patch.object(loop, "label_route", TwoStage.route({A: closed, C: "accepted"})), \
                         mock.patch.object(label_check, "training_context", lambda *a, **k: object()):
                     self.assertEqual(f.drive(1, label_dataset="ds"), ["complete"])
@@ -719,8 +717,7 @@ class SavedPolicyWhole(unittest.TestCase):
         self.assertEqual((self.tree(), dict(w.calls)), before)
 
     def test_a_saved_policy_field_missing_or_not_legal_is_refused(self):
-        for change in ({"drop": "label_repair"}, {"drop": "feedback"}, {"label_repair": "true"}, {"label_repair": 1},
-                       {"label_repair": None}, {"feedback": "labelz"}):
+        for change in ({"drop": "label_repair"}, {"label_repair": "true"}, {"label_repair": 1}, {"label_repair": None}):
             with self.subTest(change=change):
                 w = split_world()
                 with Fixture(w, **SPLIT) as f:
@@ -742,7 +739,7 @@ class SavedPolicyWhole(unittest.TestCase):
             self.started(f, handed=True)
             mf = paths.RESULTS / "r" / "handoff" / "manifest.json"
             m = json.loads(mf.read_text())
-            for anchor in ({"feedback": "labels"}, {"feedback": "labels", "label_repair": "yes"}):
+            for anchor in ({"feedback": "labels"}, {"label_repair": "yes"}):   # a version-2 anchor without label_repair, a wrong type
                 with self.subTest(anchor=anchor):
                     mf.write_text(json.dumps({**m, "acceptance_policy": anchor}))
                     self.assertTrue(any("acceptance policy is not whole" in x for x in handoff.verify("r")[0]))
@@ -931,7 +928,7 @@ class ClosedDependencyStop(unittest.TestCase):
                         self.assertEqual((dict(w.calls), f.state()["iterations_allocated"]), before)
 
     def test_without_the_split_the_run_ends_complete_as_before(self):
-        for opts in ({"feedback": "review"}, {"feedback": "labels", "label_repair": True, "aggregate_verifier_model": "gpt-test"}):
+        for opts in ({}, {"label_repair": True}):
             for route in ("plan", "repair"):
                 for closed in ("failed", "blocked"):
                     with self.subTest(route=route, provider=closed, **opts):
@@ -1044,7 +1041,7 @@ class BatchOrder(unittest.TestCase):
                 self.assertTrue(any(r.startswith("composes ['L_30'], whose law waits for the operator") for r in d["reasons"]), d["reasons"])
 
     def test_without_the_split_the_run_ends_complete_in_every_order(self):
-        out = self.same_in_every_order(self.world, ["L_30", "L_31"], dict(feedback="review", plan_attempts=1, max_iterations=4))
+        out = self.same_in_every_order(self.world, ["L_30", "L_31"], dict(plan_attempts=1, max_iterations=4))
         self.assertEqual(out["status"], ["complete"])
         d = out["ledger"][self.D]
         self.assertEqual((d["state"], d["attempts"], d["gaps"]), ("blocked", 0, [f"decision:{self.P}"]))
@@ -1106,7 +1103,7 @@ class PolicyAnchor(unittest.TestCase):
                 mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
             self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
             m = handoff.export("r", source_baseline="c0ffee")
-            self.assertEqual(m["acceptance_policy"], {"feedback": "labels", "label_repair": True})
+            self.assertEqual(m["acceptance_policy"], {"label_repair": True})
             self.assertFalse(any("policy anchor" in x for x in handoff.verify("r")[1]))
             mf = paths.RESULTS / "r" / "handoff" / "manifest.json"
             mf.write_text(json.dumps({k: v for k, v in json.loads(mf.read_text()).items() if k != "acceptance_policy"}))
@@ -1269,7 +1266,7 @@ class Pinning(unittest.TestCase):
                               "recorded/scoring.py": "# score\n", "prompts/plan.md": "plan\n", "ontology/ATOMS.md": "# atoms\n",
                               "config/x.json": "{}", "library/Explain.lean": "-- explain\n", "library/TrafficSpec/Core/Core.lean": "-- core\n",
                               "laws.jsonl": "", "definitions.jsonl": "", "reading.json": "{\"params\": []}", "precedence.json": "{}",
-                              "pyproject.toml": "[project]\n", "uv.lock": "# lock\n", "scripts/run-generation.sh": "# launcher\n",
+                              "pyproject.toml": "[project]\n", "scripts/run-generation.sh": "# launcher\n",
                               "scripts/diagnostics/doctor.py": "# doctor\n", "scripts/diagnostics/library_v2.py": "# doctor checks\n"}.items():
                 (root / rel).parent.mkdir(parents=True, exist_ok=True)
                 (root / rel).write_text(text)
@@ -1301,7 +1298,7 @@ class Pinning(unittest.TestCase):
             self.assertEqual(second["baseline"], first["baseline"])                  # the run's baseline is kept
             self.assertEqual(second["baseline"]["source_commit"], "c0ffee")
             self.assertEqual(handoff.verify("r")[0], [])
-            for rel in ("harness/phases/label_check.py", "harness/phases/label_repair.py", "prompts/plan.md", "pyproject.toml", "uv.lock",
+            for rel in ("harness/phases/label_check.py", "harness/phases/label_repair.py", "prompts/plan.md", "pyproject.toml",
                         "scripts/run-generation.sh", "scripts/diagnostics/doctor.py", "scripts/diagnostics/library_v2.py"):
                 with self.subTest(changed=rel):
                     f = root / rel
@@ -1352,7 +1349,7 @@ class LabelRepairAcrossTheClone(unittest.TestCase):
                 try:
                     lib = new_root / "w" / "library"
                     with mock.patch.multiple(paths, **{**paths.library_layout(lib), "RESULTS": new_root / "w" / "results"}):
-                        opts = Options(**{**run.opts.__dict__, "laws": new_root / "w" / "laws.jsonl", "feedback": "labels",
+                        opts = Options(**{**run.opts.__dict__, "laws": new_root / "w" / "laws.jsonl",
                                           "label_repair": True, "label_stage": True, "label_dataset": str(new_ds),
                                           "reading": lib / "TrafficSpec" / "Readings" / "base_test.json"})
                         fresh = Run(opts)
@@ -1454,7 +1451,7 @@ class PendingRepairAcrossARealFileList(unittest.TestCase):
                 mock.patch.object(paths, "FOREIGN_ROOTS", []), mock.patch.object(plan_mod, "run_plan", fake_plan), \
                 mock.patch.object(cand, "concept_review", concept_review):
             world = paths.RESULTS.parent
-            run.opts = replace(run.opts, feedback="labels", label_repair=True, label_dataset=str(training.dataset.path))
+            run.opts = replace(run.opts, label_repair=True, label_dataset=str(training.dataset.path))
             run.law_entries = ledger.entries
             with mock.patch.object(paths, "REPO", world):
                 code_set = {p.relative_to(world).as_posix() for p in handoff.code_files()} | {"laws.jsonl", "definitions.jsonl"}
@@ -1536,7 +1533,7 @@ class PendingRepairAcrossARealFileList(unittest.TestCase):
 
 
 class AcceptancePolicyPinned(unittest.TestCase):
-    """A run's acceptance policy (`feedback`, `label_repair`) is part of its fixed inputs: a resume that
+    """A run's acceptance policy (`label_repair`) is part of its fixed inputs: a resume that
     changes it, through the CLI or `run_loop`, with or without a handoff, is refused before any recovery,
     rewrite or session, and leaves the run as it was. Which stage runs, and the dataset, are not fixed;
     nor is a budget. A fixed input the run started with and the resume lacks is a change too."""
@@ -1557,7 +1554,7 @@ class AcceptancePolicyPinned(unittest.TestCase):
     def test_a_policy_change_is_refused_with_and_without_a_handoff(self):
         from harness.__main__ import Cli
         for handed in (False, True):
-            for change in (dict(label_repair=False), dict(feedback="review"), dict(feedback="review", label_repair=False)):
+            for change in (dict(label_repair=False),):
                 with self.subTest(handoff=handed, change=change):
                     w = split_world()
                     with Fixture(w, **SPLIT) as f, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
@@ -1690,14 +1687,14 @@ class CodeDigestCoverage(unittest.TestCase):
                     or f.startswith(("prompts/", "ontology/", "config/"))
                     or f in ("library/Explain.lean", "library/Main.lean", "library/lean-toolchain", "library/lakefile.lean",
                              "library/lake-manifest.json", "scripts/RegionKinds.lean", "scripts/run-generation.sh", "pyproject.toml",
-                             "uv.lock", "scripts/gen_ontology.py", "scripts/__init__.py")
+                             "scripts/gen_ontology.py", "scripts/__init__.py")
                     or (f.startswith("scripts/diagnostics/") and f.endswith(".py"))]
         self.assertEqual(sorted(f for f in deciding if (paths.REPO / f).is_file() and f not in covered), [])
         for f in ("library/TrafficSpec/Core.lean", "library/TrafficSpec/Core/Foundations/Accumulate.lean",
                   "library/TrafficSpec/Core/Language/Formula.lean", "scripts/RegionKinds.lean", "harness/checks/gate.py",
                   "harness/phases/candidate.py", "harness/tools/handoff.py", "prompts/code.md", "scripts/diagnostics/doctor.py",
                   "scripts/diagnostics/library_v2.py", "scripts/diagnostics/doctor_result.py", "scripts/run-generation.sh",
-                  "pyproject.toml", "uv.lock"):
+                  "pyproject.toml"):
             self.assertIn(f, covered)
         for f in ("scripts/tests/test_act_declarations.py", "library/TrafficSpec/Tests/HeadingSince.lean", "README.md"):
             self.assertNotIn(f, covered)

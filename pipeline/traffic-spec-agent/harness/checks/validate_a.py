@@ -694,7 +694,7 @@ SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
 def check_residue_scope(node: Node) -> list[str]:
     """A residue on a span that decides when the rule applies would make the rule apply where the
     law does not; such a span is an assumption the trace declares or a gap, unless the residue
-    says the span imposes no observable condition (`scope: none`), which the review then holds it to."""
+    says the span imposes no observable condition (`scope: none`)."""
     errs = []
     spans = node.spans()
     for r in node.get("residues", []):

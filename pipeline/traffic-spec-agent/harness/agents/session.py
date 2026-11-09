@@ -50,7 +50,7 @@ PROTECTED = ["harness", "prompts", "ontology", "laws", "scripts", "config", "lib
              "library/TrafficSpec/Index.lean", "library/TrafficSpecWitness.lean", "library/TrafficSpec.lean",
              "library/lakefile.lean", "library/lakefile.toml", "library/lake-manifest.json", "library/lean-toolchain",
              "library/.run.lock", *(f"library/{n}" for n in owner.HARNESS_FILES), *(f"library/.{n}.tmp-*" for n in owner.HARNESS_FILES),
-             "README.md", "setup.sh", "pyproject.toml", "uv.lock"]
+             "README.md", "setup.sh", "pyproject.toml"]
 #: The run's records under `results/<run>/`, by name: a session's own outputs live in that tree
 #: too (a plan directory's `blueprint.jsonl`, a task directory's `task_result.md`), so a suffix
 #: pattern over the whole tree would deny the session what it exists to write.
@@ -238,8 +238,8 @@ def _retry(label: str, why: str, spent: int, opts: Options, relaunch: Optional[C
 
 
 #: The kinds of Claude session by what they cost: `work` (a plan session, the aggregate selection, a
-#: coding session), `repair` (a concept or node repair session) and `judge` (a tool-less answer: a
-#: stage A or stage B judge, an adjudication, a recheck). Each kind has its own cap, an option.
+#: coding session), `repair` (a concept or node repair session) and `judge` (a tool-less answer: an
+#: adjudication, a recheck). Each kind has its own cap, an option.
 ROLES = ("work", "repair", "judge")
 
 

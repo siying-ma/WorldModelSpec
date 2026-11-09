@@ -63,7 +63,7 @@ READING|--reading|library/TrafficSpec/Readings/lasvegas.json
 WORKERS|--workers|4
 PLAN_BATCH|--plan_batch|8
 GATE_BUDGET|--gate_budget|6
-MODEL|--model|claude-opus-5[1m]
+MODEL|--model|claude-opus-5-5[1m]
 REVIEWER_MODEL|--reviewer_model|gpt-6.1-sol
 VERIFIER_MODEL|--aggregate_verifier_model|
 PLAN_EFFORT|--plan_effort|high
@@ -237,7 +237,7 @@ fi
 
 STAGE_FLAGS=(--label_deferred)
 [ "$STAGE" = labels ] && STAGE_FLAGS=(--label_stage --label_dataset "$LABEL_DATASET")
-[ "$ACTION" = new ] && STAGE_FLAGS=(--feedback labels --label_repair "${STAGE_FLAGS[@]}")   # a resume keeps the run's feedback
+[ "$ACTION" = new ] && STAGE_FLAGS=(--label_repair "${STAGE_FLAGS[@]}")   # a resume keeps the run's acceptance policy
 [ "$ACTION" = new ] && [ -n "${ACQUISITION_PROFILE:-}" ] && STAGE_FLAGS+=(--acquisition_profile "$ACQUISITION_PROFILE")
 log "options passed: ${LOOP_OPTS[*]:-none, the saved options of the run stand}"
 

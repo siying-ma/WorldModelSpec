@@ -4,9 +4,8 @@
   inside other operators, and the body of a saved accepted record that a dependency report reaches.
 - The independent recheck is built from the contract and the record alone: a change of the body only
   leaves its prompt byte-identical.
-- A primitive call is rendered "the primitive", a concept call "the concept", in a node's rendering
-  and in a case's; stage A is shown the case's own names and nothing of the rule, the record or the body.
-- A case's identity and a body's canonical form do not depend on the rendering."""
+- A primitive call is rendered "the primitive", a concept call "the concept".
+- A concept challenge's identity and a body's canonical form do not depend on the rendering."""
 import json
 import re
 import tempfile
@@ -15,11 +14,10 @@ from pathlib import Path
 
 from harness.agents import render
 from harness.lean import render_formula
-from harness.model import corpus
 from harness.model.blueprint import ConceptRecord
 from harness.phases import review
 from harness.phases import validate as validate_phase
-from scripts.tests.test_review_routing import A_VIOLATED, ONTO, FakeRun, Scripted, cert, ctx, div, node, scripted_reviewer, submit
+from scripts.tests.test_review_routing import ONTO, FakeRun, scripted_reviewer, submit
 
 CID = "drv.motion.zz_close_pass"
 CONTRACT = "the first road user passes close to the second one while turning, within the horizon the caller sets"
@@ -168,74 +166,21 @@ class Labels(unittest.TestCase):
         self.assertIn("the concept `drv_motion_zz_still` holds of `s` [DRV_GLOSS]", text)
         self.assertNotIn("the concept `prim_", text)
 
-    def test_in_a_node_s_rendering(self):
-        self.check(render_formula.render_rule({"binders": [{"name": "s", "cls": "tt"}], "applicability": "tt", "obligation": self.CALLS},
-                                              self.GLOSSES))
-
-    def test_in_a_case_s_rendering(self):
-        self.check(review.render_case(self.CALLS, {}, 0, {"s": 1, "o": 2}, self.GLOSSES, [0]))
-
-
-class StageASeesTheCaseOnly(unittest.TestCase):
-    """The stage A prompt of a case that names a primitive: the primitive under its label, glossed,
-    with its contract row; nothing of the rule, the record, the rule's contracts or a concept body."""
-    def test_the_judge_case_prompt(self):
-        with tempfile.TemporaryDirectory() as t:
-            run = FakeRun(Path(t))
-            run.all_concepts = lambda: {"drv.motion.zz_body": record(body_json={"atom": "BODY_JSON_MARKER"})}
-            stub, prompts = Scripted({"a": {**A_VIOLATED, "verdict": "undetermined"}}), []
-
-            def session(run, out_dir, label, prompt, **kw):
-                prompts.append(prompt)
-                return stub(run, out_dir, label, prompt, **kw)
-            saved = validate_phase._session
-            validate_phase._session = session
-            case = {"and": [{"cmp": "lt", "lhs": {"quantity": "prim_region_offset_along", "args": [{"var": "v"}, {"var": "r1"}, {"var": "r2"}],
-                                                  "params": []}, "rhs": {"lit": {"num": 0, "den": 1}, "unit": "m"}},
-                            {"derived": "prim_closest_approach_within", "args": [{"var": "v"}, {"var": "w"}],
-                             "params": [{"lit": {"num": 3, "den": 1}, "unit": "s"}]}]}
-            # `case_atoms` as the certificate writes it: `Formula.atoms` of the case, a primitive call's name among them
-            c = {**cert(), "canonical_case": case, "case_atoms": ["prim_region_offset_along", "prim_closest_approach_within"]}
-            context = ctx()
-            context.record = {"node_id": "L_1_o1", "obligation": "RECORD_MARKER"}
-            context.rendering = "RULE_RENDERING_MARKER"
-            context.rule_glosses = {"kin.speed": "RULE_GLOSS_MARKER"}
-            try:
-                review.judge_divergence(run, node(), context, ONTO, div(case=case, grounding={"v": 1, "w": 2},
-                                                                        entities={"r1": {"kind": "lane", "id": 7}, "r2": {"kind": "lane", "id": 8}}),
-                                        c, Path(t), "d1")
-            finally:
-                validate_phase._session = saved
-            [prompt] = prompts
-            for pid in ("prim.region_offset_along", "prim.closest_approach_within"):
-                self.assertIn(f"the primitive `{pid.replace('.', '_')}`", prompt)
-                self.assertIn(f"[{ONTO.contract(pid)}]", prompt)
-                self.assertIn(contract_row(pid), prompt)
-            for leak in ("RECORD_MARKER", "RULE_RENDERING_MARKER", "RULE_GLOSS_MARKER", "BODY_JSON_MARKER", "### Record", "### Rendering",
-                         "`kin.speed`", CONTRACT, "the concept `"):
-                self.assertNotIn(leak, prompt)
-            rows = re.findall(r"^\| `([^`]+)` \|", prompt.split("### The case", 1)[1], re.M)
-            self.assertEqual(sorted(rows), ["prim.closest_approach_within", "prim.region_offset_along"])
+    def test_in_a_concept_s_rendering(self):
+        self.check(render_formula.render_concept({"args": [{"name": "s", "sort": {"sort": "track"}}, {"name": "o", "sort": {"sort": "track"}}],
+                                                  "params": [{"name": "h", "unit": "s"}], "kind": "formula", "body": self.CALLS},
+                                                 self.GLOSSES))
 
 
 class IdentityIgnoresTheRendering(unittest.TestCase):
-    """A case's id and a body's canonical form, pinned to the values computed before primitives were
-    labelled apart: neither reads the rendering."""
-    CASE = {"and": [{"cmp": "lt", "lhs": {"quantity": "prim_region_offset_along", "args": [{"var": "user1"}, {"var": "r1"}, {"var": "r2"}],
-                                          "params": []}, "rhs": {"lit": {"num": 0, "den": 1}, "unit": "m"}},
-                    {"derived": "prim_closest_approach_within", "args": [{"var": "user1"}, {"var": "user2"}],
-                     "params": [{"lit": {"num": 3, "den": 1}, "unit": "s"}]}]}
+    """A concept challenge's id and a body's canonical form, pinned to the values computed before
+    primitives were labelled apart: neither reads the rendering."""
     BODY = {"and": [{"derived": "prim_closest_approach_within", "args": [{"var": "s"}, {"var": "o"}], "params": [{"param": "h"}]},
                     {"cmp": "lt", "lhs": {"quantity": "prim_heading_change", "args": [{"var": "s"}], "params": [{"param": "w"}]},
                      "rhs": {"lit": {"num": 0, "den": 1}, "unit": "deg"}}]}
 
-    def test_case_id_and_canonical_body(self):
-        law = corpus.Law("ZZ-1-1", "An invented duty", "A road user halts.", "invented")
-        canon = {"case": self.CASE, "entities": {"r1": {"kind": "lane", "id": 7}, "r2": {"kind": "lane", "id": 8}},
-                 "grounding": {"user1": 1, "user2": 2}}
+    def test_concept_case_id_and_canonical_body(self):
         d = {"trace": {"scenes": [{"t": 0}]}, "at": 0}
-        self.assertIn("the primitive `prim_region_offset_along`", review.render_case(self.CASE, canon["entities"], 0, canon["grounding"], {}))
-        self.assertEqual(review.case_id(law, d, canon), "ea8eb8c74840054f80f620c03d677ff51d0f4d1218cd72e8f41e097eed3e7e9e")
         self.assertEqual(render_formula.canonical(self.BODY, ["s", "o"], ["h", "w"]),
                          '{"and":[{"args":[{"var":"$a0"},{"var":"$a1"}],"derived":"prim_closest_approach_within","params":[{"param":"$p0"}]},'
                          '{"cmp":"lt","lhs":{"args":[{"var":"$a0"}],"params":[{"param":"$p1"}],"quantity":"prim_heading_change"},'

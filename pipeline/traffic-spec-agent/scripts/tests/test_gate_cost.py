@@ -89,7 +89,7 @@ class Routing(Interrupted, unittest.TestCase):
 
     def test_a_timeout_neither_charges_an_attempt_nor_closes_the_law(self):
         """…and, the context unchanged, the saved candidate is gated again with no session; it passes
-        and goes to the review as any candidate does."""
+        and is accepted as any candidate is."""
         w = cost_once()
         with R.Fixture(w) as f:
             f.drive()
@@ -99,7 +99,6 @@ class Routing(Interrupted, unittest.TestCase):
         e = {x["law"]: x for x in ref["ledger"]}["L-20"]
         self.assertEqual((e["state"], e["attempts"], e["cost_failures"], e["core_panics"]), ("accepted", 0, {"L_20": 1}, []))
         self.assertEqual((w.calls[("plan", "L-20", 1)], w.calls[("code", "L_20", 1)], w.calls[("code", "L_20", 2)]), (1, 1, 0))
-        self.assertEqual((w.calls[("review", "L_20", 1)], w.calls[("review", "L_20", 2)]), (0, 1))   # a timeout never reaches acceptance
         self.assertTrue(rerun.endswith("iter-001/code/L_20"))
         self.assertEqual(lib, "coded L_20 1\n")                 # the candidate the first session wrote is the one accepted
         self.assertEqual(ref["node_ledger"], [])                  # no node coding counted
@@ -127,7 +126,6 @@ class Routing(Interrupted, unittest.TestCase):
         self.assertTrue(e["reasons"][0].startswith("gate_cost:"))
         self.assertEqual(w.calls[("plan", "L-21", 2)] + w.calls[("plan", "L-21", 3)], 0)   # never re-planned
         self.assertEqual((w.calls[("code", "L_21", 1)], w.calls[("code", "L_21", 2)]), (1, 0))   # the second gate ran on the saved candidate
-        self.assertEqual(sum(c for k, c in w.calls.items() if k[0] == "review"), 0)
         self.assertEqual(ref["iterations_allocated"], ["iter-001", "iter-002"])
         self.assertEqual(s["gate_costs"], {"cost_failures": 2, "core_panics": 0, "held_for_operator": ["L_21"]})
         self.assertTrue(any("`L-21` held for you, no attempt counted: gate_cost:" in l and "final/" in l for l in ref["to_user"]))
@@ -411,7 +409,7 @@ class GapDecision(unittest.TestCase):
         w.plans = {"L-33": [R.concept("drv.motion.creep"), R.node("L_33_o1", "shall halt.", "L-33", derived=["drv.motion.creep"]),
                             R.node("L_33_o2", "shall halt.", "L-33", span="s2")]}
         w.gate[("drv.motion.creep", 1)] = w.gate[("drv.motion.creep", 3)] = "GATE_TIMEOUT"
-        w.review[("L_33_o2", 1)] = "returned"
+        w.gate[("L_33_o2", 1)] = "CHECK_FAIL"
         w.node_repair[("L_33_o2", 2)] = {"withdraw": {"span": "s2", "kind": "atom", "missing": "an atom"}}
         with R.Fixture(w) as f:
             f.drive(max_iterations=2)
@@ -545,6 +543,7 @@ class Counts(unittest.TestCase):
         nod = {"node": "L_1", "law": "L", "state": "returned", "attempts": 1, "reasons": ["gate CHECK_FAIL"], "last_task": "t",
                "iteration": 1, "judge_failures": {"stage_a": 1}}
         with tempfile.TemporaryDirectory() as t:
+            retired = {"node_ledger.jsonl": {"judge_failures"}}             # a node review's count, read and dropped
             for name, row, cls in (("ledger.jsonl", law, lambda p: Ledger(p, ["L"], 2)), ("concept_ledger.jsonl", con, lambda p: ConceptLedger(p, 3)),
                                    ("node_ledger.jsonl", nod, lambda p: NodeLedger(p, 2))):
                 p = Path(t) / name
@@ -552,8 +551,10 @@ class Counts(unittest.TestCase):
                 led = cls(p)
                 (entry,) = led.entries.values()
                 got = asdict(entry)
-                self.assertEqual({k: got[k] for k in row}, row, name)            # every recorded field as written
-                self.assertEqual({k: v for k, v in got.items() if k not in row},
+                kept = {k: v for k, v in row.items() if k not in retired.get(name, set())}
+                self.assertEqual({k: got[k] for k in kept}, kept, name)          # every recorded field it keeps, as written
+                self.assertFalse(retired.get(name, set()) & set(got), name)
+                self.assertEqual({k: v for k, v in got.items() if k not in kept},
                                  {"ledger.jsonl": {"cost_failures": {}, "core_panics": [], "waits_on": []},
                                   "concept_ledger.jsonl": {"cost_failures": 0, "core_panics": 0, "held_laws": []},
                                   "node_ledger.jsonl": {}}[name], name)           # the new counts start at zero

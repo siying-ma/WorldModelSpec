@@ -4,7 +4,7 @@ over is a self-contained checkpoint that the next machine verifies before it con
 A run is pinned to the code that decides its results (`code_digest`: the harness, the recorded-data
 code, the monitor and Explain sources, the prompts, Core with its root module, the ontology, the
 configuration, the Lean build files, the region-kind exporter the harness runs, the doctor with the
-modules it runs, the launcher, and the Python project file with its dependency lock). The operator's
+modules it runs, the launcher, and the Python project file). The operator's
 hints a session reads are pinned apart, in the run's directory (`Run.pin_hints`), and travel with it.
 Every export carries the baseline the run's first export recorded, and every import and
 every resume of a run that has a manifest refuses to continue on other code, other semantic inputs or
@@ -32,14 +32,14 @@ import uuid
 from pathlib import Path
 
 from ..store import jsonl, paths
-from ..store.state import acceptance_policy, acceptance_policy_refusal
+from ..store.state import acceptance_policy, acceptance_policy_refusal, run_version_refusal, saved_version_refusal
 
 #: The files whose content decides a run's results, relative to the agent directory.
 CODE_PATTERNS = ("harness/**/*.py", "recorded/**/*.py", "prompts/*", "ontology/*", "config/*",
                  "library/TrafficSpec/Core.lean", "library/TrafficSpec/Core/**/*.lean", "library/Explain.lean",
                  "library/Main.lean", "library/lean-toolchain", "library/lakefile.lean", "library/lake-manifest.json",
                  "scripts/RegionKinds.lean", "scripts/__init__.py", "scripts/diagnostics/*.py", "scripts/gen_ontology.py",
-                 "scripts/run-generation.sh", "pyproject.toml", "uv.lock")
+                 "scripts/run-generation.sh", "pyproject.toml")
 #: The split tool the doctor runs, from outside this directory (`paths.ontology_tool`), under its place in the
 #: WorldModelSpec layout; recorded as absent (None) where it is not found.
 DOCTOR_TOOL = "../ontology_provenance/nrs_tools/atoms_train.py"
@@ -67,8 +67,8 @@ def code_digest() -> dict:
 
 
 def toolchain() -> dict:
-    """What the run was built with besides its code (the dependency lock is code): Python, the Lean
-    toolchain as `lean --version` reports it and the installed distributions."""
+    """What the run was built with besides its code: Python, the Lean toolchain as `lean --version`
+    reports it and a digest of the installed distributions (no dependency is locked)."""
     from importlib import metadata
     lean = "unavailable"
     try:
@@ -154,8 +154,13 @@ def checkpoint_problems(run_id: str) -> list[str]:
 
 def export(run_id: str, source_baseline: str = "") -> dict:
     """Write the handoff of a run at a checkpoint (see the module's description); refuses otherwise.
-    Returns the manifest."""
+    Returns the manifest. A run another run version started is refused on its raw saved version
+    before the library is taken or anything is written."""
     from ..store import owner
+    if (paths.run_dir(run_id) / "options.json").exists():
+        why = saved_version_refusal(paths.run_dir(run_id))
+        if why:
+            raise SystemExit(f"[handoff] `{run_id}` cannot be exported by this harness: {why} — nothing was written")
     owner.acquire_for_command("handoff")                 # the single writer: refused while a loop or command owns the library
     bad = checkpoint_problems(run_id)
     if bad:
@@ -197,13 +202,15 @@ def _code_refusal(manifest: dict, now: dict) -> str:
 
 def verify(run_id: str, artifacts: bool = True) -> tuple[list[str], list[str]]:
     """The checks before a machine continues a handed-over run: (refusals, warnings). Refused: no
-    manifest; another run version than the one that started the run; other code than the run's
+    manifest; another run version than the one that started the run (the manifest's, or the saved
+    options' read raw); other code than the run's
     baseline; other semantic inputs; saved options whose acceptance policy is not the one the run's
     first export recorded (`acceptance_policy_refusal`; a manifest without that anchor is warned
     `policy anchor missing: not verified`); with `artifacts`, a handed
     file missing or not the one exported; a lock or owner record in the run's directory. Warned: other
-    Python or dependency versions than at the export."""
-    from ..loop import semantic_inputs, run_version_refusal
+    Python or dependency versions than at the export. No base chain is checked: `export` refuses a
+    run with a `base_run`, so a handed-over run has none."""
+    from ..loop import semantic_inputs
     m = jsonl.read_json(paths.run_dir(run_id) / "handoff" / "manifest.json", None)
     if m is None:
         return [f"`{run_id}` has no handoff manifest"], []
@@ -211,6 +218,9 @@ def verify(run_id: str, artifacts: bool = True) -> tuple[list[str], list[str]]:
     version = run_version_refusal(m.get("semantic"))
     if version:
         refusals.append(f"the run was handed over by another run version: {version}")
+    saved = saved_version_refusal(paths.run_dir(run_id))
+    if saved:
+        refusals.append(f"the run's saved options are of another run version: {saved}")
     now = code_digest()
     if m.get("baseline", {}).get("code", {}).get("digest") != now["digest"]:
         refusals.append(_code_refusal(m, now))

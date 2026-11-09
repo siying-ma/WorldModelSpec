@@ -281,7 +281,7 @@ class SessionRoles(unittest.TestCase):
         self.answer({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "total_cost_usd": 0.3,
                      "usage": {"output_tokens": 3}, "result": '{"ok": true}'})
         run = SimpleNamespace(opts=self.opts)
-        self.assertEqual(validate._session(run, self.task(), "stage_a", "p"), ({"ok": True}, []))
+        self.assertEqual(validate._session(run, self.task(), "adjudicate", "p"), ({"ok": True}, []))
         self.assertEqual(validate._session(run, self.task(), "plan_aggregates", "q", role="work"), ({"ok": True}, []))
         self.assertEqual(self.caps, [2.0, 20.0])
 
@@ -308,25 +308,22 @@ class SessionRoles(unittest.TestCase):
 
     def test_a_judge_past_its_cap_is_asked_again_then_deferred(self):
         """A judge the CLI stops at its budget cap left no answer: it is asked once more, and an answer
-        that stays missing defers the review (`Deferred`), as a judge without an answer always did."""
+        that stays missing is returned as no answer, with the reason, for its caller to defer."""
         self.answer({"type": "result", "subtype": "error_max_budget_usd", "is_error": True, "num_turns": 1, "total_cost_usd": 2.4,
                      "usage": {"output_tokens": 9000}})
         run = SimpleNamespace(opts=self.opts)
         out = self.task()
-        answer, errs = validate._session(run, out, "stage_a", "p")
+        answer, errs = validate._session(run, out, "adjudicate", "p")
         self.assertIsNone(answer)
-        self.assertEqual(errs, ["stage_a: no JSON object in the answer, twice"])
+        self.assertEqual(errs, ["adjudicate: no JSON object in the answer, twice"])
         self.assertEqual(self.caps, [2.0, 2.0])
-        self.assertEqual([json.loads((out / f).read_text())["cut_off"] for f in ("stage_a_result.json", "stage_a_again_result.json")],
+        self.assertEqual([json.loads((out / f).read_text())["cut_off"] for f in ("adjudicate_result.json", "adjudicate_again_result.json")],
                          ["the session stopped at its budget cap"] * 2)
         self.assertEqual(round(budget.for_run(self.opts, self.d / "t").by_vendor["anthropic"], 6), 4.8)   # settled at its actual cost
-        ctx = SimpleNamespace(law=SimpleNamespace(text="t"), definitions=[], record={"node_id": "N"})
-        with self.assertRaises(review.Deferred):
-            review.run_stage_a(run, ctx, "p2", self.task(), "stage_a")
 
 
 class ResumedReview(unittest.TestCase):
-    """A review resumed after a pause runs only the passes and the judgments it does not have."""
+    """A review resumed after a pause asks no judgment it already has."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -342,38 +339,6 @@ class ResumedReview(unittest.TestCase):
     def passes(self):
         return [SimpleNamespace(out_dir=self.d / f"pass{k}", done=False, answer=None, attempts=[]) for k in (1, 2)]
 
-    def test_a_pass_that_submitted_is_not_run_again(self):
-        calls, pause = [], [True]
-
-        def fake(prompt, out_dir, opts, t, *, label, **kw):
-            calls.append(label)
-            if label.endswith("p2") and pause[0]:
-                raise BudgetPaused("over")
-            t.done, t.answer, t.attempts = True, {"verdict": "accept", "divergences": []}, [{"divergences": 0}]
-        review.session.run_tools = fake
-        n = SimpleNamespace(id="N", raw={"node_id": "N"})
-        with self.assertRaises(BudgetPaused):
-            review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx")
-        pause[0] = False
-        again = self.passes()
-        review.run_passes(self.run, n, lambda _k: "prompt", self.d, again, context="ctx")
-        # the passes run one after another; the resumed review runs p2 alone
-        self.assertEqual(calls, ["review_behaviour_p1", "review_behaviour_p2", "review_behaviour_p2"])
-        self.assertEqual(again[0].answer, {"verdict": "accept", "divergences": []})
-
-    def test_a_changed_context_or_no_context_runs_every_pass(self):
-        calls = []
-
-        def fake(prompt, out_dir, opts, t, *, label, **kw):
-            calls.append(label)
-            t.done, t.answer = True, {"verdict": "accept", "divergences": []}
-        review.session.run_tools = fake
-        n = SimpleNamespace(id="N", raw={"node_id": "N"})
-        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx")
-        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context="ctx-changed")
-        review.run_passes(self.run, n, lambda _k: "prompt", self.d, self.passes(), context=None)
-        self.assertEqual(len(calls), 6)
-
     def test_a_judgment_already_given_on_the_same_prompt_is_taken_back(self):
         calls = []
 
@@ -382,9 +347,9 @@ class ResumedReview(unittest.TestCase):
             return {"result": {"result": json.dumps({"verdict": "lawful"})}}
         validate.session.run = fake
         out = self.d / "judge"
-        first = validate._session(self.run, out, "stage_a", "the case")
-        second = validate._session(self.run, out, "stage_a", "the case")
-        other = validate._session(self.run, out, "stage_a", "another case")
+        first = validate._session(self.run, out, "adjudicate", "the case")
+        second = validate._session(self.run, out, "adjudicate", "the case")
+        other = validate._session(self.run, out, "adjudicate", "another case")
         self.assertEqual((first, second, other[0]), (({"verdict": "lawful"}, []), ({"verdict": "lawful"}, []), {"verdict": "lawful"}))
         self.assertEqual(len(calls), 2)
 

@@ -189,14 +189,14 @@ class ClaimedAnywhere(unittest.TestCase):
 class HeldNodeFeedback(unittest.TestCase):
     """A held node is described by the state it is held in, not as waiting on the run."""
 
-    def test_a_deferred_review_is_named_by_its_stage(self):
+    def test_a_held_node_is_named_by_its_state(self):
         w = rec.World({"L-1": "shall stop."})
         w.plans = {"L-1": [rec.node("L_1", "shall stop.", "L-1")]}
-        w.review[("L_1", 1)] = ("deferred", "evidence")
+        w.gate[("L_1", 1)] = "GATE_TIMEOUT"
         with rec.Fixture(w, max_iterations=1) as f:
             f.drive(launches=1)
             notes = (paths.RESULTS / "r" / "AUTO_NOTES.md").read_text(encoding="utf-8")
-        self.assertIn("- `L_1` held: its behaviour review was deferred at stage `evidence`: scripted deferral", notes)
+        self.assertIn("- `L_1` held: its gate's evaluation ended on its cost; its saved candidate is gated again", notes)
         self.assertNotIn("waits on the run", notes)
 
 
@@ -235,8 +235,7 @@ class RepairReask(unittest.TestCase):
             return [NS(node=nodes[0], reasons=["L_9_o1: scripted defect"] if first else [])]
         patches = [mock.patch.object(plan_phase.session, "run", session_run), mock.patch.object(validate_a, "validate", validate),
                    mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"),
-                   mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []),
-                   mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: "")]
+                   mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: [])]
         reading = NS(data={"params": []}, params=[], pending_aggregates=False)
         with ExitStack() as st:
             for p_ in patches:
@@ -270,8 +269,7 @@ class RepairReask(unittest.TestCase):
         with mock.patch.object(plan_phase.session, "run", lambda *a, **k: launched.append(k.get("label"))), \
                 mock.patch.object(validate_a, "validate", lambda nodes, *a, **k: [NS(node=nodes[0], reasons=[])]), \
                 mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"), \
-                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []), \
-                mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: ""):
+                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []):
             plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], NS(data={"params": []}, params=[], pending_aggregates=False), ONTO)
         self.assertEqual(launched, [])
         self.assertEqual((d / "validation.txt").read_text(), "accept")
