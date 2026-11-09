@@ -9,7 +9,7 @@ The generation stage plans, codes and checks traffic laws. It reads no driving r
 | **Claude** (Anthropic) | Planning, coding and repair sessions | The `claude` CLI on `PATH`, logged in (`claude` once, interactively) to the account that should be billed. Leave `ANTHROPIC_API_KEY` unset, or the CLI bills that key instead. |
 | **OpenAI** | The concept reviewer and the aggregate verifier (`gpt-6.1-sol`), called through the OpenAI Python SDK | An API key in `~/.config/traffic-spec/openai.env` as `OPENAI_API_KEY=...`, mode 600. No Codex CLI or login is used. |
 
-## Quick start
+## Setup (once per machine)
 
 ```bash
 git clone --branch remote/full-train-generation <repository url> wms
@@ -21,19 +21,20 @@ python -m harness split                        # must print: train
 python -m harness doctor                       # must exit 0
 ```
 
-Then start a run with the run id, law list and settings you were given:
+## The runs
 
-```bash
-python -m scripts.subset_laws <run id> laws/example/train/laws.jsonl <law id> ...
-RUN_ID=<run id> LAWS=results/<run id>/laws/laws.jsonl <settings> \
-  nohup scripts/run-generation.sh new > launch-<run id>.out 2>&1 &
-```
+Each run has its own folder under `pipeline/traffic-spec-agent/launch/`, with its settings, its budget and a script that starts it:
 
-**The full operator guide** covers the settings, budgets, resuming, exit codes and what to send back: [`pipeline/traffic-spec-agent/REMOTE_LAUNCH.md`](pipeline/traffic-spec-agent/REMOTE_LAUNCH.md).
+| Run | Laws | Guide |
+|---|---|---|
+| **Demo** | the 22 demo laws | [`launch/demo/README.md`](pipeline/traffic-spec-agent/launch/demo/README.md) |
+| **Full training** | all 221 training laws; spans more than a week; not to be started on the current baseline | [`launch/full/README.md`](pipeline/traffic-spec-agent/launch/full/README.md) |
+
+Start only the run you were asked for. **What to do after any exit, how to resume and what to send back** is in the operator guide: [`pipeline/traffic-spec-agent/REMOTE_LAUNCH.md`](pipeline/traffic-spec-agent/REMOTE_LAUNCH.md).
 
 ## Notes
 
 - The launcher checks the checkout, the tools, the Python packages and the key before it spends anything.
-- A run keeps its settings: resume with `RUN_ID=<run id> scripts/run-generation.sh resume`, without setting them again.
+- A run keeps its settings: on resume, set nothing but the values you are told to change.
 - Do not edit files under `pipeline/traffic-spec-agent` while a run is going.
 - Agent instructions for this repository are in [`CLAUDE.md`](CLAUDE.md).
