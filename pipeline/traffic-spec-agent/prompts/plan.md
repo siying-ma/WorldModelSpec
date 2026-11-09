@@ -44,23 +44,19 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
   they were rejected.
 - **Parameters** — the reading's parameter catalogue: every named parameter a node may use, with
   its unit and the convention its value comes from. Values are not shown and are not yours.
-- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, review divergences or label-check
-  results, and gate verdicts.
-- **The evidence** — one of two blocks, by the run's feedback. Under review feedback,
-  **Situations decided against earlier records**: every certified case the review upheld against
-  an earlier rule of a node of these laws, rendered as the judges saw it, with the law's verdict and
-  the reason it was upheld. The harness runs every later rule of that node on it before any review.
-  Treat each certified case as a regression obligation: the rule must give the law's verdict on it.
-  It is not a mapping instruction. Do not copy an atom from the case into a record merely because
-  the case used it. Every changed mapping is justified by the law's span and the chosen atom's or
-  concept's contract. Under label feedback, **Label mismatches**: per law planned again, its label
-  contract, its repair goal and the cases its rules, checked together, did not meet (rule 11b).
+- **Feedback** — `AUTO_NOTES.md`: the last iteration's rejections, label-check results and gate
+  verdicts.
+- **The evidence** — during replanning for a law-level label repair, **Label mismatches**:
+  the label contract, repair goal and cases the law's rules, checked together, did not meet
+  (rule 11b). Every changed mapping is justified by the law's span and the chosen atom's or
+  concept's contract. Otherwise no law-level label-repair evidence is supplied.
 - **Your previous record of these laws** (for a law planned again) — every node of its latest
-  plan, those never coded included, with each later repaired or coded version and its state (the
-  validator's, the gate's, and the review's or the label check's verdicts, accepted or not), and the
-  nodes each composes. They are context, not authority. Keep what met its cases. Restructure only
-  where a failing case, a label mismatch, a validator defect, an upheld structural finding or another returned reason requires it, or where
-  the words show an earlier record wrong; the harness runs every recorded case on the new record.
+  plan, those never coded included, with each later repaired or coded version and its recorded
+  validator and gate results, accepted or not, and the nodes each composes. They are context,
+  not authority. Keep what met its cases. Restructure only where a failing case, a label mismatch,
+  a validator defect or another returned reason requires it, or where the words show an earlier
+  record wrong. During a law-level label repair, the label evidence states the law's check result
+  and repair goal; the candidate is checked again before commit.
 - **User hints** — `USER_HINTS.md`.
 
 {laws}
@@ -314,10 +310,12 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    factor's degree and holds mild and severe conditions to one bound; reading a factor's degree is
    the reading of the words, not a model of how the duty is performed.
 4b. **The occasion of an act.** An obligation span mapped to a concept observed over a stretch of
-   time (one with a parameter in a unit of time: a manoeuvre recognized only once it has been
-   carried out) is judged where the act is recognized, which is after it began. The act is the
-   observation at which its concept rises: the concept holds from there until its window has
-   passed, and those later observations are not the act again. A span the words place in time
+   time (one whose record declares the act, `act`: a manoeuvre recognized only once it has been
+   carried out; neither a parameter in a unit of time nor a temporal operator makes a concept an
+   act) is judged where the act is recognized, which is after it began. The act is the
+   observation at which its concept rises, and the later observations at which it still holds are
+   not the act again. The contract states how long the act concept holds after recognition and
+   what ends it; do not infer an event act's extent from a window. A span the words place in time
    relative to an act ("prior to", "after", "while"), whatever its role, is measured from that
    rise, never from a later observation at which the concept still holds. Each trigger,
    condition and exception span the node maps is then read at an occasion of the act you declare
@@ -329,8 +327,14 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    `at_recognition` where the words do not place it there narrows where the rule applies, and the
    rule is held to that like any narrowed trigger or condition, whichever span the record
    discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
-   and they share one occasion: the window, `under_way` and the scenarios. `window` names the
-   act's window parameter. Where a span is read while the act is under way, `under_way` is an
+   and they share one occasion: the boundary, `under_way` and the scenarios. `boundary` is the
+   boundary the acts' records declare: `window`, where `window` names the act's window parameter;
+   or `event`, for an act no window of fixed length bounds, where `onset` is an element
+   `{words, atoms, derived, justification}` mapping what marks
+   the act's observed beginning, claimed and coded like any element, and `recognition` the words
+   saying where the act is recognized. A window is never named only to fill the field. Where the
+   formula language cannot write the boundary, `gap` names the span of the record's `operator` gap
+   that states it. Where a span is read while the act is under way, `under_way` is an
    element `{words, atoms, derived, justification}` saying what tells an observation inside the
    act from one before it began: it reads the road user's motion (a kinematic atom such as the
    heading's rate of change, a primitive, or a concept that reads one) and never a place or a
@@ -356,6 +360,17 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    is not recorded, and no recorded act or visible end of the search decides the verdict; it expects
    `unknown`, and its `boundary` names the history the trace lacks. A boundary only names missing
    history; it never turns a verdict the trace decides into unknown.
+4d. **Event-relative history.** When the words relate a condition or a prior act to an event, state
+    the event, its recognition point and the relevant history boundary in the record and any concept
+    contract. Use an observed onset where it is the boundary the words or the disclosed reading
+    require. Do not use a sliding recognition window as the act's beginning, or discard evidence
+    before the act begins when the words require prior conduct. Retain a fixed time or distance
+    bound where the law requires it, or where a justified, parameterized observation or recognition
+    bound is needed; state its purpose and follow the reading approval rules. Never derive a bound
+    or an event onset from a recording's length, endpoints or identifier. Missing required history
+    leaves the dependent quantity or condition unknown; other branches may still decide the verdict.
+    If the formula language cannot express the required boundary, report an operator gap rather than
+    change the meaning.
 5. **One node per obligation span, and nothing below it.** Two obligations in one line are two
    nodes, `…_o1` and `…_o2`, each segmenting the whole line; in each, the other's obligation span
    and the words only the other needs carry the role `sibling`. An exception or a condition that
@@ -479,7 +494,7 @@ params, convention, surrogate}], assumptions[{span, id, meaning}], intentions[{s
 compositions[{span, rule, map, as: "exception" | "condition" | "compliance" | "unless", scopes (unless only: the exception or condition span suspended)} | {span (a `reference` span), as: "definition", source (the id of the law or posted definition the words are borrowed from), quote (the borrowed words, verbatim from it)}], residues[{span, why, scope ("none" only, and only on a trigger/subject/condition/exception span that imposes no observable condition)}],
 binders[{name, class_elements}], applicability, obligation, params, narrowings[{span, why, kind ("reading", the default, or "observable_reading" with `category`: "intention" | "perception" | "status" | "purpose" | "agency"), gap (a rejected gap id of this law whose decision this reading follows, where the gap table shows one)}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list), boundary (history_boundary only: the approach its trace lacks)}],
-occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
+occasion{act (a concept id, or a list of them for alternative acts), boundary: "window" | "event" (absent: "window"), window (boundary "window"), onset{words, atoms, derived, justification} (boundary "event"), recognition (boundary "event"), gap (boundary "event", only where the formula language cannot write it: the span of an `operator` gap), under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
 gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
@@ -502,6 +517,7 @@ Concept records, in the same file, one JSON object per concept, this schema and 
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
 args[{name, sort: "track" | "region" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+act{boundary: "window" | "event", window (window only: the formal parameter in a unit of time that bounds the act), onset, recognition, extent, history} (a concept that recognizes an act over a stretch of time, and only such a concept: the words of the contract, verbatim, stating the act's observed beginning, its point of recognition, its extent, and the history boundary for conduct before it),
 elements[{span (words of the contract), atoms, concepts, justification}], residues[{span, why}],
 literals[{value, unit, why}] (a geometric constant or a figure the definition states),
 scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only, a list)}],
@@ -539,8 +555,8 @@ Run the validator on the finished file and fix what it names; then confirm by re
   elements over the contract's words, the three scenarios, and `used_by` naming nodes that claim
   it; a definition-born contract quotes the definition's words and names its tolerances as parameters;
 - every `standard` span has an operationalization;
-- a node whose obligation is an act observed over time declares `occasion` for every trigger,
-  condition and exception span it maps, an `under_way` that reads the road user's motion, and the
+- a node whose obligation is an act observed over time declares `occasion`, with its boundary,
+  for every trigger, condition and exception span it maps, an `under_way` that reads the road user's motion, and the
   `occasion_<span>` and `occasion_<span>_outside` scenarios for each span read
   while the act is under way;
 - every node id is the derivation of rule 6 from its law id, with the ordinal counted over the

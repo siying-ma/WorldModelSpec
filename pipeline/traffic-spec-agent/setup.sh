@@ -33,20 +33,42 @@ else
 fi
 
 # ── 3. Python dependencies ───────────────────────────────────────────────
-# Install into whatever environment is active (conda, venv, or system). Only
-# fall back to creating a local .venv if that is not possible.
+# The packages pyproject.toml declares: fire (the command line) and the OpenAI SDK (the concept
+# review and the aggregate verifier). Install into whatever environment is active (conda, venv, or
+# system). Only fall back to creating a local .venv if that is not possible. No API request is sent.
 echo "==> Python dependencies"
+python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' \
+  || { echo "    Python 3.11 or newer is required (python3 is $(python3 -c 'import sys; print(sys.version.split()[0])'))" >&2; exit 1; }
+PY_PACKAGES=("fire>=0.6.0" "openai>=1.66")
+PY_IMPORTS='import fire; from openai import OpenAI, APIError, APITimeoutError, RateLimitError'
 VENV_CREATED=0
-if python3 -c "import fire" >/dev/null 2>&1; then
-  echo "    'fire' already available in the active environment"
-elif python3 -m pip install --quiet fire >/dev/null 2>&1; then
-  echo "    installed 'fire' into the active environment"
+if python3 -c "$PY_IMPORTS" >/dev/null 2>&1; then
+  echo "    fire and openai already available in the active environment"
+elif python3 -m pip install --quiet "${PY_PACKAGES[@]}" >/dev/null 2>&1 && python3 -c "$PY_IMPORTS" >/dev/null 2>&1; then
+  echo "    installed fire and openai into the active environment"
 else
   echo "    could not install into the active environment; creating .venv"
   python3 -m venv .venv
   ./.venv/bin/pip install --quiet --upgrade pip
-  ./.venv/bin/pip install --quiet fire
+  ./.venv/bin/pip install --quiet "${PY_PACKAGES[@]}"
+  ./.venv/bin/python -c "$PY_IMPORTS" || { echo "    the packages did not import in .venv" >&2; exit 1; }
   VENV_CREATED=1
+fi
+
+# ── 3b. the doctor's corpus and split tools ─────────────────────────────
+# A run's checkout is the whole WorldModelSpec repository: pipeline/ontology_provenance/ (nrs_tools)
+# lies beside this directory, where the doctor and the launcher find it.
+echo "==> The doctor's split tools (nrs_tools)"
+TOOLS="$(cd "$REPO_ROOT/.." && pwd)/ontology_provenance"
+if [ -f "$TOOLS/nrs_tools/atoms_train.py" ]; then
+  echo "    found beside this directory: $TOOLS"
+elif python3 -c "import nrs_tools.atoms_train" >/dev/null 2>&1; then
+  echo "    found on PYTHONPATH"
+else
+  echo "    MISSING: $TOOLS/nrs_tools is not there and PYTHONPATH has no nrs_tools." >&2
+  echo "      Clone the whole WorldModelSpec repository (the run branch carries pipeline/ontology_provenance/)," >&2
+  echo "      or put the directory holding nrs_tools/ on PYTHONPATH. The doctor refuses every run without it." >&2
+  exit 1
 fi
 
 # ── 4. Claude Code ───────────────────────────────────────────────────────

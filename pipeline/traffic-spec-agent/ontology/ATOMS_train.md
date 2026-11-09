@@ -435,6 +435,12 @@ A primitive is a geometric computation over atoms with no legal word in it, defi
 with its parameters exposed. A concept or a rule calls it by id; the set is closed, and a need
 for another is a gap for the operator, never a definition written during a run.
 
+`heading_since` (`Term.headingSince`) is a construct of the formula language, not an atom an
+adapter supplies and not a primitive: the signed heading change of a road user since a formula
+last became true, integrated from `kin.yaw_rate` with a step bound. It recognises no manoeuvre;
+the formula that marks the onset does. `prim.heading_change`, over a fixed window behind each
+observation, is not a stand-in for it.
+
 | id | contract | parameters | result unit | parameter units |
 |---|---|---|---|---|
 | `prim.heading_change` | the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from `kin.yaw_rate`; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing | the window length (time) | deg | s |

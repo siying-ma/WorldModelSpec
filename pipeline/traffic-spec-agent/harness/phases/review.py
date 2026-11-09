@@ -892,7 +892,7 @@ def history_of(formulas: list, concepts: dict, reading: Reading) -> _Need:
             inner = walk(x["rises"], env, depth + 1)
             inner.steps += 1
             return inner
-        for op in ("since", "count", "since_rise", "distance_while"):
+        for op in ("since", "count", "since_rise", "distance_while", "heading_since"):
             if op in x:
                 inner = walk([v for k, v in x.items() if k != op] + [x[op]], env, depth + 1)
                 inner.to_start = True
@@ -1179,7 +1179,7 @@ def rename_case(x, env: dict[str, str], bound) -> object:
     `env` lacks is kept), a name a quantifier or an aggregate binds to `bound(name)`, which renames
     its occurrences in that binder's scope only. The names a formula holds: `var` fields, the
     variable of a user quantifier (`forall_user`, `exists_user`), the vehicle of a window
-    (`subject`) and of `distance_while`, and the caller's names a rule reference maps to (the
+    (`subject`), of `distance_while` and of `heading_since`, and the caller's names a rule reference maps to (the
     values of `map`; its keys name the referenced rule's binders)."""
     if isinstance(x, list):
         return [rename_case(v, env, bound) for v in x]
@@ -1196,7 +1196,7 @@ def rename_case(x, env: dict[str, str], bound) -> object:
         return {k: (b if k == "var" else rename_case(v, scoped if k in ("body", "where", "of") else env, bound)) for k, v in x.items()}
     out = {}
     for k, v in x.items():
-        if isinstance(v, str) and (k == "var" or k == "distance_while" or (k == "subject" and any(w in x for w in _WINDOWS))):
+        if isinstance(v, str) and (k == "var" or k in ("distance_while", "heading_since") or (k == "subject" and any(w in x for w in _WINDOWS))):
             out[k] = env.get(v, v)
         elif k == "map" and isinstance(v, dict) and ("rule" in x or "rule_applies" in x):
             out[k] = {i: env.get(o, o) if isinstance(o, str) else o for i, o in v.items()}
@@ -1227,7 +1227,7 @@ def case_names(x, scope: frozenset = frozenset(), free: list | None = None, boun
                     walk(v, sc | {y["var"]} if k in ("body", "where", "of") else sc)
             return
         for k, v in y.items():
-            if isinstance(v, str) and (k == "var" or k == "distance_while" or (k == "subject" and any(w in y for w in _WINDOWS))):
+            if isinstance(v, str) and (k == "var" or k in ("distance_while", "heading_since") or (k == "subject" and any(w in y for w in _WINDOWS))):
                 if v not in sc and v not in free:
                     free.append(v)
             elif k == "map" and isinstance(v, dict) and ("rule" in y or "rule_applies" in y):
@@ -1274,7 +1274,7 @@ def canonical_case(d: dict, canonical, binders: list[str]) -> dict:
 
 
 def repair_case_names(r: dict) -> tuple[dict, bool]:
-    """A recorded case whose binders' declarations, window vehicles, `distance_while` vehicles or rule
+    """A recorded case whose binders' declarations, window vehicles, `distance_while` or `heading_since` vehicles or rule
     maps kept the names as written while its `var` fields were renamed (rows recorded before every
     name of a case was renamed), with each such name restored to its canonical one from the row's
     `names`. A name is restored only where it is out of scope and `names` gives its canonical
@@ -1301,7 +1301,7 @@ def repair_case_names(r: dict) -> tuple[dict, bool]:
             return {k: (fix(v, sc | {y["var"]}) if k in ("body", "where", "of") else (v if k == "var" else fix(v, sc))) for k, v in y.items()}
         out = {}
         for k, v in y.items():
-            name_site = isinstance(v, str) and (k == "distance_while" or (k == "subject" and any(w in y for w in _WINDOWS)))
+            name_site = isinstance(v, str) and (k in ("distance_while", "heading_since") or (k == "subject" and any(w in y for w in _WINDOWS)))
             if name_site and v not in sc and v not in known and v in canon:
                 out[k] = canon[v]
             elif k == "map" and isinstance(v, dict) and ("rule" in y or "rule_applies" in y):
@@ -2909,14 +2909,20 @@ def _inputs_digest(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, ensure_ascii=False, default=str).encode("utf-8")).hexdigest()
 
 
-def review_settings(run: Run, prompts: tuple[str, ...]) -> dict:
+#: The options a node's review uses (its passes and its divergence cap included), and those a
+#: concept's review and its adjudication use.
+NODE_REVIEW_SETTINGS = ("model", "judge_effort", "reviewer_model", "review_effort", "review_passes", "review_checks",
+                        "review_submissions", "max_divergences")
+CONCEPT_REVIEW_SETTINGS = ("model", "judge_effort", "reviewer_model", "review_effort", "review_checks", "review_submissions")
+
+
+def review_settings(run: Run, prompts: tuple[str, ...], settings: tuple[str, ...]) -> dict:
     """What a review's outcome depends on besides its record and the rulings: the iteration its
-    rulings are recorded under, the prompt files it renders, and its sessions' models, efforts and
-    limits."""
+    rulings are recorded under, the prompt files it renders, and the options it uses (`settings`:
+    its sessions' models, efforts and limits)."""
     o = run.opts
     return {"iteration": run.iteration, "prompts": {t: _digest((paths.PROMPTS / t).read_text(encoding="utf-8")) for t in prompts},
-            "opts": {k: getattr(o, k, None) for k in ("model", "judge_effort", "reviewer_model", "review_effort", "review_passes",
-                                                      "review_checks", "review_submissions", "max_divergences")}}
+            "opts": {k: getattr(o, k, None) for k in settings}}
 
 
 def review_inputs(run: Run, n: Node, law: corpus.Law, reading: Reading, rule_json: dict | None, ctx: Context, rows: list[dict]) -> str | None:
@@ -2932,7 +2938,7 @@ def review_inputs(run: Run, n: Node, law: corpus.Law, reading: Reading, rule_jso
                            "shown": {k: v for k, v in vars(ctx).items() if k not in ("law", "precedents", "rulings")},
                            "reading": reading.data, "gaps": GapLedger.for_run(paths.GAPS_DIR, run).cited_block(ctx.record),
                            "rulings": [r for r in effective_rows(rows) if r.get("key") == f"law:{law.id}"],
-                           **review_settings(run, NODE_REVIEW_PROMPTS)})
+                           **review_settings(run, NODE_REVIEW_PROMPTS, NODE_REVIEW_SETTINGS)})
 
 
 def saved_review(out_dir: Path) -> dict | None:
@@ -3140,6 +3146,8 @@ def body_dim(rec, body: dict | None) -> tuple | None:
             return _dims()["metre"]
         if "since_rise" in t:
             return _dims()["second"]
+        if "heading_since" in t:
+            return _dims()["degree"]
         if "aggregate" in t:
             return _dims()["count"] if t["aggregate"] == "count" else dim(t.get("of"))
         if "neg" in t or "abs" in t:
@@ -4241,7 +4249,7 @@ def concept_inputs(run: Run, rec, extras: dict, blocks: dict[str, str], rows: li
     return _inputs_digest({"record": rec.raw, "body": extras.get("body_json"), "reads": extras.get("reads"),
                            "narrowings": extras.get("narrowings_added"), "context": context, "shown": blocks,
                            "reading": Reading(run.reading_file).data, "rulings": [r for r in effective_rows(rows) if r.get("key") in keys],
-                           **(more or {}), **review_settings(run, CONCEPT_REVIEW_PROMPTS)})
+                           **(more or {}), **review_settings(run, CONCEPT_REVIEW_PROMPTS, CONCEPT_REVIEW_SETTINGS)})
 
 
 def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:

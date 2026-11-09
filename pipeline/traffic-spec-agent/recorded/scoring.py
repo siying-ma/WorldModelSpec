@@ -5,22 +5,9 @@ makes a recording undecidable can never pass for an improvement, and the verdict
 same wherever a recording is scored.
 
 The label contract: a label judges the subject's conduct (the trace's `subject`, which the monitor
-reports after identity merging) over the whole recording (contract v1), or over the label's scoring
-interval (contract v2); `violated` means at least one occurrence of the law's situation was violated,
-`compliant` that every occurrence complied, `not_applicable` that the situation never arose for the
-subject.
-
-Scoring interval (v2). The monitor evaluates the whole trace and reports, per grounding, its
-segments: the runs of consecutive observations with one verdict and one set of unknown reasons
-(`monitor --json --segments`). `within` keeps of each grounding only the observations inside the
-closed interval `[start_ms, end_ms]` and joins those alone, so the grounding's verdict, its reasons,
-its unknown counts and its timeline are the interval's: a violation outside the interval does not
-count, one inside still wins over an unknown, and an unknown met only outside (a look-back window
-truncated at the trace start, before the interval) is not joined. The trace is never cut before it
-is evaluated: an observation inside the interval reads its history and its future in the whole
-trace. A label whose interval cannot be used is `label_unverified`; the whole-recording verdict is
-kept beside an interval score as a diagnosis and never counted, and no summary joins scores of the
-two contracts.
+reports after identity merging) over the whole recording; `violated` means at least one occurrence
+of the law's situation was violated, `compliant` that every occurrence complied, `not_applicable`
+that the situation never arose for the subject.
 
 Joins: a rule's verdict joins the episode verdicts of the groundings that bind its subject binder
 (its first binder) to the subject; the other groundings are kept and reported, never joined. A
@@ -29,43 +16,57 @@ first of violated, unknown, compliant, not_applicable that occurs wins (an order
 evidence, not a severity).
 
 Statuses, one per recording. Labelled recordings: `match`, `mismatch`, `unknown` (the law's verdict
-is unknown; its blockers say why), `deadline` (a rule passed its time or memory limit), `crash` (the monitor failed), `no_rule` (the
-law has no rule), `incomplete` (an expected rule of the law reported no result), `contract_failed`
-(the subject the label judges cannot be found in the report: no subject, more than one, or no
-subject binder), `label_unverified` (v2: the label's scoring interval is missing, malformed, off the
-trace or unconfirmed; it is not evaluated, never a match, and keeps its place among the labels). A recording without an explicit label is `unlabelled` whatever happened to it;
-its verdict and any execution failure are kept beside the status, outside the label denominator.
-A recording some of whose expected rules passed a limit or crashed keeps the status of that failure
-and no verdict, whatever the others found: it is `partial` when some rule finished, and keeps each
-finished rule's result (under v2, its interval's) beside the failed rules (`failed`, each with its
+is unknown; its blockers say why), `deadline` (a rule passed its time or memory limit), `crash` (the
+monitor failed), `no_rule` (the law has no rule), `incomplete` (an expected rule of the law reported
+no result), `contract_failed` (the subject the label judges cannot be found in the report: no
+subject, more than one, or no subject binder). A recording without an explicit label is `unlabelled`
+whatever happened to it; its verdict and any execution failure are kept beside the status, outside
+the label denominator. A recording some of whose expected rules passed a limit or crashed keeps the
+status of that failure and no verdict, whatever the others found: it is `partial` when some rule
+finished, and keeps each finished rule's result beside the failed rules (`failed`, each with its
 failure); a violation a finished rule proved is reported apart (`found_violation`, with the
-completion and the status beside it), never a match and never a verdict of the law.
-Only `match` counts as agreement. The labelled set is fixed by the labels, never inferred from a
-status, and a judgment-call label (one whose verdict turns on a parameter the pipeline chooses) is
-counted apart from the others.
+completion and the status beside it), never a match and never a verdict of the law. Only `match`
+counts as agreement. The labelled set is fixed by the labels, never inferred from a status, and a
+judgment-call label (one whose verdict turns on a parameter the pipeline chooses) is counted apart
+from the others.
 
-Blockers. An unknown verdict keeps the monitor's reasons with their counts, and each reason becomes a
-blocker: the reason, its class (the kind of reason, never by itself who is at fault), its evidence
+Blockers. An unknown verdict keeps the monitor's reasons with their counts, and each reason becomes
+a blocker: the reason, its class (the kind of reason, never by itself who is at fault), its evidence
 and its handling. A handling names the party the evidence decides, and only then: `library` (a
 repair can make the recording decided), `data` (the source does not deliver what the rule reads,
 which is no proof that the rule reads the right thing), `harness` (a check that should have stopped
 it did not), `aggregate` (the aggregate review path), `time_contract` (a window reaching past the
-recording, held until the scoring interval of a label is fixed), `investigate` (neither side is
-shown). A recording can carry blockers of several handlings; each is kept.
+recording), `investigate` (neither side is shown). A recording can carry blockers of several
+handlings; each is kept.
+
+Window diagnosis. A truncated window keeps its blocker's class and handling (`history`,
+`time_contract`); a plain-labelled unknown recording may in addition carry pieces of window evidence
+(`diagnose_windows`), each a window operator Explain located, from its full structured report, as
+carrying the truncation the verdict holds at unknown observations of the recording (the whole
+recording is the range a label judges). A piece is eligible only when all of these hold: its Explain
+ran on the current library and reading and its source map was built; it is located (its source, the
+chain of concept calls and the binding traced); its operator is a metric window (`holdsFor`,
+`atLast` behind, `within`, `untilWithin` ahead) reported in that direction; its length after
+substitution is exactly a reading parameter `p.*` whose value and unit Explain read equal the
+reading's, the unit the one of the window's measure and the value positive; its window was observed
+not covered; and it is relevant: its grounding is one the label judges, and the grounding's segment
+at its scoring observation is unknown with that window's reason, a reason the recording's blockers
+carry. A blocker of that rule and reason with an eligible piece is `window_diagnosis` eligible: a
+reason for a diagnostic repair, never proof that the library is wrong. The coverage says how many
+unknown observations the located pieces explain; a partial coverage leaves an eligible piece
+eligible for the positions it locates only; it never names the causes complete.
 """
 from __future__ import annotations
 
 import json
-from bisect import bisect_left, bisect_right
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field
+from fractions import Fraction
 from typing import Iterable
 
 ORDER = ("violated", "unknown", "compliant", "not_applicable")
 STATUSES = ("match", "mismatch", "unknown", "deadline", "crash", "no_rule", "incomplete", "contract_failed",
             "unlabelled")
-#: The statuses of interval scoring (contract v2): those of v1 and an unusable label.
-STATUSES_V2 = STATUSES + ("label_unverified",)
 HANDLINGS = ("library", "data", "harness", "aggregate", "time_contract", "investigate")
 
 # The monitor's reason tags (`UnknownReason.tag`) by their constructor: the blocker class and handling.
@@ -85,6 +86,10 @@ REASONS = {
     "aggregate_unresolved": ("aggregate", "aggregate"),
 }
 FAILURES = ("deadline", "crash")
+#: The metric window operators whose length a parameter bounds, each with its direction.
+WINDOW_OPS = {"holdsFor": "look-back", "atLast": "look-back", "within": "look-ahead", "untilWithin": "look-ahead"}
+#: The Core unit a window's length is read in, by the window's measure.
+WINDOW_UNITS = {"time": "second", "path": "metre"}
 
 
 def join(verdicts: Iterable[str]) -> str:
@@ -166,47 +171,12 @@ def _key(binding: dict) -> str:
     return json.dumps(binding, sort_keys=True)
 
 
-def _between(times: list[int], a: int, b: int) -> list[int]:
-    return times[bisect_left(times, a):bisect_right(times, b)]
-
-
-def _clip(g: GroundingResult, start_ms: int, end_ms: int, times: list[int]) -> GroundingResult:
-    if g.segments is None:
-        raise ValueError("the report carries no reason-carrying segments (`monitor --segments`)")
-    inside, segs = _between(times, start_ms, end_ms), []
-    for sg in g.segments:
-        ts = _between(times, max(sg["from"], start_ms), min(sg["to"], end_ms))
-        if ts:
-            segs.append({"from": ts[0], "to": ts[-1], "verdict": sg["verdict"], "reasons": list(sg.get("reasons", [])),
-                         "observations": len(ts)})
-    if sum(x["observations"] for x in segs) != len(inside):
-        raise ValueError(f"a grounding's segments do not cover the scoring interval once ({g.binding})")
-    unknown = [x for x in segs if x["verdict"] == "unknown"]
-    reasons = list(dict.fromkeys(t for x in unknown for t in x["reasons"]))
-    counts = {t: sum(x["observations"] for x in unknown if t in x["reasons"]) for t in reasons}
-    return GroundingResult(dict(g.binding), join(x["verdict"] for x in segs), reasons,
-                           [{"from": x["from"], "to": x["to"], "verdict": x["verdict"]} for x in segs], counts, segs)
-
-
-def within(results: dict[str, RuleResult], start_ms: int, end_ms: int, times: list[int]) -> dict[str, RuleResult]:
-    """The rule results restricted to the scoring interval `[start_ms, end_ms]` of a trace whose
-    observation times are `times` (sorted): every grounding keeps only its segments' observations
-    inside the interval, its verdict, reasons and unknown counts joined over them alone; a rule's
-    verdict joins its subject's restricted groundings, as `rule_results` does. A rule without
-    groundings (unsupported) or without a single subject keeps its verdict. A grounding whose
-    segments are missing or do not cover the interval is refused (`ValueError`)."""
-    out = {}
-    for r, x in results.items():
-        judged = [_clip(g, start_ms, end_ms, times) for g in x.judged]
-        others = [_clip(g, start_ms, end_ms, times) for g in x.others]
-        verdict = x.verdict if x.verdict == "contract_failed" or x.support == "unsupported" else join(g.verdict for g in judged)
-        out[r] = RuleResult(r, verdict, x.support, list(x.absent), x.subject_binder, list(x.subject), judged, others)
-    return out
-
-
 def _rule_dict(x: RuleResult) -> dict:
+    """A rule's result as recorded: the segments of the groundings the label judges only."""
     d = asdict(x)
-    for g in d["judged"] + d["others"]:
+    for g in d["others"]:
+        g.pop("segments", None)
+    for g in d["judged"]:
         if g.get("segments") is None:
             g.pop("segments", None)
     return d
@@ -224,15 +194,15 @@ class Scored:
     failure: str | None = None          # deadline or crash, whether or not the recording is labelled
     judgment_call: bool = False
     blockers: list = field(default_factory=list)   # why the verdict is unknown, one entry per rule and reason
-    scope: dict | None = None       # v2: the scoring interval, its source and the whole-recording verdict (a diagnosis)
     failed: list = field(default_factory=list)     # the expected rules that did not finish: [{node, failure}]
     partial: bool = False           # some expected rule failed and some finished: `rules` holds the finished ones, no verdict
     found_violation: dict | None = None     # on a failed recording, the finished rules that proved a violation: {nodes, complete, status}
+    windows: dict | None = None     # the window evidence of an unknown recording (`diagnose_windows`)
 
     def to_dict(self) -> dict:
         d = asdict(self)
-        if d["scope"] is None:
-            d.pop("scope")
+        if d["windows"] is None:
+            d.pop("windows")
         return d
 
 
@@ -269,10 +239,8 @@ def _blocker(tag: str, declared: dict[str, str] | None) -> tuple[str, str, str]:
 
 def blockers_of(results: dict[str, RuleResult], rules: list[str], declared: dict[str, str] | None) -> list[dict]:
     """Every blocker of the unknown rules among `rules`: per rule and reason, the observations it
-    made unknown summed over the subject's unknown groundings. Under a scoring interval the results
-    are those `within` restricted to it, so a reason held only outside the interval is no blocker and
-    the counts are the interval's. A blocker claims no instant: where a reason held is read from the
-    rule's derivation."""
+    made unknown summed over the subject's unknown groundings. A blocker claims no instant: where a
+    reason held is read from the rule's derivation."""
     out = []
     for r in rules:
         x = results[r]
@@ -300,19 +268,17 @@ def blockers_of(results: dict[str, RuleResult], rules: list[str], declared: dict
 
 def score(recording_id: str, law_id: str, label: str | None, results: dict[str, RuleResult] | None,
           law_of: dict[str, str], failure: str | None = None, judgment_call: bool = False,
-          declared: dict[str, str] | None = None, scope: dict | None = None,
-          failed: dict[str, str] | None = None) -> Scored:
+          declared: dict[str, str] | None = None, failed: dict[str, str] | None = None) -> Scored:
     """The status of one recording. `results` are the monitor's results of the rules that finished
     (None when none did); `failed` maps each rule that did not to `deadline` or `crash`, and `failure`
     is the recording's own when no rule is named; `law_of` maps every rule the
     candidate registers to its law, so the law's expected rules are those it maps to the law;
-    `declared` is the recording manifest's atom declarations, which classify its blockers; `scope`
-    (v2) is the label's scoring interval, the results being already restricted to it (`within`).
+    `declared` is the recording manifest's atom declarations, which classify its blockers.
     A failure decides the status (`deadline` over `crash`) and leaves no verdict; the finished
     rules' results are kept, and a violation one of them proved is reported apart."""
     def done(verdict, status, rules=None, note="", fail=None, blockers=()):
         return Scored(recording_id, law_id, label, verdict, "unlabelled" if label is None else status,
-                      rules or {}, note, fail, judgment_call, list(blockers), scope)
+                      rules or {}, note, fail, judgment_call, list(blockers))
 
     failed = dict(failed or {})
     kinds = set(failed.values()) | ({failure} if failure is not None else set())
@@ -349,28 +315,127 @@ def score(recording_id: str, law_id: str, label: str | None, results: dict[str, 
     return done(verdict, "match" if verdict == label else "mismatch", rules)
 
 
-def unverified(recording_id: str, law_id: str, label: str | None, defect: str, judgment_call: bool = False,
-               scope: dict | None = None) -> Scored:
-    """A v2 recording whose label's scoring interval cannot be used (`defect`): not evaluated, never a
-    match; `label_unverified` when it is labelled, `unlabelled` otherwise."""
-    return Scored(recording_id, law_id, label, None, "unlabelled" if label is None else "label_unverified", {},
-                  f"label not verified under contract v2: {defect}", None, judgment_call, [],
-                  {**(scope or {}), "defect": defect})
-
-
 def library_actionable(s: Scored) -> bool:
-    """A plain-labelled unknown recording with a blocker whose evidence points at the library."""
+    """A plain-labelled unknown recording with a blocker whose evidence points at the library, or a
+    blocker with an eligible window diagnosis."""
     return (s.status == "unknown" and s.label is not None and not s.judgment_call
-            and any(b["handling"] == "library" for b in s.blockers))
+            and any(b["handling"] == "library" or (b.get("window_diagnosis") or {}).get("eligible") for b in s.blockers))
+
+
+def _q(x) -> Fraction | None:
+    return Fraction(x["num"], x["den"]) if isinstance(x, dict) and "num" in x and x.get("den") else None
+
+
+def _segment_at(g: dict, t: int) -> dict | None:
+    return next((x for x in g.get("segments") or [] if x["from"] <= t <= x["to"]), None)
+
+
+def window_piece(s: Scored, rule: str, binding: dict, piece: dict, params: dict[str, tuple[str, Fraction]]) -> str:
+    """Why a located window piece of `rule`'s Explain for `binding` is not eligible ("" when it is):
+    the conditions of the module's window diagnosis, checked on the structured report and on the
+    recording's own segments."""
+    op, tag = piece.get("op"), f"window_truncated:{piece.get('op')}"
+    if not piece.get("located"):
+        return f"source not located: {piece.get('not_located') or 'no source'}"
+    if op not in WINDOW_OPS:
+        return f"`{op}` is no metric window with a length of its own"
+    if piece.get("direction") != WINDOW_OPS[op]:
+        return f"`{op}` reads {WINDOW_OPS[op]}, the piece says {piece.get('direction')}"
+    measure = piece.get("measure")
+    if measure not in WINDOW_UNITS:
+        return f"unknown measure {measure!r}"
+    ln = piece.get("length") or {}
+    name = ln.get("param")
+    if not isinstance(name, str) or not name.startswith("p.") or ln.get("substituted") != name:
+        return f"its length after substitution is `{ln.get('substituted')}`, not a reading parameter"
+    value, unit = _q(ln.get("value")), ln.get("unit")
+    if value is None or unit is None:
+        return f"{name} has no value or unit in the reading Explain read"
+    if unit != WINDOW_UNITS[measure]:
+        return f"{name} is in {unit}, not the {WINDOW_UNITS[measure]} a {measure} window reads"
+    if value <= 0:
+        return f"{name} is not positive"
+    if params.get(name) != (unit, value):
+        return f"{name} as Explain read it differs from the current reading"
+    ex = piece.get("example") or {}
+    if not ex.get("requested") or not ex.get("observed") or ex["observed"].get("covered") is not False:
+        return "its window is not shown truncated (requested and observed bounds, not covered)"
+    sc = piece.get("scoring") or {}
+    a, z = sc.get("first_ms"), sc.get("last_ms")
+    if a is None or z is None or a > z:
+        return "its scoring observations are not stated"
+    judged = [g for g in (s.rules.get(rule) or {}).get("judged", []) if g.get("binding") == binding]
+    seg = _segment_at(judged[0], a) if judged else None
+    if seg is None or seg.get("verdict") != "unknown" or tag not in seg.get("reasons", []):
+        return "the grounding the label judges is not unknown with this window's reason at its scoring observation"
+    if not any(b["rule"] == rule and b["reason"] == tag for b in s.blockers):
+        return f"no blocker of {rule} carries `{tag}`"
+    return ""
+
+
+def diagnose_windows(s: Scored, explained: list[dict], params: dict[str, tuple[str, Fraction]]) -> None:
+    """The window diagnosis of an unknown recording: every piece of window evidence
+    in the full structured Explain reports (`explained`: each {rule, binding, ok, windows, current,
+    error}, `current` false when it was not made on the current library and reading), checked by
+    `window_piece`; `s.windows` the pieces with their eligibility, the coverage and whether it is
+    partial, and each `window_truncated` blocker its `window_diagnosis` (eligible, the pieces). A
+    recording not unknown, or not plain-labelled, gets nothing; an Explain that
+    failed or is stale gives no piece. The coverage counts the unknown observations, those with at
+    least one located source (`with_located_source`), and those at which the cause search was
+    complete (`search_complete`: nothing the Core reads was left unexamined, and every source found
+    was located); it is partial unless every unknown observation's search was complete, every
+    unknown grounding was explained and every piece and blocker is eligible. `params` are the
+    reading's parameters, name → (Core unit tag, value in it)."""
+    if s.status != "unknown" or s.label is None or s.judgment_call:
+        return
+    trunc = [b for b in s.blockers if b["reason"].startswith("window_truncated:")]
+    if not trunc:
+        return
+    pieces, notes = [], []
+    seen: dict[str, dict] = {}
+    rules = sorted({b["rule"] for b in trunc})
+    for e in (e for e in explained if e["rule"] in rules):
+        rule, bind = e["rule"], e["binding"]
+        w = e.get("windows")
+        if not e.get("ok"):
+            notes.append(f"{rule} for {bind}: Explain failed ({(e.get('error') or '')[:120]}); no piece")
+            continue
+        if not e.get("current"):
+            notes.append(f"{rule} for {bind}: Explain was not made on the current library and reading; no piece")
+            continue
+        if not isinstance(w, dict):
+            notes.append(f"{rule} for {bind}: Explain reported no windows; no piece")
+            continue
+        cov = seen.setdefault(rule, {"unknown": 0, "located": 0, "complete": 0, "groundings": 0})
+        cov["unknown"] += int(w.get("unknown_instants", 0))
+        cov["located"] += int(w.get("with_located_source", 0))
+        cov["complete"] += int(w.get("search_complete", 0))
+        cov["groundings"] += 1
+        if w.get("source_map") != "ok":
+            notes.append(f"{rule} for {bind}: source map not available ({w.get('source_map')})")
+        notes += [f"{rule} for {bind}: walk cut: {c}" for c in w.get("cut", [])]
+        for p in w.get("pieces", []):
+            why = window_piece(s, rule, bind, p, params) if w.get("source_map") == "ok" else "source map not available"
+            pieces.append({**p, "binding": p.get("binding", bind), "grounding": bind, "eligible": not why, "not_eligible": why})
+    judged_unknown = {r: sum(1 for g in (x.get("judged") or []) if g.get("verdict") == "unknown") for r, x in s.rules.items()}
+    for b in trunc:
+        mine = [i for i, p in enumerate(pieces) if p["rule"] == b["rule"] and f"window_truncated:{p['op']}" == b["reason"] and p["eligible"]]
+        b["window_diagnosis"] = {"eligible": bool(mine), "pieces": mine}
+    unexplained_groundings = sum(max(0, judged_unknown.get(r, 0) - seen.get(r, {}).get("groundings", 0)) for r in rules)
+    total = sum(seen.get(r, {}).get("unknown", 0) for r in rules)
+    located = sum(seen.get(r, {}).get("located", 0) for r in rules)
+    complete = sum(seen.get(r, {}).get("complete", 0) for r in rules)
+    partial = bool(unexplained_groundings or complete < total or notes or any(not p["eligible"] for p in pieces)
+                   or any(not b["window_diagnosis"]["eligible"] for b in trunc))
+    s.windows = {"pieces": pieces, "partial": partial, "notes": notes,
+                 "coverage": {"unknown_observations": total, "with_located_source": located, "search_complete": complete,
+                              "groundings_not_explained": unexplained_groundings}}
 
 
 def summary(scored: Iterable[Scored], expected: Iterable[str] | None = None) -> dict:
     """Counts per status, and agreement over the labelled recordings, judgment calls apart. With
     `expected` (every recording key of the fixed set), a missing or unexpected key is refused."""
     s = list(scored)
-    if len({x.scope is None for x in s}) > 1:
-        raise ValueError("whole-recording and scoring-interval scores are never joined in one summary")
-    statuses = STATUSES_V2 if any(x.scope is not None for x in s) else STATUSES
     keys = [x.recording_id for x in s]
     if len(keys) != len(set(keys)):
         raise ValueError("a recording is scored twice: the scoring key must be unique")
@@ -387,7 +452,7 @@ def summary(scored: Iterable[Scored], expected: Iterable[str] | None = None) -> 
     labelled = [x for x in s if x.label is not None]
     counts = Counter(x.status for x in s)
     unknown = [x for x in s if x.verdict == "unknown"]
-    return {"recordings": len(s), "counts": {k: counts.get(k, 0) for k in statuses},
+    return {"recordings": len(s), "counts": {k: counts.get(k, 0) for k in STATUSES},
             "blockers": {"handling": {h: sum(any(b["handling"] == h for b in x.blockers) for x in unknown) for h in HANDLINGS},
                          "class": dict(Counter(c for x in unknown for c in {b["class"] for b in x.blockers}))},
             "library_actionable": sum(library_actionable(x) for x in s),

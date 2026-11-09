@@ -1,0 +1,322 @@
+{
+ "_source": "smoke28 accepted_nodes.jsonl (NRS_484B_250_2 verbatim; the binders of NRS_484B_250_4_o1/o2) and the training corpus texts of the two laws",
+ "laws": [
+  {
+   "id": "NRS-484B-250-2",
+   "title": "Vehicle approaching or entering intersection (2)",
+   "text": "When two vehicles enter an intersection from different highways at approximately the same time, the driver of the vehicle on the left shall yield the right-of-way to the vehicle on the right. Except as otherwise provided in subsection 4 [NRS-484B-250-4], this section does not apply at intersections controlled by official traffic-control devices or to vehicles approaching each other from opposite directions, when the driver of one of the vehicles is intending to or is making a left turn.",
+   "source": "NRS 484B.250(2); with 484B.250(5)"
+  },
+  {
+   "id": "NRS-484B-250-4",
+   "title": "Vehicle approaching or entering intersection (4)",
+   "text": "When a vehicle enters an intersection controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection, the driver of the vehicle shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway. After making such a stop, the driver shall proceed cautiously, yielding to vehicles which have previously completed a stop or are within the intersection.",
+   "source": "NRS 484B.250(4)"
+  }
+ ],
+ "record": {
+  "node_id": "NRS_484B_250_2",
+  "law_refs": [
+   "NRS-484B-250-2"
+  ],
+  "subject": {
+   "binder": "subject",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  },
+  "segmentation": [
+   {
+    "id": "s1",
+    "text": "When two vehicles enter an intersection from different highways",
+    "role": "trigger"
+   },
+   {
+    "id": "s2",
+    "text": "at approximately the same time,",
+    "role": "standard"
+   },
+   {
+    "id": "s3",
+    "text": "the driver of the vehicle on the left",
+    "role": "subject"
+   },
+   {
+    "id": "s4",
+    "text": "shall yield the right-of-way to the vehicle on the right.",
+    "role": "obligation"
+   },
+   {
+    "id": "s5",
+    "text": "Except as otherwise provided in subsection 4 [NRS-484B-250-4],",
+    "role": "reference"
+   },
+   {
+    "id": "s6",
+    "text": "this section does not apply at intersections controlled by official traffic-control devices",
+    "role": "exception"
+   },
+   {
+    "id": "s7",
+    "text": "or to vehicles approaching each other from opposite directions,",
+    "role": "exception"
+   },
+   {
+    "id": "s8",
+    "text": "when the driver of one of the vehicles is intending to",
+    "role": "exception"
+   },
+   {
+    "id": "s9",
+    "text": "or is making a left turn.",
+    "role": "exception"
+   }
+  ],
+  "elements": [
+   {
+    "span": "s1",
+    "atoms": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle",
+     "rel.occupies",
+     "st.intersection",
+     "st.lane_enters",
+     "st.travel_region",
+     "st.on_way",
+     "st.highway"
+    ],
+    "derived": [
+     "drv.lane.enters_region"
+    ],
+    "justification": "\"vehicles\" is the defined term of DEF-NRS-484A-320, admitted as the aggregate DEF-NRS-484A-320::vehicle, and ru.aggregate carries 'membership of a legal aggregate: the atom's literal argument is an aggregate id'; it is claimed as one atom and never expanded. \"enter an intersection\" is the catalogued drv.lane.enters_region, which 'holds exactly at the observation at which the road user's footprint overlaps the region and did not overlap it at the previous observation', read on a region of kind st.intersection, 'the region where two roadways meet, bounded by the prolongation of their edges'; rel.occupies anchors the footprint ('a road user's footprint overlaps a lane / region'), as the mapping index already maps the words 'When a vehicle enters an intersection' for NRS_484B_250_4_o1. \"from different highways\" is read through the approach each vehicle comes in on: st.lane_enters is the 'relation: the intersection region a directed approach carrier runs into at its entrance end', and the ontology states that 'a road user's approach to an intersection is a carrier it occupies (rel.occupies) whose entrance end is that intersection'; st.travel_region is the abstract kind the carrier is quantified over, st.on_way the 'relation: the public way (a highway region) a structure region lies on', and st.highway 'the entire public way between its boundary lines', so the two carriers lying on two different highway regions is the vehicles coming from different highways. st.lane_enters is 'not a stand-in for the subject's presence in the intersection', which rel.occupies carries separately here, and st.highway is 'not a stand-in for the roadway', which is why the carrier keeps its own kind and only its way is compared."
+   },
+   {
+    "span": "s3",
+    "atoms": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle",
+     "rel.bearing"
+    ],
+    "derived": [],
+    "justification": "\"the vehicle\" is again the admitted aggregate DEF-NRS-484A-320::vehicle. \"on the left\" is the relative position of the two vehicles, which rel.bearing carries: 'direction of b from a in a's frame (for \"on the right of\", \"immediately to the rear\")'. The subject is the vehicle on the left exactly where the other vehicle bears to the subject's right in the subject's own frame, so the one atom decides both halves of the pair and no other atom is needed. \"the driver of\" is read through the vehicle's controlled motion, as the ontology states that 'drives', 'operates' and 'the driver' are read through the vehicle's controlled motion and that 'the duty binds that vehicle's conduct whoever or whatever controls it'; the reading is disclosed as a narrowing of category agency."
+   },
+   {
+    "span": "s4",
+    "atoms": [
+     "prim.closest_approach_within",
+     "prim.closest_approach_distance",
+     "ru.aggregate=DEF-NRS-484A-320::vehicle",
+     "rel.occupies",
+     "st.intersection"
+    ],
+    "derived": [],
+    "justification": "\"yield the right-of-way\" is defined by DEF-NRS-484A-210 as 'the right of one vehicle or pedestrian to proceed in a lawful manner in preference to another vehicle or pedestrian approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other'. The definition's 'circumstances of direction, speed and proximity as to give rise to the danger of a crash' are exactly what prim.closest_approach_within computes ('under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon') and prim.closest_approach_distance measures ('the centre distance at that closest approach'); granting precedence is the subject not bringing about such a predicted conflict with the vehicle on the right while the two are in or at the junction, which rel.occupies and st.intersection anchor. The primitives' inputs are the primitives' own and are not claimed here. The run's accepted node NRS_484B_250_1 and the index entry 'yielding to vehicles which have previously completed a stop or are within the intersection.' of NRS_484B_250_4_o2 carry a yield of this section with the same two primitives, which this node follows."
+   },
+   {
+    "span": "s6",
+    "atoms": [
+     "dev.governs",
+     "dev.traffic_signal",
+     "dev.stop_sign",
+     "dev.yield_sign",
+     "dev.regulatory_sign",
+     "dev.lane_control_signal",
+     "st.intersection",
+     "rel.occupies"
+    ],
+    "derived": [],
+    "justification": "\"official traffic-control device\" is DEF-NRS-484A-145, 'every sign, signal, marking and device not inconsistent with chapters 484A to 484E ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic'. The members that regulate an intersection's traffic are carried by the device atoms the run already uses for these words in NRS_484B_250_1: dev.traffic_signal ('a signal head'), dev.stop_sign ('regulatory sign requiring a full halt'), dev.yield_sign ('regulatory sign requiring yielding without a mandatory halt'), dev.regulatory_sign ('a point regulation by catalogue code'), dev.lane_control_signal ('an overhead per-lane signal'). The law's own qualification \"controlled by\" limits the definition's members to those that control the junction: dev.governs is the 'relation: the travel regions whose traffic the device controls ... or an intersection, read as control of the junction itself', which leaves out the definition's markings and warning devices that guide or warn without controlling the junction, and leaves out a device the source records as governing some other region. st.intersection is the kind the relation's region argument ranges over and rel.occupies anchors the subject at that junction. dev.governs is 'not a stand-in for a position', and no position is read from it here. That the devices are official is read from their presence, as the ontology's section on what is not an atom directs for the 'legal status of a feature on the road'; the reading is disclosed as a narrowing of category status."
+   },
+   {
+    "span": "s7",
+    "atoms": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle",
+     "st.lane_enters",
+     "st.travel_region",
+     "st.lane_direction",
+     "rel.occupies",
+     "st.intersection"
+    ],
+    "derived": [
+     "drv.road.opposed_approach_directions"
+    ],
+    "justification": "\"approaching each other from opposite directions\" is the direction each vehicle approaches the junction from, which rel.oncoming expressly excludes: it is 'not a stand-in for the direction a road user approaches from - that is read through the carrier it approaches through, any carrier st.lane_enters admits ..., whose entrance end is the intersection, and through that carrier's direction (st.lane_direction) at the same instant'. The node therefore reads each vehicle's carrier (rel.occupies on a st.travel_region whose st.lane_enters entrance end is the st.intersection the two enter) and the opposition of the two carriers' designated directions through the co-proposed concept drv.road.opposed_approach_directions, whose contract 'denotes the relation between the two regions' designated directions only'. The vehicles are the admitted aggregate."
+   },
+   {
+    "span": "s9",
+    "atoms": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle"
+    ],
+    "derived": [
+     "drv.motion.leftward_course_change"
+    ],
+    "justification": "\"is making a left turn\" is the act itself, which the catalogued drv.motion.leftward_course_change denotes: 'the road user is making a change of course to the left: at this observation the signed heading change over the window behind is to the left (positive) and lies between the smallest and the largest course change the caller admits as a turn'. The ontology's section on declared intentions directs that 'the act the words also name (\"is making ...\") is read by its manoeuvre concept', which is why the intending half of the words is a declared intention on s8 and this span carries the manoeuvre. The concept is 'not the place where it is made', and the law's words place no further restriction on the turn here, the vehicles being already fixed by the trigger."
+   }
+  ],
+  "operationalizations": [
+   {
+    "span": "s2",
+    "standard": "at approximately the same time",
+    "concepts": [
+     "drv.lane.enters_region",
+     "kin.time",
+     "rel.occupies",
+     "st.intersection"
+    ],
+    "params": [
+     "p.simultaneous_entry_window"
+    ],
+    "convention": "simultaneity convention of junction conflict analysis: two entries into one junction count as made at approximately the same time when the interval between the two entry observations, read from kin.time, is at most the window, set to the time a passenger car takes to clear a junction from its entry at ordinary entry speed, since entries farther apart than that leave no conflict to resolve",
+    "surrogate": false
+   }
+  ],
+  "assumptions": [],
+  "intentions": [
+   {
+    "span": "s8",
+    "id": "int.left_turn",
+    "meaning": "the source's current plan for this road user at the named region is to turn to the left there"
+   }
+  ],
+  "compositions": [
+   {
+    "span": "s5",
+    "rule": "NRS_484B_250_4_o1",
+    "map": {
+     "subject": "subject"
+    },
+    "as": "unless",
+    "scopes": "s6"
+   },
+   {
+    "span": "s5",
+    "rule": "NRS_484B_250_4_o2",
+    "map": {
+     "subject": "subject"
+    },
+    "as": "unless",
+    "scopes": "s6"
+   }
+  ],
+  "residues": [],
+  "binders": [
+   {
+    "name": "subject",
+    "class_elements": [
+     "ru.aggregate=DEF-NRS-484A-320::vehicle"
+    ]
+   }
+  ],
+  "applicability": "The subject is a vehicle that enters an intersection, and some other vehicle enters that same intersection within the simultaneity window of the subject's entry, the two coming in on carriers whose entrance end is that intersection and which lie on different highways, with the other vehicle bearing to the subject's right (the subject being the vehicle on the left). The rule does not apply where a traffic signal, stop sign, yield sign, regulatory sign or lane-control signal is recorded as governing that intersection - unless either node of NRS-484B-250-4 applies to the subject, which suspends that exception - and it does not apply where the two vehicles' approach carriers carry opposed designated directions and either vehicle has a declared intention to turn left at that intersection or is making a change of course to the left.",
+  "obligation": "At the observations at which the duty applies, the subject does not bring about a predicted conflict with the vehicle on its right: under the velocities observed at the instant, either the two centres do not approach within the conflict horizon, or the centre distance at their closest approach is at least the minimum clearance.",
+  "params": [
+   "p.simultaneous_entry_window",
+   "p.yield_conflict_horizon",
+   "p.yield_min_clearance",
+   "p.opposite_direction_tolerance",
+   "p.turn_window",
+   "p.turn_min_course_change",
+   "p.turn_max_course_change",
+   "p.motion_speed_tolerance"
+  ],
+  "narrowings": [
+   {
+    "span": "s3",
+    "why": "\"the driver of the vehicle on the left\" is read as the vehicle on the left itself: who or what is at its controls is not observable, and the ontology directs that 'drives', 'operates' and 'the driver' be read through the vehicle's controlled motion, the duty binding that vehicle's conduct whoever controls it.",
+    "kind": "observable_reading",
+    "category": "agency"
+   },
+   {
+    "span": "s6",
+    "why": "that the devices controlling the intersection are official is read from their presence in the scene: the ontology's section on what is not an atom states that for the legal status of a feature on the road 'the feature's presence on the road is the observable evidence of that status'.",
+    "kind": "observable_reading",
+    "category": "status"
+   },
+   {
+    "span": "s4",
+    "why": "the duty to yield the right-of-way is read as the subject not bringing about a predicted conflict with the vehicle on its right: under the velocities observed at the instant, the centres must either not approach within the conflict horizon or be no closer than the minimum clearance at their closest approach. The reading bounds the definition's 'circumstances of direction, speed and proximity as to give rise to the danger of a crash' by the two conflict primitives and does not read the definition's words about proceeding 'in a lawful manner', which is another rule's verdict.",
+    "kind": "reading"
+   },
+   {
+    "kind": "reading",
+    "span": "s4",
+    "why": "\"while the two are in or at the junction\", with which the record's reading of the yield anchors the duty (rel.occupies on the st.intersection entered), is written as the subject's own footprint overlapping that junction at the observation judged, the vehicle on the right being the one whose entry into the same junction falls inside the simultaneity window: the duty is owed at the subject's entry, and the other vehicle counts as at the junction by that entry, whether it enters at that observation, earlier or later within the window, rather than by occupying the junction at the same observation."
+   }
+  ],
+  "scenarios": [
+   {
+    "name": "forbid",
+    "expected": "violated",
+    "narrative": "Two cars reach an unsignalised crossroads of two mapped highways. The subject comes in on the segment of the east-west highway, the other on the segment of the north-south highway; both footprints first overlap the junction region at the same observation. The other car bears to the subject's right. Neither approach carries an opposed direction to the other and no left-turn intention is declared. The subject holds 10 m/s straight on, and under the two velocities the centres approach within the horizon to a distance below the minimum clearance."
+   },
+   {
+    "name": "permit",
+    "expected": "compliant",
+    "narrative": "The same crossroads and the same two entries within the window, the other car again on the subject's right, but the subject has braked to 1 m/s at the junction edge: under the velocities observed the centres' closest approach within the horizon stays well above the minimum clearance, and the other car passes in front of it."
+   },
+   {
+    "name": "idle",
+    "expected": "not_applicable",
+    "narrative": "The subject enters the same junction with no other road user anywhere in the scene, so no second vehicle enters within the window and the duty does not arise; the verdict is decided although the only party present is the subject."
+   },
+   {
+    "name": "blind",
+    "expected": "unknown",
+    "narrative": "Two cars approach the same crossroads as in the forbid scenario, but the source declares no footprint overlap for any region, so neither the subject's entry into the junction nor the other car's can be decided and the rule reports unknown.",
+    "masked": [
+     "rel.occupies"
+    ]
+   },
+   {
+    "name": "branch_1",
+    "expected": "not_applicable",
+    "narrative": "The same simultaneous entry from different highways, but the other vehicle bears to the subject's left, so the subject is the vehicle on the right and this subsection lays no duty on it."
+   },
+   {
+    "name": "branch_2",
+    "expected": "not_applicable",
+    "narrative": "Two cars enter the same junction at the same observation on two segments of one highway that carry opposed designated directions, and the other car has a declared intention to turn left at that junction; the exception for vehicles approaching each other from opposite directions applies and no signal, sign or lane-control device is recorded as governing the junction, so the duty does not arise."
+   }
+  ],
+  "literals": [],
+  "param_proposals": [
+   {
+    "name": "p.simultaneous_entry_window",
+    "unit": "s",
+    "value": 2.0,
+    "convention": "simultaneity convention of junction conflict analysis: the largest interval between two entries into one junction at which the two are still read as made at approximately the same time, set to the time a passenger car takes to clear a small junction from its entry at ordinary entry speed, since entries farther apart than that leave no conflict for the right-of-way rule to resolve",
+    "source": "junction capacity and conflict-analysis practice, where the critical headway for a crossing conflict at a minor junction is of the order of a couple of seconds"
+   }
+  ],
+  "gaps": [],
+  "context": "4f5b8412e4fc1cfc0130452b"
+ },
+ "targets": {
+  "NRS_484B_250_4_o1": {
+   "node_id": "NRS_484B_250_4_o1",
+   "law_refs": [
+    "NRS-484B-250-4"
+   ],
+   "binders": [
+    {
+     "name": "subject",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    }
+   ]
+  },
+  "NRS_484B_250_4_o2": {
+   "node_id": "NRS_484B_250_4_o2",
+   "law_refs": [
+    "NRS-484B-250-4"
+   ],
+   "binders": [
+    {
+     "name": "subject",
+     "class_elements": [
+      "ru.aggregate=DEF-NRS-484A-320::vehicle"
+     ]
+    }
+   ]
+  }
+ }
+}

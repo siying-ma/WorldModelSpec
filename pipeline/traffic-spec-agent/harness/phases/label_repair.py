@@ -37,6 +37,7 @@ what it was asked on is unchanged, asked again in a new directory once a commit 
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import subprocess
@@ -47,7 +48,7 @@ from pathlib import Path
 from ..agents import render, session
 from ..checks import gate
 from ..lean import surface
-from ..model import blueprint, corpus, definitions as definitions_mod, nodeid, ontology
+from ..model import acquisition, blueprint, corpus, definitions as definitions_mod, nodeid, ontology
 from ..model.blueprint import ConceptRecord, Node, normalize_concept
 from ..store import jsonl, paths
 from . import candidate as candidate_phase
@@ -278,7 +279,7 @@ def allow(d: Path, txn) -> list[str]:
 
 
 def prompt_for(run, txn, law: corpus.Law, defs: list[dict], onto, repairs: int) -> str:
-    """The `node_repair.md` prompt for a law under label feedback."""
+    """The `node_repair.md` prompt for a law during a law-level label repair."""
     return render.render("node_repair.md", prompt_parts(run, txn, law, defs, onto, repairs))
 
 
@@ -334,13 +335,14 @@ def prompt_parts(run, txn, law: corpus.Law, defs: list[dict], onto, repairs: int
         "task_result": "(no coding session ran for this repair)",
         "final_files": "\n".join(files) or "(no file)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(view.all_concepts()),
-        "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + declaration_catalogue(reading),
+        "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
+                      + declaration_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE}
 
 
 def where_to_write(d: Path, txn) -> str:
     return (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write there, with the Write tool, what the Output asks "
-            "under label feedback: `record.jsonl`, `lean.diff` (its paths as the files are headed above), `change_request.json`, "
+            "during a law-level label repair: `record.jsonl`, `lean.diff` (its paths as the files are headed above), `change_request.json`, "
             "and `dependency_defect.json` with a `concept` withdrawal. You may read, and not write, the candidate's rules, concepts "
             f"and witnesses under `{txn.library.resolve()}` (`TrafficSpec/Rules`, `TrafficSpec/Concepts`, `TrafficSpecWitness`) "
             f"and every record of the run you may change, with its law or its callers, under `{(txn.area / 'records').resolve()}`. "
@@ -453,7 +455,8 @@ def changes_of(txn, out: Output, law: str) -> tuple[list, list[tuple[str, str]],
 
 def code_in_candidate(txn, records: list[tuple[str, str]], law: str | None = None, earlier: Path | None = None) -> dict[str, dict]:
     """A coding session for each record, in the candidate (its library, its scope, its task
-    directories, a gate run from the session gating there); concepts first. A coder's report that a
+    directories, a gate run from the session gating there); concepts first. A node's registry holds
+    only the nodes its own law may compose (`Run.usable_nodes`). A coder's report that a
     concept it calls computes what its contract excludes is judged in the candidate (`judge_report`).
     `earlier`: the candidate where the same repair coded before (`take_up`).
     Returns id → {verdict, report, line}."""
@@ -464,18 +467,20 @@ def code_in_candidate(txn, records: list[tuple[str, str]], law: str | None = Non
     with txn.inside(), gate.candidate_scope(txn.scope):
         txn.write_scope()
         reading = txn.reading
-        registry = {"nodes": sorted(view.all_nodes()), "concepts": sorted(view.all_concepts())}
+        concepts = sorted(view.all_concepts())
         for kind, ident in order:
             if kind == "concept":
                 rec = ConceptRecord(view.all_concepts()[ident])
                 task, deps = code_phase.concept_dir(view, ident), set(rec.refs())
                 take_up(txn, earlier, kind, rec, task, reading)
-                v = code_phase.run_code_concept(view, rec, reading, registry)
+                v = code_phase.run_code_concept(view, rec, reading, {"nodes": sorted(view.usable_nodes(None)), "concepts": concepts})
             else:
                 rec = Node(view.all_nodes()[ident])
                 task, deps = code_phase.node_dir(view, ident), concept_deps(rec)
                 take_up(txn, earlier, kind, rec, task, reading)
-                v = code_phase.run_code(view, rec, reading, registry)
+                v = code_phase.run_code(view, rec, reading, {"nodes": sorted(view.usable_nodes(rec.law)), "concepts": concepts})
+            if v.verdict == "OK":
+                keep_sources(txn, kind, ident, task)
             rep = report_of(view, task, reached_concepts(view, deps))
             out[ident] = {"verdict": v.verdict, "report": rep.status, "line": rep.line, "concept": rep.concept}
             if rep.status != "none":
@@ -483,11 +488,35 @@ def code_in_candidate(txn, records: list[tuple[str, str]], law: str | None = Non
     return out
 
 
+#: The files a coding task's passing gate judged, kept in its task directory (`keep_sources`).
+SOURCES = "sources.json"
+
+
+def _text_sha(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def keep_sources(txn, kind: str, ident: str, task: Path) -> None:
+    """A record's two files as its passing gate judged them, with their digests, in its task
+    directory: what a later candidate of the same repair restores (`take_up`). The task directory is
+    part of a run's handoff, a candidate's library copy is not, so a repair left pending is taken up
+    the same way on this machine and on another."""
+    kept = {}
+    for rel in candidate_phase.own_files(kind, ident):
+        f = txn.library / rel
+        if f.is_file():
+            text = f.read_bytes().decode("utf-8")
+            kept[rel] = {"sha256": _text_sha(text), "text": text}
+    jsonl.write_atomic(task / SOURCES, json.dumps(kept, ensure_ascii=False, indent=1))
+
+
 def take_up(txn, earlier: Path | None, kind: str, rec, task: Path, reading) -> None:
     """A coding task the same repair ran in an earlier candidate, its gate decided on the context this
-    one gives the record (`code.task_context`): its directory and the files it left enter this
-    candidate, so its verdict is reused and its report judged again from where its adjudication
-    stopped. On another context the record is coded again."""
+    one gives the record (`code.task_context`): its directory, and for a passing gate the two files
+    it judged (`keep_sources`, each matching its digest), enter this candidate, so its verdict is
+    reused and its report judged again from where its adjudication stopped. On another context, or
+    a passing verdict whose files are not kept whole, the record is coded again; so it is when the
+    restore itself fails, which leaves no task directory behind (the coder rewrites the files)."""
     from . import code as code_phase
     if earlier is None or task.exists():
         return
@@ -496,11 +525,20 @@ def take_up(txn, earlier: Path | None, kind: str, rec, task: Path, reading) -> N
     if v.get("verdict") in (None, code_phase.SESSION_FAILED, gate.INFRA) or \
             v.get("extras", {}).get("context") != code_phase.task_context(txn.view, kind, rec.id, rec.raw, reading):
         return
-    shutil.copytree(old, task)
-    for rel in candidate_phase.own_files(kind, rec.id):
-        src = earlier / txn.library.relative_to(txn.area) / rel
-        if src.is_file():
-            (txn.library / rel).write_bytes(src.read_bytes())
+    files = {}
+    if v.get("verdict") == "OK":
+        kept = jsonl.read_json(old / SOURCES, None) or {}
+        files = {rel: x["text"] for rel, x in kept.items() if isinstance(x, dict) and _text_sha(str(x.get("text"))) == x.get("sha256")}
+        if set(files) != set(candidate_phase.own_files(kind, rec.id)):
+            return
+    try:
+        for rel, text in files.items():                       # the files first, their directories created: a new record's are not there yet
+            (txn.library / rel).parent.mkdir(parents=True, exist_ok=True)
+            (txn.library / rel).write_bytes(text.encode("utf-8"))
+        shutil.copytree(old, task)
+    except OSError as e:
+        shutil.rmtree(task, ignore_errors=True)               # never a task directory that looks finished without its files
+        print(f"[label_repair] {rec.id}: its earlier coding could not be restored ({e}); coded again")
 
 
 def judge_report(run, txn, d: Path, law: str):
@@ -660,7 +698,7 @@ def replan(run, txn, law: corpus.Law, defs: list[dict]) -> tuple[list, list[tupl
     from .plan import run_plan
     with txn.inside():                                 # its validator, run from the session, reads the candidate
         txn.write_scope()
-        plan_dir = run_plan(txn.view, [law], defs, tag=f"label-{law.id}")
+        plan_dir = run_plan(txn.view, [law], defs, tag=f"label-{law.id}", label_repair=True)
     nodes = [n for n in blueprint.load(plan_dir / "blueprint.jsonl") if n.raw.get("law_refs", [None])[0] == law.id]
     if not nodes:
         raise ValueError(f"the plan of `{law.id}` written in the candidate has no node: a law's duties are never withdrawn by a re-plan")
@@ -676,9 +714,11 @@ def replan(run, txn, law: corpus.Law, defs: list[dict]) -> tuple[list, list[tupl
 # One repair, and the repairs of an iteration
 # ---------------------------------------------------------------------------------------------
 def awaiting(run, ledger) -> list[str]:
-    """The planned laws awaiting their label repair, in ledger order."""
+    """The planned laws awaiting their label repair, in ledger order; a law whose active repair waits
+    on a law not yet accepted (`waits_on`) is not one until that law is."""
     return [e.law for e in ledger.entries.values()
-            if e.state == "planned" and run.label_states.get(e.law, {}).get("state") == "awaiting_label_repair"]
+            if e.state == "planned" and run.label_states.get(e.law, {}).get("state") == "awaiting_label_repair"
+            and not waits_on(run, ledger, e.law)]
 
 
 def used(run) -> int:
@@ -689,6 +729,29 @@ class Unavailable(RuntimeError):
     """A part of a repair that did not run (a session, the planner, a coder, a toolchain): nothing of
     the law is judged and nothing is charged; the repair's directory is kept, so its session's answer
     is taken up again, not asked for again."""
+
+
+class Waiting(RuntimeError):
+    """A change that composes a node of a law not yet formally accepted
+    (`candidate.unavailable_compositions`): no coder runs, nothing is charged, and the repair stays
+    active, taken up again from its session's answer once every law it waits on is accepted."""
+
+    def __init__(self, waits: dict[str, list[str]], laws: list[str]):
+        super().__init__("; ".join(f"`{i}` composes {', '.join(d)}" for i, d in waits.items()) + f", of {', '.join(laws)}, not yet accepted")
+        self.laws = laws
+
+
+def wait_states(run, ledger, law: str) -> dict[str, str]:
+    """Each law a law's active repair waits on (`Waiting`) that is still not accepted, with its ledger
+    state: `planned` (a pending law that may still be accepted) or a state that will not become
+    accepted without the operator (`blocked`, `failed`)."""
+    w = (run.label_states.get(law, {}).get("active") or {}).get("waits") or []
+    return {l: ledger.entries[l].state for l in w if l in ledger.entries and ledger.entries[l].state != "accepted"}
+
+
+def waits_on(run, ledger, law: str) -> list[str]:
+    """The laws a law's active repair waits on (`Waiting`) that are still not accepted."""
+    return list(wait_states(run, ledger, law))
 
 
 class Pending(RuntimeError):
@@ -726,10 +789,12 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
     `committed` (the law routed again, and every other law the repair checked again), `rolled_back`,
     `requested`, `gap`, `dependency_report` (a report on a concept, judged; when its ruling, or that
     of a coder's report, is not finished, the repair stays active and is taken up again without a new
-    session), `refused` (an unreadable output) or `unavailable` (a part did not run; nothing charged).
+    session), `refused` (an unreadable output), `unavailable` (a part did not run; nothing charged) or
+    `waiting` (a change composes a node of a law not yet accepted; nothing charged, `Waiting`).
     Every way out closes or rolls back its candidate."""
     from .candidate import SCHEDULING, Candidate, ChangeRefused, CommitRefused, concept_review
     st = run.label_states[law.id]
+    (st.get("active") or {}).pop("waits", None)
     repairs = int(st.get("repairs", 0))
     prior = label_check.committed_checks(run.dir, run.label_states)
     plans = {e.law: list(e.nodes) for e in ledger.entries.values()}      # every law's authoritative final plan
@@ -743,6 +808,10 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
             except ValueError as e:                       # the harness's own versions, not the repair: nothing to charge
                 raise Unavailable(f"its candidate could not be bound to the run's label versions: {e}") from e
             result = _repair(run, ledger, txn, law, defs, onto, repairs, plans, out, gaps, notes, to_user)
+        except Waiting as e:
+            result = "waiting"
+            run.label_states[law.id]["active"]["waits"] = e.laws
+            to_user.append(f"`{law.id}`: its label repair waits: {e}; no coder ran, nothing charged, taken up again once accepted")
         except Pending as e:
             result = "pending"
             to_user.append(f"`{law.id}`: {e}; its candidate is not published, the repair is taken up again, nothing charged")
@@ -757,7 +826,7 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
             if txn.status == "open":                      # no way out leaves a candidate open
                 (txn.rollback if txn.changed else txn.close)(f"the repair ended: {result or 'stopped'}")
     st = run.label_states[law.id]
-    if result not in ("unavailable", "pending", "committed"):   # decided: its session is spent, the next one is new (a commit counted it)
+    if result not in ("unavailable", "pending", "waiting", "committed"):   # decided: its session is spent, the next one is new (a commit counted it)
         st["sessions"] = int(st.get("sessions", 0)) + 1
         st.pop("active", None)
     if result in ("rolled_back", "refused", "requested", "gap", "dependency_report"):
@@ -818,6 +887,9 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
     if not changes:
         return "requested"
     txn.apply(changes)
+    waits = candidate_phase.unavailable_compositions(txn.view, [c.ident for c in changes if c.kind == "node"])
+    if waits:
+        raise Waiting(waits, sorted({Node(txn.view.all_nodes()[d]).law for ds in waits.values() for d in ds}))
     _code(txn, coder, law.id)
     results = txn.verify()
     failed = [r.subject for r in results if r.check == "gate" and r.status == "fail" and r.subject in txn.changed
@@ -914,7 +986,8 @@ def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_
     for law in awaiting(run, ledger):
         while run.label_states.get(law, {}).get("state") == "awaiting_label_repair" and ledger.entries[law].state == "planned":
             if int(run.label_states[law].get("repairs", 0)) >= run.opts.label_repair_attempts:
-                ledger.block(law, [f"decision:{law}"], [f"label repair budget ({run.opts.label_repair_attempts}) spent; the law is still mismatch"])
+                ledger.block(law, [f"decision:{law}"], [f"its own label repair attempts are spent (--label_repair_attempts, {run.opts.label_repair_attempts}); "
+                                                         "the law still disagrees with its labels"])
                 to_user.append(f"`{law}`: its label repairs are spent and it still disagrees with its labels; held for you")
                 break
             if used(run) >= run.opts.label_repair_budget:

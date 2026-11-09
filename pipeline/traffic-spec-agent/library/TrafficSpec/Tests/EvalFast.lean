@@ -23,6 +23,7 @@ def shadowed : Formula := .and fast4 (.existsUser "x" (.and slow (.forallUser "x
 -- an unbound variable: unknown at every instant
 def unbound : Formula := .cmp (.measure "kin_speed" [Z]) .ge (mps 1)
 def previously (φ : Formula) : Formula := .or (.rises (.not φ)) (.and φ (.not (.rises φ)))
+def deg0 : Term := .lit (degrees 0) .degree
 def corpus : List Formula :=
   [.tt, .ff, fast4, slow, fast, never, stopped, following timeGap, onWet .le 7, pathGe 10,
    .until slow halted, .since green halted, .always (.implies fast4 (.eventually halted)),
@@ -34,7 +35,11 @@ def corpus : List Formula :=
    .cmp (.cond fast4 (sec 1) (sec 2)) .eq (sec 1), .cmp (.sinceRise halted) .ge (sec 1),
    agg "x" "D-1::vehicle", .existsDevice (.lit "traffic_signal") "s" (.atom "dev_governs" [.var "s", .nat 7] []),
    .forallDevice (.lit "traffic_signal") "s" .ff, .forallRegion (.lit "lane") "r" .tt,
-   .existsRegion (.lit "highway") "h" (.atom "rel_occupies" [X, .var "h"] []), .rule "some/rule" []]
+   .existsRegion (.lit "highway") "h" (.atom "rel_occupies" [X, .var "h"] []), .rule "some/rule" [],
+   .cmp (.headingSince "x" (sec 1) halted) .ge deg0,
+   .existsUser "u" (.cmp (.headingSince "u" (sec 1) halted) .le (.lit (degrees 90) .degree)),
+   .existsUser "x" (.cmp (.headingSince "x" (sec 1) halted) .le (.lit (degrees 90) .degree)),
+   .and (.cmp (.sinceRise halted) .ge (sec 1)) (.cmp (.headingSince "x" (sec 1) halted) .ge deg0)]
 def contexts : List SemCtx := [c, ca, clane, cgeo, cunk, carr, SemCtx.mk' [] ρ β, SemCtx.mk' τ ρ {}]
 
 -- every formula in every context, with a cache large enough to keep everything and one so small
@@ -42,7 +47,7 @@ def contexts : List SemCtx := [c, ca, clane, cgeo, cunk, carr, SemCtx.mk' [] ρ 
 #guard contexts.all fun c => corpus.all (agrees defaultCells c)
 #guard contexts.all fun c => corpus.all (agrees 10 c)
 #guard contexts.all fun c => [timeGap, .aggregate .min "u" fast4 (.measure "kin_speed" [.var "u"]),
-  .cond green (mps 1) (.measure "kin_speed" [Z]), .distanceWhile "z" halted].all (agreesT 10 c)
+  .cond green (mps 1) (.measure "kin_speed" [Z]), .distanceWhile "z" halted, .headingSince "x" (sec 1) halted].all (agreesT 10 c)
 
 -- reads and emptyings: a repeated sub-formula is read from the cache; a bound of one value per
 -- observation empties it on every store and still gives the same values

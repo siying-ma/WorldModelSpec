@@ -102,6 +102,9 @@ Run mode: `{mode}`.
    literals are zero, enumeration spellings, and the record's declared `literals`, each written
    through the `Units` constructor of its unit. What a formula may not say is listed with the
    formula language; the gate returns `CHECK_FAIL` on it.
+   For `headingSince`, use a declared time formal directly as the step bound, including when
+   forwarding it to another concept. Never use a literal, expression, or `p.*` reading parameter
+   for that bound. Do not add or change formals.
 6. **Witnesses are built, not described.** One instance, three scenarios (`holds`, `fails`,
    `blind`), each a `Scenario` built with `Build.*` from the record's narratives; a supersession
    adds `counterexample`, on which the old body must give the wrong verdict. A scenario of an

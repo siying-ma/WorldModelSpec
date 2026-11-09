@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from . import jsonl
+from . import jsonl, paths
 from ..model import nodeid
 
 OPEN, PLANNED, RETURNED, ACCEPTED, BLOCKED, FAILED = "open", "planned", "returned", "accepted", "blocked", "failed"
@@ -26,8 +26,16 @@ JUDGE_STAGES = {"stage_a", "stage_b", "concept_adjudication"}  # an invalid judg
 GATE_COST_BOUND = 2
 
 
+def _saved(e) -> dict:
+    """An entry as it is saved: its last task directory relative to the repository (`paths.stored`)."""
+    d = asdict(e)
+    if d.get("last_task"):
+        d["last_task"] = paths.stored(d["last_task"])
+    return d
+
+
 def _rows(entries) -> str:
-    return "".join(json.dumps(asdict(e), ensure_ascii=False) + "\n" for e in entries)
+    return "".join(json.dumps(_saved(e), ensure_ascii=False) + "\n" for e in entries)
 
 
 def _load(path: Path, cls, key: str) -> dict:
@@ -36,6 +44,8 @@ def _load(path: Path, cls, key: str) -> dict:
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 d = json.loads(line)
+                if d.get("last_task") and paths.local(d["last_task"]).exists():   # the saved task directory, in this repository
+                    d["last_task"] = str(paths.local(d["last_task"]))
                 out[d[key]] = cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
     return out
 
@@ -58,6 +68,7 @@ class Entry:
     outcome_iteration: int = 0      # the attempt (iteration) whose outcome the state records
     cost_failures: dict[str, int] = field(default_factory=dict)   # node ↦ its gates ended on the evaluation's cost; never counted as attempts
     core_panics: list[str] = field(default_factory=list)          # nodes whose gate's evaluation panicked in isolation; never counted as attempts
+    waits_on: list[str] = field(default_factory=list)             # blocked only because it composes these laws' nodes while they wait for the operator
 
 
 class Ledger:
@@ -269,7 +280,7 @@ class Ledger:
         e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps = OPEN, 0, reasons, [], {}, []
         e.outcome_iteration, e.charged_iteration = 0, 0
         e.dependency_returns, e.dependency_iteration = 0, 0
-        e.cost_failures, e.core_panics = {}, []
+        e.cost_failures, e.core_panics, e.waits_on = {}, [], []
 
     def reopen_for_gaps(self, decided: dict[str, tuple[str, str]]) -> list[tuple[str, list[str]]]:
         """A blocked law reopens once the operator has decided every gap it waits on: retired (the
@@ -286,7 +297,7 @@ class Ledger:
                     e.gaps, e.reasons = left, e.reasons + [r for r in reasons if r not in e.reasons]
                     continue
                 e.state, e.gaps, e.reasons = OPEN, [], reasons
-                e.cost_failures, e.core_panics = {}, []
+                e.cost_failures, e.core_panics, e.waits_on = {}, [], []
                 out.append((e.law, reasons))
         return out
 

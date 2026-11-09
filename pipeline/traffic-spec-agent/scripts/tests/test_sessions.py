@@ -346,6 +346,14 @@ class GateChecks(unittest.TestCase):
                                          "body_json": {"atom": "rel_oncoming", "params": [{"param": "tol"}]}}}
         call = {"derived": "drv_interaction_x", "params": [{"param": "p.align"}]}
         self.assertTrue(gate.slot_range_defects(call, reading, concept))
+        deep = bad
+        for _ in range(5000):                          # no nesting hides a slot
+            deep = {"not": deep}
+        self.assertTrue(gate.slot_range_defects(deep, reading))
+        deep_call = call
+        for _ in range(5000):
+            deep_call = {"not": deep_call}
+        self.assertTrue(gate.slot_range_defects(deep_call, reading, concept))
 
     def test_a_reading_is_read_whole(self):
         from harness.model.reading import reading_defects

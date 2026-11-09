@@ -42,8 +42,8 @@ the checks of the distinctions above.
 The pipeline runs in two modes, as a learned model does.
 - **Training.** A rule is aligned with the meaning the downstream task needs by running it on
   labelled recordings of the training laws and comparing its verdict with each recording's label.
-  The training recordings are the labelled cases of
-  `demo-accepted-191-core-v2` whose split is `demo-train` (189 of 191). A mismatch goes back to the
+  The training recordings are the `demo-train` recordings of one data delivery, built into a
+  dataset folder by `recorded/dataset.py` (see "Driving data"). A mismatch goes back to the
   planner as evidence, and the rule is repaired until its verdicts agree with the labels. This is
   how the formalization is aligned with the CARLA domain.
 - **What is trusted.** Lean's evaluation is deterministic: the verdict Core computes for a rule on a
@@ -58,7 +58,7 @@ The pipeline runs in two modes, as a learned model does.
   whose rules read the changed file, so a repair that fixes one law and breaks another is not
   accepted.
 - **Testing.** The finished rules are run once on recordings no training session has seen: the
-  package's `demo-test` cases and every other dataset under `pipeline/datasets/`. Nothing learned
+  `demo-test` recordings of a delivery and every other dataset under `pipeline/datasets/`. Nothing learned
   from a test recording changes the pipeline.
 
 The downstream task is to decide whether a real autonomous-driving scene breaks a traffic rule.
@@ -163,16 +163,16 @@ feature is not better for being there, and one whose use cannot be stated is rem
   sends every mismatch to the planner as evidence: the recording's label, the rule's verdict and
   the instants and unknown reasons that decided it, never the trace, the video or a mapping. A label
   judges the ego (the trace's subject), so only the groundings that bind a rule's subject binder to
-  the ego are joined. Under the dataset's label contract v1 a label covers the whole recording;
-  under v2 it covers the scoring interval the scenario design states and the data producer
-  confirms for that label: the whole trace is still evaluated, and only the verdicts inside the
-  interval are joined. No rule, reading or repair sets or moves an interval, and a label without a
-  valid confirmed interval stays in the fixed set as `label_unverified`, never compared. The
+  the ego are joined. A label covers the whole recording (label contract v1, the only one); a
+  dataset or label stating any other contract is refused. A rule whose look-back does not fit a
+  recording is the planner's to repair, never a request for longer recordings or for an interval. The
   recordings compared are fixed by their labels before the run; a recording that passed its
   deadline, or whose verdict is unknown, keeps its own status in that fixed set and is never counted
   as a match or a mismatch. An unknown recording keeps every reason that made it unknown, each
   classified by what its evidence shows: a reason the rule can remove sends the law to a coverage
-  repair (more recordings decided, none undone); a reason only the data, the time contract or the
+  repair (more recordings decided, none undone); a repair is kept only when its goal progressed (a
+  mismatch now matches, or more recordings are decided) and no law it reaches regressed; a reason
+  only the data, the time contract or the
   harness can remove, or one whose cause the tag does not show, is reported and repairs nothing. A
   report-only check of each recording's source declarations against its trace is computed once with
   the fixed set; it changes no status, and a label repair sees it only as diagnostics, which prove
@@ -258,8 +258,8 @@ feature is not better for being there, and one whose use cannot be stated is rem
   frozen in `laws/audit_and_scripts/split_atoms.json` and the doctor fails when one changes; they
   change only by regenerating the split. The harness defaults to the training split.
   The driving data under `pipeline/datasets/**` is test data in the same sense, with one
-  exception: the training recordings named in "Training and testing" are read by the label check,
-  and only by it. No model session reads a recording, a trace, a video or a label; it sees only the
+  exception: the training recordings named in "Training and testing" are read by the dataset
+  builder, the label check and the report-only source check, and by nothing else. No model session reads a recording, a trace, a video or a label; it sees only the
   mismatch the label check renders. The one other use (operator, 2026-11-04): a development or
   diagnostic session outside the loop may run the monitor on training recordings, only to profile
   its time and memory and to compare a Core change's output byte for byte with the output before
@@ -422,8 +422,17 @@ at build time (`lake build`) and pin the arithmetic and semantics with `#guard`.
 
 The CARLA dataset is built top-down and problem-driven: its scenarios are designed from the laws
 the pipeline formalizes, not collected and then matched to laws, and they are added gradually
-until the dataset covers most of the corpus. The labelled package `demo-accepted-191-core-v2` (191 recordings of 22 demo laws, 189
-`demo-train`, 2 `demo-test`) carries the training recordings. Its other parts so far are `pipeline/datasets/carla_new/`
+until the dataset covers most of the corpus. Each delivery from the data producer is independent:
+a training dataset is built from one delivery only (`python -m recorded.dataset build <delivery>
+<out>`), and its traces, manifests and labels all come from that delivery, never mixed with an
+earlier one; a new delivery gives a new dataset folder and data version. The dataset holds one
+manifest per source (a scene-graph generator or adapter version), since what can be observed
+depends on the generator, not on the recording; one trace per recording; and the labels in its
+`INDEX.csv`. A manifest states a source's general capability; an entity the source cannot classify
+keeps that membership unknown through `unobserved_kinds` or `unobserved_classes`. Such a mark never
+stands in for an entity the source missed, a membership known false is never marked unknown, and no
+count of marks by itself makes a kind absent. The earlier package `demo-accepted-191-core-v2` (191
+recordings of 22 demo laws, 189 `demo-train`, 2 `demo-test`) was the first delivery. Other parts so far are `pipeline/datasets/carla_new/`
 (407, 600-1a), `pipeline/datasets/demo-thirteen-latest-share-20261010/` (13 demo lines) and
 `pipeline/datasets/held-out-v1-intent-laws/` (three LVMC lines).
 Other sources (nuPlan, filtered SAVeD) are added the same way.

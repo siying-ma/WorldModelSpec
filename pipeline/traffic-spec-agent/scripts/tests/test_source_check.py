@@ -224,11 +224,10 @@ class WithTheRun(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
         self.ds = make_dataset(self.root / "ds", [("ra", "L", "compliant", False, {"R1": [["compliant", {"x": 1}]]}),
-                                                  ("rb", "L", "violation", False, {"R1": [["compliant", {"x": 1}]]})])
-        for rid in ("ra", "rb"):
-            f = self.ds.files(rid)
-            f["trace"].write_text(json.dumps({"scenes": [scene(0, [{"id": 1, "kind": "sidewalk", "unobserved_kinds": ["crosswalk"]}])]}))
-            f["manifest"].write_text(json.dumps({"atoms": {"st.crosswalk": "exact", "st.sidewalk": "exact"}}))
+                                                  ("rb", "L", "violation", False, {"R1": [["compliant", {"x": 1}]]})],
+                               trace={"scenes": [scene(0, [{"id": 1, "kind": "sidewalk", "unobserved_kinds": ["crosswalk"]}])]},
+                               manifest={"atoms": {"st.crosswalk": "exact", "st.sidewalk": "exact"}})
+        self.assertEqual(self.ds.files("ra")["manifest"], self.ds.files("rb")["manifest"])     # one source manifest
         self.run_dir = self.root / "run"
         self.run_dir.mkdir()
 
@@ -278,7 +277,7 @@ class WithTheRun(unittest.TestCase):
         doc = json.loads(out.read_text())
         self.assertEqual(doc["summary"]["recordings_with"]["iii"], 2)
         self.assertEqual(sorted(doc["per_law"]), ["L"])
-        self.assertEqual(doc["data_version"], "v1")
+        self.assertEqual(doc["data_version"], self.ds.data_version)
 
 
 if __name__ == "__main__":

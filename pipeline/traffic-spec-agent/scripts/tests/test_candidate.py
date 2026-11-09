@@ -118,6 +118,7 @@ def world(concepts: dict[str, dict], nodes: dict[str, dict], library: Path | Non
             (t / "definitions.jsonl").write_text("")
             run = Run(Options(run_id="r", laws=t / "laws.jsonl", ontology=ONTO.path, reading=base_reading, model="m"))
             run.dir.mkdir(parents=True)
+            run.pin_hints()                                  # the run's start, before its first snapshot
             run.iteration = 1
             shutil.copy2(base_reading, run.reading_file)
             jsonl.write_atomic(run.state_file, json.dumps({"schema": 1, "run_id": "r", "iteration": 1, "ledger": [], "concept_ledger": [],

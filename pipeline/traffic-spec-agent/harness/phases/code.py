@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from ..checks import gate
 from ..lean import index_sync, lean, skeleton, surface
-from ..model import definitions as definitions_mod, nodeid, ontology
+from ..model import acquisition, definitions as definitions_mod, nodeid, ontology
 from ..store import jsonl, paths
 from ..store.gaps import GapLedger
 from ..agents import render, session
@@ -316,7 +316,8 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     again = _saved_candidate(saved, rels, context) or _saved_candidate(d, rels, context, gate.INFRA)
     if again is not None:
         return _gate_saved(d, rels, again, context, lambda: gate.run_gate(node, reading, baseline, d, budget_used=0, budget=run.opts.gate_budget + 1,
-                                                                           accepted_concepts=run.all_concepts()),
+                                                                           accepted_concepts=run.all_concepts(),
+                                                                           acquisition=run.opts.acquisition_profile),
                            lambda: rollback(node.id, baseline, d))
     rule_rel, wit_rel = rels
     rule_text, wit_text = write_skeletons(node)
@@ -340,7 +341,7 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
         "node": json.dumps(node.raw, ensure_ascii=False, indent=1) + "\n\n" + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw)
                 + definitions_mod.render_sources(definitions_mod.source_records(run, node.definition_sources()), definitions_mod.SOURCES_HEADING),
         "files": files, "core_surface": surface.core_surface(run.all_concepts(), claimed=node.claimed_atoms()), "contracts": contracts_block(run, node),
-        "reading": reading_table(node, reading),
+        "reading": reading_table(node, reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None)),
         "example": worked_example(run), "skeletons": skeletons, "gate": gate_text,
         "rule_path": str(rule_abs), "witness_path": str(wit_abs), "node_id": node.id,
         "core_dir": str(paths.CORE.resolve()),
@@ -364,7 +365,7 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
             return v
     # the harness's own gate call decides; the session's calls were advice to itself
     v = gate.run_gate(node, reading, baseline, d, budget_used=0, budget=run.opts.gate_budget + 1,
-                      accepted_concepts=run.all_concepts())
+                      accepted_concepts=run.all_concepts(), acquisition=run.opts.acquisition_profile)
     _save_verdict(d, v, rels, context)
     if v.verdict != "OK":
         rollback(node.id, baseline, d)
@@ -398,7 +399,7 @@ def _gate_from_cli(run_id: str, node_id: str, root: Path, pattern: str = "iter-*
     opts = json.loads((run_root / "options.json").read_text(encoding="utf-8"))
     used = int((d / "gate_runs.txt").read_text().strip() or 0)
     (d / "gate_runs.txt").write_text(str(used + 1), encoding="utf-8")
-    rd = Reading(reading or Path(opts["reading"]))
+    rd = Reading(reading or paths.local(opts["reading"]))
     catalogue = concepts if concepts is not None else cli_catalogue(run_id)
     if nodeid.is_concept_id(node_id):
         rec = ConceptRecord(json.loads((d / "concept.json").read_text(encoding="utf-8")))
@@ -406,7 +407,8 @@ def _gate_from_cli(run_id: str, node_id: str, root: Path, pattern: str = "iter-*
                                   accepted={k: r for k, r in catalogue.items() if k != node_id} if concepts is not None else catalogue)
     else:
         node = Node(json.loads((d / "node.json").read_text(encoding="utf-8")))
-        v = gate.run_gate(node, rd, baseline, d, used, opts["gate_budget"], accepted_concepts=catalogue)
+        v = gate.run_gate(node, rd, baseline, d, used, opts["gate_budget"], accepted_concepts=catalogue,
+                          acquisition=opts.get("acquisition_profile"))
     (d / "last_gate.json").write_text(json.dumps({"verdict": v.verdict, "details": v.details[:8]}, ensure_ascii=False), encoding="utf-8")
     return v
 

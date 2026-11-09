@@ -28,3 +28,4 @@ import TrafficSpec.Tests.HistoryBoundary
 import TrafficSpec.Tests.RegionOffsetAlong
 import TrafficSpec.Tests.ApproachChain
 import TrafficSpec.Tests.EvalFast
+import TrafficSpec.Tests.HeadingSince

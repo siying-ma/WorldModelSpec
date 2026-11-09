@@ -4,6 +4,7 @@ Projection keeps every active atom's state and the trace, drops held-out ids wit
 to drop an observed unknown capability, and handles retired classes as before. Scoring keeps a
 fixed denominator: undecidable recordings are not matches, and a recording is scored once.
 Decidability reads Core's support from the monitor's report on a probe trace."""
+import hashlib
 import io
 import json
 import os
@@ -47,22 +48,26 @@ class ProjectionTests(unittest.TestCase):
                   {"t": 50, "users": []}]
         raw = json.dumps({"scenes": scenes}).encode("utf-8")
         with tempfile.TemporaryDirectory() as t:
-            rec = projection.project(io.BytesIO(raw), json.dumps({"atoms": {"kin.speed": "exact"}}).encode(), Path(t), ACTIVE, FULL, "train")
+            rec = projection.project_trace(io.BytesIO(raw), Path(t) / "trace.json")
             got = json.loads((Path(t) / "trace.json").read_text())
             self.assertEqual(rec.scenes, 2)
             self.assertEqual(rec.retired_unobserved_classes_dropped, 1)
             self.assertEqual(got["scenes"][0]["users"][0]["unobserved_classes"], ["bicycle"])
             self.assertEqual(got["scenes"][0]["users"][0]["kin"], {"speed": 1.5})
             self.assertEqual(got["scenes"][1], scenes[1])
-            saved = json.loads((Path(t) / "projection.json").read_text())
-            self.assertEqual(set(saved["input_sha256"]), {"trace.json", "manifest.json"})
-            self.assertEqual(saved["split"], "train")
+            self.assertEqual(rec.input_sha256, hashlib.sha256(raw).hexdigest())
+            self.assertEqual(rec.output_sha256, hashlib.sha256((Path(t) / "trace.json").read_bytes()).hexdigest())
+            mbytes = json.dumps({"atoms": {"kin.speed": "exact"}}).encode()
+            m = projection.write_manifest(mbytes, Path(t) / "src", ACTIVE, FULL, "train")
+            saved = json.loads((Path(t) / "src" / "projection.json").read_text())
+            self.assertEqual((saved["split"], saved["input_sha256"]), ("train", hashlib.sha256(mbytes).hexdigest()))
+            self.assertEqual(m.output_sha256, hashlib.sha256((Path(t) / "src" / "manifest.json").read_bytes()).hexdigest())
 
     def test_a_positive_retired_class_is_refused(self):
         raw = json.dumps({"scenes": [{"t": 0, "users": [{"track": 1, "classes": ["vending_vehicle"]}]}]}).encode()
         with tempfile.TemporaryDirectory() as t:
             with self.assertRaises(projection.ProjectionError):
-                projection.project(io.BytesIO(raw), b'{"atoms": {}}', Path(t), ACTIVE, FULL, "train")
+                projection.project_trace(io.BytesIO(raw), Path(t) / "trace.json")
 
     def test_scenes_stream_across_small_chunks(self):
         scenes = [{"t": i, "users": [{"track": 1, "name": "ü" * 7}]} for i in range(20)]

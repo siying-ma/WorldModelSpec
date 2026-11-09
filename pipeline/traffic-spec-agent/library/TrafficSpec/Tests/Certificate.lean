@@ -18,7 +18,7 @@ def everyTerm : List Term :=
   [ .lit (Q.mk' (-3) 2) .metrePerSecond, .param "p.x", speed, .quantity "prim_heading_change" [.var "v"] [.lit (Q.ofInt 2) .second]
   , .distanceWhile "v" .tt, .sinceRise .ff, .aggregate .max "u" .tt (.measure "kin_speed" [.var "u"])
   , .add speed speed, .sub speed speed, .mul speed speed, .div speed (.lit (Q.ofInt 2) .ratio), .neg speed, .abs speed
-  , .cond (.atom "env_darkness" [] []) speed (.lit Q.zero .metrePerSecond) ]
+  , .cond (.atom "env_darkness" [] []) speed (.lit Q.zero .metrePerSecond), .headingSince "v" (.lit (Q.ofInt 1) .second) .tt ]
 def everyFormula : List Formula :=
   [ .tt, .ff, .atom "rel_occupies" [.var "v", .lit "x", .nat 3] [.lit (Q.ofInt 1) .ratio], .asm "asm.a", .same (.var "a") (.var "b")
   , .not .tt, .and .tt .ff, .or .tt .ff, .implies .tt .ff, .always .tt, .eventually .ff, .until .tt .ff, .since .tt .ff

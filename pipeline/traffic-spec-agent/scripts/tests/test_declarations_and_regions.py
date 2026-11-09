@@ -471,11 +471,67 @@ def _have_toolchain() -> bool:
     return bool(shutil.which("lake"))
 
 
+#: The Lean modules the routes below run, with the concepts the rule calls (sources and digests in the
+#: fixture's README): built from source in a temporary library, never read from a build cache.
+LEAN_SOURCES = {
+    "TrafficSpec/Rules/NRS_484B/NRS_484B_127_1.lean": "68ccb62392d38505336bd22f9f2036d07f08de79c47efd081c281a44fcff1364",
+    "TrafficSpec/Concepts/interaction/follows_in_line_of_travel.lean": "661252d88ec48e8c3b8276930c2e4eb9c1574621d0659986f73ac259a68b186d",
+    "TrafficSpec/Concepts/interaction/travel_gap.lean": "ba67d7eb953e12c5675fd64a65dd4c15fd284332ff9cbf4ee200503c011ca96a",
+    "TrafficSpec/Concepts/control/intersection_signal_inoperative.lean": "4af13bb44967a82eb6d8d0a311e39919a0a0fc714441f693698478b98caaf0ff",
+}
+
+
+def fixture_library(root: Path) -> Path:
+    """A library at `root` holding this tree's Core sources and build files and the fixture's Lean
+    sources (each checked against its digest), with those modules built there. The tree's own built
+    Core, when present, is copied in only to save time: lake rebuilds whatever it does not match."""
+    import hashlib
+    import shutil
+    from harness.lean import lean
+    from harness.store import paths
+    lib = root / "library"
+    (lib / "TrafficSpec").mkdir(parents=True)
+    for f in ("lakefile.lean", "lean-toolchain", "lake-manifest.json"):
+        shutil.copy2(paths.LIBRARY / f, lib / f)
+    shutil.copy2(paths.LIBRARY / "TrafficSpec" / "Core.lean", lib / "TrafficSpec" / "Core.lean")
+    shutil.copytree(paths.CORE, lib / "TrafficSpec" / "Core")
+    built = paths.LIBRARY / ".lake" / "build" / "lib" / "lean" / "TrafficSpec"
+    if built.is_dir():
+        (lib / ".lake" / "build" / "lib" / "lean" / "TrafficSpec").mkdir(parents=True)
+        for p in built.glob("Core*"):
+            (shutil.copytree if p.is_dir() else shutil.copy2)(p, lib / ".lake" / "build" / "lib" / "lean" / "TrafficSpec" / p.name)
+    modules = ["TrafficSpec.Core"]
+    for rel, sha in LEAN_SOURCES.items():
+        src = _saved(f"library/{rel}")
+        got = hashlib.sha256(src.read_bytes()).hexdigest()
+        if got != sha:
+            raise AssertionError(f"test fixture {src} is not the recorded source (sha256 {got}, recorded {sha})")
+        (lib / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, lib / rel)
+        modules.append(rel[:-len(".lean")].replace("/", "."))
+    code, out = lean.lake_build(lib, modules)
+    if code:
+        raise AssertionError(f"the fixture's Lean sources do not build on this Core: {out[-1500:]}")
+    return lib
+
+
 @unittest.skipUnless(_have_toolchain(), "needs the Lean toolchain")
 class AdmissionRefusesBeforeAnyVerdict(unittest.TestCase):
     """A trace the admission refuses reaches no verdict on any review route, with the real Lean: the
     node review's certificate and the concept review's harness. (The monitor's refusal is checked in
-    `test_admission_refusal_monitor`, which imports no review module.)"""
+    `test_admission_refusal_monitor`, which imports no review module.) The rule and concept modules
+    are built from the fixture's sources in a temporary library; a missing or altered source fails."""
+
+    @classmethod
+    def setUpClass(cls):
+        import shutil
+        from harness.store import paths
+        cls.tmp = Path(tempfile.mkdtemp(prefix="admission-refusal-"))
+        cls.addClassCleanup(shutil.rmtree, cls.tmp, True)
+        lib = fixture_library(cls.tmp)
+        cls.patcher = patch.multiple(paths, **paths.library_layout(lib))
+        cls.patcher.start()
+        cls.addClassCleanup(cls.patcher.stop)
 
     def test_the_certificate_returns_it_to_the_reviewer(self):
         case = json.loads(_saved("case.json").read_text())

@@ -8,6 +8,21 @@ from . import jsonl, paths
 from ..model import corpus
 from ..model.blueprint import Node
 
+#: The feedback modes a run may name. A new run names one explicitly (`--feedback`); the dataclass
+#: default `review` is the meaning of a saved run whose options name none (one started before a new
+#: run had to name its mode), never a choice made for a new run.
+FEEDBACK_MODES = ("review", "labels")
+
+
+def feedback_refusal(mode) -> str | None:
+    """Why a run cannot be launched with feedback mode `mode`, or None. Only a mode of FEEDBACK_MODES
+    is accepted: every branch that routes by the mode (the node review, law-level acceptance, the
+    record contexts) knows only those, so any other value would run another mode silently. A new mode
+    enters FEEDBACK_MODES together with its routing, acceptance, dependency and run-version wiring."""
+    if mode in FEEDBACK_MODES:
+        return None
+    return f"--feedback must be one of {' | '.join(FEEDBACK_MODES)} (given {mode!r})"
+
 
 @dataclass
 class Options:
@@ -39,7 +54,7 @@ class Options:
     restart: bool = False          # discard an interrupted iteration instead of resuming it
     reviewer_model: Optional[str] = None   # a second vendor's model for the reviews (required): the concept review, and the node behaviour review under `feedback: review`
     review_effort: Optional[str] = "high"  # the reviewer's reasoning effort
-    feedback: str = "review"               # `review`: a node is accepted on its behaviour review; `labels`: the node behaviour review and its Stage A/B are suspended, the concept review stays, and the label check scores the frozen library (`harness label_check`)
+    feedback: str = "review"               # one of FEEDBACK_MODES, named by every new run (`review` only fills a saved run that names none). `review`: a node is accepted on its behaviour review; `labels`: the node behaviour review and its Stage A/B are suspended, the concept review stays, and the label check scores the frozen library (`harness label_check`)
     aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required under `feedback: labels`; else the reviewer's)
     aggregate_verifier_effort: Optional[str] = None    # its reasoning effort (else the reviewer's)
     aggregate_verifier_budget_usd: Optional[float] = None   # the run-wide limit on its calls, within the second vendor's limit
@@ -47,6 +62,7 @@ class Options:
     mode: str = "train"            # `train`: concepts may supersede; `test`: add-only over a base run
     base_run: Optional[str] = None # a run whose accepted nodes and concepts this run starts from, read-only
     definition_precedence: Optional[Path] = None   # the operator's declared definition precedence (default config/definition_precedence.json)
+    acquisition_profile: Optional[str] = None      # the operator's acquisition profile of the recordings (config/acquisition_profiles.json): its reviewed parameter is every `heading_since` step bound; none, and no rule may read `heading_since`
     openai_budget_usd: Optional[float] = None      # the run-wide limit on the second vendor's calls; reached, the run pauses (`paused_budget`)
     claude_budget_usd: Optional[float] = None      # the run-wide limit on Claude's sessions, each reserved at its role's cap (required with it)
     total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires every role's cap)
@@ -61,7 +77,56 @@ class Options:
     label_repair: bool = False                     # under `feedback: labels`, check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: the library is only scored after the run)
     label_dataset: Optional[str] = None            # the training recordings the in-loop label check reads (required with `label_repair`)
     label_repair_attempts: int = 2                 # label repairs per law (a re-planned law keeps its count); each session call of one, its re-ask included, is capped by `repair_budget_usd`, and its planner and coder sessions by `session_budget_usd`
+    label_deferred: bool = False                   # with `label_repair`: no training recording is read on this machine; a law whose plan is gated is kept, not accepted, and recorded `awaiting_labels` for a later launch with the recordings
+    label_stage: bool = False                      # with `label_repair`: this launch only checks laws on the training recordings and repairs them; it plans and codes nothing new
     label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
+
+
+def acceptance_by_law(opts) -> bool:
+    """Whether a law's formal acceptance waits on more than its nodes' gates: under `feedback: labels`
+    with `label_repair` a law is accepted only once its label check routes it there, so a node accepted
+    on its gate is generated, not formally accepted; otherwise a node's acceptance is formal."""
+    return getattr(opts, "feedback", "review") == "labels" and bool(getattr(opts, "label_repair", False))
+
+
+#: The fields of a run's acceptance policy (what `acceptance_by_law` reads), each with the test of a
+#: legal saved value: a saved contract holds every one, explicitly, with a legal value.
+POLICY_FIELDS = {"feedback": lambda v: v in FEEDBACK_MODES, "label_repair": lambda v: isinstance(v, bool)}
+
+
+def policy_defects(saved) -> list[str]:
+    """Why a saved acceptance policy (a run's saved options, or the policy a handoff recorded) is not
+    whole: a field missing, or a value of the wrong type or not legal. Nothing is filled by default."""
+    if not isinstance(saved, dict):
+        return ["it is not an object"]
+    return [f"`{k}` is missing" if k not in saved else f"`{k}` is {saved[k]!r}, not a legal value"
+            for k, legal in POLICY_FIELDS.items() if k not in saved or not legal(saved[k])]
+
+
+def acceptance_policy(opts) -> dict:
+    """What decides how a run's laws are accepted (`acceptance_by_law` reads it), from a launch's
+    options or a saved contract that `policy_defects` found whole: fixed for the run's life."""
+    get = opts.get if isinstance(opts, dict) else lambda k, d=None: getattr(opts, k, d)
+    return {k: get(k) for k in POLICY_FIELDS}
+
+
+def acceptance_policy_refusal(fixed, opts) -> str | None:
+    """The one check of a run's acceptance policy: why a launch with options `opts` may not continue a
+    run whose policy is `fixed` (its saved options, or the policy a handoff recorded), or None. A saved
+    policy that is not whole (`policy_defects`) is refused, never completed by a default; any change
+    is refused: a run accepts its laws on one policy, and another policy is a new run. Which stage a
+    launch runs (`label_deferred`, `label_stage`), its dataset and its budgets are not part of it."""
+    if fixed is None:
+        return None
+    bad = policy_defects(fixed)
+    if bad:
+        return "the run's saved acceptance policy is not whole (" + "; ".join(bad) + "); restore its checkpoint, or start a new run id"
+    was, now = acceptance_policy(fixed), acceptance_policy(opts)
+    changed = sorted(k for k in set(was) | set(now) if was.get(k) != now.get(k))
+    if not changed:
+        return None
+    return ("the run's acceptance policy is fixed for its life (" + ", ".join(f"{k}: {was.get(k)!r} → {now.get(k)!r}" for k in changed)
+            + "); start a new run id")
 
 
 def node_reviews(opts) -> bool:
@@ -89,6 +154,7 @@ class Run:
     rechecked: dict[str, str] = field(default_factory=dict)   # an inherited record's id → the context it was last found sound on
     pending_notices: list[str] = field(default_factory=list)  # operator notices from a loop start, delivered by the next iteration
     label_states: dict[str, dict] = field(default_factory=dict)   # with `label_repair`: each checked law's routed outcome and the check it rests on
+    law_entries: Optional[dict] = None   # the live law ledger's entries (law ↦ entry), bound by the loop; else read from the ledger file
 
     @classmethod
     def load(cls, run_id: str) -> "Run":
@@ -107,13 +173,14 @@ class Run:
         if not f.exists():
             raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
         d = json.loads(f.read_text(encoding="utf-8"))
+        paths.register_roots(d.get("repo_roots"))
         fields = {k for k in Options.__dataclass_fields__}
         kw = {k: v for k, v in d.items() if k in fields}
-        kw["laws"], kw["ontology"] = Path(d["laws"]), Path(d["ontology"])
+        kw["laws"], kw["ontology"] = paths.local(d["laws"]), paths.local(d["ontology"])
         for k in ("definition_precedence", "model_prices"):
             if kw.get(k):
-                kw[k] = Path(kw[k])
-        kw["reading"] = Path(d.get("base_reading") or d["reading"])
+                kw[k] = paths.local(kw[k])
+        kw["reading"] = paths.local(d.get("base_reading") or d["reading"])
         run = cls(Options(**kw))
         run.restore_state()
         run.load_accepted()
@@ -172,6 +239,8 @@ class Run:
         self.pending_notices = list(snap.get("pending_notices", []))
         self.label_states = dict(snap.get("label_states", {}))
         self.iteration = int(snap.get("iteration", 0))
+        if snap.get("prog"):
+            snap["prog"] = prog_paths(snap["prog"], paths.local)
         return snap
 
     @property
@@ -292,6 +361,30 @@ class Run:
                 moved.append(ident)
         return moved
 
+    def usable_nodes(self, for_law: str | None) -> dict[str, dict]:
+        """The one rule of when a node may be composed (by a plan, a scheduled coding task, a registry
+        entry a caller relies on): the accepted nodes (`all_nodes`) a node of law `for_law` may use.
+        When a law's formal acceptance is the law's (`acceptance_by_law`), a node this run accepted on
+        its gate is usable only by a node of its own law (a sibling, built in dependency order inside
+        the pending law) until its law is `accepted`; an inherited node and a node of a law outside
+        this run's ledger stay usable. Otherwise every accepted node is usable. Concepts are not
+        governed here: an accepted concept is usable by every law. Generated nodes stay in
+        `all_nodes` for the label check, integration and the library."""
+        nodes = self.all_nodes()
+        if not acceptance_by_law(self.opts):
+            return nodes
+        entries = self.law_entries
+        if entries is None:
+            from .ledger import Entry, _load
+            entries = _load(self.ledger_file, Entry, "law")
+        out = {}
+        for nid, rec in nodes.items():
+            law = Node(rec).law
+            e = entries.get(law)
+            if nid not in self.accepted_nodes or law == for_law or e is None or e.state == "accepted":
+                out[nid] = rec
+        return out
+
     def all_nodes(self) -> dict[str, dict]:
         """Accepted nodes the plan may compose: the base chain's, then this run's; a fenced version
         carries `fenced` (its reason and evidence)."""
@@ -338,8 +431,40 @@ class Run:
     def read_notes(self) -> str:
         return self.auto_notes.read_text(encoding="utf-8") if self.auto_notes.exists() else "(first iteration: no feedback yet)\n"
 
+    @property
+    def hints_file(self) -> Path:
+        return self.dir / "user_hints.json"
+
+    def pin_hints(self) -> None:
+        """Record the operator's hints (`USER_HINTS.md`) as a new run first reads them, with their
+        digest: every later session of the run, on this machine or after a handoff, reads this record,
+        never the file as it stands then. A file missing at that start is recorded as absent, with
+        empty text. Only a new run (no committed snapshot yet) writes the record: a run that has one
+        and lost its record stops (`DataIntegrityError`), the record never rebuilt from the file as it
+        stands now nor as absent."""
+        if self.hints_file.exists():
+            return
+        if self.state_file.exists():
+            raise jsonl.DataIntegrityError(self.hints_file, None, "the run's pinned hints are missing; they are never recorded "
+                                           "again after the run's start: restore this file from the run's checkpoint")
+        import hashlib
+        present = paths.USER_HINTS.is_file()
+        text = paths.USER_HINTS.read_text(encoding="utf-8") if present else ""
+        jsonl.write_atomic(self.hints_file, json.dumps({"present": present, "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                                                        "text": text}, ensure_ascii=False, indent=1))
+
     def read_hints(self) -> str:
-        return paths.USER_HINTS.read_text(encoding="utf-8") if paths.USER_HINTS.exists() else "(none)\n"
+        """The run's pinned hints (`pin_hints`); `(none)` when the file was absent at the run's start."""
+        import hashlib
+        self.pin_hints()
+        try:
+            d = json.loads(self.hints_file.read_text(encoding="utf-8"))
+            ok = hashlib.sha256(str(d["text"]).encode("utf-8")).hexdigest() == d["sha256"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            ok = False
+        if not ok:
+            raise jsonl.DataIntegrityError(self.hints_file, None, "the pinned hints do not match their digest")
+        return d["text"] if d.get("present") else "(none)\n"
 
 
 def fences_of(snap: dict, run_id: str) -> dict[str, dict]:
@@ -385,8 +510,8 @@ def chain_laws(run: Run) -> dict[str, "corpus.Law"]:
     out: dict = {}
     for rid in getattr(run, "base_chain", []) or []:
         lf = (jsonl.read_json(paths.run_dir(rid) / "options.json", None) or {}).get("laws")
-        if lf and Path(lf).exists():
-            out.update({l.id: l for l in corpus.load_laws(Path(lf))})
+        if lf and paths.local(lf).exists():
+            out.update({l.id: l for l in corpus.load_laws(paths.local(lf))})
     return out
 
 
@@ -438,7 +563,52 @@ def base_view(run_id: str, seen: frozenset = frozenset()) -> dict:
             "provenance": provenance, "chain": order}
 
 
+#: The keys of an iteration's progress that hold task directories: a plan directory, and each repair's
+#: directory by the concept or node it repaired.
+PROG_PATHS = ("plan_dir",)
+PROG_PATH_MAPS = ("repairs", "node_repairs")
+
+
+def prog_paths(prog: dict, how) -> dict:
+    """A copy of an iteration's progress with its task directories passed through `how`
+    (`paths.stored` when saved, `paths.local` when read back)."""
+    out = dict(prog)
+    for k in PROG_PATHS:
+        if out.get(k):
+            out[k] = str(how(out[k]))
+    for k in PROG_PATH_MAPS:
+        if isinstance(out.get(k), dict):
+            out[k] = {i: str(how(v)) if v else v for i, v in out[k].items()}
+    return out
+
+
 _COMMIT_LOCK = __import__("threading").Lock()
+
+
+#: The fields of a run's snapshot (`commit_state` writes each one) with their types; `label_states`
+#: and `prog` are written only once the run has them, so they are checked only when present.
+SNAPSHOT_FIELDS = {"schema": int, "run_id": str, "iteration": int, "ledger": list, "concept_ledger": list, "node_ledger": list,
+                   "accepted_nodes": dict, "accepted_concepts": dict, "deferred_nodes": list, "deferred_concepts": list,
+                   "aggregate_failures": dict, "fenced": dict, "fence_history": list, "rechecked": dict, "pending_notices": list}
+SNAPSHOT_OPTIONAL = {"label_states": dict, "prog": dict}
+
+
+def snapshot_defects(snap, run_id: str) -> list[str]:
+    """Why a snapshot is not one a resume may restore: not an object, a field missing or of the wrong
+    type, another schema, or another run's. A complete snapshot whose collections are empty (a run's
+    first commit) is whole; a partial one is never read as empty state."""
+    if not isinstance(snap, dict):
+        return ["it is not an object"]
+    out = [f"`{k}` is missing" if k not in snap else f"`{k}` is not a {t.__name__}"
+           for k, t in SNAPSHOT_FIELDS.items() if k not in snap or not isinstance(snap[k], t) or isinstance(snap[k], bool)]
+    out += [f"`{k}` is not a {t.__name__}" for k, t in SNAPSHOT_OPTIONAL.items() if k in snap and not isinstance(snap[k], t)]
+    if isinstance(snap.get("schema"), int) and snap["schema"] != 1:
+        out.append(f"its schema is {snap['schema']}, not 1")
+    if isinstance(snap.get("run_id"), str) and snap["run_id"] != run_id:
+        out.append(f"it is run `{snap['run_id']}`'s, not `{run_id}`'s")
+    if isinstance(snap.get("iteration"), int) and snap["iteration"] < 0:
+        out.append("its iteration is negative")
+    return out
 
 
 def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | None = None) -> None:
@@ -448,10 +618,11 @@ def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | Non
     from dataclasses import asdict
     with _COMMIT_LOCK:
         snap = run.load_state() or {}
+        from .ledger import _saved
         snap.update({"schema": 1, "run_id": run.opts.run_id, "iteration": run.iteration,
-                     "ledger": [asdict(e) for e in ledger.entries.values()],
-                     "concept_ledger": [asdict(e) for e in concept_ledger.entries.values()],
-                     "node_ledger": [asdict(e) for e in node_ledger.entries.values()],
+                     "ledger": [_saved(e) for e in ledger.entries.values()],
+                     "concept_ledger": [_saved(e) for e in concept_ledger.entries.values()],
+                     "node_ledger": [_saved(e) for e in node_ledger.entries.values()],
                      "accepted_nodes": run.accepted_nodes, "accepted_concepts": run.accepted_concepts,
                      "deferred_nodes": run.deferred_nodes, "deferred_concepts": run.deferred_concepts,
                      "aggregate_failures": run.aggregate_failures, "fenced": run.fenced,
@@ -460,6 +631,6 @@ def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | Non
         if run.label_states:
             snap["label_states"] = run.label_states
         if prog is not None:
-            snap["prog"] = prog
+            snap["prog"] = prog_paths(prog, paths.stored)
         jsonl.write_atomic(run.state_file, json.dumps(snap, ensure_ascii=False))
         ledger.save(); concept_ledger.save(); node_ledger.save(); run.save_accepted()

@@ -38,6 +38,7 @@ def rules : List Rule := [rule, truckRule, composed]
 #guard Formula.atoms (.existsRegion (.lit "lane") "r" (.atom "rel_occupies" [X, .var "r"] [])) = ["st_lane", "rel_occupies"]
 #guard Formula.atoms (.existsDevice (.var "k") "d" (.atom "dev_governs" [.var "d", .var "r"] [])) = ["dev_governs"]
 #guard Formula.termAtoms (.distanceWhile "x" (.atom "ru_truck" [X] [])) = ["kin_path_length", "ru_truck"]
+#guard Formula.termAtoms (.headingSince "x" (.param "p.step") (.atom "ru_truck" [X] [])) = ["kin_yaw_rate", "kin_time", "ru_truck"]
 #guard atomIdOf "st_region_geometry_distance" = some "st.region_geometry"
 -- the static check: names, arities, literals, variables, constant parameters, compositions
 #guard Rule.check rules rule = []

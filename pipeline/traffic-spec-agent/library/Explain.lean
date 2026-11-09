@@ -32,9 +32,8 @@
   quantities a check reads; a cut is reported as `truncated`.
 
   `--scan` chooses the observations (at most `--max`, default 3) on the whole trace, or, with
-  `--from <ms> --to <ms>`, among the observations of that closed interval only (a label's scoring
-  interval; the trace is still evaluated whole, a violated run entering the interval is chosen at
-  its first observation inside):
+  `--from <ms> --to <ms>`, among the observations of that closed interval only (the trace is still
+  evaluated whole, a violated run entering the interval is chosen at its first observation inside):
   - violated somewhere: the first observation of each violated interval;
   - else engaged somewhere: the first unknown observation, and, for each comparison of the obligation
     outside quantifiers and temporal operators, the engaged compliant observation at which it is
@@ -43,6 +42,26 @@
     conjuncts hold (a heuristic, not a distance).
   Without `--bind`, every grounding of the monitor is explained (at most `--max-groundings`, every
   one by default; a cut is reported).
+
+  With `--scan --json`, each grounding also carries `windows`: the truncated windows its verdict
+  carries at the unknown observations of the trace, or of the interval `--from --to` names. At each
+  such observation (at most `maxWindowInstants`) the walk follows, from the verdict, only the
+  operands and observations whose reasons the Core puts into the value (the earliest unknown of a
+  window, the guard or body `atLast` selects, the side `definedWhen` takes, the branches of
+  `untilWithin` that stay unknown, each step of an unbounded operator while the rest stays unknown),
+  entering only those unknown with a `window_truncated` reason, down to the operator whose own
+  truncation the Core's branch puts into the value. An unknown with a truncation that the Core reads
+  but takes no reasons from is not walked, and the search at that observation is reported
+  incomplete. Each such operator is a piece: its occurrence, the grounding's whole binding, the
+  scoring observation and the observation at which the operator was evaluated, the measure, the
+  direction, the requested and observed window, and the length as written and after substitution,
+  with the reading's value and unit where it is a parameter. Its source is traced through a source
+  map built by expanding the rule's own formulas as `Concept.expandRule` does, step for step with
+  the same tags, keeping where each sub-formula is written (the rule, or the body of a concept) and
+  the chain of concept calls with what each passes; the map is used only when its expansion equals
+  the library's, else every piece is not located. A window reached through a composed rule, under a
+  quantity, or at an operator the walk does not follow is reported as not located; a cut of the walk
+  is reported.
 -/
 import TrafficSpec
 import TrafficSpec.Core.Runtime.Decode
@@ -110,6 +129,7 @@ mutual
     | .quantity c args _ => s!"{c}({", ".intercalate (args.map (argStr β))})"
     | .distanceWhile s _ => s!"distance travelled by {s} while …"
     | .sinceRise _ => "time since …"
+    | .headingSince s _ _ => s!"heading change of {s} since …"
     | .aggregate op v _ t => s!"{op} over road users {v} of {termStr β t}"
     | .add a b => s!"({termStr β a} + {termStr β b})"
     | .sub a b => s!"({termStr β a} - {termStr β b})"
@@ -186,9 +206,171 @@ where
 partial def params : Term → List String
   | .param p => [p]
   | .quantity _ _ ps => ps.flatMap params
+  | .headingSince _ g _ => params g
   | .aggregate _ _ _ t | .neg t | .abs t => params t
   | .add a b | .sub a b | .mul a b | .div a b | .cond _ a b => params a ++ params b
   | _ => []
+
+/-- The formula children, in the order the paths number them. -/
+def fkids : Formula → List Formula
+  | .not a | .always a | .eventually a | .rises a => [a]
+  | .and a b | .or a b | .implies a b | .until a b | .since a b | .definedWhen a b => [a, b]
+  | .holdsFor _ _ _ a | .within _ _ _ a => [a]
+  | .untilWithin _ _ _ a b | .atLast _ _ _ a b | .count a b _ _ => [a, b]
+  | .existsUser _ a | .forallUser _ a | .existsRegion _ _ a | .forallRegion _ _ a
+  | .existsDevice _ _ a | .forallDevice _ _ a => [a]
+  | _ => []
+
+-- ---------------------------------------------------------------------------------------------
+-- Heading changes since an onset, wherever a comparison side holds one
+-- ---------------------------------------------------------------------------------------------
+
+/-- A heading-change occurrence in a comparison side: its term path (`lhs`/`rhs`, then `.k` per
+    child: arithmetic `.0`/`.1`, `neg`/`abs` `.0`, a selection's guard `.0` and branches `.1`/`.2`, an
+    aggregate's condition `.0` and term `.1`, a call's parameters `.k`, a quantity's formula `.0`, a
+    heading change's step `.0` and onset `.1`, a formula's terms by name and children as the source map
+    numbers them), and why it is not located ("" when it is reached through arithmetic and the branches
+    of selections only, so that it is evaluated at the comparison's observation and binding). -/
+structure HsOcc where
+  path : String
+  subj : String
+  step : Term
+  onset : Formula
+  notLocated : String := ""
+
+mutual
+  partial def hsInT (path why : String) : Term → List HsOcc
+    | .headingSince s g ψ =>
+      { path, subj := s, step := g, onset := ψ, notLocated := why } ::
+        (hsInT s!"{path}.0" "inside a step bound" g ++ hsInF s!"{path}.1" "inside the onset of a heading change" ψ)
+    | .add a b | .sub a b | .mul a b | .div a b => hsInT s!"{path}.0" why a ++ hsInT s!"{path}.1" why b
+    | .neg a | .abs a => hsInT s!"{path}.0" why a
+    | .cond φ a b => hsInF s!"{path}.0" "inside a selection's guard" φ ++ hsInT s!"{path}.1" why a ++ hsInT s!"{path}.2" why b
+    | .aggregate _ _ φ t =>
+      hsInF s!"{path}.0" "under an aggregate (one occurrence per member)" φ ++
+        hsInT s!"{path}.1" "under an aggregate (one occurrence per member)" t
+    | .quantity _ _ ps => ps.zipIdx.flatMap fun (t, k) => hsInT s!"{path}.{k}" "inside a call's parameter" t
+    | .distanceWhile _ φ | .sinceRise φ => hsInF s!"{path}.0" "inside the formula of a quantity" φ
+    | _ => []
+  partial def hsInF (path why : String) (φ : Formula) : List HsOcc :=
+    let terms : List (String × Term) := match φ with
+      | .cmp l _ r => [("lhs", l), ("rhs", r)]
+      | .atom _ _ ps | .derived _ _ ps => ps.zipIdx.map fun (t, k) => (s!"p{k}", t)
+      | .holdsFor _ d _ _ | .within _ d _ _ | .untilWithin _ d _ _ _ | .atLast _ d _ _ _ => [("length", d)]
+      | _ => []
+    (terms.flatMap fun (k, t) => hsInT s!"{path}.{k}" why t) ++
+      ((fkids φ).zipIdx.flatMap fun (ψ, k) => hsInF s!"{path}.{k}" why ψ)
+end
+
+/-- What an occurrence shows at observation `i`: where it is, its binding, step bound and onset with
+    their parameters, and, for a located one, its value, its start (the observations just before and
+    after it) or why there is none, and for an unknown value the observation that decides it. -/
+structure HsInfo where
+  path : String
+  subject : String
+  track : Option TrackId := none
+  binding : String
+  step : String
+  stepParam : Option String := none
+  stepValue : Option Q := none
+  stepUnit : Option String := none
+  onset : String
+  onsetParams : List (String × Option Q) := []
+  notLocated : String := ""
+  value : Option QR := none
+  beforeMs : Option Int := none
+  anchorMs : Option Int := none
+  afterMs : Option Int := none
+  how : String := ""
+
+/-- Where a road user is absent from scene `k`: between two of its sightings, before its first or
+    after its last. -/
+def absence (c : SemCtx) (x : TrackId) (k : Nat) : String :=
+  let seen (m : Nat) : Bool := (c.scenes[m]!.user x).isSome
+  let before := (List.range k).any seen
+  let after := ((List.range c.n).filter (k < ·)).any seen
+  if before && after then s!"track {x} is absent from the scene at t={tAt c k} ms, between two of its sightings (a break inside the trace)"
+  else if before then s!"track {x} is absent from the scene at t={tAt c k} ms, after its last sighting"
+  else s!"track {x} is absent from the scene at t={tAt c k} ms, before its first sighting"
+
+def hsInfo (c : SemCtx) (i : Nat) (o : HsOcc) : HsInfo :=
+  let stepParam := match o.step with | .param p => some p | _ => none
+  let base : HsInfo :=
+    { path := o.path, subject := o.subj, binding := bindingKey c.β, step := termStr {} o.step, stepParam,
+      stepValue := stepParam.bind c.d.ρ.param, stepUnit := (stepParam.bind c.d.ρ.paramUnit).map fun u =>
+        match PUnit'.toJson u with | Lean.Json.str s => s | _ => "",
+      onset := cut (headStr c.β o.onset), onsetParams := (Formula.params o.onset).eraseDups.map fun p => (p, c.d.ρ.param p),
+      notLocated := o.notLocated }
+  if !o.notLocated.isEmpty then base else
+  let v := termAt c i (.headingSince o.subj o.step o.onset)
+  let base := { base with value := some v, track := c.β.track o.subj }
+  match c.β.track o.subj, stepOf o.step (evalTAll c o.step) with
+  | none, _ => { base with how := s!"the subject {o.subj} is not bound" }
+  | _, .error w => { base with how := s!"the step bound gives no value ({w.tag})" }
+  | some x, .ok g =>
+    if !Q.lt Q.zero g then { base with how := "the step bound is not positive" } else
+    let Ψ := evalAll c o.onset
+    let latestU := (List.range (i + 1)).reverse.find? fun k => (Ψ[k]?.map (·.v == .u)).getD false
+    match (Temporal.runStartAll "heading_since" Ψ)[i]? with
+    | some (.error _) =>
+      match latestU with
+      | some k => { base with how := s!"the onset is unknown at t={tAt c k} ms ({", ".intercalate (reasonTags Ψ[k]!)}): its start is not observed" }
+      | none => { base with how := "the onset held at the first observation, or ever since, with no definite rise: its start may lie before the recording" }
+    | some (.ok none) => { base with how := "the onset has not been true at any observation up to here" }
+    | some (.ok (some j)) =>
+      let dtAt (k : Nat) : Q := Q.sub c.d.times[k]! c.d.times[k - 1]!
+      let base := { base with beforeMs := some (tAt c (j - 1)), anchorMs := some (tAt c j),
+                              afterMs := if j + 1 < c.n then some (tAt c (j + 1)) else none }
+      let how := match v with
+        | .ok _ => s!"decided: the onset lies in (t={tAt c (j - 1)}, t={tAt c j}] ms, a bracket of {qStr (dtAt j)} s within the step bound {qStr g} s"
+        | .error (.samplingGap _) =>
+          match ((List.range (i + 1)).filter (j ≤ ·)).reverse.find? fun k => Q.gt (dtAt k) g with
+          | some k => s!"the interval t={tAt c (k - 1)}…{tAt c k} ms ({qStr (dtAt k)} s{if k == j then ", the bracket of the onset" else ""}) is longer than the step bound {qStr g} s"
+          | none => "a sampling gap"
+        | .error (.absentAtom _) =>
+          match ((List.range (i + 1)).filter (j < ·)).reverse.find? fun k => (kin_yaw_rate c.scenes[k]! x).isNone with
+          | some k =>
+            if (c.scenes[k]!.user x).isSome then s!"the yaw rate of track {x} is missing at t={tAt c k} ms, the track present"
+            else absence c x k
+          | none => "a yaw rate is missing"
+        | .error w => s!"unknown ({w.tag})"
+      { base with how }
+    | none => { base with how := "the observation is outside the trace" }
+
+def hsLine (h : HsInfo) : String :=
+  let val := match h.value with | some q => s!" = {qrStr q}" | none => ""
+  let step := s!"step {h.step}{match h.stepValue with | some q => s!" = {qStr q}" | none => ""}"
+  let at_ := match h.beforeMs, h.anchorMs, h.afterMs with
+    | some b, some a, af => s!"; observations around the start: t={b}, t={a}{match af with | some x => s!", t={x}" | none => ""} ms"
+    | _, _, _ => ""
+  if !h.notLocated.isEmpty then s!"heading change of {h.subject} at {h.path} [{h.binding}]: not located ({h.notLocated}); onset {h.onset}"
+  else s!"heading change of {h.subject} at {h.path} [{h.binding}]{val}; {step}; onset {h.onset}{at_}; {h.how}"
+
+open Lean (Json toJson) in
+def hsJson (h : HsInfo) : Json :=
+  let qj (q : Q) : Json := Json.mkObj [("num", toJson q.num), ("den", toJson q.den)]
+  Json.mkObj ([("path", toJson h.path), ("subject", toJson h.subject), ("binding", toJson h.binding),
+      ("located", toJson h.notLocated.isEmpty)]
+    ++ (if h.notLocated.isEmpty then [] else [("not_located", toJson h.notLocated)])
+    ++ (match h.track with | some t => [("track", toJson t)] | none => [])
+    ++ [("step", Json.mkObj [("written", toJson h.step),
+          ("param", match h.stepParam with | some p => toJson p | none => Json.null),
+          ("value", match h.stepValue with | some q => qj q | none => Json.null),
+          ("unit", match h.stepUnit with | some u => toJson u | none => Json.null)]),
+        ("onset", Json.mkObj [("written", toJson h.onset),
+          ("params", Json.mkObj (h.onsetParams.map fun (p, q) => (p, match q with | some q => qj q | none => Json.null)))])]
+    ++ (match h.value with
+        | some (.ok q) => [("exact", qj q)]
+        | some (.error w) => [("unknown", toJson w.tag)]
+        | none => [])
+    ++ (match h.beforeMs with | some t => [("before_ms", toJson t)] | none => [])
+    ++ (match h.anchorMs with | some t => [("anchor_ms", toJson t)] | none => [])
+    ++ (match h.afterMs with | some t => [("after_ms", toJson t)] | none => [])
+    ++ (if h.how.isEmpty then [] else [("how", toJson h.how)]))
+
+/-- Every heading-change occurrence of a comparison at `i`, under the comparison's binding. -/
+def hsOf (c : SemCtx) (i : Nat) (l r : Term) : List HsInfo :=
+  (hsInT "lhs" "" l ++ hsInT "rhs" "" r).map (hsInfo c i)
 
 /-- A side of a comparison at `i`: its value, exact where decided, and the values by case where a
     selection's guard is unknown. -/
@@ -390,6 +572,7 @@ structure Cmp where
   op : String
   rhs : Side
   params : List (String × Option Q)
+  heading : List HsInfo := []
 
 inductive Item where
   | node (value : R) (head : String) (cmp : Option Cmp) (win : Option Win) (note : Option String)
@@ -410,7 +593,8 @@ partial def build (c : SemCtx) (i : Nat) (φ : Formula) (d : Nat) : EM Item := d
   let cmp ← match φ with
     | .cmp l op r => do
       pure (some { lhs := ← side c i l, op := opStr op, rhs := ← side c i r,
-                   params := (params l ++ params r).eraseDups.map fun p => (p, c.d.ρ.param p) })
+                   params := (params l ++ params r).eraseDups.map fun p => (p, c.d.ρ.param p),
+                   heading := hsOf c i l r })
     | _ => pure none
   let w ← winOf c i φ
   let head := cut (headStr c.β φ)
@@ -468,7 +652,8 @@ partial def values (c : SemCtx) (i : Nat) (φ : Formula) (path : String) : EM (L
   | .cmp l op r =>
     pure [{ path, binding := bindingKey c.β, value := ← valAt c i φ,
             cmp := { lhs := ← side c i l, op := opStr op, rhs := ← side c i r,
-                     params := (params l ++ params r).eraseDups.map fun p => (p, c.d.ρ.param p) } }]
+                     params := (params l ++ params r).eraseDups.map fun p => (p, c.d.ρ.param p),
+                     heading := hsOf c i l r } }]
   | .and a b | .or a b | .implies a b | .since a b | .until a b | .definedWhen a b
   | .atLast _ _ _ a b | .untilWithin _ _ _ a b =>
     pure ((← values c i a s!"{path}.0") ++ (← values c i b s!"{path}.1"))
@@ -505,7 +690,8 @@ def winLine (w : Win) : String :=
 def cmpLines (pad : String) (v : R) (k : Cmp) : List String :=
   let ps := k.params.map fun (p, q) => s!"{p} = {match q with | some q => qStr q | none => "missing"}"
   [s!"{pad}{rStr v}: {cut k.lhs.term 90} = {sideStr k.lhs}  {k.op}  {sideStr k.rhs}", s!"{pad}    right side: {k.rhs.term}"] ++
-    (if ps.isEmpty then [] else [s!"{pad}    parameters: {", ".intercalate ps}"])
+    (if ps.isEmpty then [] else [s!"{pad}    parameters: {", ".intercalate ps}"]) ++
+    k.heading.map fun h => s!"{pad}    {hsLine h}"
 
 partial def render (d : Nat) : Item → List String
   | .node v head cmp win note truncated children =>
@@ -545,8 +731,11 @@ def sideJson (s : Side) : Json :=
 
 open Lean (Json toJson) in
 def cmpJson (k : Cmp) : Json :=
-  Json.mkObj [("lhs", sideJson k.lhs), ("op", toJson k.op), ("rhs", sideJson k.rhs),
+  Json.mkObj ([("lhs", sideJson k.lhs), ("op", toJson k.op), ("rhs", sideJson k.rhs),
     ("params", Json.mkObj (k.params.map fun (p, q) => (p, match q with | some q => qJson q | none => Json.null)))]
+    ++ (if k.heading.isEmpty then [] else
+        [("heading_since", Json.arr (k.heading.map hsJson).toArray),
+         ("heading_since_coverage", toJson (if k.heading.all (·.notLocated.isEmpty) then "complete" else "partial"))]))
 
 open Lean (Json toJson) in
 def winJson (w : Win) : Json :=
@@ -723,6 +912,519 @@ def allValues (S : Setup) (r : Rule) (g : Grounding) (i : Nat) : EM (List Value 
   let xs := cls.flatten ++ (← values c i r.applicability "applicability") ++ (← values c i r.obligation "obligation")
   pure (xs.take maxValues, xs.length > maxValues)
 
+-- ---------------------------------------------------------------------------------------------
+-- Sources: every sub-formula of the expanded rule traced to where it is written
+-- ---------------------------------------------------------------------------------------------
+
+def maxWindowInstants : Nat := 400
+def maxWindowPieces : Nat := 16
+def maxWalkMembers : Nat := 8
+def maxWalkSteps : Nat := 20000
+
+/-- A concept call on the way from the rule to a sub-formula: the concept, where the call is written
+    (`owner`, `path`), the expansion's tag, and what the call passes, as the expansion substitutes it. -/
+structure Call where
+  concept : String
+  owner : String
+  path : String
+  tag : String
+  args : List (String × String)
+  params : List (String × String)
+
+/-- Where a sub-formula of the expanded rule is written: the rule or a concept body (`owner`), its
+    path there, the calls that reached it (outermost first), and the sub-formula as written. -/
+structure Src where
+  owner : String := ""
+  path : String := ""
+  calls : List Call := []
+  written : Formula := .tt
+
+/-- The source of every sub-formula of an expanded formula, in the shape of the formula. -/
+inductive PT where
+  | mk (src : Src) (kids : List PT)
+
+instance : Inhabited PT := ⟨.mk {} []⟩
+
+def PT.src : PT → Src | .mk s _ => s
+def PT.kid (p : PT) (k : Nat) : PT := match p with | .mk _ ks => ks[k]?.getD default
+
+def argText : Arg → String
+  | .var n => n
+  | .lit s => s!"\"{s}\""
+  | .nat n => toString n
+
+def termText (t : Term) : String := termStr {} t
+
+private def nextTag : StateM Nat String := modifyGet fun k => (toString k, k + 1)
+
+/-- `φ` expanded as `Concept.expandF cs fuel` expands it, step for step with the same tags, with the
+    source of each sub-formula. `w` is `φ` as written at its source (a concept body before
+    substitution, or the rule's own formula), node for node of the same shape. -/
+partial def expandSrc (cs : List Concept) (fuel : Nat) (owner path : String) (calls : List Call)
+    (w φ : Formula) : StateM Nat (Formula × PT) := do
+  let here (kids : List PT) : PT := .mk { owner, path, calls, written := w } kids
+  let sub (k : Nat) (ψ : Formula) : StateM Nat (Formula × PT) :=
+    expandSrc cs fuel owner s!"{path}.{k}" calls ((fkids w)[k]?.getD ψ) ψ
+  let et := Concept.expandT cs fuel
+  let one (mk : Formula → Formula) (a : Formula) : StateM Nat (Formula × PT) := do
+    let (a', p) ← sub 0 a
+    pure (mk a', here [p])
+  let two (mk : Formula → Formula → Formula) (a b : Formula) : StateM Nat (Formula × PT) := do
+    let (a', p) ← sub 0 a
+    let (b', q) ← sub 1 b
+    pure (mk a' b', here [p, q])
+  match φ with
+  | .derived n args ps =>
+    let ps' ← ps.mapM et
+    match cs.find? (·.leanName == n), fuel with
+    | some c, fuel' + 1 =>
+      let tag ← nextTag
+      match Concept.instantiate c args ps' tag, c.body with
+      | some (.formula body), .formula written =>
+        let call : Call := { concept := c.id, owner, path, tag,
+                             args := (c.args.map (·.1)).zip (args.map argText),
+                             params := c.paramNames.zip (ps'.map termText) }
+        expandSrc cs fuel' s!"concept {c.id}" "body" (calls ++ [call]) written body
+      | _, _ => pure (.derived n args ps', here [])
+    | _, _ => pure (.derived n args ps', here [])
+  | .atom n args ps => pure (.atom n args (← ps.mapM et), here [])
+  | .cmp l op r => do
+    let l' ← et l
+    let r' ← et r
+    pure (.cmp l' op r', here [])
+  | .not a => one .not a
+  | .and a b => two .and a b
+  | .or a b => two .or a b
+  | .implies a b => two .implies a b
+  | .always a => one .always a
+  | .eventually a => one .eventually a
+  | .until a b => two .until a b
+  | .since a b => two .since a b
+  | .holdsFor m d s a => do let d' ← et d; one (.holdsFor m d' s) a
+  | .within m d s a => do let d' ← et d; one (.within m d' s) a
+  | .untilWithin m d s a b => do let d' ← et d; two (.untilWithin m d' s) a b
+  | .atLast m d s g a => do let d' ← et d; two (.atLast m d' s) g a
+  | .count e s op k => two (fun e' s' => .count e' s' op k) e s
+  | .rises a => one .rises a
+  | .definedWhen p a => two .definedWhen p a
+  | .existsUser v a => one (.existsUser v) a
+  | .forallUser v a => one (.forallUser v) a
+  | .existsRegion k v a => one (.existsRegion k v) a
+  | .forallRegion k v a => one (.forallRegion k v) a
+  | .existsDevice k v a => one (.existsDevice k v) a
+  | .forallDevice k v a => one (.forallDevice k v) a
+  | ψ => pure (ψ, here [])
+
+/-- The source map of a rule as written (`r0`) against the rule as the library expands it (`r`): each
+    root of the expanded rule (`classes.<binder>`, `applicability`, `obligation`) with its sources;
+    an error when the map's expansion is not the library's. -/
+def sourceMap (cs : List Concept) (r0 r : Rule) : Except String (List (String × PT)) := do
+  let fuel := cs.length + 1
+  let roots := r0.binders.map (fun b => (s!"classes.{b.name}", b.cls)) ++
+    [("applicability", r0.applicability), ("obligation", r0.obligation)]
+  let want := r.binders.map (·.cls) ++ [r.applicability, r.obligation]
+  if roots.length != want.length then throw "the rule's binders differ from the library's"
+  (roots.zip want).mapM fun ((name, φ), x) => do
+    let (e, p) := (expandSrc cs fuel s!"rule {r0.id}" name [] φ φ).run' 0
+    if reprStr e != reprStr x then throw s!"the source map's expansion of {name} is not the library's"
+    pure (name, p)
+
+-- ---------------------------------------------------------------------------------------------
+-- Truncated windows: the walk from a verdict down to the windows whose truncation it carries
+-- ---------------------------------------------------------------------------------------------
+
+def isTrunc : UnknownReason → Bool | .windowTruncated _ => true | _ => false
+def carriesTrunc (r : R) : Bool := r.v == .u && r.why.any isTrunc
+
+def truncOps (r : R) : List String := r.why.filterMap fun | .windowTruncated op => some op | _ => none
+
+/-- The observations an unbounded operator reads from `j`, one at a time backward (`back`) or
+    forward: at each, `look k` gives the operand observations to walk and whether the operator is
+    decided there. Returns those observations, whether the scan ran off the trace undecided, the
+    steps used (at most `fuel`), and whether the steps ran out before either. -/
+def scan (n j fuel : Nat) (back : Bool) (look : Nat → List (Nat × Formula × Nat) × Bool) :
+    List (Nat × Formula × Nat) × Bool × Nat × Bool := Id.run do
+  let mut steps : List (Nat × Formula × Nat) := []
+  let mut k := j
+  let mut used := 0
+  let mut off := false
+  let mut ended := false
+  for _ in [0:fuel] do
+    if k ≥ n then
+      ended := true
+      break
+    used := used + 1
+    let (s, stop) := look k
+    steps := steps ++ s
+    if stop then
+      ended := true
+      break
+    if (back && k == 0) || (!back && k + 1 == n) then
+      off := true
+      ended := true
+      break
+    k := if back then k - 1 else k + 1
+  return (steps, off, used, !ended)
+
+/-- The Kleene conjunction and disjunction of `A` over `[lo, hi]` (true, resp. false, when empty). -/
+def rangeAll (A : Array R) (lo hi : Nat) : Tri :=
+  if hi < lo then .t
+  else if (firstIn lo hi fun k => A[k]!.v == .f).isSome then .f
+  else if (firstIn lo hi fun k => A[k]!.v == .u).isSome then .u else .t
+def rangeAny (A : Array R) (lo hi : Nat) : Tri :=
+  if hi < lo then .f
+  else if (firstIn lo hi fun k => A[k]!.v == .t).isSome then .t
+  else if (firstIn lo hi fun k => A[k]!.v == .u).isSome then .u else .f
+/-- The earliest unknown of `A` in `[lo, hi]`: where `RangeAgg` takes the reasons of a range. -/
+def firstU (A : Array R) (lo hi : Nat) : Option Nat := if hi < lo then none else firstIn lo hi fun k => A[k]!.v == .u
+
+/-- An operator reached by the walk: the occurrence (`xp`, its path in the expanded rule), its
+    source, the context with its binding, the observation at which it is evaluated, the truncated
+    operator (`op`, empty when the walk stopped without one) and, when its source is not located, why. -/
+structure Hit where
+  xp : String
+  pt : PT
+  φ : Formula
+  c : SemCtx
+  j : Nat
+  op : String
+  notLocated : String := ""
+  hs : Option HsOcc := none
+
+structure Walked where
+  hits : List Hit := []
+  cut : List String := []
+
+instance : Inhabited Walked := ⟨{}⟩
+
+def Walked.merge (xs : List Walked) : Walked := { hits := xs.flatMap (·.hits), cut := xs.flatMap (·.cut) }
+
+/-- The values of an occurrence of the expanded rule over the trace, for the context's binding. -/
+def occAll (c : SemCtx) (xp : String) (φ : Formula) : EM (Array R) := do
+  let k := "@" ++ bindingKey c.β ++ "|" ++ xp
+  match (← get)[k]? with
+  | some a => pure a
+  | none =>
+    let a := Rule.evalRuleFormula c φ
+    modify (·.insert k a)
+    pure a
+
+/-- The first `k` in `[a, b]` whose value is unknown with a truncation among its reasons. -/
+def firstTrunc (A : Array R) (a b : Nat) : Option Nat := firstIn a b fun k => (A[k]?.map carriesTrunc).getD false
+
+def ownOp : Formula → String
+  | .holdsFor .. => "holdsFor" | .within .. => "within" | .untilWithin .. => "untilWithin" | .atLast .. => "atLast"
+  | .since .. => "since" | .until .. => "until" | .always .. => "always" | .eventually .. => "eventually"
+  | .rises .. => "rises" | .count .. => "count" | _ => ""
+
+/-- From `φ` at observation `j`, every operator whose own window truncation the value there carries:
+    the walk follows, operator by operator, the operands and observations whose reasons the Core
+    puts into the value's reasons, and enters only those unknown with a truncation among their
+    reasons. An operator's own truncation is a hit only where the Core's branch puts it into the
+    value. Where an unknown with a truncation lies in a range the Core reads but does not take its
+    reasons from (a later unknown of a window, the earlier part of an `atLast` window), it is not
+    walked and the search is marked incomplete (`unexamined`). -/
+partial def walk (c : SemCtx) (j : Nat) (xp : String) (pt : PT) (φ : Formula) (fuel : Nat) : EM (Walked × Nat) := do
+  if fuel == 0 then return ({ cut := [s!"walk steps spent at {xp}"] }, 0)
+  let fuel := fuel - 1
+  let V ← occAll c xp φ
+  let r := V[j]?.getD (R.u .outOfRange)
+  if !carriesTrunc r then return ({}, fuel)
+  let unexamined (B : Array R) (lo hi : Nat) (walked : List Nat) : Walked :=
+    if hi < lo then {} else
+    if (firstIn lo hi fun q => !walked.contains q && carriesTrunc B[q]!).isSome
+    then { cut := [s!"unexamined: other unknown observations with a truncation read by {xp}"] } else {}
+  let own (op : String) : Walked := { hits := [{ xp, pt, φ, c, j, op }] }
+  let stop (why : String) : Walked := { hits := [{ xp, pt, φ, c, j, op := "", notLocated := why }] }
+  let go (k : Nat) (ψ : Formula) (j' : Nat) (f : Nat) : EM (Walked × Nat) := walk c j' s!"{xp}.{k}" (pt.kid k) ψ f
+  let seq (steps : List (Nat × Formula × Nat)) (f0 : Nat) : EM (Walked × Nat) := do
+    let mut acc : List Walked := []
+    let mut f := f0
+    for (k, ψ, j') in steps do
+      let (w, f') ← go k ψ j' f
+      acc := acc ++ [w]
+      f := f'
+    pure (Walked.merge acc, f)
+  let window (m : Measure) (d : Term) (s : String) : Option (Array (Option Q) × Q) :=
+    match subjectFor c.β m s, termAt c j d with
+    | .ok x, .ok dv => some (Primitives.positions c.d m x, dv)
+    | _, _ => none
+  match φ with
+  | .not a => seq [(0, a, j)] fuel
+  | .and a b | .or a b | .implies a b => seq [(0, a, j), (1, b, j)] fuel
+  | .definedWhen p a =>
+    let P ← occAll c s!"{xp}.0" p
+    match (P[j]?.map (·.v)).getD .f with
+    | .t => seq [(1, a, j)] fuel
+    | .u => seq [(0, p, j)] fuel
+    | .f => pure ({}, fuel)
+  | .existsUser .. | .forallUser .. | .existsRegion .. | .forallRegion .. | .existsDevice .. | .forallDevice .. =>
+    match ← members c j φ, body φ with
+    | some (v, ms), some b =>
+      let hit := ms.filter fun (_, x) => carriesTrunc x
+      let mut acc : List Walked := if hit.length > maxWalkMembers then
+        [{ cut := [s!"members at {xp}: {maxWalkMembers} of {hit.length} walked"] }] else []
+      let mut f := fuel
+      for (x, _) in hit.take maxWalkMembers do
+        let (w, f') ← walk (c.bindVar v x) j s!"{xp}.0" (pt.kid 0) b f
+        acc := acc ++ [w]
+        f := f'
+      pure (Walked.merge acc, f)
+    | _, _ => pure (stop "a quantifier whose members cannot be listed", fuel)
+  | .holdsFor m d s a =>
+    match window m d s with
+    | some (pos, dv) =>
+      match (Time.backWindows pos dv)[j]? with
+      | some (some w) =>
+        if !w.covered then pure (own "holdsFor", fuel)
+        else
+          let B ← occAll c s!"{xp}.0" a
+          match firstU B w.j0 j with
+          | some k => do
+            let (inner, f) ← seq [(0, a, k)] fuel
+            pure (Walked.merge [inner, unexamined B w.j0 j [k]], f)
+          | none => pure ({}, fuel)
+      | _ => pure ({}, fuel)
+    | none => pure ({}, fuel)
+  | .atLast m d s g a =>
+    match window m d s with
+    | some (pos, dv) =>
+      match (Time.backWindows pos dv)[j]? with
+      | some (some w) =>
+        let G ← occAll c s!"{xp}.0" g
+        match (firstIn 0 (j - w.j0) fun k => G[j - k]!.v != .f).map (j - ·) with
+        | some k =>
+          if !w.adequate then pure ({}, fuel)
+          else if G[k]!.v == .t then seq [(1, a, k)] fuel
+          else do
+            let (inner, f) ← seq [(0, g, k)] fuel
+            let earlier : Walked := if k == w.j0 && w.covered then {} else
+              { cut := [s!"unexamined: the observations of the window at {xp} before its unknown guard"] }
+            pure (Walked.merge [inner, earlier], f)
+        | none => pure (if w.covered then {} else own "atLast", fuel)
+      | _ => pure ({}, fuel)
+    | none => pure ({}, fuel)
+  | .within m d s a =>
+    match window m d s with
+    | some (pos, dv) =>
+      match (Time.forwardWindows pos dv)[j]? with
+      | some (some w) =>
+        if !w.adequate then return ({}, fuel)
+        let B ← occAll c s!"{xp}.0" a
+        let inner ← match firstU B j w.jl with
+          | some k => do
+            let (x, f) ← seq [(0, a, k)] fuel
+            pure (Walked.merge [x, unexamined B j w.jl [k]], f)
+          | none => pure ({}, fuel)
+        pure (if w.covered then inner.1 else Walked.merge [own "within", inner.1], inner.2)
+      | _ => pure ({}, fuel)
+    | none => pure ({}, fuel)
+  | .untilWithin m d s a g =>
+    match window m d s with
+    | some (pos, dv) =>
+      match (Time.forwardWindows pos dv)[j]? with
+      | some (some w) =>
+        if !w.adequate then return ({}, fuel)
+        let Af ← occAll c s!"{xp}.0" a
+        let Gf ← occAll c s!"{xp}.1" g
+        let n := Af.size
+        let b := (firstIn j (n - 1) fun k => Gf[k]!.v == .t).getD n
+        let before : Tri := if b ≤ j then .t else rangeAll Af j (b - 1)
+        -- the witnessed branch: true, false, or unknown with the reasons of ψ over [j, hi] and of φ before b
+        let witnessed : List (Nat × Formula × Nat) × Bool × Walked :=
+          if b ≤ w.jl && before == .t then ([], false, {})
+          else
+            let hi := min ((firstIn j (n - 1) fun k => Af[k]!.v == .f).getD n) w.jl
+            let anyG := rangeAny Gf j hi
+            if anyG == .f then ([], false, {})
+            else
+              let gs := if anyG == .u then (firstU Gf j hi).toList.map fun k => (1, g, k) else []
+              let as_ := if b ≤ w.jl && before == .u then (firstU Af j (b - 1)).toList.map fun k => (0, a, k) else []
+              let rest := Walked.merge [unexamined Gf j hi (gs.map (·.2.2)),
+                                        if b ≤ w.jl && b > j then unexamined Af j (b - 1) (as_.map (·.2.2)) else {}]
+              (gs ++ as_, gs.isEmpty && as_.isEmpty, rest)
+        -- the unobserved remainder, `truncated ∧ φ over the observed window`, only where not covered
+        let tail : List (Nat × Formula × Nat) × Bool × Walked :=
+          if w.covered then ([], false, {})
+          else match rangeAll Af j w.jl with
+            | .f => ([], false, {})
+            | .t => ([], true, {})
+            | .u => let k := (firstU Af j w.jl).getD j
+                    ([(0, a, k)], true, unexamined Af j w.jl [k])
+        let (inner, f) ← seq (witnessed.1 ++ tail.1) fuel
+        let ownHit : Walked := if witnessed.2.1 || tail.2.1 then own "untilWithin" else {}
+        pure (Walked.merge [ownHit, inner, witnessed.2.2, tail.2.2], f)
+      | _ => pure ({}, fuel)
+    | none => pure ({}, fuel)
+  | .since a b =>
+    let Aa ← occAll c s!"{xp}.0" a
+    let Bb ← occAll c s!"{xp}.1" b
+    -- r(k) = ψ(k) ∨ (φ(k) ∧ r(k-1)), r(-1) truncated: at an unknown r(k), ψ's reasons, and φ's with
+    -- r(k-1)'s while r(k-1) is not false
+    let (steps, off, used, out) := scan Aa.size j fuel true fun k =>
+      let s := if carriesTrunc Bb[k]! then [(1, b, k)] else []
+      let prev : Tri := if k == 0 then .u else V[k - 1]!.v
+      if Aa[k]!.v == .f || prev == .f then (s, true)
+      else (s ++ (if carriesTrunc Aa[k]! then [(0, a, k)] else []), prev != .u)
+    let (inner, f) ← seq steps (fuel - min fuel used)
+    pure (Walked.merge [if off then own "since" else {}, inner,
+                        if out then { cut := [s!"walk steps spent at {xp}"] } else {}], f)
+  | .until a b =>
+    let Aa ← occAll c s!"{xp}.0" a
+    let Bb ← occAll c s!"{xp}.1" b
+    let (steps, off, used, out) := scan Aa.size j fuel false fun k =>
+      let s := if carriesTrunc Bb[k]! then [(1, b, k)] else []
+      let next : Tri := if k + 1 ≥ V.size then .u else V[k + 1]!.v
+      if Aa[k]!.v == .f || next == .f then (s, true)
+      else (s ++ (if carriesTrunc Aa[k]! then [(0, a, k)] else []), next != .u)
+    let (inner, f) ← seq steps (fuel - min fuel used)
+    pure (Walked.merge [if off then own "until" else {}, inner,
+                        if out then { cut := [s!"walk steps spent at {xp}"] } else {}], f)
+  | .always a | .eventually a =>
+    let Aa ← occAll c s!"{xp}.0" a
+    let (steps, off, used, out) := scan Aa.size j fuel false fun k =>
+      let next : Tri := if k + 1 ≥ V.size then .u else V[k + 1]!.v
+      (if carriesTrunc Aa[k]! then [(0, a, k)] else [], next != .u)
+    let (inner, f) ← seq steps (fuel - min fuel used)
+    pure (Walked.merge [if off then own (ownOp φ) else {}, inner,
+                        if out then { cut := [s!"walk steps spent at {xp}"] } else {}], f)
+  | .rises a =>
+    let (inner, f) ← seq ((0, a, j) :: (if j == 0 then [] else [(0, a, j - 1)])) fuel
+    pure (if j == 0 then Walked.merge [own "rises", inner] else inner, f)
+  | .count .. => pure (stop "a count of rising edges: the walk does not follow it", fuel)
+  | .derived n _ _ =>
+    pure (if (truncOps r).all (·.startsWith "prim_") then { hits := [{ xp, pt, φ, c, j, op := s!"primitive {n}" }] }
+          else stop s!"a call of {n} the walk does not open", fuel)
+  | .cmp .. | .atom .. =>
+    let ops := (truncOps r).eraseDups
+    let occs := match φ with | .cmp lt _ rt => hsInT "lhs" "" lt ++ hsInT "rhs" "" rt | _ => []
+    let hsHits : List Hit := if !ops.contains "heading_since" then []
+      else if occs.isEmpty then [{ xp, pt, φ, c, j, op := "", notLocated := "a heading change's truncation with no heading change in the comparison" }]
+      else occs.map fun o => { xp, pt, φ, c, j, op := "quantity heading_since", notLocated := o.notLocated, hs := some o }
+    pure (if ops.all fun o => o == "distance_while" || o == "since_rise" || o == "heading_since" || o.startsWith "prim_"
+          then { hits := (ops.filter (· != "heading_since")).map (fun o => { xp, pt, φ, c, j, op := s!"quantity {o}" }) ++ hsHits }
+          else stop "a window inside a quantity (a selection or an aggregate): its source is not traced", fuel)
+  | .rule id _ | .ruleApplies id _ => pure (stop s!"a window of the composed rule {id}: its source is not traced", fuel)
+  | _ => pure (stop "an operator the walk does not follow", fuel)
+
+def unitTag (u : PUnit') : String :=
+  match PUnit'.toJson u with | Lean.Json.str s => s | _ => ""
+
+open Lean (Json toJson) in
+/-- One piece: an operator occurrence for one binding, with the observations at which it was met. -/
+def pieceJson (rid : String) (h : Hit) (scoring : List Int) (evaluated : List Int) (located : Bool) (why : String) : Json :=
+  let c := h.c
+  let src := h.pt.src
+  let callJ (k : Call) : Json := Json.mkObj [("concept", toJson k.concept), ("owner", toJson k.owner), ("path", toJson k.path),
+    ("tag", toJson k.tag), ("args", Json.mkObj (k.args.map fun (a, b) => (a, toJson b))),
+    ("params", Json.mkObj (k.params.map fun (a, b) => (a, toJson b)))]
+  let binding := Json.mkObj (c.β.binds.reverse.map fun (n, v) => (n, toJson (valStr v)))
+  let base : List (String × Json) := [("rule", toJson rid), ("op", toJson h.op), ("located", toJson located)]
+    ++ (if located then [] else [("not_located", toJson why)])
+    ++ [("expanded_path", toJson h.xp),
+        ("source", Json.mkObj [("owner", toJson src.owner), ("path", toJson src.path), ("written", toJson (cut (headStr {} src.written)))]),
+        ("calls", Json.arr (src.calls.map callJ).toArray), ("binding", binding),
+        ("scoring", Json.mkObj [("first_ms", toJson (scoring.head?.getD 0)), ("last_ms", toJson (scoring.getLast?.getD 0)),
+                                 ("instants", toJson scoring.length)]),
+        ("evaluated", Json.mkObj [("first_ms", toJson (evaluated.foldl min (evaluated.head?.getD 0))),
+                                   ("last_ms", toJson (evaluated.foldl max (evaluated.head?.getD 0)))])]
+  let metric (dir : String) (m : Measure) (d : Term) (s : String) (wd : Term) (ws : String) : List (String × Json) :=
+    let meas := match m with | .time => "time" | .path => "path"
+    let unit := match m with | .time => "s" | .path => "m"
+    let len : Json := Json.mkObj ([("written", toJson (termText wd)), ("substituted", toJson (termText d))]
+      ++ (match d with
+          | .param p => [("param", toJson p), ("value", match c.d.ρ.param p with | some q => qJson q | none => Json.null),
+                         ("unit", match c.d.ρ.paramUnit p with | some u => toJson (unitTag u) | none => Json.null)]
+          | _ => [("param", Json.null)]))
+    let subj : Json := Json.mkObj ([("written", toJson ws), ("evaluated", toJson s)]
+      ++ (match subjectFor c.β m s with | .ok x => if m == .path then [("track", toJson x)] else [] | .error _ => []))
+    let ex : List (String × Json) := match subjectFor c.β m s, termAt c h.j d with
+      | .ok x, .ok dv =>
+        let pos := Primitives.positions c.d m x
+        let p (k : Nat) : Json := match pos[k]? with | some (some q) => qJson q | _ => Json.null
+        let pj : Q := ((pos[h.j]?).getD none).getD Q.zero
+        let span (a b : Nat) (cov adq : Bool) : Json := Json.mkObj [("from", p a), ("to", p b), ("from_ms", toJson (tAt c a)),
+          ("to_ms", toJson (tAt c b)), ("covered", toJson cov), ("adequate", toJson adq)]
+        if dir == "look-back" then
+          match (Time.backWindows pos dv)[h.j]? with
+          | some (some w) => [("requested", Json.mkObj [("from", qJson (Q.sub pj dv)), ("to", qJson pj), ("unit", toJson unit)]),
+                              ("observed", span w.j0 h.j w.covered w.adequate)]
+          | _ => []
+        else
+          match (Time.forwardWindows pos dv)[h.j]? with
+          | some (some w) => [("requested", Json.mkObj [("from", qJson pj), ("to", qJson (Q.add pj dv)), ("unit", toJson unit)]),
+                              ("observed", span h.j w.jl w.covered w.adequate)]
+          | _ => []
+      | _, _ => []
+    [("measure", toJson meas), ("direction", toJson dir), ("subject", subj), ("length", len),
+     ("example", Json.mkObj ([("scoring_ms", toJson (scoring.head?.getD 0)), ("evaluated_ms", toJson (tAt c h.j))] ++ ex))]
+  let w := src.written
+  let extra : List (String × Json) := match h.φ, w with
+    | .holdsFor m d s _, .holdsFor _ wd ws _ | .atLast m d s _ _, .atLast _ wd ws _ _ => metric "look-back" m d s wd ws
+    | .within m d s _, .within _ wd ws _ | .untilWithin m d s _ _, .untilWithin _ wd ws _ _ => metric "look-ahead" m d s wd ws
+    | .holdsFor m d s _, _ | .atLast m d s _ _, _ => metric "look-back" m d s d s
+    | .within m d s _, _ | .untilWithin m d s _ _, _ => metric "look-ahead" m d s d s
+    | .since .., _ | .rises .., _ => [("direction", toJson "look-back"), ("length", Json.mkObj [("param", Json.null)])]
+    | .until .., _ | .always .., _ | .eventually .., _ => [("direction", toJson "look-ahead"), ("length", Json.mkObj [("param", Json.null)])]
+    | _, _ => [("length", Json.mkObj [("param", Json.null)])]
+  let hs : List (String × Json) := match h.hs with
+    | some o => [("heading_since", hsJson (hsInfo c h.j o))]
+    | none => []
+  Json.mkObj (base ++ (if h.op.isEmpty then [] else extra) ++ hs)
+
+open Lean (Json toJson) in
+/-- The truncated windows the grounding's verdict carries at the unknown observations `inW` admits
+    (from `fromMs` to `toMs`), each traced to its source through the rule's source map (`map`). -/
+def windowsJson (S : Setup) (r : Rule) (map : Except String (List (String × PT))) (g : Grounding)
+    (tl : Array (Timestamp × Verdict)) (inW : Nat → Bool) (fromMs toMs : Int) : EM Json := do
+  let c := S.ctx g.binding
+  let unknown := (List.range tl.size).filter fun i => inW i && match tl[i]!.2 with
+    | .unknown w => w.any isTrunc
+    | _ => false
+  let walked := unknown.take maxWindowInstants
+  let roots : List (String × Formula) := r.binders.map (fun b => (s!"classes.{b.name}", b.cls)) ++
+    [("applicability", r.applicability), ("obligation", r.obligation)]
+  let pts : List (String × PT) := match map with | .ok xs => xs | .error _ => []
+  let mapErr := match map with | .ok _ => "" | .error e => e
+  let eng := r.engagedAll c
+  let mut groups : Std.HashMap String (Hit × List Int × List Int) := {}
+  let mut order : List String := []
+  let mut cuts : List String := []
+  let mut withSource := 0
+  let mut complete := 0
+  for i in walked do
+    let picks := if (eng[i]?.map (·.v == .u)).getD false then roots.filter (·.1 != "obligation") else roots.filter (·.1 == "obligation")
+    let mut hits : List Hit := []
+    let mut cutHere : List String := []
+    let mut fuel := maxWalkSteps
+    for (name, φ) in picks do
+      let (w, f) ← walk c i name ((pts.lookup name).getD default) φ fuel
+      fuel := f
+      hits := hits ++ w.hits
+      cutHere := cutHere ++ w.cut
+    let located (h : Hit) : Bool := mapErr.isEmpty && h.notLocated.isEmpty && !h.op.isEmpty
+    if hits.any located then withSource := withSource + 1
+    if cutHere.isEmpty && !hits.isEmpty && hits.all located then complete := complete + 1
+    cuts := cuts ++ cutHere
+    for h in hits do
+      let key := h.xp ++ "|" ++ bindingKey h.c.β ++ "|" ++ h.op ++ "|" ++ h.notLocated ++ "|" ++ ((h.hs.map (·.path)).getD "")
+      match groups[key]? with
+      | some (h0, sc, ev) =>
+        groups := groups.insert key (h0, if sc.getLast? == some (tAt c i) then sc else sc ++ [tAt c i], ev ++ [tAt c h.j])
+      | none =>
+        groups := groups.insert key (h, [tAt c i], [tAt c h.j])
+        order := order ++ [key]
+  let pieces := order.filterMap fun k => groups[k]?.map fun (h, sc, ev) =>
+    let why := if !mapErr.isEmpty then s!"the source map is not available: {mapErr}" else h.notLocated
+    pieceJson r.id h sc ev (why.isEmpty && !h.op.isEmpty) why
+  let cutAll := cuts.eraseDups ++ (if unknown.length > walked.length then [s!"observations: {walked.length} of {unknown.length} walked"] else [])
+    ++ (if pieces.length > maxWindowPieces then [s!"pieces: {maxWindowPieces} of {pieces.length} kept"] else [])
+  pure (Json.mkObj [("from_ms", toJson fromMs), ("to_ms", toJson toMs),
+    ("source_map", toJson (if mapErr.isEmpty then "ok" else mapErr)),
+    ("unknown_instants", toJson unknown.length), ("walked", toJson walked.length),
+    ("with_located_source", toJson withSource), ("search_complete", toJson complete),
+    ("cut", toJson (cutAll.take 12)), ("pieces", Json.arr (pieces.take maxWindowPieces).toArray)])
+
 end Explain
 
 open Explain in
@@ -776,6 +1478,9 @@ def main (args : List String) : IO UInt32 := do
       let (S, r, sup) ← match prepare allRules allConcepts rid τ ρ m with
         | .ok x => pure x
         | .error e => IO.eprintln s!"explain: {e}"; return (2 : UInt32)
+      let srcMap : Except String (List (String × PT)) := match allRules.find? (·.id == rid) with
+        | some r0 => sourceMap allConcepts r0 r
+        | none => .error s!"no registered rule {rid}"
       let names := r.binders.map (·.name)
       if !binds.isEmpty && (binds.map (·.1)).toArray.qsort (· < ·) != names.toArray.qsort (· < ·) then
         IO.eprintln s!"explain: --bind must name each binder of {rid} once: {", ".intercalate names}"; return (2 : UInt32)
@@ -816,9 +1521,13 @@ def main (args : List String) : IO UInt32 := do
         else
           let rps : List Report := Id.run ((picks.1.mapM fun (i, why) => report S r g tl i why).run' {})
           if json then
-            out := out.push (Lean.Json.mkObj [("binding", Lean.Json.mkObj (g.assign.map fun (n, t) => (n, Lean.toJson t))),
+            let wins : List (String × Lean.Json) := match fromT?, toT? with
+              | some a, some b => [("windows", Id.run ((windowsJson S r srcMap g tl inW a b).run' {}))]
+              | _, _ => if S.n = 0 then [] else
+                [("windows", Id.run ((windowsJson S r srcMap g tl inW S.scenes[0]!.t S.scenes[S.n - 1]!.t).run' {}))]
+            out := out.push (Lean.Json.mkObj ([("binding", Lean.Json.mkObj (g.assign.map fun (n, t) => (n, Lean.toJson t))),
               ("episode", Lean.toJson ep.tag), ("episode_reasons", Lean.toJson (ep.reasons.map UnknownReason.tag |>.eraseDups)),
-              ("choice_notes", Lean.toJson picks.2), ("explanations", Lean.Json.arr (rps.map (reportJson rid g)).toArray)])
+              ("choice_notes", Lean.toJson picks.2), ("explanations", Lean.Json.arr (rps.map (reportJson rid g)).toArray)] ++ wins))
           else
             for n in picks.2 do IO.println s!"note: {n}"
             for rp in rps do
