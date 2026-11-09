@@ -1,0 +1,85 @@
+'TrafficSpec.Rules.NRS_484B_127_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_127_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_127_1","intentions":[],"laws":["NRS-484B-127-1"],"narrowings":[{"kind":"reading","span":"s3","why":"“the condition of the highway” and “the traffic upon … the highway” are read at a highway the subject occupies: the standard is written `existsRegion highway` with `st_highway` and `rel_occupies` of the binder, that being the only tie the node's claimed names give between a way and the subject. Where the subject occupies more than one highway region, the adverse-geometry selection and the traffic count are read at some such region and not at all of them."},{"kind":"reading","span":"s3","why":"“the traffic upon … the highway” counts every road user occupying that highway, the subject included: the posted definition of traffic covers every road user using the way for travel and names no exception for the one whose duty is judged, so the count is not reduced by one for the subject."}],"operationalizations":[{"concepts":["drv.interaction.following","env.ice_or_snow","env.precipitation","env.wet_road","kin.speed","rel.occupies","rel.surface_gap","st.curvature","st.grade","st.highway"],"params":["p.following_headway_time_dry","p.following_headway_time_wet","p.following_headway_time_ice","p.following_headway_time_adverse_geometry","p.following_reaction_time","p.following_grade_threshold","p.following_curvature_threshold","p.following_dense_traffic_count","p.following_dense_traffic_gap_increment"],"standard":"more closely than is reasonable and prudent, having due regard for the speed of such vehicles and the traffic upon and the condition of the highway","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_127_1","intentions":[],"laws":["NRS-484B-127-1"],"narrowings":[{"kind":"reading","span":"s3","why":"“the condition of the highway” and “the traffic upon … the highway” are read at a highway the subject occupies: the standard is written `existsRegion highway` with `st_highway` and `rel_occupies` of the binder, that being the only tie the node's claimed names give between a way and the subject. Where the subject occupies more than one highway region, the adverse-geometry selection and the traffic count are read at some such region and not at all of them."},{"kind":"reading","span":"s3","why":"“the traffic upon … the highway” counts every road user occupying that highway, the subject included: the posted definition of traffic covers every road user using the way for travel and names no exception for the one whose duty is judged, so the count is not reduced by one for the subject."}],"obligation":{"not":{"body":{"and":[{"and":[{"not":{"same":[{"var":"v"},{"var":"w"}]}},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"v"},{"var":"w"}],"derived":"drv_interaction_following","params":[{"param":"p.same_direction_cosine_tolerance"}]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"cond":{"body":{"and":[{"and":[{"args":[{"var":"h"}],"atom":"st_highway","params":[]},{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},{"or":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.following_grade_threshold"}},{"cmp":"gt","lhs":{"args":[{"var":"h"}],"measure":"st_curvature"},"rhs":{"param":"p.following_curvature_threshold"}}]}]},"exists_region":{"lit":"highway"},"var":"h"},"else":{"param":"p.following_headway_time_dry"},"then":{"param":"p.following_headway_time_adverse_geometry"}},"then":{"param":"p.following_headway_time_wet"}},"then":{"param":"p.following_headway_time_ice"}},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"cond":{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"args":[{"var":"w"}],"measure":"kin_speed"}},"else":{"lit":{"den":1,"num":0},"unit":"metre"},"then":{"mul":[{"param":"p.following_reaction_time"},{"sub":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"args":[{"var":"w"}],"measure":"kin_speed"}]}]}}]},{"cond":{"cmp":"ge","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"metre"},"var":"u","where":{"body":{"and":[{"and":[{"args":[{"var":"h"}],"atom":"st_highway","params":[]},{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},{"args":[{"var":"u"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"highway"},"var":"h"}},"rhs":{"param":"p.following_dense_traffic_count"}},"else":{"lit":{"den":1,"num":0},"unit":"metre"},"then":{"param":"p.following_dense_traffic_gap_increment"}}]}}]}]},"exists_user":"w"}},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_127_1","intentions":[],"laws":["NRS-484B-127-1"],"narrowings":[{"kind":"reading","span":"s3","why":"“the condition of the highway” and “the traffic upon … the highway” are read at a highway the subject occupies: the standard is written `existsRegion highway` with `st_highway` and `rel_occupies` of the binder, that being the only tie the node's claimed names give between a way and the subject. Where the subject occupies more than one highway region, the adverse-geometry selection and the traffic count are read at some such region and not at all of them."},{"kind":"reading","span":"s3","why":"“the traffic upon … the highway” counts every road user occupying that highway, the subject included: the posted definition of traffic covers every road user using the way for travel and names no exception for the one whose duty is judged, so the count is not reduced by one for the subject."}],"obligation":{"not":{"body":{"and":[{"and":[{"not":{"same":[{"var":"v"},{"var":"w"}]}},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"and":[{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"v"},{"var":"w"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine_tolerance"}]}]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"add":[{"mul":[{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"cond":{"body":{"and":[{"and":[{"args":[{"var":"h"}],"atom":"st_highway","params":[]},{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},{"or":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"h"}],"measure":"st_grade"}},"rhs":{"param":"p.following_grade_threshold"}},{"cmp":"gt","lhs":{"args":[{"var":"h"}],"measure":"st_curvature"},"rhs":{"param":"p.following_curvature_threshold"}}]}]},"exists_region":{"lit":"highway"},"var":"h"},"else":{"param":"p.following_headway_time_dry"},"then":{"param":"p.following_headway_time_adverse_geometry"}},"then":{"param":"p.following_headway_time_wet"}},"then":{"param":"p.following_headway_time_ice"}},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"cond":{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"args":[{"var":"w"}],"measure":"kin_speed"}},"else":{"lit":{"den":1,"num":0},"unit":"metre"},"then":{"mul":[{"param":"p.following_reaction_time"},{"sub":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"args":[{"var":"w"}],"measure":"kin_speed"}]}]}}]},{"cond":{"cmp":"ge","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"metre"},"var":"u","where":{"body":{"and":[{"and":[{"args":[{"var":"h"}],"atom":"st_highway","params":[]},{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},{"args":[{"var":"u"},{"var":"h"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"highway"},"var":"h"}},"rhs":{"param":"p.following_dense_traffic_count"}},"else":{"lit":{"den":1,"num":0},"unit":"metre"},"then":{"param":"p.following_dense_traffic_gap_increment"}}]}}]}]},"exists_user":"w"}},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,drv_interaction_following,rel_surface_gap,env_ice_or_snow,env_wet_road,env_precipitation,st_highway,rel_occupies,st_grade,st_curvature,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.surface_gap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+OCC	v
+OCC	?w
+OCC	v,w
+OCC	w
+OCC	v,w
+OCC	v,w
+OCC	
+OCC	
+OCC	
+OCC	?h
+OCC	h
+OCC	v,h
+OCC	h
+OCC	h
+OCC	v
+OCC	v
+OCC	w
+OCC	v
+OCC	w
+OCC	?u
+OCC	?h
+OCC	h
+OCC	v,h
+OCC	u,h
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	126
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	157
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	223
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	155
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	211
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	53
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	162
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	127
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	152
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	147
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	325
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	185
+SCEN	branch_8	compliant	compliant	ok
+TIME	scenario:branch_8	63
+SCEN	branch_9	compliant	compliant	ok
+TIME	scenario:branch_9	102
+SCEN	branch_10	compliant	compliant	ok
+TIME	scenario:branch_10	107
+TIME	witnesses	2169
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_127_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_127_1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_127_1	3	13
+TIME	adequacy_start	10
+TIME	adequacy	5866
+DONE

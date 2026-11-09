@@ -1,0 +1,73 @@
+'TrafficSpec.Rules.NRS_484B_400_2b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_400_2b.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_400_2b","intentions":["int.turn"],"laws":["NRS-484B-400-2b"],"narrowings":[{"kind":"reading","span":"s7","why":"The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges."},{"kind":"reading","span":"s7","why":"'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"and":[{"and":[{"and":[{"since":["tt",{"body":{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"args":[{"var":"v"},{"var":"i"}],"int":"int.turn"}]},{"body":{"implies":[{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"implies":[{"args":[{"var":"c2"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"body":{"not":{"args":[{"var":"md"},{"var":"w"}],"atom":"st_on_way","params":[]}},"forall_region":{"lit":"median_or_divider"},"var":"md"},{"body":{"and":[{"args":[{"var":"r1"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"r2"},{"var":"w"}],"atom":"st_on_way","params":[]},{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"r1"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"r2"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"r1"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"r2"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]},"exists_region":{"lit":"roadway"},"var":"r2"}]},"exists_region":{"lit":"roadway"},"var":"r1"}]}]},"forall_region":{"lit":"highway"},"var":"w"}]},"forall_region":{"lit":"travel_region"},"var":"c2"}]},{"since":["tt",{"args":[{"var":"v"},{"var":"i"}],"derived":"drv_motion_region_entry","params":[]}]}]},{"args":[{"var":"v"}],"derived":"drv_motion_left_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.left_turn_angle"}]}]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_400_2b","intentions":["int.turn"],"laws":["NRS-484B-400-2b"],"narrowings":[{"kind":"reading","span":"s7","why":"The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges."},{"kind":"reading","span":"s7","why":"'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour."}],"obligation":{"body":{"implies":[{"and":[{"and":[{"since":["tt",{"body":{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"args":[{"var":"v"},{"var":"i"}],"int":"int.turn"}]},{"args":[{"var":"v"},{"var":"i"}],"derived":"drv_motion_region_exit","params":[]}]},{"body":{"implies":[{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"body":{"and":[{"args":[{"var":"cl"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"param":"p.lateral_offset_resolution"}}]},"exists_region":{"lit":"centre_line"},"var":"cl"},"defined_when":{"body":{"args":[{"var":"cl"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"centre_line"},"var":"cl"}}]},"forall_region":{"lit":"highway"},"var":"h"}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"and":[{"and":[{"and":[{"since":["tt",{"body":{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"args":[{"var":"v"},{"var":"i"}],"int":"int.turn"}]},{"body":{"implies":[{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"implies":[{"args":[{"var":"c2"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"body":{"not":{"args":[{"var":"md"},{"var":"w"}],"atom":"st_on_way","params":[]}},"forall_region":{"lit":"median_or_divider"},"var":"md"},{"body":{"and":[{"args":[{"var":"r1"},{"var":"w"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"r2"},{"var":"w"}],"atom":"st_on_way","params":[]},{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"r1"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"r2"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"r1"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"r2"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]},"exists_region":{"lit":"roadway"},"var":"r2"}]},"exists_region":{"lit":"roadway"},"var":"r1"}]}]},"forall_region":{"lit":"highway"},"var":"w"}]},"forall_region":{"lit":"travel_region"},"var":"c2"}]},{"since":["tt",{"rises":{"args":[{"var":"v"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]},{"cmp":"ge","lhs":{"heading_since":"v","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.turn_onset_yaw_rate"}}},"rhs":{"param":"p.left_turn_angle"}}]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_400_2b","intentions":["int.turn"],"laws":["NRS-484B-400-2b"],"narrowings":[{"kind":"reading","span":"s7","why":"The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges."},{"kind":"reading","span":"s7","why":"'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour."}],"obligation":{"body":{"implies":[{"and":[{"and":[{"since":["tt",{"body":{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"args":[{"var":"v"},{"var":"i"}],"int":"int.turn"}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]},{"body":{"implies":[{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"body":{"and":[{"args":[{"var":"cl"},{"var":"h"}],"atom":"st_on_way","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"cl"}],"params":[],"quantity":"prim_region_lateral_offset"},"rhs":{"param":"p.lateral_offset_resolution"}}]},"exists_region":{"lit":"centre_line"},"var":"cl"},"defined_when":{"body":{"args":[{"var":"cl"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"centre_line"},"var":"cl"}}]},"forall_region":{"lit":"highway"},"var":"h"}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,st_travel_region,rel_occupies,st_lane_enters,st_highway,st_on_way,st_median_or_divider,st_roadway,st_lane_direction,drv_motion_region_entry,drv_motion_left_turn,drv_motion_region_exit,st_centre_line,prim_region_lateral_offset
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.yaw_rate
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	v
+OCC	?i
+OCC	?c
+OCC	v,c
+OCC	c,i
+OCC	?c2
+OCC	c2,i
+OCC	?w
+OCC	c2,w
+OCC	?md
+OCC	md,w
+OCC	?r1
+OCC	r1,w
+OCC	?r2
+OCC	r2,w
+OCC	r1
+OCC	r2
+OCC	r1
+OCC	r2
+OCC	v,i
+OCC	v
+OCC	?i
+OCC	?c
+OCC	v,c
+OCC	c,i
+OCC	v,i
+OCC	?h
+OCC	v,h
+OCC	?cl
+OCC	cl,h
+OCC	?cl
+OCC	cl,h
+OCC	v,cl
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	1049
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	111
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	89
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	73
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	92
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	81
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	88
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	70
+TIME	witnesses	604
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_400_2b.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_400_2b.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_400_2b	19	6
+TIME	adequacy_start	20
+TIME	adequacy	10921
+DONE

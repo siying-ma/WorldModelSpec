@@ -1,0 +1,99 @@
+{
+ "concept_id": "drv.motion.u_turn",
+ "kind": "formula",
+ "contract": "The road user's direction of travel upon a way has reversed: counting from the onset of the manoeuvre — the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate, a rate the caller sets — the magnitude of the heading change accumulated since that onset reaches at least the reversal angle, a size the caller sets below a half turn, while the road user's footprint overlaps a way. The definition this contract carries is the turning of a vehicle upon a highway “so as to proceed in the opposite direction”, “whether accomplished by one continuous movement or not”, so halts, rearward movements and steering the other way between the onset and the reversal do not end the manoeuvre, and the count runs on until the angle is reached or a later onset starts it again; the integration is bounded by the heading step, the largest interval between consecutive observations it may integrate across. The concept becomes true at the observation at which that angle is first reached, and it holds at the later observations at which the accumulated change still holds that angle, until a later onset starts the count again. Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a reversal begun before the recording is never read as one made within it. The reversal angle is the contract's own magnitude, the bound within which a sampled heading change is read as the opposite direction. Not a stand-in for: a turn through a smaller angle, which has its own concept, a turn into another way, travel against a designated direction of travel, a reversing movement, or a signal or a declared intention.",
+ "definition": "DEF-NRS-484B-077",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "heading_step",
+   "unit": "ms",
+   "meaning": "the largest interval between two consecutive observations the heading integration may cross, the sampling standard of the acquisition profile"
+  },
+  {
+   "name": "onset_yaw_rate",
+   "unit": "deg/s",
+   "meaning": "the rate of change of heading above which the body is read as beginning to turn rather than running straight, which fixes the observed onset the heading change is counted from"
+  },
+  {
+   "name": "reversal_angle",
+   "unit": "deg",
+   "meaning": "the accumulated heading change at which the definition's proceeding in the opposite direction is recognized; it is set below a half turn so that a reversal sampled coarsely or made on a skewed way is still recognized"
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate",
+  "recognition": "the observation at which that angle is first reached",
+  "extent": "the later observations at which the accumulated change still holds that angle, until a later onset starts the count again",
+  "history": "Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a reversal begun before the recording is never read as one made within it."
+ },
+ "elements": [
+  {
+   "span": "the magnitude of its rate of change of heading first rose above the onset yaw rate",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is the “rate of change of heading, positive when the heading turns to the left (counter-clockwise)”, in deg/s, whose magnitude is read here so that a reversal to either hand is recognized; its exclusion of road curvature does not apply, the body's yaw being what is read."
+  },
+  {
+   "span": "the magnitude of the heading change accumulated since that onset",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "The accumulated heading change since an observed onset is integrated from the same atom by the formula language's own construct, “the signed heading change of a road user since a formula last became true, integrated from kin.yaw_rate with a step bound”; prim.heading_change is expressly “not a stand-in for it”, being taken over a fixed window, which a manoeuvre made “not … by one continuous movement” would fall outside."
+  },
+  {
+   "span": "while the road user's footprint overlaps a way",
+   "atoms": [
+    "st.highway",
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "The definition places the turning “upon a highway”: st.highway is “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic”, and rel.occupies, “a road user's footprint overlaps a lane / region”, anchors it to the road user, so the concept reads the way the body is on and not any way of the scene."
+  }
+ ],
+ "residues": [
+  {
+   "span": "of a vehicle",
+   "why": "Which devices count as a vehicle is the aggregate the caller states of the road user it passes; the concept is written for any road user and adds no class of its own."
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car on a city street swings left across the way, halts to let a vehicle pass, reverses a metre and completes the swing: from the onset of the turning the accumulated heading change reaches about a hundred and seventy degrees while its footprint overlaps the way.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car turns left into a side street: the accumulated heading change since the onset peaks at about ninety degrees and never reaches the reversal angle.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car is already mid-turn at the first observation of the recording, so no onset is observed with the yaw rate known at every observation since: whether the direction reversed cannot be read.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o2"
+ ],
+ "differs_from": {
+  "concept": "drv.motion.left_turn",
+  "why": "Both take one road user and read the same atom, but they recognize different manoeuvres and decide differently for the same motion: the left turn is recognized at a smaller angle to the left alone, while this concept reads the magnitude of the accumulated change, so it holds for a reversal to either hand and is false of an ordinary junction turn that the left-turn concept recognizes."
+ }
+}

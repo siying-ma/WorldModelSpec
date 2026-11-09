@@ -1,0 +1,242 @@
+{
+ "node_id": "NRS_484B_257_1_o1",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "Except when traffic is being controlled by a police officer or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "c1",
+   "text": "When proper signs have been erected,",
+   "role": "condition"
+  },
+  {
+   "id": "s1",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "ob1",
+   "text": "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "obligation"
+  },
+  {
+   "id": "sib1",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped, the driver shall yield the right-of-way to other vehicles which have entered the intersection from such through highway or which are approaching so closely on such through highway as to constitute an immediate hazard during the time such driver is moving across or within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the term DEF-NRS-484A-285 defines, 'pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel', admitted as the aggregate ru.aggregate=DEF-NRS-484A-285::traffic and claimed as one atom. 'being controlled by a police officer' is dev.human_direction, 'a person directing traffic and the direction given; role is police_officer, flagger, school_crossing_guard, railroad_flagger; indication is stop, proceed, slow, turn(dir)', read with role police_officer, which is DEF-NRS-484A-180's 'officer authorized to direct or regulate traffic'; the atom carries the direction given, so a person present but directing nothing does not engage the exception. 'or a traffic-control signal' is dev.traffic_signal, 'a signal head', the device by which traffic is 'alternately directed to stop or proceed' as DEF-NRS-484A-290 requires. The controlling is dev.governs, 'the travel regions whose traffic the device controls ... or an intersection', read on the junction the subject approaches or on its own approach carrier, which rel.occupies, st.travel_region, st.lane_enters and st.intersection bind to the subject's own approach, so that a signal governing another junction of the scene does not excuse the duty. dev.governs is not a stand-in for a position, and no halt place is read from it."
+  },
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'proper signs' are, in this section, the stop sign and the yield sign its own words name: dev.stop_sign is the 'regulatory sign requiring a full halt' and dev.yield_sign the 'regulatory sign requiring yielding without a mandatory halt'. 'have been erected' is read as the sign's presence on the road governing the subject's approach: dev.governs gives 'the travel regions whose traffic the device controls', read on the carrier the subject occupies (rel.occupies, st.travel_region) whose entrance end is the junction (st.lane_enters, st.intersection), so the sign read is the one governing this approach and not any sign of the scene. Which of the two signs governs decides which act the obligation owes."
+  },
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver of a vehicle' binds the subject: DEF-NRS-484A-080 makes the driver the one who drives or is in actual physical control of the vehicle, and the ontology reads 'the driver' through the vehicle's controlled motion, so the duty binds that vehicle, of the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom. The mapping index maps the same words to the same atom."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "kin.speed",
+    "rel.occupies",
+    "st.stop_line",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.region_geometry",
+    "st.travel_region",
+    "st.lane_direction",
+    "st.lane_enters",
+    "st.intersection",
+    "st.on_way",
+    "st.highway",
+    "st.sight_along_way",
+    "prim.region_offset_along"
+   ],
+   "derived": [
+    "drv.motion.standstill",
+    "drv.motion.region_entry"
+   ],
+   "justification": "'shall stop' is the halt DEF-NRS-484A-255 defines, 'complete cessation from movement', carried by drv.motion.standstill within the speed tolerance its contract names; 'or yield', owed where the governing sign is a yield sign (dev.yield_sign, 'regulatory sign requiring yielding without a mandatory halt', dev.stop_sign being the sign that requires the halt, dev.governs tying each to this approach), is carried by kin.speed, 'magnitude of velocity', at or below p.yield_sign_slowed_max_speed at the place. The place is read in the words' own order: st.stop_line, 'the transverse line marking where vehicles halt for a device', then st.crosswalk, 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', each tied to the subject's own entrance by st.entrance_of, 'the carrier whose entrance into an intersection a stop line or a crosswalk marks ... the line or crossing a vehicle approaching through that carrier halts at or before', with st.lane_enters giving 'the intersection region a directed approach carrier runs into at its entrance end', st.travel_region the kind the carrier quantifier ranges over and rel.occupies the anchor to the subject's own carrier; then the point at which st.sight_along_way, 'the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen from the road user's eye at the observation ... the smaller of the two directions', reaches the view distance, on the way st.on_way and st.highway bind. prim.region_offset_along gives which side of the mark the subject is on along the carrier's designated direction st.lane_direction, and st.region_geometry the distance between the subject's body and the mark that the stop-point tolerance bounds; the primitive's own inputs are not claimed beside it. 'before entering the crosswalk', and the entry into the junction the act precedes, are the event drv.motion.region_entry denotes, 'comes to overlap a structure region at the observation'. 'approaching traffic' is DEF-NRS-484A-285's aggregate, claimed as the single atom ru.aggregate=DEF-NRS-484A-285::traffic. st.sight_along_way is not a stand-in for whether an actual road user is seen (rel.visible): the words require a view of the way whether or not anyone is on it. st.intersection is not a stand-in for a crosswalk or a stop line."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle approaches an intersection -- it occupies a carrier whose entrance end is that junction -- and a stop sign or a yield sign governs that carrier. The duty does not apply where a police officer is directing the traffic at that junction or on that carrier, or where a traffic-control signal governs it.",
+ "obligation": "Before the subject enters that intersection it must have halted, or where the governing sign is a yield sign halted or come down to a speed at or below p.yield_sign_slowed_max_speed, at the place the words name in their order. The event is the subject's entry into that intersection; the target is the approach carrier it occupies whose entrance end is that junction. The place is the stop line recorded as marking that carrier; where the carrier's stop lines are observed and none marks it, the crosswalk recorded as marking that carrier; where neither is marked, the point on that carrier nearest the junction at which the sight along the crossing way, in the lesser of its two directions, is at least p.intersecting_way_view_distance. The act counts at the place where the subject's speed is at or below p.standstill_speed_tolerance, or under a yield sign at or below p.yield_sign_slowed_max_speed, while the distance between its body and the mark is at most p.stop_point_tolerance and it has not yet passed the mark, the side read by the sign of prim.region_offset_along along the carrier's designated direction; an act whose footprint already overlaps the junction is not at the place. The search runs back from the entry observation and ends at the start of that approach -- the last observation before the entry at which the subject, on a carrier the mark marks, was off the mark, short of it and farther from it than p.stop_point_tolerance -- or at the subject's previous entry into the same junction, and at nothing else: not at another junction, not at the first observation of the recording, not at a distance travelled. Where the search finds the act the duty is met; where it reaches either end without it the duty is violated; where it reaches neither end, because the history begins before the recording or because the carrier's association with the mark or its direction is unobserved, the duty is unknown. Where a mark's entrances are observed and exclude the subject's carrier, the place is read from the next words in order and the duty is not unknown on that ground.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.yield_sign_slowed_max_speed",
+  "p.stop_point_tolerance",
+  "p.intersecting_way_view_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "'or yield' at a yield sign is read as the subject's speed at the place being at or below p.yield_sign_slowed_max_speed -- the sign's own contract requires 'yielding without a mandatory halt' -- together with the precedence the next sentence states, which the second node of this line carries. A reading that demanded a halt under a yield sign would hold the subject to more than the words.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob1",
+   "why": "'a clearly marked stop line' is read as the stop line the scene represents: the line's presence is the evidence of its clear marking, and the paint's clarity or wear is not modelled. The reading relaxes neither which place governs nor the act and its timing.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "ob1",
+   "why": "'the through highway' is read as the crossing highway at whose entrance the subject's governing stop or yield sign stands: DEF-NRS-484A-275 makes a through highway one at whose entrances traffic is required by law to yield in obedience to such a sign, and the sign governing this approach is the observable evidence of that designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "ob1",
+   "why": "'has a view of approaching traffic' is read as the sight along the crossing way reaching at least p.intersecting_way_view_distance in the lesser of its two directions, not as the driver's actual perception, which no trace carries.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "c1",
+   "why": "'proper signs have been erected' is read as the presence on the road of a stop sign or a yield sign governing the subject's approach carrier: the feature's presence is the observable evidence of its proper erection by an authority.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s1",
+   "why": "'the driver of a vehicle' is read through the vehicle's controlled motion: who or what is at the controls is not observable, and the duty binds that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A side road meets a highway. A stop sign governs the car's approach lane, a stop line is recorded as marking that lane, and no officer or signal controls the junction. The car rolls over the line at 4 m/s and enters the junction, its speed never falling to the standstill tolerance anywhere on the approach from the line's upstream zone onward. No other road user is in the scene.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same junction and stop sign. The car comes to rest with its speed at zero while its body is within the stop-point tolerance of the stop line and short of it, then enters the junction. The scene holds no other road user and the verdict is still decided.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same geometry, but a police officer stands in the junction giving a proceed indication to the traffic on the car's approach. The exception holds, so the rule is not engaged.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car enters the junction without halting and a stop sign stands beside its approach, but the source does not report which travel regions that sign governs, so whether a proper sign has been erected for this approach is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A yield sign, not a stop sign, governs the car's approach, with a stop line marking the lane. The car does not halt but comes down to 3 m/s within the stop-point tolerance of the line before entering the junction: under a yield sign the words require no mandatory halt.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A stop sign governs the approach, and the lane's stop lines and crosswalks are observed with none marking it. The car crosses the point nearest the junction at which the sight along the crossing way reaches the view distance at 6 m/s and enters without ever halting: the third place governs and no halt is found.",
+   "masked": []
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with the car already between the stop line and the junction, inside the line's stopping zone, and the car then enters the junction. No halt is recorded, and the recording holds neither the start of the approach upstream of the line nor a previous entry of the car into that junction.",
+   "boundary": "the stretch of the approach upstream of the stop line's stopping zone, at which the car entered that zone, lies before the first observation of the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled speed reading is read as the complete cessation from movement DEF-NRS-484A-255 requires, set at the noise floor of a speed channel at rest.",
+   "source": "Instrumentation practice for speed channels in scene-graph traces, whose residual at rest stays below a tenth of a metre per second."
+  },
+  {
+   "name": "p.yield_sign_slowed_max_speed",
+   "unit": "m/s",
+   "value": 4.5,
+   "convention": "Yield-sign approach convention: the speed at or below which a vehicle at a yield-controlled entrance counts as having slowed, so that it can give way at the entrance without a mandatory halt; taken as the crawl speed design practice assigns to a yield-controlled approach.",
+   "source": "AASHTO Green Book and MUTCD practice for yield-controlled approaches, where a 10 mph approach speed is the design basis for giving way without stopping."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Stop-point convention of the approach reading: the bound within which an act counts as at the place the words name -- the stop line, the crosswalk or the view point -- covering the width of the marking and the position error of the body outline.",
+   "source": "Marking-geometry and localisation practice: a transverse line about half a metre wide plus the position error of a body outline."
+  },
+  {
+   "name": "p.intersecting_way_view_distance",
+   "unit": "m",
+   "value": 100.0,
+   "convention": "Intersection sight-distance convention: the length of the intersecting way that must be visible in each direction from the stopping point for approaching traffic to be seen before the crossing is begun.",
+   "source": "AASHTO Green Book intersection sight-distance tables for a crossing manoeuvre at urban approach speeds."
+  }
+ ],
+ "gaps": []
+}

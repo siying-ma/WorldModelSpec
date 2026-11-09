@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1021412,
+  "stop_reason": "end_turn",
+  "session_id": "905874ba-bbf9-4947-8324-f0dbdc39fdf7",
+  "total_cost_usd": 5.247786699999999,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 220413,
+   "cache_read_input_tokens": 1740151,
+   "output_tokens": 86751,
+   "output_tokens_details": {
+    "thinking_tokens": 67307
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 220413,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 644,
+     "cache_read_input_tokens": 223078,
+     "cache_creation_input_tokens": 2801,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2801
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46702,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004686200000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 86751,
+    "cacheReadInputTokens": 1740151,
+    "cacheCreationInputTokens": 220413,
+    "webSearchRequests": 0,
+    "costUSD": 5.243100499999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 67307,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Done — gate verdict **OK** on the first (and only) run, with 1 of 6 runs used.\n\n**What I wrote**\n\n- `library/TrafficSpec/Rules/NRS_484A/NRS_484A_450_2.lean` — class formula, applicability and obligation from the node's elements and its one operationalization, using only claimed names:\n  - **s2/s5 (applicability):** a travel region the vehicle occupies whose entrance end is the junction (`st_lane_enters`), governed by a stop sign (`dev_stop_sign` + `dev_governs`), at the observation its footprint first overlaps the junction (`.rises (rel_occupies v X)`).\n  - **s3 (obligation):** the places in the order of the words — the crossing that marks the carrier's entrance, else the stop line, else the view point — each as `.since (.not bound) halt`, the record's history bound, ending only at the start of the approach or the previous entry. The place is the body off the mark and the junction, the mark ahead along the carrier's direction (`prim.region_offset_along`), within `p.stop_point_tolerance`; the act is `drv.motion.standstill`.\n  - **s4:** the sight distance along the intersecting way plus visibility of the road users on it, bounding the third place only.\n- `library/TrafficSpecWitness/NRS_484A/NRS_484A_450_2.lean` — the five planned scenarios plus six `branch_*` witnesses (stop-line branch, three view-branch cases including an occluded cross vehicle, a second entry into the same junction, and a sign governing another approach).\n\n**Three narrowings declared**, all on s3: the stopping zone for the view point (the record gives one only for a mark), `st.lane_direction` read on its own as the carrier carrying a designated direction, and the duty read through *every* qualifying carrier rather than one.\n\n`task_result.md` in the working directory has the full report. The node itself needed no repair.",
+  "ttft_ms": 56298,
+  "type": "result",
+  "duration_ms": 1036187,
+  "uuid": "616be032-65a7-4fbe-a480-b816edf47bb3",
+  "ttft_stream_ms": 1588,
+  "time_to_request_ms": 62,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 10,
+   "input_hooks": 1,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 94,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1588,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46702,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004686200000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 86751,
+    "cacheReadInputTokens": 1740151,
+    "cacheCreationInputTokens": 220413,
+    "webSearchRequests": 0,
+    "costUSD": 5.243100499999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 67307,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

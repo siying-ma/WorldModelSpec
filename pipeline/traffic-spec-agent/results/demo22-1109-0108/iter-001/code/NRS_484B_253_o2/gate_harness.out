@@ -1,0 +1,115 @@
+'TrafficSpec.Rules.NRS_484B_253_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_253_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_253_o2","intentions":[],"laws":["NRS-484B-253"],"narrowings":[{"kind":"reading","span":"ob1","why":"Granting precedence is read as a duty on the subject's own proceeding: where the subject's speed is zero it grants precedence by standing, and the clearance bounds are read on a subject that is itself moving. Contact is forbidden whether or not the subject moves."},{"kind":"reading","span":"ob1","why":"The clearance the span's atoms measure is bounded in both of the ways they give, each at p.yield_min_clearance: the gap between the nearest points of the two bodies at the observation (rel.surface_gap), and, where the centres approach within p.yield_conflict_horizon, the centre distance at that closest approach (prim.closest_approach_distance), which is undefined where they do not approach and then bounds nothing."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"not":{"same":[{"var":"t"},{"var":"v"}]}},{"and":[{"args":[{"var":"t"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"t"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"t"}],"derived":"drv_motion_left_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.left_turn_angle"}]}]}]},{"and":[{"at_last":"time","body":{"not":{"body":{"not":{"or":[{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]}},"holds_for":"time","length":{"param":"p.turn_signal_advance_window"},"subject":"t"}},"length":{"param":"p.turn_signal_advance_window"},"subject":"t","when":{"rises":{"args":[{"var":"t"}],"derived":"drv_motion_left_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.left_turn_angle"}]}}},{"and":[{"map":{"v":"t"},"rule":"NRS_484B_253_o1"},{"body":{"and":[{"args":[{"var":"cv"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"cv"},{"var":"j"}]}},{"and":[{"args":[{"var":"v"},{"var":"cv"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cv"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"ct"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"ct"},{"var":"j"}]}},{"and":[{"args":[{"var":"t"},{"var":"ct"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ct"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"cv"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"cv"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.same_direction_cosine_tolerance"}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"ct"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cv"}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]},"exists_user":"t"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_253_o2","intentions":[],"laws":["NRS-484B-253"],"narrowings":[{"kind":"reading","span":"ob1","why":"Granting precedence is read as a duty on the subject's own proceeding: where the subject's speed is zero it grants precedence by standing, and the clearance bounds are read on a subject that is itself moving. Contact is forbidden whether or not the subject moves."},{"kind":"reading","span":"ob1","why":"The clearance the span's atoms measure is bounded in both of the ways they give, each at p.yield_min_clearance: the gap between the nearest points of the two bodies at the observation (rel.surface_gap), and, where the centres approach within p.yield_conflict_horizon, the centre distance at that closest approach (prim.closest_approach_distance), which is undefined where they do not approach and then bounds nothing."}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"t"},{"var":"v"}]}},{"and":[{"args":[{"var":"t"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"t"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"t"}],"derived":"drv_motion_left_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.left_turn_angle"}]}]}]},{"and":[{"at_last":"time","body":{"not":{"body":{"not":{"or":[{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]}},"holds_for":"time","length":{"param":"p.turn_signal_advance_window"},"subject":"t"}},"length":{"param":"p.turn_signal_advance_window"},"subject":"t","when":{"rises":{"args":[{"var":"t"}],"derived":"drv_motion_left_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.left_turn_angle"}]}}},{"and":[{"map":{"v":"t"},"rule":"NRS_484B_253_o1"},{"body":{"and":[{"args":[{"var":"cv"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"cv"},{"var":"j"}]}},{"and":[{"args":[{"var":"v"},{"var":"cv"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cv"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"ct"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"ct"},{"var":"j"}]}},{"and":[{"args":[{"var":"t"},{"var":"ct"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ct"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"cv"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"cv"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.same_direction_cosine_tolerance"}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"ct"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cv"}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]},{"and":[{"not":{"args":[{"var":"v"},{"var":"t"}],"atom":"rel_contact","params":[]}},{"or":[{"not":{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre_per_second"}}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"t"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.yield_min_clearance"}},{"or":[{"not":{"args":[{"var":"v"},{"var":"t"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"t"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}}]}]}]}]}]},"forall_user":"t"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"not":{"same":[{"var":"t"},{"var":"v"}]}},{"and":[{"args":[{"var":"t"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"t"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"heading_since":"t","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"t"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.turn_onset_yaw_rate"}}},"rhs":{"param":"p.left_turn_angle"}}]}]},{"and":[{"at_last":"time","body":{"not":{"body":{"not":{"or":[{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]}},"holds_for":"time","length":{"param":"p.turn_signal_advance_window"},"subject":"t"}},"length":{"param":"p.turn_signal_advance_window"},"subject":"t","when":{"rises":{"cmp":"ge","lhs":{"heading_since":"t","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"t"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.turn_onset_yaw_rate"}}},"rhs":{"param":"p.left_turn_angle"}}}},{"and":[{"map":{"v":"t"},"rule":"NRS_484B_253_o1"},{"body":{"and":[{"args":[{"var":"cv"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"cv"},{"var":"j"}]}},{"and":[{"args":[{"var":"v"},{"var":"cv"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cv"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"ct"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"ct"},{"var":"j"}]}},{"and":[{"args":[{"var":"t"},{"var":"ct"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ct"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"cv"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"cv"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.same_direction_cosine_tolerance"}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"ct"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cv"}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]},"exists_user":"t"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_253_o2","intentions":[],"laws":["NRS-484B-253"],"narrowings":[{"kind":"reading","span":"ob1","why":"Granting precedence is read as a duty on the subject's own proceeding: where the subject's speed is zero it grants precedence by standing, and the clearance bounds are read on a subject that is itself moving. Contact is forbidden whether or not the subject moves."},{"kind":"reading","span":"ob1","why":"The clearance the span's atoms measure is bounded in both of the ways they give, each at p.yield_min_clearance: the gap between the nearest points of the two bodies at the observation (rel.surface_gap), and, where the centres approach within p.yield_conflict_horizon, the centre distance at that closest approach (prim.closest_approach_distance), which is undefined where they do not approach and then bounds nothing."}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"t"},{"var":"v"}]}},{"and":[{"args":[{"var":"t"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"t"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"heading_since":"t","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"t"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.turn_onset_yaw_rate"}}},"rhs":{"param":"p.left_turn_angle"}}]}]},{"and":[{"at_last":"time","body":{"not":{"body":{"not":{"or":[{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"t"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]}},"holds_for":"time","length":{"param":"p.turn_signal_advance_window"},"subject":"t"}},"length":{"param":"p.turn_signal_advance_window"},"subject":"t","when":{"rises":{"cmp":"ge","lhs":{"heading_since":"t","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"t"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.turn_onset_yaw_rate"}}},"rhs":{"param":"p.left_turn_angle"}}}},{"and":[{"map":{"v":"t"},"rule":"NRS_484B_253_o1"},{"body":{"and":[{"args":[{"var":"cv"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"cv"},{"var":"j"}]}},{"and":[{"args":[{"var":"v"},{"var":"cv"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cv"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"ct"}],"atom":"st_travel_region","params":[]},{"and":[{"not":{"same":[{"var":"ct"},{"var":"j"}]}},{"and":[{"args":[{"var":"t"},{"var":"ct"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ct"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"cv"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"cv"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"ct"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.same_direction_cosine_tolerance"}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"ct"}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cv"}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]},{"and":[{"not":{"args":[{"var":"v"},{"var":"t"}],"atom":"rel_contact","params":[]}},{"or":[{"not":{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre_per_second"}}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"t"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.yield_min_clearance"}},{"or":[{"not":{"args":[{"var":"v"},{"var":"t"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"t"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}}]}]}]}]}]},"forall_user":"t"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,drv_motion_left_turn,kin_time,sig_turn_indicator,sig_hand_signal,st_travel_region,st_lane_enters,st_lane_direction,rel_contact,kin_speed,rel_surface_gap,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	NRS_484B_253_o1
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+OCC	v
+OCC	?t
+OCC	t,v
+OCC	t
+OCC	?j
+OCC	j
+OCC	t,j
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	$,t
+OCC	?cv
+OCC	cv
+OCC	cv,j
+OCC	v,cv
+OCC	cv,j
+OCC	?ct
+OCC	ct
+OCC	ct,j
+OCC	t,ct
+OCC	ct,j
+OCC	cv
+OCC	ct
+OCC	cv
+OCC	ct
+OCC	?t
+OCC	t,v
+OCC	t
+OCC	?j
+OCC	j
+OCC	t,j
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	t
+OCC	$,t
+OCC	?cv
+OCC	cv
+OCC	cv,j
+OCC	v,cv
+OCC	cv,j
+OCC	?ct
+OCC	ct
+OCC	ct,j
+OCC	t,ct
+OCC	ct,j
+OCC	cv
+OCC	ct
+OCC	cv
+OCC	ct
+OCC	v,t
+OCC	v
+OCC	v,t
+OCC	v,t
+OCC	v,t
+TIME	occurrences	0
+TIME	checks	14
+TIME	lint	5119
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	759
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	754
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	761
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	791
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	754
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	2777
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	759
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	756
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	767
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	752
+SCEN	branch_7	not_applicable	not_applicable	ok
+TIME	scenario:branch_7	761
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	764
+TIME	witnesses	11155
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_253_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_253_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_253_o2	35	11
+TIME	adequacy_start	168
+TIME	adequacy	326052
+DONE

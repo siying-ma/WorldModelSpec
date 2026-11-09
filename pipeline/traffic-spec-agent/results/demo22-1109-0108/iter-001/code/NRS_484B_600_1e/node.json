@@ -1,0 +1,127 @@
+{
+ "node_id": "NRS_484B_600_1e",
+ "law_refs": [
+  "NRS-484B-600-1e"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for any person to drive or operate a vehicle of any kind or character at:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "In any event,",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "a rate of speed greater than 80 miles per hour.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "The same words as in NRS_484B_600_1a and NRS_484B_600_1c and read the same way: 'a vehicle of any kind or character' is the defined term the table resolves to DEF-NRS-484A-320, admitted as DEF-NRS-484A-320::vehicle, carried by ru.aggregate, whose 'literal argument is an aggregate id'; 'to drive or operate' is read through the vehicle's controlled motion, drv.motion.standstill read negated. Exclusions: ru.aggregate is not a stand-in for a class atom or a relational role; drv.motion.standstill is not a stand-in for the engine being off or a brake being applied."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed is the 'magnitude of velocity' in m/s, which is the 'rate of speed' the words bound; the bound is the figure the text itself states, declared as a literal in miles per hour on this span, and the comparison is that magnitude against it. Exclusion: kin.speed is the magnitude of velocity and not the acceleration along heading, which is not read; no posted sign and no judgement standard enters, the figure being the statute's own."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s2",
+   "why": "The words add no observable condition and no restriction to the duty: they say that the cap binds whatever the other paragraphs of the subsection allow, so the duty is the same whether or not these words hold, and nothing in the scene is read for them.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v is in motion at the observation (drv.motion.standstill false for v, with p.standstill_speed_tolerance), which is how 'to drive or operate' is read: the duty binds the vehicle's conduct whoever or whatever is at the controls, in any event and wherever the vehicle runs.",
+ "obligation": "v's speed (kin.speed) does not exceed the figure the text states, 80 miles per hour, carried as a literal in that unit.",
+ "params": [
+  "p.standstill_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'for any person to drive or operate' is read through the vehicle's controlled motion, as the ontology's section on what is not an atom directs: a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject runs along an open highway at a speed above the figure the text states.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The subject runs along the same highway at a speed below the figure the text states, holding it for the whole recording. No other road user is present in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject stands in a parking bay with its engine running, the magnitude of its velocity within the standstill tolerance, so it is not driven or operated.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject is on the highway and the source supplies no magnitude of velocity for it, so neither whether it is in motion nor whether its speed exceeds the stated figure can be told.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "literals": [
+  {
+   "span": "s3",
+   "text": "80 miles per hour",
+   "value": 80,
+   "unit": "mph"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled speed reading is read as the definition's complete cessation from movement, the bound within which measurement error and sampling cannot be told from no movement at all.",
+   "source": "the speed resolution of vehicle-dynamics and scene-graph sources, of the order of a tenth of a metre per second."
+  }
+ ],
+ "gaps": []
+}

@@ -1,0 +1,152 @@
+'TrafficSpec.Rules.NRS_484A_450_2.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484A_450_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484A_450_2","intentions":[],"laws":["NRS-484A-450-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The record bounds the search for the halt by the mark's stopping zone (off the mark, short of it, farther from it than p.stop_point_tolerance) and leaves the third place — the point at which the view of s4 is met — without a zone for the search to end at. The zone of that place is read as the stretch of the carrier, outside the junction, on which that view is met: the search back from the entry ends at the last observation at which the vehicle was on the carrier, outside the junction, and the view was not met. Nothing else ends it, as with a mark."},{"kind":"reading","span":"s3","why":"st.lane_direction, which the record claims beside prim.region_offset_along for the side of the mark, is read on its own as the carrier carrying a designated direction at the observation judged: the magnitude of the direction a formula reads (normalised, so at least one) is above zero exactly where the source records one, and is unknown where it records none. The place of the halt is read only where that direction is recorded, since the side of the mark is read along it."},{"kind":"reading","span":"s3","why":"“the carrier the vehicle approaches through” is written as every carrier the vehicle occupies whose entrance end is the junction entered and which the stop sign governs: the duty must be met through each of them, as st.lane_enters directs (“a rule never picks the carrier that favours the road user”). Where the vehicle occupies one such carrier, the ordinary case, this reading and a reading that picks one agree."}],"operationalizations":[{"concepts":["rel.occupies","rel.visible","st.highway","st.intersection","st.on_way","st.sight_along_way","st.travel_region"],"params":["p.intersecting_way_view_distance"],"standard":"where the driver has a view of approaching traffic on the intersecting highway","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"X"}],"atom":"st_intersection","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"L"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"L"},{"var":"X"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_stop_sign","params":[]},{"args":[{"var":"d"},{"var":"L"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"L"}]}]},"exists_region":{"lit":"intersection"},"var":"X"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484A_450_2","intentions":[],"laws":["NRS-484A-450-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The record bounds the search for the halt by the mark's stopping zone (off the mark, short of it, farther from it than p.stop_point_tolerance) and leaves the third place — the point at which the view of s4 is met — without a zone for the search to end at. The zone of that place is read as the stretch of the carrier, outside the junction, on which that view is met: the search back from the entry ends at the last observation at which the vehicle was on the carrier, outside the junction, and the view was not met. Nothing else ends it, as with a mark."},{"kind":"reading","span":"s3","why":"st.lane_direction, which the record claims beside prim.region_offset_along for the side of the mark, is read on its own as the carrier carrying a designated direction at the observation judged: the magnitude of the direction a formula reads (normalised, so at least one) is above zero exactly where the source records one, and is unknown where it records none. The place of the halt is read only where that direction is recorded, since the side of the mark is read along it."},{"kind":"reading","span":"s3","why":"“the carrier the vehicle approaches through” is written as every carrier the vehicle occupies whose entrance end is the junction entered and which the stop sign governs: the duty must be met through each of them, as st.lane_enters directs (“a rule never picks the carrier that favours the road user”). Where the vehicle occupies one such carrier, the ordinary case, this reading and a reading that picks one agree."}],"obligation":{"body":{"and":[{"args":[{"var":"X"}],"atom":"st_intersection","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"implies":[{"and":[{"args":[{"var":"L"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"L"},{"var":"X"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_stop_sign","params":[]},{"args":[{"var":"d"},{"var":"L"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"c"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"c"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"and":[{"not":{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}]},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]},"forall_region":{"lit":"crosswalk"},"var":"c"},{"implies":[{"not":{"body":{"and":[{"args":[{"var":"c"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"c"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"s"}],"atom":"st_stop_line","params":[]},{"args":[{"var":"s"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"and":[{"not":{"args":[{"var":"v"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}]},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]},"forall_region":{"lit":"stop_line"},"var":"s"},{"implies":[{"not":{"body":{"and":[{"args":[{"var":"s"}],"atom":"st_stop_line","params":[]},{"args":[{"var":"s"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},"exists_region":{"lit":"stop_line"},"var":"s"}},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"w"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"X"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"L"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}},{"body":{"implies":[{"and":[{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"not":{"same":[{"var":"u"},{"var":"v"}]}}]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_visible","params":[]}]},"forall_user":"u"}]}]}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"w"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"X"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"L"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}},{"body":{"implies":[{"and":[{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"not":{"same":[{"var":"u"},{"var":"v"}]}}]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_visible","params":[]}]},"forall_user":"u"}]}]}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"travel_region"},"var":"L"}]}]},"exists_region":{"lit":"intersection"},"var":"X"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"X"}],"atom":"st_intersection","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"L"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"L"},{"var":"X"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_stop_sign","params":[]},{"args":[{"var":"d"},{"var":"L"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"L"}]}]},"exists_region":{"lit":"intersection"},"var":"X"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484A_450_2","intentions":[],"laws":["NRS-484A-450-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The record bounds the search for the halt by the mark's stopping zone (off the mark, short of it, farther from it than p.stop_point_tolerance) and leaves the third place — the point at which the view of s4 is met — without a zone for the search to end at. The zone of that place is read as the stretch of the carrier, outside the junction, on which that view is met: the search back from the entry ends at the last observation at which the vehicle was on the carrier, outside the junction, and the view was not met. Nothing else ends it, as with a mark."},{"kind":"reading","span":"s3","why":"st.lane_direction, which the record claims beside prim.region_offset_along for the side of the mark, is read on its own as the carrier carrying a designated direction at the observation judged: the magnitude of the direction a formula reads (normalised, so at least one) is above zero exactly where the source records one, and is unknown where it records none. The place of the halt is read only where that direction is recorded, since the side of the mark is read along it."},{"kind":"reading","span":"s3","why":"“the carrier the vehicle approaches through” is written as every carrier the vehicle occupies whose entrance end is the junction entered and which the stop sign governs: the duty must be met through each of them, as st.lane_enters directs (“a rule never picks the carrier that favours the road user”). Where the vehicle occupies one such carrier, the ordinary case, this reading and a reading that picks one agree."}],"obligation":{"body":{"and":[{"args":[{"var":"X"}],"atom":"st_intersection","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"implies":[{"and":[{"args":[{"var":"L"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"L"},{"var":"X"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_stop_sign","params":[]},{"args":[{"var":"d"},{"var":"L"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"stop_sign"},"var":"d"}]}]}]},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"c"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"c"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"and":[{"not":{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}]},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"c"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"c"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]},"forall_region":{"lit":"crosswalk"},"var":"c"},{"implies":[{"not":{"body":{"and":[{"args":[{"var":"c"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"c"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"c"}},{"and":[{"body":{"implies":[{"and":[{"args":[{"var":"s"}],"atom":"st_stop_line","params":[]},{"args":[{"var":"s"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"and":[{"not":{"args":[{"var":"v"},{"var":"s"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}]},{"and":[{"cmp":"gt","lhs":{"add":[{"abs":{"args":[{"var":"L"},{"lit":"x"}],"measure":"st_lane_direction"}},{"abs":{"args":[{"var":"L"},{"lit":"y"}],"measure":"st_lane_direction"}}]},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"s"},{"var":"L"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"s"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]}]}]},"forall_region":{"lit":"stop_line"},"var":"s"},{"implies":[{"not":{"body":{"and":[{"args":[{"var":"s"}],"atom":"st_stop_line","params":[]},{"args":[{"var":"s"},{"var":"L"}],"atom":"st_entrance_of","params":[]}]},"exists_region":{"lit":"stop_line"},"var":"s"}},{"since":[{"not":{"or":[{"or":[{"and":[{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"rises":{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}}}]},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"w"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"X"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"L"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}},{"body":{"implies":[{"and":[{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"not":{"same":[{"var":"u"},{"var":"v"}]}}]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_visible","params":[]}]},"forall_user":"u"}]}]}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"L"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"X"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"w"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"X"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"L"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}},{"body":{"implies":[{"and":[{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"not":{"same":[{"var":"u"},{"var":"v"}]}}]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_visible","params":[]}]},"forall_user":"u"}]}]}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"travel_region"},"var":"L"}]}]},"exists_region":{"lit":"intersection"},"var":"X"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,st_travel_region,st_lane_enters,dev_stop_sign,dev_governs,st_crosswalk,st_entrance_of,st_lane_direction,prim_region_offset_along,st_region_geometry_distance,drv_motion_standstill,st_stop_line,st_highway,st_on_way,st_sight_along_way,rel_visible
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	history_boundary	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+BOUNDARY	history_boundary
+OCC	v
+OCC	?X
+OCC	X
+OCC	v,X
+OCC	?L
+OCC	L
+OCC	v,L
+OCC	L,X
+OCC	?d
+OCC	d
+OCC	d,L
+OCC	?X
+OCC	X
+OCC	v,X
+OCC	?L
+OCC	L
+OCC	v,L
+OCC	L,X
+OCC	?d
+OCC	d
+OCC	d,L
+OCC	?c
+OCC	c
+OCC	c,L
+OCC	v,X
+OCC	v,X
+OCC	v,X
+OCC	v,L
+OCC	v,c
+OCC	L
+OCC	L
+OCC	v
+OCC	c
+OCC	L
+OCC	v,c
+OCC	v
+OCC	v,c
+OCC	v,X
+OCC	L
+OCC	L
+OCC	v
+OCC	c
+OCC	L
+OCC	v,c
+OCC	?c
+OCC	c
+OCC	c,L
+OCC	?s
+OCC	s
+OCC	s,L
+OCC	v,X
+OCC	v,X
+OCC	v,X
+OCC	v,L
+OCC	v,s
+OCC	L
+OCC	L
+OCC	v
+OCC	s
+OCC	L
+OCC	v,s
+OCC	v
+OCC	v,s
+OCC	v,X
+OCC	L
+OCC	L
+OCC	v
+OCC	s
+OCC	L
+OCC	v,s
+OCC	?s
+OCC	s
+OCC	s,L
+OCC	v,X
+OCC	v,X
+OCC	v,X
+OCC	v,L
+OCC	v,X
+OCC	?w
+OCC	w
+OCC	X,w
+OCC	L,w
+OCC	v,w
+OCC	?u
+OCC	u,w
+OCC	u,v
+OCC	v,u
+OCC	v
+OCC	v,L
+OCC	v,X
+OCC	?w
+OCC	w
+OCC	X,w
+OCC	L,w
+OCC	v,w
+OCC	?u
+OCC	u,w
+OCC	u,v
+OCC	v,u
+TIME	occurrences	0
+TIME	checks	9
+TIME	lint	156
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	28
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	34
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	23
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	30
+SCEN	history_boundary	unknown	unknown	ok
+TIME	scenario:history_boundary	19
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	30
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	20
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	20
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	20
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	30
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	19
+TIME	witnesses	273
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484A_450_2.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484A_450_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484A_450_2	70	9
+TIME	adequacy_start	6
+TIME	adequacy	10815
+DONE

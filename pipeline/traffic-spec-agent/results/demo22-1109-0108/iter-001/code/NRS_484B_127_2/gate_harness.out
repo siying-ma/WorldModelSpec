@@ -1,0 +1,124 @@
+'TrafficSpec.Rules.NRS_484B_127_2.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_127_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_127_2","intentions":[],"laws":["NRS-484B-127-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's words relieve the duty where an obstruction lies in the space between the two bodies. The atoms this operationalization claims place no structure region within that space: rel.occupies relates a road user to a region, rel.surface_gap two road users, and the node claims no st.region_geometry. The leaf is therefore read at the coarsest place those atoms reach — an st.obstruction region lying on the highway the subject's lane lies on — so the conditions are read as not permitting in some scenes where the words would still require the space."}],"operationalizations":[{"concepts":["dev.temporary_traffic_control","kin.speed","rel.ahead_behind_in_lane","rel.occupies","rel.surface_gap","st.obstruction","st.roadway"],"params":["p.conditions_permit_min_speed","p.conditions_permit_max_intervening_users"],"standard":"whenever conditions permit","surrogate":false}],"residues":["The purpose clause explains the figure the law itself fixes: the space is 500 feet, and the words “so that an overtaking vehicle may enter and occupy such space without danger” state what that space is for, adding no further requirement to the duty, which is met by leaving the stated space and breached by not leaving it. The ontology reads a purpose through the conduct it explains, and here that conduct is the leaving of the space the next words measure. The rule is held to this: no verdict of the node turns on these words."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"v"},{"var":"u"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"u"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},{"args":[{"var":"v"},{"var":"u"}],"derived":"drv_interaction_following","params":[{"param":"p.same_direction_cosine_tolerance"}]}]}]},"exists_user":"u"},{"and":[{"not":{"body":{"and":[{"not":{"same":[{"var":"v"},{"var":"w"}]}},{"and":[{"or":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"args":[{"var":"v"},{"var":"w"}],"derived":"drv_interaction_overtaking","params":[{"param":"p.same_direction_cosine_tolerance"},{"param":"p.overtaking_min_speed_excess"}]}]}]},"exists_user":"w"}},{"not":{"and":[{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"hw"}],"atom":"st_highway","params":[]},{"body":{"and":[{"args":[{"var":"ln"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"v"},{"var":"ln"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ln"},{"var":"hw"}],"atom":"st_on_way","params":[]},{"or":[{"cmp":"ge","lhs":{"args":[{"var":"ln"},{"lit":"count"}],"measure":"st_lane_adjacency"},"rhs":{"lit":{"den":1,"num":2},"unit":"count"}},{"body":{"and":[{"args":[{"var":"ln2"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"ln2"},{"var":"hw"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"same":[{"var":"ln"},{"var":"ln2"}]}},{"and":[{"cmp":"eq","lhs":{"args":[{"var":"ln2"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"args":[{"var":"ln"},{"lit":"x"}],"measure":"st_lane_direction"}},{"cmp":"eq","lhs":{"args":[{"var":"ln2"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"args":[{"var":"ln"},{"lit":"y"}],"measure":"st_lane_direction"}}]}]}]}]},"exists_region":{"lit":"lane"},"var":"ln2"}]}]}]}]},"exists_region":{"lit":"lane"},"var":"ln"}]},"exists_region":{"lit":"highway"},"var":"hw"}]}]}]}}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},"name":"v"}],"id":"NRS_484B_127_2","intentions":[],"laws":["NRS-484B-127-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's words relieve the duty where an obstruction lies in the space between the two bodies. The atoms this operationalization claims place no structure region within that space: rel.occupies relates a road user to a region, rel.surface_gap two road users, and the node claims no st.region_geometry. The leaf is therefore read at the coarsest place those atoms reach — an st.obstruction region lying on the highway the subject's lane lies on — so the conditions are read as not permitting in some scenes where the words would still require the space."}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"u"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"u"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},{"and":[{"args":[{"var":"v"},{"var":"u"}],"derived":"drv_interaction_following","params":[{"param":"p.same_direction_cosine_tolerance"}]},{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]}]}]},{"implies":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.conditions_permit_min_speed"}},{"and":[{"cmp":"le","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"metre"},"var":"w","where":{"and":[{"not":{"same":[{"var":"w"},{"var":"v"}]}},{"and":[{"not":{"same":[{"var":"w"},{"var":"u"}]}},{"and":[{"body":{"and":[{"args":[{"var":"rd"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"v"},{"var":"rd"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"w"},{"var":"rd"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"roadway"},"var":"rd"},{"and":[{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"args":[{"var":"v"},{"var":"u"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"}}]}]}]}]}},"rhs":{"param":"p.conditions_permit_max_intervening_users"}},{"not":{"body":{"and":[{"args":[{"var":"hw2"}],"atom":"st_highway","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"ln3"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"v"},{"var":"ln3"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ln3"},{"var":"hw2"}],"atom":"st_on_way","params":[]}]}]},"exists_region":{"lit":"lane"},"var":"ln3"},{"body":{"and":[{"args":[{"var":"ob"}],"atom":"st_obstruction","params":[]},{"args":[{"var":"ob"},{"var":"hw2"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"obstruction"},"var":"ob"}]}]},"exists_region":{"lit":"highway"},"var":"hw2"}}]}]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"u"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]}]},"forall_user":"u"},"residues":["The purpose clause explains the figure the law itself fixes: the space is 500 feet, and the words “so that an overtaking vehicle may enter and occupy such space without danger” state what that space is for, adding no further requirement to the duty, which is met by leaving the stated space and breached by not leaving it. The ontology reads a purpose through the conduct it explains, and here that conduct is the leaving of the space the next words measure. The rule is held to this: no verdict of the node turns on these words."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"not":{"same":[{"var":"v"},{"var":"u"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"u"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},{"and":[{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine_tolerance"}]}]}]}]},"exists_user":"u"},{"and":[{"not":{"body":{"and":[{"not":{"same":[{"var":"v"},{"var":"w"}]}},{"and":[{"or":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"v"},{"var":"w"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine_tolerance"}]},{"and":[{"cmp":"ge","lhs":{"sub":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"args":[{"var":"w"}],"measure":"kin_speed"}]},"rhs":{"param":"p.overtaking_min_speed_excess"}},{"or":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]}]}]}]}]},"exists_user":"w"}},{"not":{"and":[{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}}},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"hw"}],"atom":"st_highway","params":[]},{"body":{"and":[{"args":[{"var":"ln"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"v"},{"var":"ln"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"ln"},{"var":"hw"}],"atom":"st_on_way","params":[]},{"or":[{"cmp":"ge","lhs":{"args":[{"var":"ln"},{"lit":"count"}],"measure":"st_lane_adjacency"},"rhs":{"lit":{"den":1,"num":2},"unit":"count"}},{"body":{"and":[{"args":[{"var":"ln2"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"ln2"},{"var":"hw"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"same":[{"var":"ln"},{"var":"ln2"}]}},{"and":[{"cmp":"eq","lhs":{"args":[{"var":"ln2"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"args":[{"var":"ln"},{"lit":"x"}],"measure":"st_lane_direction"}},{"cmp":"eq","lhs":{"args":[{"var":"ln2"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"args":[{"var":"ln"},{"lit":"y"}],"measure":"st_lane_direction"}}]}]}]}]},"exists_region":{"lit":"lane"},"var":"ln2"}]}]}]}]},"exists_region":{"lit":"lane"},"var":"ln"}]},"exists_region":{"lit":"highway"},"var":"hw"}]}]}]}}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},"name":"v"}],"id":"NRS_484B_127_2","intentions":[],"laws":["NRS-484B-127-2"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's words relieve the duty where an obstruction lies in the space between the two bodies. The atoms this operationalization claims place no structure region within that space: rel.occupies relates a road user to a region, rel.surface_gap two road users, and the node claims no st.region_geometry. The leaf is therefore read at the coarsest place those atoms reach — an st.obstruction region lying on the highway the subject's lane lies on — so the conditions are read as not permitting in some scenes where the words would still require the space."}],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"v"},{"var":"u"}]}},{"and":[{"or":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-305::truck"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"u"},{"lit":"width"}],"measure":"kin_extent"},"rhs":{"lit":{"den":125,"num":254},"unit":"metre"}}]}]},{"and":[{"and":[{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine_tolerance"}]}]},{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]}]}]},{"implies":[{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.conditions_permit_min_speed"}},{"and":[{"cmp":"le","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"metre"},"var":"w","where":{"and":[{"not":{"same":[{"var":"w"},{"var":"v"}]}},{"and":[{"not":{"same":[{"var":"w"},{"var":"u"}]}},{"and":[{"body":{"and":[{"args":[{"var":"rd"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"v"},{"var":"rd"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"w"},{"var":"rd"}],"atom":"rel_occupies","params":[]}]}]},"exists_region":{"lit":"roadway"},"var":"rd"},{"and":[{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"args":[{"var":"v"},{"var":"u"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"}}]}]}]}]}},"rhs":{"param":"p.conditions_permit_max_intervening_users"}},{"not":{"body":{"and":[{"args":[{"var":"hw2"}],"atom":"st_highway","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"ln3"}],"atom":"st_lane","params":[]},{"and":[{"args":[{"var":"v"},{"var":"ln3"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"ln3"},{"var":"hw2"}],"atom":"st_on_way","params":[]}]}]},"exists_region":{"lit":"lane"},"var":"ln3"},{"body":{"and":[{"args":[{"var":"ob"}],"atom":"st_obstruction","params":[]},{"args":[{"var":"ob"},{"var":"hw2"}],"atom":"st_on_way","params":[]}]},"exists_region":{"lit":"obstruction"},"var":"ob"}]}]},"exists_region":{"lit":"highway"},"var":"hw2"}}]}]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"u"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]}]},"forall_user":"u"},"residues":["The purpose clause explains the figure the law itself fixes: the space is 500 feet, and the words “so that an overtaking vehicle may enter and occupy such space without danger” state what that space is for, adding no further requirement to the duty, which is met by leaving the stated space and breached by not leaving it. The ontology reads a purpose through the conduct it explains, and here that conduct is the leaving of the space the next words measure. The rule is held to this: no verdict of the node turns on these words."],"surrogate":false}
+ATOMS	ru_aggregate,kin_extent,drv_interaction_following,drv_interaction_overtaking,drv_motion_standstill,st_highway,st_lane,rel_occupies,st_on_way,st_lane_adjacency,st_lane_direction,rel_ahead_behind_in_lane,kin_speed,st_roadway,rel_surface_gap,st_obstruction
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-305::truck	DEF-NRS-484A-050::combination_of_vehicles	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.surface_gap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+OCC	v
+OCC	v
+OCC	v
+OCC	?u
+OCC	v,u
+OCC	u
+OCC	u
+OCC	u
+OCC	v,u
+OCC	?w
+OCC	v,w
+OCC	w
+OCC	w
+OCC	v,w
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	?hw
+OCC	hw
+OCC	?ln
+OCC	ln
+OCC	v,ln
+OCC	ln,hw
+OCC	ln
+OCC	?ln2
+OCC	ln2
+OCC	ln2,hw
+OCC	ln,ln2
+OCC	ln2
+OCC	ln
+OCC	ln2
+OCC	ln
+OCC	?u
+OCC	v,u
+OCC	u
+OCC	u
+OCC	u
+OCC	v,u
+OCC	u,v
+OCC	v
+OCC	?w
+OCC	w,v
+OCC	w,u
+OCC	?rd
+OCC	rd
+OCC	v,rd
+OCC	w,rd
+OCC	w,v
+OCC	v,w
+OCC	v,u
+OCC	?hw2
+OCC	hw2
+OCC	?ln3
+OCC	ln3
+OCC	v,ln3
+OCC	ln3,hw2
+OCC	?ob
+OCC	ob
+OCC	ob,hw2
+OCC	v,u
+LITERAL	254/125	TrafficSpec.PUnit'.metre
+LITERAL	254/125	TrafficSpec.PUnit'.metre
+LITERAL	2/1	TrafficSpec.PUnit'.count
+LITERAL	254/125	TrafficSpec.PUnit'.metre
+LITERAL	762/5	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	5
+REF	blind	scene t=0: track 2 is in occupancy_observed but lacks a position, a non-zero heading or an extent, so its footprint is undefined
+REF	blind	scene t=1000: track 2 is in occupancy_observed but lacks a position, a non-zero heading or an extent, so its footprint is undefined
+REF	blind	scene t=2000: track 2 is in occupancy_observed but lacks a position, a non-zero heading or an extent, so its footprint is undefined
+TIME	lint	173
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	19
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	20
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	18
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	17
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	14
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	15
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	18
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	23
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	14
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	16
+SCEN	branch_8	not_applicable	not_applicable	ok
+TIME	scenario:branch_8	9
+SCEN	branch_9	not_applicable	not_applicable	ok
+TIME	scenario:branch_9	8
+SCEN	branch_10	compliant	compliant	ok
+TIME	scenario:branch_10	12
+TIME	witnesses	222
+DONE_WITNESSES

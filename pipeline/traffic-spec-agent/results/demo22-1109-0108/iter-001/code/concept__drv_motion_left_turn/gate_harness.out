@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.left_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.left_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}}],"body":{"cmp":"ge","lhs":{"heading_since":"u","max_step":{"param":"heading_step"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"u"}],"measure":"kin_yaw_rate"},"rhs":{"param":"onset_yaw_rate"}}},"rhs":{"param":"turn_angle"}},"contract":"The road user has turned to the left: counting from the onset of the turning — the observation at which its rate of change of heading to the left first rose above the onset yaw rate, a rate the caller sets — the heading change accumulated since that onset reaches at least the turn angle, a size the caller sets, to the left. The concept becomes true at the observation at which that angle is first reached, and it holds at the later observations at which the accumulated change still holds that angle, until a later onset starts the count again; the integration is bounded by the heading step, the largest interval between consecutive observations it may integrate across. Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a turn begun before the recording is never read as one made within it. It states the turning of the body only: no place, no lane, no way and no destination. Not a stand-in for: a signal or a declared intention, a steering input, the curvature of the road — a body yaws on a straight road whenever it manoeuvres — a lane change, or a reversal of the direction of travel, which is a larger angle and has its own concept.","definition":null,"id":"drv.motion.left_turn","kind":"formula","narrowings":[{"kind":"reading","span":"the observation at which its rate of change of heading to the left first rose above the onset yaw rate","why":"The onset is read as the latest observation at which `kin.yaw_rate` of the road user rose definitely above the onset yaw rate (false at the observation before, true there), not the first such rise of the recording: the contract's own words \"until a later onset starts the count again\" make the count restart at every later onset, so \"first rose\" is read relative to the judged observation."}],"params":[{"name":"heading_step","unit":"second"},{"name":"onset_yaw_rate","unit":"degree_per_second"},{"name":"turn_angle","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	kin_yaw_rate,kin_time
+READS	kin_yaw_rate,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"ge","lhs":{"heading_since":"u","max_step":{"param":"heading_step"},"onset":{"cmp":"gt","lhs":{"args":[{"var":"u"}],"measure":"kin_yaw_rate"},"rhs":{"param":"onset_yaw_rate"}}},"rhs":{"param":"turn_angle"}}
+WITNESS	holds	drv.motion.left_turn@w
+WITNESS	fails	drv.motion.left_turn@w
+WITNESS	blind	drv.motion.left_turn@w
+OCC	u
+OCC	u
+INST	drv.motion.left_turn@w	ok
+TIME	checks	2
+TIME	lint	5
+SCEN	holds	drv.motion.left_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.left_turn@w/holds	21
+SCEN	fails	drv.motion.left_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.left_turn@w/fails	19
+SCEN	blind	drv.motion.left_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.left_turn@w/blind	21
+TIME	witnesses	61
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.left_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.left_turn.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.left_turn@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	77
+DONE

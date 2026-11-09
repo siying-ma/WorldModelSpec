@@ -1,0 +1,233 @@
+{
+ "node_id": "NRS_484B_600_1a",
+ "law_refs": [
+  "NRS-484B-600-1a"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for any person to drive or operate a vehicle of any kind or character at:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "A rate of speed greater than",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "'a vehicle of any kind or character' is the defined term the table resolves to DEF-NRS-484A-320, admitted as the aggregate DEF-NRS-484A-320::vehicle, and ru.aggregate carries 'membership of a legal aggregate ... the atom's literal argument is an aggregate id'; 'of any kind or character' adds no member the definition does not carry, the definition itself reaching 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway' with its four exceptions. 'to drive or operate' is read through the vehicle's controlled motion, for which drv.motion.standstill ('the road user is motionless at the observation: the magnitude of its velocity is at most the speed tolerance') is read negated: a vehicle in motion is taken to be driven. Exclusions: ru.aggregate is not a stand-in for a class atom or for a relational role such as who controls the vehicle; drv.motion.standstill is 'not a stand-in for ... the engine being off or a brake being applied', none of which is read here."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "kin.speed is the 'magnitude of velocity' in m/s, which is the 'rate of speed' the words compare; 'greater than' is the comparison of that magnitude with the bound the standard of s3 sets. Exclusion: kin.speed is the magnitude and not the acceleration along heading (kin.accel_longitudinal), which is not read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions",
+   "concepts": [
+    "kin.speed",
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.lane",
+    "st.lane_width",
+    "st.roadway",
+    "env.wet_road",
+    "env.precipitation",
+    "env.ice_or_snow",
+    "env.visibility",
+    "st.grade",
+    "st.sight_distance"
+   ],
+   "params": [
+    "p.reasonable_speed_base_limit",
+    "p.reasonable_speed_wet_decrement",
+    "p.reasonable_speed_ice_decrement",
+    "p.reasonable_speed_traffic_decrement_per_user",
+    "p.reasonable_speed_grade_decrement_per_unit_grade",
+    "p.reasonable_speed_lane_width_time",
+    "p.reasonable_speed_sight_time"
+   ],
+   "convention": "A stopping-sight-distance and surface-friction reading of a reasonable speed. A base design speed stands for a dry, wide, level and unobstructed stretch; it is lowered by the wet-pavement decrement where the surface is wet or precipitation falls and by the larger winter-surface decrement where the surface is icy or snow-covered; by the per-user traffic decrement for each road user of the scene whose footprint lies on the highway the subject occupies, so the bound falls as the stream thickens; and by the grade decrement times the magnitude of the longitudinal slope at the subject's place, the braking-distance model's grade correction. The speed is bounded in addition by the shortest available sight: the sight distance of the subject's place and the visibility distance, each divided by the perception-reaction-plus-braking time of the stopping-distance model, and by the width of the lane the subject occupies divided by the lateral-recovery time of the lane-keeping convention, so that a narrower lane bounds the speed in proportion to its width. Values come from the AASHTO Green Book's design-speed, stopping-sight-distance and grade-correction tables and from the wet- and winter-surface practice of the same standard.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v is in motion at the observation (drv.motion.standstill false for v, with p.standstill_speed_tolerance), which is how 'to drive or operate' is read: the duty binds the vehicle's conduct whoever or whatever is at the controls.",
+ "obligation": "v's speed (kin.speed) does not exceed the reasonable-speed bound: p.reasonable_speed_base_limit lowered by p.reasonable_speed_wet_decrement where env.wet_road or env.precipitation holds, by p.reasonable_speed_ice_decrement where env.ice_or_snow holds, by p.reasonable_speed_traffic_decrement_per_user for each road user of the scene whose footprint overlaps the st.highway region v occupies, and by p.reasonable_speed_grade_decrement_per_unit_grade times the magnitude of st.grade at v's place; and in no case above st.lane_width of the lane v occupies divided by p.reasonable_speed_lane_width_time, st.sight_distance of v's place divided by p.reasonable_speed_sight_time, or env.visibility divided by p.reasonable_speed_sight_time. The standard is the whole obligation, so the node is a surrogate: its verdicts are evidence, not a legal conclusion.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.reasonable_speed_base_limit",
+  "p.reasonable_speed_wet_decrement",
+  "p.reasonable_speed_ice_decrement",
+  "p.reasonable_speed_traffic_decrement_per_user",
+  "p.reasonable_speed_grade_decrement_per_unit_grade",
+  "p.reasonable_speed_lane_width_time",
+  "p.reasonable_speed_sight_time"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'for any person to drive or operate' is read through the vehicle's controlled motion, as the ontology's section on what is not an atom directs: a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it. No person, no control of a vehicle and no operation is read as such.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'the traffic' is read as the count of the road users of the scene whose footprint overlaps the highway the subject occupies, each lowering the bound by the per-user decrement. The term's definition, DEF-NRS-484A-285, reaches 'pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel', which is every road user a scene carries, so presence on the way reads the stream; 'for purposes of travel' is read as that presence, no purpose being observable. The operationalization bounds the standard with atoms and primitives, so no aggregate membership is claimed for the count, and a member the scene does not carry as a road user is not counted.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'surface' and 'the weather' are read through the contracts the ontology carries for them -- a wet surface, falling precipitation, ice or snow, and the visibility distance -- the first three selecting a decrement and the last entering the bound by its magnitude. A surface defect, a loose or unpaved surface, and wind are carried by no contract and are not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'width of the highway' is read as the width of the lane the subject occupies, divided by the lateral-recovery time; the whole width between the highway's boundary lines carries no atom of its own, and the lane's width is the width the vehicle runs in. The reading is narrower than the words.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "'other highway conditions', the standard's catch-all, is read only through the longitudinal slope at the vehicle's place (st.grade), the sight distance of that place (st.sight_distance) and the visibility distance (env.visibility); further conditions the catch-all covers are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a wet two-lane highway with a short sight distance at the subject's place and a file of other road users on the same way, the subject runs at a speed far above the base limit, let alone the lowered bound and the sight-derived bounds.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A dry, level, wide stretch with a long sight distance, good visibility and no other road user in the scene; the subject runs at a speed well below the base limit and below every sight- and width-derived bound.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject stands at the kerb with its engine running, the magnitude of its velocity within the standstill tolerance, so it is not driven or operated and the duty does not arise.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject runs on a dry, level, wide stretch at a speed below the base limit, the traffic count and the place's sight distance recorded, but the source declares the visibility distance absent, so whether the visibility-derived bound is exceeded cannot be told.",
+   "masked": [
+    "env.visibility"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A dry, level, straight stretch with a long sight distance and no other road user in the scene, but the lane the subject occupies is a narrow one: the subject's speed exceeds the lane's width divided by the lateral-recovery time while staying below the base limit.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A dry stretch running down a steep grade with no other road user present; the subject's speed stays below the base limit but above that limit lowered by the grade decrement times the magnitude of the slope at its place.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled speed reading is read as the definition's complete cessation from movement, the bound within which measurement error and sampling cannot be told from no movement at all.",
+   "source": "the speed resolution of vehicle-dynamics and scene-graph sources, of the order of a tenth of a metre per second."
+  },
+  {
+   "name": "p.reasonable_speed_base_limit",
+   "unit": "m/s",
+   "value": 29.0,
+   "convention": "Design-speed convention: the speed a dry, wide, level, straight and unobstructed open-road stretch supports, before any correction for surface, stream, slope or sight; it is the upper anchor of the reasonable-speed bound and is lowered by every factor the standard names.",
+   "source": "AASHTO Green Book design-speed table for rural arterial highways (the 65 mph design speed)."
+  },
+  {
+   "name": "p.reasonable_speed_wet_decrement",
+   "unit": "m/s",
+   "value": 2.8,
+   "convention": "Wet-pavement convention: the reduction from the dry design speed that keeps the braking distance of the stopping-distance model unchanged on a wet surface, about a tenth of the design speed.",
+   "source": "AASHTO Green Book wet-pavement friction factors used in the stopping-sight-distance model."
+  },
+  {
+   "name": "p.reasonable_speed_ice_decrement",
+   "unit": "m/s",
+   "value": 8.0,
+   "convention": "Winter-surface convention: the larger reduction from the dry design speed that keeps the braking distance unchanged on an icy or snow-covered surface, whose friction is a small fraction of the dry value.",
+   "source": "winter maintenance practice and the low-friction end of the AASHTO braking-distance model."
+  },
+  {
+   "name": "p.reasonable_speed_traffic_decrement_per_user",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "Traffic-density convention: the reduction of the bound for each road user of the scene present on the highway the subject occupies, so that the bound falls as the stream thickens and the space to react shortens.",
+   "source": "the speed-flow relations of the Highway Capacity Manual, whose free-flow speed falls steadily as flow on a segment rises."
+  },
+  {
+   "name": "p.reasonable_speed_grade_decrement_per_unit_grade",
+   "unit": "m/s",
+   "value": 30.0,
+   "convention": "Grade-correction convention: the reduction of the bound per unit of longitudinal slope magnitude, taken from the grade correction of the braking-distance model, so that a few per cent of slope costs a little over a metre per second.",
+   "source": "AASHTO Green Book stopping-sight-distance tables with grade corrections for downgrades."
+  },
+  {
+   "name": "p.reasonable_speed_lane_width_time",
+   "unit": "s",
+   "value": 0.12,
+   "convention": "Lateral-recovery convention: the time within which a driver must correct a lateral excursion of the order of the lane's width; dividing the lane width by it turns the width into a speed bound, so that a narrower lane bounds the speed in proportion to its width and a standard lane yields a bound near the open-road design speed.",
+   "source": "lane-keeping and lateral-recovery times of vehicle-dynamics practice, calibrated against the standard 3.6 m lane and the design speed."
+  },
+  {
+   "name": "p.reasonable_speed_sight_time",
+   "unit": "s",
+   "value": 2.5,
+   "convention": "Stopping-sight-distance convention: the perception-reaction plus braking time over which the available sight must cover the distance the vehicle travels; dividing the place's sight distance, or the visibility distance, by it gives the speed at which the vehicle can still stop within what can be seen.",
+   "source": "AASHTO Green Book brake-reaction time of 2.5 s used in the stopping-sight-distance model."
+  }
+ ],
+ "gaps": []
+}

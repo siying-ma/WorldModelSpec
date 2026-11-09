@@ -1,0 +1,79 @@
+'TrafficSpec.Rules.NRS_484B_407.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_407.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"since":[{"not":{"rises":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}}}},{"and":[{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}},{"cmp":"lt","lhs":{"abs":{"heading_since":"v","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}}}}},"rhs":{"param":"p.u_turn_reversal_angle"}}]},{"and":[{"or":[{"body":{"and":[{"and":[{"args":[{"var":"rc"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rc"}],"atom":"rel_occupies","params":[]}]},{"cmp":"ge","lhs":{"args":[{"var":"rc"}],"measure":"st_curvature"},"rhs":{"param":"p.curvature_resolution"}}]},"exists_region":{"lit":"roadway"},"var":"rc"},{"body":{"and":[{"and":[{"args":[{"var":"rg"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rg"}],"atom":"rel_occupies","params":[]}]},{"body":{"and":[{"args":[{"var":"cr"}],"atom":"st_crest","params":[]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"cr"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.crest_approach_distance"}}]},"exists_region":{"lit":"crest"},"var":"cr"}]},"exists_region":{"lit":"roadway"},"var":"rg"}]},{"body":{"and":[{"and":[{"args":[{"var":"rs"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rs"}],"atom":"rel_occupies","params":[]}]},{"cmp":"lt","lhs":{"args":[{"var":"rs"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]},"exists_region":{"lit":"roadway"},"var":"rs"}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"obligation":{"not":{"rises":{"args":[{"var":"v"}],"derived":"drv_motion_u_turn","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.turn_onset_yaw_rate"},{"param":"p.u_turn_reversal_angle"}]}}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"since":[{"not":{"rises":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}}}},{"and":[{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}},{"cmp":"lt","lhs":{"abs":{"heading_since":"v","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"rises":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}}}}},"rhs":{"param":"p.u_turn_reversal_angle"}}]},{"and":[{"or":[{"body":{"and":[{"and":[{"args":[{"var":"rc"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rc"}],"atom":"rel_occupies","params":[]}]},{"cmp":"ge","lhs":{"args":[{"var":"rc"}],"measure":"st_curvature"},"rhs":{"param":"p.curvature_resolution"}}]},"exists_region":{"lit":"roadway"},"var":"rc"},{"body":{"and":[{"and":[{"args":[{"var":"rg"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rg"}],"atom":"rel_occupies","params":[]}]},{"body":{"and":[{"args":[{"var":"cr"}],"atom":"st_crest","params":[]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"cr"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.crest_approach_distance"}}]},"exists_region":{"lit":"crest"},"var":"cr"}]},"exists_region":{"lit":"roadway"},"var":"rg"}]},{"body":{"and":[{"and":[{"args":[{"var":"rs"}],"atom":"st_roadway","params":[]},{"args":[{"var":"v"},{"var":"rs"}],"atom":"rel_occupies","params":[]}]},{"cmp":"lt","lhs":{"args":[{"var":"rs"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":5,"num":762},"unit":"metre"}}]},"exists_region":{"lit":"roadway"},"var":"rs"}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_407","intentions":[],"laws":["NRS-484B-407"],"narrowings":[],"obligation":{"not":{"rises":{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"v","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.turn_onset_yaw_rate"}}}},"rhs":{"param":"p.u_turn_reversal_angle"}},{"body":{"args":[{"var":"v"},{"var":"w#0"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"w#0"}]}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,kin_yaw_rate,kin_time,st_roadway,rel_occupies,st_curvature,st_crest,st_region_geometry_distance,st_sight_distance,drv_motion_u_turn
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.sight_distance
+MANIFEST	occasion_s3	
+MANIFEST	occasion_s3_outside	
+MANIFEST	occasion_s4	
+MANIFEST	occasion_s4_outside	
+MANIFEST	occasion_s5	
+MANIFEST	occasion_s5_outside	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	?rc
+OCC	rc
+OCC	v,rc
+OCC	rc
+OCC	?rg
+OCC	rg
+OCC	v,rg
+OCC	?cr
+OCC	cr
+OCC	v,cr
+OCC	?rs
+OCC	rs
+OCC	v,rs
+OCC	rs
+OCC	v
+LITERAL	762/5	TrafficSpec.PUnit'.metre
+TIME	occurrences	1
+TIME	checks	6
+TIME	lint	1900
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	128
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	133
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	127
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	129
+SCEN	occasion_s3	violated	violated	ok
+TIME	scenario:occasion_s3	131
+SCEN	occasion_s3_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s3_outside	206
+SCEN	occasion_s4	violated	violated	ok
+TIME	scenario:occasion_s4	254
+SCEN	occasion_s4_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s4_outside	410
+SCEN	occasion_s5	violated	violated	ok
+TIME	scenario:occasion_s5	133
+SCEN	occasion_s5_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_s5_outside	206
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	125
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	126
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	248
+TIME	witnesses	2356
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_407.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_407.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_407	14	12
+TIME	adequacy_start	53
+TIME	adequacy	24908
+DONE

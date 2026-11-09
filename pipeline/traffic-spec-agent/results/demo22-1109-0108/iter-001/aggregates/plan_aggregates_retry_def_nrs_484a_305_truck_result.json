@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 94184,
+  "stop_reason": "end_turn",
+  "session_id": "d896a483-c0d4-4bb9-b428-e88dcd9c3a67",
+  "total_cost_usd": 0.32272200000000006,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7470,
+   "cache_read_input_tokens": 2573,
+   "output_tokens": 9832,
+   "output_tokens_details": {
+    "thinking_tokens": 4461
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7470,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 9832,
+     "cache_read_input_tokens": 2573,
+     "cache_creation_input_tokens": 7470,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7470
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7565,
+    "outputTokens": 338,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0009255,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 314,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 9832,
+    "cacheReadInputTokens": 2573,
+    "cacheCreationInputTokens": 7470,
+    "webSearchRequests": 0,
+    "costUSD": 0.32179650000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 4461,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"selection\": [{\"definition\": \"DEF-NRS-484A-305\", \"term\": \"truck\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484A-305::truck\", \"quote\": \"\\u201cTruck\\u201d means every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose.\", \"reason\": \"The definition denotes an extensional set of self-propelled road users distinguished by a purpose-built goods body, which the ru.* classes can carry.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484A-305::truck\", \"term\": \"truck\", \"definition\": \"DEF-NRS-484A-305\", \"classifications\": [\n   {\"class\": \"ru.bicycle\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"\\u201cMotor vehicle\\u201d means every vehicle which is self-propelled but not operated upon rails.\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Devices moved by human power or used exclusively upon stationary rails\"}],\n    \"reason\": \"A human-powered device is neither self-propelled nor a vehicle, so no member is admitted.\"},\n   {\"class\": \"ru.bus\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Design to carry many passengers neither prohibits nor establishes the goods use and purpose-built goods body, so a bus is admitted only where it is a motor vehicle with a body built for carrying goods, and any such bus already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.bus\", \"words\": \"motor vehicle designed to carry many passengers\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.child\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"\\u201cVehicle\\u201d means every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}],\n    \"reason\": \"A pedestrian who is a child is a person, not a self-propelled device, so no member is admitted.\"},\n   {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Commercial mass class or commercial licensing is not the goods use and purpose-built body the words require, so such a vehicle is admitted only when it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.commercial_motor_vehicle\", \"words\": \"vehicle over the jurisdiction's commercial mass class or marked as commercially licensed\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-130\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Electric bicycles\"}],\n    \"reason\": \"The nested motor vehicle and vehicle definitions expressly exclude electric bicycles, so no member is admitted.\"},\n   {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-130\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"An electric scooter\"}],\n    \"reason\": \"The nested motor vehicle and vehicle definitions expressly exclude electric scooters, so no member is admitted.\"},\n   {\"class\": \"ru.emergency_vehicle\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Emergency designation neither prohibits nor establishes the goods use and purpose-built body, so an emergency vehicle is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.fire_apparatus\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Being a fire-fighting vehicle neither prohibits nor establishes the goods use and purpose-built body, so a fire apparatus is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.fire_apparatus\", \"words\": \"a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own)\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.moped\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"A low-power two- or three-wheeler is self-propelled and not excluded by the words, but is admitted only where it is used for goods transport with a body built for that purpose, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.moped\", \"words\": \"a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.motor_vehicle\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Being a self-propelled non-rail vehicle is necessary but not sufficient under the words, so a motor vehicle is admitted only when it also has a body built and designed for goods transport, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.motor_vehicle\", \"words\": \"a self-propelled vehicle other than a rail vehicle; excludes the powered two-wheelers a jurisdiction classes separately below\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.motorcycle\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Wheel count and astride riding neither prohibit nor establish the goods use and purpose-built body, so a motorcycle is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.motorcycle\", \"words\": \"motor vehicle on two or three wheels ridden astride, including three-wheeled variants\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.official_vehicle\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Official or contracted road service neither prohibits nor establishes the goods use and purpose-built body, so such a vehicle is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.official_vehicle\", \"words\": \"a vehicle in official or contracted road service, identifiable by livery or equipment\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.pedestrian\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"\\u201cVehicle\\u201d means every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}],\n    \"reason\": \"A person on foot, in a wheelchair or on a device treated as on foot is not a motor vehicle, so no member is admitted.\"},\n   {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"\\u201cVehicle\\u201d means every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}],\n    \"reason\": \"A pedestrian with a cane, guide animal or guide is a person, not a motor vehicle, so no member is admitted.\"},\n   {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-130\", \"words\": \"every vehicle which is self-propelled but not operated upon rails\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Devices moved by human power or used exclusively upon stationary rails\"}],\n    \"reason\": \"On-track equipment is operated upon rails and so is not a motor vehicle, leaving no member admitted.\"},\n   {\"class\": \"ru.school_bus\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Designation and markings for carrying school children neither prohibit nor establish the goods use and purpose-built body, so a school bus is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.school_bus\", \"words\": \"bus designated for carrying school children, with the jurisdiction's markings\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.taxicab\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Being a marked passenger vehicle for hire neither prohibits nor establishes the goods use and purpose-built body, so a taxicab is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.taxicab\", \"words\": \"passenger vehicle for hire, identifiable by its markings\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Tour, shuttle or lengthened passenger-for-hire livery neither prohibits nor establishes the goods use and purpose-built body, so such a vehicle is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.tour_bus_or_limousine\", \"words\": \"a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.trailer_or_combination\", \"status\": \"unresolved\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"every vehicle which is self-propelled but not operated upon rails\"}],\n    \"reason\": \"A vehicle drawn by another is not self-propelled and so falls outside the words, but the words do not settle whether a combination whose drawing unit is a goods-bodied motor vehicle is itself such a motor vehicle, so the class is decided neither way.\"},\n   {\"class\": \"ru.transit_bus\", \"status\": \"covered\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}],\n    \"reason\": \"Public transit service and livery neither prohibit nor establish the goods use and purpose-built body, so a transit bus is admitted only where it is a motor vehicle with a body built for carrying goods, and every such member already carries ru.truck.\",\n    \"covered_by\": [\"ru.truck\"],\n    \"basis\": [{\"class\": \"ru.transit_bus\", \"words\": \"bus in public transit service, identifiable by its livery or route display\"}, {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n   {\"class\": \"ru.truck\", \"status\": \"included\",\n    \"quotes\": [{\"definition\": \"DEF-NRS-484A-305\", \"words\": \"every motor vehicle which is used for the transportation or delivery of goods with a body built and designed for that purpose\"}, {\"definition\": \"DEF-NRS-484A-130\", \"words\": \"every vehicle which is self-propelled but not operated upon rails\"}],\n    \"reason\": \"The class contract is a motor vehicle for carrying goods with a body built for that purpose, which is exactly what the words admit.\"}\n ]}]}",
+  "ttft_ms": 49102,
+  "type": "result",
+  "duration_ms": 91823,
+  "uuid": "4321ec4b-bf7e-464c-9236-859a820f4a85",
+  "ttft_stream_ms": 1349,
+  "time_to_request_ms": 53,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 16,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 4,
+   "input_hooks": 1,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 1,
+   "init_message": 4,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 3
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 3,
+  "time_to_request_cpu_ms": 80,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 8,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1349,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7565,
+    "outputTokens": 338,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0009255,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 314,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 9832,
+    "cacheReadInputTokens": 2573,
+    "cacheCreationInputTokens": 7470,
+    "webSearchRequests": 0,
+    "costUSD": 0.32179650000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 4461,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

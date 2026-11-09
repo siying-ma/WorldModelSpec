@@ -1,0 +1,711 @@
+{
+ "a rate of speed greater than": {
+  "atoms": [
+   "kin.speed"
+  ],
+  "node": "NRS_484B_600_1a",
+  "role": "obligation"
+ },
+ "a rate of speed greater than 80 miles per hour.": {
+  "atoms": [
+   "kin.speed"
+  ],
+  "node": "NRS_484B_600_1e",
+  "role": "obligation"
+ },
+ "a rate of speed greater than that posted by a public authority for the particular portion of highway being traversed.": {
+  "atoms": [
+   "dev.governs",
+   "dev.speed_limit_sign",
+   "kin.speed",
+   "rel.occupies",
+   "st.highway",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_600_1c",
+  "role": "obligation"
+ },
+ "a signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled": {
+  "atoms": [
+   "kin.path_length",
+   "kin.yaw_rate",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "sig.hand_signal",
+   "sig.turn_indicator"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "obligation"
+ },
+ "a vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_407",
+  "role": "subject"
+ },
+ "after entering the intersection,": {
+  "atoms": [
+   "drv.motion.region_entry",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "condition"
+ },
+ "after having stopped or, in the event of a yield sign, slowed or stopped,": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "drv.motion.standstill",
+   "kin.speed",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.on_way",
+   "st.region_geometry",
+   "st.sight_along_way",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "after making such a stop,": {
+  "atoms": [
+   "drv.motion.standstill",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.on_way",
+   "st.region_geometry",
+   "st.sight_along_way",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "and having given a signal when and as required,": {
+  "atoms": [
+   "sig.hand_signal",
+   "sig.turn_indicator"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
+ "and must not be driven over, across or within any dividing space, barrier or section or make any left turn, semicircular turn or u-turn,": {
+  "atoms": [
+   "drv.motion.left_turn",
+   "drv.motion.u_turn",
+   "rel.occupies",
+   "st.highway",
+   "st.median_or_divider",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_227_1_o2",
+  "role": "obligation"
+ },
+ "and such vehicular traffic must not enter the intersection": {
+  "atoms": [
+   "drv.motion.region_entry",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_307_6a",
+  "role": "obligation"
+ },
+ "and the drivers of all other vehicles approaching the intersection from the opposite direction": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "subject"
+ },
+ "approaching a stop intersection indicated by a stop sign": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484A_450_2",
+  "role": "trigger"
+ },
+ "at an intersection and:": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "condition"
+ },
+ "before entering the intersection.": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484A_450_2",
+  "role": "condition"
+ },
+ "both intersecting highways are two-directional:": {
+  "atoms": [
+   "rel.occupies",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.median_or_divider",
+   "st.on_way",
+   "st.roadway",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "condition"
+ },
+ "during the time such driver is moving across or within the intersection.": {
+  "atoms": [
+   "kin.speed",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_257_2_o2",
+  "role": "condition"
+ },
+ "every driver of a vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484A_450_2",
+  "role": "subject"
+ },
+ "every vehicle driven upon a divided highway": {
+  "atoms": [
+   "drv.motion.standstill",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.median_or_divider",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_227_1_o2",
+  "role": "subject"
+ },
+ "except through an opening in the barrier or dividing section or space or at a crossover or intersection established by a public authority.": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.median_or_divider",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_227_1_o2",
+  "role": "exception"
+ },
+ "except when traffic is being controlled by a police officer or a traffic-control signal:": {
+  "atoms": [
+   "dev.governs",
+   "dev.human_direction",
+   "dev.traffic_signal",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_2_o2",
+  "role": "exception"
+ },
+ "if a highway has two or more clearly marked lanes for traffic traveling in one direction,": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.highway",
+   "st.lane",
+   "st.lane_adjacency",
+   "st.lane_direction",
+   "st.lane_marking",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_223_1b",
+  "role": "trigger"
+ },
+ "if a stop sign or a yield sign is erected at one or more entrances thereto": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_2_o2",
+  "role": "condition"
+ },
+ "if the driver of a vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "subject"
+ },
+ "in a caravan or motorcade,": {
+  "atoms": [
+   "drv.interaction.vehicle_file"
+  ],
+  "node": "NRS_484B_127_3",
+  "role": "trigger"
+ },
+ "it is unlawful for any person to drive or operate a vehicle of any kind or character at:": {
+  "atoms": [
+   "drv.motion.standstill",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_600_1e",
+  "role": "subject"
+ },
+ "may make such left turn": {
+  "atoms": [
+   "drv.motion.left_turn",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
+ "motor vehicles being driven upon any highway": {
+  "atoms": [
+   "drv.motion.standstill",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+   "st.highway"
+  ],
+  "node": "NRS_484B_127_3",
+  "role": "subject"
+ },
+ "must be driven only upon the right-hand roadway": {
+  "atoms": [
+   "drv.position.direction_component",
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.lane_direction",
+   "st.median_or_divider",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_227_1_o1",
+  "role": "obligation"
+ },
+ "must be made so as to leave the intersection to the right of the centerline of the highway being entered.": {
+  "atoms": [
+   "drv.motion.region_exit",
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.centre_line",
+   "st.highway",
+   "st.intersection",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "obligation"
+ },
+ "not be moved from that lane": {
+  "atoms": [
+   "drv.lane.lane_change",
+   "rel.occupies",
+   "st.lane"
+  ],
+  "node": "NRS_484B_223_1b",
+  "role": "obligation"
+ },
+ "or upon the approach to or near the crest of a grade,": {
+  "atoms": [
+   "rel.occupies",
+   "st.crest",
+   "st.region_geometry",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_407",
+  "role": "condition"
+ },
+ "prior to changing the course of a vehicle.": {
+  "atoms": [
+   "drv.motion.turning"
+  ],
+  "node": "NRS_484B_413_2",
+  "role": "condition"
+ },
+ "shall be driven only in the direction designated.": {
+  "atoms": [
+   "drv.position.direction_component",
+   "rel.occupies",
+   "st.lane_direction",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_220_1",
+  "role": "obligation"
+ },
+ "shall be operated to allow sufficient space between each such vehicle or combination of vehicles": {
+  "atoms": [
+   "drv.interaction.vehicle_file",
+   "rel.ahead_behind_in_lane",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_127_3",
+  "role": "obligation"
+ },
+ "shall not be turned so as to proceed in the opposite direction": {
+  "atoms": [
+   "drv.motion.u_turn"
+  ],
+  "node": "NRS_484B_407",
+  "role": "obligation"
+ },
+ "shall not follow another vehicle": {
+  "atoms": [
+   "drv.interaction.following",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_127_1",
+  "role": "obligation"
+ },
+ "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.": {
+  "atoms": [
+   "drv.motion.standstill",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.on_way",
+   "st.region_geometry",
+   "st.sight_along_way",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_4_o1",
+  "role": "obligation"
+ },
+ "shall stop before entering the crosswalk on the near side of the intersection or, if there is no crosswalk, shall stop at a clearly marked stop line, or if none, then at the point nearest the intersecting highway": {
+  "atoms": [
+   "drv.motion.standstill",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.on_way",
+   "st.region_geometry",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484A_450_2",
+  "role": "obligation"
+ },
+ "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "drv.motion.region_entry",
+   "drv.motion.standstill",
+   "kin.speed",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.highway",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.on_way",
+   "st.region_geometry",
+   "st.sight_along_way",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "obligation"
+ },
+ "shall yield the right-of-way to any vehicle approaching from the opposite direction which is within the intersection": {
+  "atoms": [
+   "kin.speed",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.contact",
+   "rel.occupies",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "obligation"
+ },
+ "shall yield the right-of-way to other vehicles which have entered the intersection from such through highway": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "drv.motion.region_entry",
+   "kin.speed",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.contact",
+   "rel.occupies",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "obligation"
+ },
+ "shall yield the right-of-way to the vehicle making the left turn.": {
+  "atoms": [
+   "kin.speed",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.contact",
+   "rel.occupies",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "obligation"
+ },
+ "the approach for a left turn must be made in that portion of the right half of the highway nearest the centerline thereof.": {
+  "atoms": [
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.centre_line",
+   "st.highway",
+   "st.intersection",
+   "st.lane",
+   "st.lane_adjacency",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.on_way",
+   "st.roadway",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_400_2a",
+  "role": "obligation"
+ },
+ "the driver": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "subject"
+ },
+ "the driver of a vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_257_2_o2",
+  "role": "subject"
+ },
+ "the driver of the vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_250_4_o1",
+  "role": "subject"
+ },
+ "the left turn": {
+  "atoms": [
+   "drv.motion.left_turn"
+  ],
+  "node": "NRS_484B_400_2b",
+  "role": "condition"
+ },
+ "until the driver has given the appropriate turn signal": {
+  "atoms": [
+   "sig.hand_signal",
+   "sig.turn_indicator",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "node": "NRS_484B_223_1b",
+  "role": "condition"
+ },
+ "upon a highway designated and signposted for one-way traffic": {
+  "atoms": [
+   "dev.governs",
+   "dev.regulatory_sign",
+   "prim.conditions_hold",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.highway",
+   "st.lane_direction",
+   "st.on_way",
+   "st.one_way_roadway",
+   "st.roadway",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_220_1",
+  "role": "trigger"
+ },
+ "upon any curve,": {
+  "atoms": [
+   "rel.occupies",
+   "st.curvature",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_407",
+  "role": "condition"
+ },
+ "vehicles must:": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_223_1b",
+  "role": "subject"
+ },
+ "vehicular traffic facing the signal": {
+  "atoms": [
+   "dev.governs",
+   "dev.traffic_signal",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_6a",
+  "role": "subject"
+ },
+ "when a vehicle enters an intersection controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,": {
+  "atoms": [
+   "dev.governs",
+   "dev.inoperative",
+   "dev.traffic_signal",
+   "drv.motion.region_entry",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "trigger"
+ },
+ "when proper signs have been erected,": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "condition"
+ },
+ "when the red signal is exhibited.": {
+  "atoms": [
+   "dev.governs",
+   "dev.traffic_signal"
+  ],
+  "node": "NRS_484B_307_6a",
+  "role": "condition"
+ },
+ "where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet.": {
+  "atoms": [
+   "rel.occupies",
+   "st.roadway",
+   "st.sight_distance"
+  ],
+  "node": "NRS_484B_407",
+  "role": "condition"
+ },
+ "where the signal is a steady yellow signal alone:": {
+  "atoms": [
+   "dev.traffic_signal"
+  ],
+  "node": "NRS_484B_307_6a",
+  "role": "trigger"
+ },
+ "within an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "trigger"
+ },
+ "yielding to vehicles not so obligated to stop or yield and which are within the intersection": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "kin.speed",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.contact",
+   "rel.occupies",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_2_o2",
+  "role": "obligation"
+ },
+ "yielding to vehicles which have previously completed a stop or are within the intersection.": {
+  "atoms": [
+   "drv.motion.region_entry",
+   "drv.motion.standstill",
+   "kin.speed",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.contact",
+   "rel.occupies",
+   "rel.surface_gap",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "obligation"
+ }
+}

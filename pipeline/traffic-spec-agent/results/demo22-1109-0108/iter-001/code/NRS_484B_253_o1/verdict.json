@@ -1,0 +1,554 @@
+{
+ "verdict": "OK",
+ "details": [
+  "11 witnesses, 12 names, composes nothing",
+  "narrowings declared by the coder: 3"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "j"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "j"
+        }
+       ],
+       "int": "int.left_turn"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "j"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_253_o1",
+   "intentions": [
+    "int.left_turn"
+   ],
+   "laws": [
+    "NRS-484B-253"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "'Its closest approach to it' is read as: the centres approach each other within p.yield_conflict_horizon (prim.closest_approach_within), and at that approach either the centre distance (prim.closest_approach_distance) or the gap between the nearest points of the two bodies (rel.surface_gap, the measure the convention names) lies below p.yield_min_clearance. Where no approach of the centres falls within the horizon the clearance is not read as lost: two bodies drawing apart are no failure to grant precedence, and contact is read beside this by rel.contact."
+    },
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "'The carrier by which the subject came to the junction' is read existentially: some carrier of kind st.travel_region that the subject occupies and whose entrance end is that junction. The ontology fixes a road user's approach by occupancy and entrance topology, and the words name no further way to single one carrier out."
+    },
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "A carrier read as an approach to the junction is not the junction region itself. The kind the record names, st.travel_region, covers the intersection, but st.lane_enters is the source's record of an approach segment's entrance end and is never recorded on the junction that segment enters ('A carrier enters one intersection at most'), so on the junction region the relation is unrecorded rather than false and asking it there could only add an unknown. The junction is therefore excluded as its own approach carrier, which removes no case that relation could decide and no vehicle the duty could reach."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "j"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "j"
+          }
+         ],
+         "int": "int.left_turn"
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "u"
+              },
+              {
+               "var": "v"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "u"
+               },
+               {
+                "lit": "DEF-NRS-484A-320::vehicle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "cu"
+                     },
+                     {
+                      "var": "j"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "u"
+                      },
+                      {
+                       "var": "cu"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "cu"
+                        },
+                        {
+                         "var": "j"
+                        }
+                       ],
+                       "atom": "st_lane_enters",
+                       "params": []
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "not": {
+                           "same": [
+                            {
+                             "var": "cs"
+                            },
+                            {
+                             "var": "j"
+                            }
+                           ]
+                          }
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "v"
+                             },
+                             {
+                              "var": "cs"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "cs"
+                               },
+                               {
+                                "var": "j"
+                               }
+                              ],
+                              "atom": "st_lane_enters",
+                              "params": []
+                             },
+                             {
+                              "cmp": "le",
+                              "lhs": {
+                               "add": [
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "cu"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "cs"
+                                    },
+                                    {
+                                     "lit": "x"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                },
+                                {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "cu"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  },
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "cs"
+                                    },
+                                    {
+                                     "lit": "y"
+                                    }
+                                   ],
+                                   "measure": "st_lane_direction"
+                                  }
+                                 ]
+                                }
+                               ]
+                              },
+                              "rhs": {
+                               "neg": {
+                                "param": "p.same_direction_cosine_tolerance"
+                               }
+                              }
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "cs"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "cu"
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "u"
+                   },
+                   {
+                    "var": "j"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "or": [
+                   {
+                    "cmp": "le",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "u"
+                      },
+                      {
+                       "var": "j"
+                      }
+                     ],
+                     "measure": "st_region_geometry_distance"
+                    },
+                    "rhs": {
+                     "mul": [
+                      {
+                       "args": [
+                        {
+                         "var": "u"
+                        }
+                       ],
+                       "measure": "kin_speed"
+                      },
+                      {
+                       "param": "p.yield_headway_time"
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "u"
+                       }
+                      ],
+                      "derived": "prim_closest_approach_within",
+                      "params": [
+                       {
+                        "param": "p.yield_conflict_horizon"
+                       }
+                      ]
+                     },
+                     {
+                      "or": [
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "args": [
+                          {
+                           "var": "v"
+                          },
+                          {
+                           "var": "u"
+                          }
+                         ],
+                         "params": [
+                          {
+                           "param": "p.yield_conflict_horizon"
+                          }
+                         ],
+                         "quantity": "prim_closest_approach_distance"
+                        },
+                        "rhs": {
+                         "param": "p.yield_min_clearance"
+                        }
+                       },
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "args": [
+                          {
+                           "var": "v"
+                          },
+                          {
+                           "var": "u"
+                          }
+                         ],
+                         "measure": "rel_surface_gap"
+                        },
+                        "rhs": {
+                         "param": "p.yield_min_clearance"
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "u"
+              }
+             ],
+             "atom": "rel_contact",
+             "params": []
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "v"
+                },
+                {
+                 "var": "u"
+                }
+               ],
+               "derived": "prim_closest_approach_within",
+               "params": [
+                {
+                 "param": "p.yield_conflict_horizon"
+                }
+               ]
+              },
+              {
+               "or": [
+                {
+                 "cmp": "lt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "u"
+                   }
+                  ],
+                  "params": [
+                   {
+                    "param": "p.yield_conflict_horizon"
+                   }
+                  ],
+                  "quantity": "prim_closest_approach_distance"
+                 },
+                 "rhs": {
+                  "param": "p.yield_min_clearance"
+                 }
+                },
+                {
+                 "cmp": "lt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "u"
+                   }
+                  ],
+                  "measure": "rel_surface_gap"
+                 },
+                 "rhs": {
+                  "param": "p.yield_min_clearance"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_user": "u"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "j"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "'Its closest approach to it' is read as: the centres approach each other within p.yield_conflict_horizon (prim.closest_approach_within), and at that approach either the centre distance (prim.closest_approach_distance) or the gap between the nearest points of the two bodies (rel.surface_gap, the measure the convention names) lies below p.yield_min_clearance. Where no approach of the centres falls within the horizon the clearance is not read as lost: two bodies drawing apart are no failure to grant precedence, and contact is read beside this by rel.contact."
+   },
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "'The carrier by which the subject came to the junction' is read existentially: some carrier of kind st.travel_region that the subject occupies and whose entrance end is that junction. The ontology fixes a road user's approach by occupancy and entrance topology, and the words name no further way to single one carrier out."
+   },
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "A carrier read as an approach to the junction is not the junction region itself. The kind the record names, st.travel_region, covers the intersection, but st.lane_enters is the source's record of an approach segment's entrance end and is never recorded on the junction that segment enters ('A carrier enters one intersection at most'), so on the junction region the relation is unrecorded rather than false and asking it there could only add an unknown. The junction is therefore excluded as its own approach carrier, which removes no case that relation could decide and no vehicle the duty could reach."
+   }
+  ],
+  "context": "243e8b58f22f4b47fabc7f5c",
+  "candidate_digest": "f2d536e1e08bbbd08d94e2eec754166690ecd45a186bf61f5ebbabca45ac16e4"
+ }
+}

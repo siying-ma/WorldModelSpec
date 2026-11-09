@@ -1,0 +1,50 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate"
+  ],
+  "refs": [],
+  "canonical_body": "{\"cmp\":\"ge\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_yaw_rate\"},\"rhs\":{\"param\":\"$p1\"}}},\"rhs\":{\"param\":\"$p2\"}}",
+  "body_json": {
+   "cmp": "ge",
+   "lhs": {
+    "heading_since": "u",
+    "max_step": {
+     "param": "heading_step"
+    },
+    "onset": {
+     "cmp": "gt",
+     "lhs": {
+      "args": [
+       {
+        "var": "u"
+       }
+      ],
+      "measure": "kin_yaw_rate"
+     },
+     "rhs": {
+      "param": "onset_yaw_rate"
+     }
+    }
+   },
+   "rhs": {
+    "param": "turn_angle"
+   }
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "the observation at which its rate of change of heading to the left first rose above the onset yaw rate",
+    "why": "The onset is read as the latest observation at which `kin.yaw_rate` of the road user rose definitely above the onset yaw rate (false at the observation before, true there), not the first such rise of the recording: the contract's own words \"until a later onset starts the count again\" make the count restart at every later onset, so \"first rose\" is read relative to the judged observation."
+   }
+  ],
+  "context": "50ddbad6d6f1e4bcf937dd2e",
+  "candidate_digest": "ccd24cb344042d60b0816bf1116049dad6d8d3ae9a7b776903f2fcd7ecd0689d"
+ }
+}

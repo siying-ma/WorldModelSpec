@@ -1,0 +1,65 @@
+{
+ "concept_id": "drv.motion.standstill",
+ "kind": "formula",
+ "contract": "The road user is motionless at the observation: the magnitude of its velocity is at most the speed tolerance, a speed the caller sets, so that a sampled reading at or below it is read as no movement at all. The definition this contract carries requires a “complete cessation from movement”, and because speed is sampled and measured with error, the tolerance is the bound within which a reading is read as that cessation; it is the contract's own magnitude and never a figure. The concept states the motion state at the observation and nothing else. Not a stand-in for: a halt of any duration or a halt repeated over a window, a vehicle standing, parked or waiting, the engine being off or a brake being applied, or a halt at a place a law names — it carries no place, no duration and no control state.",
+ "definition": "DEF-NRS-484A-255",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a sampled reading of the road user's speed is read as a complete cessation from movement; it names the source's resolution for a standing body"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the magnitude of its velocity is at most the speed tolerance",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the “magnitude of velocity” of a road user, in m/s, which is exactly the quantity the definition's “complete cessation from movement” bounds. The atom carries no exclusion bearing on this reading; kin.velocity is not read, because the definition speaks of movement and not of its direction."
+  }
+ ],
+ "residues": [
+  {
+   "span": "when required",
+   "why": "The definition's scope clause tells which of the two posted definitions of the word applies to a given law — the one for a stop that is required rather than prohibited. It is a rule of application, not a condition of the scene, and no observation decides it."
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car has braked to rest at a junction: its speed reads zero over several consecutive observations, below the tolerance.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car rolls through the same junction at about 2 m/s without stopping: its speed is well above the tolerance at every observation.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same approach with the source declaring the speed of road users absent: no observation decides whether the car was motionless.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484A_450_2",
+  "NRS_484B_127_2",
+  "NRS_484B_127_3",
+  "NRS_484B_227_1_o1",
+  "NRS_484B_227_1_o2"
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 781886,
+  "stop_reason": "end_turn",
+  "session_id": "43e917a6-bb18-42d4-968c-07ef7eff9c56",
+  "total_cost_usd": 4.964984,
+  "usage": {
+   "input_tokens": 44,
+   "cache_creation_input_tokens": 191526,
+   "cache_read_input_tokens": 3015209,
+   "output_tokens": 61526,
+   "output_tokens_details": {
+    "thinking_tokens": 42928
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 191526,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 749,
+     "cache_read_input_tokens": 194339,
+     "cache_creation_input_tokens": 2653,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2653
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37365,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037495000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 44,
+    "outputTokens": 61526,
+    "cacheReadInputTokens": 3015209,
+    "cacheCreationInputTokens": 191526,
+    "webSearchRequests": 0,
+    "costUSD": 4.9612345,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 42928,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 23,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Final verdict: `OK`** (3 of 6 gate runs used).\n\nWhat I wrote:\n\n- **Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_413_2.lean`) — binder class `ru_aggregate v \"DEF-NRS-484A-320::vehicle\"`; applicability `.rises (drv_motion_turning v [p.turn_recognition_window, p.heading_change_noise_floor])`; obligation `asm → (100 ft duty)` ∧ `¬asm → (300 ft duty)`, each duty being `yaw_rate > 0 → holdsFor .path d \"v\" (indicator left ∨ arm left)` conjoined with the mirror for a negative rate. The hand is read at the judged observation, outside the window; the two feet figures are the text's own through `Units.feet`.\n- **Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_413_2.lean`) — twelve scenarios on one built carriageway: the six planned names plus six `branch_<n>` that reach the remaining leaves (each district × hand combination with both signal alternatives false, and the pair where 50 m of signal keeps the 100 ft bound but breaks the 300 ft one).\n- **`task_result.md`** — the verdict, each gate run and what changed, and the choices I made.\n\nTwo things worth flagging:\n\n1. The gate enforces adapter-producibility that the Core files don't state: a scene's heading must equal the previous heading rotated by its yaw rate over the interval *before* it, and `kin.path_length` must grow by at least the chord between consecutive positions. That drove both failed runs; the final traces turn through the exactly representable unit heading (24/25, 7/25) with the yaw rate as `Units.millidegrees 32520`, so position, velocity, heading and path increment are exact and only the yaw rate carries a 0.0002° rounding.\n2. I declared one narrowing of my own on s1: the hand comes from the *sign* of `kin.yaw_rate`, so an observation whose rate of change of heading is exactly zero has no hand and the duty is not stated there. Everything else I wrote is the record's reading, and the node needed no repair.",
+  "ttft_ms": 125345,
+  "type": "result",
+  "duration_ms": 794918,
+  "uuid": "e3ce7ec0-35e4-4eea-be79-0d3fcf9e82b9",
+  "ttft_stream_ms": 1813,
+  "time_to_request_ms": 57,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 16,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 1,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 7,
+  "time_to_request_cpu_ms": 87,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1813,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37365,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037495000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 44,
+    "outputTokens": 61526,
+    "cacheReadInputTokens": 3015209,
+    "cacheCreationInputTokens": 191526,
+    "webSearchRequests": 0,
+    "costUSD": 4.9612345,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 42928,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

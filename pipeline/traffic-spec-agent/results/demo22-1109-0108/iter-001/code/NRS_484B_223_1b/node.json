@@ -1,0 +1,244 @@
+{
+ "node_id": "NRS_484B_223_1b",
+ "law_refs": [
+  "NRS-484B-223-1b"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has two or more clearly marked lanes for traffic traveling in one direction,",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "vehicles must:",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "Not be moved from that lane",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "until the driver has given the appropriate turn signal",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "and ascertained that such movement can be made with safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.highway",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction",
+    "st.lane_marking",
+    "st.on_way",
+    "rel.occupies",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "“a highway” is st.highway, “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic”, DEF-NRS-484A-095's words, anchored to the subject by rel.occupies and tied to the lanes by st.on_way, “the public way (a highway region) a structure region lies on — a lane, roadway, shoulder …”. “two or more … lanes … traveling in one direction” is st.lane, “a longitudinal strip of roadway for one line of vehicles”, with st.lane_adjacency, which carries “lane ordinal within the carriageway and the count of lanes in that direction”, the count the words require, and st.lane_direction, “direction of travel designated for a structure a vehicle travels in”, which fixes that the lanes counted are those of one direction — the direction of the lane the subject occupies. st.lane's exclusion “not a stand-in for a half of the roadway or a lateral position within a lane” is respected: the rule reads the mapped lanes and their count, not an offset from the edge. “clearly marked” is read through st.lane_marking, “per side of a lane: type ∈ {none, broken, solid, double_solid, solid_broken, dotted, curb}, colour …”: a lane marked on the side the movement crosses carries a marking of a type other than none, and the clarity of the paint is not modelled (narrowing on this span). “traffic” claims its admitted aggregate DEF-NRS-484A-285::traffic, which fixes whose travel the lanes are for. The literal two is the law's own figure."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "“vehicles” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, so the span claims ru.aggregate with that id and never the classes it covers."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.lane",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.lane.lane_change"
+   ],
+   "justification": "“moved from that lane” is a manoeuvre and maps to a concept: drv.lane.lane_change states that the road user's footprint overlapped the region at the observation before and that at the observation it either no longer overlaps it or overlaps a lane adjacent to it that it did not overlap before, built on rel.occupies, “a road user's footprint overlaps a lane / region”, and st.lane_adjacency, “left / right neighbouring lane of the same direction”. The concept takes the lane as a region formal, so the lane it reads is the one “that lane” singles out — the marked lane the trigger binds for the subject — and not any lane of the scene. st.lane is the kind that region argument admits and rel.occupies the anchor; the heading change is not read, since the words forbid the movement out of the lane and not a turn."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal",
+    "st.lane_adjacency",
+    "st.lane"
+   ],
+   "derived": [],
+   "justification": "“the appropriate turn signal” is the signal the vehicle emits: sig.turn_indicator is “the turn indicator state ∈ {off, left, right}: neither indicator lit, or the left or the right one”, and sig.hand_signal “a driver's or rider's arm signal; meaning ∈ {no_signal, left, right, stop_or_slow, re_enter}”, which is the other way the same indication is given and which the law's own scheme admits. sig.turn_indicator's exclusion “not a stand-in for the turn or lane change itself — the indicator is the signal that precedes a manoeuvre, judged separately from it” is exactly the separation these words make, the manoeuvre being s3's concept. Which indication is the appropriate one is st.lane_adjacency, the “left / right neighbouring lane of the same direction”: the appropriate signal is left where the lane the vehicle moves into is the left neighbour of the lane it leaves and right where it is the right neighbour; st.lane is the kind of both regions. “the driver has given” is read through the signal the vehicle shows (narrowing on this span)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "ascertained that such movement can be made with safety",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.lane",
+    "drv.lane.lane_change"
+   ],
+   "params": [
+    "p.lane_change_entry_headway_time",
+    "p.lane_change_min_clearance",
+    "p.lane_change_conflict_horizon"
+   ],
+   "convention": "Gap-acceptance and conflict-avoidance convention (critical lane-change gap, with a closest-approach test over a conflict horizon). The movement can be made with safety at the observation of the change where, for every road user other than the subject that occupies the lane the subject moves into (rel.occupies with st.lane) or lies alongside the subject: the longitudinal component of rel.surface_gap, “distance between the nearest points of two bodies … its longitudinal and lateral components”, is at least p.lane_change_min_clearance + p.lane_change_entry_headway_time × the greater of the two kin.speed readings, so the required clearance grows with the speed of the faster of the pair; and the two do not close to less than p.lane_change_min_clearance within the horizon, which prim.closest_approach_within, “under constant velocities, the centres of two road users approach each other at some time between the observation and the horizon”, and prim.closest_approach_distance, “the centre distance at that closest approach”, decide over p.lane_change_conflict_horizon. drv.lane.lane_change fixes the observation and the lane the test is made for. The clearance and the horizon are parameters of the reading; the words state no figure.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle whose footprint overlaps a marked lane L of a highway, where the count of lanes in L's direction of travel on that carriageway is at least the literal two and L carries a marking on the side the movement crosses. L is the lane the words single out as “that lane”: the obligation binds it again with the whole of that selection — a lane of the same highway, in a direction with at least two lanes, marked, and occupied by the subject at the observation before the movement — and the duty is written for every such lane the subject occupies, since the words require it of each.",
+ "obligation": "At each observation at which the subject moves out of such a lane L (drv.lane.lane_change for the subject and L), the appropriate turn signal must have been given for that movement and the movement must be one that can be made with safety on the bound of s5. The signal is appropriate where sig.turn_indicator shows left, or sig.hand_signal means left, while the lane entered is the left neighbour of L, and shows or means right while it is the right neighbour; where the lane entered is no neighbour of L in L's direction, either indication given for the side the body moves towards counts. It has been given where the appropriate indication holds at the observation of the movement or at some observation in the window of p.turn_signal_advance_window behind it. Where the movement is made with no appropriate indication in that window, or where the clearances of s5 are not met at the observation of the movement, the duty is violated; where the indicator, the hand signal, a gap or a speed the bound reads is unobserved, or the window behind reaches past the start of the recording with no indication in the part observed, the duty is unknown. Where the subject does not move out of the lane, the duty is complied with.",
+ "params": [
+  "p.turn_signal_advance_window",
+  "p.lane_change_entry_headway_time",
+  "p.lane_change_min_clearance",
+  "p.lane_change_conflict_horizon"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“clearly marked lanes” is read as the lanes the map represents with a marking of a type other than none on the side the movement crosses. The ontology reads the clarity of paint the same way it reads a clearly marked stop line: the marking's presence is the evidence, and its wear is not modelled. The reading relaxes nothing about which lanes are counted or which lane the duty is owed from.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "“vehicles must” is read as the vehicle's controlled motion: who or what controls a road user is not observable, and the ontology reads a duty stated of a vehicle through that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "“the driver has given” is read as the signal the vehicle shows: who gives the indication is not observable, and the ontology reads such words through the observable feature — the indicator's state or the arm signal's meaning — whoever or whatever operates it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "“until the driver has given the appropriate turn signal” states no duration, so the look-back is bounded by p.turn_signal_advance_window: an indication counts as given for the movement where it holds at the observation of the movement or at some observation within that window behind it. The purpose of the bound is to give the search a stated extent, as a fixed, parameterized recognition bound rather than a search over the whole recording; a window that reaches past the start of the recording leaves the duty unknown rather than violated, so the bound never turns a signal the trace does not cover into a breach.",
+   "kind": "reading"
+  },
+  {
+   "span": "s5",
+   "why": "“ascertained that such movement can be made with safety” is read through the outcome the duty secures: the movement made with the clearances the reading sets. What a driver ascertained or perceived is not observable, and the ontology directs that a duty to perceive, ascertain or make sure is read by the outcome the check is there to secure.",
+   "kind": "observable_reading",
+   "category": "perception"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a three-lane carriageway, all lanes marked and running in one direction, a car occupying the middle lane moves at one observation into the left-hand lane, its footprint reaching that lane while its indicator has shown off at every observation of the window behind and no arm signal has been given. The left-hand lane is clear.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same carriageway: the car's left indicator has been lit for two seconds before it moves into the left-hand lane, and the nearest road user in that lane is 60 m behind it at the same speed, so the longitudinal clearance exceeds the bound and the centres do not close within the horizon.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car on a single-lane one-way street, the lane adjacency recording one lane in its direction, swings onto the shoulder with no signal. The highway has fewer than two lanes in that direction, so the trigger fails and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the turn indicator absent and no arm signal observed: the lanes, the markings and the movement into the left-hand lane are recorded, but whether the appropriate signal was given cannot be read, so the duty is unknown.",
+   "masked": [
+    "sig.turn_indicator"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The car's left indicator has been lit for three seconds, but as it moves into the left-hand lane a van is 8 m behind it in that lane and closing at 10 m/s: the longitudinal clearance is below the bound and the centres close to less than the minimum clearance within the conflict horizon.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The car, alone on the three-lane carriageway with no other road user anywhere in the scene, moves into the left-hand lane with its left indicator lit through the two observations before. The verdict is decided although the only party present is the subject.",
+   "masked": []
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "The car in the middle lane lights its right indicator and then moves into the left-hand lane, which st.lane_adjacency records as the left neighbour of the lane it leaves. The indication given is not the appropriate one for the movement made.",
+   "masked": []
+  }
+ ],
+ "literals": [
+  {
+   "span": "s1",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.turn_signal_advance_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Signalling convention: the window behind the movement within which an indication counts as the signal given for it, taken from the advance warning a lane change is expected to carry; it is a stated recognition bound for the look-back and not a requirement of duration.",
+   "source": "turn-signal advance-warning intervals in driver guidance and signalling-compliance studies"
+  },
+  {
+   "name": "p.lane_change_entry_headway_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "Gap-acceptance convention: the headway, at the speed of the faster of the two road users, that the longitudinal clearance to a road user in the lane entered must cover for the entry to be an accepted gap.",
+   "source": "critical-gap values for lane-change manoeuvres in capacity analysis"
+  },
+  {
+   "name": "p.lane_change_min_clearance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Conflict-avoidance convention: the clearance between bodies below which an approach is read as a conflict rather than a safe passing distance, used both as the floor of the entry clearance and as the bound on the closest approach.",
+   "source": "surrogate-safety-measure clearance thresholds in conflict analysis"
+  },
+  {
+   "name": "p.lane_change_conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities is tested, taken from the horizon used for surrogate conflict measures.",
+   "source": "time-to-collision horizons in surrogate-safety-measure practice"
+  }
+ ],
+ "gaps": []
+}

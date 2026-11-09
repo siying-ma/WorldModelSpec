@@ -1,0 +1,48 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "rel.ahead_behind_in_lane",
+   "rel.same_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a0\"}],\"atom\":\"rel_ahead_behind_in_lane\",\"params\":[]},{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "b"
+      },
+      {
+       "var": "a"
+      }
+     ],
+     "atom": "rel_ahead_behind_in_lane",
+     "params": []
+    },
+    {
+     "args": [
+      {
+       "var": "a"
+      },
+      {
+       "var": "b"
+      }
+     ],
+     "atom": "rel_same_direction",
+     "params": [
+      {
+       "param": "same_direction_tolerance"
+      }
+     ]
+    }
+   ]
+  },
+  "context": "4160940f1a96eb78c4c34399",
+  "candidate_digest": "ada93ad2272ee6edde375aa6888cadb2e0254a1f910b0228e036584684137375"
+ }
+}

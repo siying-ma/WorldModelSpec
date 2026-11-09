@@ -1,0 +1,144 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)",
+  "narrowings declared by the coder: 2"
+ ],
+ "extras": {
+  "reads": [
+   "rel.occupies",
+   "st.lane",
+   "st.lane_adjacency"
+  ],
+  "refs": [],
+  "canonical_body": "{\"or\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"and\":[{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]},{\"not\":{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}}]},{\"body\":{\"and\":[{\"or\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"left\"},{\"var\":\"$b0\"}],\"atom\":\"st_lane_adjacency\",\"params\":[]},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"right\"},{\"var\":\"$b0\"}],\"atom\":\"st_lane_adjacency\",\"params\":[]}]},{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$b0\"}],\"atom\":\"rel_occupies\",\"params\":[]}}]},\"exists_region\":{\"lit\":\"lane\"},\"var\":\"$b0\"}]}]}",
+  "body_json": {
+   "or": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "u"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "and": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "u"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "not": {
+          "rises": {
+           "args": [
+            {
+             "var": "u"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "lit": "left"
+             },
+             {
+              "var": "n"
+             }
+            ],
+            "atom": "st_lane_adjacency",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "lit": "right"
+             },
+             {
+              "var": "n"
+             }
+            ],
+            "atom": "st_lane_adjacency",
+            "params": []
+           }
+          ]
+         },
+         {
+          "rises": {
+           "args": [
+            {
+             "var": "u"
+            },
+            {
+             "var": "n"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "lane"
+       },
+       "var": "n"
+      }
+     ]
+    }
+   ]
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "its footprint overlapped the region at the observation before",
+    "why": "The language names no past instant of its own; `rises φ` (φ here and not at the observation before) is the only operator that reaches the preceding observation, so the overlap at the observation before is written through it, per branch of the contract's own disjunction: `rises (not occupies r)` where it no longer overlaps the region, and `occupies r and not rises (occupies r)` — overlapping here and not newly so — where it still does."
+   },
+   {
+    "kind": "reading",
+    "span": "overlaps a lane neighbouring it in the same direction of travel",
+    "why": "st.lane_adjacency reads a side (left or right); the contract reads none, since the side the crossing is made towards is excluded, so the body holds the neighbour to be the lane adjacent on either side, disjunctively."
+   }
+  ],
+  "context": "b097711d630c42082ad7f5ed",
+  "candidate_digest": "fe890e8bd643f9b1d3d68ee70d2f7b619c1dfcacb2bab14633cc996df492f285"
+ }
+}

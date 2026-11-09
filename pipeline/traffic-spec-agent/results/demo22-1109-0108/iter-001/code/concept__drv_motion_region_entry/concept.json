@@ -1,0 +1,66 @@
+{
+ "concept_id": "drv.motion.region_entry",
+ "kind": "formula",
+ "contract": "The road user's footprint comes to overlap a structure region at the observation: it overlaps the region at the observation and did not overlap it at the observation before. The concept is the event of that coming to overlap, read at the observation at which the overlap has begun, and not the state of lying inside the region afterwards. It states no direction of entry, no carrier the road user came through, no speed and no place within the region. Not a stand-in for: lying within the region, which the occupancy relation carries on its own; a later observation at which the road user is still inside; the carrier or the way the road user came from, which a caller reads with its own relations; a crossing of a boundary the source represents by no region; or a leaving of the region.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "comes to overlap a structure region at the observation",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies is 'a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure)', which is exactly the overlap of the footprint with the region argument at the observation; the kind of the region is the caller's, since the formal is a region variable the caller binds."
+  },
+  {
+   "span": "did not overlap it at the observation before",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "the same relation read at the previous observation, which the formula language's 'rises' construct ('phi here and not at the previous observation') states over it; no other atom is read, so the event is the rise of that occupancy and nothing else."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car's footprint is clear of the junction polygon at one scene and overlaps it at the next: the concept is true at that next scene."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car's footprint overlaps the junction polygon at both scenes: it is already inside, so the concept is false at the later scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source does not report whether the car's footprint overlaps the junction polygon at the earlier scene, so whether the overlap has just begun is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_4_o1",
+  "NRS_484B_250_4_o2",
+  "NRS_484B_250_1",
+  "NRS_484B_250_2",
+  "NRS_484B_257_1_o1",
+  "NRS_484B_257_1_o2",
+  "NRS_484B_257_2_o1",
+  "NRS_484B_307_6a"
+ ]
+}

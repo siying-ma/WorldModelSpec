@@ -1,0 +1,287 @@
+{
+ "node_id": "NRS_484B_127_2",
+ "law_refs": [
+  "NRS-484B-127-2"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-305::truck",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "kin.extent"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of any truck or combination of vehicles 80 inches or more in overall width,",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "which is following a truck, or combination of vehicles 80 inches or more in overall width,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall, whenever conditions permit,",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "leave a space of 500 feet",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "so that an overtaking vehicle may enter and occupy such space without danger,",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "but this shall not prevent a truck or combination of vehicles from overtaking and passing any vehicle or combination of vehicles.",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "This subsection does not apply to any vehicle or combination of vehicles while moving on a highway on which there are two or more lanes available for traffic moving in the same direction.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "kin.extent"
+   ],
+   "derived": [],
+   "justification": "“truck” and “combination of vehicles” are terms DEF-NRS-484A-305 and DEF-NRS-484A-050 define and the run admits as the aggregates DEF-NRS-484A-305::truck and DEF-NRS-484A-050::combination_of_vehicles, so the span claims ru.aggregate with each id and never the class atoms ru.truck or ru.trailer_or_combination, which the aggregate's exclusion forbids as a substitute. The width is kin.extent, “the body's size along its axes about the reference point: a trace writes the half-length, half-width and half-height; a formula reads the full length, width and height, twice each”, whose width read is the overall width the words measure; the literal 80 inches is the law's own figure and is declared in literals. “driver” is read through controlled motion (narrowing on this span)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "kin.extent"
+   ],
+   "derived": [
+    "drv.interaction.following"
+   ],
+   "justification": "“which is following” is a relation between two road users over time and maps to drv.interaction.following, built on rel.ahead_behind_in_lane, “a is ahead of / behind b in the same lane, along the lane direction”, and rel.same_direction. The followed road user is of the same two defined terms, claimed as the same admitted aggregates, with kin.extent's width read for the combination; the followed road user is quantified inside the applicability and is no binder, since the duty exists for the subject whether or not a scene supplies one."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane"
+   ],
+   "derived": [],
+   "justification": "“a space of 500 feet” is the clear distance between the two bodies: rel.surface_gap is “distance between the nearest points of two bodies, each body's footprint read with its own heading and extent: zero when they touch or overlap, never negative; its longitudinal and lateral components are the lengths of the vector between those nearest points along and across the subject's heading”, so its longitudinal component is the space the words measure, and its exclusion of a centre-to-centre reading is why rel.centre_distance is not used, that atom being “not a stand-in for a clearance between bodies”. rel.ahead_behind_in_lane fixes that the space is the one ahead of the subject towards the vehicle it follows. The figure 500 feet is the law's own and is declared in literals."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtaking"
+   ],
+   "justification": "“overtaking and passing” is a relation between road users over time and maps to drv.interaction.overtaking, which states the same direction within a tolerance, a speed excess and the bodies drawing level (rel.same_direction, kin.speed, rel.longitudinal_overlap, rel.ahead_behind_in_lane). The three defined terms of the span claim their admitted aggregates: the overtaking road user as truck or combination, the overtaken as vehicle or combination."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "st.highway",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "“while moving” is the negation of drv.motion.standstill, the posted definition of complete cessation from movement read as a motion state. “on a highway” is st.highway, “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic” — DEF-NRS-484A-095 word for word — anchored to the subject by rel.occupies and tied to the lanes by st.on_way, “the public way (a highway region) a structure region lies on — a lane, roadway, shoulder …”. “two or more lanes available for traffic moving in the same direction” is st.lane, “a longitudinal strip of roadway for one line of vehicles”, with st.lane_adjacency, which carries “lane ordinal within the carriageway and the count of lanes in that direction”, the count the words require, and st.lane_direction, “direction of travel designated for a structure a vehicle travels in”, which fixes that the direction counted is the one the subject travels in; st.lane_adjacency's exclusion “not a stand-in for the marking between two lanes” does not apply, the words counting lanes and not markings. “traffic” claims its admitted aggregate DEF-NRS-484A-285::traffic, which fixes whose movement the lanes are available for. The literal two is the law's own figure."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "whenever conditions permit",
+   "concepts": [
+    "kin.speed",
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane",
+    "rel.occupies",
+    "st.roadway",
+    "st.obstruction",
+    "dev.temporary_traffic_control"
+   ],
+   "params": [
+    "p.conditions_permit_min_speed",
+    "p.conditions_permit_max_intervening_users"
+   ],
+   "convention": "Traffic-flow feasibility convention (free-flow versus congested operation in highway capacity practice): leaving and holding a long space ahead is possible only where the stream runs freely and nothing occupies the space. The conditions permit at an observation where the subject's kin.speed, “magnitude of velocity”, is at least p.conditions_permit_min_speed, so that a queue or stop-and-go running is not read as a failure to leave the space; and where the number of road users that occupy the subject's roadway (rel.occupies with st.roadway) between the subject and the vehicle it follows, read through the longitudinal component of rel.surface_gap and rel.ahead_behind_in_lane, is at most p.conditions_permit_max_intervening_users, so that a vehicle that has moved into the space is not read as the subject's closing of it; and where no st.obstruction, “a physical object on or beside the roadway that is not a road user”, and no dev.temporary_traffic_control, “cones, barricades, temporary signs and flashers marking works, a closure or an obstruction”, lies in that space, since a works zone or a blocked lane makes the space impossible to hold. Both magnitudes are parameters of the reading; the words state none.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s5",
+   "why": "The purpose clause explains the figure the law itself fixes: the space is 500 feet, and the words “so that an overtaking vehicle may enter and occupy such space without danger” state what that space is for, adding no further requirement to the duty, which is met by leaving the stated space and breached by not leaving it. The ontology reads a purpose through the conduct it explains, and here that conduct is the leaving of the space the next words measure. The rule is held to this: no verdict of the node turns on these words.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-305::truck",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+    "kin.extent"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a truck of DEF-NRS-484A-305::truck, or a road user of DEF-NRS-484A-050::combination_of_vehicles whose read width is at least the literal 80 inches, and it is following (drv.interaction.following) some other road user that is likewise a truck or a combination of that width. The subsection does not apply where the subject is moving on a highway on which the count of lanes in its direction of travel is at least the literal two (s7), nor where the subject is overtaking and passing another vehicle or combination (s6).",
+ "obligation": "At each observation at which the applicability holds and the conditions of s3 permit, the longitudinal component of rel.surface_gap between the subject and the road user it is following must be at least the literal 500 feet. Where that gap is below the figure the duty is violated; where the gap, or a quantity the conditions of s3 read, is unobserved the duty is unknown.",
+ "params": [
+  "p.same_direction_cosine_tolerance",
+  "p.overtaking_min_speed_excess",
+  "p.conditions_permit_min_speed",
+  "p.conditions_permit_max_intervening_users",
+  "p.standstill_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“The driver of any truck or combination of vehicles” is read as that truck or combination, the road user whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “the driver” through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "The space of 500 feet is read as the longitudinal component of the clearance between the two bodies, measured along the subject's heading from the nearest point of its own body to the nearest point of the body ahead, which is the quantity the vocabulary carries for a space between vehicles; a centre-to-centre distance would overstate the space by about the two half-lengths.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a two-lane rural highway with one lane in each direction, an articulated lorry runs at 22 m/s about 60 m behind another articulated lorry in the same lane, headings aligned. No road user is between them, no works or obstruction lies in the space, and the subject is well above the free-flow speed, so the conditions permit; the longitudinal gap is far below 500 feet.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same two lorries on the same highway at the same speed, but the follower holds a longitudinal gap of about 260 m, which exceeds 500 feet.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A passenger car — neither a truck of the truck aggregate nor a coupled combination, and 70 inches wide — follows an articulated lorry at 60 m on the same two-lane highway. The subject is outside the classes the subsection binds and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the gap between bodies absent: both road users' classes, the following relation and the single-lane carriageway are recorded, but the space cannot be read, so the duty is unknown.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The same two lorries at 60 m, moving on a dual carriageway whose lane adjacency records three lanes in their direction of travel. The second exception applies by its own words and the subsection does not apply.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "On the two-lane highway the following lorry is overtaking and passing the lorry ahead: the two travel in the same direction, the follower's speed exceeds the leader's by 4 m/s and their bodies' projections on the follower's heading overlap as it draws level. The first exception applies and the duty does not bite on the closed space.",
+   "masked": []
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "The follower lorry is held at 2 m/s in a slow-moving queue on the two-lane highway, 15 m behind the lorry ahead, with a van that has moved into the space between them. Its speed is below the free-flow bound and a road user occupies the space, so the conditions do not permit and no space of 500 feet is owed at that observation.",
+   "masked": []
+  }
+ ],
+ "literals": [
+  {
+   "span": "s1",
+   "text": "80 inches",
+   "value": 80,
+   "unit": "in"
+  },
+  {
+   "span": "s2",
+   "text": "80 inches",
+   "value": 80,
+   "unit": "in"
+  },
+  {
+   "span": "s4",
+   "text": "500 feet",
+   "value": 500,
+   "unit": "ft"
+  },
+  {
+   "span": "s7",
+   "text": "two",
+   "value": 2,
+   "unit": "count"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two headings still read as the same direction, set at thirty degrees so that a vehicle in a bend is still read as travelling with the stream.",
+   "source": "heading-tolerance values used in lane-level trajectory conflict analyses"
+  },
+  {
+   "name": "p.overtaking_min_speed_excess",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "Passing convention: the excess of the overtaking road user's speed over the overtaken one's below which the two are keeping station rather than passing, set at the resolution of a speed difference.",
+   "source": "overtaking-manoeuvre identification thresholds in trajectory data studies"
+  },
+  {
+   "name": "p.conditions_permit_min_speed",
+   "unit": "m/s",
+   "value": 5.0,
+   "convention": "Traffic-flow feasibility convention: the speed below which running is queued or stop-and-go, so that holding a long space ahead is not possible, taken from the boundary between congested and free-flow operation.",
+   "source": "speed-flow curves and congested-regime boundaries in highway capacity practice"
+  },
+  {
+   "name": "p.conditions_permit_max_intervening_users",
+   "unit": "count",
+   "value": 0,
+   "convention": "Traffic-flow feasibility convention: the number of other vehicles that may occupy the space ahead before the subject is read as unable to hold it, since a vehicle that moves into the space closes it without any act of the subject.",
+   "source": "gap-closure observations in heavy-vehicle platooning field trials"
+  },
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled reading is read as a complete cessation from movement, set at the noise floor of vehicle speed measurement.",
+   "source": "stop-detection thresholds used in naturalistic-driving data reduction"
+  }
+ ],
+ "gaps": []
+}

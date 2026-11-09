@@ -1,0 +1,65 @@
+'TrafficSpec.Rules.NRS_484B_220_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_220_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_220_1","intentions":[],"laws":["NRS-484B-220-1"],"narrowings":[{"kind":"reading","span":"s3","why":"Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_one_way_roadway","params":[]},{"and":[{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]}},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"one_way"}],"atom":"dev_regulatory_sign_code","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"v"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_220_1","intentions":[],"laws":["NRS-484B-220-1"],"narrowings":[{"kind":"reading","span":"s3","why":"Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_one_way_roadway","params":[]},{"and":[{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]}},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"one_way"}],"atom":"dev_regulatory_sign_code","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"v"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]}]},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"r"}],"params":[],"quantity":"drv_position_direction_component"},"rhs":{"neg":{"param":"p.wrong_way_speed_tolerance"}}}]},"forall_region":{"lit":"travel_region"},"var":"r"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_one_way_roadway","params":[]},{"and":[{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]}},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"one_way"}],"atom":"dev_regulatory_sign_code","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"v"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_220_1","intentions":[],"laws":["NRS-484B-220-1"],"narrowings":[{"kind":"reading","span":"s3","why":"Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_roadway","params":[]},{"and":[{"args":[{"var":"r"}],"atom":"st_one_way_roadway","params":[]},{"and":[{"body":{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}},{"cmp":"eq","lhs":{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"},"rhs":{"lit":{"den":1,"num":0},"unit":"ratio"}}]}},{"and":[{"body":{"and":[{"args":[{"var":"d"},{"lit":"one_way"}],"atom":"dev_regulatory_sign_code","params":[]},{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"d"},{"var":"v"}],"derived":"prim_conditions_hold","params":[]}]}]},"exists_device":{"lit":"regulatory_sign"},"var":"d"},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]}]},{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"v"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"v"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.wrong_way_speed_tolerance"}}}]},"forall_region":{"lit":"travel_region"},"var":"r"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,rel_occupies,st_roadway,st_one_way_roadway,st_highway,st_on_way,st_lane_direction,dev_regulatory_sign,dev_regulatory_sign_code,dev_governs,prim_conditions_hold,drv_position_direction_component
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.lane_direction
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	v
+OCC	?r
+OCC	v,r
+OCC	r
+OCC	r
+OCC	?h
+OCC	r,h
+OCC	r
+OCC	r
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	d,v
+OCC	v
+OCC	?r
+OCC	v,r
+OCC	r
+OCC	r
+OCC	?h
+OCC	r,h
+OCC	r
+OCC	r
+OCC	?d
+OCC	d
+OCC	d,r
+OCC	d,v
+OCC	v
+OCC	v,r
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	28
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	10
+TIME	witnesses	66
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_220_1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_220_1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_220_1	21	5
+TIME	adequacy_start	6
+TIME	adequacy	998
+DONE

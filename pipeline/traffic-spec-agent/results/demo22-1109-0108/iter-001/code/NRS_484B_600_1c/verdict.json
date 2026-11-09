@@ -1,0 +1,300 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 11 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "v"
+        }
+       ],
+       "derived": "drv_motion_standstill",
+       "params": [
+        {
+         "param": "p.standstill_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "or": [
+          {
+           "args": [
+            {
+             "var": "d"
+            },
+            {
+             "lit": "maximum"
+            }
+           ],
+           "atom": "dev_speed_limit_sign_kind",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "lit": "structure_maximum"
+              }
+             ],
+             "atom": "dev_speed_limit_sign_kind",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "lit": "zone"
+              }
+             ],
+             "atom": "dev_speed_limit_sign_kind",
+             "params": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "body": {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "var": "w"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              "exists_region": {
+               "lit": "highway"
+              },
+              "var": "w"
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "travel_region"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      "exists_device": {
+       "lit": "speed_limit_sign"
+      },
+      "var": "d"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_600_1c",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-600-1c"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "or": [
+          {
+           "args": [
+            {
+             "var": "d"
+            },
+            {
+             "lit": "maximum"
+            }
+           ],
+           "atom": "dev_speed_limit_sign_kind",
+           "params": []
+          },
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "lit": "structure_maximum"
+              }
+             ],
+             "atom": "dev_speed_limit_sign_kind",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "d"
+              },
+              {
+               "lit": "zone"
+              }
+             ],
+             "atom": "dev_speed_limit_sign_kind",
+             "params": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "d"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "dev_governs",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "body": {
+               "args": [
+                {
+                 "var": "r"
+                },
+                {
+                 "var": "w"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              "exists_region": {
+               "lit": "highway"
+              },
+              "var": "w"
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "travel_region"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      {
+       "cmp": "le",
+       "lhs": {
+        "args": [
+         {
+          "var": "v"
+         }
+        ],
+        "measure": "kin_speed"
+       },
+       "rhs": {
+        "args": [
+         {
+          "var": "d"
+         }
+        ],
+        "measure": "dev_speed_limit_sign_value"
+       }
+      }
+     ]
+    },
+    "forall_device": {
+     "lit": "speed_limit_sign"
+    },
+    "var": "d"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "0b8528e8b59ea5be7ee4e35e",
+  "candidate_digest": "901286ddbfd65c4f1db62c3dddf6988029ffda819dc61b6c5a671f510c372e80"
+ }
+}

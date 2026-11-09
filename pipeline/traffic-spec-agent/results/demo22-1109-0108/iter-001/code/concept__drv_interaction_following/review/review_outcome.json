@@ -1,0 +1,153 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (fails_wrongly) at t=0 ms: Both road users occupy the same eastbound lane, with b ahead of a and their headings identical. At the admissible cosine tolerance 1, their zero heading differe — contract: holds, body: fails; contract: \"Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of\"",
+   "ruling": "dismissed",
+   "why": "The verdict turns only on the caller's parameter being set to the degenerate extreme 1, where the atom's strict comparison (cosine \"above its tolerance\") can never be met; the contract leaves the tolerance to the caller. — \"the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "3641dcea3e42a23dcdba8517397f095993e3f8862918b10621e95daa69877c7f",
+ "rulings_at": 0,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (fails_wrongly) at t=0 ms: Both road users occupy the same eastbound lane, with b ahead of a and their headings identical. At the admissible cosine tolerance 1, their zero heading differe — contract: holds, body: fails; contract: \"Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of\" — The verdict turns only on the caller's parameter being set to the degenerate extreme 1, where the atom's strict comparison (cosine \"above its tolerance\") can never be met; the contract leaves the tolerance to the caller. — \"the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets\""
+  ],
+  "keys": [],
+  "questions": [],
+  "defer_stage": null,
+  "satisfied": [],
+  "param_notes": []
+ },
+ "rows": [
+  {
+   "id": "6427ce5d8a1416fcb483",
+   "row": {
+    "key": "concept:drv.interaction.following",
+    "subject": "drv.interaction.following",
+    "iteration": 1,
+    "item": "divergence 1 (fails_wrongly) at t=0 ms: Both road users occupy the same eastbound lane, with b ahead of a and their headings identical. At the admissible cosine tolerance 1, their zero heading differe — contract: holds, body: fails; contract: \"Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of\"",
+    "ruling": "dismissed",
+    "reason": "The verdict turns only on the caller's parameter being set to the degenerate extreme 1, where the atom's strict comparison (cosine \"above its tolerance\") can never be met; the contract leaves the tolerance to the caller. — \"the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets\"",
+    "schema": "concept_case/1",
+    "case_id": "c9c32a89a437e3ef3b8f897d7af5d683bc97f3bbea0c838dc471de27e63e4728",
+    "kind": "fails_wrongly",
+    "situation": "Both road users occupy the same eastbound lane, with b ahead of a and their headings identical. At the admissible cosine tolerance 1, their zero heading difference is within the allowed angle, but the body fails.",
+    "contract_words": "Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of travel, and the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets.",
+    "contract_verdict": "holds",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "same_direction_tolerance": [
+       1,
+       "ratio"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1,
+     "b": 2
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "position": [
+           0,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           2,
+           1,
+           1
+          ]
+         }
+        },
+        {
+         "track": 2,
+         "kin": {
+          "position": [
+           10,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           2,
+           1,
+           1
+          ]
+         }
+        }
+       ],
+       "structures": [
+        {
+         "id": 1,
+         "kind": "lane",
+         "boundary": [
+          [
+           -5,
+           -3
+          ],
+          [
+           15,
+           -3
+          ],
+          [
+           15,
+           3
+          ],
+          [
+           -5,
+           3
+          ]
+         ],
+         "lane": {
+          "direction": [
+           1,
+           0
+          ]
+         }
+        }
+       ],
+       "occupancy_observed": true
+      }
+     ]
+    },
+    "at": 0,
+    "verdict": "violated",
+    "value": null,
+    "contract_digest": "ae2d76d9f9d155d3e9e8d5b39d1c6d14786e4bdbdabbf31abac44debca2e37ac",
+    "body_digest": "9481f929ad0b0779266bdc22b732b9a42611a82362ec57d2f38fbc7539c3e95e",
+    "obligation": null,
+    "ruling_id": "6427ce5d8a1416fcb483",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

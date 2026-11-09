@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 943183,
+  "stop_reason": "end_turn",
+  "session_id": "3a547217-b246-4d75-bb4d-0db1642b7cd0",
+  "total_cost_usd": 5.596302600000001,
+  "usage": {
+   "input_tokens": 50,
+   "cache_creation_input_tokens": 206549,
+   "cache_read_input_tokens": 3421200,
+   "output_tokens": 72630,
+   "output_tokens_details": {
+    "thinking_tokens": 52288
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 206549,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 810,
+     "cache_read_input_tokens": 209047,
+     "cache_creation_input_tokens": 2968,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2968
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41996,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042126,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 50,
+    "outputTokens": 72630,
+    "cacheReadInputTokens": 3421200,
+    "cacheCreationInputTokens": 206549,
+    "webSearchRequests": 0,
+    "costUSD": 5.592090000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 52288,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 26,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Final verdict: `OK`** (2 of 6 gate runs used).\n\nWhat I wrote:\n\n- **Rule** (`TrafficSpec/Rules/NRS_484B/NRS_484B_127_1.lean`) — binder class `ru_aggregate v \"DEF-NRS-484A-320::vehicle\"`; applicability `.tt` (the node states no trigger beyond the class); obligation forbidding any road user `w`, distinct from `v` and of the same aggregate, which `v` is following (`drv_interaction_following` with the reading's cosine tolerance) and whose longitudinal `rel_surface_gap` is below `H·speed(v) + R + T`, with `H` selected by ice → wet/precipitation → adverse geometry → dry, `R` the closing-speed term, `T` the dense-traffic increment. Every magnitude is a `.param`; the only literal is zero.\n- **Witnesses** — the 4 planned scenes, the node's 2 branches, and 8 more of mine, one per selection of the bound or limb of the prohibition (ice, grade, curvature, dense traffic, precipitation, non-vehicle leader, divergent headings, abreast in the next lane).\n\nTwo things worth flagging:\n\n1. **One real obstacle, in Core's semantics, not the node.** `elimCond` lifts the bound's guards into the obligation's formula, so an unknown guard adds its own reason to an unknown verdict. Since the gap is unreadable only where a footprint is, and the trace lint ties observed occupancy to having a footprint, the dense-traffic count's `rel.occupies` went unknown in the first `blind` scene and its reason leaked (gate run 1). The blind scene is now recorded by a source that maps no road: both region-dependent guards are decidedly false, the van carries no extent, and the two supplied relations (the gap, which the mask drops, and the van's place in the lane) are both ones Core cannot compute there. The masked set is still exactly the node's.\n2. **Two narrowings declared on `s3`** — that the condition of the way and its traffic are read at a highway the subject occupies (so at *some* such region where there are several), and that the traffic count includes the subject. Both are on record in the rule and explained in its header.\n\nThe node needed no repair, and no concept defect was reported — `drv.interaction.following` matched its contract in every scene, including the two built to make it fail. `task_result.md` is in the working directory.",
+  "ttft_ms": 80414,
+  "type": "result",
+  "duration_ms": 958632,
+  "uuid": "458b57ed-9721-4bcd-8759-daa8d05be5b2",
+  "ttft_stream_ms": 3059,
+  "time_to_request_ms": 64,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 19,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 14,
+  "time_to_request_cpu_ms": 96,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 3059,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41996,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042126,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 50,
+    "outputTokens": 72630,
+    "cacheReadInputTokens": 3421200,
+    "cacheCreationInputTokens": 206549,
+    "webSearchRequests": 0,
+    "costUSD": 5.592090000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 52288,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

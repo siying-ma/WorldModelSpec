@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.interaction.following.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.following.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.following.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]}]},"contract":"Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of travel, and the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets. It is a relation of place and direction at the observation; it states no gap, no speed, no duration and no intention. Not a stand-in for: the size of the space between the two — a caller that bounds a space reads the gap atom itself — overtaking or passing, two road users abreast in neighbouring lanes, or a towed combination, which is one road user drawn by another.","definition":null,"id":"drv.interaction.following","kind":"formula","narrowings":[],"params":[{"name":"same_direction_tolerance","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	rel_ahead_behind_in_lane,rel_same_direction
+READS	rel_ahead_behind_in_lane,rel_same_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]}]}
+WITNESS	holds	drv.interaction.following@w
+WITNESS	fails	drv.interaction.following@w
+WITNESS	blind	drv.interaction.following@w
+OCC	b,a
+OCC	a,b
+INST	drv.interaction.following@w	ok
+TIME	checks	2
+TIME	lint	15
+SCEN	holds	drv.interaction.following@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.following@w/holds	8
+SCEN	fails	drv.interaction.following@w	violated	violated	ok
+TIME	scenario:drv.interaction.following@w/fails	6
+SCEN	blind	drv.interaction.following@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.following@w/blind	11
+TIME	witnesses	25
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.following.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.following.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.following.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.following@w	2	2
+TIME	adequacy_start	4
+TIME	adequacy	45
+DONE

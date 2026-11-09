@@ -1,0 +1,60 @@
+{
+ "concept_id": "drv.motion.turning",
+ "kind": "formula",
+ "contract": "The road user's heading is changing at the observation: the magnitude of its heading change over the window behind the observation is at least the heading change tolerance, a size the caller sets at the resolution of the source. It is a state the road user is in at each observation of a bending path, in either hand, and it states no direction, no angle reached, no beginning and no place. Not a stand-in for: a completed turn or a manoeuvre recognized from an observed onset — which counts the heading change from that onset and not over a window — a steering input, the curvature of the road, a lane change, or a signal or an intention.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "the length of the window behind the observation over which the heading change is accumulated"
+  },
+  {
+   "name": "heading_change_tolerance",
+   "unit": "deg",
+   "meaning": "the magnitude of heading change over that window below which the reading is not distinguished from straight running; it names the source's resolution and no size of turn"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the magnitude of its heading change over the window behind the observation",
+   "atoms": [
+    "prim.heading_change"
+   ],
+   "concepts": [],
+   "justification": "prim.heading_change is “the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from kin.yaw_rate; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing”, whose magnitude is exactly the quantity this contract bounds, and whose window is its own parameter, which this concept exposes. Its inputs are the primitive's own and are not claimed again."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A van swings round the corner of a junction: over the window behind the observation its integrated heading change is about forty degrees, well above the tolerance.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same van reverses straight back along a roadway: its integrated heading change over the window is under a degree, below the tolerance.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The corner manoeuvre at the start of the recording, where the window behind the observation is truncated, so the primitive's integration is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2"
+ ]
+}

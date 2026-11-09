@@ -1,0 +1,235 @@
+{
+ "node_id": "NRS_484B_127_3",
+ "law_refs": [
+  "NRS-484B-127-3"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Motor vehicles being driven upon any highway",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "outside of a business district",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "in a caravan or motorcade,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "whether or not towing other vehicles,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "shall be operated to allow sufficient space between each such vehicle or combination of vehicles",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "“motor vehicle” is the term DEF-NRS-484A-130 defines and the run admits as DEF-NRS-484A-130::motor_vehicle, so the span claims ru.aggregate with that id and not the class atom ru.motor_vehicle, which the aggregate's exclusion forbids as a substitute. “upon any highway” is st.highway, “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic”, which is DEF-NRS-484A-095's words, anchored to the subject by rel.occupies, “a road user's footprint overlaps a lane / region”, so the rule reads the way the subject is on and not any way of the scene. “being driven” is read through the vehicle's controlled motion (narrowing on this span): the negation of drv.motion.standstill states that it is moving, which is the observable content of the words."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.interaction.vehicle_file"
+   ],
+   "justification": "“in a caravan or motorcade” is a relation between road users over time — several travelling together one behind another — so it maps to a concept: drv.interaction.vehicle_file states that, counting the subject, at least a minimum number of road users travel in the subject's direction within a tolerance, lie ahead of or behind it in the same lane, and are within a reach of it, built on rel.same_direction, rel.ahead_behind_in_lane and rel.surface_gap. Its atoms are the concept's and count as this node's through the call."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane",
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+   ],
+   "derived": [
+    "drv.interaction.vehicle_file"
+   ],
+   "justification": "“space between each such vehicle or combination of vehicles” is the clear distance between the bodies of the members: rel.surface_gap is “distance between the nearest points of two bodies … its longitudinal and lateral components are the lengths of the vector between those nearest points along and across the subject's heading”, and its longitudinal component is the space the words mean; rel.centre_distance is excluded by its own contract as “not a stand-in for a clearance between bodies”. rel.ahead_behind_in_lane fixes that the space is the one between the subject and the member in front of or behind it in the same lane, and drv.interaction.vehicle_file fixes which road users are “each such vehicle”. “vehicle or combination of vehicles” claims the admitted aggregates for the members: the caravan's members are the motor vehicles of s1, and a member drawing another vehicle is a combination of DEF-NRS-484A-050::combination_of_vehicles."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.extent",
+    "kin.speed",
+    "drv.interaction.vehicle_file"
+   ],
+   "params": [
+    "p.entry_vehicle_length",
+    "p.entry_clearance_headway_time"
+   ],
+   "convention": "Gap-acceptance convention for a lane-change entry (the critical-gap family used in capacity and merging analysis): a space admits an entering vehicle where it holds the vehicle's own length plus a clear headway in front of and behind it at the speed of the stream. The space is sufficient at an observation where the longitudinal component of rel.surface_gap between the subject and the adjacent member of the file is at least p.entry_vehicle_length + 2 × p.entry_clearance_headway_time × kin.speed of the subject. kin.extent, “the body's size along its axes … a formula reads the full length, width and height, twice each”, is what p.entry_vehicle_length stands for: where a road user that is not a member of the file is in the scene, the length in the bound is the greater of p.entry_vehicle_length and that road user's own read length, so the degree of the factor is read where it is observed and the design length is the floor, never a reduction of the space owed. kin.speed scales the clearance term, so the space required grows with the speed of the file. “without danger” is bounded by those clearances and by nothing else; both magnitudes are parameters of the reading, and the law states no figure.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "s2",
+   "id": "asm.outside_business_district",
+   "meaning": "the map or trace declares that the stretch of highway the road user occupies at the observation lies outside a business district"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s4",
+   "why": "“whether or not towing other vehicles” imposes no condition: it states that the duty is the same for a member drawing another vehicle and for one that is not, so no verdict of the node turns on these words. The rule is held to that: the applicability reads nothing from them, and the members of the file are read whether or not any of them draws another vehicle.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a motor vehicle of DEF-NRS-484A-130::motor_vehicle that is moving and whose footprint overlaps a highway, that is a member of a file of road users travelling one behind another (drv.interaction.vehicle_file with p.caravan_min_members, p.caravan_max_member_gap and p.same_direction_cosine_tolerance), and for which the assumption asm.outside_business_district holds for the stretch of highway it occupies. Where that assumption is not declared, whether the rule applies is unknown.",
+ "obligation": "At each observation at which the applicability holds, the longitudinal component of rel.surface_gap between the subject and each member of the file immediately ahead of or behind it in the same lane must be at least the space the operationalization of s6 sets at that observation. Where a gap falls below that bound the duty is violated; where a gap, the speed or the length the bound reads is unobserved for such a member, the duty is unknown; where the subject is in no file, the rule does not apply.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.same_direction_cosine_tolerance",
+  "p.caravan_min_members",
+  "p.caravan_max_member_gap",
+  "p.entry_vehicle_length",
+  "p.entry_clearance_headway_time"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "“shall be operated to allow … space” is read as the vehicle's own conduct: who or what controls it is not observable, so the duty binds the motion of the motor vehicle, whose spacing from the members ahead of and behind it is what the rule reads.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "“each such vehicle or combination of vehicles” is read as the members of the file immediately ahead of and behind the subject in the same lane, not as every pair of members of the file: the duty binds the subject's own conduct, and the space the subject allows is the space between it and its neighbours. The spacing of a pair neither of which is the subject is that pair's own duty under the same node.",
+   "kind": "reading"
+  },
+  {
+   "span": "s6",
+   "why": "“without danger” is read through the clearances an entering vehicle needs — its length and a headway in front of and behind it at the speed of the file — and through no other aspect of danger; the manner of the entering vehicle's driving and the conditions of the surface are not read into this standard, which the words tie to the entering and occupying of the space.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Five cars of a motorcade run in file in the same lane of a two-lane highway outside a business district, declared as such by the map, at 20 m/s with longitudinal gaps of about 6 m between consecutive bodies. The space holds no entering vehicle's length plus a clear headway at that speed.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same five cars at the same speed on the same highway, each holding about 70 m of longitudinal gap to its neighbours: every space exceeds an entering vehicle's length plus the clearance headway fore and aft.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedal cycle propelled by human power, which the motor-vehicle definition leaves out, rides in close file with four others on the same highway. No motor vehicle is bound and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the gap between bodies absent: the file, the speeds and the declared district class are recorded, but the spaces the bound is compared with cannot be read, so the duty is unknown.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A single car runs at 20 m/s on the same highway outside a business district with no other road user anywhere in the scene. The minimum member count of the file is not reached, so the subject is in no caravan and the rule does not apply, the verdict being decided although the only party is the subject.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The five cars of the motorcade hold 6 m gaps but are halted in a queue: the subject's speed is below the standstill tolerance, so it is not being driven, and the rule does not reach a halted file. The verdict is decided on the words of the subject span.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled reading is read as a complete cessation from movement, set at the noise floor of vehicle speed measurement.",
+   "source": "stop-detection thresholds used in naturalistic-driving data reduction"
+  },
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two headings still read as the same direction, set at thirty degrees so that a vehicle in a bend is still read as travelling with the file.",
+   "source": "heading-tolerance values used in lane-level trajectory conflict analyses"
+  },
+  {
+   "name": "p.caravan_min_members",
+   "unit": "count",
+   "value": 3,
+   "convention": "Procession convention: the number of road users travelling one behind another at which the group is read as a file rather than as two vehicles happening to follow one another, taken from the smallest group that presents a continuous obstacle to an entering vehicle.",
+   "source": "convoy and platoon definitions in traffic-operations practice"
+  },
+  {
+   "name": "p.caravan_max_member_gap",
+   "unit": "m",
+   "value": 50.0,
+   "convention": "Procession convention: the reach within which another road user is read as travelling with the subject in the same file, beyond which the two are independent vehicles on the same highway.",
+   "source": "platoon-identification headway and spacing thresholds in traffic-flow studies"
+  },
+  {
+   "name": "p.entry_vehicle_length",
+   "unit": "m",
+   "value": 6.0,
+   "convention": "Gap-acceptance convention: the length of the design vehicle that must fit into the space, used where no entering road user is in the scene whose own read length could be used instead.",
+   "source": "design-vehicle dimensions for a passenger car in highway geometric design"
+  },
+  {
+   "name": "p.entry_clearance_headway_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "Gap-acceptance convention: the clear headway in front of and behind an entering vehicle, at the speed of the stream, below which the entry is not a safe one; the critical gap is the vehicle's length plus twice this headway.",
+   "source": "critical-gap values for lane-change and merging manoeuvres in capacity analysis"
+  }
+ ],
+ "gaps": []
+}

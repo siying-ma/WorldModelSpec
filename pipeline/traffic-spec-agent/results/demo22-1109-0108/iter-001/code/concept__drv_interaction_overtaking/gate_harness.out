@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.interaction.overtaking.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtaking.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtaking.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]},{"and":[{"cmp":"ge","lhs":{"sub":[{"args":[{"var":"a"}],"measure":"kin_speed"},{"args":[{"var":"b"}],"measure":"kin_speed"}]},"rhs":{"param":"min_speed_excess"}},{"or":[{"cmp":"gt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_ahead_behind_in_lane","params":[]}]}]}]},"contract":"Road user a is passing road user b at the observation: the two headings are aligned within the same-direction tolerance, a's speed exceeds b's by at least the speed excess the caller sets, and either the two bodies' projections on a's heading overlap — a is drawing level with b — or b is still ahead of a in the same lane. It is the state of a passing manoeuvre at the observation and states no lane used, no clearance between the bodies, no completion of the pass and no right to make it. Not a stand-in for: a completed pass, the lane or side the pass is made on, a signal or an intention, or the clearance between the bodies, which the gap atom carries.","definition":null,"id":"drv.interaction.overtaking","kind":"formula","narrowings":[{"kind":"reading","span":"the two bodies' projections on a's heading overlap","why":"read as a strictly positive shared length of the two projections: the atom is signed, zero where the projections abut and negative for the gap between them, and projections that merely touch at a point are no overlap, so the bound is strict rather than at-or-above zero."}],"params":[{"name":"same_direction_tolerance","unit":"ratio"},{"name":"min_speed_excess","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	rel_same_direction,kin_speed,rel_longitudinal_overlap,rel_ahead_behind_in_lane
+READS	rel_same_direction,kin_speed,rel_longitudinal_overlap,rel_ahead_behind_in_lane
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]},{"and":[{"cmp":"ge","lhs":{"sub":[{"args":[{"var":"a"}],"measure":"kin_speed"},{"args":[{"var":"b"}],"measure":"kin_speed"}]},"rhs":{"param":"min_speed_excess"}},{"or":[{"cmp":"gt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_ahead_behind_in_lane","params":[]}]}]}]}
+WITNESS	holds	drv.interaction.overtaking@w
+WITNESS	fails	drv.interaction.overtaking@w
+WITNESS	blind	drv.interaction.overtaking@w
+OCC	a,b
+OCC	a
+OCC	b
+OCC	a
+OCC	b
+OCC	b,a
+INST	drv.interaction.overtaking@w	ok
+TIME	checks	5
+TIME	lint	26
+SCEN	holds	drv.interaction.overtaking@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.overtaking@w/holds	14
+SCEN	fails	drv.interaction.overtaking@w	violated	violated	ok
+TIME	scenario:drv.interaction.overtaking@w/fails	6
+SCEN	blind	drv.interaction.overtaking@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.overtaking@w/blind	16
+TIME	witnesses	36
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.overtaking.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtaking.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtaking.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.overtaking@w	4	2
+TIME	adequacy_start	4
+TIME	adequacy	133
+DONE

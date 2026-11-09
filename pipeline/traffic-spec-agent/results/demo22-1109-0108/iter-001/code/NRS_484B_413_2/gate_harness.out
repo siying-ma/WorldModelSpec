@@ -1,0 +1,77 @@
+'TrafficSpec.Rules.NRS_484B_413_2.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_413_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.in_business_or_residential_district"],"binders":["v"],"id":"NRS_484B_413_2","intentions":[],"laws":["NRS-484B-413-2"],"narrowings":[{"kind":"reading","span":"s1","why":"The hand of the course change is read from the sign of kin.yaw_rate at the judged observation: strictly positive is left, strictly negative is right. At an observation whose rate of change of heading is exactly zero no hand is read, so the duty of s1 is stated for a course change whose rate of change of heading is non-zero where it is recognized; the signal is required on the hand the sign gives and a signal on the other hand does not satisfy it."}],"operationalizations":[],"residues":["The words add no observable condition and no restriction: the signal is owed over the same window, in the same terms, whether or not rain, snow, wet road, ice or any other weather is present, so the duty is the same whether or not these words hold. The rule reads no weather atom for them, and nothing of the obligation is dropped."],"surrogate":false}
+RULEJSON	{"applicability":{"rises":{"args":[{"var":"v"}],"derived":"drv_motion_turning","params":[{"param":"p.turn_recognition_window"},{"param":"p.heading_change_noise_floor"}]}},"assumptions":["asm.in_business_or_residential_district"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_413_2","intentions":[],"laws":["NRS-484B-413-2"],"narrowings":[{"kind":"reading","span":"s1","why":"The hand of the course change is read from the sign of kin.yaw_rate at the judged observation: strictly positive is left, strictly negative is right. At an observation whose rate of change of heading is exactly zero no hand is read, so the duty of s1 is stated for a course change whose rate of change of heading is non-zero where it is recognized; the signal is required on the hand the sign gives and a signal on the other hand does not satisfy it."}],"obligation":{"and":[{"implies":[{"asm":"asm.in_business_or_residential_district"},{"and":[{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"v"}]},{"implies":[{"cmp":"lt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"v"}]}]}]},{"implies":[{"not":{"asm":"asm.in_business_or_residential_district"}},{"and":[{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":2286},"unit":"metre"},"subject":"v"}]},{"implies":[{"cmp":"lt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":2286},"unit":"metre"},"subject":"v"}]}]}]}]},"residues":["The words add no observable condition and no restriction: the signal is owed over the same window, in the same terms, whether or not rain, snow, wet road, ice or any other weather is present, so the duty is the same whether or not these words hold. The rule reads no weather atom for them, and nothing of the obligation is dropped."],"surrogate":false}
+RULEXJSON	{"applicability":{"rises":{"cmp":"ge","lhs":{"abs":{"args":[{"var":"v"}],"params":[{"param":"p.turn_recognition_window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"p.heading_change_noise_floor"}}},"assumptions":["asm.in_business_or_residential_district"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_413_2","intentions":[],"laws":["NRS-484B-413-2"],"narrowings":[{"kind":"reading","span":"s1","why":"The hand of the course change is read from the sign of kin.yaw_rate at the judged observation: strictly positive is left, strictly negative is right. At an observation whose rate of change of heading is exactly zero no hand is read, so the duty of s1 is stated for a course change whose rate of change of heading is non-zero where it is recognized; the signal is required on the hand the sign gives and a signal on the other hand does not satisfy it."}],"obligation":{"and":[{"implies":[{"asm":"asm.in_business_or_residential_district"},{"and":[{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"v"}]},{"implies":[{"cmp":"lt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":762},"unit":"metre"},"subject":"v"}]}]}]},{"implies":[{"not":{"asm":"asm.in_business_or_residential_district"}},{"and":[{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":2286},"unit":"metre"},"subject":"v"}]},{"implies":[{"cmp":"lt","lhs":{"args":[{"var":"v"}],"measure":"kin_yaw_rate"},"rhs":{"lit":{"den":1,"num":0},"unit":"degree_per_second"}},{"body":{"or":[{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"v"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]},"holds_for":"path","length":{"lit":{"den":25,"num":2286},"unit":"metre"},"subject":"v"}]}]}]}]},"residues":["The words add no observable condition and no restriction: the signal is owed over the same window, in the same terms, whether or not rain, snow, wet road, ice or any other weather is present, so the duty is the same whether or not these words hold. The rule reads no weather atom for them, and nothing of the obligation is dropped."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_turning,kin_yaw_rate,kin_path_length,sig_turn_indicator,sig_hand_signal
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.turn_indicator,sig.hand_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+OCC	v
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	762/25	TrafficSpec.PUnit'.metre
+LITERAL	2286/25	TrafficSpec.PUnit'.metre
+LITERAL	2286/25	TrafficSpec.PUnit'.metre
+TIME	occurrences	1
+TIME	checks	6
+TIME	lint	203
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	59
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	58
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	55
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	61
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	62
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	56
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	56
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	56
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	58
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	60
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	55
+SCEN	branch_8	compliant	compliant	ok
+TIME	scenario:branch_8	56
+TIME	witnesses	692
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_413_2.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_413_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_413_2	15	11
+TIME	adequacy_start	13
+TIME	adequacy	2810
+DONE

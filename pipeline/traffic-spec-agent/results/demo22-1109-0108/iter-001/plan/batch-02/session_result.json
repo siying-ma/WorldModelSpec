@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 2238491,
+  "stop_reason": "end_turn",
+  "session_id": "c7aafb87-9ac4-4dd6-95da-8305697588e4",
+  "total_cost_usd": 10.302294699999997,
+  "usage": {
+   "input_tokens": 74,
+   "cache_creation_input_tokens": 268206,
+   "cache_read_input_tokens": 5285822,
+   "output_tokens": 198829,
+   "output_tokens_details": {
+    "thinking_tokens": 112104
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 268206,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1421,
+     "cache_read_input_tokens": 210712,
+     "cache_creation_input_tokens": 609,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 609
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 62157,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0062287,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 74,
+    "outputTokens": 198829,
+    "cacheReadInputTokens": 5285822,
+    "cacheCreationInputTokens": 268206,
+    "webSearchRequests": 0,
+    "costUSD": 10.296065999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 112104,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 37,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "All three files are written and the validator accepts every node.\n\n**`blueprint.jsonl`** — 13 nodes across the 8 law lines, plus one concept record:\n\n| line | nodes |\n|---|---|\n| NRS-484B-250-4 | `_o1` halt at the place (inoperative signal), `_o2` proceed cautiously + yield |\n| NRS-484B-250-1 | yield to a vehicle already in from a different highway |\n| NRS-484B-250-2 | left yields to right on near-simultaneous entry |\n| NRS-484B-253 | `_o1` left-turner yields, `_o2` opposing drivers yield to the turner |\n| NRS-484B-257-1 | `_o1` stop/yield at the place, `_o2` yield to through-highway traffic |\n| NRS-484B-257-2 | `_o1` obey the sign in subsection 1's manner, `_o2` cautious crossing + yield |\n| NRS-484B-307-6a | no entry on the red after a steady yellow |\n| NRS-484B-400-2a | left-turn approach next to the centre line |\n\nNew concept: `drv.motion.region_entry` (the entry event, region passed in by the caller), used by eight nodes. `aggregates.jsonl` is empty — no clause here defines, adds or excludes members.\n\nFour decisions worth your eye, all recorded in `PLAN.md`:\n\n- **\"Yield the right-of-way\"** is read as three observable limbs (no entry while the other is within, no contact, no closest approach below the clearance). No `standard` span was cut from those obligations, since their own words contain no standard word; the bounds sit on the obligation elements with a disclosed reading. `## For the operator` item 3 offers the uniform re-cut if the review phase prefers it.\n- **\"Immediate hazard\"** is operationalized by degree (distance to the junction against speed × headway, plus the closest-approach bound), never by mere presence.\n- **Subsection 4's \"except as otherwise provided\"** suspends only the traffic-control-device exception in 250-1/250-2, not the opposite-direction left-turn exception.\n- **\"Vehicular traffic\"** in 307-6a carries two class atoms — the `traffic` aggregate with the `vehicle` aggregate as the law's own \"vehicular\" qualification — with a pedestrian branch scenario expecting `not_applicable`. The `vehicle` id is not in that line's definitions table, so the reason is stated in `PLAN.md` as rule 0 requires.\n\nThree nodes are rule-4c halt duties and each carries the `history_boundary` scenario. Parameters are re-proposed per node because the validator does not see other batches' proposals; values match the earlier batch's wherever a name already existed.",
+  "ttft_ms": 758108,
+  "type": "result",
+  "duration_ms": 2242057,
+  "uuid": "610f5af1-6c30-446f-882a-000f421aef17",
+  "ttft_stream_ms": 1563,
+  "time_to_request_ms": 59,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 17,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 1,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 90,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1563,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 62157,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0062287,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 74,
+    "outputTokens": 198829,
+    "cacheReadInputTokens": 5285822,
+    "cacheCreationInputTokens": 268206,
+    "webSearchRequests": 0,
+    "costUSD": 10.296065999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 112104,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

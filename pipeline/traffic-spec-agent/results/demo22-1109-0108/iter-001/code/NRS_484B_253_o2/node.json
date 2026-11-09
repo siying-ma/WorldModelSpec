@@ -1,0 +1,226 @@
+{
+ "node_id": "NRS_484B_253_o2",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "sib1",
+   "text": "The driver of a vehicle within an intersection intending to turn to the left shall yield the right-of-way to any vehicle approaching from the opposite direction which is within the intersection or so close thereto as to constitute an immediate hazard,",
+   "role": "sibling"
+  },
+  {
+   "id": "c1",
+   "text": "but such driver, having so yielded",
+   "role": "condition"
+  },
+  {
+   "id": "c2",
+   "text": "and having given a signal when and as required,",
+   "role": "condition"
+  },
+  {
+   "id": "c3",
+   "text": "may make such left turn",
+   "role": "condition"
+  },
+  {
+   "id": "s1",
+   "text": "and the drivers of all other vehicles approaching the intersection from the opposite direction",
+   "role": "subject"
+  },
+  {
+   "id": "ob1",
+   "text": "shall yield the right-of-way to the vehicle making the left turn.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c2",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ],
+   "derived": [],
+   "justification": "'having given a signal' is the signal the left-turning vehicle emits: sig.turn_indicator, whose 'state is off, left or right: neither indicator lit, or the left or the right one', shown as left, or sig.hand_signal, 'a driver's or rider's arm signal; meaning is no_signal, left, right, stop_or_slow, re_enter', given as left. sig.turn_indicator is 'not a stand-in for the turn or lane change itself', and it is not used for one here: the turn is carried separately by its own concept in c3, and this span carries only the indication. 'when and as required' is read through the signalling convention: a left indication at some observation in the window p.turn_signal_advance_window behind the turn's recognition. The condition is read on the left-turning vehicle the obligation quantifies over, not on the subject."
+  },
+  {
+   "span": "c3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.left_turn"
+   ],
+   "justification": "'may make such left turn' names the manoeuvre drv.motion.left_turn denotes, 'the road user has turned to the left: counting from the onset of the turning ... the heading change accumulated since that onset reaches at least the turn angle ... to the left', read on the left-turning vehicle while its footprint overlaps the junction: rel.occupies ('a road user's footprint overlaps a lane / region') on a region of kind st.intersection ties the turn to the junction the subject approaches, so that a left turn made elsewhere in the scene does not raise this duty. The concept states the turning of the body only, and neither a signal nor a declared intention stands in for it."
+  },
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.lane_direction",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'the drivers of all other vehicles' binds the subject: the driver is read through the vehicle's controlled motion, so the subject is each other vehicle of the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom. 'approaching the intersection' is the ontology's own reading, 'a carrier it occupies (rel.occupies) whose entrance end is that intersection (st.lane_enters)', with st.travel_region the kind that carrier quantifier ranges over and st.intersection the junction at which the left turn is made. 'from the opposite direction' is read, as the ontology directs for these words, through that carrier's designated direction st.lane_direction being opposed to the direction of the carrier by which the left-turning vehicle reached the junction, their normalised dot product at or below the negative of p.same_direction_cosine_tolerance; rel.oncoming is expressly not a stand-in for the direction a road user approaches from, and the left-turning vehicle's heading swings through its turn, so the carriers and not the headings are read."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "rel.surface_gap",
+    "rel.contact",
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [],
+   "justification": "'the vehicle making the left turn' refers to the road user c3 already binds -- the vehicle of the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed here as one atom, whose left turn in that junction c3's element carries with its concept -- so the obligation reads that same road user and re-claims no manoeuvre of its own: the turning is the condition that raises the duty, and the duty itself is conduct of the subject towards it. Its presence in the junction is rel.occupies on a region of kind st.intersection. 'shall yield the right-of-way' is DEF-NRS-484A-210's right 'to proceed in a lawful manner in preference to another vehicle ... unless one grants precedence to the other': the subject grants precedence by not coming into contact with that vehicle (rel.contact) and by not letting its closest approach to it fall below the clearance, which prim.closest_approach_within and prim.closest_approach_distance give under constant velocities within the horizon and rel.surface_gap measures between the nearest points of the bodies, with kin.speed the subject's own speed. rel.contact is not a stand-in for a near miss, which is why the primitives stand beside it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "c1",
+   "rule": "NRS_484B_253_o1",
+   "map": {
+    "v": "t"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "There is a vehicle t of the aggregate within an intersection making a left turn there, which has complied with the duty of NRS_484B_253_o1 ('having so yielded') and has given a left indication, by indicator or by arm signal, at some observation in the window p.turn_signal_advance_window behind the recognition of its turn; and the subject vehicle occupies a carrier whose entrance end is that intersection and whose designated direction is opposed to the direction of t's approach carrier.",
+ "obligation": "At every such observation the subject must grant precedence to t: it must not come into contact with t, and must not let its closest approach to t under constant velocities within p.yield_conflict_horizon fall below p.yield_min_clearance.",
+ "params": [
+  "p.same_direction_cosine_tolerance",
+  "p.turn_signal_advance_window",
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_onset_yaw_rate",
+  "p.left_turn_angle",
+  "p.yield_conflict_horizon",
+  "p.yield_min_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "'shall yield the right-of-way' is read as granting precedence in the two observable ways open here: no contact with the turning vehicle, and no closest approach within the horizon closer than the clearance.",
+   "kind": "reading"
+  },
+  {
+   "span": "s1",
+   "why": "'the drivers of all other vehicles' is read through each vehicle's controlled motion: who or what is at the controls is not observable, and the duty binds that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A van within a junction has yielded to the opposing stream, shows its left indicator through the two seconds before its turn is recognized, and turns left. The subject car occupies the opposing approach lane entering the same junction and drives on into the van's path, the two bodies touching.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same junction and the same signalled, yielded left turn by the van. The subject car brakes on its approach and stays more than ten metres clear of the van throughout, no closest approach within the horizon coming near the clearance bound.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject car occupies the opposing approach lane of a junction in which no vehicle is making a left turn at all: no road user raises the duty, so the rule is not engaged.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A van makes a signalled left turn in the junction the subject approaches, but the source does not report whether the van's footprint overlaps the junction region, so whether the turn is the one made in that intersection is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The van turns left in the junction and has yielded to the opposing stream, but its indicator stays off and it gives no arm signal in the window behind the recognition of the turn: the weaker fact -- a turn made without the signal the words require -- leaves the other drivers' duty unraised, and the rule is not engaged.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The van signals left and turns, but it did not comply with its own duty to yield under the first node of this section: it turned across an oncoming vehicle that was within the junction. Having not so yielded, it raises no duty on the other drivers.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two directions still read as the same direction, set at thirty degrees; its negative is the bound at which two directions are read as opposed.",
+   "source": "The thirty-degree sector convention used for same-direction and opposed-direction tests in traffic conflict analysis."
+  },
+  {
+   "name": "p.turn_signal_advance_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Signalling convention: the window behind the movement within which an indication counts as the signal given for it, taken from the advance-notice practice for a turn.",
+   "source": "Driver-signalling practice and the advance-notice intervals of state vehicle codes."
+  },
+  {
+   "name": "p.turn_onset_yaw_rate",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "Manoeuvre-onset convention: the rate of change of heading above which a body is read as turning rather than running straight, set above the yaw noise of a vehicle holding its lane.",
+   "source": "Yaw-rate channel noise and lane-keeping figures from instrumented-vehicle studies."
+  },
+  {
+   "name": "p.left_turn_angle",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "Turn-recognition convention: the heading change accumulated since the onset at which a turn to the left is recognized as made, rather than as a lane change or a bend taken.",
+   "source": "Manoeuvre-recognition practice: half the ninety-degree heading change of a right-angle junction turn."
+  },
+  {
+   "name": "p.yield_conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities is read as the 'danger of a crash' the right-of-way definition names, rather than as a passing of two road users on diverging paths.",
+   "source": "Surrogate-safety practice for time-to-conflict measures at junctions (post-encroachment and time-to-collision thresholds of two to three seconds)."
+  },
+  {
+   "name": "p.yield_min_clearance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Conflict-avoidance convention: the clearance between the nearest points of two bodies below which a closest approach is read as a failure to grant precedence rather than as a safe passing.",
+   "source": "Lateral and longitudinal clearance practice for passing a road user at low speed in a junction."
+  }
+ ],
+ "gaps": []
+}

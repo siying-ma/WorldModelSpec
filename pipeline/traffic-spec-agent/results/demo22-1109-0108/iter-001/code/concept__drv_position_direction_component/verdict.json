@@ -1,0 +1,80 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "reads": [
+   "kin.velocity",
+   "st.lane_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"}]}]}",
+  "body_json": {
+   "add": [
+    {
+     "mul": [
+      {
+       "args": [
+        {
+         "var": "u"
+        },
+        {
+         "lit": "x"
+        }
+       ],
+       "measure": "kin_velocity"
+      },
+      {
+       "args": [
+        {
+         "var": "r"
+        },
+        {
+         "lit": "x"
+        }
+       ],
+       "measure": "st_lane_direction"
+      }
+     ]
+    },
+    {
+     "mul": [
+      {
+       "args": [
+        {
+         "var": "u"
+        },
+        {
+         "lit": "y"
+        }
+       ],
+       "measure": "kin_velocity"
+      },
+      {
+       "args": [
+        {
+         "var": "r"
+        },
+        {
+         "lit": "y"
+        }
+       ],
+       "measure": "st_lane_direction"
+      }
+     ]
+    }
+   ]
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "The component, in metres per second, of a road user's velocity along the designated direction of travel of a structure region",
+    "why": "Written as the planar scalar projection vx·dx + vy·dy over the two world-frame components the vector atoms expose (`kin_velocity`, `st_lane_direction`, each read with a component literal), the direction being the normalised one its atom states. The contract names a component along a direction without saying how it is formed; this is the only reading the available atoms allow, and it leaves the height out because the world is planar."
+   }
+  ],
+  "context": "3c5a5a41ba29abf43734175d",
+  "candidate_digest": "a20d57d8747607b3b6517b552c6baa5639b9ba792b3c6fc47e8a155f16bbda56"
+ }
+}

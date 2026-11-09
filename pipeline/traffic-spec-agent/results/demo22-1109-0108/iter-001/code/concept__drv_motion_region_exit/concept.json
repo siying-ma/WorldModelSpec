@@ -1,0 +1,57 @@
+{
+ "concept_id": "drv.motion.region_exit",
+ "kind": "formula",
+ "contract": "The road user's footprint ceases to overlap a structure region at the observation: it does not overlap the region at the observation and did overlap it at the observation before. The concept is the event of that ceasing to overlap, read at the observation at which the overlap has ended, and not the state of lying outside the region at the later observations. It states no direction of departure, no carrier the road user leaves through, no speed and no place outside the region. Not a stand-in for: lying outside the region, which the occupancy relation carries on its own; a later observation at which the road user is still outside; the carrier or the way the road user goes on to, which a caller reads with its own relations; a crossing of a boundary the source represents by no region; or an entry into the region, which has its own concept.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "it does not overlap the region at the observation and did overlap it at the observation before",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies is 'a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure)', which is the overlap the contract reads at the observation and at the one before; the region is the formal r the caller binds, so no region of the scene other than the one the caller singles out is read. Exclusion: the relation carries the footprint's overlap and not the geometry of the region (st.region_geometry), no distance being read, and not a direction or a speed of departure, which the contract expressly does not state."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle's footprint overlaps an intersection region at one observation and, at the next, lies wholly clear of it: the concept holds at that next observation.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle's footprint overlaps the intersection region at both observations, having only moved farther into it: the concept fails. It fails as well at the observation after the departure, when the footprint lay clear of the region at the observation before.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source does not observe which regions the vehicle's footprint overlaps, so whether the overlap with the region has just ended cannot be told.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_400_2b"
+ ],
+ "differs_from": {
+  "concept": "drv.motion.region_entry",
+  "why": "The sorts and the atom are the same as drv.motion.region_entry's, but the event is the opposite one: region_entry rises where the footprint comes to overlap the region, having not overlapped it at the observation before, while this concept rises where it ceases to overlap the region, having overlapped it at the observation before. Neither implies the other and no instantiation of one gives the other's verdict."
+ }
+}

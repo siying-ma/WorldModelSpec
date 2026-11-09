@@ -1,0 +1,806 @@
+{
+ "verdict": "OK",
+ "details": [
+  "16 witnesses, 17 names, composes nothing",
+  "narrowings declared by the coder: 4"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "j"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "cmp": "gt",
+         "lhs": {
+          "args": [
+           {
+            "var": "v"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         "rhs": {
+          "param": "p.standstill_speed_tolerance"
+         }
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "c"
+                },
+                {
+                 "var": "j"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "c"
+                 },
+                 {
+                  "var": "j"
+                 }
+                ],
+                "atom": "st_lane_enters",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "ds"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "dy"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "yield_sign"
+                  },
+                  "var": "dy"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "travel_region"
+           },
+           "var": "c"
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "w"
+                },
+                {
+                 "lit": "DEF-NRS-484A-285::traffic"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "w"
+                  },
+                  {
+                   "var": "j"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "or": [
+                     {
+                      "same": [
+                       {
+                        "var": "cc"
+                       },
+                       {
+                        "var": "j"
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "cc"
+                         },
+                         {
+                          "var": "j"
+                         }
+                        ],
+                        "atom": "st_lane_enters",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "v"
+                         },
+                         {
+                          "var": "cc"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "or": [
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "o"
+                          },
+                          {
+                           "lit": "police_officer"
+                          }
+                         ],
+                         "atom": "dev_human_direction_role",
+                         "params": []
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "o"
+                          },
+                          {
+                           "var": "cc"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        }
+                       ]
+                      },
+                      "exists_device": {
+                       "lit": "human_direction"
+                      },
+                      "var": "o"
+                     },
+                     {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "g"
+                        },
+                        {
+                         "var": "cc"
+                        }
+                       ],
+                       "atom": "dev_governs",
+                       "params": []
+                      },
+                      "exists_device": {
+                       "lit": "traffic_signal"
+                      },
+                      "var": "g"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "travel_region"
+                 },
+                 "var": "cc"
+                }
+               ]
+              }
+             ]
+            },
+            "exists_user": "w"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "j"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_257_2_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-257-2"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence."
+    },
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation."
+    },
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction."
+    },
+    {
+     "kind": "reading",
+     "span": "st2",
+     "why": "The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "j"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "cmp": "gt",
+           "lhs": {
+            "args": [
+             {
+              "var": "v"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           "rhs": {
+            "param": "p.standstill_speed_tolerance"
+           }
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "c"
+                },
+                {
+                 "var": "j"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "c"
+                 },
+                 {
+                  "var": "j"
+                 }
+                ],
+                "atom": "st_lane_enters",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "ds"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "body": {
+                   "args": [
+                    {
+                     "var": "dy"
+                    },
+                    {
+                     "var": "c"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  "exists_device": {
+                   "lit": "yield_sign"
+                  },
+                  "var": "dy"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "travel_region"
+           },
+           "var": "c"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "cmp": "le",
+         "lhs": {
+          "args": [
+           {
+            "var": "v"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         "rhs": {
+          "param": "p.cautious_proceed_max_speed"
+         }
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "u"
+                },
+                {
+                 "var": "v"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "u"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-320::vehicle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "not": {
+                      "same": [
+                       {
+                        "var": "cu"
+                       },
+                       {
+                        "var": "j"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "u"
+                        },
+                        {
+                         "var": "cu"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "cu"
+                          },
+                          {
+                           "var": "j"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "not": {
+                            "body": {
+                             "args": [
+                              {
+                               "var": "dus"
+                              },
+                              {
+                               "var": "cu"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            "exists_device": {
+                             "lit": "stop_sign"
+                            },
+                            "var": "dus"
+                           }
+                          },
+                          {
+                           "not": {
+                            "body": {
+                             "args": [
+                              {
+                               "var": "duy"
+                              },
+                              {
+                               "var": "cu"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            "exists_device": {
+                             "lit": "yield_sign"
+                            },
+                            "var": "duy"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "travel_region"
+                  },
+                  "var": "cu"
+                 },
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "u"
+                     },
+                     {
+                      "var": "j"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "or": [
+                     {
+                      "cmp": "le",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "u"
+                        },
+                        {
+                         "var": "j"
+                        }
+                       ],
+                       "measure": "st_region_geometry_distance"
+                      },
+                      "rhs": {
+                       "mul": [
+                        {
+                         "args": [
+                          {
+                           "var": "u"
+                          }
+                         ],
+                         "measure": "kin_speed"
+                        },
+                        {
+                         "param": "p.yield_headway_time"
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "v"
+                         },
+                         {
+                          "var": "u"
+                         }
+                        ],
+                        "derived": "prim_closest_approach_within",
+                        "params": [
+                         {
+                          "param": "p.yield_conflict_horizon"
+                         }
+                        ]
+                       },
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "args": [
+                          {
+                           "var": "v"
+                          },
+                          {
+                           "var": "u"
+                          }
+                         ],
+                         "params": [
+                          {
+                           "param": "p.yield_conflict_horizon"
+                          }
+                         ],
+                         "quantity": "prim_closest_approach_distance"
+                        },
+                        "rhs": {
+                         "param": "p.yield_min_clearance"
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "v"
+                },
+                {
+                 "var": "u"
+                }
+               ],
+               "atom": "rel_contact",
+               "params": []
+              }
+             },
+             {
+              "not": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "v"
+                  },
+                  {
+                   "var": "u"
+                  }
+                 ],
+                 "derived": "prim_closest_approach_within",
+                 "params": [
+                  {
+                   "param": "p.yield_conflict_horizon"
+                  }
+                 ]
+                },
+                {
+                 "or": [
+                  {
+                   "cmp": "lt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "v"
+                     },
+                     {
+                      "var": "u"
+                     }
+                    ],
+                    "params": [
+                     {
+                      "param": "p.yield_conflict_horizon"
+                     }
+                    ],
+                    "quantity": "prim_closest_approach_distance"
+                   },
+                   "rhs": {
+                    "param": "p.yield_min_clearance"
+                   }
+                  },
+                  {
+                   "cmp": "lt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "v"
+                     },
+                     {
+                      "var": "u"
+                     }
+                    ],
+                    "measure": "rel_surface_gap"
+                   },
+                   "rhs": {
+                    "param": "p.yield_min_clearance"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "forall_user": "u"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "j"
+   },
+   "residues": [
+    "'although not a part of a through highway' adds no observable condition: it is concessive, saying that the cautious proceeding and the yielding are owed even where the junction is not part of a through highway, so the duty is the same whether or not it is. Reading it as a condition would make the rule apply only at junctions off a through highway, which is narrower than the words."
+   ],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence."
+   },
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation."
+   },
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction."
+   },
+   {
+    "kind": "reading",
+    "span": "st2",
+    "why": "The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach."
+   }
+  ],
+  "context": "d3a66ac15150a8c8878addb9",
+  "candidate_digest": "9baf64466e82d9d1d749aad802af4a717e77df80f10b623517a7a44d59daafb9"
+ }
+}

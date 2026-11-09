@@ -1,0 +1,37 @@
+'TrafficSpec.Concepts.lane.lane_change.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.lane_change.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.lane_change.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"or":[{"rises":{"not":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"and":[{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}]},{"body":{"and":[{"or":[{"args":[{"var":"r"},{"lit":"left"},{"var":"n"}],"atom":"st_lane_adjacency","params":[]},{"args":[{"var":"r"},{"lit":"right"},{"var":"n"}],"atom":"st_lane_adjacency","params":[]}]},{"rises":{"args":[{"var":"u"},{"var":"n"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"lane"},"var":"n"}]}]},"contract":"The road user crosses out of a structure region at the observation: its footprint overlapped the region at the observation before, and at the observation it either no longer overlaps that region or overlaps a lane neighbouring it in the same direction of travel which it did not overlap at the observation before. It is the event of that crossing, read at the observation at which it has happened, and not the state of being outside the region afterwards. Not a stand-in for: a turn, since no heading change is read, a signal or a declared intention, a movement that stays within the region however far across it, the completion of a movement into the neighbouring region, or the direction or side the crossing is made towards, which a caller reads from the regions themselves.","definition":null,"id":"drv.lane.lane_change","kind":"formula","narrowings":[{"kind":"reading","span":"its footprint overlapped the region at the observation before","why":"The language names no past instant of its own; `rises φ` (φ here and not at the observation before) is the only operator that reaches the preceding observation, so the overlap at the observation before is written through it, per branch of the contract's own disjunction: `rises (not occupies r)` where it no longer overlaps the region, and `occupies r and not rises (occupies r)` — overlapping here and not newly so — where it still does."},{"kind":"reading","span":"overlaps a lane neighbouring it in the same direction of travel","why":"st.lane_adjacency reads a side (left or right); the contract reads none, since the side the crossing is made towards is excluded, so the body holds the neighbour to be the lane adjacent on either side, disjunctively."}],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies,st_lane,st_lane_adjacency
+READS	rel_occupies,st_lane,st_lane_adjacency
+AGGREGATES	
+HARDAGG	
+BODY	{"or":[{"rises":{"not":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"and":[{"and":[{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}]},{"body":{"and":[{"or":[{"args":[{"var":"r"},{"lit":"left"},{"var":"n"}],"atom":"st_lane_adjacency","params":[]},{"args":[{"var":"r"},{"lit":"right"},{"var":"n"}],"atom":"st_lane_adjacency","params":[]}]},{"rises":{"args":[{"var":"u"},{"var":"n"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"lane"},"var":"n"}]}]}
+WITNESS	holds	drv.lane.lane_change@w
+WITNESS	fails	drv.lane.lane_change@w
+WITNESS	blind	drv.lane.lane_change@w
+OCC	u,r
+OCC	u,r
+OCC	u,r
+OCC	?n
+OCC	r,n
+OCC	r,n
+OCC	u,n
+INST	drv.lane.lane_change@w	ok
+TIME	checks	1
+TIME	lint	17
+SCEN	holds	drv.lane.lane_change@w	compliant	compliant	ok
+TIME	scenario:drv.lane.lane_change@w/holds	9
+SCEN	fails	drv.lane.lane_change@w	violated	violated	ok
+TIME	scenario:drv.lane.lane_change@w/fails	7
+SCEN	blind	drv.lane.lane_change@w	unknown	unknown	ok
+TIME	scenario:drv.lane.lane_change@w/blind	10
+TIME	witnesses	26
+DONE_WITNESSES
+'TrafficSpec.Concepts.lane.lane_change.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.lane_change.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.lane_change.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.lane.lane_change@w	6	2
+TIME	adequacy_start	4
+TIME	adequacy	89
+DONE

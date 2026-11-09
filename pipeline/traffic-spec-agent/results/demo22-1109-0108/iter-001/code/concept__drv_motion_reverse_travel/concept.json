@@ -1,0 +1,56 @@
+{
+ "concept_id": "drv.motion.reverse_travel",
+ "kind": "formula",
+ "contract": "The road user is travelling rearward at the observation: the component of its velocity along the direction its body points is at most the negative of the reverse speed tolerance, a speed the caller sets, so that a rearward component smaller than it is read as none. The concept states the direction of the body's motion relative to the direction it points, at the observation only, and says nothing of how long the rearward motion lasts or where it happens. Not a stand-in for: the gear selected — a body in a forward gear rolls backwards on a grade and one in reverse stands still — a reversing lamp or any other signal, a halt, a turn, or the place the motion happens at.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "reverse_speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the magnitude of the rearward velocity component below which the motion is not distinguished from a standing body's measurement noise; it names the source's resolution"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of its velocity along the direction its body points",
+   "atoms": [
+    "kin.velocity",
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the “velocity vector” in m/s in the world frame and kin.heading the “direction the body points”, which “a formula reads … normalised”, so the product of the two along the heading is the signed speed in the direction the body points. The ontology directs this reading expressly: kin.gear is “not a stand-in for the direction of motion — a vehicle in a forward gear rolls backwards on a grade; backing is read from kinematics”. kin.speed is not read, being unsigned."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car reverses out of a parking bay at about 1.5 m/s: its velocity points opposite to its heading, so the component along the heading is about minus 1.5 m/s.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car drives forward out of the bay at 1.5 m/s: the component along its heading is about plus 1.5 m/s.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same manoeuvre with the source declaring road-user velocity absent: the direction of the motion relative to the body cannot be read.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2"
+ ]
+}

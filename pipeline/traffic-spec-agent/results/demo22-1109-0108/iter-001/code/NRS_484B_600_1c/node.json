@@ -1,0 +1,138 @@
+{
+ "node_id": "NRS_484B_600_1c",
+ "law_refs": [
+  "NRS-484B-600-1c"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for any person to drive or operate a vehicle of any kind or character at:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "A rate of speed greater than that posted by a public authority for the particular portion of highway being traversed.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "The same words as in NRS_484B_600_1a and read the same way: 'a vehicle of any kind or character' is the defined term the table resolves to DEF-NRS-484A-320, admitted as DEF-NRS-484A-320::vehicle, and ru.aggregate carries 'membership of a legal aggregate ... the atom's literal argument is an aggregate id'; 'to drive or operate' is read through the vehicle's controlled motion, drv.motion.standstill ('the road user is motionless at the observation: the magnitude of its velocity is at most the speed tolerance') read negated, a vehicle in motion being taken to be driven. Exclusions: ru.aggregate is not a stand-in for a class atom or a relational role; drv.motion.standstill is not a stand-in for the engine being off or a brake being applied, neither of which is read."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.governs",
+    "dev.speed_limit_sign",
+    "kin.speed",
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "kin.speed, 'magnitude of velocity', is the 'rate of speed'. dev.speed_limit_sign is a 'sign stating a maximum or minimum speed, with value and unit; kind in {maximum, minimum, structure_maximum, zone}', and its value for a sign of kind maximum, structure_maximum or zone is the speed 'posted ... for the particular portion of highway being traversed'. dev.governs, 'the travel regions whose traffic the device controls -- a lane, reserved lane, turn lane, centre turn lane, bicycle lane or path, roadway, one-way roadway or shoulder -- or an intersection', ties the sign to that portion: a travel region the subject's footprint overlaps (rel.occupies, 'a road user's footprint overlaps a lane / region'), quantified over st.travel_region, the kind dev.governs ranges over. st.on_way, 'the public way (a highway region) a structure region lies on', and st.highway, 'the entire public way between its boundary lines', carry 'of highway'. Exclusions: dev.governs is 'not a stand-in for a position', so dev.position is not read and no distance to the sign head is used; a sign of kind minimum is not read, the words forbidding only a speed greater than the posted one; st.travel_region is 'not a stand-in for the extent of a highway', which its own atom carries."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v is in motion at the observation (drv.motion.standstill false for v, with p.standstill_speed_tolerance), which is how 'to drive or operate' is read, and some dev.speed_limit_sign of kind maximum, structure_maximum or zone governs (dev.governs) a travel region v's footprint overlaps (rel.occupies), that region lying on a highway (st.on_way, st.highway). Where no such sign governs a region v occupies, the duty does not arise.",
+ "obligation": "v's speed (kin.speed) is at most the value of every such posted maximum: for each dev.speed_limit_sign of kind maximum, structure_maximum or zone governing a travel region v occupies, kin.speed does not exceed that sign's stated value, so the lowest posted maximum binds.",
+ "params": [
+  "p.standstill_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'for any person to drive or operate' is read through the vehicle's controlled motion, as the ontology's section on what is not an atom directs: a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'posted by a public authority' is read as the presence of the speed-limit sign on the road: the feature's presence is the observable evidence of its official posting, as the ontology directs for the legal status of a feature on the road. Which authority posted it, and its jurisdiction under DEF-NRS-484A-195, are not read.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "'the particular portion of highway being traversed' is read as a travel region the vehicle's footprint overlaps whose traffic the sign governs (dev.governs), that region lying on a highway; where several such signs govern regions the vehicle occupies, the lowest posted maximum binds. The posted maximum is read from signs of kind maximum, structure_maximum and zone, and a speed-limit sign carries no conditions attribute, so a legend stating hours or a class is read as a posting in effect.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A maximum-kind speed-limit sign governs the lane the subject occupies; the subject runs along that lane at a speed above the sign's stated value.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same lane and the same governing maximum-kind sign; the subject's speed stays below the sign's stated value throughout. No other road user is present in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject runs along a highway on which the source records the governance of every device and no speed-limit sign governs any region the subject occupies, so no posted limit applies to the portion traversed.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject runs fast along a lane beside a sign head the source records, but the source does not observe speed-limit signs or their stated values, so whether a posted maximum is exceeded cannot be told.",
+   "masked": [
+    "dev.speed_limit_sign"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Two signs govern regions the subject occupies, a maximum-kind sign on the roadway and a lower zone-kind sign on the lane; the subject's speed lies between the two values, above the lower posted maximum.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A minimum-kind speed-limit sign governs the lane the subject occupies and no other speed-limit sign does; the subject runs faster than that sign's stated value, which the words do not reach.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled speed reading is read as the definition's complete cessation from movement, the bound within which measurement error and sampling cannot be told from no movement at all.",
+   "source": "the speed resolution of vehicle-dynamics and scene-graph sources, of the order of a tenth of a metre per second."
+  }
+ ],
+ "gaps": []
+}

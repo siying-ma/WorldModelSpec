@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1648660,
+  "stop_reason": "end_turn",
+  "session_id": "8048239f-edf7-470a-bd1d-6b9a3134c79f",
+  "total_cost_usd": 9.747273199999999,
+  "usage": {
+   "input_tokens": 90,
+   "cache_creation_input_tokens": 209542,
+   "cache_read_input_tokens": 8157011,
+   "output_tokens": 142713,
+   "output_tokens_details": {
+    "thinking_tokens": 72832
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 209542,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1636,
+     "cache_read_input_tokens": 203953,
+     "cache_creation_input_tokens": 5589,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5589
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 50592,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005072699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 90,
+    "outputTokens": 142713,
+    "cacheReadInputTokens": 8157011,
+    "cacheCreationInputTokens": 209542,
+    "webSearchRequests": 0,
+    "costUSD": 9.7422005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 72832,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 45,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "All three files are written and the validator passes clean — 19 of 19 records `accept` (9 nodes, 10 concept records).\n\n**What's in the batch**\n\n| node | law | shape |\n|---|---|---|\n| `NRS_484A_450_2` | stop-sign halt | rule-4c past search, place cascade (crossing → stop line → view point), `history_boundary` witness |\n| `NRS_484B_113_2` | backing | one prohibition, three places; \"street\" carried as a city-limits assumption |\n| `NRS_484B_127_1` | following too closely | **surrogate**; nine-parameter headway bound reading each named factor by degree |\n| `NRS_484B_127_2` | 500-foot truck space | literals 80 in / 500 ft; feasibility standard; purpose clause as a `scope: none` residue |\n| `NRS_484B_127_3` | caravan spacing | gap-acceptance standard; business district as an assumption |\n| `NRS_484B_220_1` | one-way highway | velocity component against the designated direction |\n| `NRS_484B_223_1b` | lane change | singled-out lane re-bound; signal window; \"ascertained\" read through the outcome |\n| `NRS_484B_227_1_o1/_o2` | divided highway | two obligations → two nodes; `_o2` declares an event-boundary `occasion`, exception read `throughout` |\n\nTen concepts proposed, two definition-born (`drv.motion.standstill` from `DEF-NRS-484A-255`, `drv.motion.u_turn` from `DEF-NRS-484B-077`); only the two turn concepts declare `act`. `aggregates.jsonl` is empty — no line defines members of its own. No gaps: every span grounds in the closed set or in one of the ontology's stated readings.\n\n**Three things flagged under `## For the operator`**\n\n1. A genuine conflict I had to resolve myself: rule 0 says a defined road-user word claims `ru.aggregate=<id>`, but the validator rejects both that form and the bare atom inside an operationalization's `concepts`. Four standard spans use such a word; I read them without a class restriction, quoted the definition in each convention, and checked in each case that the wider reading cannot weaken the duty. If a standard is meant to be bounded by an aggregate, the validator needs to admit the `=<id>` form there.\n2. `p.heading_since_step_carla_scene_graph` is in milliseconds while the rest of the time vocabulary is in seconds; I declared the concepts' `heading_step` formals as `ms` to match it exactly.\n3. Twenty-four parameter values are provisional, from the conventions named on each.\n\nTwo readings I'd most want a second opinion on, both reversible without touching the segmentation: `NRS-484B-127-3` is **not** marked surrogate (the law supplies its own functional test for \"sufficient space\"), and `NRS-484B-127-2`'s 80-inch qualifier is read as attaching to \"combination of vehicles\" alone, not to \"truck\".",
+  "ttft_ms": 751939,
+  "type": "result",
+  "duration_ms": 1651098,
+  "uuid": "f0366551-5e11-47e7-8740-66714e6eef23",
+  "ttft_stream_ms": 1480,
+  "time_to_request_ms": 60,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 17,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 9,
+   "input_hooks": 1,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 92,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1480,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 50592,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005072699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 90,
+    "outputTokens": 142713,
+    "cacheReadInputTokens": 8157011,
+    "cacheCreationInputTokens": 209542,
+    "webSearchRequests": 0,
+    "costUSD": 9.7422005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 72832,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

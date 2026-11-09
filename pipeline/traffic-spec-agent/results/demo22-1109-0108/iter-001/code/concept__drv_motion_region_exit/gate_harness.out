@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.region_exit.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_exit.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_exit.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"rises":{"not":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},"contract":"The road user's footprint ceases to overlap a structure region at the observation: it does not overlap the region at the observation and did overlap it at the observation before. The concept is the event of that ceasing to overlap, read at the observation at which the overlap has ended, and not the state of lying outside the region at the later observations. It states no direction of departure, no carrier the road user leaves through, no speed and no place outside the region. Not a stand-in for: lying outside the region, which the occupancy relation carries on its own; a later observation at which the road user is still outside; the carrier or the way the road user goes on to, which a caller reads with its own relations; a crossing of a boundary the source represents by no region; or an entry into the region, which has its own concept.","definition":null,"id":"drv.motion.region_exit","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies
+READS	rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"rises":{"not":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}}
+WITNESS	holds	drv.motion.region_exit@w
+WITNESS	fails	drv.motion.region_exit@w
+WITNESS	blind	drv.motion.region_exit@w
+OCC	u,r
+INST	drv.motion.region_exit@w	ok
+TIME	checks	2
+TIME	lint	9
+SCEN	holds	drv.motion.region_exit@w	compliant	compliant	ok
+TIME	scenario:drv.motion.region_exit@w/holds	9
+SCEN	fails	drv.motion.region_exit@w	violated	violated	ok
+TIME	scenario:drv.motion.region_exit@w/fails	10
+SCEN	blind	drv.motion.region_exit@w	unknown	unknown	ok
+TIME	scenario:drv.motion.region_exit@w/blind	11
+TIME	witnesses	30
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.region_exit.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_exit.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_exit.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.region_exit@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	27
+DONE

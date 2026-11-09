@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 652310,
+  "stop_reason": "end_turn",
+  "session_id": "5fec4092-176f-44bf-ba86-bc59529c55ba",
+  "total_cost_usd": 4.233529,
+  "usage": {
+   "input_tokens": 40,
+   "cache_creation_input_tokens": 174945,
+   "cache_read_input_tokens": 2359610,
+   "output_tokens": 52006,
+   "output_tokens_details": {
+    "thinking_tokens": 37474
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 174945,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 914,
+     "cache_read_input_tokens": 177938,
+     "cache_creation_input_tokens": 2473,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2473
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39090,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003924,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 52006,
+    "cacheReadInputTokens": 2359610,
+    "cacheCreationInputTokens": 174945,
+    "webSearchRequests": 0,
+    "costUSD": 4.229605,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 37474,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 21,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Gate: `OK`** — first run, 1 of 6 used.\n\n## The rule (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_307_6a.lean`)\n\n- **Class of `v`**: the two admitted aggregates as `ru_aggregate` atoms on the binder with the aggregate ids as literals, conjoined — neither expanded into its classes.\n- **Applicability**: `existsRegion travel_region \"c\"` — the subject occupies `c`, `c`'s entrance end is an intersection `i` (`st_lane_enters`, `st_intersection`), and some signal head `d` governs `c` with `.since (rel_occupies v c) (yellowAlone d)`: the steady yellow alone at this or an earlier observation while the subject was on that carrier. `yellowAlone` is `shows circular_yellow` conjoined with the negation of every other indication spelling.\n- **Obligation**: the whole selection written again, universally (`forallRegion`/`forallDevice`, selection as antecedent) — at every carrier the subject occupies, every junction it enters and every head governing it, a `circular_red` face forbids `drv.motion.region_entry` of the subject at that junction.\n\n## The witnesses (8)\n\nThe four planned, the two planned branches, plus `branch_3` (yellow **with** a green left arrow, so never \"alone\" → not applicable: the only scene exercising the no-other-state conjunction) and `branch_4` (a second head governing the southern approach shows red while the car's own head shows yellow → compliant: the only scene that holds `dev_governs` in the obligation in place).\n\nTwo things worth knowing about the geometry, both recorded in the file headers:\n\n- Occupancy is stated per scene rather than derived from the reference point, because at the instant of entry the body lies across the lane and the junction at once.\n- `idle` and `branch_3` begin with the subject upstream of the recorded lane region, so the strong-since look-back is settled **false** at the first observation instead of running off the trace start — otherwise those witnesses would be unknown, not not-applicable.\n\n## Judgement calls, all in `task_result.md`\n\nThe enumeration's `unknown` counts as \"another state\" (a head with an unreadable face does not show the yellow alone); the obligation reads the duty at *every* selected carrier/junction/head, per the `st.lane_enters` contract's \"a rule never picks the carrier that favours the road user\"; the carrier quantifier stays over `travel_region` as the record names it, and the junction-as-carrier candidate is decided out by the record's own `dev_governs` conjunct rather than by an added exclusion. `narrowings` is empty — nothing is stated more narrowly than its words. No node defect and no concept defect found.",
+  "ttft_ms": 49598,
+  "type": "result",
+  "duration_ms": 657625,
+  "uuid": "c08a888d-9d7e-478b-87ad-8221a0013f40",
+  "ttft_stream_ms": 1503,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 100,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 17,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1503,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39090,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003924,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 52006,
+    "cacheReadInputTokens": 2359610,
+    "cacheCreationInputTokens": 174945,
+    "webSearchRequests": 0,
+    "costUSD": 4.229605,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 37474,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

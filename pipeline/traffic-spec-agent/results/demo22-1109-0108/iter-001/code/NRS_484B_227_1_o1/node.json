@@ -1,0 +1,181 @@
+{
+ "node_id": "NRS_484B_227_1_o1",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every vehicle driven upon a divided highway",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section or make any left turn, semicircular turn or U-turn,",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "except through an opening in the barrier or dividing section or space or at a crossover or intersection established by a public authority.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.highway",
+    "st.roadway",
+    "st.median_or_divider",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, claimed as ru.aggregate with that id. “a divided highway” is DEF-NRS-484A-070, “a highway divided into two or more roadways by means of a physical barrier or dividing section, constructed so as to impede the conflict of vehicular traffic traveling in opposite directions”: st.highway is the way, st.median_or_divider the “physical barrier or dividing section between roadways; opening attribute where a crossover exists”, st.roadway “the part of a highway improved for vehicular traffic, excluding shoulder; separate roadways of a divided highway are separate” — which carries the definition's division into roadways in the atom's own words — and st.on_way, “the public way (a highway region) a structure region lies on”, is what makes the divider and the roadways parts of one way. rel.occupies anchors the way to the subject. “driven upon” is read through controlled motion (narrowing on this span): the negation of drv.motion.standstill states that the vehicle is moving."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.roadway",
+    "rel.occupies",
+    "st.lane_direction",
+    "st.median_or_divider",
+    "st.on_way",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [
+    "drv.position.direction_component"
+   ],
+   "justification": "“the right-hand roadway” of a divided highway is the roadway of that way whose designated direction of travel is the one the vehicle travels in and which has the dividing section on its left. st.roadway is the atom for the roadway, with “separate roadways of a divided highway are separate” in its own contract, anchored by rel.occupies; st.on_way ties the roadway to the same way as the divider. The direction is read by drv.position.direction_component, the component of the vehicle's velocity along st.lane_direction, “direction of travel designated for a structure a vehicle travels in — … a roadway, one-way roadway or shoulder”. Which hand the roadway is on is prim.region_lateral_offset, “the signed lateral offset (m, left positive) of a structure region from a road user: the component, perpendicular to the road user's heading, of the vector from its reference point to the point of the region's boundary nearest that reference point”, read for the dividing section: a positive offset places the divider to the vehicle's left, which is the right-hand roadway of a way driven on the right. The primitive's own inputs are not claimed again. st.roadway's exclusion “not a stand-in for the sidewalk — 'not on the roadway' includes shoulder, verge and parking bays” is why the duty is written as a requirement to be on the right-hand roadway, so that a vehicle on the shoulder or the median of the divided highway is not read as complying."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "“an opening in the barrier or dividing section or space” and “a crossover” are st.median_or_divider's own “opening attribute where a crossover exists”, so the atom carries both words; “or intersection” is st.intersection, “the region where two roadways meet, bounded by the prolongation of their edges”. rel.occupies anchors the opening or the junction to the subject — the vehicle is within it — and st.on_way ties it to the same divided highway. “established by a public authority” is read through the presence of the feature (narrowing on this span)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle that is moving and whose footprint overlaps a highway on which a dividing space, barrier or section separates two or more roadways: a divided highway. The duty does not apply at an observation at which the vehicle's footprint overlaps an opening in that barrier or dividing section, a crossover, or an intersection on that way (s4).",
+ "obligation": "At each observation at which the applicability holds and the exception does not, the vehicle's footprint must overlap a roadway of that divided highway which is its right-hand roadway: the roadway whose designated direction of travel agrees with the vehicle's travel, so that the component of its velocity along that direction (drv.position.direction_component) is above the negative of p.wrong_way_speed_tolerance, and which has the dividing space, barrier or section to its left, so that prim.region_lateral_offset of that divider from the vehicle is at least p.lateral_offset_resolution. Where the vehicle occupies no such roadway of that way — it is on the other roadway, on the shoulder or on the median — the duty is violated; where the roadway's designated direction, the velocity or the divider's boundary is unobserved, the duty is unknown.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.wrong_way_speed_tolerance",
+  "p.lateral_offset_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“Every vehicle driven upon a divided highway” is read as the vehicle whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “drives” and “driven” through the vehicle's controlled motion, a vehicle moving on the road being taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "“the right-hand roadway” is read as the roadway of the divided highway whose designated direction of travel agrees with the vehicle's travel and which has the dividing section to the vehicle's left. The words name a hand, which on a way driven on the right is the side the divider is not on; reading the designation as well as the geometry keeps a vehicle that has crossed to the other roadway and runs along it in either direction outside the duty's compliance.",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "“established by a public authority” is read as the presence of the opening, crossover or junction on the road. That a feature is official, posted or designated by an authority is a legal status the ontology reads through the feature itself: the feature's presence is the evidence of that status, and a category no feature displays would be a legal region class, which this is not.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car moving at 25 m/s on a divided highway has crossed the central barrier and runs along the opposite roadway in the direction it was already travelling. The barrier's lateral offset from the car is negative — the divider is on its right — and the roadway's designated direction opposes its velocity; its footprint overlaps no roadway of that way that is its right-hand one, and it is not within any opening or junction.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car at 25 m/s on the nearside roadway of the divided highway: the roadway's designated direction agrees with its velocity and the central barrier lies to its left, well beyond the offset resolution.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car runs along a two-lane undivided highway with a painted centre line and no physical barrier or dividing section between the directions. The way is not a divided highway and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the designated direction of travel of structures absent: the divided highway, the barrier, the roadways and the car's velocity are recorded, but which roadway is the right-hand one for the car's travel cannot be read, so the duty is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The car's footprint overlaps a crossover recorded as an opening in the central dividing section of the divided highway as it crosses from one roadway to the other. The exception applies by its own words and the duty does not bite at that observation.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The car has left the nearside roadway and runs along the paved shoulder of the divided highway at 15 m/s, the barrier still to its left. Its footprint overlaps no roadway of the way, so it is not upon the right-hand roadway, and no opening or junction covers it.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled reading is read as a complete cessation from movement, set at the noise floor of vehicle speed measurement.",
+   "source": "stop-detection thresholds used in naturalistic-driving data reduction"
+  },
+  {
+   "name": "p.wrong_way_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "Direction-of-travel convention: the magnitude of the velocity component along a designated direction below which travel against that direction is not distinguished from standing, from lateral drift, or from the error of the mapped direction and the measured velocity.",
+   "source": "wrong-way-driving detection thresholds in traffic-surveillance practice"
+  },
+  {
+   "name": "p.lateral_offset_resolution",
+   "unit": "m",
+   "value": 0.5,
+   "convention": "Lateral-offset convention: the magnitude of a signed lateral offset below which the side a region lies on is not distinguished from straddling it, covering the error of the mapped boundary and the measured heading and position.",
+   "source": "lane-level map accuracy and positioning-error specifications"
+  }
+ ],
+ "gaps": []
+}

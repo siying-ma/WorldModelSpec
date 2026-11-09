@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.interaction.vehicle_file.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.vehicle_file.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.vehicle_file.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}}],"body":{"cmp":"ge","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"v","where":{"or":[{"same":[{"var":"v"},{"var":"u"}]},{"and":[{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]},{"and":[{"or":[{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"u"},{"var":"v"}],"measure":"rel_surface_gap"},"rhs":{"param":"file_reach"}}]}]}]}},"rhs":{"param":"min_member_count"}},"contract":"Road user u is one of a file of road users travelling one behind another at the observation: counting u itself, at least the minimum member count of road users have their heading aligned with u's within the same-direction tolerance, lie ahead of or behind u in the same lane, and are within the file reach of u, a distance the caller sets measured between the nearest points of the bodies. It is a relation of place, direction and spacing at the observation. It says nothing of why the road users travel together, of a common destination or origin, of an organizer, or of their speed: a caller that means a moving file states the motion itself. Not a stand-in for: a chain each of whose consecutive spaces is bounded — the reach is measured from u to each member, so a long file is read through the membership of each road user in turn — the class of the members, which the caller states, or a towed combination, which is one road user drawn by another.","definition":null,"id":"drv.interaction.vehicle_file","kind":"formula","narrowings":[{"kind":"reading","span":"are within the file reach of u, a distance the caller sets measured between the nearest points of the bodies","why":"The gap is read without a component — the distance between the nearest points of the two bodies — and the bound is inclusive: a road user whose body is exactly the file reach from u's is a member. The contract says `within` without fixing the boundary."},{"kind":"reading","span":"counting u itself","why":"u is counted as a member by identity (`same v u`), not by the three relations holding of u with itself: u is neither ahead of nor behind itself, so the conjunction would exclude it and no file could ever reach its member count. Every other road user is counted only through the relations."},{"kind":"reading","span":"lie ahead of or behind u in the same lane","why":"rel.ahead_behind_in_lane states one road user ahead of another along the direction of the lane they share, so the clause is written as that atom in both directions: v ahead of u, or u ahead of v (v behind u)."}],"params":[{"name":"min_member_count","unit":"count"},{"name":"file_reach","unit":"metre"},{"name":"same_direction_tolerance","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	rel_same_direction,rel_ahead_behind_in_lane,rel_surface_gap
+READS	rel_same_direction,rel_ahead_behind_in_lane,rel_surface_gap
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"ge","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"v","where":{"or":[{"same":[{"var":"v"},{"var":"u"}]},{"and":[{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_same_direction","params":[{"param":"same_direction_tolerance"}]},{"and":[{"or":[{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"u"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"u"},{"var":"v"}],"measure":"rel_surface_gap"},"rhs":{"param":"file_reach"}}]}]}]}},"rhs":{"param":"min_member_count"}}
+WITNESS	holds	drv.interaction.vehicle_file@w
+WITNESS	fails	drv.interaction.vehicle_file@w
+WITNESS	blind	drv.interaction.vehicle_file@w
+OCC	?v
+OCC	v,u
+OCC	v,u
+OCC	v,u
+OCC	u,v
+OCC	u,v
+INST	drv.interaction.vehicle_file@w	ok
+TIME	checks	2
+TIME	lint	14
+SCEN	holds	drv.interaction.vehicle_file@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.vehicle_file@w/holds	21
+SCEN	fails	drv.interaction.vehicle_file@w	violated	violated	ok
+TIME	scenario:drv.interaction.vehicle_file@w/fails	9
+SCEN	blind	drv.interaction.vehicle_file@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.vehicle_file@w/blind	12
+TIME	witnesses	42
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.vehicle_file.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.vehicle_file.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.vehicle_file.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.vehicle_file@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	46
+DONE

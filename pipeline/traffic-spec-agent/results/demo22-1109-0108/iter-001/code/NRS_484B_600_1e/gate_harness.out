@@ -1,0 +1,38 @@
+'TrafficSpec.Rules.NRS_484B_600_1e.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_600_1e.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"operationalizations":[],"residues":["The words add no observable condition and no restriction to the duty: they say that the cap binds whatever the other paragraphs of the subsection allow, so the duty is the same whether or not these words hold, and nothing in the scene is read for them."],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":22352},"unit":"metre_per_second"}},"residues":["The words add no observable condition and no restriction to the duty: they say that the cap binds whatever the other paragraphs of the subsection allow, so the duty is the same whether or not these words hold, and nothing in the scene is read for them."],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_600_1e","intentions":[],"laws":["NRS-484B-600-1e"],"narrowings":[],"obligation":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"lit":{"den":625,"num":22352},"unit":"metre_per_second"}},"residues":["The words add no observable condition and no restriction to the duty: they say that the cap binds whatever the other paragraphs of the subsection allow, so the duty is the same whether or not these words hold, and nothing in the scene is read for them."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_standstill,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	v
+OCC	v
+OCC	v
+LITERAL	22352/625	TrafficSpec.PUnit'.metrePerSecond
+TIME	occurrences	0
+TIME	checks	11
+TIME	lint	13
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	16
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	13
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	13
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	18
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	13
+TIME	witnesses	74
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1e.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_600_1e.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1e	2	4
+TIME	adequacy_start	8
+TIME	adequacy	84
+DONE

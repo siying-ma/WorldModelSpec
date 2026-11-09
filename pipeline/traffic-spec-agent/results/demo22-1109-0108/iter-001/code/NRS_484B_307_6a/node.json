@@ -1,0 +1,158 @@
+{
+ "node_id": "NRS_484B_307_6a",
+ "law_refs": [
+  "NRS-484B-307-6a"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "Where the signal is a steady yellow signal alone:",
+   "role": "trigger"
+  },
+  {
+   "id": "s1",
+   "text": "Vehicular traffic facing the signal",
+   "role": "subject"
+  },
+  {
+   "id": "c1",
+   "text": "is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter,",
+   "role": "condition"
+  },
+  {
+   "id": "ob1",
+   "text": "and such vehicular traffic must not enter the intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "c2",
+   "text": "when the red signal is exhibited.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "'the signal is a steady yellow signal alone' is dev.traffic_signal, 'a signal head', read in its state circular_yellow: the enumeration lists circular_yellow for a steady yellow face, and since 'several states may be displayed at once', 'alone' is read as that state being displayed and no other state of the head being displayed at the observation. The atom is a device and not a sign, and no sign atom is claimed; the head read is the one governing the subject's approach, which the subject span binds."
+  },
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the term DEF-NRS-484A-285 defines, 'pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel', admitted as the aggregate ru.aggregate=DEF-NRS-484A-285::traffic and claimed as one atom. The law's own word 'vehicular' qualifies it and limits which of its members the duty reads: of the classes the definition includes -- pedestrians, ridden or herded animals, vehicles and other conveyances -- the duty reads the vehicles, leaving out pedestrians and ridden or herded animals, so the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle is claimed beside it as the second class element, each as one atom and neither expanded into the classes it covers. 'facing the signal' is read as the ontology directs for an approach: the road user occupies (rel.occupies) a carrier of kind st.travel_region whose entrance end is the intersection (st.lane_enters, st.intersection) and which the head governs, dev.governs being 'the travel regions whose traffic the device controls', with dev.traffic_signal the head itself. dev.governs is not a stand-in for a position, and the facing is not read from the subject's heading: the ontology fixes which approach a road user is on by the carrier it occupies and that carrier's entrance, never by its velocity or heading."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.region_entry"
+   ],
+   "justification": "'must not enter the intersection' is the event drv.motion.region_entry denotes, 'the road user's footprint comes to overlap a structure region at the observation ... the event of that coming to overlap', read on the junction region of kind st.intersection ('the region where two roadways meet, bounded by the prolongation of their edges') that the subject's carrier enters, with rel.occupies the anchor to the subject's own footprint and the kind-ranging relation the region quantifier needs. The concept is the entry and not the lying inside: a road user already within the junction when the red is exhibited makes no entry, which is what the words forbid. st.intersection is not a stand-in for a crosswalk or a stop line."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "'when the red signal is exhibited' is dev.traffic_signal in its state circular_red, the enumeration's value for a steady red face, read on the same head that governs the subject's carrier (dev.governs, 'the travel regions whose traffic the device controls'), so that a red face governing another approach of the junction does not forbid this entry. The condition is read at the observation of the entry the obligation judges, since the words tie the exhibition to the moment of entering."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "c1",
+   "why": "'is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter' adds no observable condition to the prohibition: it states what the yellow face tells the driver, and the duty that follows is the same whether or not the green movement is in fact being terminated or the red in fact follows immediately. What a driver was warned of is a state of mind no trace carries, and reading the clause as a condition would make the rule apply only where the signal's programme is known, which is narrower than the words.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject is a road user of the traffic aggregate that is also a vehicle, occupying a carrier whose entrance end is an intersection and which a traffic-signal head governs, and that head displayed a steady circular yellow and no other state at the judged observation or at an earlier observation while the subject was on that carrier.",
+ "obligation": "The subject must not enter that intersection -- its footprint must not come to overlap the junction region -- at an observation at which the head governing its carrier exhibits a steady circular red.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "The words join a trigger stated of the yellow face to a prohibition conditioned on the red face, which the head cannot display as its only state at one and the same observation. The prohibition is therefore read over the approach: the duty arises for a road user that faced the steady yellow alone on that carrier, and it forbids an entry made at an observation at which the governing head exhibits the red. A reading that required both faces at one observation would make the prohibition empty.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car occupies a lane that enters a signalised junction, and the head governing that lane shows a steady circular yellow alone. Two seconds later the head shows circular red, and at that observation the car's footprint comes to overlap the junction region for the first time.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same lane and head. The car faces the steady yellow, brakes and comes to rest short of the junction, its footprint never overlapping the junction region while the head shows red; no other road user is in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The head governing the car's lane shows a steady circular green throughout and never a steady yellow alone: the trigger never holds and the rule is not engaged, even though the car enters the junction.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car faces the steady yellow and later enters the junction, but at the entry observation the source reports no state for the head governing its lane, so whether the red was exhibited is unknown.",
+   "masked": [
+    "dev.traffic_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car faces the steady yellow and crosses into the junction while the head still shows the yellow, the red appearing only after its whole body is inside: the entry was not made at an observation at which the red was exhibited.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A pedestrian on a crosswalk at the same junction faces the same head after it has shown steady yellow alone and steps into the junction region while the red is exhibited: the subject is not of the vehicle aggregate, so the duty this rule states does not bind it.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": []
+}

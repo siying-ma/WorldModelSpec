@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.reverse_travel.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.reverse_travel.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.reverse_travel.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}}],"body":{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"reverse_speed_tolerance"}}},"contract":"The road user is travelling rearward at the observation: the component of its velocity along the direction its body points is at most the negative of the reverse speed tolerance, a speed the caller sets, so that a rearward component smaller than it is read as none. The concept states the direction of the body's motion relative to the direction it points, at the observation only, and says nothing of how long the rearward motion lasts or where it happens. Not a stand-in for: the gear selected — a body in a forward gear rolls backwards on a grade and one in reverse stands still — a reversing lamp or any other signal, a halt, a turn, or the place the motion happens at.","definition":null,"id":"drv.motion.reverse_travel","kind":"formula","narrowings":[],"params":[{"name":"reverse_speed_tolerance","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,kin_heading
+READS	kin_velocity,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"reverse_speed_tolerance"}}}
+WITNESS	holds	drv.motion.reverse_travel@w
+WITNESS	fails	drv.motion.reverse_travel@w
+WITNESS	blind	drv.motion.reverse_travel@w
+OCC	u
+OCC	u
+OCC	u
+OCC	u
+INST	drv.motion.reverse_travel@w	ok
+TIME	checks	2
+TIME	lint	2
+SCEN	holds	drv.motion.reverse_travel@w	compliant	compliant	ok
+TIME	scenario:drv.motion.reverse_travel@w/holds	8
+SCEN	fails	drv.motion.reverse_travel@w	violated	violated	ok
+TIME	scenario:drv.motion.reverse_travel@w/fails	6
+SCEN	blind	drv.motion.reverse_travel@w	unknown	unknown	ok
+TIME	scenario:drv.motion.reverse_travel@w/blind	9
+TIME	witnesses	23
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.reverse_travel.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.reverse_travel.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.reverse_travel.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.reverse_travel@w	1	2
+TIME	adequacy_start	4
+TIME	adequacy	27
+DONE

@@ -1,0 +1,4 @@
+Arguments: `u` (a track).
+Parameters (bounds the caller sets): `heading_step` in ms, `onset_yaw_rate` in deg/s, `turn_angle` in deg.
+It holds at an observation exactly when:
+the heading change of `u` since (the measured `kin_yaw_rate` of `u` [rate of change of heading, positive when the heading turns to the left (counter-clockwise) **Not a stand-in for:** road curvature — a vehicle yaws on a straight road whenever it manoeuvres] is more than `onset_yaw_rate` (a parameter the caller sets)) last became true, integrated with steps of at most `heading_step` (a parameter the caller sets) is at least `turn_angle` (a parameter the caller sets)

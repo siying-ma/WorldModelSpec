@@ -1,0 +1,624 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 11 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "not": {
+       "args": [
+        {
+         "var": "v"
+        }
+       ],
+       "derived": "drv_motion_standstill",
+       "params": [
+        {
+         "param": "p.standstill_speed_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "w"
+          }
+         ],
+         "atom": "st_highway",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "w"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "and": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   }
+                  ],
+                  "atom": "st_median_or_divider",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "var": "w"
+                   }
+                  ],
+                  "atom": "st_on_way",
+                  "params": []
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "median_or_divider"
+               },
+               "var": "d"
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "rw1"
+                   }
+                  ],
+                  "atom": "st_roadway",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "rw1"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "atom": "st_on_way",
+                    "params": []
+                   },
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "rw2"
+                        }
+                       ],
+                       "atom": "st_roadway",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "rw2"
+                          },
+                          {
+                           "var": "w"
+                          }
+                         ],
+                         "atom": "st_on_way",
+                         "params": []
+                        },
+                        {
+                         "not": {
+                          "same": [
+                           {
+                            "var": "rw1"
+                           },
+                           {
+                            "var": "rw2"
+                           }
+                          ]
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "roadway"
+                    },
+                    "var": "rw2"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "rw1"
+              }
+             ]
+            },
+            {
+             "not": {
+              "or": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "o"
+                    }
+                   ],
+                   "atom": "st_median_or_divider",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "o"
+                      }
+                     ],
+                     "atom": "st_median_or_divider_opening",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "o"
+                        },
+                        {
+                         "var": "w"
+                        }
+                       ],
+                       "atom": "st_on_way",
+                       "params": []
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "v"
+                        },
+                        {
+                         "var": "o"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "median_or_divider"
+                },
+                "var": "o"
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "x"
+                    }
+                   ],
+                   "atom": "st_intersection",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "x"
+                      },
+                      {
+                       "var": "w"
+                      }
+                     ],
+                     "atom": "st_on_way",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "v"
+                      },
+                      {
+                       "var": "x"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "intersection"
+                },
+                "var": "x"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "w"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_227_1_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s2",
+     "why": "“the right-hand roadway” has “the dividing space, barrier or section” of the way to its left: the side is read of some dividing section of that way, not of every one. A divided highway's barrier is mapped as a run of sections — a crossover or a junction interrupts it — and the words name the division of the way, so the section whose side the duty reads is the one beside the vehicle."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "w"
+        }
+       ],
+       "atom": "st_highway",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "w"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "and": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 }
+                ],
+                "atom": "st_median_or_divider",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "d"
+                 },
+                 {
+                  "var": "w"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "median_or_divider"
+             },
+             "var": "d"
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "rw1"
+                 }
+                ],
+                "atom": "st_roadway",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "rw1"
+                   },
+                   {
+                    "var": "w"
+                   }
+                  ],
+                  "atom": "st_on_way",
+                  "params": []
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "rw2"
+                      }
+                     ],
+                     "atom": "st_roadway",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "rw2"
+                        },
+                        {
+                         "var": "w"
+                        }
+                       ],
+                       "atom": "st_on_way",
+                       "params": []
+                      },
+                      {
+                       "not": {
+                        "same": [
+                         {
+                          "var": "rw1"
+                         },
+                         {
+                          "var": "rw2"
+                         }
+                        ]
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "roadway"
+                  },
+                  "var": "rw2"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "roadway"
+             },
+             "var": "rw1"
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "rw"
+               }
+              ],
+              "atom": "st_roadway",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "rw"
+                 },
+                 {
+                  "var": "w"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "rw"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "cmp": "gt",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "v"
+                      },
+                      {
+                       "var": "rw"
+                      }
+                     ],
+                     "params": [],
+                     "quantity": "drv_position_direction_component"
+                    },
+                    "rhs": {
+                     "neg": {
+                      "param": "p.wrong_way_speed_tolerance"
+                     }
+                    }
+                   },
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "d"
+                        }
+                       ],
+                       "atom": "st_median_or_divider",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "d"
+                          },
+                          {
+                           "var": "w"
+                          }
+                         ],
+                         "atom": "st_on_way",
+                         "params": []
+                        },
+                        {
+                         "cmp": "ge",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "v"
+                           },
+                           {
+                            "var": "d"
+                           }
+                          ],
+                          "params": [],
+                          "quantity": "prim_region_lateral_offset"
+                         },
+                         "rhs": {
+                          "param": "p.lateral_offset_resolution"
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "median_or_divider"
+                    },
+                    "var": "d"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "rw"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "w"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s2",
+    "why": "“the right-hand roadway” has “the dividing space, barrier or section” of the way to its left: the side is read of some dividing section of that way, not of every one. A divided highway's barrier is mapped as a run of sections — a crossover or a junction interrupts it — and the words name the division of the way, so the section whose side the duty reads is the one beside the vehicle."
+   }
+  ],
+  "context": "b40a85dd1f4796f7a870f2ab",
+  "candidate_digest": "72d6c712aa5da5b20f3beb3ed768c0770f8ee0e440fb68a7d21d7849dfd561b7"
+ }
+}

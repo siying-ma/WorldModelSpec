@@ -1,0 +1,512 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 15 names, composes nothing",
+  "narrowings declared by the coder: 2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "and": [
+          {
+           "and": [
+            {
+             "since": [
+              "tt",
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            },
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "int": "int.turn"
+            }
+           ]
+          },
+          {
+           "body": {
+            "implies": [
+             {
+              "args": [
+               {
+                "var": "c2"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "atom": "st_lane_enters",
+              "params": []
+             },
+             {
+              "body": {
+               "implies": [
+                {
+                 "args": [
+                  {
+                   "var": "c2"
+                  },
+                  {
+                   "var": "w"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "body": {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "md"
+                      },
+                      {
+                       "var": "w"
+                      }
+                     ],
+                     "atom": "st_on_way",
+                     "params": []
+                    }
+                   },
+                   "forall_region": {
+                    "lit": "median_or_divider"
+                   },
+                   "var": "md"
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "r1"
+                       },
+                       {
+                        "var": "w"
+                       }
+                      ],
+                      "atom": "st_on_way",
+                      "params": []
+                     },
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "r2"
+                          },
+                          {
+                           "var": "w"
+                          }
+                         ],
+                         "atom": "st_on_way",
+                         "params": []
+                        },
+                        {
+                         "cmp": "lt",
+                         "lhs": {
+                          "add": [
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "r1"
+                               },
+                               {
+                                "lit": "x"
+                               }
+                              ],
+                              "measure": "st_lane_direction"
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "r2"
+                               },
+                               {
+                                "lit": "x"
+                               }
+                              ],
+                              "measure": "st_lane_direction"
+                             }
+                            ]
+                           },
+                           {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "r1"
+                               },
+                               {
+                                "lit": "y"
+                               }
+                              ],
+                              "measure": "st_lane_direction"
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "r2"
+                               },
+                               {
+                                "lit": "y"
+                               }
+                              ],
+                              "measure": "st_lane_direction"
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "rhs": {
+                          "lit": {
+                           "den": 1,
+                           "num": 0
+                          },
+                          "unit": "ratio"
+                         }
+                        }
+                       ]
+                      },
+                      "exists_region": {
+                       "lit": "roadway"
+                      },
+                      "var": "r2"
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "roadway"
+                   },
+                   "var": "r1"
+                  }
+                 ]
+                }
+               ]
+              },
+              "forall_region": {
+               "lit": "highway"
+              },
+              "var": "w"
+             }
+            ]
+           },
+           "forall_region": {
+            "lit": "travel_region"
+           },
+           "var": "c2"
+          }
+         ]
+        },
+        {
+         "since": [
+          "tt",
+          {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "derived": "drv_motion_region_entry",
+           "params": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "args": [
+        {
+         "var": "v"
+        }
+       ],
+       "derived": "drv_motion_left_turn",
+       "params": [
+        {
+         "param": "p.heading_since_step_carla_scene_graph"
+        },
+        {
+         "param": "p.turn_onset_yaw_rate"
+        },
+        {
+         "param": "p.left_turn_angle"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_400_2b",
+   "intentions": [
+    "int.turn"
+   ],
+   "laws": [
+    "NRS-484B-400-2b"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s7",
+     "why": "The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges."
+    },
+    {
+     "kind": "reading",
+     "span": "s7",
+     "why": "'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "and": [
+          {
+           "since": [
+            "tt",
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "c"
+                 },
+                 {
+                  "var": "i"
+                 }
+                ],
+                "atom": "st_lane_enters",
+                "params": []
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "travel_region"
+             },
+             "var": "c"
+            }
+           ]
+          },
+          {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "int": "int.turn"
+          }
+         ]
+        },
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "derived": "drv_motion_region_exit",
+         "params": []
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "v"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "body": {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "cl"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "cmp": "ge",
+              "lhs": {
+               "args": [
+                {
+                 "var": "v"
+                },
+                {
+                 "var": "cl"
+                }
+               ],
+               "params": [],
+               "quantity": "prim_region_lateral_offset"
+              },
+              "rhs": {
+               "param": "p.lateral_offset_resolution"
+              }
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "centre_line"
+           },
+           "var": "cl"
+          },
+          "defined_when": {
+           "body": {
+            "args": [
+             {
+              "var": "cl"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "centre_line"
+           },
+           "var": "cl"
+          }
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "highway"
+       },
+       "var": "h"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s7",
+    "why": "The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges."
+   },
+   {
+    "kind": "reading",
+    "span": "s7",
+    "why": "'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour."
+   }
+  ],
+  "context": "1322357ccba04810891f0cc2",
+  "candidate_digest": "7910791c6158460c7bf0e14a268e39640a20486c4f333fc04695f77bebfe7d27"
+ }
+}

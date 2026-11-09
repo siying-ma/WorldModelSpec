@@ -1,0 +1,221 @@
+{
+ "node_id": "NRS_484B_227_1_o2",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every vehicle driven upon a divided highway",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "s3",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section or make any left turn, semicircular turn or U-turn,",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "except through an opening in the barrier or dividing section or space or at a crossover or intersection established by a public authority.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.highway",
+    "st.roadway",
+    "st.median_or_divider",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, claimed as ru.aggregate with that id. “a divided highway” is DEF-NRS-484A-070, “a highway divided into two or more roadways by means of a physical barrier or dividing section”: st.highway is the way, st.median_or_divider the “physical barrier or dividing section between roadways; opening attribute where a crossover exists”, st.roadway the part improved for vehicular traffic, whose contract states that “separate roadways of a divided highway are separate”, and st.on_way what makes them parts of one way. rel.occupies anchors the way to the subject, and the negation of drv.motion.standstill carries “driven” as controlled motion (narrowing on this span)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [
+    "drv.motion.left_turn",
+    "drv.motion.u_turn"
+   ],
+   "justification": "“driven over, across or within any dividing space, barrier or section” is the overlap of the vehicle's footprint with st.median_or_divider, the “physical barrier or dividing section between roadways”, read through rel.occupies, “a road user's footprint overlaps a lane / region (… median …)”: over, across and within are all the overlap of the body with that region, there being no observable difference between driving over a dividing section and being within it at an observation. “any left turn” is drv.motion.left_turn, the turn to the left recognized when the heading change accumulated since the onset of the turn reaches the turn angle, and “U-turn” is drv.motion.u_turn, which carries the posted definition DEF-NRS-484B-077, “the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not”; both read kin.yaw_rate, “rate of change of heading, positive when the heading turns to the left”, whose exclusion of road curvature does not apply because the body's yaw and not the road's bend is read. st.highway with st.on_way and rel.occupies carries “upon a highway” in the U-turn definition for the way the vehicle is on. “semicircular turn” is read through the same two concepts (narrowing on this span)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "“an opening in the barrier or dividing section or space” and “a crossover” are st.median_or_divider's own “opening attribute where a crossover exists”, so the atom carries both; “or intersection” is st.intersection, “the region where two roadways meet, bounded by the prolongation of their edges”. rel.occupies anchors the opening or junction to the subject and st.on_way ties it to the same divided highway. “established by a public authority” is read through the presence of the feature (narrowing on this span)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle that is moving and whose footprint overlaps a highway on which a dividing space, barrier or section separates two or more roadways: a divided highway.",
+ "obligation": "At no observation may the vehicle (a) have its footprint overlapping the dividing space, barrier or section of that way (rel.occupies on st.median_or_divider), or (b) be recognized as having made a left turn (drv.motion.left_turn with p.turn_onset_yaw_rate, p.left_turn_angle and p.heading_since_step_carla_scene_graph) or a turn reversing its direction of travel (drv.motion.u_turn with p.turn_onset_yaw_rate, p.u_turn_reversal_angle and the same step bound) upon that way. The exception of s4 excuses an act only where the vehicle's footprint overlaps an opening in the barrier or dividing section, a crossover or an intersection on that way throughout the act — from the onset of the turn to its recognition — so a turn begun at an opening and completed on the travelled roadway beyond it is not excused. Where the yaw rate since the onset, the divider's region or the vehicle's occupancy of the opening is unobserved, the duty is unknown.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_onset_yaw_rate",
+  "p.left_turn_angle",
+  "p.u_turn_reversal_angle"
+ ],
+ "occasion": {
+  "act": [
+   "drv.motion.left_turn",
+   "drv.motion.u_turn"
+  ],
+  "boundary": "event",
+  "onset": {
+   "words": "the observation at which the vehicle's rate of change of heading first rose above the onset yaw rate, counted from zero at that observation",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "kin.yaw_rate is “rate of change of heading, positive when the heading turns to the left, in deg/s”, which is the quantity whose rise marks the beginning of the turning; its exclusion “not a stand-in for road curvature — a vehicle yaws on a straight road whenever it manoeuvres” is why the onset is read from the body's yaw and not from the road, and the same atom is what the accumulated heading change since that onset is integrated from."
+  },
+  "recognition": "the observation at which the heading change accumulated since that onset first reaches the turn angle of the left-turn concept, or the reversal angle of the U-turn concept",
+  "under_way": {
+   "words": "the vehicle's rate of change of heading stands above the onset yaw rate, or the heading change accumulated since the onset stands clear of zero, at the observation",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "An observation inside the act is told from one before it began by the vehicle's own motion: kin.yaw_rate, “rate of change of heading, positive when the heading turns to the left”, is above the onset rate while the body is turning, and the heading change integrated from the same atom since the onset is non-zero from the onset on, whereas before the onset no such accumulation exists. No region or place is read, since the vehicle occupied the same roadway and the same way before the turn began."
+  },
+  "spans": {
+   "s4": "throughout"
+  }
+ },
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“Every vehicle driven upon a divided highway” is read as the vehicle whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “drives” and “driven” through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "“semicircular turn” is read through the same two concepts as the other turns the span names: a turn through a half circle is a turn whose heading change reaches the reversal angle, which is what the U-turn concept recognizes, and one made to the left also reaches the left-turn angle. No separate concept is proposed, because a semicircular turn differs from the reversal the U-turn definition states only in the path's shape, which no contract of the vocabulary tells apart from the heading change, and the span names both words as members of one list of prohibited turns.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "“driven over, across or within” is read as the overlap of the vehicle's footprint with the dividing space, barrier or section at the observation. The three prepositions name one observable fact — the body on that region — since a body that is driven over or across a dividing section overlaps it at some observation of the crossing, and no contract distinguishes passing over it from standing within it.",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "“established by a public authority” is read as the presence of the opening, crossover or junction on the road. That a feature is official or designated by an authority is a legal status the ontology reads through the feature itself: its presence is the evidence of that status.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a divided highway with a kerbed central dividing section, a car running at 12 m/s swings to the left: its yaw rate rises well above the onset rate, and about two seconds later the heading change accumulated since that onset passes the left-turn angle while its footprint overlaps the dividing section. No opening, crossover or junction covers any observation of the turn.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car runs straight along the nearside roadway of the divided highway for the whole recording: its yaw rate never rises above the onset rate, no heading change accumulates, and its footprint never overlaps the central dividing section.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car makes a U-turn on a two-lane undivided highway with a painted centre line and no physical barrier or dividing section. The way is not a divided highway and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the yaw rate of road users absent: the divided highway, the dividing section and the car's track are recorded, but no heading change can be integrated, so whether a left turn or a reversal was made is unknown and the duty is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "occasion_s4",
+   "expected": "violated",
+   "narrative": "The car begins a U-turn inside a crossover recorded as an opening in the central dividing section: at the onset and for the first second its footprint overlaps the opening, but it swings wide and completes the reversal with its body on the travelled roadway beyond the opening, where the heading change reaches the reversal angle. The exception holds for part of the act only, and a part-covered act is not excused.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s4_outside",
+   "expected": "not_applicable",
+   "narrative": "The car runs along the nearside roadway, its body clear of any opening, and then turns left into a junction established on that way: from the onset of the turn to the observation at which the heading change reaches the turn angle its footprint overlaps that junction region throughout, although it did not before the turn began. The exception covers the whole act and the duty does not bite on it.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled reading is read as a complete cessation from movement, set at the noise floor of vehicle speed measurement.",
+   "source": "stop-detection thresholds used in naturalistic-driving data reduction"
+  },
+  {
+   "name": "p.turn_onset_yaw_rate",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "Manoeuvre-onset convention: the rate of change of heading above which a body is read as turning rather than running straight with sensor noise and small corrections, which fixes the observed beginning from which a turn's heading change is counted.",
+   "source": "yaw-rate onset thresholds in manoeuvre-segmentation practice"
+  },
+  {
+   "name": "p.left_turn_angle",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "Turn-recognition convention: the heading change accumulated since the onset at which a turn to the left is recognized as a turn rather than a lane change or a curve, taken from the smallest angle a junction turn subtends.",
+   "source": "turn-classification angle thresholds in trajectory-based manoeuvre recognition"
+  },
+  {
+   "name": "p.u_turn_reversal_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "Reversal convention: the accumulated heading change at which the definition's proceeding in the opposite direction is recognized, set below a half turn so that a reversal completed between sampled observations or on a skewed way is still recognized.",
+   "source": "U-turn detection angle thresholds in trajectory-based manoeuvre recognition"
+  }
+ ],
+ "gaps": []
+}

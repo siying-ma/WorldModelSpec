@@ -1,0 +1,68 @@
+{
+ "concept_id": "drv.interaction.following",
+ "kind": "formula",
+ "contract": "Road user a is following road user b at the observation: b is ahead of a in the same lane along that lane's direction of travel, and the two bodies' headings are aligned within the same-direction tolerance, a cosine the caller sets. It is a relation of place and direction at the observation; it states no gap, no speed, no duration and no intention. Not a stand-in for: the size of the space between the two — a caller that bounds a space reads the gap atom itself — overtaking or passing, two road users abreast in neighbouring lanes, or a towed combination, which is one road user drawn by another.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "same_direction_tolerance",
+   "unit": "ratio",
+   "meaning": "the cosine of the largest angle between the two headings still read as the same direction, a ratio between minus one and one"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b is ahead of a in the same lane along that lane's direction of travel",
+   "atoms": [
+    "rel.ahead_behind_in_lane"
+   ],
+   "concepts": [],
+   "justification": "rel.ahead_behind_in_lane is “a is ahead of / behind b in the same lane, along the lane direction”, which is exactly the ordering and the frame this contract states; no other atom carries an in-lane order, rel.bearing giving only a direction in the subject's frame."
+  },
+  {
+   "span": "the two bodies' headings are aligned within the same-direction tolerance",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction is “headings aligned: the cosine of the angle between the headings is above its tolerance, which is the cosine of the largest angle allowed, a ratio between -1 and 1”; the tolerance is the atom's own parameter, which this concept exposes as its formal parameter."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car runs in the same lane as a van, 30 m behind it, both headings within a few degrees of each other along the lane.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The car runs abreast of the van in the neighbouring lane: neither is ahead of the other in the same lane.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same pair with the source declaring the in-lane order of road users absent: whether the van is ahead of the car in its lane cannot be read.",
+   "masked": [
+    "rel.ahead_behind_in_lane"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_127_1",
+  "NRS_484B_127_2"
+ ]
+}

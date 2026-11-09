@@ -1,0 +1,73 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 3 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "not": {
+     "args": [
+      {
+       "var": "v"
+      }
+     ],
+     "derived": "drv_motion_standstill",
+     "params": [
+      {
+       "param": "p.standstill_speed_tolerance"
+      }
+     ]
+    }
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_600_1e",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-600-1e"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "cmp": "le",
+    "lhs": {
+     "args": [
+      {
+       "var": "v"
+      }
+     ],
+     "measure": "kin_speed"
+    },
+    "rhs": {
+     "lit": {
+      "den": 625,
+      "num": 22352
+     },
+     "unit": "metre_per_second"
+    }
+   },
+   "residues": [
+    "The words add no observable condition and no restriction to the duty: they say that the cap binds whatever the other paragraphs of the subsection allow, so the duty is the same whether or not these words hold, and nothing in the scene is read for them."
+   ],
+   "surrogate": false
+  },
+  "context": "ec300f30916d438eb350e155",
+  "candidate_digest": "564b5e09c3be490e787c2f9fd7f6d15f771ca4222d25c2aeb3e19c0ffa4edf11"
+ }
+}

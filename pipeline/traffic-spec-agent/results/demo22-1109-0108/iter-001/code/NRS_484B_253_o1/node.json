@@ -1,0 +1,218 @@
+{
+ "node_id": "NRS_484B_253_o1",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "t1",
+   "text": "within an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "c1",
+   "text": "intending to turn to the left",
+   "role": "condition"
+  },
+  {
+   "id": "ob1",
+   "text": "shall yield the right-of-way to any vehicle approaching from the opposite direction which is within the intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "st1",
+   "text": "or so close thereto as to constitute an immediate hazard,",
+   "role": "standard"
+  },
+  {
+   "id": "sib1",
+   "text": "but such driver, having so yielded and having given a signal when and as required, may make such left turn and the drivers of all other vehicles approaching the intersection from the opposite direction shall yield the right-of-way to the vehicle making the left turn.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'The driver of a vehicle' binds the subject: DEF-NRS-484A-080 makes the driver the person who drives or is in actual physical control of the vehicle, and the ontology reads 'the driver' through the vehicle's controlled motion, so the duty binds that vehicle. Its class is the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom and never expanded into the classes it covers; the mapping index maps the same words to the same atom."
+  },
+  {
+   "span": "t1",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'within an intersection' is rel.occupies, 'a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, ...)', on a region of kind st.intersection, 'the region where two roadways meet, bounded by the prolongation of their edges'. rel.occupies is the anchor that makes the junction the subject's own and the kind-ranging relation the region quantifier needs; st.intersection is not a stand-in for a crosswalk or a stop line, and none is read here. The junction this element binds is the one every later condition of this node reads, the intention's target included."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.lane_direction",
+    "rel.surface_gap",
+    "rel.contact",
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [],
+   "justification": "'any vehicle' is the term DEF-NRS-484A-320 defines, the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom for the road users quantified over inside the obligation. 'approaching from the opposite direction' is read as the ontology directs, since rel.oncoming is 'not a stand-in for the direction a road user approaches from -- that is read through the carrier it approaches through, any carrier st.lane_enters admits ..., whose entrance end is the intersection, and through that carrier's direction (st.lane_direction) at the same instant': the other vehicle occupies (rel.occupies) a carrier of kind st.travel_region whose entrance end is the junction t1 binds (st.lane_enters), and that carrier's designated direction is opposed to the direction of the carrier by which the subject came to the junction, their normalised dot product lying at or below the negative of p.same_direction_cosine_tolerance. This reading is what the words need here, because the subject's own heading swings through the turn while the direction it approached from does not change. 'which is within the intersection' is rel.occupies on the same st.intersection region. 'shall yield the right-of-way' is DEF-NRS-484A-210's right 'to proceed in a lawful manner in preference to another vehicle ... unless one grants precedence to the other': the subject grants precedence by not coming into contact with that vehicle (rel.contact, 'the bodies of two road users ... touch or overlap') and by not letting its closest approach to it fall below the clearance, which prim.closest_approach_within and prim.closest_approach_distance give under constant velocities within the horizon and rel.surface_gap measures between the nearest points of the two bodies, with kin.speed the subject's own speed. rel.surface_gap is not read as an order of arrival; rel.contact is not a stand-in for a near miss, which is why the primitives stand beside it."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st1",
+   "standard": "or so close thereto as to constitute an immediate hazard",
+   "concepts": [
+    "st.region_geometry",
+    "st.intersection",
+    "kin.speed",
+    "rel.surface_gap",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.yield_headway_time",
+    "p.yield_conflict_horizon",
+    "p.yield_min_clearance"
+   ],
+   "convention": "Gap-acceptance convention for a left turn across an opposing stream. 'So close thereto' is the oncoming vehicle's distance to the junction, which st.region_geometry gives as 'the ground distance from a road user's body outline to it'; the hazard is read by the degree to which the words hold, the distance divided by nothing but carried as a product -- the vehicle is so close where that distance is at most its own speed (kin.speed) times p.yield_headway_time, so a faster approach makes a greater distance count and a slower one a smaller. The immediacy of the hazard is read in the same breath by the conflict-avoidance convention: the closest approach between the two bodies under constant velocities within p.yield_conflict_horizon falling below p.yield_min_clearance, measured between the nearest points of the bodies by rel.surface_gap. Both bounds are the reading's, set from gap-acceptance tables for a permitted left turn, and neither is a figure of the law's.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "c1",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user is that it turn to the left at the region named as the declaration's target"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle's footprint overlaps an intersection and the source declares its current plan to be a left turn at that intersection. The declaration is read at the judged observation or earlier, never ahead of it, and the act of turning is not what engages the rule: an intention the plan still holds engages it even while the vehicle waits.",
+ "obligation": "At every such observation the subject must grant precedence to every vehicle of the aggregate that occupies a carrier whose entrance end is that intersection and whose designated direction is opposed to the direction of the subject's own approach carrier, and that either lies within the intersection or is so close to it as to constitute an immediate hazard -- its distance to the junction region at most its speed times p.yield_headway_time, or its closest approach to the subject under constant velocities within p.yield_conflict_horizon below p.yield_min_clearance. Granting precedence is: no contact with that vehicle, and no closest approach to it within p.yield_conflict_horizon below p.yield_min_clearance.",
+ "params": [
+  "p.same_direction_cosine_tolerance",
+  "p.yield_headway_time",
+  "p.yield_conflict_horizon",
+  "p.yield_min_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "'shall yield the right-of-way' is read as granting precedence in the two observable ways open to a vehicle already within the junction: no contact with the oncoming vehicle, and no closest approach within the horizon closer than the clearance. A deference that shows in neither is outside what a trace can check; the duty is not read as a prohibition on turning at all, which the words do not state.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob1",
+   "why": "'approaching from the opposite direction' is read through the designated direction of the carrier by which each vehicle reaches the junction, not through the two bodies' current headings: the subject's heading swings through the turn while the direction it approached from does not, and the ontology directs this reading for exactly these words.",
+   "kind": "reading"
+  },
+  {
+   "span": "s1",
+   "why": "'The driver of a vehicle' is read through the vehicle's controlled motion: who or what is at the controls is not observable, and the duty binds that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car stands within a junction with the source declaring its plan to be a left turn there. A van occupies the opposing approach lane, which enters the same junction with the opposite designated direction, and is already within the junction. The car turns across its path and the two bodies touch.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same junction and the same declared left turn, and no other road user anywhere in the scene: nothing is owed precedence, the duty is discharged, and the verdict is decided with the subject alone.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car stands within the junction and the source's current plan for it is to go straight through: no left turn is declared at that junction, so the rule is not engaged even though an opposing van is within the junction.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car within the junction is declared to intend a left turn and a van is on the opposing approach, but the source does not report the designated direction of the van's carrier, so whether it approaches from the opposite direction is unknown and the rule reports unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The oncoming van is not yet within the junction but is fifteen metres from it at 12 m/s, so its distance is under its speed times the headway bound: it is so close as to constitute an immediate hazard. The car turns left in front of it and their closest approach under constant velocities within the horizon falls to half a metre.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The oncoming van is a hundred and fifty metres from the junction at 10 m/s, neither within it nor within the headway bound, and no closest approach within the horizon comes near the clearance: the car completes its left turn with nothing owed precedence.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two directions still read as the same direction, set at thirty degrees; its negative is the bound at which two directions are read as opposed.",
+   "source": "The thirty-degree sector convention used for same-direction and opposed-direction tests in traffic conflict analysis."
+  },
+  {
+   "name": "p.yield_headway_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "Gap-acceptance convention: the headway, at the approaching vehicle's own speed, within which that vehicle is read as so close to the junction as to constitute an immediate hazard, being the time a turning or crossing vehicle needs to clear its path.",
+   "source": "Critical gap and follow-up headway practice for permitted left turns and crossing manoeuvres (Highway Capacity Manual)."
+  },
+  {
+   "name": "p.yield_conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities is read as the 'danger of a crash' the right-of-way definition names, rather than as a passing of two road users on diverging paths.",
+   "source": "Surrogate-safety practice for time-to-conflict measures at junctions (post-encroachment and time-to-collision thresholds of two to three seconds)."
+  },
+  {
+   "name": "p.yield_min_clearance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Conflict-avoidance convention: the clearance between the nearest points of two bodies below which a closest approach is read as a failure to grant precedence rather than as a safe passing.",
+   "source": "Lateral and longitudinal clearance practice for passing a road user at low speed in a junction."
+  }
+ ],
+ "gaps": []
+}

@@ -1,0 +1,224 @@
+{
+ "node_id": "NRS_484B_400_2b",
+ "law_refs": [
+  "NRS-484B-400-2b"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "intends to turn",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "at an intersection and:",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "Both intersecting highways are two-directional:",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "After entering the intersection,",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "the left turn",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "must be made so as to leave the intersection to the right of the centerline of the highway being entered.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a legal aggregate and the definitions table admits DEF-NRS-484A-320::vehicle for this law; ru.aggregate carries 'membership of a legal aggregate: the atom's literal argument is an aggregate id', so the words are claimed as the one atom with that id. The mapping index maps these same words in NRS_484B_400_2a to this atom and they mean the same here. Exclusions: not a stand-in for a named road-user class, since no class atom is used and the aggregate stays one atom; not a stand-in for a relational role such as who drives or controls a vehicle, so 'the driver' is not carried by the aggregate but read through the vehicle's controlled motion (narrowing on this span)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Reuse of the mapping index for these same words in NRS_484B_400_2a. st.intersection is 'the region where two roadways meet, bounded by the prolongation of their edges', the junction the words name; rel.occupies, 'a road user's footprint overlaps a lane / region', anchors the vehicle to the carrier it is on, and st.lane_enters gives 'the intersection region a directed approach carrier runs into at its entrance end', so the intersection the words single out is the one the carrier the vehicle occupies enters; st.travel_region, 'the union of the kinds a device can govern: a lane and the kinds that refine it ... a roadway ... or an intersection', is the kind the carrier quantifier ranges over. Exclusions: st.intersection is not a stand-in for a crosswalk or a stop line, neither of which is read; st.lane_enters is not a stand-in for lane connectivity or for the subject's presence in the intersection, which rel.occupies carries; st.travel_region is not a stand-in for the extent of a highway, read by its own atom on s4."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.intersection",
+    "st.lane_direction",
+    "st.lane_enters",
+    "st.median_or_divider",
+    "st.on_way",
+    "st.roadway",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Reuse of the mapping index for these same words in NRS_484B_400_2a. DEF-NRS-484B-073 defines a two-directional highway as 'an undivided highway upon which vehicles are allowed to proceed in opposite directions': st.median_or_divider, 'physical barrier or dividing section between roadways', carries 'undivided' by the absence of such a region on the way, and st.lane_direction, 'direction of travel designated for a structure a vehicle travels in ... a roadway, one-way roadway or shoulder', carries 'proceed in opposite directions' by two carriers of the same way carrying opposed designated directions. The two ways are reached through the junction: st.lane_enters names the carriers whose entrance end is that intersection, st.travel_region is the kind they are quantified by, st.roadway 'the part of a highway improved for vehicular traffic' is the kind whose directions are designated, st.on_way 'the public way (a highway region) a structure region lies on' and st.highway 'the entire public way between its boundary lines' give the highway each carrier lies on, st.intersection the junction itself, and rel.occupies anchors the subject. Exclusions: st.median_or_divider is read for the physical barrier its contract denotes and not for a legal designation of a highway, which would be an assumption; st.lane_direction is local to its carrier, which is why it is read on the carriers of each intersecting way and not at a point; st.roadway is not a stand-in for the sidewalk, which is not read."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.region_entry"
+   ],
+   "justification": "drv.motion.region_entry is 'the road user's footprint comes to overlap a structure region at the observation: it overlaps the region at the observation and did not overlap it at the observation before ... the event of that coming to overlap', which is 'entering the intersection'; the region formal is bound to the intersection s3 singles out, so the entry is into that junction and not into any region of its kind. rel.occupies anchors the vehicle on the region and st.intersection is the kind the region quantifier names. The mapping index maps 'prior to entering an intersection' to the same carriers. Exclusions: the concept is not a stand-in for lying within the region afterwards, which rel.occupies carries on its own, nor for the carrier the road user came through."
+  },
+  {
+   "span": "s6",
+   "atoms": [],
+   "derived": [
+    "drv.motion.left_turn"
+   ],
+   "justification": "drv.motion.left_turn is 'the road user has turned to the left: counting from the onset of the turning ... the heading change accumulated since that onset reaches at least the turn angle ... to the left', which is 'the left turn' the words name, the manoeuvre whose manner the obligation governs. Exclusions: the concept is not a stand-in for a signal or a declared intention (the intention of s2 is carried by int.turn), not for a steering input, not for the curvature of the road, not for a lane change, and not for a reversal of the direction of travel, which is a larger angle with its own concept."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "prim.region_lateral_offset",
+    "rel.occupies",
+    "st.centre_line",
+    "st.highway",
+    "st.intersection",
+    "st.on_way"
+   ],
+   "derived": [
+    "drv.motion.region_exit"
+   ],
+   "justification": "'leave the intersection' is drv.motion.region_exit, 'the road user's footprint ceases to overlap a structure region at the observation: it does not overlap the region at the observation and did overlap it at the observation before ... the event of that ceasing to overlap', with its region formal bound to the intersection s3 singles out, so the departure is from that junction; rel.occupies anchors the vehicle and st.intersection is the kind that region quantifier names. 'the centerline of the highway being entered' is a st.centre_line region, 'the marking, or the geometric centre, dividing the two directions of a two-way roadway', tied to the way by st.on_way, 'the public way (a highway region) a structure region lies on', on the st.highway region, 'the entire public way between its boundary lines', that the vehicle occupies at that observation (rel.occupies). 'to the right of' is prim.region_lateral_offset, 'the signed lateral offset (m, left positive) of a structure region from a road user ... the component, perpendicular to the road user's heading, of the vector from its reference point to the point of the region's boundary nearest that reference point': the centre line lies to the vehicle's left, so the vehicle lies to its right. Exclusions: prim.region_lateral_offset 'does not establish that the road user is on the carrier', which rel.occupies does; st.centre_line is the dividing marking or geometric centre and no lane or lane adjacency stands in for it; st.highway is not a stand-in for the roadway, and the words name the highway being entered."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s2",
+   "id": "int.turn",
+   "meaning": "the source's current plan for the road user is that it turn, to either hand, at the region named as the declaration's target"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v occupies a carrier whose entrance end is an intersection i (st.lane_enters, the carrier quantified over st.travel_region, rel.occupies); the source's current declaration for v at i is int.turn; both highways that meet at i are two-directional, each way carrying no median or dividing section (st.median_or_divider absent on it) and carriers of its roadway carrying opposed designated directions (st.lane_direction), the ways reached by st.on_way and st.highway from the carriers that enter i; v has entered i (drv.motion.region_entry on i at the judged observation or at an earlier one); and v has made a left turn (drv.motion.left_turn, with p.turn_onset_yaw_rate, p.left_turn_angle and the step bound p.heading_since_step_carla_scene_graph).",
+ "obligation": "At the observation at which v leaves i (drv.motion.region_exit on the intersection i the applicability binds), v lies to the right of the centre line of the highway it then occupies: for the st.highway region h with rel.occupies(v, h) at that observation there is a st.centre_line region c with st.on_way(c, h) whose signed lateral offset from v, prim.region_lateral_offset (left positive), is at least p.lateral_offset_resolution. Where no such centre line is observed on that way the obligation is unknown, not met.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_onset_yaw_rate",
+  "p.left_turn_angle",
+  "p.lateral_offset_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'the driver of a vehicle' is read through the vehicle's controlled motion: the ontology's section on what is not an atom directs that 'drives', 'operates' and 'the driver' are read through the vehicle's controlled motion, a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "'the highway being entered' is read as the st.highway region the vehicle occupies at the observation at which it leaves the intersection, and 'the centerline' of it as a centre-line region lying on that way (st.on_way). The words leave open which way is meant; this is the way the vehicle is on once it is clear of the junction, the junction itself lying on every way that meets there.",
+   "kind": "reading"
+  },
+  {
+   "span": "s7",
+   "why": "'to the right of the centerline' is read as the centre line's signed lateral offset from the vehicle standing at or above p.lateral_offset_resolution on the left-positive side, the magnitude below which the side a region lies on is not distinguishable at the source's resolution; the side is read across the vehicle's own heading, which at the departure from the junction lies along the way entered.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two undivided ways, each with carriers of opposed designated directions, cross; the trace declares the subject's intention to turn at that junction; the subject enters the junction and its accumulated heading change to the left passes the turn angle, so a left turn is made. At the observation at which its footprint ceases to overlap the junction it is on the far side of the entered way's centre line, the centre line lying to its right.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same two two-directional ways, the same declared intention, the same entry and left turn; at the observation at which the subject's footprint ceases to overlap the junction the centre line of the way it then occupies lies to its left by more than the lateral-offset resolution. No other road user is present in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject runs straight through the same junction: the trace declares no intention to turn for it at that junction and its accumulated heading change never reaches the turn angle, so no left turn is made.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Every other condition holds -- two two-directional ways, the declared intention, the entry, and a departure from the junction on the left of the entered way's centre line -- but the source supplies no rate of change of heading for the subject, so whether it has turned to the left cannot be told.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "The way being entered carries a median dividing its two directions, so the intersecting ways are not both two-directional; the subject, with a declared intention to turn, enters the junction, turns left and leaves it on the left of that way's centre line.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.lateral_offset_resolution",
+   "unit": "m",
+   "value": 0.5,
+   "convention": "Lateral-offset convention: the magnitude of a signed lateral offset below which the side a region lies on is not distinguishable at the source's resolution, so that an offset smaller than it decides no side; it names the source's resolution only and sets no measure of how far from the line a vehicle must be.",
+   "source": "the lateral accuracy of mapped region boundaries and of a body's reference point in a scene-graph source, of the order of half a metre."
+  },
+  {
+   "name": "p.left_turn_angle",
+   "unit": "deg",
+   "value": 45.0,
+   "convention": "Turn-recognition convention: the heading change accumulated since the onset at which a turn to the left is recognized as made, taken as the angle at which a body has committed to a left turn at a junction rather than a lane change or a drift within its lane.",
+   "source": "manoeuvre-recognition practice for junction turns, which treats an accumulated heading change of about a quarter turn as a committed turn."
+  },
+  {
+   "name": "p.turn_onset_yaw_rate",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "Manoeuvre-onset convention: the rate of change of heading above which a body is read as turning rather than running straight, set at the noise floor of a yaw reading so that the onset of a manoeuvre is told from lane-keeping corrections.",
+   "source": "yaw-rate noise of vehicle-dynamics and scene-graph sources at open-road speeds."
+  }
+ ],
+ "gaps": []
+}

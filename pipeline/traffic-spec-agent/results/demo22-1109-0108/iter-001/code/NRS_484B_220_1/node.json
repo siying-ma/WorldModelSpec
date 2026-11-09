@@ -1,0 +1,151 @@
+{
+ "node_id": "NRS_484B_220_1",
+ "law_refs": [
+  "NRS-484B-220-1"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Upon a highway designated and signposted for one-way traffic",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall be driven only in the direction designated.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.highway",
+    "st.one_way_roadway",
+    "st.roadway",
+    "st.travel_region",
+    "st.lane_direction",
+    "st.on_way",
+    "rel.occupies",
+    "dev.regulatory_sign",
+    "dev.governs",
+    "prim.conditions_hold",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "“a highway” is st.highway, “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic”, which is DEF-NRS-484A-095's words; rel.occupies anchors it to the subject and st.on_way, “the public way (a highway region) a structure region lies on”, ties the travelled region to that way. “designated … for one-way traffic” is carried twice over, as the ontology's vocabulary carries it: st.one_way_roadway is the “roadway on which traffic is restricted to one direction”, a refinement of st.roadway, and st.lane_direction is the “direction of travel designated for a structure a vehicle travels in — a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder”, which is the designation the next span reads; st.travel_region is the kind the quantifier over the travelled region ranges over, the abstract union that admits the lane, roadway, one-way roadway and shoulder the direction may be carried on. “signposted” is dev.regulatory_sign with code one_way, “a point regulation by catalogue code … one_way”, tied to the region by dev.governs, “the travel regions whose traffic the device controls”, and its conditions are read by prim.conditions_hold, “the structured conditions of a device … hold at the observation”, since the sign's row directs that its conditions are read that way (unconditional when empty, unknown when absent); dev.regulatory_sign's exclusion “not a stand-in for a manoeuvre or a road feature” does not apply, because the designated direction itself is read from st.lane_direction and the sign carries only the posting. “traffic” claims its admitted aggregate DEF-NRS-484A-285::traffic — “pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel” — which fixes whose travel the one-way designation governs."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, so the span claims ru.aggregate with that id: “membership of a legal aggregate … true when the user carries an included class, unknown when … an included or unresolved class it might carry is unobserved”. The aggregate is claimed whole and never expanded into classes."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_direction"
+   ],
+   "derived": [
+    "drv.position.direction_component"
+   ],
+   "justification": "“driven only in the direction designated” compares the vehicle's direction of travel with the designated direction of the region it occupies: drv.position.direction_component is the component of its velocity along that region's designated direction, positive with the designation and negative against it, built on kin.velocity, “velocity vector”, and st.lane_direction, read normalised as that atom's contract directs. rel.occupies is the anchor that makes the region the vehicle's own, and st.travel_region the kind its quantifier ranges over, the abstract union that admits the lane, one-way roadway, roadway and shoulder a designated direction may be carried on. “driven” is read through controlled motion (narrowing on this span); kin.heading is not read, because a vehicle may point one way while moving another and the words govern the direction it is driven in."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle whose footprint overlaps a travel region that lies on a highway and that carries a designated direction of travel, where a regulatory sign of code one_way governs that region and its posted conditions hold at the observation. Where the sign's governance or its conditions are unobserved, whether the rule applies is unknown; where no such sign governs the region, the rule does not apply.",
+ "obligation": "At each observation at which the applicability holds, the component of the vehicle's velocity along the designated direction of the region it occupies (drv.position.direction_component) must not be at or below the negative of p.wrong_way_speed_tolerance: a component below that is travel against the designated direction and the duty is violated. A component above it — travel with the designation, a standstill, or a movement across the region within the tolerance — complies. Where the velocity or the region's designated direction is unobserved the duty is unknown. Where the vehicle occupies several such regions and the verdict differs between them, the duty is unknown; where it is the same through each, it is decided.",
+ "params": [
+  "p.wrong_way_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“designated and signposted” is read as the presence of a one-way regulatory sign governing the region and of a designated direction of travel on it. That a sign or a designation is official or posted by an authority is a legal status the ontology reads through the feature itself: the sign's presence on the road is the evidence of the designation.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "“shall be driven” is read as the vehicle's controlled motion: who or what controls a road user is not observable, and the ontology reads “drives” and “is driven” through the vehicle's motion, a vehicle moving on the road being taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "“the direction designated” is read as the designated direction of travel of the travel region the vehicle occupies, and the comparison is made on the component of its velocity along that direction. A standstill and a purely lateral movement fall within the tolerance and are not read as travel against the designation, because a component of that size is not distinguishable from measurement noise; the tolerance names only that resolution.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car travels at 8 m/s along a one-way roadway of a city street whose designated direction of travel runs the other way, a one-way regulatory sign with no posted conditions governing that roadway. The component of its velocity along the designated direction is about minus 8 m/s.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car on the same signposted one-way roadway travelling at 8 m/s with the designated direction: the component of its velocity along that direction is about plus 8 m/s.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car travels along a two-way roadway against the flow in the oncoming lane. No one-way regulatory sign governs the region it occupies, so the trigger of this subsection fails and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the designated direction of travel of structures absent: the one-way sign and its governance of the roadway are recorded and the car's velocity is recorded, but the direction the words compare it with cannot be read, so the duty is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car stands still, loading, on the signposted one-way roadway with its body pointing against the designated direction. The component of its velocity along that direction is zero, within the tolerance, so it is not being driven against the designation and nothing in the scene but the subject decides the verdict.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.wrong_way_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "Direction-of-travel convention: the magnitude of the velocity component along a designated direction below which travel against that direction is not distinguished from standing, from lateral drift, or from the error of the mapped direction and the measured velocity.",
+   "source": "wrong-way-driving detection thresholds in traffic-surveillance practice"
+  }
+ ],
+ "gaps": []
+}

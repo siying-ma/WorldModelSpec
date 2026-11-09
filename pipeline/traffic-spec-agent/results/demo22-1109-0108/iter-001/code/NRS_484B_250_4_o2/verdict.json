@@ -1,0 +1,1346 @@
+{
+ "verdict": "OK",
+ "details": [
+  "14 witnesses, 24 names, composes nothing",
+  "narrowings declared by the coder: 3"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "v"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       {
+        "body": {
+         "since": [
+          {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "derived": "drv_motion_region_entry",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "d"
+                  }
+                 ],
+                 "atom": "dev_traffic_signal_uncovered",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    }
+                   ],
+                   "atom": "dev_inoperative",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     },
+                     {
+                      "var": "l"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "not": {
+                       "same": [
+                        {
+                         "var": "l"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "l"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 {
+                  "count": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "v"
+                      }
+                     ],
+                     "derived": "drv_motion_standstill",
+                     "params": [
+                      {
+                       "param": "p.standstill_speed_tolerance"
+                      }
+                     ]
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "v"
+                        },
+                        {
+                         "var": "l"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "or": [
+                        {
+                         "body": {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "m"
+                             },
+                             {
+                              "var": "l"
+                             }
+                            ],
+                            "atom": "st_entrance_of",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "cmp": "ge",
+                              "lhs": {
+                               "args": [
+                                {
+                                 "var": "v"
+                                },
+                                {
+                                 "var": "m"
+                                },
+                                {
+                                 "var": "l"
+                                }
+                               ],
+                               "params": [],
+                               "quantity": "prim_region_offset_along"
+                              },
+                              "rhs": {
+                               "lit": {
+                                "den": 1,
+                                "num": 0
+                               },
+                               "unit": "metre"
+                              }
+                             },
+                             {
+                              "cmp": "le",
+                              "lhs": {
+                               "args": [
+                                {
+                                 "var": "v"
+                                },
+                                {
+                                 "var": "m"
+                                }
+                               ],
+                               "measure": "st_region_geometry_distance"
+                              },
+                              "rhs": {
+                               "param": "p.stop_point_tolerance"
+                              }
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "exists_region": {
+                          "lit": "stop_line"
+                         },
+                         "var": "m"
+                        },
+                        {
+                         "or": [
+                          {
+                           "and": [
+                            {
+                             "not": {
+                              "body": {
+                               "args": [
+                                {
+                                 "var": "m"
+                                },
+                                {
+                                 "var": "l"
+                                }
+                               ],
+                               "atom": "st_entrance_of",
+                               "params": []
+                              },
+                              "exists_region": {
+                               "lit": "stop_line"
+                              },
+                              "var": "m"
+                             }
+                            },
+                            {
+                             "body": {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "c"
+                                 },
+                                 {
+                                  "var": "l"
+                                 }
+                                ],
+                                "atom": "st_entrance_of",
+                                "params": []
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "cmp": "ge",
+                                  "lhs": {
+                                   "args": [
+                                    {
+                                     "var": "v"
+                                    },
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "var": "l"
+                                    }
+                                   ],
+                                   "params": [],
+                                   "quantity": "prim_region_offset_along"
+                                  },
+                                  "rhs": {
+                                   "lit": {
+                                    "den": 1,
+                                    "num": 0
+                                   },
+                                   "unit": "metre"
+                                  }
+                                 },
+                                 {
+                                  "cmp": "le",
+                                  "lhs": {
+                                   "args": [
+                                    {
+                                     "var": "v"
+                                    },
+                                    {
+                                     "var": "c"
+                                    }
+                                   ],
+                                   "measure": "st_region_geometry_distance"
+                                  },
+                                  "rhs": {
+                                   "param": "p.stop_point_tolerance"
+                                  }
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             "exists_region": {
+                              "lit": "crosswalk"
+                             },
+                             "var": "c"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "not": {
+                              "body": {
+                               "args": [
+                                {
+                                 "var": "m"
+                                },
+                                {
+                                 "var": "l"
+                                }
+                               ],
+                               "atom": "st_entrance_of",
+                               "params": []
+                              },
+                              "exists_region": {
+                               "lit": "stop_line"
+                              },
+                              "var": "m"
+                             }
+                            },
+                            {
+                             "and": [
+                              {
+                               "not": {
+                                "body": {
+                                 "args": [
+                                  {
+                                   "var": "c"
+                                  },
+                                  {
+                                   "var": "l"
+                                  }
+                                 ],
+                                 "atom": "st_entrance_of",
+                                 "params": []
+                                },
+                                "exists_region": {
+                                 "lit": "crosswalk"
+                                },
+                                "var": "c"
+                               }
+                              },
+                              {
+                               "body": {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "i"
+                                   },
+                                   {
+                                    "var": "w"
+                                   }
+                                  ],
+                                  "atom": "st_on_way",
+                                  "params": []
+                                 },
+                                 {
+                                  "cmp": "ge",
+                                  "lhs": {
+                                   "args": [
+                                    {
+                                     "var": "v"
+                                    },
+                                    {
+                                     "var": "w"
+                                    }
+                                   ],
+                                   "measure": "st_sight_along_way"
+                                  },
+                                  "rhs": {
+                                   "param": "p.intersecting_way_view_distance"
+                                  }
+                                 }
+                                ]
+                               },
+                               "exists_region": {
+                                "lit": "highway"
+                               },
+                               "var": "w"
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "n": 1,
+                  "op": "ge",
+                  "since": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "v"
+                      },
+                      {
+                       "var": "l"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "not": {
+                        "same": [
+                         {
+                          "var": "l"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "l"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ],
+                       "atom": "st_lane_enters",
+                       "params": []
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "travel_region"
+               },
+               "var": "l"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "defined_when": {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       }
+      ]
+     },
+     "exists_device": {
+      "lit": "traffic_signal"
+     },
+     "var": "d"
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_250_4_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-250-4"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "'which have previously completed a stop' is read as a standstill of that road user, on a carrier whose entrance end is this junction, at some observation of the recording up to and including the judged one: the language looks back to an observation at or before the one it judges, and a road user standing at an entrance at the judged observation has come to the halt the words describe."
+    },
+    {
+     "kind": "reading",
+     "span": "ob1",
+     "why": "the clearance of p.yield_min_clearance is read on two measurements the record names together: the centre distance at the closest approach under constant velocities within p.yield_conflict_horizon (prim.closest_approach_distance), and the clearance between the nearest points of the two bodies at the observation (rel.surface_gap); precedence is denied where either falls below it while the centres approach within the horizon."
+    },
+    {
+     "kind": "reading",
+     "span": "st1",
+     "why": "the duty is read at every observation from the qualified entry at which the subject's footprint still overlaps the junction region, that unbroken occupancy carrying 'from that entry on, while the subject is moving across or within the intersection'; it is not read after the subject's footprint has left the junction."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "v"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "body": {
+           "since": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "v"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_region_entry",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "d"
+                    }
+                   ],
+                   "atom": "dev_traffic_signal_uncovered",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      }
+                     ],
+                     "atom": "dev_inoperative",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "d"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "l"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "and": [
+                       {
+                        "not": {
+                         "same": [
+                          {
+                           "var": "l"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "l"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "st_lane_enters",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "count": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "v"
+                        }
+                       ],
+                       "derived": "drv_motion_standstill",
+                       "params": [
+                        {
+                         "param": "p.standstill_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "v"
+                          },
+                          {
+                           "var": "l"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "body": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "m"
+                               },
+                               {
+                                "var": "l"
+                               }
+                              ],
+                              "atom": "st_entrance_of",
+                              "params": []
+                             },
+                             {
+                              "and": [
+                               {
+                                "cmp": "ge",
+                                "lhs": {
+                                 "args": [
+                                  {
+                                   "var": "v"
+                                  },
+                                  {
+                                   "var": "m"
+                                  },
+                                  {
+                                   "var": "l"
+                                  }
+                                 ],
+                                 "params": [],
+                                 "quantity": "prim_region_offset_along"
+                                },
+                                "rhs": {
+                                 "lit": {
+                                  "den": 1,
+                                  "num": 0
+                                 },
+                                 "unit": "metre"
+                                }
+                               },
+                               {
+                                "cmp": "le",
+                                "lhs": {
+                                 "args": [
+                                  {
+                                   "var": "v"
+                                  },
+                                  {
+                                   "var": "m"
+                                  }
+                                 ],
+                                 "measure": "st_region_geometry_distance"
+                                },
+                                "rhs": {
+                                 "param": "p.stop_point_tolerance"
+                                }
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           "exists_region": {
+                            "lit": "stop_line"
+                           },
+                           "var": "m"
+                          },
+                          {
+                           "or": [
+                            {
+                             "and": [
+                              {
+                               "not": {
+                                "body": {
+                                 "args": [
+                                  {
+                                   "var": "m"
+                                  },
+                                  {
+                                   "var": "l"
+                                  }
+                                 ],
+                                 "atom": "st_entrance_of",
+                                 "params": []
+                                },
+                                "exists_region": {
+                                 "lit": "stop_line"
+                                },
+                                "var": "m"
+                               }
+                              },
+                              {
+                               "body": {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "c"
+                                   },
+                                   {
+                                    "var": "l"
+                                   }
+                                  ],
+                                  "atom": "st_entrance_of",
+                                  "params": []
+                                 },
+                                 {
+                                  "and": [
+                                   {
+                                    "cmp": "ge",
+                                    "lhs": {
+                                     "args": [
+                                      {
+                                       "var": "v"
+                                      },
+                                      {
+                                       "var": "c"
+                                      },
+                                      {
+                                       "var": "l"
+                                      }
+                                     ],
+                                     "params": [],
+                                     "quantity": "prim_region_offset_along"
+                                    },
+                                    "rhs": {
+                                     "lit": {
+                                      "den": 1,
+                                      "num": 0
+                                     },
+                                     "unit": "metre"
+                                    }
+                                   },
+                                   {
+                                    "cmp": "le",
+                                    "lhs": {
+                                     "args": [
+                                      {
+                                       "var": "v"
+                                      },
+                                      {
+                                       "var": "c"
+                                      }
+                                     ],
+                                     "measure": "st_region_geometry_distance"
+                                    },
+                                    "rhs": {
+                                     "param": "p.stop_point_tolerance"
+                                    }
+                                   }
+                                  ]
+                                 }
+                                ]
+                               },
+                               "exists_region": {
+                                "lit": "crosswalk"
+                               },
+                               "var": "c"
+                              }
+                             ]
+                            },
+                            {
+                             "and": [
+                              {
+                               "not": {
+                                "body": {
+                                 "args": [
+                                  {
+                                   "var": "m"
+                                  },
+                                  {
+                                   "var": "l"
+                                  }
+                                 ],
+                                 "atom": "st_entrance_of",
+                                 "params": []
+                                },
+                                "exists_region": {
+                                 "lit": "stop_line"
+                                },
+                                "var": "m"
+                               }
+                              },
+                              {
+                               "and": [
+                                {
+                                 "not": {
+                                  "body": {
+                                   "args": [
+                                    {
+                                     "var": "c"
+                                    },
+                                    {
+                                     "var": "l"
+                                    }
+                                   ],
+                                   "atom": "st_entrance_of",
+                                   "params": []
+                                  },
+                                  "exists_region": {
+                                   "lit": "crosswalk"
+                                  },
+                                  "var": "c"
+                                 }
+                                },
+                                {
+                                 "body": {
+                                  "and": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "i"
+                                     },
+                                     {
+                                      "var": "w"
+                                     }
+                                    ],
+                                    "atom": "st_on_way",
+                                    "params": []
+                                   },
+                                   {
+                                    "cmp": "ge",
+                                    "lhs": {
+                                     "args": [
+                                      {
+                                       "var": "v"
+                                      },
+                                      {
+                                       "var": "w"
+                                      }
+                                     ],
+                                     "measure": "st_sight_along_way"
+                                    },
+                                    "rhs": {
+                                     "param": "p.intersecting_way_view_distance"
+                                    }
+                                   }
+                                  ]
+                                 },
+                                 "exists_region": {
+                                  "lit": "highway"
+                                 },
+                                 "var": "w"
+                                }
+                               ]
+                              }
+                             ]
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "n": 1,
+                    "op": "ge",
+                    "since": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "v"
+                        },
+                        {
+                         "var": "l"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "not": {
+                          "same": [
+                           {
+                            "var": "l"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "args": [
+                          {
+                           "var": "l"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "travel_region"
+                 },
+                 "var": "l"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          "defined_when": {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         }
+        ]
+       },
+       "exists_device": {
+        "lit": "traffic_signal"
+       },
+       "var": "d"
+      },
+      {
+       "and": [
+        {
+         "cmp": "le",
+         "lhs": {
+          "args": [
+           {
+            "var": "v"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         "rhs": {
+          "param": "p.cautious_proceed_max_speed"
+         }
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "y"
+                },
+                {
+                 "var": "v"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-320::vehicle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "since": [
+                   "tt",
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "y"
+                        },
+                        {
+                         "var": "ly"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "not": {
+                          "same": [
+                           {
+                            "var": "ly"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "ly"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "atom": "st_lane_enters",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "y"
+                            }
+                           ],
+                           "derived": "drv_motion_standstill",
+                           "params": [
+                            {
+                             "param": "p.standstill_speed_tolerance"
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "travel_region"
+                    },
+                    "var": "ly"
+                   }
+                  ]
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "not": {
+             "or": [
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "v"
+                  },
+                  {
+                   "var": "i"
+                  }
+                 ],
+                 "derived": "drv_motion_region_entry",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "y"
+                  },
+                  {
+                   "var": "i"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               ]
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "v"
+                  },
+                  {
+                   "var": "y"
+                  }
+                 ],
+                 "atom": "rel_contact",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "v"
+                    },
+                    {
+                     "var": "y"
+                    }
+                   ],
+                   "derived": "prim_closest_approach_within",
+                   "params": [
+                    {
+                     "param": "p.yield_conflict_horizon"
+                    }
+                   ]
+                  },
+                  {
+                   "or": [
+                    {
+                     "cmp": "lt",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "y"
+                       }
+                      ],
+                      "params": [
+                       {
+                        "param": "p.yield_conflict_horizon"
+                       }
+                      ],
+                      "quantity": "prim_closest_approach_distance"
+                     },
+                     "rhs": {
+                      "param": "p.yield_min_clearance"
+                     }
+                    },
+                    {
+                     "cmp": "lt",
+                     "lhs": {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "y"
+                       }
+                      ],
+                      "measure": "rel_surface_gap"
+                     },
+                     "rhs": {
+                      "param": "p.yield_min_clearance"
+                     }
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "forall_user": "y"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "'which have previously completed a stop' is read as a standstill of that road user, on a carrier whose entrance end is this junction, at some observation of the recording up to and including the judged one: the language looks back to an observation at or before the one it judges, and a road user standing at an entrance at the judged observation has come to the halt the words describe."
+   },
+   {
+    "kind": "reading",
+    "span": "ob1",
+    "why": "the clearance of p.yield_min_clearance is read on two measurements the record names together: the centre distance at the closest approach under constant velocities within p.yield_conflict_horizon (prim.closest_approach_distance), and the clearance between the nearest points of the two bodies at the observation (rel.surface_gap); precedence is denied where either falls below it while the centres approach within the horizon."
+   },
+   {
+    "kind": "reading",
+    "span": "st1",
+    "why": "the duty is read at every observation from the qualified entry at which the subject's footprint still overlaps the junction region, that unbroken occupancy carrying 'from that entry on, while the subject is moving across or within the intersection'; it is not read after the subject's footprint has left the junction."
+   }
+  ],
+  "context": "dc62d89fc9ff7c0f37470560",
+  "candidate_digest": "db3032591b5b89e20384504875a2144c6448b7ee84153d2bd65c034781a2cfe6"
+ }
+}

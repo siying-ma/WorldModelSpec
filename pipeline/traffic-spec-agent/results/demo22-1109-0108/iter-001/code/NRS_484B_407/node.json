@@ -1,0 +1,240 @@
+{
+ "node_id": "NRS_484B_407",
+ "law_refs": [
+  "NRS-484B-407"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not be turned so as to proceed in the opposite direction",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "upon any curve,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "or upon the approach to or near the crest of a grade,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "where such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is a legal aggregate and the definitions table admits DEF-NRS-484A-320::vehicle for this law; ru.aggregate carries 'membership of a legal aggregate: the atom's literal argument is an aggregate id'. Exclusions: not a stand-in for a named road-user class, no class atom being used; not a stand-in for a relational role, the words naming the vehicle itself and not its driver."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.u_turn"
+   ],
+   "justification": "drv.motion.u_turn is 'the road user's direction of travel upon a way has reversed ... the magnitude of the heading change accumulated since that onset reaches at least the reversal angle ... while the road user's footprint overlaps a way', and its contract carries the very words of this obligation: 'the turning of a vehicle upon a highway so as to proceed in the opposite direction', 'whether accomplished by one continuous movement or not', so halts and rearward movements between the onset and the reversal do not end the manoeuvre. Exclusions: it is not a stand-in for a turn through a smaller angle, which has its own concept, nor for travel against a designated direction of travel, nor for a reversing movement, nor for a signal or a declared intention."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.curvature",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.curvature is 'horizontal curvature of the roadway at a point, as a magnitude (1/m, never negative): a bend to either hand has the same value', which is 'any curve'; the words name the feature and no size of it, so it is carried by the magnitude standing clear of zero, at or above p.curvature_resolution, a parameter that names the source's resolution only and no measure of how sharp a bend must be. rel.occupies, 'a road user's footprint overlaps a lane / region', anchors the vehicle on the region whose curvature is read, and st.roadway, 'the part of a highway improved for vehicular traffic', is the kind that region quantifier names, the curvature being the roadway's. Exclusions: st.curvature is not the crest of a grade, read on s4 by its own atom, and not the sight distance the bend restricts, read on s5; st.roadway is not a stand-in for the sidewalk, which is not read."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.crest",
+    "st.region_geometry",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "st.crest is 'the place on a roadway's longitudinal profile where the slope changes from rising to falling in the direction of travel, carried as a region with a reference point and a boundary, so the ground distance from a road user to it is read through st.region_geometry', which is 'the crest of a grade'; 'the approach to or near' it is that ground distance, st.region_geometry giving 'the ground distance from a road user's body outline to it', at most p.crest_approach_distance. rel.occupies anchors the vehicle on the roadway and st.roadway is the kind the region quantifier names for the way the profile belongs to. Exclusions: st.crest is expressly 'not a stand-in for the slope at a point (st.grade)', which is why no grade atom is read, nor for 'the view a crest restricts (st.sight_distance)', read on s5 by its own atom, nor for 'a horizontal bend (st.curvature)', read on s3; st.region_geometry is not a stand-in for occupancy, which rel.occupies carries. The ground distance carries the words as they read: 'the approach to or near' the crest reaches the vicinity on either hand of it, which is what a distance from the body to the crest region states, the atom carrying the crest as a region and the distance to it."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.sight_distance"
+   ],
+   "derived": [],
+   "justification": "st.sight_distance is 'the distance along the road within which a vehicle at a point and another vehicle on the road could see each other, from the eye of either driver to the body of the other vehicle at the height convention the source declares: both the view of approaching traffic from that point and its being seen by drivers approaching it, whether or not any road user is there'. The words 'such vehicle cannot be seen by the driver of any other vehicle approaching from either direction within 500 feet' are exactly that quantity at the vehicle's place falling short of the stated 500 feet, and the contract's 'whether or not any road user is there' is why the duty binds the subject with no other vehicle in the scene. rel.occupies anchors the vehicle on the road whose sight distance is read and st.roadway is the kind that region quantifier names. Exclusions: it is 'not a stand-in for whether an actual road user saw, or could see, another at an observation (rel.visible)', and the words ask of any approaching driver, not of one present; not for 'the clarity of the air (env.visibility)'; and not st.sight_along_way, whose contract is the view from a road user's own eye along a way, while the words ask whether the vehicle can be seen at its place. The contract's one value for the place carries 'from either direction' as the words read it, the quantity being defined over both directions of the road at once, and it carries 'cannot be seen by the driver of any other vehicle' as the place's own sight distance, which the contract states 'whether or not any road user is there', so no perception of an actual driver is read."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v occupies a roadway, and at one and the same moment while the reversal is under way (the words join the place and the sight condition by 'where'): either the horizontal curvature of the roadway at v's place stands at or above p.curvature_resolution, or the ground distance from v's body to a st.crest region on the roadway is at most p.crest_approach_distance; and the sight distance of v's place (st.sight_distance) falls short of 500 feet.",
+ "obligation": "v does not turn upon the way so as to proceed in the opposite direction: the rule is violated where drv.motion.u_turn is recognized for v (with p.turn_onset_yaw_rate, p.u_turn_reversal_angle and the step bound p.heading_since_step_carla_scene_graph) and the applicability's conditions held together at a moment of that act; it is complied with where the conditions so held and no such act is recognized.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_onset_yaw_rate",
+  "p.u_turn_reversal_angle",
+  "p.curvature_resolution",
+  "p.crest_approach_distance"
+ ],
+ "narrowings": [],
+ "occasion": {
+  "act": "drv.motion.u_turn",
+  "boundary": "event",
+  "onset": {
+   "words": "counting from the onset of the manoeuvre -- the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "The concept's contract fixes the act's observed beginning at that observation, and the only quantity it reads there is kin.yaw_rate, 'rate of change of heading, positive when the heading turns to the left (counter-clockwise)'. Exclusion: kin.yaw_rate is 'not a stand-in for road curvature', which this node reads on s3 by its own atom for the place, not for the manoeuvre."
+  },
+  "recognition": "the observation at which the magnitude of the heading change accumulated since that onset first reaches the reversal angle, which is where the concept rises; the later observations at which the accumulated change still holds that angle are not the act again.",
+  "under_way": {
+   "words": "the magnitude of the road user's rate of change of heading has stood above the onset yaw rate since the onset and the accumulated heading change has not yet reached the reversal angle",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "An observation inside the act is told from one before it began by the road user's own motion: its rate of change of heading, the quantity the concept's onset and accumulation read. No place or region tells them apart, since the vehicle occupies the same bend, the same crest vicinity and the same place before the manoeuvre begins."
+  },
+  "spans": {
+   "s3": "some_moment",
+   "s4": "some_moment",
+   "s5": "some_moment"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The subject runs along a bend whose horizontal curvature stands well above the resolution, and the sight distance of its place falls short of the figure the text states. On that bend it swings through more than the reversal angle and proceeds back the way it came.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same bend with the same short sight distance; the subject turns off into a side way, its accumulated heading change staying far below the reversal angle, and never proceeds in the opposite direction. No other road user is present in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "On a straight and level stretch, no crest region within the approach distance and the place's sight distance well beyond the stated figure, the subject swings through more than the reversal angle and proceeds back the way it came.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The subject reverses its direction on a bend whose curvature is recorded, but the source declares no sight distance for the places along it, so whether the vehicle could be seen within the stated distance cannot be told.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "The subject begins the reversal on the bend and completes it where the alignment has run out straight: the curvature stands above the resolution at the onset and the first part of the manoeuvre only, and the sight distance at those same observations falls short of the stated figure.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject runs along the bend, leaves it, and only then, on a straight stretch with no crest region within the approach distance, swings through more than the reversal angle; the curvature stands above the resolution only at observations before the onset, while the sight distance is short throughout.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s4",
+   "expected": "violated",
+   "narrative": "The subject begins the reversal with the crest region within the approach distance of its body and completes it farther down the grade, beyond that distance; the alignment is straight throughout and the sight distance at the observations near the crest falls short of the stated figure.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s4_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject passes the crest, runs on until the crest region lies beyond the approach distance, and only then swings through more than the reversal angle on a straight stretch; the crest was within the approach distance only at observations before the onset, while the sight distance is short throughout.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s5",
+   "expected": "violated",
+   "narrative": "The subject reverses its direction on a bend whose curvature stands above the resolution at every observation of the manoeuvre, and the sight distance of its place falls short of the stated figure at the onset and the first part of the manoeuvre, rising above it before the reversal is complete.",
+   "masked": []
+  },
+  {
+   "name": "occasion_s5_outside",
+   "expected": "not_applicable",
+   "narrative": "The subject runs on the bend through a stretch whose sight distance falls short of the stated figure, and begins and completes the reversal farther along the same bend, where the sight distance at its place exceeds the stated figure at every observation from the onset onwards.",
+   "masked": []
+  }
+ ],
+ "literals": [
+  {
+   "span": "s5",
+   "text": "500 feet",
+   "value": 500,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.turn_onset_yaw_rate",
+   "unit": "deg/s",
+   "value": 3.0,
+   "convention": "Manoeuvre-onset convention: the rate of change of heading above which a body is read as turning rather than running straight, set at the noise floor of a yaw reading so that the onset of a manoeuvre is told from lane-keeping corrections.",
+   "source": "yaw-rate noise of vehicle-dynamics and scene-graph sources at open-road speeds."
+  },
+  {
+   "name": "p.u_turn_reversal_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "Reversal convention: the accumulated heading change at which the definition's proceeding in the opposite direction is recognized, set below a half turn so that a reversal completed in stages, or one leaving a residual angle to the way, still counts as made.",
+   "source": "manoeuvre-recognition practice for U-turns, which admits a reversal short of a full half turn."
+  },
+  {
+   "name": "p.curvature_resolution",
+   "unit": "1/m",
+   "value": 0.001,
+   "convention": "Map-geometry resolution convention: the magnitude of horizontal curvature below which a surveyed road alignment is indistinguishable from a tangent at the resolution of the source, a radius of the order of a kilometre. It names the source's resolution only and sets no bound on how sharp a bend must be for the duty to bind.",
+   "source": "highway alignment survey practice, in which curves of radius above about a kilometre are recorded as tangents in the road geometry of a map or simulator."
+  },
+  {
+   "name": "p.crest_approach_distance",
+   "unit": "m",
+   "value": 150.0,
+   "convention": "Crest sight-distance convention: the distance from a crest within which the crest's vertical curve restricts the view of the road beyond it, taken as the length of the crest vertical curve of the design standard at open-road design speed; it bounds 'the approach to or near' the crest on either side.",
+   "source": "AASHTO Green Book crest vertical curve lengths and stopping sight distance tables for open-road design speeds."
+  }
+ ],
+ "gaps": []
+}

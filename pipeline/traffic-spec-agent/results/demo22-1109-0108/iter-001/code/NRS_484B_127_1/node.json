@@ -1,0 +1,243 @@
+{
+ "node_id": "NRS_484B_127_1",
+ "law_refs": [
+  "NRS-484B-127-1"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not follow another vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "more closely than is reasonable and prudent, having due regard for the speed of such vehicles and the traffic upon and the condition of the highway.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, so the span claims ru.aggregate with that id: “membership of a legal aggregate … true when the user carries an included class”. The aggregate is claimed whole, never expanded into classes, and “driver” is read through controlled motion (narrowing on this span), honouring the atom's exclusion of relational roles."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.following"
+   ],
+   "justification": "“follow another vehicle” is a relation between two road users over time, so it maps to a concept: drv.interaction.following states that the other road user is ahead of the subject in the same lane along the lane's direction and that the two headings are aligned within a tolerance, built on rel.ahead_behind_in_lane, “a is ahead of / behind b in the same lane, along the lane direction”, and rel.same_direction. “another vehicle” is the same defined term, so the followed road user also claims ru.aggregate=DEF-NRS-484A-320::vehicle, and “another” is the exclusion of the subject itself, which the formula language states with same. The followed vehicle is quantified inside the obligation and is no binder: the duty exists without it, and a subject alone must be judged compliant rather than left unjudged."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "more closely than is reasonable and prudent, having due regard for the speed of such vehicles and the traffic upon and the condition of the highway",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed",
+    "st.highway",
+    "rel.occupies",
+    "env.wet_road",
+    "env.ice_or_snow",
+    "env.precipitation",
+    "st.grade",
+    "st.curvature",
+    "drv.interaction.following"
+   ],
+   "params": [
+    "p.following_headway_time_dry",
+    "p.following_headway_time_wet",
+    "p.following_headway_time_ice",
+    "p.following_headway_time_adverse_geometry",
+    "p.following_reaction_time",
+    "p.following_grade_threshold",
+    "p.following_curvature_threshold",
+    "p.following_dense_traffic_count",
+    "p.following_dense_traffic_gap_increment"
+   ],
+   "convention": "Time-headway and stopping-distance convention (the two-second-rule family with surface-dependent multipliers, over AASHTO perception-reaction time and stopping-distance figures). Following is closer than the bound where the longitudinal component of rel.surface_gap, “the distance between the nearest points of two bodies … its longitudinal and lateral components … along and across the subject's heading”, is less than H × kin.speed of the subject + p.following_reaction_time × the excess of the subject's speed over the followed vehicle's speed where that excess is positive + T. Each named factor is read by its degree. “the speed of such vehicles”: the subject's measured speed scales the whole headway term, so the bound grows with it, and the followed vehicle's measured speed enters through the closing speed, so a bound that is adequate behind a vehicle running at the same speed is not adequate behind a slower one. “the condition of the highway”: H is selected among bounds by the conditions read at the observation — p.following_headway_time_ice where env.ice_or_snow (“road surface icy or snow-covered”), else p.following_headway_time_wet where env.wet_road (“road surface wet, standing water”) or env.precipitation, else p.following_headway_time_adverse_geometry where the magnitude of st.grade exceeds p.following_grade_threshold or st.curvature, “horizontal curvature of the roadway at a point, as a magnitude”, exceeds p.following_curvature_threshold, else p.following_headway_time_dry. “the traffic upon the highway”: T adds p.following_dense_traffic_gap_increment where the count of road users occupying the highway the subject is on (rel.occupies with st.highway) reaches p.following_dense_traffic_count — the posted definition of traffic covering “pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel”, so every road user on the way is counted and no class narrows the stream — and is zero otherwise, so the density of the stream moves the bound. drv.interaction.following fixes which pair the bound is applied to. Every magnitude is a named parameter of the reading; the law states none.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle whose motion is observed. The duty has no further trigger: it bites at any observation at which the vehicle is following another vehicle, which the obligation quantifies.",
+ "obligation": "At no observation may there be another road user, distinct from the subject and a member of DEF-NRS-484A-320::vehicle, which the subject is following (drv.interaction.following with p.same_direction_cosine_tolerance) and whose longitudinal surface gap from the subject is below the bound the operationalization of s3 sets at that observation. Where no such road user is in the scene the duty is complied with; where the gap, a speed or a surface condition the selected bound reads is unobserved for a road user the subject is following, the duty is unknown. The node is a surrogate: the standard is the whole measure of the duty, so its verdicts are evidence and not a legal conclusion.",
+ "params": [
+  "p.same_direction_cosine_tolerance",
+  "p.following_headway_time_dry",
+  "p.following_headway_time_wet",
+  "p.following_headway_time_ice",
+  "p.following_headway_time_adverse_geometry",
+  "p.following_reaction_time",
+  "p.following_grade_threshold",
+  "p.following_curvature_threshold",
+  "p.following_dense_traffic_count",
+  "p.following_dense_traffic_gap_increment"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“The driver of a vehicle” is read as the vehicle whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “the driver” through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "“the condition of the highway” is read through the contracts the ontology carries for a condition of the way — the wetness of the surface, ice or snow on it, falling precipitation, the longitudinal slope and the horizontal curvature at the point — and through no other condition. Conditions of a way the vocabulary does not carry (a broken or rutted surface, loose gravel, a worn marking) are not read, so the bound is the one those contracts support and no wider.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "“the traffic upon … the highway” is read as the number of road users occupying the highway the subject is on at the observation, the posted definition of traffic covering every road user using the highway for travel. The density of the stream is the aspect of the factor the vocabulary carries; the composition of the stream, its lane discipline and its queueing are read only through that count.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "“reasonable and prudent” is the whole measure of the duty, so the node is marked surrogate: the bound the operationalization states is a policy choice of the reading, not a reading of the words, and the verdicts are evidence only.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a wet single-carriageway highway a car runs at 25 m/s in the same lane as, and 20 m behind, a van travelling at the same speed, their headings aligned. The wet-surface headway bound requires about 75 m, so the longitudinal surface gap is far below the bound.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pair on a dry, level, straight highway with light traffic: the car runs at 25 m/s with a longitudinal surface gap of 90 m behind the van, which exceeds the dry-surface bound and the closing-speed term, the two speeds being equal.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedal cycle propelled by human power, which the vehicle definition leaves out, rides 2 m behind a car in the same lane at 6 m/s. No vehicle is bound and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring the gap between bodies absent: the following relation, the speeds and the wet surface are recorded, but the quantity the bound is compared with cannot be read, so the duty is unknown.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car runs at 25 m/s on the same wet highway with no other road user anywhere in the scene. No road user is ahead of it in its lane, so the prohibition is complied with and the verdict is decided although the only party is the subject.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A dry, level, straight highway, but the car at 25 m/s closes on a lorry ahead in its lane that is running at 10 m/s with a longitudinal surface gap of 55 m: the dry headway term alone would be met, and the closing-speed term raises the bound above the gap.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two headings still read as the same direction, set at thirty degrees so that a vehicle in a bend or beginning a lane change is still read as travelling with the stream.",
+   "source": "heading-tolerance values used in lane-level trajectory conflict analyses"
+  },
+  {
+   "name": "p.following_headway_time_dry",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "Time-headway convention on a dry surface: the headway that multiplies the follower's speed to give the gap within which a leader's deceleration cannot be answered, the two-second rule.",
+   "source": "two-second-rule driver guidance and AASHTO perception-reaction time"
+  },
+  {
+   "name": "p.following_headway_time_wet",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-headway convention on a wet surface: the dry headway increased for the longer braking distance of a wet pavement.",
+   "source": "wet-pavement friction factors in AASHTO stopping-sight-distance models"
+  },
+  {
+   "name": "p.following_headway_time_ice",
+   "unit": "s",
+   "value": 4.5,
+   "convention": "Time-headway convention on ice or snow: the dry headway increased for the much longer braking distance of an icy or snow-covered pavement.",
+   "source": "winter-surface friction factors in highway design practice"
+  },
+  {
+   "name": "p.following_headway_time_adverse_geometry",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-headway convention on a steep or curved stretch: the dry headway increased where a downgrade lengthens braking distance or a bend shortens the view of the vehicle ahead.",
+   "source": "AASHTO grade and horizontal-curve corrections to stopping sight distance"
+  },
+  {
+   "name": "p.following_reaction_time",
+   "unit": "s",
+   "value": 1.5,
+   "convention": "Perception-reaction convention: the time over which a closing speed is carried before the follower's brakes act, which turns the excess of the follower's speed over the leader's into an added gap requirement.",
+   "source": "AASHTO Green Book perception-reaction time"
+  },
+  {
+   "name": "p.following_grade_threshold",
+   "unit": "ratio",
+   "value": 0.04,
+   "convention": "Grade convention: the magnitude of longitudinal slope above which the design correction to braking distance becomes material, so that the headway bound moves to the adverse-geometry selection.",
+   "source": "AASHTO grade corrections to stopping sight distance"
+  },
+  {
+   "name": "p.following_curvature_threshold",
+   "unit": "1/m",
+   "value": 0.01,
+   "convention": "Curvature convention: the horizontal curvature above which a bend materially shortens the view of the vehicle ahead on an ordinary highway, a radius of about one hundred metres.",
+   "source": "AASHTO horizontal-curve design radii"
+  },
+  {
+   "name": "p.following_dense_traffic_count",
+   "unit": "count",
+   "value": 5,
+   "convention": "Traffic-density convention: the number of road users of the traffic aggregate on the subject's highway at which the stream is read as dense enough to call for the added gap.",
+   "source": "level-of-service density bands in highway capacity practice"
+  },
+  {
+   "name": "p.following_dense_traffic_gap_increment",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "Traffic-density convention: the gap added to the headway bound in dense traffic, covering the shorter warning a follower has when vehicles ahead of the leader may brake.",
+   "source": "car-following model jam-spacing figures"
+  }
+ ],
+ "gaps": []
+}

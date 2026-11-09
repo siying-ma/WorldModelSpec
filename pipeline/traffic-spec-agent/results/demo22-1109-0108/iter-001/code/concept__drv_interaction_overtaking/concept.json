@@ -1,0 +1,92 @@
+{
+ "concept_id": "drv.interaction.overtaking",
+ "kind": "formula",
+ "contract": "Road user a is passing road user b at the observation: the two headings are aligned within the same-direction tolerance, a's speed exceeds b's by at least the speed excess the caller sets, and either the two bodies' projections on a's heading overlap — a is drawing level with b — or b is still ahead of a in the same lane. It is the state of a passing manoeuvre at the observation and states no lane used, no clearance between the bodies, no completion of the pass and no right to make it. Not a stand-in for: a completed pass, the lane or side the pass is made on, a signal or an intention, or the clearance between the bodies, which the gap atom carries.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "same_direction_tolerance",
+   "unit": "ratio",
+   "meaning": "the cosine of the largest angle between the two headings still read as the same direction, a ratio between minus one and one"
+  },
+  {
+   "name": "min_speed_excess",
+   "unit": "m/s",
+   "meaning": "the amount by which a's speed must exceed b's for the two to be read as passing rather than keeping station; it names the resolution of a speed difference"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the two headings are aligned within the same-direction tolerance",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction is “headings aligned: the cosine of the angle between the headings is above its tolerance”, the relation this clause states, with the tolerance the atom's own parameter."
+  },
+  {
+   "span": "a's speed exceeds b's by at least the speed excess",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the “magnitude of velocity” in m/s of each road user, so the difference of the two readings is the excess this clause bounds; kin.accel_longitudinal is excluded by its own contract as “not a stand-in for speed”."
+  },
+  {
+   "span": "the two bodies' projections on a's heading overlap",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap is “the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share, negative for the gap between the projections; a projection, so neither a contact nor a distance between the bodies”, which is the drawing level this clause states."
+  },
+  {
+   "span": "b is still ahead of a in the same lane",
+   "atoms": [
+    "rel.ahead_behind_in_lane"
+   ],
+   "concepts": [],
+   "justification": "rel.ahead_behind_in_lane is “a is ahead of / behind b in the same lane, along the lane direction”, which carries the earlier part of a pass, before the bodies draw level."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A lorry at 24 m/s draws level with a lorry at 20 m/s on a two-lane highway, their headings aligned and their bodies' projections on the overtaking lorry's heading sharing several metres.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The two lorries run in file at the same speed, 40 m apart: there is no speed excess, so neither is passing the other.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same pair drawing level with the source declaring the speed of road users absent: whether one is gaining on the other cannot be read.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_127_2"
+ ],
+ "differs_from": {
+  "concept": "drv.interaction.following",
+  "why": "The two take the same sorts — two road users — but read different atoms and decide differently for the same motion: following reads only the in-lane order and the heading agreement, and is true of a pair that keeps station indefinitely, while passing adds the speed excess and the longitudinal overlap of the bodies and is false of such a pair."
+ }
+}

@@ -1,0 +1,237 @@
+'TrafficSpec.Rules.NRS_484B_250_4_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_250_4_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_250_4_o1","intentions":[],"laws":["NRS-484B-250-4"],"narrowings":[{"kind":"reading","span":"ob1","why":"'the point nearest the intersection where the driver has a view of approaching traffic' is written as: at rest on the approach carrier, its footprint not yet over the junction, with the sight along the crossing way at least p.intersecting_way_view_distance. No region of a scene marks that point, and a trace carries sampled positions only, so the place is not stated as the minimum over the points of the carrier at which the view holds; every point of the carrier, short of the junction, from which the way is visible that far counts as the place."},{"kind":"reading","span":"ob1","why":"'the through highway' on which the traffic approaches is written as a highway region the junction lies on (st.on_way) that the subject's carrier does not lie on — the way the approach crosses there. Where the source records several such ways, the view along any one of them satisfies the place; a way the source does not record leaves no view, so the place is not reached."},{"kind":"reading","span":"ob1","why":"Where the place is the view point, the start of the approach that ends the search back has no mark to be measured from: it is written as the stretch of the carrier, short of the junction, at which the sight along the crossing way does not yet reach p.intersecting_way_view_distance — the same relation to the place that the mark's upstream zone has to a mark."},{"kind":"reading","span":"ob1","why":"The end of the search at 'the previous entry of the same subject into the same intersection' is written as the subject's own presence in that junction (rel.occupies), read at an observation before the judged entry: a formula read at the judged entry cannot tell that entry from an earlier one, and the two bounds decide this duty alike, because no halt at the place can be found while the subject's footprint overlaps the junction. The duty is judged at the observation before the entry for the same reason."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v"},{"var":"x"}],"derived":"drv_motion_region_entry","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"x"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal_uncovered","params":[]},{"args":[{"var":"d"}],"atom":"dev_inoperative","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]},"exists_region":{"lit":"intersection"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_250_4_o1","intentions":[],"laws":["NRS-484B-250-4"],"narrowings":[{"kind":"reading","span":"ob1","why":"'the point nearest the intersection where the driver has a view of approaching traffic' is written as: at rest on the approach carrier, its footprint not yet over the junction, with the sight along the crossing way at least p.intersecting_way_view_distance. No region of a scene marks that point, and a trace carries sampled positions only, so the place is not stated as the minimum over the points of the carrier at which the view holds; every point of the carrier, short of the junction, from which the way is visible that far counts as the place."},{"kind":"reading","span":"ob1","why":"'the through highway' on which the traffic approaches is written as a highway region the junction lies on (st.on_way) that the subject's carrier does not lie on — the way the approach crosses there. Where the source records several such ways, the view along any one of them satisfies the place; a way the source does not record leaves no view, so the place is not reached."},{"kind":"reading","span":"ob1","why":"Where the place is the view point, the start of the approach that ends the search back has no mark to be measured from: it is written as the stretch of the carrier, short of the junction, at which the sight along the crossing way does not yet reach p.intersecting_way_view_distance — the same relation to the place that the mark's upstream zone has to a mark."},{"kind":"reading","span":"ob1","why":"The end of the search at 'the previous entry of the same subject into the same intersection' is written as the subject's own presence in that junction (rel.occupies), read at an observation before the judged entry: a formula read at the judged entry cannot tell that entry from an earlier one, and the two bounds decide this duty alike, because no halt at the place can be found while the subject's footprint overlaps the junction. The duty is judged at the observation before the entry for the same reason."}],"obligation":{"body":{"and":[{"and":[{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"v"},{"var":"x"}],"derived":"drv_motion_region_entry","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"x"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal_uncovered","params":[]},{"args":[{"var":"d"}],"atom":"dev_inoperative","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"l"},{"var":"x"}]}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]}]},{"or":[{"and":[{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]},{"not":{"rises":{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}}}]},{"rises":{"not":{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}}}]}]},"forall_region":{"lit":"travel_region"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"d"},{"var":"x"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal_uncovered","params":[]},{"args":[{"var":"d"}],"atom":"dev_inoperative","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]},"exists_region":{"lit":"intersection"},"var":"x"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_250_4_o1","intentions":[],"laws":["NRS-484B-250-4"],"narrowings":[{"kind":"reading","span":"ob1","why":"'the point nearest the intersection where the driver has a view of approaching traffic' is written as: at rest on the approach carrier, its footprint not yet over the junction, with the sight along the crossing way at least p.intersecting_way_view_distance. No region of a scene marks that point, and a trace carries sampled positions only, so the place is not stated as the minimum over the points of the carrier at which the view holds; every point of the carrier, short of the junction, from which the way is visible that far counts as the place."},{"kind":"reading","span":"ob1","why":"'the through highway' on which the traffic approaches is written as a highway region the junction lies on (st.on_way) that the subject's carrier does not lie on — the way the approach crosses there. Where the source records several such ways, the view along any one of them satisfies the place; a way the source does not record leaves no view, so the place is not reached."},{"kind":"reading","span":"ob1","why":"Where the place is the view point, the start of the approach that ends the search back has no mark to be measured from: it is written as the stretch of the carrier, short of the junction, at which the sight along the crossing way does not yet reach p.intersecting_way_view_distance — the same relation to the place that the mark's upstream zone has to a mark."},{"kind":"reading","span":"ob1","why":"The end of the search at 'the previous entry of the same subject into the same intersection' is written as the subject's own presence in that junction (rel.occupies), read at an observation before the judged entry: a formula read at the judged entry cannot tell that entry from an earlier one, and the two bounds decide this duty alike, because no halt at the place can be found while the subject's footprint overlaps the junction. The duty is judged at the observation before the entry for the same reason."}],"obligation":{"body":{"and":[{"and":[{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"d"},{"var":"x"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal_uncovered","params":[]},{"args":[{"var":"d"}],"atom":"dev_inoperative","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"l"},{"var":"x"}]}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"l"},{"var":"x"}],"atom":"st_lane_enters","params":[]}]}]},{"or":[{"and":[{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]},{"not":{"rises":{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}}}]},{"rises":{"not":{"since":[{"not":{"or":[{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"m"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}}]}]}]}]}]}]},{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}]}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"stop_line"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"stop_line"},"var":"m"}},{"or":[{"body":{"and":[{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"m"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.stop_point_tolerance"}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"m"},{"var":"l"}],"params":[],"quantity":"prim_region_offset_along"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}]}]}]},"exists_region":{"lit":"crosswalk"},"var":"m"},{"and":[{"not":{"body":{"args":[{"var":"m"},{"var":"l"}],"atom":"st_entrance_of","params":[]},"exists_region":{"lit":"crosswalk"},"var":"m"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"not":{"args":[{"var":"v"},{"var":"x"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"l"},{"var":"w"}],"atom":"st_on_way","params":[]}},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"st_sight_along_way"},"rhs":{"param":"p.intersecting_way_view_distance"}}]}]},"exists_region":{"lit":"highway"},"var":"w"}]}]}]}]}]}]}]}]}}}]}]},"forall_region":{"lit":"travel_region"},"var":"l"}]},"exists_region":{"lit":"intersection"},"var":"x"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,drv_motion_region_entry,dev_traffic_signal,dev_governs,dev_traffic_signal_uncovered,dev_inoperative,st_travel_region,st_lane_enters,st_stop_line,st_entrance_of,prim_region_offset_along,st_region_geometry_distance,st_crosswalk,st_highway,st_on_way,st_sight_along_way,drv_motion_standstill
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.inoperative
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	history_boundary	
+BOUNDARY	history_boundary
+OCC	v
+OCC	?x
+OCC	v,x
+OCC	v,x
+OCC	?d
+OCC	d,x
+OCC	d
+OCC	d
+OCC	?x
+OCC	v,x
+OCC	v,x
+OCC	?d
+OCC	d,x
+OCC	d
+OCC	d
+OCC	?l
+OCC	l,x
+OCC	v,l
+OCC	l,x
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+OCC	v,x
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+OCC	v,x
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	v,m
+OCC	?m
+OCC	m,l
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+OCC	v,x
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	v,m
+OCC	v
+OCC	m
+OCC	l
+OCC	?m
+OCC	m,l
+OCC	v
+OCC	v,l
+OCC	v,x
+OCC	?w
+OCC	x,w
+OCC	l,w
+OCC	v,w
+TIME	occurrences	1
+TIME	checks	15
+TIME	lint	139
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	36
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	36
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	18
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	38
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	29
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	36
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	28
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	37
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	30
+SCEN	history_boundary	unknown	unknown	ok
+TIME	scenario:history_boundary	29
+TIME	witnesses	317
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_250_4_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_250_4_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_250_4_o1	126	8
+TIME	adequacy_start	81
+TIME	adequacy	33221
+DONE

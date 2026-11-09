@@ -1,0 +1,63 @@
+{
+ "concept_id": "drv.lane.lane_change",
+ "kind": "formula",
+ "contract": "The road user crosses out of a structure region at the observation: its footprint overlapped the region at the observation before, and at the observation it either no longer overlaps that region or overlaps a lane neighbouring it in the same direction of travel which it did not overlap at the observation before. It is the event of that crossing, read at the observation at which it has happened, and not the state of being outside the region afterwards. Not a stand-in for: a turn, since no heading change is read, a signal or a declared intention, a movement that stays within the region however far across it, the completion of a movement into the neighbouring region, or the direction or side the crossing is made towards, which a caller reads from the regions themselves.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "its footprint overlapped the region at the observation before",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies is “a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk …)”, which is the occupancy this clause reads, taken at the previous observation by the formula language's own past reading; st.region_geometry is excluded by its own contract, which states that “a footprint inside a boundary is rel.occupies”."
+  },
+  {
+   "span": "overlaps a lane neighbouring it in the same direction of travel",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_adjacency",
+    "st.lane"
+   ],
+   "concepts": [],
+   "justification": "st.lane_adjacency is the “left / right neighbouring lane of the same direction”, which is the neighbour this clause names, and its exclusion “not a stand-in for the marking between two lanes” does not apply, since the neighbour and not the mark is read; the neighbour is a region of kind st.lane, “a longitudinal strip of roadway for one line of vehicles”, which the body's quantifier ranges over, and rel.occupies is the overlap of the footprint with it."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car running in the middle lane of a three-lane carriageway reaches the left-hand lane: at the observation before, its footprint overlapped the middle lane alone; at the observation it overlaps the left-hand lane as well.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car drifts to the left within the middle lane and back again: its footprint overlaps the middle lane and no neighbouring lane at every observation.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same movement with the source declaring the occupancy of regions by road users absent: whether the footprint overlapped the lane before and the neighbour now cannot be read.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_223_1b"
+ ]
+}

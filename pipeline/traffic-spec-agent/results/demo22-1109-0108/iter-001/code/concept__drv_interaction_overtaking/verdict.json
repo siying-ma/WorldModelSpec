@@ -1,0 +1,113 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 4 names, reads 4 atom(s)",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "rel.ahead_behind_in_lane",
+   "rel.longitudinal_overlap",
+   "rel.same_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"sub\":[{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},{\"args\":[{\"var\":\"$a1\"}],\"measure\":\"kin_speed\"}]},\"rhs\":{\"param\":\"$p1\"}},{\"or\":[{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}},{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a0\"}],\"atom\":\"rel_ahead_behind_in_lane\",\"params\":[]}]}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "a"
+      },
+      {
+       "var": "b"
+      }
+     ],
+     "atom": "rel_same_direction",
+     "params": [
+      {
+       "param": "same_direction_tolerance"
+      }
+     ]
+    },
+    {
+     "and": [
+      {
+       "cmp": "ge",
+       "lhs": {
+        "sub": [
+         {
+          "args": [
+           {
+            "var": "a"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         {
+          "args": [
+           {
+            "var": "b"
+           }
+          ],
+          "measure": "kin_speed"
+         }
+        ]
+       },
+       "rhs": {
+        "param": "min_speed_excess"
+       }
+      },
+      {
+       "or": [
+        {
+         "cmp": "gt",
+         "lhs": {
+          "args": [
+           {
+            "var": "a"
+           },
+           {
+            "var": "b"
+           }
+          ],
+          "measure": "rel_longitudinal_overlap"
+         },
+         "rhs": {
+          "lit": {
+           "den": 1,
+           "num": 0
+          },
+          "unit": "metre"
+         }
+        },
+        {
+         "args": [
+          {
+           "var": "b"
+          },
+          {
+           "var": "a"
+          }
+         ],
+         "atom": "rel_ahead_behind_in_lane",
+         "params": []
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "the two bodies' projections on a's heading overlap",
+    "why": "read as a strictly positive shared length of the two projections: the atom is signed, zero where the projections abut and negative for the gap between them, and projections that merely touch at a point are no overlap, so the bound is strict rather than at-or-above zero."
+   }
+  ],
+  "context": "6b15326ef31cdd45fa7791db",
+  "candidate_digest": "eab1f533c95f1c4f3a99c41c0b3f94aca4495cda60ce6de284ba420de157d985"
+ }
+}

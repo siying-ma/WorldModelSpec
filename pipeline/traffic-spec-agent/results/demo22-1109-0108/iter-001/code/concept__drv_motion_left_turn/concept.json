@@ -1,0 +1,80 @@
+{
+ "concept_id": "drv.motion.left_turn",
+ "kind": "formula",
+ "contract": "The road user has turned to the left: counting from the onset of the turning — the observation at which its rate of change of heading to the left first rose above the onset yaw rate, a rate the caller sets — the heading change accumulated since that onset reaches at least the turn angle, a size the caller sets, to the left. The concept becomes true at the observation at which that angle is first reached, and it holds at the later observations at which the accumulated change still holds that angle, until a later onset starts the count again; the integration is bounded by the heading step, the largest interval between consecutive observations it may integrate across. Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a turn begun before the recording is never read as one made within it. It states the turning of the body only: no place, no lane, no way and no destination. Not a stand-in for: a signal or a declared intention, a steering input, the curvature of the road — a body yaws on a straight road whenever it manoeuvres — a lane change, or a reversal of the direction of travel, which is a larger angle and has its own concept.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "heading_step",
+   "unit": "ms",
+   "meaning": "the largest interval between two consecutive observations the heading integration may cross, the sampling standard of the acquisition profile"
+  },
+  {
+   "name": "onset_yaw_rate",
+   "unit": "deg/s",
+   "meaning": "the rate of change of heading above which the body is read as beginning to turn rather than running straight, which fixes the observed onset the heading change is counted from"
+  },
+  {
+   "name": "turn_angle",
+   "unit": "deg",
+   "meaning": "the accumulated heading change at which a turn to the left is recognized"
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "the observation at which its rate of change of heading to the left first rose above the onset yaw rate",
+  "recognition": "the observation at which that angle is first reached",
+  "extent": "the later observations at which the accumulated change still holds that angle, until a later onset starts the count again",
+  "history": "Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a turn begun before the recording is never read as one made within it."
+ },
+ "elements": [
+  {
+   "span": "its rate of change of heading to the left first rose above the onset yaw rate",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is the “rate of change of heading, positive when the heading turns to the left (counter-clockwise)”, in deg/s, which is the quantity whose rise marks the onset; its exclusion “not a stand-in for road curvature — a vehicle yaws on a straight road whenever it manoeuvres” does not apply, because the body's yaw and not the road's bend is what the contract reads."
+  },
+  {
+   "span": "the heading change accumulated since that onset",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "The accumulated heading change since an observed onset is integrated from the same atom by the formula language's own construct, which the ontology describes as “the signed heading change of a road user since a formula last became true, integrated from kin.yaw_rate with a step bound”; prim.heading_change is expressly “not a stand-in for it”, being taken over a fixed window behind each observation rather than from an onset, which is why this concept reads the atom and not that primitive."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car running straight begins to swing left: its yaw rate rises above the onset rate, and a second and a half later the heading change accumulated since that observation passes the turn angle.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car changes lane to the left: its yaw rate rises above the onset rate briefly, but the accumulated heading change peaks at a few degrees and never reaches the turn angle.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car is already turning at the first observation of the recording, so no onset is observed with the yaw rate known at every observation since: the accumulated change cannot be counted.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o2"
+ ]
+}

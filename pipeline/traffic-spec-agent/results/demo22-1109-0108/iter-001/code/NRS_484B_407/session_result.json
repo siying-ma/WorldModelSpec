@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 2383338,
+  "stop_reason": "end_turn",
+  "session_id": "a2d2f8fa-94bb-4eec-bb13-5503912143d1",
+  "total_cost_usd": 9.523511,
+  "usage": {
+   "input_tokens": 36,
+   "cache_creation_input_tokens": 316579,
+   "cache_read_input_tokens": 3146061,
+   "output_tokens": 191209,
+   "output_tokens_details": {
+    "thinking_tokens": 164879
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 316579,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 893,
+     "cache_read_input_tokens": 297768,
+     "cache_creation_input_tokens": 3040,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3040
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42715,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042855,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 36,
+    "outputTokens": 191209,
+    "cacheReadInputTokens": 3146061,
+    "cacheCreationInputTokens": 316579,
+    "webSearchRequests": 0,
+    "costUSD": 9.519225500000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 164879,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 22,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Gate verdict: **OK** — `13 witnesses, 10 names, composes nothing`, on gate run 3 of 6.\n\n**The rule.** `clsV` is `ru_aggregate` with the claimed aggregate id; the obligation is `.not (.rises uTurnReversal)` (the record's event boundary, recognition where the concept rises); the applicability is `.since (.not onset) (underWay ∧ ((s3 ∨ s4) ∧ s5))` — the conditions held together at some observation of the stretch from this manoeuvre's observed onset to the observation judged, with `.not onset` ending the search exactly at that onset. Each condition span has its own `roadway` quantifier anchored by `rel_occupies`, reading the curvature against `p.curvature_resolution`, the body-to-crest distance against `p.crest_approach_distance`, and the place's sight distance against the text's own 500 feet. `narrowings := []` — the readings are the record's own, and condition spans are not narrowed.\n\n**The witnesses.** Ten planned scenarios plus `branch_1..3` (a pedal cycle outside the aggregate; the subject turning on the footway, occupying no roadway; a crest 400 m off), each naming its window from the onset observation onward.\n\n**Two things worth your attention:**\n\n1. The witness checker enforces that a recorded heading agrees with the recorded yaw rate, which no rational heading can do at 3° per 50 ms. The traces are therefore built on an exact rational rotation (cos 840/841, sin 41/841) with the recorded yaw rate *defined* as that rotation's angle over the sampling interval (55.887241 deg/s), the place advancing 0.2 m along the heading each interval — so the path is the genuine arc of that rate, 4.1 m turning radius.\n\n2. A 150° sweep displaces a body by about twice that radius, ~4 m, so no consistent trace can show a crest leaving a 150 m approach distance *within* the manoeuvre. `occasion_s4` keeps the crest within that distance throughout the act (by ≥11 m) and is violated through the s4 limb; `occasion_s4_outside` carries the whole within→beyond crossing on the straight run before the onset, with 5 m margins either side. This deviation from the s4 narrative is stated in the witness file header and in `task_result.md`.\n\nFull session record, including both earlier `WITNESS_FAIL` runs and what changed after each, is in `/local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/results/demo22-1109-0108/iter-001/code/NRS_484B_407/task_result.md`.",
+  "ttft_ms": 116538,
+  "type": "result",
+  "duration_ms": 2425054,
+  "uuid": "84032c23-0623-4f79-8b75-3418191fb692",
+  "ttft_stream_ms": 1476,
+  "time_to_request_ms": 60,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 90,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 11,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1476,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42715,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042855,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 36,
+    "outputTokens": 191209,
+    "cacheReadInputTokens": 3146061,
+    "cacheCreationInputTokens": 316579,
+    "webSearchRequests": 0,
+    "costUSD": 9.519225500000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 164879,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

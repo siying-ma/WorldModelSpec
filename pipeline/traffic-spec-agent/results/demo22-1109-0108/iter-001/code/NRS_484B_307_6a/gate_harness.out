@@ -1,0 +1,89 @@
+'TrafficSpec.Rules.NRS_484B_307_6a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_6a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_307_6a","intentions":[],"laws":["NRS-484B-307-6a"],"narrowings":[],"operationalizations":[],"residues":["'is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter' adds no observable condition to the prohibition: it states what the yellow face tells the driver, and the duty that follows is the same whether or not the green movement is in fact being terminated or the red in fact follows immediately. What a driver was warned of is a state of mind no trace carries, and reading the clause as a condition would make the rule apply only where the signal's programme is known, which is narrower than the words."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"c"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal","params":[]},{"and":[{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},{"since":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"d"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"d"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"v"}],"id":"NRS_484B_307_6a","intentions":[],"laws":["NRS-484B-307-6a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"c"}],"atom":"st_travel_region","params":[]},{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"implies":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"v"},{"var":"i"}],"derived":"drv_motion_region_entry","params":[]}}]}]},"forall_device":{"lit":"traffic_signal"},"var":"d"}]},"forall_region":{"lit":"intersection"},"var":"i"}]},"forall_region":{"lit":"travel_region"},"var":"c"},"residues":["'is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter' adds no observable condition to the prohibition: it states what the yellow face tells the driver, and the duty that follows is the same whether or not the green movement is in fact being terminated or the red in fact follows immediately. What a driver was warned of is a state of mind no trace carries, and reading the clause as a condition would make the rule apply only where the signal's programme is known, which is narrower than the words."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"c"}],"atom":"st_travel_region","params":[]},{"and":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"body":{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal","params":[]},{"and":[{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]},{"since":[{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"and":[{"args":[{"var":"d"},{"lit":"circular_yellow"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"args":[{"var":"d"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"dark"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"unknown"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"not":{"args":[{"var":"d"},{"lit":"flashing_yellow_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"v"}],"id":"NRS_484B_307_6a","intentions":[],"laws":["NRS-484B-307-6a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"c"}],"atom":"st_travel_region","params":[]},{"args":[{"var":"v"},{"var":"c"}],"atom":"rel_occupies","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"d"}],"atom":"dev_traffic_signal","params":[]},{"args":[{"var":"d"},{"var":"c"}],"atom":"dev_governs","params":[]}]},{"implies":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"not":{"rises":{"args":[{"var":"v"},{"var":"i"}],"atom":"rel_occupies","params":[]}}}]}]},"forall_device":{"lit":"traffic_signal"},"var":"d"}]},"forall_region":{"lit":"intersection"},"var":"i"}]},"forall_region":{"lit":"travel_region"},"var":"c"},"residues":["'is thereby warned that the related green movement is being terminated or that a steady red indication will be exhibited immediately thereafter' adds no observable condition to the prohibition: it states what the yellow face tells the driver, and the duty that follows is the same whether or not the green movement is in fact being terminated or the red in fact follows immediately. What a driver was warned of is a state of mind no trace carries, and reading the clause as a condition would make the rule apply only where the signal's programme is known, which is narrower than the words."],"surrogate":false}
+ATOMS	ru_aggregate,st_travel_region,rel_occupies,st_intersection,st_lane_enters,dev_traffic_signal,dev_governs,dev_traffic_signal_shows,drv_motion_region_entry
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.traffic_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	v
+OCC	v
+OCC	?c
+OCC	c
+OCC	v,c
+OCC	?i
+OCC	i
+OCC	c,i
+OCC	?d
+OCC	d
+OCC	d,c
+OCC	v,c
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	?c
+OCC	c
+OCC	v,c
+OCC	?i
+OCC	i
+OCC	c,i
+OCC	?d
+OCC	d
+OCC	d,c
+OCC	d
+OCC	v,i
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	39
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	18
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	15
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	20
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	18
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	11
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	18
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	21
+TIME	witnesses	140
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_6a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_6a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_6a	38	7
+TIME	adequacy_start	7
+TIME	adequacy	1841
+DONE

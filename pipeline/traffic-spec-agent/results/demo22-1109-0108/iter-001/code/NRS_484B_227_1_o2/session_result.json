@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1923148,
+  "stop_reason": "end_turn",
+  "session_id": "df302fcc-ca6e-4da2-983b-003a36ae47d1",
+  "total_cost_usd": 9.863477699999999,
+  "usage": {
+   "input_tokens": 58,
+   "cache_creation_input_tokens": 295489,
+   "cache_read_input_tokens": 6053956,
+   "output_tokens": 155083,
+   "output_tokens_details": {
+    "thinking_tokens": 127476
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 295489,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 750,
+     "cache_read_input_tokens": 297696,
+     "cache_creation_input_tokens": 3259,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3259
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42287,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042447000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 58,
+    "outputTokens": 155083,
+    "cacheReadInputTokens": 6053956,
+    "cacheCreationInputTokens": 295489,
+    "webSearchRequests": 0,
+    "costUSD": 9.859233,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 127476,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 30,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Final verdict: `OK`** — `12 witnesses, 13 names, composes nothing`, on 4 of 6 gate runs.\n\nWhat the three files contain:\n\n- **Rule** (`TrafficSpec/Rules/NRS_484B/NRS_484B_227_1_o2.lean`) — s1 as the binder's aggregate class, non-standstill, and a divided highway the vehicle occupies (a highway with a dividing section and two distinct roadways on it); s3 as the duty at every way so selected — footprint clear of any dividing section of that way, and no observation at which the left-turn or U-turn concept first becomes true; s4 as the exception in the applicability — the footprint on a recorded opening/crossover or an intersection of that way, and, where a manoeuvre is under way, throughout the act from the occasion's declared onset (`.since` anchored on it). `narrowings := []`: every reading is one the record's elements and occasion already fix.\n- **Witnesses** — twelve built scenes, each trajectory generated so heading, velocity and position follow the recorded yaw rate and speed exactly (the harness rejects a body that keeps its heading while its yaw rate turns it).\n\nThree judgement calls worth your eye, all recorded in `task_result.md`:\n\n1. `permit` had to record a sub-degree steering correction. Written as the plan narrates it (\"yaw rate never rises above the onset rate\") the scene is **unknown**, not compliant: with no onset observed, both turn concepts are unknown and never false by contract, so the duty is undecided.\n2. `blind` keeps the car clear of the dividing section. The plan says \"the forbid scene with the yaw rate absent\", but in the forbid scene the divider limb is decided without reading any yaw rate, so that trace is violated rather than unknown.\n3. Five witnesses name a `window`. The duty reads the heading change since the onset of the manoeuvre being judged, so at an observation with no onset yet recorded it is unknown — an onset may lie before the recording.\n\nThe `VACUOUS` run was informative: the reversal concept did no work inside the exception guard, which told me the guard should be the occasion's own `under_way` element rather than the recognition concepts — the turn concepts now appear only where the duty is judged.",
+  "ttft_ms": 4067,
+  "type": "result",
+  "duration_ms": 2014503,
+  "uuid": "9fb3db87-210b-4258-8ffb-9561dbdef2d3",
+  "ttft_stream_ms": 1891,
+  "time_to_request_ms": 68,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 7,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 18,
+  "time_to_request_cpu_ms": 103,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1892,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42287,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0042447000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 58,
+    "outputTokens": 155083,
+    "cacheReadInputTokens": 6053956,
+    "cacheCreationInputTokens": 295489,
+    "webSearchRequests": 0,
+    "costUSD": 9.859233,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 127476,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

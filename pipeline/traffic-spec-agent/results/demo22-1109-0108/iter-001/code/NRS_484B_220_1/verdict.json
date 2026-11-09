@@ -1,0 +1,452 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 13 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "st_roadway",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "st_one_way_roadway",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "body": {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             "exists_region": {
+              "lit": "highway"
+             },
+             "var": "h"
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "and": [
+                 {
+                  "cmp": "eq",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "r"
+                    },
+                    {
+                     "lit": "x"
+                    }
+                   ],
+                   "measure": "st_lane_direction"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 0
+                   },
+                   "unit": "ratio"
+                  }
+                 },
+                 {
+                  "cmp": "eq",
+                  "lhs": {
+                   "args": [
+                    {
+                     "var": "r"
+                    },
+                    {
+                     "lit": "y"
+                    }
+                   ],
+                   "measure": "st_lane_direction"
+                  },
+                  "rhs": {
+                   "lit": {
+                    "den": 1,
+                    "num": 0
+                   },
+                   "unit": "ratio"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "and": [
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "lit": "one_way"
+                     }
+                    ],
+                    "atom": "dev_regulatory_sign_code",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "r"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "v"
+                       }
+                      ],
+                      "derived": "prim_conditions_hold",
+                      "params": []
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_device": {
+                  "lit": "regulatory_sign"
+                 },
+                 "var": "d"
+                },
+                {
+                 "args": [
+                  {
+                   "var": "v"
+                  },
+                  {
+                   "lit": "DEF-NRS-484A-285::traffic"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_220_1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-220-1"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s3",
+     "why": "Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "st_roadway",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "r"
+              }
+             ],
+             "atom": "st_one_way_roadway",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "r"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "highway"
+               },
+               "var": "h"
+              },
+              {
+               "and": [
+                {
+                 "not": {
+                  "and": [
+                   {
+                    "cmp": "eq",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "r"
+                      },
+                      {
+                       "lit": "x"
+                      }
+                     ],
+                     "measure": "st_lane_direction"
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "ratio"
+                    }
+                   },
+                   {
+                    "cmp": "eq",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "r"
+                      },
+                      {
+                       "lit": "y"
+                      }
+                     ],
+                     "measure": "st_lane_direction"
+                    },
+                    "rhs": {
+                     "lit": {
+                      "den": 1,
+                      "num": 0
+                     },
+                     "unit": "ratio"
+                    }
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "lit": "one_way"
+                       }
+                      ],
+                      "atom": "dev_regulatory_sign_code",
+                      "params": []
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "var": "r"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "d"
+                         },
+                         {
+                          "var": "v"
+                         }
+                        ],
+                        "derived": "prim_conditions_hold",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "regulatory_sign"
+                   },
+                   "var": "d"
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "v"
+                    },
+                    {
+                     "lit": "DEF-NRS-484A-285::traffic"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "cmp": "gt",
+       "lhs": {
+        "args": [
+         {
+          "var": "v"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "params": [],
+        "quantity": "drv_position_direction_component"
+       },
+       "rhs": {
+        "neg": {
+         "param": "p.wrong_way_speed_tolerance"
+        }
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "travel_region"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s3",
+    "why": "Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle."
+   }
+  ],
+  "context": "155a382e462731ffa4feecf0",
+  "candidate_digest": "0ea86ac4604f7ad67e9e7a7860761e6d5883d936223900c0e14c6758e0ad83dd"
+ }
+}

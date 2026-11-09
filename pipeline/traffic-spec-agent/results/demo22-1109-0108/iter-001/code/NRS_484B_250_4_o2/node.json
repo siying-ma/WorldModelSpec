@@ -1,0 +1,258 @@
+{
+ "node_id": "NRS_484B_250_4_o2",
+ "law_refs": [
+  "NRS-484B-250-4"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "When a vehicle enters an intersection controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+   "role": "trigger"
+  },
+  {
+   "id": "sib1",
+   "text": "the driver of the vehicle shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "c1",
+   "text": "After making such a stop,",
+   "role": "condition"
+  },
+  {
+   "id": "s1",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "st1",
+   "text": "shall proceed cautiously,",
+   "role": "standard"
+  },
+  {
+   "id": "ob1",
+   "text": "yielding to vehicles which have previously completed a stop or are within the intersection.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "dev.traffic_signal",
+    "dev.governs",
+    "dev.inoperative"
+   ],
+   "derived": [
+    "drv.motion.region_entry"
+   ],
+   "justification": "The same words as in the first node of this line take the same atoms. 'a vehicle' is DEF-NRS-484A-320, admitted as ru.aggregate=DEF-NRS-484A-320::vehicle and claimed as one atom. 'enters an intersection' is drv.motion.region_entry ('comes to overlap a structure region at the observation') on a region of kind st.intersection ('the region where two roadways meet, bounded by the prolongation of their edges'), anchored by rel.occupies ('a road user's footprint overlaps a lane / region') so that the junction read is the subject's own. 'a traffic-control signal ... installed and has its vehicular signals uncovered' is dev.traffic_signal, 'a signal head' with the 'uncovered attribute for an installed head whose faces are not covered', the only device atom by which traffic is 'alternately directed to stop or proceed' as DEF-NRS-484A-290 requires; 'controlled by' is dev.governs, 'the travel regions whose traffic the device controls ... or an intersection, read as control of the junction itself'; 'is inoperative at the time the vehicle enters the intersection' is dev.inoperative, 'a signal head installed and uncovered but showing no valid indication', read at the entry observation. dev.governs is not a stand-in for a position, and the place of the halt is read in c1 from its own marks."
+  },
+  {
+   "span": "c1",
+   "atoms": [
+    "rel.occupies",
+    "st.stop_line",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.region_geometry",
+    "st.travel_region",
+    "st.lane_direction",
+    "st.lane_enters",
+    "st.intersection",
+    "st.on_way",
+    "st.highway",
+    "st.sight_along_way",
+    "prim.region_offset_along"
+   ],
+   "derived": [
+    "drv.motion.standstill"
+   ],
+   "justification": "'such a stop' refers to the halt the previous sentence requires, and the condition carries that halt with every qualification the referring words keep: the same subject, the same place and the same order before the entry. The halt itself is drv.motion.standstill, which carries DEF-NRS-484A-255's 'complete cessation from movement' within the speed tolerance its contract names. The place is carried as the previous sentence states it: st.stop_line ('the transverse line marking where vehicles halt for a device') or st.crosswalk ('marked crossing, or the unmarked prolongation of sidewalks at an intersection'), each tied to the subject's own approach by st.entrance_of ('the carrier whose entrance into an intersection a stop line or a crosswalk marks ... the line or crossing a vehicle approaching through that carrier halts at or before') and st.lane_enters ('the intersection region a directed approach carrier runs into at its entrance end'), with st.travel_region the kind that carrier quantifier ranges over and rel.occupies the anchor to the subject's own footprint; else the point at which st.sight_along_way ('the distance along a way, in each direction from the point of that way nearest a road user, within which another vehicle on that way could be seen') reaches the view distance, on the way st.on_way and st.highway bind. prim.region_offset_along gives the side along the carrier's designated direction st.lane_direction, and st.region_geometry the distance between the subject's body and the mark that the stop-point tolerance bounds. A weaker fact -- a halt anywhere, or a halt at another junction -- would not be the stop the words refer to, so the full qualification is carried here and the defining words are marked sibling only because the duty they state belongs to the other node."
+  },
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver' is the driver of the same vehicle the trigger reads; DEF-NRS-484A-080 makes the driver the person who drives or is in actual physical control of the vehicle, and the ontology reads 'the driver' through the vehicle's controlled motion, so the duty binds that vehicle, whose class is the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "rel.contact",
+    "rel.surface_gap",
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [
+    "drv.motion.region_entry",
+    "drv.motion.standstill"
+   ],
+   "justification": "'vehicles' is DEF-NRS-484A-320, the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle, claimed as one atom for the road users quantified over inside the obligation. 'which have previously completed a stop' is drv.motion.standstill read at an earlier observation ('complete cessation from movement' within the speed tolerance), on a carrier whose entrance end is the same junction: st.lane_enters gives that entrance relation, st.travel_region the kind its carrier quantifier ranges over, rel.occupies the anchor to that other road user's own footprint. 'or are within the intersection' is rel.occupies on a region of kind st.intersection, the relation whose contract is exactly a footprint overlapping the junction region. 'yielding' is DEF-NRS-484A-210's right of one vehicle 'to proceed in a lawful manner in preference to another ... unless one grants precedence to the other': the subject grants precedence by not entering the junction while such a road user is within it -- drv.motion.region_entry is the entry event -- and by not closing on it, which rel.surface_gap ('distance between the nearest points of two bodies ... zero when they touch or overlap'), prim.closest_approach_within and prim.closest_approach_distance measure under constant velocities within the horizon, with kin.speed the subject's own speed and rel.contact ('the bodies of two road users ... touch or overlap') the outcome the precedence is there to prevent. rel.surface_gap is not a stand-in for an order of arrival, which the words carry themselves through the earlier halt and the present occupancy; rel.contact is not a stand-in for a near miss, which is why the closest-approach primitives are claimed beside it."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "st1",
+   "standard": "shall proceed cautiously",
+   "concepts": [
+    "kin.speed",
+    "rel.occupies",
+    "st.intersection",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "drv.motion.region_entry"
+   ],
+   "params": [
+    "p.cautious_proceed_max_speed",
+    "p.yield_conflict_horizon",
+    "p.yield_min_clearance"
+   ],
+   "convention": "A low-speed stopping-distance convention bounds the caution: moving off from a required halt, the subject's speed where it enters and crosses the junction is held at or below p.cautious_proceed_max_speed, the speed at which a vehicle can halt within the junction's conflict area on seeing a road user it must give way to; the degree of the hazard enters through the conflict-avoidance convention, the closest approach under constant velocities within p.yield_conflict_horizon staying clear of p.yield_min_clearance, so that the bound moves with the proximity and the closing speed of the road users the same sentence names rather than switching on their presence alone.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle enters an intersection governed by a traffic-control signal that is installed, uncovered and inoperative at that entry, and at an earlier observation on the same approach the subject came to a complete halt at the place the first sentence names -- the stop line marking its approach carrier, else the crosswalk marking it, else the point at which the sight along the crossing way reaches p.intersecting_way_view_distance. The halt is searched for back from the entry to the start of that approach or to the subject's previous entry into the same junction, as the first node of this line states it; where that history begins before the recording the condition, and so the rule, is unknown.",
+ "obligation": "From that entry on, while the subject is moving across or within the intersection, it must proceed cautiously -- its speed at or below p.cautious_proceed_max_speed -- and must grant precedence to every road user of the vehicle aggregate that either completed a halt earlier on a carrier whose entrance end is the same junction or lies within the junction at the observation: the subject must not enter the junction at an observation at which such a road user lies within it, must not come into contact with it, and must not let its closest approach to it under constant velocities within p.yield_conflict_horizon fall below p.yield_min_clearance.",
+ "params": [
+  "p.standstill_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.intersecting_way_view_distance",
+  "p.cautious_proceed_max_speed",
+  "p.yield_conflict_horizon",
+  "p.yield_min_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "'yielding' is read as granting precedence in the three observable ways the right-of-way definition's 'danger of a crash unless one grants precedence' admits on a trace: no entry into the junction while such a road user is within it, no contact, and no closest approach within the horizon closer than the clearance. A driver's deference that shows in none of these is outside what a trace can check.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob1",
+   "why": "'have previously completed a stop' is read as a halt at an earlier observation of the recording by that road user on a carrier whose entrance end is the same junction: the words give no place for the other road user's halt, and the junction's own entrances are the places at which such a halt is owed.",
+   "kind": "reading"
+  },
+  {
+   "span": "s1",
+   "why": "'the driver' is read through the vehicle's controlled motion: who or what is at the controls is not observable, and the duty binds that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts at the stop line of its lane at a junction whose signal heads are installed, uncovered and dark, then accelerates into the junction at 8 m/s while a van that halted a moment earlier at the opposite entrance is already within the junction region: the subject enters while the van lies inside, and its speed is above the cautious bound.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same junction and inoperative signal. The car halts at its stop line and then crosses the junction at 3 m/s. No other road user is in the scene at all, so nothing is owed precedence and the verdict is still decided.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same junction, the same dark heads, but the car never halts anywhere on its approach before entering the junction: the condition that it made such a stop does not hold, so this rule is not engaged and only the first node of the line judges the conduct.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car halts at its stop line and moves off into the junction, but the source does not report whether the other road user's footprint overlaps the junction region, so whether a road user was within the intersection when the subject entered is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The same junction and inoperative signal. The car halts at its stop line, a van that halted earlier at the opposite entrance is within the junction, and the car stays at rest until the van has left the junction region, then crosses at 3 m/s with a closest approach well clear of the clearance bound.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The car halts at its stop line, then crosses the junction at 3 m/s, below the cautious bound, but passes within half a metre of a van already within the junction, the closest approach under constant velocities falling below the clearance bound within the horizon: precedence is not granted even though the speed is low.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Standstill convention: the speed at or below which a sampled speed reading is read as the complete cessation from movement DEF-NRS-484A-255 requires, set at the noise floor of a speed channel at rest.",
+   "source": "Instrumentation practice for speed channels in scene-graph traces, whose residual at rest stays below a tenth of a metre per second."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Stop-point convention of the approach reading: the bound within which a halt counts as at the place the words name -- the stop line, the crosswalk or the view point -- covering the width of the marking and the position error of the body outline.",
+   "source": "Marking-geometry and localisation practice: a transverse line about half a metre wide plus the position error of a body outline."
+  },
+  {
+   "name": "p.intersecting_way_view_distance",
+   "unit": "m",
+   "value": 100.0,
+   "convention": "Intersection sight-distance convention: the length of the intersecting way that must be visible in each direction from the stopping point for approaching traffic to be seen before the crossing is begun.",
+   "source": "AASHTO Green Book intersection sight-distance tables for a crossing manoeuvre at urban approach speeds."
+  },
+  {
+   "name": "p.cautious_proceed_max_speed",
+   "unit": "m/s",
+   "value": 4.5,
+   "convention": "Low-speed stopping-distance convention: the speed at or below which a vehicle moving off from a required halt into a junction can be brought to rest within the junction's conflict area on seeing a road user it must give way to, taken as the 10 mph figure design practice uses for a stop-controlled entry.",
+   "source": "AASHTO Green Book stopping-sight-distance table at low design speeds, and the MUTCD practice of treating a stop-controlled entry as a crawl speed."
+  },
+  {
+   "name": "p.yield_conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities is read as the 'danger of a crash' the right-of-way definition names, rather than as a passing of two road users on diverging paths.",
+   "source": "Surrogate-safety practice for time-to-conflict measures at junctions (post-encroachment and time-to-collision thresholds of two to three seconds)."
+  },
+  {
+   "name": "p.yield_min_clearance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Conflict-avoidance convention: the clearance between the nearest points of two bodies below which a closest approach is read as a failure to grant precedence rather than as a safe passing.",
+   "source": "Lateral and longitudinal clearance practice for passing a road user at low speed in a junction."
+  }
+ ],
+ "gaps": []
+}

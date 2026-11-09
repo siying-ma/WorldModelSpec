@@ -1,0 +1,135 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)",
+  "narrowings declared by the coder: 3"
+ ],
+ "extras": {
+  "reads": [
+   "rel.ahead_behind_in_lane",
+   "rel.same_direction",
+   "rel.surface_gap"
+  ],
+  "refs": [],
+  "canonical_body": "{\"cmp\":\"ge\",\"lhs\":{\"aggregate\":\"count\",\"of\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"count\"},\"var\":\"$b0\",\"where\":{\"or\":[{\"same\":[{\"var\":\"$b0\"},{\"var\":\"$a0\"}]},{\"and\":[{\"args\":[{\"var\":\"$b0\"},{\"var\":\"$a0\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p2\"}]},{\"and\":[{\"or\":[{\"args\":[{\"var\":\"$b0\"},{\"var\":\"$a0\"}],\"atom\":\"rel_ahead_behind_in_lane\",\"params\":[]},{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$b0\"}],\"atom\":\"rel_ahead_behind_in_lane\",\"params\":[]}]},{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$b0\"}],\"measure\":\"rel_surface_gap\"},\"rhs\":{\"param\":\"$p1\"}}]}]}]}},\"rhs\":{\"param\":\"$p0\"}}",
+  "body_json": {
+   "cmp": "ge",
+   "lhs": {
+    "aggregate": "count",
+    "of": {
+     "lit": {
+      "den": 1,
+      "num": 0
+     },
+     "unit": "count"
+    },
+    "var": "v",
+    "where": {
+     "or": [
+      {
+       "same": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "u"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "v"
+          },
+          {
+           "var": "u"
+          }
+         ],
+         "atom": "rel_same_direction",
+         "params": [
+          {
+           "param": "same_direction_tolerance"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "u"
+              }
+             ],
+             "atom": "rel_ahead_behind_in_lane",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "u"
+              },
+              {
+               "var": "v"
+              }
+             ],
+             "atom": "rel_ahead_behind_in_lane",
+             "params": []
+            }
+           ]
+          },
+          {
+           "cmp": "le",
+           "lhs": {
+            "args": [
+             {
+              "var": "u"
+             },
+             {
+              "var": "v"
+             }
+            ],
+            "measure": "rel_surface_gap"
+           },
+           "rhs": {
+            "param": "file_reach"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "rhs": {
+    "param": "min_member_count"
+   }
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "are within the file reach of u, a distance the caller sets measured between the nearest points of the bodies",
+    "why": "The gap is read without a component — the distance between the nearest points of the two bodies — and the bound is inclusive: a road user whose body is exactly the file reach from u's is a member. The contract says `within` without fixing the boundary."
+   },
+   {
+    "kind": "reading",
+    "span": "counting u itself",
+    "why": "u is counted as a member by identity (`same v u`), not by the three relations holding of u with itself: u is neither ahead of nor behind itself, so the conjunction would exclude it and no file could ever reach its member count. Every other road user is counted only through the relations."
+   },
+   {
+    "kind": "reading",
+    "span": "lie ahead of or behind u in the same lane",
+    "why": "rel.ahead_behind_in_lane states one road user ahead of another along the direction of the lane they share, so the clause is written as that atom in both directions: v ahead of u, or u ahead of v (v behind u)."
+   }
+  ],
+  "context": "6fe4c28a4e83f255013bd664",
+  "candidate_digest": "637f90cfdfc65b96fe7a9dc33189cb68d00f1d8f78e383bf09a80c473e6492d6"
+ }
+}

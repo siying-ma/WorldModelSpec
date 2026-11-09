@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 2390729,
+  "stop_reason": "end_turn",
+  "session_id": "b7a62d12-cadd-4f26-924c-3082f8109d19",
+  "total_cost_usd": 10.528293099999997,
+  "usage": {
+   "input_tokens": 46,
+   "cache_creation_input_tokens": 344849,
+   "cache_read_input_tokens": 4066468,
+   "output_tokens": 201661,
+   "output_tokens_details": {
+    "thinking_tokens": 177385
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 344849,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 788,
+     "cache_read_input_tokens": 315506,
+     "cache_creation_input_tokens": 3032,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3032
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 47991,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004814100000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 201661,
+    "cacheReadInputTokens": 4066468,
+    "cacheCreationInputTokens": 344849,
+    "webSearchRequests": 0,
+    "costUSD": 10.523478999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 177385,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01H3FqZ6yqWbHJ2atexwC9f9",
+    "tool_input": {
+     "command": "find /local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/library -name \"*.lean\" | head -100",
+     "description": "List library Lean files"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 24,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Gate: **`OK`** — 14 witnesses, 24 names, 3 coder narrowings, on the second of six runs.\n\n**The rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_250_4_o2.lean`)\n\n- **t1** — `drv.motion.region_entry` into an `intersection` region whose signal head is uncovered, inoperative and governing it, all read at the entry observation.\n- **c1** — the halt it refers to, fully qualified: `drv.motion.standstill` on a `travel_region` the subject occupies whose entrance end is that junction, at the place the sibling sentence names in its own order (stop line marking that carrier → else crosswalk marking it → else the point where the sight along a way the junction lies on reaches the view distance), the side from `prim.region_offset_along` and the distance from `st.region_geometry` under `p.stop_point_tolerance`. The search back is `count` over the latest run of \"on that approach carrier\" — the record's own boundary, with no window length invented.\n- **st1/ob1** — speed at or below `p.cautious_proceed_max_speed`, and precedence to every other vehicle that halted at an entrance of this junction or lies within it: no entry while it is inside, no contact, and no closest approach (centre distance, or present body clearance) below `p.yield_min_clearance` while the centres approach within the horizon.\n\n**Narrowings declared** (on duty/standard spans only): the other road user's halt read at an observation up to and including the judged one; the clearance read on both the predicted centre approach and the present body clearance; the duty's scope as the subject's unbroken occupancy of the junction from the entry on.\n\n**Witnesses** — the six planned ones plus `branch_3`…`branch_10`, each isolating one limb so it moves a decided verdict (crosswalk, view point, contact alone, body clearance alone, speed alone, entry-while-inside alone, and the crosswalk/view-point limbs in violated scenes, which is what the first run's `VACUOUS` was about).\n\nOne deviation worth your eye, recorded in `task_result.md`: `branch_2`'s van moves in off its carrier as the car enters instead of being already inside — with it inside at the entry observation, the \"no entry while it is within\" limb decides the episode and the closest-approach limb the plan wrote that witness for would move nothing.",
+  "ttft_ms": 3692,
+  "type": "result",
+  "duration_ms": 2457205,
+  "uuid": "7e01ca79-0d39-48cb-afe3-f032cb183e00",
+  "ttft_stream_ms": 2477,
+  "time_to_request_ms": 71,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 21,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 21,
+  "time_to_request_cpu_ms": 104,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 17,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 2477,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 47991,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004814100000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 201661,
+    "cacheReadInputTokens": 4066468,
+    "cacheCreationInputTokens": 344849,
+    "webSearchRequests": 0,
+    "costUSD": 10.523478999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 177385,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

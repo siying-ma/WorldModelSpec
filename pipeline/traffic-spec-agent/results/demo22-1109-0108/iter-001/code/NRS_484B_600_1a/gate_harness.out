@@ -1,0 +1,75 @@
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen."},{"kind":"reading","span":"s3","why":"'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow."}],"operationalizations":[{"concepts":["env.ice_or_snow","env.precipitation","env.visibility","env.wet_road","kin.speed","rel.occupies","st.grade","st.highway","st.lane","st.lane_width","st.on_way","st.roadway","st.sight_distance"],"params":["p.reasonable_speed_base_limit","p.reasonable_speed_wet_decrement","p.reasonable_speed_ice_decrement","p.reasonable_speed_traffic_decrement_per_user","p.reasonable_speed_grade_decrement_per_unit_grade","p.reasonable_speed_lane_width_time","p.reasonable_speed_sight_time"],"standard":"a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":{"not":{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen."},{"kind":"reading","span":"s3","why":"'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow."}],"obligation":{"body":{"implies":[{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"l"},{"var":"h"}],"atom":"st_on_way","params":[]}]},{"and":[{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"sub":[{"sub":[{"sub":[{"sub":[{"param":"p.reasonable_speed_base_limit"},{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"lit":{"den":1,"num":0},"unit":"metre_per_second"},"then":{"param":"p.reasonable_speed_wet_decrement"}}]},{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"lit":{"den":1,"num":0},"unit":"metre_per_second"},"then":{"param":"p.reasonable_speed_ice_decrement"}}]},{"mul":[{"param":"p.reasonable_speed_traffic_decrement_per_user"},{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"u","where":{"args":[{"var":"u"},{"var":"h"}],"atom":"rel_occupies","params":[]}}]}]},{"mul":[{"param":"p.reasonable_speed_grade_decrement_per_unit_grade"},{"abs":{"args":[{"var":"r"}],"measure":"st_grade"}}]}]}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_lane_width_time"}]},"rhs":{"args":[{"var":"l"}],"measure":"st_lane_width"}}]},{"and":[{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_sight_time"}]},"rhs":{"args":[{"var":"r"}],"measure":"st_sight_distance"}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_sight_time"}]},"rhs":{"args":[],"measure":"env_visibility"}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"}]},"forall_region":{"lit":"roadway"},"var":"r"}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":{"not":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen."},{"kind":"reading","span":"s3","why":"'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow."}],"obligation":{"body":{"implies":[{"args":[{"var":"v"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"r"},{"var":"h"}],"atom":"st_on_way","params":[]}]},{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"l"},{"var":"h"}],"atom":"st_on_way","params":[]}]},{"and":[{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"sub":[{"sub":[{"sub":[{"sub":[{"param":"p.reasonable_speed_base_limit"},{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"lit":{"den":1,"num":0},"unit":"metre_per_second"},"then":{"param":"p.reasonable_speed_wet_decrement"}}]},{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"lit":{"den":1,"num":0},"unit":"metre_per_second"},"then":{"param":"p.reasonable_speed_ice_decrement"}}]},{"mul":[{"param":"p.reasonable_speed_traffic_decrement_per_user"},{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"u","where":{"args":[{"var":"u"},{"var":"h"}],"atom":"rel_occupies","params":[]}}]}]},{"mul":[{"param":"p.reasonable_speed_grade_decrement_per_unit_grade"},{"abs":{"args":[{"var":"r"}],"measure":"st_grade"}}]}]}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_lane_width_time"}]},"rhs":{"args":[{"var":"l"}],"measure":"st_lane_width"}}]},{"and":[{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_sight_time"}]},"rhs":{"args":[{"var":"r"}],"measure":"st_sight_distance"}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"v"}],"measure":"kin_speed"},{"param":"p.reasonable_speed_sight_time"}]},"rhs":{"args":[],"measure":"env_visibility"}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"}]},"forall_region":{"lit":"roadway"},"var":"r"}]},"forall_region":{"lit":"highway"},"var":"h"},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,drv_motion_standstill,st_highway,rel_occupies,st_roadway,st_on_way,st_lane,kin_speed,env_wet_road,env_precipitation,env_ice_or_snow,st_grade,st_lane_width,st_sight_distance,env_visibility
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	env.visibility
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	v
+OCC	v
+OCC	?h
+OCC	v,h
+OCC	?r
+OCC	v,r
+OCC	r,h
+OCC	?l
+OCC	v,l
+OCC	l,h
+OCC	v
+OCC	
+OCC	
+OCC	
+OCC	?u
+OCC	u,h
+OCC	r
+OCC	v
+OCC	l
+OCC	v
+OCC	r
+OCC	v
+OCC	
+TIME	occurrences	0
+TIME	checks	12
+TIME	lint	116
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	24
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	22
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	17
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	24
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	26
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	28
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	26
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	25
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	23
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	26
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	23
+TIME	witnesses	265
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1a	10	10
+TIME	adequacy_start	12
+TIME	adequacy	2013
+DONE

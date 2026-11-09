@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 2490645,
+  "stop_reason": "end_turn",
+  "session_id": "5d5383ff-023a-4a8b-bd77-9eaff76ca4da",
+  "total_cost_usd": 11.397100499999999,
+  "usage": {
+   "input_tokens": 52,
+   "cache_creation_input_tokens": 333259,
+   "cache_read_input_tokens": 6055409,
+   "output_tokens": 201291,
+   "output_tokens_details": {
+    "thinking_tokens": 173211
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 333259,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 726,
+     "cache_read_input_tokens": 335535,
+     "cache_creation_input_tokens": 3190,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3190
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42565,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004271,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 52,
+    "outputTokens": 201291,
+    "cacheReadInputTokens": 6055409,
+    "cacheCreationInputTokens": 333259,
+    "webSearchRequests": 0,
+    "costUSD": 11.3928295,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 173211,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 30,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Gate: `OK`** — 12 witnesses, 15 names, composes `NRS_484B_253_o1`, 2 coder narrowings (run 4 of a 6-run budget).\n\nWhat I wrote:\n\n- **Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_253_o2.lean`): binder class from the admitted aggregate; applicability as `∃t` another vehicle of the aggregate that, in a junction region, has turned left by `drv.motion.left_turn` (reviewed step bound, onset yaw rate, turn angle), gave a left indication by indicator or arm at some observation in `p.turn_signal_advance_window` behind the turn's recognition, complied with `NRS_484B_253_o1` (`c1`, as `compliance`), with the subject on a `travel_region` carrier entering that junction whose designated direction opposes the turning vehicle's approach carrier (normalised dot product ≤ −`p.same_direction_cosine_tolerance`); obligation as `∀t`, that same selection restated, implying the subject grants precedence — no contact, and the clearance held at `p.yield_min_clearance` both as the nearest-point gap and as the centre distance at the closest approach within `p.yield_conflict_horizon`, read on a subject that is itself proceeding.\n- **Witnesses**: one junction with two opposing approaches, 141 scenes at the profile's 50 ms, each body kinematically self-consistent (the van's heading rotates by an exact rational 1.5° per scene, matching its 30 deg/s yaw rate); the six planned scenarios plus six branch witnesses so every leaf moves a decided verdict.\n\nThree findings are recorded in `task_result.md`: the `atLast` reading of c2 (and why an unbounded past search would leave `branch_1` undecided), the carrier/junction distinction needed so `blind` is unknown for the masked atom alone, and the one substantive tension — `c1` read as compliance at the judged observation means this duty and `NRS_484B_253_o1` can only fail together on a shared conflict, so the violating witnesses keep the turning vehicle blameless there.",
+  "ttft_ms": 122977,
+  "type": "result",
+  "duration_ms": 3201856,
+  "uuid": "bbc59d9c-c684-4c79-83a2-9a32d3a30d12",
+  "ttft_stream_ms": 3577,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 99,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 3578,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42565,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004271,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 52,
+    "outputTokens": 201291,
+    "cacheReadInputTokens": 6055409,
+    "cacheCreationInputTokens": 333259,
+    "webSearchRequests": 0,
+    "costUSD": 11.3928295,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 173211,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

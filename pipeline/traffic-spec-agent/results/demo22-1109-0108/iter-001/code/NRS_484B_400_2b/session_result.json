@@ -1,0 +1,192 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1521905,
+  "stop_reason": "end_turn",
+  "session_id": "36311a0a-fc41-4512-a4b9-d975cdd913a6",
+  "total_cost_usd": 7.3582789,
+  "usage": {
+   "input_tokens": 36,
+   "cache_creation_input_tokens": 266918,
+   "cache_read_input_tokens": 2988583,
+   "output_tokens": 127608,
+   "output_tokens_details": {
+    "thinking_tokens": 102014
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 266918,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 726,
+     "cache_read_input_tokens": 269839,
+     "cache_creation_input_tokens": 2545,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2545
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 44124,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044274,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 36,
+    "outputTokens": 127608,
+    "cacheReadInputTokens": 2988583,
+    "cacheCreationInputTokens": 266918,
+    "webSearchRequests": 0,
+    "costUSD": 7.353851499999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 102014,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Read",
+    "tool_use_id": "toolu_01FuqWWdGPTEJVKSEtgiruR3",
+    "tool_input": {
+     "file_path": "/local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/library/TrafficSpec/Index.lean"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 21,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Done — gate verdict **OK** (run 2 of 6).\n\n**What I wrote**\n\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_400_2b.lean` — the class formula (`ru_aggregate` with the aggregate id), the applicability (one `intersection` quantifier binding the junction: the approach carrier that enters it, the current `int.turn` declaration, both ways two-directional — undivided plus two carriers with opposed designated directions — the entry, and the left turn with the reading's three parameters and the profile's step bound), and the obligation (at the departure from that same junction, every highway region occupied has a centre line on it whose signed lateral offset is at least `p.lateral_offset_resolution`, undefined where no centre line is observed on that way).\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_400_2b.lean` — one junction of two undivided ways and seven witnesses: the five planned ones plus `branch_2` (both carriers of the entered way point east) and `branch_3` (a weave whose accumulated heading change never reaches the turn angle).\n- `task_result.md` in the working directory.\n\n**Two things worth your attention**\n\n1. Gate run 1 failed because the harness holds a trace to the yaw rate it reports: the heading at an observation must be the previous heading rotated by that rate over the interval before it. The turns are now exact circular arcs of radius v/ω sampled at 5° per 50 ms observation, to micrometre and ten-millionth precision.\n2. The node's applicability is present-tense about occupying a carrier whose entrance end is the junction, but the duty is judged at the observation the subject *leaves* that junction — by which time it is no longer on an approach carrier. I read that selection as holding at the judged observation or an earlier one (as the record already reads the entry); without it the plan's own `permit` scene could never be compliant. That choice, the universal reading of \"the highway being entered\", and the negative-dot-product reading of \"opposite directions\" (no cosine tolerance exists in the node's reading) are recorded — the first two as narrowings on s7, all three in the rule file's header and in `task_result.md`.",
+  "ttft_ms": 2847,
+  "type": "result",
+  "duration_ms": 1541380,
+  "uuid": "be80cd67-9000-4cb2-af41-d0884555e181",
+  "ttft_stream_ms": 1745,
+  "time_to_request_ms": 61,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 11,
+  "time_to_request_cpu_ms": 92,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1746,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 44124,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044274,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 36,
+    "outputTokens": 127608,
+    "cacheReadInputTokens": 2988583,
+    "cacheCreationInputTokens": 266918,
+    "webSearchRequests": 0,
+    "costUSD": 7.353851499999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 102014,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

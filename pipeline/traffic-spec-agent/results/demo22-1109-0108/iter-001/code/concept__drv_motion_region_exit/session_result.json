@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 273719,
+  "stop_reason": "end_turn",
+  "session_id": "ccbe3c0d-c41b-4144-8c46-b25799297969",
+  "total_cost_usd": 2.0474757,
+  "usage": {
+   "input_tokens": 50,
+   "cache_creation_input_tokens": 78787,
+   "cache_read_input_tokens": 1515772,
+   "output_tokens": 19942,
+   "output_tokens_details": {
+    "thinking_tokens": 10554
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 78787,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 825,
+     "cache_read_input_tokens": 82281,
+     "cache_creation_input_tokens": 1972,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1972
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 29082,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029197,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 50,
+    "outputTokens": 19942,
+    "cacheReadInputTokens": 1515772,
+    "cacheCreationInputTokens": 78787,
+    "webSearchRequests": 0,
+    "costUSD": 2.044556,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 10554,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 25,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Final verdict: `OK`** — 3 witnesses, 1 name, reads 1 atom. Two gate runs of six used.\n\n**The body** (`library/TrafficSpec/Concepts/motion/region_exit.lean:…`):\n\n```lean\ndef overlaps : Formula := .atom \"rel_occupies\" [aU, aR] []\ndef body : Formula := .rises (.not overlaps)\n```\n\nThe record's single element — \"it does not overlap the region at the observation and did overlap it at the observation before\" — is exactly the rising edge of the overlap's negation. Both formals are read by the atom, so both are anchored; nothing else is read, and `narrowings` is empty because the contract left no choice open (the predecessor relation and the event-not-state reading are the contract's own words and the language's only predecessor).\n\n**The witnesses.** One geometry: region 100 an intersection square (−10,−10)…(10,10) m, track 1 a motor vehicle with half-extents (2,1,1) m heading east at 7 m/s, centre at x = −7, 0, 7, 14, 21 m on successive seconds. Centre-in-polygon and footprint-overlap agree at every observation, and the overlap ends at t = 3000 ms only. `holds` judges that instant; `fails` judges the whole five-observation trace, false both where the vehicle moved farther in and at the observation after the departure; `blind` masks `rel.occupies` at the same instant as `holds`.\n\n**The one gate failure and its fix.** Run 1 returned `WITNESS_FAIL`: `blind` was unknown for `window_truncated:rises` rather than for the masked atom. The episode verdict collects the reasons of every judged instant, and at t = 0 the edge's reason is the unobserved past, not the absent atom. The scene and the body were both right — only the instant judged was wrong — so `blind` got the same single-instant window as `holds`. Run 2: `OK`.\n\nWorth flagging for the plan agent, as a property of edge concepts generally rather than a defect here: because `rises` is false at the observation just before it rises, no trace containing a departure can be compliant at every instant, so a `holds` witness for any such concept must name its instant through `window`.\n\n`task_result.md` is written at `/local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/results/demo22-1109-0108/iter-001/code/concept__drv_motion_region_exit/task_result.md`.",
+  "ttft_ms": 7516,
+  "type": "result",
+  "duration_ms": 279527,
+  "uuid": "8fd1fe93-0eab-4786-8c79-eeb3fd3854c6",
+  "ttft_stream_ms": 1527,
+  "time_to_request_ms": 64,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 19,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 12,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 14,
+  "time_to_request_cpu_ms": 97,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 18,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1527,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 29082,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029197,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 50,
+    "outputTokens": 19942,
+    "cacheReadInputTokens": 1515772,
+    "cacheCreationInputTokens": 78787,
+    "webSearchRequests": 0,
+    "costUSD": 2.044556,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 10554,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

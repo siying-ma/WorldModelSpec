@@ -1,0 +1,381 @@
+{
+ "verdict": "OK",
+ "details": [
+  "11 witnesses, 15 names, composes nothing",
+  "narrowings declared by the coder: 2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "not": {
+     "args": [
+      {
+       "var": "v"
+      }
+     ],
+     "derived": "drv_motion_standstill",
+     "params": [
+      {
+       "param": "p.standstill_speed_tolerance"
+      }
+     ]
+    }
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_600_1a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-600-1a"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "s3",
+     "why": "The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen."
+    },
+    {
+     "kind": "reading",
+     "span": "s3",
+     "why": "'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "args": [
+        {
+         "var": "v"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "v"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         },
+         {
+          "body": {
+           "implies": [
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "v"
+                },
+                {
+                 "var": "l"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "l"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "and": [
+                {
+                 "cmp": "le",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "v"
+                   }
+                  ],
+                  "measure": "kin_speed"
+                 },
+                 "rhs": {
+                  "sub": [
+                   {
+                    "sub": [
+                     {
+                      "sub": [
+                       {
+                        "sub": [
+                         {
+                          "param": "p.reasonable_speed_base_limit"
+                         },
+                         {
+                          "cond": {
+                           "or": [
+                            {
+                             "args": [],
+                             "atom": "env_wet_road",
+                             "params": []
+                            },
+                            {
+                             "args": [],
+                             "atom": "env_precipitation",
+                             "params": []
+                            }
+                           ]
+                          },
+                          "else": {
+                           "lit": {
+                            "den": 1,
+                            "num": 0
+                           },
+                           "unit": "metre_per_second"
+                          },
+                          "then": {
+                           "param": "p.reasonable_speed_wet_decrement"
+                          }
+                         }
+                        ]
+                       },
+                       {
+                        "cond": {
+                         "args": [],
+                         "atom": "env_ice_or_snow",
+                         "params": []
+                        },
+                        "else": {
+                         "lit": {
+                          "den": 1,
+                          "num": 0
+                         },
+                         "unit": "metre_per_second"
+                        },
+                        "then": {
+                         "param": "p.reasonable_speed_ice_decrement"
+                        }
+                       }
+                      ]
+                     },
+                     {
+                      "mul": [
+                       {
+                        "param": "p.reasonable_speed_traffic_decrement_per_user"
+                       },
+                       {
+                        "aggregate": "count",
+                        "of": {
+                         "lit": {
+                          "den": 1,
+                          "num": 0
+                         },
+                         "unit": "count"
+                        },
+                        "var": "u",
+                        "where": {
+                         "args": [
+                          {
+                           "var": "u"
+                          },
+                          {
+                           "var": "h"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        }
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   {
+                    "mul": [
+                     {
+                      "param": "p.reasonable_speed_grade_decrement_per_unit_grade"
+                     },
+                     {
+                      "abs": {
+                       "args": [
+                        {
+                         "var": "r"
+                        }
+                       ],
+                       "measure": "st_grade"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                },
+                {
+                 "cmp": "le",
+                 "lhs": {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "param": "p.reasonable_speed_lane_width_time"
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "args": [
+                   {
+                    "var": "l"
+                   }
+                  ],
+                  "measure": "st_lane_width"
+                 }
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "cmp": "le",
+                 "lhs": {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "param": "p.reasonable_speed_sight_time"
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "args": [
+                   {
+                    "var": "r"
+                   }
+                  ],
+                  "measure": "st_sight_distance"
+                 }
+                },
+                {
+                 "cmp": "le",
+                 "lhs": {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "v"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "param": "p.reasonable_speed_sight_time"
+                   }
+                  ]
+                 },
+                 "rhs": {
+                  "args": [],
+                  "measure": "env_visibility"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          "forall_region": {
+           "lit": "lane"
+          },
+          "var": "l"
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "roadway"
+       },
+       "var": "r"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "s3",
+    "why": "The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen."
+   },
+   {
+    "kind": "reading",
+    "span": "s3",
+    "why": "'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow."
+   }
+  ],
+  "context": "d5bbca3062541bec3b4cd3ea",
+  "candidate_digest": "6091528227ba0559073235a5f23c66363f66b0b5138b81170a9e58b974327826"
+ }
+}

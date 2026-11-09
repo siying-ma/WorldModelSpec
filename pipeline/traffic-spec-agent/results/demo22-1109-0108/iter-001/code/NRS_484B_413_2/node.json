@@ -1,0 +1,171 @@
+{
+ "node_id": "NRS_484B_413_2",
+ "law_refs": [
+  "NRS-484B-413-2"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled",
+   "role": "obligation"
+  },
+  {
+   "id": "s2",
+   "text": "in a business or residential district and not less than the last 300 feet traveled in any other area",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "prior to changing the course of a vehicle.",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "This rule shall be observed, regardless of the weather.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "kin.path_length",
+    "kin.yaw_rate",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "justification": "sig.turn_indicator is 'the turn indicator state in {off, left, right}: neither indicator lit, or the left or the right one' and sig.hand_signal is 'a driver's or rider's arm signal; meaning in {no_signal, left, right, stop_or_slow, re_enter}'; together they carry 'a signal of intention to turn right or left', the ontology directing that a signal 'of intention' is the signal itself and not a declared intention. kin.path_length, 'distance travelled along the body's path since the start of the trace, monotone', is what the window 'the last 100 feet traveled' measures: a distance-travelled window reads it as a time window reads the clock. kin.yaw_rate, 'rate of change of heading, positive when the heading turns to the left', gives the hand of the course change, so that the signal required is the indication of that hand. ru.aggregate carries 'a vehicle' by the admitted id DEF-NRS-484A-320::vehicle. Exclusions: sig.turn_indicator is 'not a stand-in for the turn or lane change itself', which s3 carries by its concept; sig.hand_signal is not the rider's posture; kin.yaw_rate is 'not a stand-in for road curvature', no road geometry being read; kin.path_length is the subject's own travelled distance and not a position."
+  },
+  {
+   "span": "s3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.turning"
+   ],
+   "justification": "drv.motion.turning is 'the road user's heading is changing at the observation: the magnitude of its heading change over the window behind the observation is at least the heading change tolerance ... a state the road user is in at each observation of a bending path, in either hand', which is 'changing the course of a vehicle', the law's own 'turn right or left, or otherwise turn ... from a direct course'. 'prior to' is read from the observation at which that change is first recognized, the rise of the concept, and the window of travelled path runs back from it. Exclusions: the concept is not a stand-in for a completed turn, a steering input, the curvature of the road, a lane change, or a signal or an intention, the signal being carried on s1 by its own atoms."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s2",
+   "id": "asm.in_business_or_residential_district",
+   "meaning": "the map or trace declares that the stretch of highway the road user occupies at the observation lies within a business district or a residential district"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s4",
+   "why": "The words add no observable condition and no restriction: the signal is owed over the same window, in the same terms, whether or not rain, snow, wet road, ice or any other weather is present, so the duty is the same whether or not these words hold. The rule reads no weather atom for them, and nothing of the obligation is dropped.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle v changes its course: at the judged observation drv.motion.turning rises for v, its heading change over p.turn_recognition_window first reaching p.heading_change_noise_floor. The trace's declaration asm.in_business_or_residential_district selects the window; where the trace declares it neither true nor false the verdict is unknown.",
+ "obligation": "Over the window of path travelled behind that observation -- 100 feet where asm.in_business_or_residential_district holds and 300 feet where it does not, the length selected by a condition on that declaration and measured as a distance-travelled window on kin.path_length -- v gave the signal of the hand of the course change at every observation of the window: sig.turn_indicator in the state of that hand, or sig.hand_signal with that hand's meaning. The hand is read at the judged observation from the sign of kin.yaw_rate, left positive. A window that reaches past the start of the trace leaves the verdict unknown.",
+ "params": [
+  "p.turn_recognition_window",
+  "p.heading_change_noise_floor"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course' is read as an indication of the hand of the course change -- the indicator lit on that hand, or an arm signal whose meaning is that hand -- and the hand is read from the sign of the road user's rate of change of heading at the observation at which the course change is recognized. A signal given on the other hand does not satisfy the duty.",
+   "kind": "reading"
+  },
+  {
+   "span": "s1",
+   "why": "'given continuously during not less than the last 100 feet traveled' and the alternative length of s2 are read as one distance-travelled window behind the observation at which the course change is recognized, the length selected by the district declaration, with the signal required at every observation of that window; the figures are the text's own.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The trace declares the stretch the subject occupies to lie in a business district. The subject runs straight, then bends to the right until its heading change over the recognition window reaches the noise floor; over the whole hundred feet of path travelled before that observation its indicator was off and no arm signal was given.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The trace declares the stretch to lie in no business or residential district. The subject lights its left indicator early and holds it lit over more than three hundred feet of travelled path before its heading change to the left reaches the noise floor. No other road user is present in the scene.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The subject runs along its lane for the whole recording, its heading change over the recognition window never reaching the noise floor, so no course change is recognized and no signal is owed.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The trace declares a residential district and the subject's course change to the left is recognized well after the start of the recording, but the source observes neither the indicator state nor an arm signal, so whether the signal was given over the window cannot be told.",
+   "masked": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Outside any business or residential district by the trace's declaration, the subject holds its right indicator lit over the whole three hundred feet of travelled path and then bends to the left, its heading change to the left reaching the noise floor: the signal given is of the other hand.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "In a declared business district, the subject gives no indicator but the driver holds out an arm whose signal means left at every observation of the hundred feet of travelled path before its heading change to the left is recognized.",
+   "masked": []
+  }
+ ],
+ "literals": [
+  {
+   "span": "s1",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "s2",
+   "text": "300 feet",
+   "value": 300,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.turn_recognition_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Manoeuvre-recognition convention: the window behind an observation over which a yaw rate is integrated to tell a bending path from a straight one, long enough to carry a junction turn and short enough not to merge two successive manoeuvres.",
+   "source": "manoeuvre-recognition practice for junction turns and lane changes at urban speeds."
+  },
+  {
+   "name": "p.heading_change_noise_floor",
+   "unit": "deg",
+   "value": 5.0,
+   "convention": "Resolution convention: the heading change over the recognition window below which an integrated yaw reading is indistinguishable from a straight course at the source's resolution; it names the resolution only and sets no measure of how sharp a course change must be.",
+   "source": "integrated yaw-rate noise over a window of a few seconds in vehicle-dynamics and scene-graph sources."
+  }
+ ],
+ "gaps": []
+}

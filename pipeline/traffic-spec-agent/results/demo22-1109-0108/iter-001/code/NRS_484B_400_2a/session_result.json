@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1049083,
+  "stop_reason": "end_turn",
+  "session_id": "22ed9f71-e506-44f1-bb28-5ffa67c1a9d5",
+  "total_cost_usd": 6.0705245,
+  "usage": {
+   "input_tokens": 68,
+   "cache_creation_input_tokens": 204682,
+   "cache_read_input_tokens": 3785745,
+   "output_tokens": 85050,
+   "output_tokens_details": {
+    "thinking_tokens": 65416
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 204682,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 705,
+     "cache_read_input_tokens": 206886,
+     "cache_creation_input_tokens": 3262,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3262
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42280,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004242,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 68,
+    "outputTokens": 85050,
+    "cacheReadInputTokens": 3785745,
+    "cacheCreationInputTokens": 204682,
+    "webSearchRequests": 0,
+    "costUSD": 6.0662825,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 65416,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 35,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Verdict: `OK`** — first and only gate run (5 of 6 unused).\n\n```\nOK\n   8 witnesses, 14 names, composes nothing\n   narrowings declared by the coder: 3\n```\n\nWhat I wrote:\n\n**Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_400_2a.lean`)\n- `clsV`: the one aggregate atom `ru_aggregate v \"DEF-NRS-484A-320::vehicle\"`.\n- `applicability`: an intersection at which the source declares a left turn for `v`, the approach carrier `v` occupies whose entrance end is that junction, and `twoDirectional` on both the carrier's way and the other way meeting there — no divider lying on the way, two carriers of opposed designated direction (dot product ≤ −`p.same_direction_cosine_tolerance`).\n- `obligation`: a universal over the carriers the subject occupies that enter that junction and over their ways, re-stating the whole selection (occupancy, kind, entrance, junction, declared intention), requiring either the leftmost lane of its own direction or — where the carrier is no recorded lane — a signed lateral offset to the centre line of its roadway within [`p.lateral_offset_resolution`, `p.centerline_adjacent_distance`].\n- Three narrowings on `ob1`: ordinal 1 written as \"no left neighbour of its direction\" (no magnitude of the file's own), the laned/unlaned gate read at the carrier, and the duty read at every such carrier rather than one.\n\n**Witnesses**: the node's seven plus `branch_4` (not applicable — the *other* intersecting highway divided), which the divider leaves of the second way need; without it mutation adequacy would have reported them unexercised.\n\nTwo judgement calls worth your eye, both argued in `task_result.md`: the obligation does not repeat the two-directionality of the ways (implied by the applicability, and every leaf of the repetition would be unexercisable), and `st.roadway` is read in `ob1`, where the node's words tie it to the centre line, rather than in `c2`.",
+  "ttft_ms": 3006,
+  "type": "result",
+  "duration_ms": 1062870,
+  "uuid": "021f0fbd-35cc-4687-ae9d-af0688b24e20",
+  "ttft_stream_ms": 1893,
+  "time_to_request_ms": 59,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 17,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 90,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1894,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 42280,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004242,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 68,
+    "outputTokens": 85050,
+    "cacheReadInputTokens": 3785745,
+    "cacheCreationInputTokens": 204682,
+    "webSearchRequests": 0,
+    "costUSD": 6.0662825,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 65416,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

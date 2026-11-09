@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}}],"body":{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"u","max_step":{"param":"heading_step"},"onset":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"u"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"onset_yaw_rate"}}}},"rhs":{"param":"reversal_angle"}},{"body":{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"w"}]},"contract":"The road user's direction of travel upon a way has reversed: counting from the onset of the manoeuvre — the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate, a rate the caller sets — the magnitude of the heading change accumulated since that onset reaches at least the reversal angle, a size the caller sets below a half turn, while the road user's footprint overlaps a way. The definition this contract carries is the turning of a vehicle upon a highway “so as to proceed in the opposite direction”, “whether accomplished by one continuous movement or not”, so halts, rearward movements and steering the other way between the onset and the reversal do not end the manoeuvre, and the count runs on until the angle is reached or a later onset starts it again; the integration is bounded by the heading step, the largest interval between consecutive observations it may integrate across. The concept becomes true at the observation at which that angle is first reached, and it holds at the later observations at which the accumulated change still holds that angle, until a later onset starts the count again. Where no such onset is observed, with the rate of change of heading known at every observation from the one before it onwards and no interval between consecutive observations longer than the heading step, the concept is unknown and never false, so a reversal begun before the recording is never read as one made within it. The reversal angle is the contract's own magnitude, the bound within which a sampled heading change is read as the opposite direction. Not a stand-in for: a turn through a smaller angle, which has its own concept, a turn into another way, travel against a designated direction of travel, a reversing movement, or a signal or a declared intention.","definition":"DEF-NRS-484B-077","id":"drv.motion.u_turn","kind":"formula","narrowings":[{"kind":"reading","span":"the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate","why":"The count is anchored to the latest observation at which that magnitude rose above the onset yaw rate (false at the observation before, true there), not to the first such rise of the recording: the contract's own extent fixes this, since \"the count runs on until the angle is reached or a later onset starts it again\". \"First\" is therefore read as the first rise of the run the count belongs to."},{"kind":"reading","span":"while the road user's footprint overlaps a way","why":"Read at the observation the concept speaks about — the one at which the angle is reached, and each later one at which the accumulated change still holds it — and not as a condition required at every observation from the onset onwards; the contract makes the overlap a circumstance of the reversal it recognizes, not a further bound on the manoeuvre's course."}],"params":[{"name":"heading_step","unit":"second"},{"name":"onset_yaw_rate","unit":"degree_per_second"},{"name":"reversal_angle","unit":"degree"}],"residues":["Which devices count as a vehicle is the aggregate the caller states of the road user it passes; the concept is written for any road user and adds no class of its own."],"supersedes":null}
+ATOMS	kin_yaw_rate,kin_time,st_highway,rel_occupies
+READS	kin_yaw_rate,kin_time,st_highway,rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"ge","lhs":{"abs":{"heading_since":"u","max_step":{"param":"heading_step"},"onset":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"u"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"onset_yaw_rate"}}}},"rhs":{"param":"reversal_angle"}},{"body":{"args":[{"var":"u"},{"var":"w"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"w"}]}
+WITNESS	holds	drv.motion.u_turn@w
+WITNESS	fails	drv.motion.u_turn@w
+WITNESS	blind	drv.motion.u_turn@w
+OCC	u
+OCC	u
+OCC	?w
+OCC	u,w
+INST	drv.motion.u_turn@w	ok
+TIME	checks	3
+TIME	lint	25
+SCEN	holds	drv.motion.u_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.u_turn@w/holds	20
+SCEN	fails	drv.motion.u_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.u_turn@w/fails	13
+SCEN	blind	drv.motion.u_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.u_turn@w/blind	13
+TIME	witnesses	47
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.u_turn@w	2	2
+TIME	adequacy_start	5
+TIME	adequacy	124
+DONE

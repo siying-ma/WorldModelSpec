@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-130::motor_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a human-powered device, which the vehicle definition expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes a motor vehicle, matching the admitting words without a class-removing exception.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person rather than a self-propelled vehicle.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial mass or licensing does not establish the self-propulsion required by the admitting clause.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly excludes electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly excludes electric scooters.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation does not establish that the vehicle is self-propelled.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting function and emergency-vehicle sub-kind do not establish self-propulsion.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The jurisdiction-classified moped contract and quoted motor-driven definition establish a self-propelled road vehicle, while the moped definition excludes electric bicycles and scooters.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly requires a self-propelled nonrail vehicle and separates out the powered classes addressed by the exceptions.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes a motor vehicle, and no exception names or describes the motorcycle class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official or contracted road service and identifying equipment do not establish self-propulsion.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person, including a wheelchair or qualifying-device user, rather than the self-propelled device itself.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person with specified assistance rather than a self-propelled vehicle.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The requirement that a motor vehicle not be operated upon rails excludes the contract's on-track equipment.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a bus, whose contract expressly makes it a motor vehicle, with no applicable class-removing exception.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A marked passenger vehicle for hire is not required by its contract to be self-propelled.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Although the bus branch supplies motor-vehicle characteristics, the alternative lengthened passenger vehicle for hire is not required to be self-propelled.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every admitted member must itself be a self-propelled nonrail vehicle fitting the quoted motor-vehicle contract or the separately classified motorcycle or moped contracts, with electric bicycles and scooters expressly excluded.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a bus, whose contract expressly makes it a motor vehicle, and transit service introduces no applicable exception.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes a motor vehicle for carrying goods, matching the admitting words without a class-removing exception.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 98472,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4343,
+   "input_tokens_details": {
+    "cache_write_tokens": 4340,
+    "cached_tokens": 0
+   },
+   "output_tokens": 5186,
+   "output_tokens_details": {
+    "reasoning_tokens": 4142
+   },
+   "total_tokens": 9529
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_0e670cf2e00c2d88016af181214e8887d0a9a3ad375529d65e",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

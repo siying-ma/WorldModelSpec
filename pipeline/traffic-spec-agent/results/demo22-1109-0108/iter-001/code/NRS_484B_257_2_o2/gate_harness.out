@@ -1,0 +1,121 @@
+'TrafficSpec.Rules.NRS_484B_257_2_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_257_2_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["v"],"id":"NRS_484B_257_2_o2","intentions":[],"laws":["NRS-484B-257-2"],"narrowings":[{"kind":"reading","span":"ob1","why":"The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence."},{"kind":"reading","span":"ob1","why":"The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation."},{"kind":"reading","span":"ob1","why":"The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction."},{"kind":"reading","span":"st2","why":"The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach."}],"operationalizations":[{"concepts":["kin.speed","prim.closest_approach_distance","prim.closest_approach_within","rel.occupies","st.intersection"],"params":["p.cautious_proceed_max_speed","p.yield_conflict_horizon","p.yield_min_clearance"],"standard":"and shall proceed cautiously","surrogate":false},{"concepts":["kin.speed","prim.closest_approach_distance","prim.closest_approach_within","rel.occupies","rel.surface_gap","st.intersection","st.lane_enters","st.region_geometry","st.travel_region"],"params":["p.yield_headway_time","p.yield_conflict_horizon","p.yield_min_clearance"],"standard":"or approaching so closely as to constitute an immediate hazard","surrogate":false}],"residues":["'although not a part of a through highway' adds no observable condition: it is concessive, saying that the cautious proceeding and the yielding are owed even where the junction is not part of a through highway, so the duty is the same whether or not it is. Reading it as a condition would make the rule apply only at junctions off a through highway, which is narrower than the words."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"body":{"and":[{"not":{"same":[{"var":"c"},{"var":"j"}]}},{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"body":{"args":[{"var":"dy"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},{"not":{"body":{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"or":[{"same":[{"var":"cc"},{"var":"j"}]},{"and":[{"args":[{"var":"cc"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"v"},{"var":"cc"}],"atom":"rel_occupies","params":[]}]}]},{"or":[{"body":{"and":[{"args":[{"var":"o"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"o"},{"var":"cc"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"human_direction"},"var":"o"},{"body":{"args":[{"var":"g"},{"var":"cc"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"traffic_signal"},"var":"g"}]}]},"exists_region":{"lit":"travel_region"},"var":"cc"}]}]},"exists_user":"w"}}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_257_2_o2","intentions":[],"laws":["NRS-484B-257-2"],"narrowings":[{"kind":"reading","span":"ob1","why":"The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence."},{"kind":"reading","span":"ob1","why":"The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation."},{"kind":"reading","span":"ob1","why":"The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction."},{"kind":"reading","span":"st2","why":"The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"body":{"and":[{"not":{"same":[{"var":"c"},{"var":"j"}]}},{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"body":{"args":[{"var":"dy"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.cautious_proceed_max_speed"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"v"}]}},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"body":{"and":[{"not":{"same":[{"var":"cu"},{"var":"j"}]}},{"and":[{"args":[{"var":"u"},{"var":"cu"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cu"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"body":{"args":[{"var":"dus"},{"var":"cu"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"dus"}},{"not":{"body":{"args":[{"var":"duy"},{"var":"cu"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"duy"}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cu"},{"or":[{"args":[{"var":"u"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"or":[{"cmp":"le","lhs":{"args":[{"var":"u"},{"var":"j"}],"measure":"st_region_geometry_distance"},"rhs":{"mul":[{"args":[{"var":"u"}],"measure":"kin_speed"},{"param":"p.yield_headway_time"}]}},{"and":[{"args":[{"var":"v"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}}]}]}]}]}]}]},{"and":[{"not":{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"v"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]},{"or":[{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.yield_min_clearance"}}]}]}}]}]},"forall_user":"u"}]}]},"forall_region":{"lit":"intersection"},"var":"j"},"residues":["'although not a part of a through highway' adds no observable condition: it is concessive, saying that the cautious proceeding and the yielding are owed even where the junction is not part of a through highway, so the duty is the same whether or not it is. Reading it as a condition would make the rule apply only at junctions off a through highway, which is narrower than the words."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"and":[{"body":{"and":[{"not":{"same":[{"var":"c"},{"var":"j"}]}},{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"body":{"args":[{"var":"dy"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},{"not":{"body":{"and":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"w"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"or":[{"same":[{"var":"cc"},{"var":"j"}]},{"and":[{"args":[{"var":"cc"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"args":[{"var":"v"},{"var":"cc"}],"atom":"rel_occupies","params":[]}]}]},{"or":[{"body":{"and":[{"args":[{"var":"o"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"o"},{"var":"cc"}],"atom":"dev_governs","params":[]}]},"exists_device":{"lit":"human_direction"},"var":"o"},{"body":{"args":[{"var":"g"},{"var":"cc"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"traffic_signal"},"var":"g"}]}]},"exists_region":{"lit":"travel_region"},"var":"cc"}]}]},"exists_user":"w"}}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_257_2_o2","intentions":[],"laws":["NRS-484B-257-2"],"narrowings":[{"kind":"reading","span":"ob1","why":"The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence."},{"kind":"reading","span":"ob1","why":"The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation."},{"kind":"reading","span":"ob1","why":"The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction."},{"kind":"reading","span":"st2","why":"The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}},{"body":{"and":[{"not":{"same":[{"var":"c"},{"var":"j"}]}},{"and":[{"args":[{"var":"c"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"or":[{"body":{"args":[{"var":"ds"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"ds"},{"body":{"args":[{"var":"dy"},{"var":"c"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"dy"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"and":[{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.cautious_proceed_max_speed"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"v"}]}},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"body":{"and":[{"not":{"same":[{"var":"cu"},{"var":"j"}]}},{"and":[{"args":[{"var":"u"},{"var":"cu"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"cu"},{"var":"j"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"body":{"args":[{"var":"dus"},{"var":"cu"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"dus"}},{"not":{"body":{"args":[{"var":"duy"},{"var":"cu"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"duy"}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"cu"},{"or":[{"args":[{"var":"u"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"or":[{"cmp":"le","lhs":{"args":[{"var":"u"},{"var":"j"}],"measure":"st_region_geometry_distance"},"rhs":{"mul":[{"args":[{"var":"u"}],"measure":"kin_speed"},{"param":"p.yield_headway_time"}]}},{"and":[{"args":[{"var":"v"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}}]}]}]}]}]}]},{"and":[{"not":{"args":[{"var":"v"},{"var":"u"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"v"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.yield_conflict_horizon"}]},{"or":[{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"params":[{"param":"p.yield_conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.yield_min_clearance"}},{"cmp":"lt","lhs":{"args":[{"var":"v"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.yield_min_clearance"}}]}]}}]}]},"forall_user":"u"}]}]},"forall_region":{"lit":"intersection"},"var":"j"},"residues":["'although not a part of a through highway' adds no observable condition: it is concessive, saying that the cautious proceeding and the yielding are owed even where the junction is not part of a through highway, so the duty is the same whether or not it is. Reading it as a condition would make the rule apply only at junctions off a through highway, which is narrower than the words."],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,kin_speed,st_travel_region,st_lane_enters,dev_stop_sign,dev_governs,dev_yield_sign,dev_human_direction,dev_human_direction_role,dev_traffic_signal,st_region_geometry_distance,prim_closest_approach_within,prim_closest_approach_distance,rel_contact,rel_surface_gap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.governs
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+MANIFEST	branch_11	
+MANIFEST	branch_12	
+OCC	v
+OCC	?j
+OCC	v,j
+OCC	v
+OCC	?c
+OCC	c,j
+OCC	c,j
+OCC	?ds
+OCC	ds,c
+OCC	?dy
+OCC	dy,c
+OCC	?w
+OCC	w
+OCC	w,j
+OCC	?cc
+OCC	cc,j
+OCC	cc,j
+OCC	v,cc
+OCC	?o
+OCC	o
+OCC	o,cc
+OCC	?g
+OCC	g,cc
+OCC	?j
+OCC	v,j
+OCC	v
+OCC	?c
+OCC	c,j
+OCC	c,j
+OCC	?ds
+OCC	ds,c
+OCC	?dy
+OCC	dy,c
+OCC	v
+OCC	?u
+OCC	u,v
+OCC	u
+OCC	?cu
+OCC	cu,j
+OCC	u,cu
+OCC	cu,j
+OCC	?dus
+OCC	dus,cu
+OCC	?duy
+OCC	duy,cu
+OCC	u,j
+OCC	u,j
+OCC	u
+OCC	v,u
+OCC	v,u
+OCC	v,u
+OCC	v,u
+OCC	v,u
+OCC	v,u
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	157
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	16
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	14
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	11
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	22
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	15
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	23
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	14
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	14
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	16
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	15
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	16
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	25
+SCEN	branch_9	violated	violated	ok
+TIME	scenario:branch_9	22
+SCEN	branch_10	compliant	compliant	ok
+TIME	scenario:branch_10	22
+SCEN	branch_11	violated	violated	ok
+TIME	scenario:branch_11	16
+SCEN	branch_12	violated	violated	ok
+TIME	scenario:branch_12	23
+TIME	witnesses	284
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_257_2_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_257_2_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_257_2_o2	31	15
+TIME	adequacy_start	8
+TIME	adequacy	8856
+DONE

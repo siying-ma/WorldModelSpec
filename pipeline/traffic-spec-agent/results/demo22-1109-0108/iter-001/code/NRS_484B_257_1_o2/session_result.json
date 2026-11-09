@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 1510684,
+  "stop_reason": "end_turn",
+  "session_id": "a01b32dd-6348-4d5a-aa07-7cc06795ec18",
+  "total_cost_usd": 7.9834023,
+  "usage": {
+   "input_tokens": 46,
+   "cache_creation_input_tokens": 269309,
+   "cache_read_input_tokens": 4301114,
+   "output_tokens": 125381,
+   "output_tokens_details": {
+    "thinking_tokens": 100905
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 269309,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 845,
+     "cache_read_input_tokens": 271696,
+     "cache_creation_input_tokens": 3079,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3079
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 49853,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005000300000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 125381,
+    "cacheReadInputTokens": 4301114,
+    "cacheCreationInputTokens": 269309,
+    "webSearchRequests": 0,
+    "costUSD": 7.978402000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 100905,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 24,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Done — the gate returns **`OK`** (16 witnesses, 26 names, 2 coder narrowings), using 2 of 6 gate runs.\n\n**What I wrote**\n\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_257_1_o2.lean` — the formulas, with a per-span account in the header:\n  - **c2** selects the junction (`rel_occupies` + the `intersection` quantifier) and reads \"moving\" as `kin_speed` above `p.standstill_speed_tolerance`;\n  - **c1** carries the act with its full qualification — the place in the order the first sentence gives it (stop line → crosswalk → view point), the standstill or the yield-sign slowing — and bounds the search into the past with `Formula.count` over the subject's latest run of occupying its approach carrier, so the history ends where the record says and is unknown only where that approach begins before the recording;\n  - **e1** is conjoined negated (officer or signal governing the junction or the approach, with traffic of the aggregate in the governed region);\n  - **ob1/st1** re-select junction, carrier and through highway with the record's own relations, then owe precedence (no contact, no closest approach below the clearance) to every other vehicle of the aggregate that entered from the through highway or is approaching so closely.\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_257_1_o2.lean` — one documented map, 16 built scenarios.\n\n**The one gate failure and its fix:** run 1 was `VACUOUS` on five leaves (the two unexercised device/region governance pairs, the yield-sign limb of the obligation's carrier selection, the headway bound, and `rel_contact`). I added `branch_10` (contact with a van privileged by the headway bound alone, their centres never approaching, so both leaves decide), `branch_11`/`branch_12` for the remaining governance pairs, and moved `branch_5` onto a yield-governed approach. Run 2 was `OK`.\n\n**Judgement calls**, both declared as narrowings on duty/standard spans and explained in `task_result.md`: the clearance is read as the centre distance at closest approach *or* the nearest-point gap falling below `p.yield_min_clearance` (the primitives work on centres, the convention names the surface gap), and st1's two figures are read as alternatives, following the node's own obligation wording (\"…or its closest approach…\") rather than the convention's \"in the same breath\". The node itself needed no repair, so there is no `dependency_defect.json`.",
+  "ttft_ms": 2453,
+  "type": "result",
+  "duration_ms": 1576834,
+  "uuid": "d4c8883f-cf31-4891-89de-681bcc52bedd",
+  "ttft_stream_ms": 1463,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 17,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 98,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 14,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1464,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 49853,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.005000300000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 125381,
+    "cacheReadInputTokens": 4301114,
+    "cacheCreationInputTokens": 269309,
+    "webSearchRequests": 0,
+    "costUSD": 7.978402000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 100905,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

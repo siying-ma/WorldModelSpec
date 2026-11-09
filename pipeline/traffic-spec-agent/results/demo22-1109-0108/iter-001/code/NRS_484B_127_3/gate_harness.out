@@ -1,0 +1,69 @@
+'TrafficSpec.Rules.NRS_484B_127_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_127_3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.outside_business_district"],"binders":["v"],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"reading","span":"s5","why":"“each such vehicle or combination of vehicles” is written as every member of the subject's file that lies ahead of or behind it in the same lane (rel.ahead_behind_in_lane in either order) and within the file's reach of it (the space between the bodies at most p.caravan_max_member_gap, the reach the file concept uses). The space to the nearest such member is the binding one, since the space to a member further along the file is larger; a further member carries the same bound and never a weaker one, so the duty states the record's “immediately ahead of and behind” reading without an operator for “immediately”."},{"kind":"reading","span":"s6","why":"“any other vehicle or combination of vehicles” whose length the bound reads is every road user of the scene that is neither the subject nor a member of the subject's file; where several are present, the space must hold each of them, which is the greater length the convention names. The clear headway is written as the headway term twice, fore and aft, because no figure of this file's own — not even a factor of two — may enter a formula."}],"operationalizations":[{"concepts":["drv.interaction.vehicle_file","kin.extent","kin.speed","rel.surface_gap"],"params":["p.entry_vehicle_length","p.entry_clearance_headway_time"],"standard":"so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger","surrogate":false}],"residues":["“whether or not towing other vehicles” imposes no condition: it states that the duty is the same for a member drawing another vehicle and for one that is not, so no verdict of the node turns on these words. The rule is held to that: the applicability reads nothing from them, and the members of the file are read whether or not any of them draws another vehicle."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"v"}],"derived":"drv_motion_standstill","params":[{"param":"p.standstill_speed_tolerance"}]}},{"and":[{"body":{"args":[{"var":"v"},{"var":"hw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"hw"},{"and":[{"args":[{"var":"v"}],"derived":"drv_interaction_vehicle_file","params":[{"param":"p.caravan_min_members"},{"param":"p.caravan_max_member_gap"},{"param":"p.same_direction_cosine_tolerance"}]},{"asm":"asm.outside_business_district"}]}]}]},"assumptions":["asm.outside_business_district"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"reading","span":"s5","why":"“each such vehicle or combination of vehicles” is written as every member of the subject's file that lies ahead of or behind it in the same lane (rel.ahead_behind_in_lane in either order) and within the file's reach of it (the space between the bodies at most p.caravan_max_member_gap, the reach the file concept uses). The space to the nearest such member is the binding one, since the space to a member further along the file is larger; a further member carries the same bound and never a weaker one, so the duty states the record's “immediately ahead of and behind” reading without an operator for “immediately”."},{"kind":"reading","span":"s6","why":"“any other vehicle or combination of vehicles” whose length the bound reads is every road user of the scene that is neither the subject nor a member of the subject's file; where several are present, the space must hold each of them, which is the greater length the convention names. The clear headway is written as the headway term twice, fore and aft, because no figure of this file's own — not even a factor of two — may enter a formula."}],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"or":[{"args":[{"var":"v"},{"var":"w"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.caravan_max_member_gap"}}]}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"param":"p.entry_vehicle_length"},{"add":[{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]}]}]}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"v"}]}},{"not":{"and":[{"or":[{"args":[{"var":"v"},{"var":"e"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"e"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"e"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.caravan_max_member_gap"}}]}}]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"args":[{"var":"e"},{"lit":"length"}],"measure":"kin_extent"},{"add":[{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]}]}]}}]},"forall_user":"e"}]}]},"forall_user":"w"},"residues":["“whether or not towing other vehicles” imposes no condition: it states that the duty is the same for a member drawing another vehicle and for one that is not, so no verdict of the node turns on these words. The rule is held to that: the applicability reads nothing from them, and the members of the file are read whether or not any of them draws another vehicle."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"v"}],"measure":"kin_speed"},"rhs":{"param":"p.standstill_speed_tolerance"}}},{"and":[{"body":{"args":[{"var":"v"},{"var":"hw"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"hw"},{"and":[{"cmp":"ge","lhs":{"aggregate":"count","of":{"lit":{"den":1,"num":0},"unit":"count"},"var":"v#1","where":{"or":[{"same":[{"var":"v#1"},{"var":"v"}]},{"and":[{"args":[{"var":"v#1"},{"var":"v"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine_tolerance"}]},{"and":[{"or":[{"args":[{"var":"v#1"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"v"},{"var":"v#1"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"v#1"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.caravan_max_member_gap"}}]}]}]}},"rhs":{"param":"p.caravan_min_members"}},{"asm":"asm.outside_business_district"}]}]}]},"assumptions":["asm.outside_business_district"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"reading","span":"s5","why":"“each such vehicle or combination of vehicles” is written as every member of the subject's file that lies ahead of or behind it in the same lane (rel.ahead_behind_in_lane in either order) and within the file's reach of it (the space between the bodies at most p.caravan_max_member_gap, the reach the file concept uses). The space to the nearest such member is the binding one, since the space to a member further along the file is larger; a further member carries the same bound and never a weaker one, so the duty states the record's “immediately ahead of and behind” reading without an operator for “immediately”."},{"kind":"reading","span":"s6","why":"“any other vehicle or combination of vehicles” whose length the bound reads is every road user of the scene that is neither the subject nor a member of the subject's file; where several are present, the space must hold each of them, which is the greater length the convention names. The clear headway is written as the headway term twice, fore and aft, because no figure of this file's own — not even a factor of two — may enter a formula."}],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"w"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"or":[{"args":[{"var":"v"},{"var":"w"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"w"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"w"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.caravan_max_member_gap"}}]}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"param":"p.entry_vehicle_length"},{"add":[{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]}]}]}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"e"},{"var":"v"}]}},{"not":{"and":[{"or":[{"args":[{"var":"v"},{"var":"e"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"e"},{"var":"v"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"args":[{"var":"v"},{"var":"e"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.caravan_max_member_gap"}}]}}]},{"cmp":"ge","lhs":{"args":[{"var":"v"},{"var":"w"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"args":[{"var":"e"},{"lit":"length"}],"measure":"kin_extent"},{"add":[{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_clearance_headway_time"},{"args":[{"var":"v"}],"measure":"kin_speed"}]}]}]}}]},"forall_user":"e"}]}]},"forall_user":"w"},"residues":["“whether or not towing other vehicles” imposes no condition: it states that the duty is the same for a member drawing another vehicle and for one that is not, so no verdict of the node turns on these words. The rule is held to that: the applicability reads nothing from them, and the members of the file are read whether or not any of them draws another vehicle."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_standstill,st_highway,rel_occupies,drv_interaction_vehicle_file,rel_ahead_behind_in_lane,rel_surface_gap,kin_speed,kin_extent
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-050::combination_of_vehicles
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.surface_gap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	v
+OCC	v
+OCC	?hw
+OCC	v,hw
+OCC	v
+OCC	?w
+OCC	w
+OCC	w
+OCC	v,w
+OCC	w,v
+OCC	v,w
+OCC	v,w
+OCC	v
+OCC	v
+OCC	?e
+OCC	e,v
+OCC	v,e
+OCC	e,v
+OCC	v,e
+OCC	v,w
+OCC	e
+OCC	v
+OCC	v
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	162
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	53
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	62
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	25
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	28
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	9
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	67
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	37
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	49
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	48
+TIME	witnesses	379
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_127_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_127_3.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_127_3	14	8
+TIME	adequacy_start	9
+TIME	adequacy	3232
+DONE

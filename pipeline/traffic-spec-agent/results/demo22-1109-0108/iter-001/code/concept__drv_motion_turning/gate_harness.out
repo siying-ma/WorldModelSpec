@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.turning.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}}],"body":{"cmp":"ge","lhs":{"abs":{"args":[{"var":"u"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"heading_change_tolerance"}},"contract":"The road user's heading is changing at the observation: the magnitude of its heading change over the window behind the observation is at least the heading change tolerance, a size the caller sets at the resolution of the source. It is a state the road user is in at each observation of a bending path, in either hand, and it states no direction, no angle reached, no beginning and no place. Not a stand-in for: a completed turn or a manoeuvre recognized from an observed onset — which counts the heading change from that onset and not over a window — a steering input, the curvature of the road, a lane change, or a signal or an intention.","definition":null,"id":"drv.motion.turning","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"heading_change_tolerance","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	prim_heading_change
+READS	prim_heading_change
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"ge","lhs":{"abs":{"args":[{"var":"u"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"heading_change_tolerance"}}
+WITNESS	holds	drv.motion.turning@w
+WITNESS	fails	drv.motion.turning@w
+WITNESS	blind	drv.motion.turning@w
+OCC	u
+INST	drv.motion.turning@w	ok
+TIME	checks	2
+TIME	lint	23
+SCEN	holds	drv.motion.turning@w	compliant	compliant	ok
+TIME	scenario:drv.motion.turning@w/holds	19
+SCEN	fails	drv.motion.turning@w	violated	violated	ok
+TIME	scenario:drv.motion.turning@w/fails	18
+SCEN	blind	drv.motion.turning@w	unknown	unknown	ok
+TIME	scenario:drv.motion.turning@w/blind	21
+TIME	witnesses	58
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.turning.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.turning@w	1	2
+TIME	adequacy_start	4
+TIME	adequacy	75
+DONE

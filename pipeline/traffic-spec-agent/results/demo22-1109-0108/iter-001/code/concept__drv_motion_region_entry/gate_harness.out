@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.region_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_entry.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"rises":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"contract":"The road user's footprint comes to overlap a structure region at the observation: it overlaps the region at the observation and did not overlap it at the observation before. The concept is the event of that coming to overlap, read at the observation at which the overlap has begun, and not the state of lying inside the region afterwards. It states no direction of entry, no carrier the road user came through, no speed and no place within the region. Not a stand-in for: lying within the region, which the occupancy relation carries on its own; a later observation at which the road user is still inside; the carrier or the way the road user came from, which a caller reads with its own relations; a crossing of a boundary the source represents by no region; or a leaving of the region.","definition":null,"id":"drv.motion.region_entry","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies
+READS	rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"rises":{"args":[{"var":"u"},{"var":"r"}],"atom":"rel_occupies","params":[]}}
+WITNESS	holds	drv.motion.region_entry@w
+WITNESS	fails	drv.motion.region_entry@w
+WITNESS	blind	drv.motion.region_entry@w
+OCC	u,r
+INST	drv.motion.region_entry@w	ok
+TIME	checks	2
+TIME	lint	7
+SCEN	holds	drv.motion.region_entry@w	compliant	compliant	ok
+TIME	scenario:drv.motion.region_entry@w/holds	7
+SCEN	fails	drv.motion.region_entry@w	violated	violated	ok
+TIME	scenario:drv.motion.region_entry@w/fails	7
+SCEN	blind	drv.motion.region_entry@w	unknown	unknown	ok
+TIME	scenario:drv.motion.region_entry@w/blind	8
+TIME	witnesses	22
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.region_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.region_entry.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.region_entry@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	20
+DONE

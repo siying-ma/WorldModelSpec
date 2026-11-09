@@ -1,0 +1,38 @@
+'TrafficSpec.Concepts.position.direction_component.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.direction_component.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.direction_component.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"u","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"add":[{"mul":[{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"contract":"The component, in metres per second, of a road user's velocity along the designated direction of travel of a structure region: positive where the road user moves with that direction, negative where it moves against it, and near zero where it stands or moves across it. The region's direction is read normalised, as its atom states, so the value is a speed along that direction. The quantity is geometric only: it does not state that the road user is on the region, that the region is the one a law names, or how far the road user is from it, and a caller states those with its own relations. Unknown where the road user's velocity is absent and where the region carries no designated direction — a centre turn lane carries none, and a place no carrier covers has none. Not a stand-in for: the direction the body points, which a road user may hold while moving another way, the road user's speed, which is unsigned, or an angle between the two directions.","definition":null,"id":"drv.position.direction_component","kind":"quantity","narrowings":[{"kind":"reading","span":"The component, in metres per second, of a road user's velocity along the designated direction of travel of a structure region","why":"Written as the planar scalar projection vx·dx + vy·dy over the two world-frame components the vector atoms expose (`kin_velocity`, `st_lane_direction`, each read with a component literal), the direction being the normalised one its atom states. The contract names a component along a direction without saying how it is formed; this is the only reading the available atoms allow, and it leaves the height out because the world is planar."}],"params":[],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,st_lane_direction
+READS	kin_velocity,st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"add":[{"mul":[{"args":[{"var":"u"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"u"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]}
+WITNESS	holds	drv.position.direction_component@w
+WITNESS	fails	drv.position.direction_component@w
+WITNESS	blind	drv.position.direction_component@w
+OCC	u
+OCC	r
+OCC	u
+OCC	r
+OCC	u
+OCC	r
+OCC	u
+OCC	r
+INST	drv.position.direction_component@w	ok
+TIME	checks	3
+TIME	lint	8
+SCEN	holds	drv.position.direction_component@w	compliant	compliant	ok
+TIME	scenario:drv.position.direction_component@w/holds	8
+SCEN	fails	drv.position.direction_component@w	violated	violated	ok
+TIME	scenario:drv.position.direction_component@w/fails	6
+SCEN	blind	drv.position.direction_component@w	unknown	unknown	ok
+TIME	scenario:drv.position.direction_component@w/blind	10
+TIME	witnesses	24
+DONE_WITNESSES
+'TrafficSpec.Concepts.position.direction_component.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.direction_component.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.direction_component.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.position.direction_component@w	2	2
+TIME	adequacy_start	5
+TIME	adequacy	49
+DONE

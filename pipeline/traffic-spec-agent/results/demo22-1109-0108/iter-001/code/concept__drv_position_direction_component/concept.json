@@ -1,0 +1,62 @@
+{
+ "concept_id": "drv.position.direction_component",
+ "kind": "quantity",
+ "contract": "The component, in metres per second, of a road user's velocity along the designated direction of travel of a structure region: positive where the road user moves with that direction, negative where it moves against it, and near zero where it stands or moves across it. The region's direction is read normalised, as its atom states, so the value is a speed along that direction. The quantity is geometric only: it does not state that the road user is on the region, that the region is the one a law names, or how far the road user is from it, and a caller states those with its own relations. Unknown where the road user's velocity is absent and where the region carries no designated direction — a centre turn lane carries none, and a place no carrier covers has none. Not a stand-in for: the direction the body points, which a road user may hold while moving another way, the road user's speed, which is unsigned, or an angle between the two directions.",
+ "args": [
+  {
+   "name": "u",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "a road user's velocity",
+   "atoms": [
+    "kin.velocity"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the “velocity vector” of a road user, in m/s in the world frame, whose components are what this quantity projects; kin.speed is not read, being the unsigned magnitude, and kin.heading is excluded because the contract reads the direction of the motion and not the direction the body points."
+  },
+  {
+   "span": "the designated direction of travel of a structure region",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction is the “direction of travel designated for a structure a vehicle travels in — a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder”, which “a formula reads … normalised”, exactly as this contract reads it, and whose contract also states that “a centre turn lane carries none” and “a place no carrier covers has none (unknown)”, which the contract's unknown clause carries."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car travels at 8 m/s along a one-way roadway whose designated direction runs the same way: the quantity reads about plus 8 m/s, within bounds the caller sets for travel with the designation.",
+   "masked": []
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same car travels at 8 m/s the other way along that roadway: the quantity reads about minus 8 m/s, outside those bounds.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The same roadway with the source declaring the designated direction of travel of structures absent: the quantity has no direction to project onto and is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_220_1",
+  "NRS_484B_227_1_o1"
+ ]
+}

@@ -1,0 +1,216 @@
+{
+ "node_id": "NRS_484B_400_2a",
+ "law_refs": [
+  "NRS-484B-400-2a"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "i1",
+   "text": "intends to turn",
+   "role": "condition"
+  },
+  {
+   "id": "c1",
+   "text": "at an intersection and:",
+   "role": "condition"
+  },
+  {
+   "id": "c2",
+   "text": "Both intersecting highways are two-directional:",
+   "role": "condition"
+  },
+  {
+   "id": "ob1",
+   "text": "The approach for a left turn must be made in that portion of the right half of the highway nearest the centerline thereof.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver of a vehicle' binds the subject: DEF-NRS-484A-080 makes the driver the one who drives or is in actual physical control of the vehicle, and the ontology reads 'the driver' through the vehicle's controlled motion, so the duty binds that vehicle, of the admitted aggregate ru.aggregate=DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except ...'), claimed as one atom and never expanded. The mapping index maps 'The driver of a vehicle' to the same atom."
+  },
+  {
+   "span": "c1",
+   "atoms": [
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'at an intersection' names the place the turn is intended at and the junction the approach leads to: st.intersection is 'the region where two roadways meet, bounded by the prolongation of their edges', st.lane_enters 'the intersection region a directed approach carrier runs into at its entrance end', st.travel_region the kind that carrier quantifier ranges over, and rel.occupies ('a road user's footprint overlaps a lane / region') the anchor that makes the junction the one the subject itself approaches. This element binds the region the declared intention of the preceding span is read at, and the same region the obligation's approach leads into. The trailing 'and:' only joins this condition to the next."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.roadway",
+    "st.lane_direction",
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters"
+   ],
+   "derived": [],
+   "justification": "'two-directional' is the term DEF-NRS-484B-073 defines, used here in the copular form rather than as one contiguous phrase: 'an undivided highway upon which vehicles are allowed to proceed in opposite directions'. 'undivided' is the absence of st.median_or_divider, 'physical barrier or dividing section between roadways', on that way; 'upon which vehicles are allowed to proceed in opposite directions' is read from the designated directions of the carriers the way carries: st.lane_direction, 'direction of travel designated for a structure a vehicle travels in -- a lane, reserved lane, turn lane, bicycle lane or path, or a roadway, one-way roadway or shoulder', opposed between two carriers of the way, their normalised dot product at or below the negative of p.same_direction_cosine_tolerance. st.highway is the way itself as DEF-NRS-484A-095 defines it, 'the entire width between the boundary lines of every way dedicated to a public authority', st.roadway 'the part of a highway improved for vehicular traffic, excluding shoulder', and st.on_way 'the public way (a highway region) a structure region lies on', which ties each carrier and each divider to its way. 'Both intersecting highways' are the two ways meeting at the junction the previous span binds: st.intersection with st.on_way, since 'an intersection lies on every way that meets there', and st.lane_enters with st.travel_region and rel.occupies pick out the subject's own way among them. st.median_or_divider is not read as a lane marking, and st.lane_direction is not read as a road user's heading."
+  },
+  {
+   "span": "ob1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.roadway",
+    "st.centre_line",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_direction",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "'The approach for a left turn must be made in' is the subject's lateral place while it occupies the carrier whose entrance end is that junction: rel.occupies is the anchor, st.travel_region the kind the carrier quantifier ranges over, st.lane_enters the entrance relation and st.intersection the junction. 'that portion of the right half of the highway nearest the centerline thereof' is read in the two ways the ontology provides for a way with and without marked lanes. Where the carriageway is laned, st.lane is 'a longitudinal strip of roadway for one line of vehicles' and st.lane_adjacency carries the 'lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane, looking along the lane's direction': on a two-directional highway the leftmost lane of the subject's direction, read along st.lane_direction, is the portion of the right half nearest the centre line, so ordinal 1 for that direction is the portion the words name. Where no lane is recorded, st.centre_line is 'the marking, or the geometric centre, dividing the two directions of a two-way roadway' and prim.region_lateral_offset gives 'the signed lateral offset (m, left positive) of a structure region from a road user': the centre line lies to the subject's left, its offset positive and of magnitude at least p.lateral_offset_resolution, which places the subject on the right half, and at most p.centerline_adjacent_distance, which is the portion nearest the centre line. st.roadway, st.highway and st.on_way bind the way and its improved part; st.lane_adjacency is expressly not a stand-in for the marking between two lanes, and none is read as one; st.lane is not a stand-in for a half of the roadway, which is why the unlaned case is read through the centre line and the lateral offset rather than through a lane ordinal; the primitive's own inputs are not claimed beside it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "i1",
+   "id": "int.left_turn",
+   "meaning": "the source's current plan for the road user is that it turn to the left at the region named as the declaration's target"
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The subject vehicle occupies a carrier whose entrance end is an intersection; the source declares its current plan to be a left turn at that intersection; and both the way carrying that carrier and the other way meeting at that junction are two-directional -- no physical barrier or dividing section lies on either, and each carries two carriers whose designated directions are opposed.",
+ "obligation": "At every observation on that approach the subject must lie in the portion of the right half of its highway nearest the centre line: it occupies the lane of ordinal 1 for its own direction of travel, counted along that lane's designated direction, or, where the carriageway carries no recorded lane, the centre line of its roadway lies to its left with a signed lateral offset of at least p.lateral_offset_resolution and at most p.centerline_adjacent_distance.",
+ "params": [
+  "p.same_direction_cosine_tolerance",
+  "p.lateral_offset_resolution",
+  "p.centerline_adjacent_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "ob1",
+   "why": "'The approach for a left turn' restricts the duty to an approach made for a turn to the left: the condition span carries a declared intention to turn, and the obligation's own words select the left turn among the turns the earlier words allow, so the duty is read only where the declaration is a left turn at that junction.",
+   "kind": "reading"
+  },
+  {
+   "span": "ob1",
+   "why": "'that portion of the right half of the highway nearest the centerline thereof' is read, where the carriageway is laned, as the lane of ordinal 1 for the subject's direction -- the leftmost lane of that direction and so the one adjoining the centre line -- and, where no lane is recorded, as a place whose signed lateral offset to the centre line is positive and at most p.centerline_adjacent_distance. The second bound is a width the reading sets, since the words name a portion and no measure of it; it is set at a design lane width, so that the portion read is the width of one line of vehicles beside the centre line.",
+   "kind": "reading"
+  },
+  {
+   "span": "c2",
+   "why": "'are allowed to proceed in opposite directions' is read as the designated directions of the carriers the way carries being opposed: a permission granted by an authority is nothing a scene displays, and the designated direction of travel on the road is its observable evidence.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s1",
+   "why": "'the driver of a vehicle' is read through the vehicle's controlled motion: who or what is at the controls is not observable, and the duty binds that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A four-lane undivided street, two lanes each way, meets another undivided two-way street. The source declares the car's plan to be a left turn at that junction, and the car runs the whole approach in the kerbside lane -- ordinal 2 of its direction -- up to the junction.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same geometry and the same declared left turn. The car runs the approach in the lane of ordinal 1 for its direction, the one adjoining the centre line, throughout. No other road user is in the scene and the verdict is decided.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car approaches the same junction in the kerbside lane, but the source's current plan for it is to go straight through: no left turn is declared at that junction, so the rule is not engaged.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car approaches the junction with a declared left turn, but the source does not report the lane ordinals of the carriageway and the roadway carries a recorded lane, so which portion of the right half the car occupies is unknown.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A narrow two-way street with no lanes recorded, meeting another undivided two-way street. The car, declared to turn left at the junction, runs the approach with the centre line two metres to its left, inside the centre-line portion.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "The car, declared to turn left, approaches a junction on a highway divided by a raised median: the way is not two-directional in the definition's sense, so this paragraph does not apply.",
+   "masked": []
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "An unlaned two-way street, the car declared to turn left at the junction, running the whole approach close to the kerb with the centre line six metres to its left, outside the centre-line portion.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Heading-agreement convention: the cosine of the largest angle between two directions still read as the same direction, set at thirty degrees; its negative is the bound at which two directions are read as opposed.",
+   "source": "The thirty-degree sector convention used for same-direction and opposed-direction tests in traffic conflict analysis."
+  },
+  {
+   "name": "p.lateral_offset_resolution",
+   "unit": "m",
+   "value": 0.5,
+   "convention": "Lateral-offset convention: the magnitude of a signed lateral offset below which the side a region lies on is not distinguishable from the measurement noise of the boundary and the position.",
+   "source": "Map and localisation practice for boundary polygons in scene-graph traces."
+  },
+  {
+   "name": "p.centerline_adjacent_distance",
+   "unit": "m",
+   "value": 3.6,
+   "convention": "Lane-position convention: the lateral distance from the centre line within which a place on the right half of a two-directional highway counts as the portion nearest the centre line, set at one design lane width, the width of a single line of vehicles beside the centre line.",
+   "source": "AASHTO Green Book design lane widths for urban arterials (3.0 to 3.6 m)."
+  }
+ ],
+ "gaps": []
+}

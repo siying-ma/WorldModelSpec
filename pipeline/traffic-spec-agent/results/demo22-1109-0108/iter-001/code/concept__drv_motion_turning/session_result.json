@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c3164b392ae940adb930005b1a404023",
+ "result": {
+  "duration_api_ms": 295838,
+  "stop_reason": "end_turn",
+  "session_id": "03f02f8b-48fe-4fb2-a9ce-ebc9c556f0a4",
+  "total_cost_usd": 1.8708348000000001,
+  "usage": {
+   "input_tokens": 46,
+   "cache_creation_input_tokens": 71571,
+   "cache_read_input_tokens": 1264326,
+   "output_tokens": 20793,
+   "output_tokens_details": {
+    "thinking_tokens": 11091
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 71571,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 603,
+     "cache_read_input_tokens": 75182,
+     "cache_creation_input_tokens": 1855,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1855
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28943,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029068,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 20793,
+    "cacheReadInputTokens": 1264326,
+    "cacheCreationInputTokens": 71571,
+    "webSearchRequests": 0,
+    "costUSD": 1.867928,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 11091,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 23,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Gate verdict: **OK** (3 witnesses, 1 name, 1 atom read), reached on the second of six runs.\n\n**Body** (`library/TrafficSpec/Concepts/motion/turning.lean`):\n\n```lean\ndef body : Formula :=\n  .cmp (.abs (.quantity \"prim_heading_change\" [aU] [pWindow])) .ge pHeadingChangeTolerance\n```\n\nThe record's one element maps to `prim.heading_change` with this concept's `window` formal passed\nstraight into the primitive's own window parameter; `abs` is the contract's \"magnitude\" (either\nhand, no direction stated), `.ge` its \"at least\". No narrowings — the contract fixed the quantity,\nthe window and the sense of the bound.\n\n**Witnesses** (`library/TrafficSpecWitness/Concepts/motion/turning.lean`): one instance with\n`window = 2 s`, `tolerance = 5°`; nine scenes 0.5 s apart in each trace. `holds` — a 20 °/s left\nswing round an intersection, 40° per window; `fails` — reversing straight with 0.4 °/s, 0.8° per\nwindow; `blind` — the same corner with `kin.yaw_rate` masked.\n\n**Gate runs**\n\n1. `WITNESS_FAIL`: the blind episode was unknown for `window_truncated`, not for the masked atom — the 2 s lookback is truncated at every trace's first instants, and no padding can fix the very first observation. Fixed by naming the covered instant range `[2000, 4000] ms` on `blind`, as the other two scenarios already did.\n2. `OK`.\n\n`task_result.md` is written in the working directory with the parameter and instant-range choices, and why I stopped. The record needed no changes, so no `dependency_defect.json`.",
+  "ttft_ms": 5877,
+  "type": "result",
+  "duration_ms": 301748,
+  "uuid": "bb707497-0407-44f9-ac9e-41c8e2b6d390",
+  "ttft_stream_ms": 1219,
+  "time_to_request_ms": 70,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 21,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 1,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 20,
+  "time_to_request_cpu_ms": 108,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 20,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1219,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28943,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029068,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5[1m]": {
+    "inputTokens": 46,
+    "outputTokens": 20793,
+    "cacheReadInputTokens": 1264326,
+    "cacheCreationInputTokens": 71571,
+    "webSearchRequests": 0,
+    "costUSD": 1.867928,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 64000,
+    "thinkingTokens": 11091,
+    "canonicalModel": "claude-opus-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}
