@@ -21,13 +21,13 @@ The script starts the launcher in the background over the whole training split, 
 | OpenAI model | `gpt-6.1-sol` |
 | Workers | 12 |
 | Launches per invocation | 40 |
-| Budget | Claude $1,300, OpenAI $40, total $1,340 |
+| Budget for the whole run | Claude $2,500, OpenAI $40, total $2,540 |
 
-## Expect it to span more than one week
+## Budget
 
-The whole split is estimated at $2,000–2,500 of Claude. That is more than one Claude seat's weekly allowance, so the Claude limit is set for one week.
+The whole split is estimated at $2,000–2,500 of Claude and about $10 of OpenAI; the limits above are the whole run's.
 
-When the limit is reached, the run stops at a pushed checkpoint with **exit status 4** (`paused_budget`). Do not raise the limit yourself: the requester tells you the new limit, and you resume with it:
+If a limit is reached, the run stops at a pushed checkpoint with **exit status 4** (`paused_budget`). Do not raise the limit yourself: the requester tells you the new limit, and you resume with it:
 
 ```bash
 RUN_ID=<run id> CLAUDE_BUDGET=<new limit> TOTAL_BUDGET=<new limit + 40> \
