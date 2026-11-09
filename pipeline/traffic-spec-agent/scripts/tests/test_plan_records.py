@@ -227,7 +227,7 @@ class SmallerChecks(unittest.TestCase):
 class AllRequirementsAtOnce(unittest.TestCase):
     """A returned record learns every requirement of the item it misses in the first message: an
     early return never hides a further requirement of the same item."""
-    PARAMS = {"drv.motion.turn": [{"name": "window", "unit": "s"}]}
+    PARAMS = {"drv.motion.turn": {"boundary": "window", "window": "window"}}     # the act each concept record declares
 
     def occasion_node(self, **occasion):
         rec = copy.deepcopy(NODE)
@@ -281,6 +281,140 @@ class AllRequirementsAtOnce(unittest.TestCase):
         errs, gaps = validate_a.check_closed_set(Node(rec), ONTO)
         self.assertTrue(any("nearest" in e for e in errs) and any("already has" in e for e in errs))
         self.assertEqual(gaps, [])
+
+
+class EventBoundary(unittest.TestCase):
+    """An act is what a concept record declares (`act`), with its boundary: a window parameter or
+    its observed onset. The occasion states the boundary its acts declare; an event boundary names
+    the onset and the recognition and needs no window parameter. Nothing else makes a concept an
+    act: a parameter in a unit of time is no declaration. The window form stays as it was."""
+    TURN = "drv.motion.turn"
+    WINDOW = {TURN: {"boundary": "window", "window": "turn_window"}}
+    EVENT = {TURN: {"boundary": "event"}}
+    ONSET = {"words": "begins to turn", "atoms": ["kin.yaw_rate"], "derived": [], "justification": "j"}
+    UNDER_WAY = {"words": "while turning", "atoms": ["kin.yaw_rate"], "justification": "j"}
+
+    def node(self, params=(), gaps=(), **occasion):
+        rec = copy.deepcopy(NODE)
+        rec["segmentation"].append({"id": "c1", "role": "condition", "text": "x"})
+        rec["elements"] = [{"span": "s1", "atoms": [], "derived": [self.TURN], "justification": "j"},
+                           {"span": "c1", "atoms": ["kin.speed"], "derived": [], "justification": "j"}]
+        rec["params"] = list(params)
+        rec["scenarios"] += [{"name": "occasion_c1", "expected": "violated"}, {"name": "occasion_c1_outside", "expected": "compliant"}]
+        if gaps:
+            rec["gaps"] = list(gaps)
+        if occasion:
+            rec["occasion"] = occasion
+        return Node(rec)
+
+    def check(self, n, acts=None):
+        return validate_a.check_occasion(n, self.EVENT if acts is None else acts, ONTO, {self.TURN}, {})
+
+    def event(self, **kw):
+        occ = dict(act=self.TURN, boundary="event", onset=self.ONSET, recognition="where the turn is complete",
+                   spans={"c1": "some_moment"}, under_way=self.UNDER_WAY)
+        occ.update(kw)
+        return {k: v for k, v in occ.items() if v is not None}
+
+    def window(self, **kw):
+        return dict(params=["p.turn_window"], act=self.TURN, window="p.turn_window", spans={"c1": "some_moment"},
+                    under_way=self.UNDER_WAY, **kw)
+
+    def test_a_declared_act_needs_an_occasion(self):
+        errs = self.check(self.node())
+        self.assertEqual(len(errs), 1)
+        self.assertIn("`boundary`", errs[0]); self.assertIn("`event`", errs[0]); self.assertIn("`onset`", errs[0])
+
+    def test_nothing_but_a_declaration_makes_an_act(self):
+        self.assertEqual(self.check(self.node(), {}), [])                   # a time parameter alone declares nothing
+        errs = self.check(self.node(**self.window()), {})
+        self.assertTrue(any("declares an act (`act`)" in e for e in errs), errs)
+
+    def test_a_complete_event_occasion_passes_with_no_window(self):
+        self.assertEqual(self.check(self.node(**self.event())), [])
+
+    def test_the_window_form_stays_valid(self):
+        self.assertEqual(self.check(self.node(**self.window()), self.WINDOW), [])
+
+    def test_the_occasion_states_the_boundary_its_acts_declare(self):
+        errs = self.check(self.node(**self.window()), self.EVENT)
+        self.assertTrue(any("declares `drv.motion.turn`: 'event'" in e for e in errs), errs)
+        errs = self.check(self.node(**self.event()), self.WINDOW)
+        self.assertTrue(any("declares `drv.motion.turn`: 'window'" in e for e in errs), errs)
+
+    def test_an_event_occasion_names_each_missing_part(self):
+        errs = self.check(self.node(params=["p.w"], **self.event(onset={"words": "w", "justification": "j"}, recognition=" ",
+                                                                  window="p.w")))
+        for part in ("`onset` must be an element", "`recognition` must state", "`window` belongs to"):
+            self.assertTrue(any(part in e for e in errs), part)
+        errs = self.check(self.node(**self.event(onset={**self.ONSET, "atoms": ["kin.no_such_atom"]})))
+        self.assertTrue(any("occasion `onset` names" in e for e in errs), errs)
+
+    def test_a_window_occasion_carries_no_event_fields(self):
+        self.assertTrue(any("`onset` belongs to" in e for e in self.check(self.node(**self.window(onset=self.ONSET)), self.WINDOW)))
+
+    def test_an_unwritable_boundary_names_an_operator_gap(self):
+        gap = {"span": "s1", "kind": "operator", "proposal": "an onset-anchored heading change", "nearest": [self.TURN]}
+        self.assertEqual(self.check(self.node(gaps=[gap], **self.event(gap="s1"))), [])
+        errs = self.check(self.node(gaps=[{**gap, "kind": "atom"}], **self.event(gap="s1")))
+        self.assertTrue(any("carries no `operator` gap" in e for e in errs), errs)
+
+    def test_the_schema_admits_two_boundaries(self):
+        rec = copy.deepcopy(NODE)
+        rec["occasion"] = {"boundary": "since", "onset": {"atoms": "kin.yaw_rate"}}
+        errs = validate_a.schema_errors("L_1", rec, validate_a.NODE_SCHEMA)
+        self.assertTrue(any("occasion.boundary" in e for e in errs) and any("occasion.onset.atoms" in e for e in errs), errs)
+        rec["occasion"] = self.event(gap="s1")
+        self.assertEqual(validate_a.schema_errors("L_1", rec, validate_a.NODE_SCHEMA), [])
+
+    def test_the_boundary_defaults_to_the_window(self):
+        self.assertEqual(self.node(act=self.TURN, window="p.w").occasion_boundary(), "window")
+        self.assertEqual(self.node(**self.event()).occasion_boundary(), "event")
+        self.assertIsNone(self.node().occasion_boundary())
+
+    def test_the_onset_is_claimed(self):
+        n = self.node(**self.event(onset={**self.ONSET, "derived": ["drv.motion.turning"]}))
+        self.assertTrue({"kin.yaw_rate", "drv.motion.turning"} <= n.claimed_atoms())
+        self.assertIn("drv.motion.turning", n.claimed_concepts())
+
+
+class ConceptAct(unittest.TestCase):
+    """A concept that declares an act states its onset, recognition, extent and history boundary in
+    its contract; a window boundary names the time parameter that bounds it, an event boundary none."""
+    ONTO_NS = SimpleNamespace(knows=lambda i: True, contract=lambda i: "a contract", primitive_ids=set(), atom_ids=set())
+    CONTRACT = ("the vehicle turns, from when it begins to turn until the turn is complete; it holds while the heading keeps "
+                "changing, and conduct before the turn began is not read")
+    WORDS = {"onset": "begins to turn", "recognition": "until the turn is complete", "extent": "while the heading keeps changing",
+             "history": "conduct before the turn began is not read"}
+
+    def errs(self, act, params=()):
+        from harness.model.blueprint import ConceptRecord
+        rec = ConceptRecord({"concept_id": "drv.motion.turn", "kind": "formula", "contract": self.CONTRACT,
+                             "args": [{"name": "v", "sort": "track"}], "params": list(params),
+                             "elements": [{"span": "the vehicle turns", "atoms": ["kin.yaw_rate"], "justification": "j"}],
+                             "scenarios": [], "act": act})
+        return [e for e in validate_a.check_concept(rec, {}, self.ONTO_NS, {}, set(), {}, {}, "train") if "`act." in e or "boundary" in e]
+
+    def test_the_act_words_are_the_contract_s(self):
+        self.assertEqual(self.errs({"boundary": "event", **self.WORDS}), [])
+        errs = self.errs({"boundary": "event", **self.WORDS, "onset": "starts a manoeuvre", "extent": ""})
+        self.assertTrue(any("`act.onset`" in e for e in errs) and any("`act.extent`" in e for e in errs), errs)
+
+    def test_the_boundary_is_carried_by_the_formals(self):
+        window = [{"name": "turn_window", "unit": "s", "meaning": "m"}]
+        self.assertEqual(self.errs({"boundary": "window", "window": "turn_window", **self.WORDS}, window), [])
+        self.assertTrue(self.errs({"boundary": "window", "window": "turn_window", **self.WORDS}))          # no such formal
+        self.assertTrue(self.errs({"boundary": "window", "window": "gap", **self.WORDS},
+                                  [{"name": "gap", "unit": "m", "meaning": "m"}]))                       # not a time
+        self.assertTrue(self.errs({"boundary": "event", "window": "turn_window", **self.WORDS}, window))
+        self.assertEqual(self.errs({"boundary": "event", **self.WORDS}, window), [])                    # a sampling bound may stay
+
+    def test_the_schema_requires_every_part(self):
+        raw = {"concept_id": "drv.motion.turn", "kind": "formula", "contract": "c", "args": [], "params": [], "elements": [],
+               "scenarios": [], "act": {"boundary": "since", "onset": 3}}
+        errs = validate_a.schema_errors("c", raw, validate_a.CONCEPT_SCHEMA)
+        for part in ("act.boundary", "act.onset", "act.recognition", "act.extent", "act.history"):
+            self.assertTrue(any(part in e for e in errs), part)
 
 
 class FormulaRestrictions(unittest.TestCase):

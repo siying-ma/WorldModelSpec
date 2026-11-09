@@ -80,6 +80,9 @@ def term(t, glosses: dict[str, str]) -> str:
         return f"the path length `{t['distance_while']}` has travelled while ({formula(t['holds'], glosses)}) held continuously"
     if "since_rise" in t:
         return f"the time since ({formula(t['since_rise'], glosses)}) last became true"
+    if "heading_since" in t:
+        return (f"the heading change of `{t['heading_since']}` since ({formula(t['onset'], glosses)}) last became true, "
+                f"integrated with steps of at most {term(t['max_step'], glosses)}")
     if "aggregate" in t:
         return (f"the {t['aggregate']} of {term(t['of'], glosses)} over the road users `{t['var']}` of the scene "
                 f"for which ({formula(t['where'], glosses)})")
@@ -248,7 +251,7 @@ def canonical(body, arg_names: list[str], param_names: list[str]) -> str:
                 out[k] = ren(v)
             elif k == "param":
                 out[k] = params.get(v, v)
-            elif k in ("subject", "distance_while"):
+            elif k in ("subject", "distance_while", "heading_since"):
                 out[k] = ren(v)
             else:
                 out[k] = walk(v)
@@ -261,7 +264,7 @@ def canonical(body, arg_names: list[str], param_names: list[str]) -> str:
 # A case in time order: the same formula, its facts placed on the trace's time axis
 # ---------------------------------------------------------------------------------------------
 _TEMPORAL = ("holds_for", "within", "at_last", "until_within", "rises", "since", "until", "count", "always", "eventually",
-             "since_rise", "distance_while")
+             "since_rise", "distance_while", "heading_since")
 
 
 def _conj(f) -> list:

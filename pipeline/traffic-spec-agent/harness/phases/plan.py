@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import json
 from pathlib import Path
 from ..checks import aggregates
-from ..model import corpus, definitions as definitions_mod, nodeid, ontology
+from ..model import acquisition, corpus, definitions as definitions_mod, nodeid, ontology
 from ..agents import render, session
 from ..store import jsonl, paths
 from ..store.gaps import GapLedger
@@ -25,16 +25,28 @@ def node_upheld_block(run: Run, laws: set[str]) -> str:
         return "## Situations decided against earlier records\n\n(none)\n"
     return review_phase.upheld_block(run, laws)
 
-def evidence_block(run: Run, laws: list[corpus.Law]) -> str:
-    """The evidence a planning session is shown: under `label_repair`, the label evidence of each of
-    these laws that awaits its label repair (the block its last committed label check rendered);
-    otherwise the node obligations earlier reviews upheld (`node_upheld_block`)."""
-    if not getattr(run.opts, "label_repair", False):
-        return node_upheld_block(run, {l.id for l in laws})
+#: The evidence of a session that is no law-level label repair, when no node review runs.
+NO_LABEL_EVIDENCE = "## Repair evidence\n\nNo law-level label-repair evidence is supplied for this session.\n"
+
+
+def repair_evidence(run: Run, laws: set[str]) -> str:
+    """The evidence of a planning or node repair session that is no law-level label repair: the node
+    obligations earlier behaviour reviews upheld where node reviews run (`node_upheld_block`),
+    otherwise `NO_LABEL_EVIDENCE`. A run's `label_repair` option gives such a session no label scope."""
+    return node_upheld_block(run, laws) if node_reviews(run.opts) else NO_LABEL_EVIDENCE
+
+
+def evidence_block(run: Run, laws: list[corpus.Law], label_repair: bool = False) -> str:
+    """The evidence a planning session is shown. A law-level label repair's re-plan (`label_repair`,
+    set by that entry point only) is shown the label evidence of each of these laws that awaits its
+    label repair, the `## Label mismatches` block its last committed label check rendered with the
+    label contract and the repair goal; every other planning session `repair_evidence`."""
+    if not label_repair:
+        return repair_evidence(run, {l.id for l in laws})
     states = getattr(run, "label_states", {}) or {}
     blocks = [(run.dir / states[l.id]["evidence"]).read_text(encoding="utf-8") for l in laws
               if states.get(l.id, {}).get("state") == "awaiting_label_repair" and (run.dir / states[l.id].get("evidence", "")).is_file()]
-    return "\n".join(blocks) or "## Label mismatches\n\n(none: no law of this plan awaits a label repair)\n"
+    return "\n".join(blocks) or NO_LABEL_EVIDENCE
 
 
 def parameter_catalogue(reading: Reading) -> str:
@@ -113,9 +125,11 @@ def concept_catalogue(run: Run) -> str:
 
 def library_summary(run: Run, pending: list[dict] | None = None) -> str:
     rows = []
+    formal = run.usable_nodes(None)                  # the availability rule: a node whose law awaits its formal acceptance
     for n in run.all_nodes().values():
         atoms = sorted(Node(n).claimed_atoms())
-        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} | accepted |")
+        state = "accepted" if n["node_id"] in formal else "generated; its law is not yet accepted: only its own law's nodes may compose it"
+        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} | {state} |")
     for n in pending or []:
         atoms = sorted(Node(n).claimed_atoms())
         rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n.get('binders', []))} | {', '.join(atoms)} | planned this iteration, not yet accepted |")
@@ -201,12 +215,15 @@ def _law_id(raw: dict) -> str:
     return str(refs[0]) if isinstance(refs, list) and refs else ""
 
 
-def _task_state(task: Path) -> str:
-    """What the gate and the review decided on one coding task, as they recorded it."""
+def _task_state(task: Path, reviews: bool = True) -> str:
+    """What the gate and, where node reviews run (`reviews`), the review decided on one coding task,
+    as they recorded it."""
     v = _read_json(task / "verdict.json")
     if not isinstance(v, dict):
         return "coded: " + ("the gate verdict could not be read" if v is _UNREAD else "no gate verdict recorded")
     out = f"coded: gate {v.get('verdict', 'not run')}" + (f" ({_ws('; '.join(str(x) for x in (v.get('details') or [])[:2]))[:240]})" if v.get("details") else "")
+    if not reviews:
+        return out
     o = _read_json(task / "review" / "review_outcome.json")
     if not isinstance(o, dict):
         return out + (", the review outcome could not be read" if o is _UNREAD else ", not reviewed")
@@ -329,7 +346,7 @@ def law_history(run: Run, law: corpus.Law) -> tuple[int | None, list[_Entry], li
         for nid, (raw, task) in coded.items():
             e = _entry(entries, raw, law)
             e.versions.append((f"as coded in iteration {it}", raw))
-            e.note(it, (f"validator {verdicts[nid].get('kind')}; " if nid in verdicts else "") + _task_state(task))
+            e.note(it, (f"validator {verdicts[nid].get('kind')}; " if nid in verdicts else "") + _task_state(task, node_reviews(run.opts)))
     accepted = run.all_nodes()
     for e in entries:
         if e.id in accepted and e.matches(accepted[e.id], law):
@@ -358,7 +375,7 @@ def _latest_elsewhere(run: Run, rid: str) -> tuple[str, dict, str] | None:
         d = paths.iter_dir(run.opts.run_id, it)
         raw = _read_json(d / "code" / rid / "node.json")
         if isinstance(raw, dict):
-            return f"as coded in iteration {it}", raw, f"not accepted; {_task_state(d / 'code' / rid)}"
+            return f"as coded in iteration {it}", raw, f"not accepted; {_task_state(d / 'code' / rid, node_reviews(run.opts))}"
         try:
             hit = [n.raw for n in blueprint.load(d / "plan" / "blueprint.jsonl") if n.id == rid]
         except ValueError:
@@ -502,11 +519,13 @@ def repair_context(run: Run, node, law: corpus.Law, siblings: list) -> str:
     return "\n".join(out) + "\n"
 
 
-def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", pending: list[dict] | None = None) -> Path:
+def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", pending: list[dict] | None = None,
+             label_repair: bool = False) -> Path:
     """One plan session over `laws`. With a `tag` the session writes under `iter/plan/<tag>/` (one
     batch of several); `pending` lists the nodes and concept records earlier batches of this
     iteration planned, so a law that names one of their laws can compose the node by its id and
-    reuse the concept by its id. A batch directory that already holds a session result and a
+    reuse the concept by its id. `label_repair` marks the re-plan of a law-level label repair, the
+    one planning session shown label evidence (`evidence_block`). A batch directory that already holds a session result and a
     blueprint is a finished batch: it is returned as it is, without a session."""
     plan_dir = run.iter / "plan" / tag if tag else run.iter / "plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
@@ -522,11 +541,12 @@ def run_plan(run: Run, laws: list[corpus.Law], defs: list[dict], tag: str = "", 
         "library_summary": library_summary(run, [n for n in pending or [] if "node_id" in n]),
         "concepts": concept_catalogue(run) + pending_concepts_table(pending),
         "mapping_index": MappingIndex(run.mapping_file).render() + pending_mappings_table(pending),
-        "parameters": parameter_catalogue(Reading(run.reading_file)) + pending_proposals_table(pending)
+        "parameters": parameter_catalogue(Reading(run.reading_file)) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
+                      + pending_proposals_table(pending)
                       + declaration_catalogue(Reading(run.reading_file), pending),
         "gaps": GapLedger(paths.GAPS_DIR).render({l.id for l in corpus.load_laws(run.opts.laws)}, run.opts.base_run),
         "feedback": run.read_notes(),
-        "evidence": evidence_block(run, laws),
+        "evidence": evidence_block(run, laws, label_repair),
         "previous_records": previous_records(run, laws),
         "user_hints": run.read_hints(),
         "anchors": ontology.anchors_text(onto),
@@ -687,7 +707,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         finals.append(f"```lean\n-- {f.relative_to(last_task / 'final')}\n{f.read_text(encoding='utf-8')}\n```")
     verdict = "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)"
     rendered = last_task / "review" / "rendered_rule.md"
-    if rendered.exists():
+    if rendered.exists() and node_reviews(run.opts):
         verdict += f"\n\nThe rule the review read, rendered from the code:\n```\n{rendered.read_text(encoding='utf-8')[-8000:]}\n```"
     seg = "\n".join(f"- `{s['id']}` ({s['role']}): {s['text']}" for s in node.get("segmentation", []))
     editable = {k: v for k, v in node.raw.items() if k not in FIXED_NODE_KEYS}
@@ -697,10 +717,11 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
                        + definitions_mod.render_sources(definitions_mod.cited_sources(run, [law], [node]), definitions_mod.CITED_HEADING),
         "node": "## The node\n\n```json\n" + json.dumps(editable, ensure_ascii=False, indent=1) + "\n```\n"
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
-        "verdict": verdict, "evidence": node_upheld_block(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
+        "verdict": verdict, "evidence": repair_evidence(run, {law.id}), "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
         "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
-        "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + declaration_catalogue(reading),
+        "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
+                      + declaration_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object, the revised node record (the harness attaches `node_id`, `law_refs` and `segmentation` itself), or a withdrawal "

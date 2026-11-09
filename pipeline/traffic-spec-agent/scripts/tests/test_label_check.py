@@ -1,8 +1,8 @@
 """The label check on a synthetic dataset, with stand-in monitor and explain programs: a law's
 outcome, the ego filter, judgment calls kept out of the outcome and the evidence, failures never
-read as a semantic disagreement, and an evidence block that carries no trace; under label contract
-v2, scoring inside each label's interval on the whole trace's reason-carrying segments, unusable
-intervals kept unverified, and the interval bound into the run's comparison set."""
+read as a semantic disagreement, and an evidence block that carries no trace; a label judges the
+whole recording, scored on the reason-carrying segments of the whole trace, and a dataset or a label
+that states another label contract is refused."""
 import json
 import os
 import stat
@@ -19,7 +19,7 @@ from recorded import dataset, scoring
 # to its own failure, so that one rule fails and the others finish). A grounding may
 # give its reasons and its segments, [[from, to, verdict, reasons], ...], from which its episode is
 # joined; with `--segments` each grounding's segments line follows the report (a grounding without
-# segments is one segment over the whole trace).
+# segments is one segment over the whole trace, observed at TIMES).
 FAKE_MONITOR = """#!{py}
 import json, sys, time
 args = sys.argv[1:]
@@ -58,7 +58,10 @@ for d in seg_lines:
 print(json.dumps({{'kind': 'subject', 'ego': spec.get('ego', [1]), 'binders': {{r: 'x' for r in rules}}}}))
 """
 # The stand-in explain refuses, as the real one does, a binding that does not name every binder of
-# the rule (the binders of its groundings in `fake.json`), and can answer with a large report.
+# the rule (the binders of its groundings in `fake.json`), and can answer with a large report. It
+# reports the grounding's truncated windows as `fake.json` gives them for the rule
+# (`"windows": {rule: section}`), echoes an interval it is given (`window`), or fails where
+# `"explain_fail"` names the rule.
 FAKE_EXPLAIN = """#!{py}
 import json, sys
 args = sys.argv[1:]
@@ -68,9 +71,13 @@ spec = json.load(open(args[-1].rsplit('/', 1)[0] + '/fake.json'))
 names = set(spec[rule][0][1])
 if {{b.split('=')[0] for b in binds}} != names:
     sys.stderr.write('explain: --bind must name every binder'); sys.exit(2)
+if rule in spec.get('explain_fail', []):
+    sys.stderr.write('explain: failed'); sys.exit(2)
 window = [int(args[args.index(o) + 1]) for o in ('--from', '--to') if o in args]
+wins = spec.get('windows', {{}}).get(rule)
+grounds = [{{'binding': {{b.split('=')[0]: int(b.split('=')[1]) for b in binds}}, 'windows': wins}}] if wins else []
 print(json.dumps({{'rule': rule, 'bind': sorted(binds), 'scan': [{{'value': 'x' * 300}}] * spec.get('big', 1),
-                  **({{'window': window}} if window else {{}})}}))
+                  **({{'window': window}} if window else {{}}), **({{'groundings': grounds}} if grounds else {{}})}}))
 """
 
 
@@ -80,26 +87,46 @@ def write_exe(path: Path, text: str) -> Path:
     return path
 
 
-def make_dataset(root: Path, recs: list[tuple[str, str, str, bool, dict]]) -> dataset.Dataset:
-    """recs: (recording_id, law, recorded_label, judgment_call, fake monitor spec)"""
+#: The observation times (ms) of every synthetic trace: 0, 1000, ..., 9000.
+TIMES = list(range(0, 10000, 1000))
+
+
+def make_dataset(root: Path, recs: list[tuple[str, str, str, bool, dict]], trace: dict | None = None,
+                 manifest: dict | None = None) -> dataset.Dataset:
+    """recs: (recording_id, law, recorded_label, judgment_call, fake monitor spec), every trace observed
+    at TIMES unless `trace` is given. The dataset is built from a synthetic delivery of one source
+    (`manifest`, by default `{"atoms": {}}`, under a library whose split has exactly its atoms), so
+    every recording reads the same source manifest."""
+    import shutil
+    from scripts.tests.test_recorded_dataset import fake_library, make_delivery
+    raw = json.dumps(trace or {"scenes": [{"t": t} for t in TIMES]}).encode()
+    for side in (".delivery", ".lib"):
+        shutil.rmtree(root.with_name(root.name + side), ignore_errors=True)
+    dl = make_delivery(root.with_name(root.name + ".delivery"),
+                       [{"rid": rid, "law": law, "label": label or None, "jc": jc, "trace": raw} for rid, law, label, jc, _ in recs],
+                       shared=manifest or {"atoms": {}})
+    lib = fake_library(root.with_name(root.name + ".lib"), ", ".join(json.dumps(a) for a in (manifest or {}).get("atoms", {})))
+    dataset.build(dl, root, lib, jobs=1)
+    for rid, _law, _label, _jc, spec in recs:
+        (root / "recordings" / rid / "fake.json").write_text(json.dumps(spec))
+    return dataset.Dataset(root)
+
+
+def set_label(ds: dataset.Dataset, rid: str, recorded_label: str, judgment_call: bool | None = None) -> None:
+    """Rewrite one recording's label in the dataset's index (its verdict normalized from it)."""
     import csv
-    (root / "recordings").mkdir(parents=True)
-    rows = []
-    for rid, law, label, jc, spec in recs:
-        d = root / "recordings" / rid
-        d.mkdir()
-        (d / "trace.json").write_text('{"scenes":[]}')
-        (d / "manifest.json").write_text('{"atoms":{}}')
-        (d / "label.json").write_text(json.dumps({"law_id": law, "recorded_label": label, "judgment_call": jc}))
-        (d / "fake.json").write_text(json.dumps(spec))
-        rows.append({"recording_id": rid, "case_id": rid, "law_id": law, "verdict": "", "recorded_label": label,
-                     "judgment_call": jc, "revision": "", "scenes": 1, "trace_sha256": "", "manifest_sha256": ""})
-    with (root / "INDEX.csv").open("w") as f:
-        w = csv.DictWriter(f, dataset.INDEX_FIELDS)
+    from recorded import labels
+    f = ds.path / "INDEX.csv"
+    rows = list(csv.DictReader(f.open()))
+    for r in rows:
+        if r["recording_id"] == rid:
+            r["recorded_label"], r["verdict"] = recorded_label, labels.verdict_of(recorded_label) or ""
+            if judgment_call is not None:
+                r["judgment_call"] = judgment_call
+    with f.open("w", newline="") as fh:
+        w = csv.DictWriter(fh, dataset.INDEX_FIELDS)
         w.writeheader()
         w.writerows(rows)
-    (root / "DATASET.json").write_text(json.dumps({"data_version": "v1"}))
-    return dataset.Dataset(root)
 
 
 LAW_OF = {"R1": "L", "R2": "L"}
@@ -261,10 +288,8 @@ class SiblingsAndFreeze(_Fixture):
 
 
 # ---------------------------------------------------------------------------------------------
-# Label contract v2: a scoring interval per label
+# The whole recording, on the reason-carrying segments of the whole trace
 # ---------------------------------------------------------------------------------------------
-TIMES = list(range(0, 10000, 1000))          # observations at 0, 1000, ..., 9000 ms
-IV = {"start_ms": 3000, "end_ms": 6000, "source": "scenario design S", "confirmed": True}
 TRUNC = ["window_truncated:since"]
 
 
@@ -272,139 +297,49 @@ def sg(a, z, v, reasons=()):
     return [a, z, v, list(reasons)]
 
 
-def label_v2(law, label, jc, interval=IV, **over):
-    d = {"law_id": law, "recorded_label": label, "judgment_call": jc, "label_contract": "v2", "subject": "ego"}
-    if interval is not None:
-        d["scoring_interval"] = interval
-    return {**d, **over}
-
-
-def make_v2_dataset(root: Path, recs: list[tuple[str, dict, dict]]) -> dataset.Dataset:
-    """recs: (recording_id, label.json, fake monitor spec), every trace observed at TIMES."""
-    import csv
-    from recorded import labels
-    (root / "recordings").mkdir(parents=True)
-    rows = []
-    for rid, lab, spec in recs:
-        d = root / "recordings" / rid
-        d.mkdir()
-        (d / "trace.json").write_text(json.dumps({"scenes": [{"t": t} for t in TIMES]}))
-        (d / "manifest.json").write_text('{"atoms":{}}')
-        (d / "label.json").write_text(json.dumps(lab))
-        (d / "fake.json").write_text(json.dumps(spec))
-        rows.append({"recording_id": rid, "case_id": rid, "law_id": lab.get("law_id", "L"), "verdict": "",
-                     "recorded_label": lab["recorded_label"], "judgment_call": lab["judgment_call"], "revision": "",
-                     "scenes": len(TIMES), "trace_sha256": "", "manifest_sha256": ""})
-    with (root / "INDEX.csv").open("w") as f:
-        w = csv.DictWriter(f, dataset.INDEX_FIELDS)
-        w.writeheader()
-        w.writerows(rows)
-    (root / "DATASET.json").write_text(json.dumps({"data_version": "v2data", "label_contract": labels.CONTRACT_V2}))
-    return dataset.Dataset(root)
-
-
-class IntervalScoring(_Fixture):
-    def check2(self, recs):
+class WholeRecording(_Fixture):
+    def fresh(self, recs):
         import shutil
         shutil.rmtree(self.root / "ds", ignore_errors=True)
-        self.ds = make_v2_dataset(self.root / "ds", recs)
-        return label_check.check_law("L", ["R1", "R2"], LAW_OF, self.ds, self.mon, self.exp, self.reading, self.lim)
+        return self.check(recs)
 
-    def one(self, r1_segments, label="compliant", r2=None, jc=False, binding=None):
+    def one(self, r1_segments, label="compliant", r2=None, binding=None):
         spec = {"R1": [["", binding or {"x": 1}, [], r1_segments]],
                 "R2": r2 or [["", {"x": 1}, [], [sg(0, 9000, "not_applicable")]]]}
-        c = self.check2([("a", label_v2("L", label, jc), spec)])
+        c = self.fresh([("a", "L", label, False, spec)])
         return c, c.scored[0]
 
-    def test_a_violation_outside_the_interval_does_not_change_the_label(self):
-        c, s = self.one([sg(0, 2000, "violated"), sg(3000, 6000, "compliant"), sg(7000, 9000, "violated")])
-        self.assertEqual((s.verdict, s.status, c.outcome), ("compliant", "match", "aligned"))
-        self.assertEqual(s.scope["whole_verdict"], "violated")             # kept as a diagnosis only
-        self.assertEqual((s.scope["start_ms"], s.scope["end_ms"], s.scope["source"]), (3000, 6000, "scenario design S"))
-        self.assertEqual(c.to_dict()["label_contract"], "v2")
+    def test_a_violation_anywhere_decides_the_recording(self):
+        for segs in ([sg(0, 2000, "violated"), sg(3000, 9000, "compliant")], [sg(0, 8000, "compliant"), sg(9000, 9000, "violated")]):
+            with self.subTest(segs=segs):
+                c, s = self.one(segs)
+                self.assertEqual((s.verdict, s.status, c.outcome), ("violated", "mismatch", "mismatch"))
 
-    def test_inside_a_violation_wins_over_an_unknown(self):
-        _, s = self.one([sg(0, 3000, "unknown", TRUNC), sg(4000, 4000, "violated"), sg(5000, 9000, "compliant")],
-                        label="violation")
+    def test_a_violation_wins_over_an_unknown(self):
+        _, s = self.one([sg(0, 3000, "unknown", TRUNC), sg(4000, 4000, "violated"), sg(5000, 9000, "compliant")], label="violation")
         self.assertEqual((s.verdict, s.status, s.blockers), ("violated", "match", []))
 
-    def test_an_unknown_only_in_the_prefix_is_not_joined_and_is_no_blocker(self):
-        c, s = self.one([sg(0, 2000, "unknown", TRUNC), sg(3000, 9000, "compliant")])
-        self.assertEqual((s.verdict, s.status), ("compliant", "match"))
-        self.assertEqual(s.scope["whole_verdict"], "unknown")
-        self.assertEqual(s.blockers, [])
-
-    def test_blockers_are_computed_from_the_interval_only(self):
-        _, s = self.one([sg(0, 2000, "unknown", ["sampling_gap:once"]), sg(3000, 4000, "unknown", TRUNC),
-                         sg(5000, 6000, "compliant"), sg(7000, 9000, "unknown", ["division_by_zero:d"])])
-        self.assertEqual(s.status, "unknown")
-        self.assertEqual([(b["reason"], b["handling"], b["observations"]) for b in s.blockers],
-                         [("window_truncated:since", "time_contract", 2)])
-
-    def test_insufficient_context_before_and_after_stays_unknown(self):
-        # history missing at the interval's start, a look-ahead past the trace end at its end: the
-        # interval creates neither, and they are blockers of the interval
-        c = self.check2([("b", label_v2("L", "compliant", False, {**IV, "start_ms": 0, "end_ms": 9000}),
-                          {"R1": [["", {"x": 1}, [], [sg(0, 1000, "unknown", TRUNC), sg(2000, 8000, "compliant"),
-                                                       sg(9000, 9000, "unknown", ["window_truncated:eventually"])]]],
-                           "R2": [["", {"x": 1}, [], [sg(0, 9000, "not_applicable")]]]})])
-        s = c.scored[0]
-        self.assertEqual((s.verdict, s.status, c.outcome), ("unknown", "unknown", "unverified"))
-        self.assertEqual(sorted((b["reason"], b["observations"]) for b in s.blockers),
-                         [("window_truncated:eventually", 1), ("window_truncated:since", 2)])
-
-    def test_the_endpoints_are_inside(self):
-        for at, want in ((3000, "violated"), (6000, "violated"), (2000, "compliant"), (7000, "compliant")):
-            with self.subTest(at=at):
-                segs = [sg(t, t, "violated" if t == at else "compliant") for t in TIMES]
-                _, s = self.one(segs, label="violation")
-                self.assertEqual(s.verdict, want)
-
-    def test_unusable_intervals_keep_their_place_unverified_and_are_never_run(self):
-        bad = {"empty": {**IV, "start_ms": 6000, "end_ms": 3000}, "after": {**IV, "end_ms": 12000},
-               "before": {**IV, "start_ms": -1000}, "between": {**IV, "start_ms": 3500},
-               "unconfirmed": {**IV, "confirmed": False}, "no_source": {**IV, "source": ""},
-               "float": {**IV, "start_ms": 3000.0}}
-        recs = [(k, label_v2("L", "compliant", False, v), {**OK, "fail": "crash"}) for k, v in bad.items()]
-        recs += [("missing", label_v2("L", "compliant", False, None), {**OK, "fail": "crash"}),
-                 ("v1label", {"law_id": "L", "recorded_label": "compliant", "judgment_call": False}, {**OK, "fail": "crash"}),
-                 ("ok", label_v2("L", "compliant", False), OK)]
-        c = self.check2(recs)
-        st = {s.recording_id: s.status for s in c.scored}
-        self.assertEqual(st, {**{k: "label_unverified" for k in [*bad, "missing", "v1label"]}, "ok": "match"})
-        self.assertEqual(c.coverage, {"eligible": 10, "matched": 1})      # the fixed denominator keeps them
-        self.assertEqual(c.outcome, "unverified")                         # never failed (no crash: never run), never aligned
-        self.assertEqual(c.summary["counts"]["label_unverified"], 9)
-        self.assertEqual(c.evidence, [])
-        notes = {s.recording_id: s.note for s in c.scored}
-        self.assertIn("empty", notes["empty"])
-        self.assertIn("leaves the trace", notes["after"])
-        self.assertIn("fall on no observation", notes["between"])
-        self.assertIn("not confirmed", notes["unconfirmed"])
-        self.assertIn("no scoring interval", notes["missing"])
-        self.assertIn("does not state label contract v2", notes["v1label"])
-
-    def test_an_unverified_label_never_reaches_the_evidence(self):
-        c = self.check2([("u", label_v2("L", "compliant", False, None), BAD), ("m", label_v2("L", "compliant", False), BAD)])
-        self.assertEqual(c.outcome, "mismatch")
-        self.assertEqual({e.recording_id for e in c.evidence}, {"m"})
-        block = label_check.render_evidence(c)
-        self.assertNotIn("Recording u", block)
-        self.assertIn("label_unverified 1", block)
-        self.assertIn("scoring interval [3000, 6000] ms", block)
-        self.assertIn("only the verdicts at observations inside the interval are joined", block)
+    def test_an_unknown_anywhere_is_joined_and_every_reason_is_a_blocker(self):
+        c, s = self.one([sg(0, 2000, "unknown", ["sampling_gap:once"]), sg(3000, 4000, "unknown", TRUNC),
+                         sg(5000, 6000, "compliant"), sg(7000, 8000, "unknown", ["division_by_zero:d"]),
+                         sg(9000, 9000, "unknown", ["window_truncated:eventually"])])
+        self.assertEqual((s.verdict, s.status), ("unknown", "unknown"))
+        self.assertEqual(sorted((b["reason"], b["handling"]) for b in s.blockers),
+                         [("division_by_zero:d", "library"), ("sampling_gap:once", "data"),
+                          ("window_truncated:eventually", "time_contract"), ("window_truncated:since", "time_contract")])
+        self.assertEqual(c.outcome, "undecided")                          # the library's blocker routes it
 
     def test_only_the_ego_groundings_are_joined(self):
         r1 = [["", {"x": 1, "o": 2}, [], [sg(0, 9000, "compliant")]],
               ["", {"x": 1, "o": 3}, [], [sg(0, 4000, "compliant"), sg(5000, 5000, "violated"), sg(6000, 9000, "compliant")]],
               ["", {"x": 2, "o": 1}, [], [sg(0, 9000, "violated")]]]                                # not the ego
         spec = {"R1": r1, "R2": [["", {"x": 1, "o": 2}, [], [sg(0, 9000, "not_applicable")]]]}
-        c = self.check2([("a", label_v2("L", "violation", False), spec)])
+        c = self.fresh([("a", "L", "violation", False, spec)])
         s = c.scored[0]
         self.assertEqual((s.verdict, s.status), ("violated", "match"))
         self.assertEqual(len(s.rules["R1"]["judged"]), 2)
         spec["R1"] = [r1[0], r1[2]]                                     # the other user's violation alone
-        c = self.check2([("a", label_v2("L", "compliant", False), spec)])
+        c = self.fresh([("a", "L", "compliant", False, spec)])
         self.assertEqual(c.scored[0].status, "match")
 
     def test_several_rules_join_in_order(self):
@@ -417,106 +352,69 @@ class IntervalScoring(_Fixture):
         _, s = self.one([sg(0, 9000, "compliant")])
         self.assertEqual(s.verdict, "compliant")                          # compliant before not_applicable
 
-    def test_a_judgment_call_is_scored_in_its_interval_and_kept_apart(self):
-        c = self.check2([("j", label_v2("L", "compliant", True), {"R1": [["", {"x": 1}, [], [sg(0, 2000, "violated"), sg(3000, 9000, "compliant")]]],
-                                                               "R2": OK["R2"]}),
-                         ("jbad", label_v2("L", "compliant", True, None), OK),
-                         ("a", label_v2("L", "compliant", False), OK)])
-        self.assertEqual(c.outcome, "aligned")
-        self.assertEqual(c.evidence, [])
-        self.assertEqual({r["recording_id"]: r["status"] for r in label_check.judgment_table(c)},
-                         {"j": "match", "jbad": "label_unverified"})
-
-    def test_explain_chooses_inside_the_interval(self):
+    def test_explain_is_given_the_whole_trace(self):
         c, _ = self.one([sg(0, 2000, "compliant"), sg(3000, 6000, "violated"), sg(7000, 9000, "compliant")])
         ev = [e for e in c.evidence if e.rule == "R1"]
-        self.assertTrue(ev and all(e.ok and e.report["window"] == [3000, 6000] for e in ev), [e.error for e in ev])
+        self.assertTrue(ev and all(e.ok and "window" not in e.report for e in ev), [e.error for e in ev])
 
-    def test_a_grounding_whose_segments_miss_the_interval_is_refused(self):
-        _, s = self.one([sg(0, 3000, "compliant"), sg(5000, 9000, "compliant")])
-        self.assertEqual(s.status, "crash")
-        self.assertIn("do not cover the scoring interval", s.note)
-
-    def test_v1_runs_without_segments_and_keeps_its_records(self):
-        c = self.check([("a", "L", "compliant", False, OK)])
+    def test_the_record_keeps_the_judged_segments_and_no_other_contract(self):
+        c = self.fresh([("a", "L", "compliant", False, {**OK, "R1": [["compliant", {"x": 1}], ["violated", {"x": 2}]]})])
         self.assertEqual(c.scored[0].status, "match")
         d = c.to_dict()
         self.assertNotIn("label_contract", d)
         self.assertNotIn("scope", d["scored"][0])
-        self.assertNotIn("segments", d["scored"][0]["rules"]["R1"]["judged"][0])
-        self.assertNotIn("label_unverified", c.summary["counts"])
+        r1 = d["scored"][0]["rules"]["R1"]
+        self.assertEqual(r1["judged"][0]["segments"], [{"from": 0, "to": 9000, "verdict": "compliant", "reasons": []}])
+        self.assertNotIn("segments", r1["others"][0])                    # another user's grounding: reported, its timeline not kept
+        self.assertEqual(set(c.summary["counts"]), set(scoring.STATUSES))
         self.assertIn("over the whole recording; violated", label_check.render_evidence(c))
 
-    def test_a_summary_never_joins_the_two_contracts(self):
-        from recorded import scoring
-        v1 = self.check([("a", "L", "compliant", False, OK)]).scored
-        v2 = self.check2([("b", label_v2("L", "compliant", False), OK)]).scored
-        with self.assertRaises(ValueError):
-            scoring.summary(v1 + v2)
 
+class LabelContract(_Fixture):
+    """Only label contract v1 is read: a dataset that states another is refused, loudly, never read
+    as v1, and no comparison set is written on it (the labels themselves are checked when the
+    dataset is built)."""
 
-class IntervalBinding(_Fixture):
-    """The interval, its source, its confirmation and the contract are bound into the run's fixed
-    comparison set: a change refuses resumption, and a repair compared on another stretch fails."""
-
-    def test_an_interval_change_refuses_resumption(self):
-        ds = make_v2_dataset(self.root / "ds", [("a", label_v2("L", "compliant", False), OK)])
+    def test_a_dataset_stating_another_contract_is_refused(self):
+        from recorded import labels
+        ds = make_dataset(self.root / "ds", [("a", "L", "compliant", False, OK)])
+        meta = json.loads((ds.path / "DATASET.json").read_text())
+        for ok in ("v1", labels.CONTRACT):
+            (ds.path / "DATASET.json").write_text(json.dumps({**meta, "label_contract": ok}))
+            self.assertEqual(dataset.Dataset(ds.path).label("a").verdict, "compliant")
         run_dir = self.root / "run"
         run_dir.mkdir()
-        ctx = label_check.training_context(run_dir, ["L"], ds.path, self.lim)
-        case = ctx.fixed["cases"]["a"]
-        self.assertEqual((case["scope"], case["defect"]), ({"start_ms": 3000, "end_ms": 6000, "source": "scenario design S"}, None))
-        self.assertIn("label_set", ctx.versions())
-        self.assertNotEqual(ctx.fixed["label_contract"], label_check.contract_version("v1"))
-        saved = (run_dir / "comparison_set.json").read_bytes()
-        label_check.training_context(run_dir, ["L"], ds.path, self.lim)                  # the same inputs resume
-        lab = ds.files("a")["label"]
-        for change in ({**IV, "end_ms": 5000}, {**IV, "source": "another design"}, {**IV, "confirmed": False}):
-            with self.subTest(change=change):
-                lab.write_text(json.dumps(label_v2("L", "compliant", False, change)))
-                with self.assertRaises(SystemExit):
+        for bad in ("v2", {"version": "v2", "subject": "ego", "scope": "scoring interval"}):
+            with self.subTest(bad=bad):
+                (ds.path / "DATASET.json").write_text(json.dumps({**meta, "label_contract": bad}))
+                with self.assertRaisesRegex(dataset.DatasetError, "is refused"):
+                    dataset.Dataset(ds.path)
+                with self.assertRaisesRegex(dataset.DatasetError, "is refused"):
                     label_check.training_context(run_dir, ["L"], ds.path, self.lim)
-        self.assertEqual((run_dir / "comparison_set.json").read_bytes(), saved)
+        self.assertFalse((run_dir / "comparison_set.json").exists())
 
-    def test_a_v1_run_does_not_resume_on_a_v2_dataset(self):
-        ds1 = make_dataset(self.root / "ds1", [("a", "L", "compliant", False, OK)])
+    def test_the_old_dataset_layout_is_refused_before_anything_runs(self):
+        ds = make_dataset(self.root / "ds", [("a", "L", "compliant", False, OK)])
+        meta = json.loads((ds.path / "DATASET.json").read_text())
+        (ds.path / "DATASET.json").write_text(json.dumps({k: v for k, v in meta.items() if k != "layout"}))
         run_dir = self.root / "run"
         run_dir.mkdir()
-        ctx = label_check.training_context(run_dir, ["L"], ds1.path, self.lim)
-        self.assertNotIn("label_set", ctx.versions())
-        self.assertNotIn("scope", ctx.fixed["cases"]["a"])
-        meta = json.loads((ds1.path / "DATASET.json").read_text())
-        from recorded import labels
-        (ds1.path / "DATASET.json").write_text(json.dumps({**meta, "label_contract": labels.CONTRACT_V2}))
-        with self.assertRaises(SystemExit):
-            label_check.training_context(run_dir, ["L"], ds1.path, self.lim)
+        with self.assertRaisesRegex(dataset.DatasetError, "rebuild the dataset from one delivery"):
+            label_check.training_context(run_dir, ["L"], ds.path, self.lim)
+        self.assertFalse((run_dir / "comparison_set.json").exists())
 
-    def test_a_repair_never_gains_by_another_stretch(self):
-        def rec(status, start):
-            return {"outcome": "x", "scored": [{"recording_id": "a", "label": "compliant", "judgment_call": False, "status": status,
-                                                "scope": {"start_ms": start, "end_ms": 6000, "source": "S"}}]}
-        moved = label_check.compare(rec("mismatch", 3000), rec("match", 4000), "labelled semantic")
-        self.assertFalse(moved["ok"])
-        self.assertIn("scored over another stretch of the recording: a", moved["reasons"])
-        self.assertTrue(label_check.compare(rec("mismatch", 3000), rec("match", 3000), "labelled semantic")["ok"])
-
-
-class LabelContractV2(unittest.TestCase):
-    def test_validation(self):
-        from recorded import labels
-        p = lambda **over: labels.parse(label_v2("L", "compliant", False, **over), "v2")
-        self.assertIsNone(labels.interval_defect(p(), TIMES, "L"))
-        self.assertEqual(p().interval, labels.Interval(3000, 6000, "scenario design S", True))
-        self.assertIn("integer", p(interval={**IV, "end_ms": True}).defect)
-        self.assertIn("subject", p(subject="track 7").defect)
-        self.assertIn("names law", labels.interval_defect(p(), TIMES, "OTHER"))
-        self.assertIsNone(labels.interval_defect(p(interval={**IV, "start_ms": 4000, "end_ms": 4000}), TIMES, "L"))
-        self.assertIn("no observation", labels.interval_defect(p(), [], "L"))
-        self.assertEqual(labels.parse(label_v2("L", "compliant", False)).contract, "v1")     # v1 reads no interval
-        self.assertEqual(labels.contract_of(None), "v1")
-        self.assertEqual(labels.contract_of(labels.CONTRACT), "v1")
-        with self.assertRaises(ValueError):
-            labels.contract_of({"scope": "the part we like"})
+    def test_the_monitor_and_explain_read_the_source_manifest(self):
+        ds = make_dataset(self.root / "ds", [("a", "L", "compliant", False, BAD), ("b", "L", "compliant", False, BAD)])
+        log = self.root / "args.log"
+        for name, text in (("monitor", FAKE_MONITOR), ("explain", FAKE_EXPLAIN)):
+            write_exe(self.root / name, text.replace("args = sys.argv[1:]",
+                                                     f"args = sys.argv[1:]\nopen({str(log)!r}, 'a').write(json.dumps(args) + '\\n')", 1))
+        label_check.check_law("L", ["R1", "R2"], LAW_OF, ds, self.mon, self.exp, self.reading, self.lim)
+        calls = [json.loads(l) for l in log.read_text().splitlines()]
+        src = str(ds.files("a")["manifest"])
+        self.assertEqual(src, str(ds.path / "sources" / ds.row("a")["source"] / "manifest.json"))
+        self.assertTrue(calls and all(c[c.index("--manifest") + 1] == src for c in calls))
+        self.assertTrue(any("--scan" in c for c in calls) and any("--segments" in c for c in calls))
 
 
 if __name__ == "__main__":
@@ -530,7 +428,6 @@ FAILS = {"crash": "crash", "sleep": "deadline"}
 
 
 class PartialRecordings(_Fixture):
-    check2 = IntervalScoring.check2
 
     def assert_partial(self, c, s, finished, failing, kind, verdict, label):
         status = kind if label is not None else "unlabelled"
@@ -568,28 +465,7 @@ class PartialRecordings(_Fixture):
                 spec = {finished: [["violated", {"x": 1}]], failing: [["compliant", {"x": 1}]], "fail": {failing: fail}}
                 c = self.check([("a", "L", label or "", False, spec)])
                 self.assert_partial(c, c.scored[0], finished, failing, FAILS[fail], "violated", label)
-
-    def test_v2_keeps_the_finished_rule_cut_to_the_interval_in_both_orders(self):
-        inside = [sg(0, 2000, "compliant"), sg(3000, 4000, "violated"), sg(5000, 9000, "compliant")]
-        outside = [sg(0, 2000, "violated"), sg(3000, 9000, "compliant")]
-        for (finished, failing), fail, label, (segs, verdict, kept) in (
-                (o, f, l, x) for o in (("R1", "R2"), ("R2", "R1")) for f in FAILS for l in ("violated", None)
-                for x in ((inside, "violated", ["violated", "compliant"]), (outside, "compliant", ["compliant"]))):
-            with self.subTest(finished=finished, fail=fail, label=label, verdict=verdict):
-                spec = {finished: [["", {"x": 1}, [], segs]], failing: [["", {"x": 1}, [], [sg(0, 9000, "compliant")]]],
-                        "fail": {failing: fail}}
-                c = self.check2([("a", label_v2("L", label or "", False), spec)])
-                s = c.scored[0]
-                self.assert_partial(c, s, finished, failing, FAILS[fail], verdict, label)
-                self.assertNotIn("whole_verdict", s.scope)
-                self.assertEqual([x["verdict"] for x in s.rules[finished]["judged"][0]["segments"]], kept)
-
-    def test_a_rule_whose_segments_miss_the_interval_fails_alone(self):
-        spec = {"R1": [["", {"x": 1}, [], [sg(0, 3000, "compliant"), sg(5000, 9000, "compliant")]]],
-                "R2": [["", {"x": 1}, [], [sg(0, 9000, "violated")]]]}
-        c = self.check2([("a", label_v2("L", "violated", False), spec)])
-        self.assert_partial(c, c.scored[0], "R2", "R1", "crash", "violated", "violated")
-        self.assertIn("do not cover the scoring interval", c.scored[0].note)
+                self.assertEqual([x["verdict"] for x in c.scored[0].rules[finished]["judged"][0]["segments"]], ["violated"])
 
     def test_a_partial_recording_never_counts_as_decided(self):
         import shutil

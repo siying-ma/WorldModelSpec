@@ -89,6 +89,89 @@ def aggRule : Rule :=
 #guard (Rule.checkReading [aggRule] aggRule ρ).length = 2
 #guard (Rule.checkReading [aggRule] aggRule { ρ with aggregates := [{ id := "D-1::vehicle", included := ["D-2::heavy"] }, { id := "D-2::heavy" }] }).length = 1
 #guard Formula.aggregateIds (.and (agg "x" "D-1::vehicle") (.existsUser "u" (agg "u" "D-2::heavy"))) = ["D-1::vehicle", "D-2::heavy"]
+-- an aggregate id is collected at every position of a formula or a term that carries one
+private def sr (id : String) : Term := .sinceRise (agg "x" id)
+private def q : Term := .param "p"
+#guard Formula.aggregateIds (.cmp (sr "A") .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp q .le (sr "A")) = ["A"]
+#guard Formula.aggregateIds (.cmp (.distanceWhile "x" (agg "x" "A")) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.aggregate .count "u" (agg "u" "A") q) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.aggregate .max "u" .tt (sr "A")) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.cond (agg "x" "A") q q) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.cond .tt (sr "A") q) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.cond .tt q (sr "A")) .le q) = ["A"]
+#guard ([.add, .sub, .mul, .div] : List (Term → Term → Term)).all fun k =>
+  Formula.aggregateIds (.cmp (k (sr "A") (sr "B")) .le q) = ["A", "B"]
+#guard ([.neg, .abs] : List (Term → Term)).all fun k => Formula.aggregateIds (.cmp (k (sr "A")) .le q) = ["A"]
+#guard Formula.aggregateIds (.cmp (.quantity "c" [] [sr "A"]) .le q) = ["A"]
+#guard Formula.aggregateIds (.atom "rel_occupies" [.var "x", .var "y"] [sr "A"]) = ["A"]
+#guard Formula.aggregateIds (.atom "ru_aggregate" [.var "x", .lit "A"] [sr "B"]) = ["A", "B"]
+#guard Formula.aggregateIds (.derived "c" [] [sr "A"]) = ["A"]
+#guard Formula.aggregateIds (.holdsFor .time (sr "A") "x" (agg "x" "B")) = ["A", "B"]
+#guard Formula.aggregateIds (.within .time (sr "A") "x" (agg "x" "B")) = ["A", "B"]
+#guard Formula.aggregateIds (.untilWithin .time (sr "A") "x" (agg "x" "B") (agg "x" "C")) = ["A", "B", "C"]
+#guard Formula.aggregateIds (.atLast .path (sr "A") "x" (agg "x" "B") (agg "x" "C")) = ["A", "B", "C"]
+#guard Formula.aggregateIds (.count (.cmp (sr "A") .le q) (.cmp (sr "B") .le q) .ge 1) = ["A", "B"]
+#guard Formula.aggregateIds (.forallRegion (.lit "lane") "r" (.existsDevice (.lit "sign") "d" (.cmp (sr "A") .le q))) = ["A"]
+-- the reading check holds an aggregate named inside a term as it holds one named by a formula
+def aggTermRule : Rule :=
+  { id := "t_agg_term", laws := [], binders := [{ name := "x", cls := agg "x" "D-1::vehicle" }]
+    applicability := .tt, obligation := .cmp (.sinceRise (agg "x" "D-9::none")) .ge (.lit Q.zero .second) }
+#guard Rule.checkReading [aggTermRule] aggTermRule ρa = ["t_agg_term: aggregate `D-9::none` is not declared by the reading"]
+-- the reading check reads each rule with its concept calls expanded: at any depth, in a formula or
+-- a quantity concept, through a composed rule, with the id a call gives a literal formal
+private def cMember : Concept :=
+  { id := "drv.audit.member", contract := "", args := [("u", .track)], params := []
+    body := .formula (agg "u" "DEF-AUDIT::member") }
+private def cNested : Concept :=
+  { id := "drv.audit.nested", contract := "", args := [("u", .track)], params := []
+    body := .formula (.derived "drv_audit_member" [.var "u"] []) }
+private def cSpeed : Concept :=
+  { id := "drv.audit.speed", contract := "", args := [("u", .track)], params := []
+    body := .quantity (.cond (agg "u" "DEF-AUDIT::member") (.measure "kin_speed" [.var "u"]) (.measure "kin_speed" [.var "u"])) }
+private def cOf : Concept :=
+  { id := "drv.audit.of", contract := "", args := [("u", .track), ("w", .literal ["DEF-AUDIT::member"])], params := []
+    body := .formula (.atom "ru_aggregate" [.var "u", .var "w"] []) }
+private def auditCs : List Concept := [cMember, cNested, cSpeed, cOf]
+private def callRule (id : String) (φ : Formula) : Rule :=
+  { id := id, laws := [], binders := [{ name := "x", cls := .tt }], applicability := .tt, obligation := φ }
+private def undeclared (who : String) : List String := [s!"{who}: aggregate `DEF-AUDIT::member` is not declared by the reading"]
+private def ρMember : Reading := { ρ with aggregates := [{ id := "DEF-AUDIT::member", included := ["ru.bus"] }] }
+private def rCall : Rule := callRule "audit" (.derived "drv_audit_member" [.var "x"] [])
+private def rNested : Rule := callRule "audit_nested" (.derived "drv_audit_nested" [.var "x"] [])
+private def rSpeed : Rule := callRule "audit_speed" (.cmp (.quantity "drv_audit_speed" [.var "x"] []) .le (.lit Q.zero .metrePerSecond))
+private def rOf : Rule := callRule "audit_of" (.derived "drv_audit_of" [.var "x", .lit "DEF-AUDIT::member"] [])
+private def rComposes : Rule := callRule "audit_composes" (.rule "audit" [("x", "x")])
+#guard Rule.checkReading [rCall] rCall {} auditCs = undeclared "audit"
+#guard Rule.checkReading [rCall] rCall ρMember auditCs = []
+#guard Rule.checkReading [rNested] rNested {} auditCs = undeclared "audit_nested"
+#guard Rule.checkReading [rSpeed] rSpeed {} auditCs = undeclared "audit_speed"
+#guard Rule.checkReading [rOf] rOf {} auditCs = undeclared "audit_of"
+#guard Rule.checkReading [rCall, rComposes] rComposes {} auditCs = undeclared "audit"
+#guard [rCall, rNested, rSpeed, rOf, rComposes].map (Concept.ruleAggregateIds auditCs) =
+  [["DEF-AUDIT::member"], ["DEF-AUDIT::member"], ["DEF-AUDIT::member"], ["DEF-AUDIT::member"], []]
+#guard auditCs.map (Concept.aggregateIds auditCs) = List.replicate 4 ["DEF-AUDIT::member"]
+#guard Concept.checkReading auditCs cNested {} = undeclared "drv.audit.nested"
+#guard Concept.checkReading auditCs cSpeed ρMember = []
+-- an aggregate named in a heading change's onset or step bound is collected, held by the reading
+-- check, and held through a concept whose body takes the heading change since it
+#guard Formula.aggregateIds (.cmp (.headingSince "x" (sr "A") (agg "x" "B")) .le q) = ["A", "B"]
+#guard Formula.aggregateIds (.cmp (.abs (.headingSince "x" q (agg "x" "A"))) .le q) = ["A"]
+private def hsAgg : Term := .headingSince "x" (.lit (Q.ofInt 1) .second) (agg "x" "DEF-AUDIT::member")
+private def rHs : Rule := callRule "audit_hs" (.cmp (.abs hsAgg) .le (.lit Q.zero .degree))
+#guard Rule.checkReading [rHs] rHs {} = undeclared "audit_hs"
+#guard Rule.checkReading [rHs] rHs ρMember = []
+private def cTurn : Concept :=
+  { id := "drv.audit.turn", contract := "", args := [("u", .track)], params := [⟨"s", .second⟩]
+    body := .quantity (.headingSince "u" (.param "s") (agg "u" "DEF-AUDIT::member")) }
+private def rTurn : Rule :=
+  callRule "audit_turn" (.cmp (.quantity "drv_audit_turn" [.var "x"] [.lit (Q.ofInt 1) .second]) .le (.lit Q.zero .degree))
+#guard Rule.checkReading [rTurn] rTurn {} [cTurn] = undeclared "audit_turn"
+#guard Rule.checkReading [rTurn] rTurn ρMember [cTurn] = []
+#guard Concept.ruleAggregateIds [cTurn] rTurn = ["DEF-AUDIT::member"]
+#guard Concept.aggregateIds [cTurn] cTurn = ["DEF-AUDIT::member"]
+#guard Concept.checkReading [cTurn] cTurn {} = undeclared "drv.audit.turn"
+#guard Concept.checkReading [cTurn] cTurn ρMember = []
 -- a heading is read as a direction, whatever the length a source writes
 def τheading : Trace := [{ t := 0, users := [{ track := 1, kin := { heading := some (Q.ofInt 3, Q.ofInt 4) } }] }]
 #guard (evalTAll (SemCtx.mk' τheading ρ β) (.measure "kin_heading" [.var "x", .lit "x"])).toList.map (·.toOption.map (Q.eq · (Q.mk' 3 5))) = [some true]

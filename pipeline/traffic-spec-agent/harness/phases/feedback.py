@@ -91,21 +91,52 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
-def write_status(run: Run, ledger: Ledger, status: str, reason: str) -> dict:
+def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str = "") -> dict:
     """The run's terminal status in `summary.json`: `complete` when every law is terminal,
     `infrastructure_failure` when a session could not be launched, `paused_budget` when a limit on the
     run's spend admits no further request (resumed under the same run id once raised),
     `stale_aggregate` when an aggregate's inputs changed under nodes that claim it (a new run is
     needed), `protocol_failure` when the aggregate selection stayed defective twice, `data_integrity_failure` when an audit file cannot be read as written (named, and left as
     it is), `incomplete` when the iteration bound or a stop without progress left a law open.
-    `never_planned` names the laws still open that no plan was ever registered or returned for."""
+    A split stage with no work of its own says why: `awaiting_labels` (the generation stage, while the
+    label stage has work), `awaiting_generation` (the label stage, while the generation stage has
+    work), `paused_budget` (also when the run's label repair budget no longer funds a law awaiting its
+    repair), `awaiting_operator` (neither stage has work and a law is open).
+    `never_planned` names the laws still open that no plan was ever registered or returned for.
+    `stop` is `iteration_limit` when the launch stopped at its iteration bound with work left (the one
+    stop after which a launcher starts the next iteration), else empty; `stage` is the stage the last
+    iteration reached; `pending` lists the laws by what each waits on."""
     f = run.dir / "summary.json"
     f.parent.mkdir(parents=True, exist_ok=True)
     summary = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"run": run.opts.run_id}
     summary.update({"status": status, "stop_reason": reason, "laws": ledger.counts(), "iteration": run.iteration,
-                    "never_planned": sorted(e.law for e in ledger.entries.values() if e.state == "open" and not e.iteration)})
+                    "never_planned": sorted(e.law for e in ledger.entries.values() if e.state == "open" and not e.iteration),
+                    "stop": stop, "stage": ((run.load_state() or {}).get("prog") or {}).get("stage") if hasattr(run, "load_state") else None,
+                    "pending": pending_lists(run, ledger)})
     f.write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
     return summary
+
+
+def pending_lists(run: Run, ledger: Ledger) -> dict[str, list[str]]:
+    """The laws not accepted, by what each waits on: a label check (`awaiting_labels`: generated,
+    not checked), a label repair, generation (planned with nodes still to code or held), planning
+    (open or returned), the operator (blocked) or nothing (failed)."""
+    out: dict[str, list[str]] = {k: [] for k in ("awaiting_labels", "awaiting_label_repair", "generating", "to_plan", "blocked", "failed")}
+    done = set(run.all_nodes()) if hasattr(run, "all_nodes") else set()
+    for e in ledger.entries.values():
+        st = (getattr(run, "label_states", None) or {}).get(e.law, {}).get("state")
+        if e.state == "planned":
+            if st == "awaiting_label_repair":
+                out["awaiting_label_repair"].append(e.law)
+            elif e.nodes and all(i in done for i in e.nodes):
+                out["awaiting_labels"].append(e.law)
+            else:
+                out["generating"].append(e.law)
+        elif e.state in ("open", "returned"):
+            out["to_plan"].append(e.law)
+        elif e.state in ("blocked", "failed"):
+            out[e.state].append(e.law)
+    return {k: sorted(v) for k, v in out.items()}
 
 
 def write_to_user(run: Run, lines: list[str]) -> None:

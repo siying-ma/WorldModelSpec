@@ -157,7 +157,7 @@ class ScopeBesideOtherTasks(unittest.TestCase):
         with Fixture(w, workers=2) as f:
             scripted = gate.run_gate
 
-            def run_gate(n, reading, baseline, d, budget_used=0, budget=0, accepted_concepts=None):
+            def run_gate(n, reading, baseline, d, budget_used=0, budget=0, accepted_concepts=None, acquisition=None):
                 own = {gate.lib_rel(nodeid.rule_path(n.id)), gate.lib_rel(nodeid.witness_path(n.id))}
                 stray = gate.scope_stray(baseline, own, Path(d))
                 v = gate.Verdict("SCOPE_VIOLATION", stray) if stray else scripted(n, reading, baseline, d, budget_used, budget, accepted_concepts)

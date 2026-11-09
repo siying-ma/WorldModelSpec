@@ -90,9 +90,12 @@ LAW_FREE_PATTERNS = {
         # "right-of-way rules" is caught and not just its tail. Excluded, so the
         # check does not push prose around for nothing: compounds that count or
         # structure something ("two-binder rule") and the machinery ones
-        # ("end-of-trace rules"), neither of which names a subject matter.
+        # ("end-of-trace rules"), and the whole generic compound
+        # "operator-approval rules" (a topic after the prefix is still caught),
+        # none of which names a subject matter.
         "named rule family": r"(?<![-\w])(?!(?:one|two|three|four|multi|single|per"
                             r"|sub|non|no|first|second|last|top|end-of-trace)\b)"
+                            r"(?!operator-approval rules?\b)"
                             r"(?:[a-z]+-)+[a-z]+ rules?\b",
         # Reasoning about how the specification will be graded. The test
         # database does not exist when these files are frozen.

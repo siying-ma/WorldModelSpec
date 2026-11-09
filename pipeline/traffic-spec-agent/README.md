@@ -11,7 +11,7 @@ traces. A rule gives one of four verdicts at each observation: `violated`, `comp
     (`library/TrafficSpec/Core/`).
   - The frozen prompts (`prompts/`).
   - The operator's reading, which holds the parameter values (`library/TrafficSpec/Readings/`), and
-    the operator's definition precedence (`config/`).
+    the operator's definition precedence and acquisition profiles (`config/`).
 - **Outputs.**
   - For each obligation of a law, a *node*: a rule file and a witness file under `library/`. A node
     is accepted only when the harness's gate and a behaviour review both pass it.
@@ -61,9 +61,10 @@ removed, not kept.
 | `library/TrafficSpec/Readings/<run>.json` | the parameter catalogue: every number a statute did not state, with its unit (the law's own units are accepted: ft, mph, min, …) and the convention its value comes from; `library/TrafficSpec/Readings/lasvegas.json` is this corpus's base reading; it starts empty and is filled by the planner's proposals, which the operator reviews (the pre-pipeline operator list is archived under `library/TrafficSpec/Readings/legacy/`). A figure a statute states is never a reading parameter: it is a literal on its law's span. The doctor's `reading figures` check lists every parameter whose value equals a figure some law states, until the entry carries a `figure_review` note | operator-written input |
 | `prompts/*.md` | thirteen templates: `plan`, `plan_aggregates`, `code`, `code_concept`, `concept_repair`, `node_repair`, the second vendor's `review_code`, `review_concept` and `verify_aggregate`, and the judges `judge_case`, `adjudicate`, `adjudicate_concept` and `recheck_concept` | yes, law-free |
 | `harness/` | the loop, its phases and the modules they share, grouped by role (see *Harness structure*) | code |
+| `recorded/` | recorded driving data, shared by training and evaluation: the training dataset built from one delivery (`dataset`), the label contract (`labels`), the projection onto the active split (`projection`), verdict joins and scoring (`scoring`), what a manifest lets a rule decide (`decidability`) and the report-only source check (`source_check`); see *The training dataset* | code |
 | `scripts/gen_ontology.py`, `scripts/RegionKinds.lean`, `scripts/diagnostics/`, `scripts/setup_reviewer.sh` | the ontology generator, the exporter of the region kinds Core declares at each region argument, the doctor (`prompts vocabulary-free` holds the templates to injected context only: no vocabulary id, parameter or corpus-defined term in a rule) and the reviewer's one-time key setup | code |
 | `library/TrafficSpec/Gaps/proposals.jsonl`, `decisions.jsonl` | what the frozen vocabulary cannot carry (kinds `atom` and `operator` only), proposed by plan and repair sessions, decided by the operator (`retired` when the ontology or Core now carries it, `rejected` when the span is carried as it is); one ledger for every run, each plan shown only the gaps on its own corpus's laws (and its base run's); ids come from `counter.txt` beside it, which only grows | operator-decided |
-| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
+| `results/<run>/` | per-run artifacts: `options.json`, `reading.json` (the run's reading, with the admitted aggregates), `definition_resolution.json`, `aggregate_selection.jsonl`, `aggregate_certificates.jsonl`, `rulings.jsonl`, `recheck_answers.jsonl` (each valid concept recheck answer, under the digest of its full prompt, model and effort, taken again in any later iteration or restart of the run instead of a new session; never a ruling), the law, concept and node ledgers (`ledger.jsonl`, `concept_ledger.jsonl`, `node_ledger.jsonl`), `accepted_nodes.jsonl`, `accepted_concepts.jsonl`, `state.json` (the run's authoritative state: the current iteration's progress, the ledgers, the accepted and held records, the aggregate failures and the concept versions found defective), `mapping.json`, `AUTO_NOTES.md`, `TO_USER.md`, `summary.json`, `usage.jsonl` (each session's spend, a `pending` row before a reviewer request and a `settled` row after it), `validator_fault.txt` (only when the validator itself failed), `handoff/` (a split run's checkpoint manifest and file list, see *Remote generation and local label check*), and per iteration `iter-NNN/{plan,repair,validate,review,code,integrate}` (a coding task's directory keeps its `baseline.json` and `toolchain.jsonl`, each lake or Lean call of its gates with the attribution) | run output |
 
 ## Harness structure
 
@@ -79,7 +80,7 @@ modules the stages share sit in one folder each.
 | `harness/lean/` | `lean.py`, `index_sync.py`, `skeleton.py`, `surface.py`, `render_formula.py`, `relations.py` | everything that reads or writes `library/`: lake calls, the registries, the skeletons, the Core surface, the formula renderer, the check of a trace's supplied relations against Core's computation |
 | `harness/agents/` | `runner.py`, `session.py`, `render.py`, `openai_runner.py` | agent sessions (launch, relaunch on refusal, jail and allow-list), prompt filling and JSON extraction; `openai_runner.py` makes one OpenAI Responses API call per tool-less session, in JSON mode, and one request at a time of a reviewer's tool session (`session.run_tools`) |
 | `harness/checks/` | `validate_a.py`, `gate.py`, `aggregates.py` | the deterministic acceptance checks: validator A, the gate, the aggregate validator |
-| `harness/tools/` | `split.py`, `score_split.py` | operator commands: the train/full Core swap and the test-run scorer |
+| `harness/tools/` | `split.py`, `score_split.py`, `handoff.py` | operator commands: the train/full Core swap, the test-run scorer, and the export and verification of a split run's checkpoint |
 
 Imports point one way. `model/` and `store/` import nothing else in the harness; `lean/` and
 `agents/` build on them; `checks/` builds on `model/`, `store/` and `lean/`; `phases/` uses all
@@ -109,11 +110,11 @@ only, and a witness file its rule or concept and `TrafficSpec.Core.Evidence.Buil
 Run from this directory (`lake` is run inside `library/`, where `lean-toolchain` pins the toolchain).
 
 ```bash
-bash setup.sh                         # elan + toolchain + Python deps
+bash setup.sh                         # elan + toolchain + Python deps (Python >= 3.11; fire, openai)
 source .venv/bin/activate
 
 python -m unittest discover scripts/tests # the harness's own tests: the certificate protocol, review routing, definition resolver, aggregate gate and run-budget integrity
-bash scripts/setup_reviewer.sh            # once: the openai package, the API key in ~/.config/traffic-spec/openai.env (mode 600), a test call
+bash scripts/setup_reviewer.sh            # once: the API key in ~/.config/traffic-spec/openai.env (mode 600), and a test call that is billed
 source ~/.config/traffic-spec/openai.env  # in the shell that runs a loop with --reviewer_model
 
 python -m harness init                # library/TrafficSpec/Readings/default.json template, registries, library build
@@ -131,7 +132,7 @@ python -m harness init --fresh --snapshot <previous run>
 source ~/.config/traffic-spec/openai.env
 python -m harness loop --run_id <run> --laws laws/example/<subset>/laws.jsonl \
     --ontology_file ontology/ATOMS_train.md --reading library/TrafficSpec/Readings/lasvegas.json \
-    --reviewer_model <model> --review_effort high \
+    --feedback review --reviewer_model <model> --review_effort high \
     --plan_batch <n> --max_iterations <n> --workers <n>
 
 # a training run (operator, 2026-11-03): the node behaviour review and its Stage A/B are suspended,
@@ -146,15 +147,18 @@ python -m harness label_check <run>
 # rule can remove, goes to a label repair; aligned and unverified are accepted); at most
 # --label_repair_attempts repairs per law and --label_repair_budget over the run
 python -m harness loop --run_id <run> --laws <subset> --feedback labels --label_repair \
-    --label_dataset ../datasets/demo-accepted-191-core-v2-train \
+    --label_dataset <dataset> \
     [--label_repair_attempts 2] [--label_repair_budget 10] ...
 
-# the report-only source check of a dataset: each recording's declarations against its trace
+# build a training dataset from one restored delivery (see *The training dataset*); refuses an existing <out_dir>
+python -m recorded.dataset build <delivery_dir> <out_dir> [--split train] [--jobs <n>] [--exclude <file.json>] [--library <dir>]
+
+# the report-only source check of a dataset: each recording's trace against its source's declarations
 python -m recorded.source_check <dataset> [--out <file>] [--laws <id>,<id>] [--jobs <n>]
 
 # a test run on top of a training run: add-only, the training run's nodes and concepts read-only
 python -m harness loop --run_id <test run> --laws laws/example/test/laws.jsonl --mode test --base_run <training run> \
-    --ontology_file ontology/ATOMS_train.md --reading library/TrafficSpec/Readings/lasvegas.json --max_iterations <n>
+    --feedback <review|labels> --ontology_file ontology/ATOMS_train.md --reading library/TrafficSpec/Readings/lasvegas.json --max_iterations <n>
 python -m harness score_split --run_id <test run>   # gap recall / precision / approximation rate
 
 python -m harness validate --run_id <run> [--blueprint_file <blueprint.jsonl>]   # validator A in the run's context (the plan session runs it on its draft)
@@ -162,7 +166,9 @@ python -m harness validate --blueprint_file <blueprint.jsonl> --laws <laws.jsonl
 python -m harness gate --run_id <run> --node_id <node>   # the gate for one node or concept id (what a coding session runs)
 python -m harness surface                                  # the generated Core surface a coding session is shown
 python -m harness verify --run_id <run>                    # today's gates on every record of the run and its base chain, the active library's witnesses, changed contexts; fenced records reported apart
-python -m harness label_check <run>                       # once the loop has stopped: the frozen library scored on the labelled training recordings (pipeline/datasets/demo-accepted-191-core-v2-train); writes results/<run>/label_check/
+python -m harness label_check <run> --dataset <dataset>   # once the loop has stopped: the frozen library scored on the labelled training recordings of a dataset built from one delivery; writes results/<run>/label_check/
+python -m harness handoff export <run> [--source_baseline <commit>]   # a split run's checkpoint for the other machine (see *Remote generation and local label check*)
+python -m harness handoff verify <run>                     # before continuing a handed-over run: its code baseline, semantic inputs and files
 python -m harness index                                    # regenerate the registries
 python -m harness status --run_id <run>
 python -m harness reopen --run_id <run> --laws <id>[,<id>]   # a law not accepted and not blocked on a gap back to open with a fresh
@@ -176,7 +182,10 @@ cd library && lake build monitor && lake exe monitor --manifest <case>/manifest.
 python -m harness split --use train                        # before the next training run
 ```
 
-Pass the run options explicitly rather than relying on the defaults: `--workers` is 1 (one concept
+A new run names its feedback mode (`--feedback review` or `--feedback labels`); a launch of a new run
+without it is refused before anything is spent. A resume keeps the mode its saved options record, and
+a saved run whose options name none (one started before the mode was required) is read as `review`.
+Pass the other run options explicitly rather than relying on the defaults: `--workers` is 1 (one concept
 or node coded at a time; set it to the parallelism wanted), `--max_iterations` is 3, and
 `--plan_batch` is 8 (`--plan_batch 1` plans each law in its own session, root laws first, so a law
 that names another is shown the other's planned nodes and composes them by id). `--model <id>` pins
@@ -196,7 +205,11 @@ gate verdict is applied, not coded again), the rest are coded. `--max_iterations
 not launches: an unfinished iteration always resumes, and a new one is allocated only below the
 bound. A resume takes the saved options for every option not given, and stops before rewriting
 anything when the corpus, ontology, Core, prompts, base reading or base run differ from the saved
-run. `--restart` discards the incomplete iteration instead, returning its planned laws to `open`.
+run. Those digests do not cover the whole harness, so the run also records the harness's run version
+(`RUN_VERSION` in `harness/loop.py`), raised by a change that makes earlier runs unsafe to continue: a
+run started by another version is refused at its first launch, before anything is touched, and is
+continued only from a checkout of the code it started on, or replaced by a new run. The remote and
+local stages of a split run run the same version. `--restart` discards the incomplete iteration instead, returning its planned laws to `open`.
 One process owns the library at a time: the flock on `library/.run.lock`, whose file never changes,
 with the owner's record (its nonce and its live child process groups) in the library's `.run.owner.json`,
 replaced atomically. `init`, `split`, `reopen`, `verify` and `index` take it too, and so does a gate
@@ -228,27 +241,62 @@ They share an evaluation lock that only the isolated rerun of a resource failure
 Integration holds the library-wide lock throughout. `--plan_turns` caps a plan or
 repair session.
 
-**Labels, intervals and unknowns.** A label judges the ego (the trace's subject). The dataset's
-label contract says what it covers: under v1 the whole recording; under v2 the closed interval
-`scoring_interval` (`start_ms`, `end_ms` on the trace's clock, each on an observation, a `source` in
-the scenario design and `confirmed: true` from the data producer). Under v2 the whole trace is
-evaluated and only the verdicts inside the interval are joined (`monitor --json --segments` exports
-the timeline with its reasons, and `explain --scan --from --to` chooses its observations inside the
-interval); a label without a valid confirmed interval is `label_unverified`, kept in the fixed set
-and never compared. The fixed set, the interval set (`label_set`), the label contract, the scoring
-code and the limits are bound at the run's start; a change refuses resumption. An unknown recording
-keeps its reasons as blockers, each with a class and a handling: only `library` sends the law to a
-coverage repair (outcome `undecided`); `data`, `time_contract`, `harness`, `aggregate` and
-`investigate` are reported. The source check is computed once with the fixed set and stored in
+**Labels and unknowns.** A label judges the ego (the trace's subject) over the whole recording
+(label contract v1, the only one: a dataset or a label that states another contract is refused).
+The fixed set, the label contract, the scoring code (with `Explain.lean`) and the limits are bound
+at the run's start; a change refuses resumption. An unknown recording keeps its reasons as
+blockers, each with a class and a handling: only `library` sends the law to a coverage repair
+(outcome `undecided`); `data`, `time_contract`, `harness`, `aggregate` and `investigate` are
+reported. One more route reaches that repair, with the attribution unchanged: a truncated window
+(`time_contract`) that Explain locates as carried by the ego's unknown, anywhere in the recording
+(`explain --scan --json` reports, per grounding, the truncated windows the verdict carries, each
+traced through the rule's source map to where it is written, its concept calls and binding; the
+monitor's `--json --segments` gives the reasons per run of observations they are checked against),
+and whose length is a reading parameter `p.*` of the window's unit, gives its blocker a
+`window_diagnosis` eligibility (`recorded/scoring.py`, `diagnose_windows`); the evidence block lists
+the located windows, the coverage and whether it is partial, and states that a window should be
+anchored to the event itself rather than depend on history from before the recording began. The source check is computed once with the fixed set and stored in
 `results/<run>/source_check.json`; it changes no status, and only a label repair is shown it, as
 diagnostics. A Smoke 1 run (`--feedback labels` without `--label_repair`) freezes the library and
 scores it after the loop; a Smoke 2 run adds the repairs.
+
+**The training dataset.** The label check and `recorded.source_check` read a dataset folder built
+once from one data delivery (`recorded/dataset.py`). Every delivery is independent: a dataset's
+traces, manifests, labels and validation all come from one delivery, nothing of another is mixed in,
+and a new delivery gives a new dataset folder and a new data version. A delivery is a restored
+directory with `recordings.csv` (`recording_id`, `case_id`, `cell_id`, `law_id` and the relative
+paths of each recording's `video`, `trace` and `metadata`), `inputs/shared/manifest.json`,
+`sets/demo-train/{manifest,scope,selection}.json`, and beside each `trace.json` its `manifest.json`
+and `metadata.json` (`expected_label`, `judgment_sweep`, `trace_sha256`, `manifest_sha256`, …).
+Only the demo-train set is read: a recording whose path lies outside `work/demo-train/` or that the
+selection does not list as an accepted training member is refused before any of its files is read.
+Each trace and manifest must have the sha256 its metadata states. Recordings are grouped by their
+manifest's sha256 into sources (one per scene-graph generator or adapter version), and the monitor
+and Explain read each recording's trace with its source's manifest. The folder holds:
+- `sources/<manifest sha256>/manifest.json`, projected onto the active split once per source
+  (held-out atoms dropped, split atoms it does not list declared absent), and its `projection.json`;
+- `recordings/<recording_id>/trace.json` (projected: unchanged but for retired road-user classes)
+  and `record.json` (its source, delivery paths, metadata sha256 and the trace's projection record);
+- `INDEX.csv`, one row per recording: `recording_id`, `case_id`, `law_id`, `source`, `verdict`
+  (normalized), `recorded_label` (as delivered), `judgment_call`, `scenes`, `trace_sha256`;
+- `DATASET.json`: the layout, the data version, the split, the label contract (v1), the delivery's
+  path and identity, the sources, the exclusions with their reasons, and the counts.
+
+A label is read from the metadata: `violation`, `violated` and `non_compliant` mean violated,
+`compliant` compliant, `not applicable`/`not_applicable` not applicable; null, empty, `unknown`,
+`inconclusive` or `Unresolved…` mean no label; `judgment_sweep` is the judgment-call flag; any
+other label string, or a stated label contract other than v1, refuses the build. The data version is
+the sha256 over the delivery's identity (its shared files and every included recording's metadata),
+the split's atom ids, the label contract, the exclusions, each source's projected manifest sha256,
+and each recording's id, source, projected trace sha256 and label fields. A dataset folder of
+another layout (such as the archive-and-revision-package folder `demo-accepted-191-core-v2-train`)
+is refused when read, with the instruction to rebuild it from one delivery.
 
 **The behaviour review and its two judges.** Under `--feedback labels` (training) the node behaviour
 review and its two judges are not run: a gated node is accepted, and the run is scored afterwards by
 `label_check`; the concept review below is unchanged, and the aggregate verifier takes its own
 `--aggregate_verifier_model`, `--aggregate_verifier_effort` and `--aggregate_verifier_budget_usd`.
-Under `--feedback review` (the default) everything below applies. `--reviewer_model <model>` is required (a model of
+Under `--feedback review` (and for a saved run whose options name no mode) everything below applies. `--reviewer_model <model>` is required (a model of
 another vendor than the agents', such as an OpenAI model; `--allow_same_vendor` overrides the check;
 `OPENAI_API_KEY` must be set in the loop's shell, and no Claude session is launched with it; only
 `--dry_run` runs without it). The *behaviour review*, one per node the gate accepts, writes each
@@ -556,6 +604,173 @@ A training or test run needs the training split active (`python -m harness split
 the doctor's `ontology generated` check follows the active split and its `training split` check
 holds the training variant to `ATOMS_train.md` and `split_atoms.json`.
 
+## Remote generation and local label check
+
+A training run can be split between two machines that never write the run at the same time. The
+**remote machine** generates: it plans, codes and gates laws, with the concept review and the
+aggregate verifier, and reads no training recording (`--label_deferred`). The **local machine**
+holds the training recordings: it checks every law whose plan is gated on them and repairs it
+(`--label_stage`). Each finished iteration is exported as a checkpoint, committed to the run's
+branch and pushed, and the other machine continues from it.
+
+**Branches.** The code baseline is the branch `remote/full-train-generation`. Each run has its own
+branch `runs/<run id>`, created by `scripts/run-generation.sh new` from the baseline's tip; that
+branch only appends the run's checkpoint commits on that baseline, and development code is never
+merged into an active run. `resume` refuses a run branch that does not descend from the run's
+baseline commit or holds a merge commit after it, and the loop refuses any change to the code the
+run is pinned to (below). To use newer code, start a new run from the baseline's new tip.
+
+**What waits.** On the remote machine a law whose nodes all pass the gate is kept, with its
+generated nodes, and recorded as not accepted (`awaiting_labels`); it is accepted only by its label
+check. Inside a law, its nodes are built in dependency order whatever the law's state; a node of
+another law that composes a node of a law not yet accepted waits, uncharged, and so does a law whose
+text names a law not yet accepted. Sharing an accepted concept makes no law wait. When nothing
+runnable is left without a label check, the remote stage pauses (status `awaiting_labels`) instead
+of spending iterations, and the run goes to the local machine. After the local stage has checked and
+repaired the waiting laws (status `awaiting_generation`), the run goes back to the remote machine,
+where the laws that waited on them continue. A large corpus may need several such handoffs. A
+stage hands the run over only when the other stage has work, judged by that stage's own work
+(never by a provider's ledger state alone: a planned provider may be generated and awaiting its
+labels); otherwise it ends `paused_budget` (the run-wide label repair count, `--label_repair_budget`,
+no longer funds a law awaiting its repair; a law whose own `--label_repair_attempts` are spent is held
+for the operator instead), `awaiting_operator` (nothing can move an open law but an operator's
+decision: a node or an active label repair waiting on a blocked or failed law is no work on either
+side, whether or not other laws run: the dependent keeps its plan, its held nodes and its attempts,
+and the stop reason names each such law with its state; a law whose plan or node repair is blocked only
+because it composes a node of such a law stays blocked, uncharged, and keeps the stage from ending
+`complete` as well) or `complete`. A cycle
+of laws each waiting on the next is held for the operator (`TO_USER.md` names it); nothing is retried.
+
+**A run never changes under later development.** A split run is pinned to the code it started on:
+the harness, `recorded/`, the monitor and Explain sources, the prompts, Core with its root module,
+the ontology, the configuration, the Lean build files, the region-kind exporter
+(`scripts/RegionKinds.lean`), the doctor and the modules it runs, the launcher, and `pyproject.toml`
+with `uv.lock`. The first checkpoint records their digest and the commit the
+branch started from, and every handoff and every resume refuses to continue on other code or other
+semantic inputs, naming the files that differ. Run both stages from a checkout of the run branch,
+never from a production tree that has moved on; to use newer code, start a new run. A checkpoint that
+only adds run files is no code change.
+
+**The checkout is the whole WorldModelSpec repository.** The doctor, which runs at every loop
+start and refuses a run on a failure, checks the training split with the corpus tools
+`nrs_tools` (`atoms_train`), which live in `pipeline/ontology_provenance/`, beside this directory,
+not in it. A run's checkout is therefore a clone of the whole repository, never this directory
+alone: the run branch carries both. `setup.sh` checks that the tools are there, and the launcher
+puts `pipeline/ontology_provenance` on `PYTHONPATH` itself and refuses to start without them.
+Without them the doctor's training-split check fails, naming where they belong; outside that
+layout (a development checkout of this directory alone) put the directory that holds `nrs_tools/`
+on `PYTHONPATH`. The tool's file is part of the code a run is pinned to, as are the doctor, the
+launcher, `pyproject.toml` and `uv.lock`; the operator's `USER_HINTS.md` is recorded once at the run's
+start (`results/<run>/user_hints.json`, with its digest; a missing file recorded as absent) and every
+session of the run, on either machine, reads that record.
+
+**The two accounts.** Each machine uses its own credentials: the remote machine's Claude account
+and OpenAI key pay for generation, the local machine's for the label repairs (which also run
+planning and coding sessions). The run's spend is one record (`results/<run>/usage.jsonl`) that
+travels with the branch, so the run's limits (`CLAUDE_BUDGET`, `OPENAI_BUDGET`, `TOTAL_BUDGET`) count
+both machines' sessions together, whatever account paid.
+
+### Connecting Claude
+
+Every planning, coding and repair session is a `claude` CLI process (`harness/agents/runner.py`),
+launched with the environment of the shell that runs the loop. Choose one of:
+- **An account login.** Run `claude auth login` once and sign in. The login is stored in the
+  configuration directory, `~/.claude` unless `CLAUDE_CONFIG_DIR` names another; to use a second
+  account on the same machine, `export CLAUDE_CONFIG_DIR=~/.claude-<name>` before logging in and in
+  every shell that launches the run.
+- **API billing.** `export ANTHROPIC_API_KEY=...` in the shell that launches the run; the CLI then
+  uses the key instead of a login.
+
+Check which is active with `claude auth status` (and `echo ${CLAUDE_CONFIG_DIR:-~/.claude}`); the
+launcher logs which of the two it found, never the key. Pin the model with `MODEL` (default
+`claude-opus-5[1m]`): an unpinned CLI default may change between launches.
+
+### Connecting GPT
+
+The concept review and the aggregate verifier are a second vendor's model, called through the
+OpenAI Responses API with `OPENAI_API_KEY` (`harness/agents/openai_runner.py`); the Codex CLI is not
+used. A ChatGPT or Codex subscription login does not give the harness access: an OpenAI **API key**
+from the OpenAI platform is needed. Store it once with `bash scripts/setup_reviewer.sh` (it writes
+`~/.config/traffic-spec/openai.env`, mode 600, and makes one test call); the launcher sources that
+file (or `OPENAI_KEY_FILE`). The model is a name the API accepts, chosen with `REVIEWER_MODEL` (and
+`VERIFIER_MODEL` for the aggregate verifier, by default the same); it must have a row in
+`config/model_prices.json`, keyed by exactly that name, or no call is made. The key is removed from
+every Claude session's environment.
+
+### Start the remote generation
+
+```bash
+git clone --branch remote/full-train-generation <repository url> wms-run && cd wms-run/pipeline/traffic-spec-agent
+bash setup.sh && source .venv/bin/activate
+python -m harness split --use train            # if `python -m harness split` does not print train
+RUN_ID=<run id> MODEL=<claude model> REVIEWER_MODEL=<openai model> WORKERS=4 \
+  CLAUDE_BUDGET=<usd> OPENAI_BUDGET=<usd> scripts/run-generation.sh new
+```
+
+`scripts/run-generation.sh` checks, before any model time is spent: git `user.name` and
+`user.email`, a clean checkout (no staged change, no change to a tracked file), that the run branch
+is new (no `results/<run id>`, or only the law subset `scripts.subset_laws` wrote there) and this
+checkout is at the tip of `remote/full-train-generation` (`new`), or that the run
+branch is checked out, not behind the remote and free of merges since its baseline (`resume`), a dry-run push, the
+Python environment (Python 3.11 or newer; the harness, fire and the OpenAI SDK import) and the harness's options, the doctor's split tools (`nrs_tools`), the `claude` and `lake` commands, `OPENAI_API_KEY`,
+the training split, the library build (`SKIP_BUILD=1` skips it) and the doctor. It then launches the
+loop one iteration at a time (`LAUNCHES`, 20 by default), each iteration's bound taken from the run's
+persisted progress, so a restart resumes where the run stopped. A `new` run passes every option the
+launcher knows, set or defaulted: every role's effort (`PLAN_EFFORT`, `CODE_EFFORT`, `REVIEW_EFFORT`,
+`JUDGE_EFFORT`, `VERIFIER_EFFORT`) and cap (`SESSION_CAP`, `REPAIR_CAP`, `JUDGE_CAP`, `VERIFIER_CAP`),
+the models, the budgets and `WORKERS` (4 by default; match the machine's processors and memory).
+`ACQUISITION_PROFILE` (a profile of `config/acquisition_profiles.json`) is passed by `new` only, and only when
+set: a run keeps the profile it started with, and a `resume` that sets it is refused. A run without one may
+read no `heading_since`.
+**A `resume` keeps the run's saved options**: it passes only the variables set in that invocation,
+plus the stage, the dataset folder and the iteration bound, so a resume never resets a budget, a model
+or an effort to a default. The run's acceptance policy (`--feedback` and `--label_repair`) is fixed
+for its life: a launch that gives another one, by the launcher, the CLI or `run_loop`, is refused
+before anything of the run is touched (a new policy is a new run). A run id is new only while
+`results/<run id>` is absent or empty; any other run resumes only on its own readable `options.json`
+and `state.json` (the snapshot may be missing only if the run never got past its first launch), and is
+never initialised again over what it left. A handoff whose manifest predates the policy anchor is read,
+but its policy is reported `policy anchor missing: not verified`. To raise a budget on resume, set it explicitly; `CLAUDE_BUDGET` or
+`OPENAI_BUDGET` on resume needs `TOTAL_BUDGET` set with it. After each finished iteration it runs `python -m harness
+handoff export <run>`, commits exactly the files that export lists (the run's directory, its rules,
+concepts and witnesses, the registries, the base reading and the gap ledger; no lock, owner record,
+build cache or dataset) and pushes that commit. It goes on only after an iteration that stopped at its
+iteration bound with work left; it stops with status 0 on `awaiting_labels`, `awaiting_generation` or
+`complete`; with 4 on `paused_budget` ("raise the named limit explicitly and resume": the stop reason
+names the option, its used count, its limit and the laws affected) or `awaiting_operator` ("operator
+decision needed; see stop_reason and TO_USER.md"), after pushing the checkpoint and handing the run to
+neither stage, never continued as an iteration limit; with 1 on any other status (diagnostics in
+`.runtime/<run id>/`); and with 3 when a push still fails after its retries: no further model call is
+made, and the next `resume` pushes the same commit first. Continue
+an interrupted remote stage with `RUN_ID=<run id> scripts/run-generation.sh resume` in the same
+checkout.
+
+### The local label check
+
+On the machine with the training recordings, in a checkout of its own (never the production tree):
+
+```bash
+git clone --branch runs/<run id> <repository url> wms-<run id> && cd wms-<run id>/pipeline/traffic-spec-agent
+bash setup.sh && source .venv/bin/activate
+python -m harness handoff verify <run id>      # the code, the semantic inputs and every handed file
+RUN_ID=<run id> STAGE=labels LABEL_DATASET=<dataset folder> scripts/run-generation.sh resume
+```
+
+The first local launch binds the run to the dataset (its data version, labels and digests, in
+`results/<run>/comparison_set.json`); every later launch checks the same data again, and a different
+dataset is refused. The local stage plans and codes nothing new: it checks each waiting law, accepts
+the aligned ones, and repairs a mismatch through the candidate transaction (the label repair budget,
+`LABEL_REPAIR_ATTEMPTS` and `LABEL_REPAIR_BUDGET`, and the spend continue from the run). It ends with
+`awaiting_generation` (status 0) once no label work is left, after pushing its checkpoint.
+
+**Handing back.** On the remote machine, `git pull` in the run's checkout, then
+`RUN_ID=<run id> scripts/run-generation.sh resume`: the laws the label check accepted are now usable,
+and the laws that waited on them are generated. Repeat the two stages until the remote stage ends
+`complete` or the local stage leaves nothing waiting. Before each switch the other machine's launcher
+must have exited: only one machine writes the run, and `--force_takeover` never stops a process on
+another machine. A machine that pulls a newer checkpoint than the one it last wrote verifies it at its
+first launch (`results/<run>/handoff/imported.json` records that, locally).
+
 ## The loop, briefly
 
 0. **Repair** (one session per concept, and one per node, the gate or a review returned last
@@ -773,15 +988,38 @@ magnitude enters the bound, a condition selects among bounds — never by one fi
 factor switches on. A gap is only `atom` or `operator`: the
 frozen vocabulary cannot carry the span.
 
+**Acquisition profile.** The step bound of `heading_since` is a sampling standard of the recordings,
+not of a law. `config/acquisition_profiles.json` names, per acquisition profile, the reading
+parameter that is that bound; a run names its profile (`--acquisition_profile`, kept on resume and
+part of the run's semantic inputs), and its loop starts only when the base reading holds that
+parameter reviewed, in a unit of time. The node gate requires every `heading_since` step bound of a
+rule, its concept calls expanded, to be exactly that parameter (no literal, alias or expression), a
+concept takes it through one of its formal parameters, and the validator refuses any proposal of a
+parameter a profile names. A run without a profile may not read `heading_since`.
+
 **Composition order.** A `definition` reference (`as: "definition"`: a reference span that only
 borrows the words another law or posted definition of the run's corpus defines or sets forth) names
 its source and the quoted words, never a rule: the validator checks the quote verbatim in the
 source, the elements carrying the borrowed words name the span in `source_spans`, and nothing below
 applies to it — it is not ordered, held, returned, blocked or fenced with its source, and a re-plan
-of a law whose latest records only borrow from a named law does not wait on that law. The source,
+of a law whose latest records only borrow from a named law does not wait on that law. One that
+borrows from a law (not a posted definition) states `why`: which qualifiers it borrows and why that
+law's rule need not apply, hold or be complied with.
+
+**Reference admission.** The validator reads a law's references from its posted text, not from the
+plan's roles. A `reference` span is carried by compositions or by one residue, never by the node's
+own atoms. Words that require compliance with, or apply or except, a law named in brackets in the
+same clause (`except as (otherwise) provided in`, `as (otherwise) provided in`, `in compliance with`,
+`as required by` / `pursuant to`) are a `reference` span (or another node's, marked `sibling`),
+carried by execution compositions or, where the named law is outside the corpus, a residue; never by
+a `definition` reference. Other words that mention a law are not forced into a composition. An
+execution composition on a span naming laws composes a node of one of them. In a candidate (label or
+node repair) a node may not gain a dependency on a node of another law not yet formally accepted
+(`Run.usable_nodes`). These checks are what make a dependency the text states mechanically a
+declared composition: the cycle and fence checks see declared compositions only. The source,
 fetched whole from the corpus with the definitions that apply to it, is shown to the planner, the
 repair, the coder, the reviewer and both judges, and joins the node's dependency context.
-Every other composition is an execution dependency. A node is coded only after every node it composes is accepted; a node whose
+Every other composition is an execution dependency. A node is coded only after every node it composes is accepted; under `--label_repair`, where a law is accepted only by its label check, a node of another law counts as accepted only once its law is (`Run.usable_nodes`), while the nodes of one law compose one another in dependency order whatever the law's state, and a cycle of laws each waiting on the next is blocked for the operator; a node whose
 composed node is not accepted yet is held in the run's state and coded in a
 later iteration without re-planning and without an attempt counted, its law staying `planned`
 until every node it was planned with is accepted. A law waits for the operator when it is blocked, closed as

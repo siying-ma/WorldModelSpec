@@ -20,7 +20,7 @@ from harness.store import jsonl
 from harness.store.ledger import Ledger
 from harness.store.state import Options, commit_state
 from scripts.tests.test_candidate import Base, Txn, files, node_rec, passing, world
-from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, IV, label_v2, make_dataset, make_v2_dataset, write_exe
+from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, make_dataset, set_label, write_exe
 
 N = {k: f"TEST_LREP_{k}" for k in range(1, 6)}
 L = {k: f"TEST-LREP-{k}" for k in range(1, 6)}
@@ -40,20 +40,15 @@ RECS = [("r1a", L[1], "compliant", False, spec(N[1], "compliant")),
         ("r5c", L[5], "compliant", False, spec(N[5], "compliant"))]
 
 
-#: The plain labels of `RECS` under label contract v2, each with its confirmed scoring interval.
-RECS_V2 = [(rid, label_v2(law, label, jc), sp) for rid, law, label, jc, sp in RECS if label and not jc]
-
-
 @contextmanager
 def setting(recs=RECS, concepts: dict | None = None, calls: dict | None = None):
     """The world of the candidate's tests with five laws of one node each, all planned and accepted
-    (each node calling the concepts `calls` names for it, among `concepts`), a synthetic dataset (under
-    label contract v2 when `recs` are `RECS_V2`-shaped: id, label, spec), the stand-in tools, and the
-    run's training context."""
+    (each node calling the concepts `calls` names for it, among `concepts`), a synthetic dataset, the
+    stand-in tools, and the run's training context."""
     nodes = {N[k]: node_rec(N[k], (calls or {}).get(N[k], ())) for k in N}
     with world(concepts or {}, nodes) as (run, lib), tempfile.TemporaryDirectory() as t:
         t = Path(t)
-        ds = make_v2_dataset(t / "ds", recs) if recs and len(recs[0]) == 3 else make_dataset(t / "ds", recs)
+        ds = make_dataset(t / "ds", recs)
         mon, exp = write_exe(t / "monitor", FAKE_MONITOR), write_exe(t / "explain", FAKE_EXPLAIN)
         ledger = Ledger(run.ledger_file, list(L.values()), 2)
         ledger.attempt = 1
@@ -85,7 +80,7 @@ class Routing(Base):
             self.assertIn("r5a", evidence)
             self.assertNotIn("r1j", (run.dir / run.label_states[L[1]]["evidence"]).read_text())
             check = json.loads((run.dir / run.label_states[L[5]]["check"]).read_text())
-            self.assertEqual(check["versions"]["data"], "v1")
+            self.assertEqual(check["versions"]["data"], training.dataset.data_version)
             self.assertEqual(check["versions"]["scoring"], training.fixed["scoring"])
             self.assertTrue(any("awaiting its label repair" in x for x in to_user))
             self.assertEqual(label_check.committed_checks(run.dir, run.label_states)[L[5]]["outcome"], "mismatch")
@@ -115,12 +110,12 @@ class FixedSet(unittest.TestCase):
             self.assertEqual(first.fixed["laws"][L[1]], {"recordings": ["r1a", "r1j", "r1u"], "eligible": ["r1a"], "judgment_calls": ["r1j"]})
             saved = (run_dir / "comparison_set.json").read_bytes()
             label_check.training_context(run_dir, list(L.values()), ds.path)                   # the same inputs resume
-            (ds.path / "DATASET.json").write_text(json.dumps({"data_version": "v2"}))
+            meta = json.loads((ds.path / "DATASET.json").read_text())
+            (ds.path / "DATASET.json").write_text(json.dumps({**meta, "data_version": "v2"}))
             with self.assertRaisesRegex(SystemExit, "data_version"):
                 label_check.training_context(run_dir, list(L.values()), ds.path)
-            (ds.path / "DATASET.json").write_text(json.dumps({"data_version": "v1"}))
-            (ds.path / "recordings" / "r5c" / "label.json").write_text(json.dumps({"law_id": L[5], "recorded_label": "violation",
-                                                                                    "judgment_call": True}))
+            (ds.path / "DATASET.json").write_text(json.dumps(meta))
+            set_label(ds, "r5c", "violation", True)
             with self.assertRaisesRegex(SystemExit, "laws"):
                 label_check.training_context(run_dir, list(L.values()), ds.path)
             self.assertEqual((run_dir / "comparison_set.json").read_bytes(), saved)
@@ -200,67 +195,29 @@ class Hook(Base):
             self.assertEqual(results[0].status, "unavailable")
 
 
-class LabelSetV2(Base):
-    """Under label contract v2 a candidate is bound to the digest of the fixed labels with their
-    scoring intervals (`label_set`) through the real transaction: the loop's check binds, checks and
-    keeps it in the check, its results and the committed state; a candidate whose results rest on
-    another interval set is refused at the commit, and a run whose intervals changed does not resume."""
+class Binding(Base):
+    """A candidate is bound to the label versions of the run's fixed set through the real transaction:
+    another set's versions are refused at the binding, and a version bound after verification makes
+    the results stale at the commit."""
 
-    def test_a_v2_law_is_checked_and_routed_with_its_label_set(self):
-        with setting(RECS_V2) as (run, ledger, training, _t):
-            want = training.versions()["label_set"]
-            routed = loop.label_route(run, ledger, training, [])
-            self.assertEqual((routed[L[1]], routed[L[5]]), ("accepted", "awaiting_label_repair"))
-            for law in (L[1], L[5]):
-                st = run.label_states[law]
-                self.assertEqual(st["versions"]["label_set"], want)
-                check = json.loads((run.dir / st["check"]).read_text())
-                self.assertEqual((check["versions"]["label_set"], check["label_contract"]), (want, "v2"))
-            from harness.store.ledger import ConceptLedger, NodeLedger
-            commit_state(run, ledger, ConceptLedger(run.concept_ledger_file, 3), NodeLedger(run.node_ledger_file, 2))
-            self.assertEqual(jsonl.read_json(run.state_file, {})["label_states"][L[5]]["versions"]["label_set"], want)
-
-    def test_the_label_set_is_kept_in_the_results_and_the_commit(self):
-        with setting(RECS_V2) as (run, ledger, training, _t):
-            loop.label_route(run, ledger, training, [])
-            prior_checks = label_check.committed_checks(run.dir, run.label_states)
-            hook = label_check.label_hook(training, prior_checks, {L[5]: [N[5]]}, target=L[5], goal="labelled semantic")
-            f = training.dataset.path / "recordings" / "r5a" / "fake.json"
-            f.write_text(json.dumps(spec(N[5], "compliant")))           # the changed rule now agrees on r5a
-            with Txn(run, hooks=(hook,)) as txn:
-                training.bind(txn)
-                txn.apply([cand.Change("node", N[5], node_rec(N[5]), files("node", N[5], "v2"))])
-                results = txn.verify()
-                self.assertTrue(all(r.status == "pass" for r in results), results)
-                want = training.versions()["label_set"]
-                self.assertEqual({r.versions["label_set"] for r in results}, {want})
-                rows = [json.loads(x) for x in (txn.area / "checks.jsonl").read_text().splitlines()]
-                self.assertEqual({r["versions"]["label_set"] for r in rows}, {want})
-                self.assertEqual(txn.label_checks[L[5]].versions["label_set"], want)
-                txn.commit()
-            self.assertEqual(txn.status, "committed")
-
-    def test_another_interval_set_refuses_the_commit_and_the_resumption(self):
-        with setting(RECS_V2) as (run, ledger, training, t):
+    def test_a_candidate_bound_to_one_label_set_takes_no_other(self):
+        with setting() as (run, ledger, training, t):
             with Txn(run) as txn:
                 training.bind(txn)
                 txn.apply([cand.Change("node", N[5], node_rec(N[5]), files("node", N[5], "v2"))])
                 txn.verify()
-                other = make_v2_dataset(t / "ds_other", [(rid, label_v2(lab["law_id"], lab["recorded_label"], False,
-                                                                        {**IV, "end_ms": 5000}), sp) for rid, lab, sp in RECS_V2])
+                other = make_dataset(t / "ds_other", RECS)
+                meta = json.loads((other.path / "DATASET.json").read_text())
+                (other.path / "DATASET.json").write_text(json.dumps({**meta, "data_version": "another"}))
                 (t / "run_other").mkdir()
                 moved = label_check.training_context(t / "run_other", list(L.values()), other.path, training.limits)
-                self.assertNotEqual(moved.versions()["label_set"], training.versions()["label_set"])
-                with self.assertRaisesRegex(ValueError, "label_set"):
-                    moved.bind(txn)                                      # a candidate bound to one interval set takes no other
-                txn.bind(label_set=moved.versions()["label_set"])
-                with self.assertRaisesRegex(cand.CommitRefused, "label_set"):
+                self.assertNotEqual(moved.versions()["data"], training.versions()["data"])
+                with self.assertRaisesRegex(ValueError, "data"):
+                    moved.bind(txn)
+                txn.bind(data=moved.versions()["data"])
+                with self.assertRaisesRegex(cand.CommitRefused, "data"):
                     txn.commit()
                 txn.rollback("test")
-            lab = training.dataset.files("r5a")["label"]
-            lab.write_text(json.dumps(label_v2(L[5], "compliant", False, {**IV, "end_ms": 5000})))
-            with self.assertRaises(SystemExit):
-                label_check.training_context(run.dir, list(L.values()), training.dataset.path, training.limits)
 
 
 class Off(Base):

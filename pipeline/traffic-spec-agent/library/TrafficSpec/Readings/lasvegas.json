@@ -1,7 +1,14 @@
 {
  "run": "lasvegas",
  "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder), the convention its value comes from and its source. It starts empty: the plan decides which parameters exist and proposes each with a provisional value, and the harness enters the proposal here marked `proposed` (run, iteration, node) until the operator reviews it by removing the marker or changing the value; the doctor lists every unreviewed proposal. The operator-authored list this file carried before any law was planned is kept, out of the pipeline's path, under readings/legacy/. Figures the law states are literals on the rule's span, never entries here.",
- "params": [],
+ "params": [
+  {
+   "name": "p.heading_since_step_carla_scene_graph",
+   "value": 50,
+   "unit": "ms",
+   "convention": "The sampling period of the carla_scene_graph acquisition standard, 20 Hz (one scene every 50 ms): the step bound of headingSince, the largest gap between two consecutive scenes it integrates across; not a look-back window and not an action window."
+  }
+ ],
  "aggregates": [],
  "declarations": [],
  "_fields": {

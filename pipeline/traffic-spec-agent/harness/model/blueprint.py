@@ -87,9 +87,9 @@ class Node:
 
     def claimed_atoms(self) -> set[str]:
         """The ids the record claims: its elements', its operationalizations', what marks its
-        occasion's act under way, and the class elements of its subject and its binders (each
-        binder's class is a formula the rule reads). Only string ids are collected: a record whose
-        fields are of another shape is the validator's to return, and reading it here never raises."""
+        occasion's act under way and, for an event boundary, its onset, and the class elements of
+        its subject and its binders (each binder's class is a formula the rule reads). Only string
+        ids are collected: a record whose fields are of another shape is the validator's to return, and reading it here never raises."""
         out: set[str] = set()
 
         def add(ids: Any) -> None:
@@ -103,15 +103,25 @@ class Node:
             add(e.get("derived"))
         for o in dicts(self.raw.get("operationalizations")):
             add(concepts_of(o) if isinstance(o.get("concepts") or [], list) else [o.get("concept")])
-        uw = (self.raw.get("occasion") or {}).get("under_way") if isinstance(self.raw.get("occasion"), dict) else None
-        if isinstance(uw, dict):                 # what marks the act under way is read by the rule, so it is claimed
-            add(uw.get("atoms"))
-            add(uw.get("derived"))
+        occ = self.raw.get("occasion") if isinstance(self.raw.get("occasion"), dict) else {}
+        for part in (occ.get("under_way"), occ.get("onset")):
+            if isinstance(part, dict):           # what marks the act under way, or its onset, is read by the rule, so it is claimed
+                add(part.get("atoms"))
+                add(part.get("derived"))
         return out
+
+    def occasion_boundary(self) -> str | None:
+        """Where the occasion's act stretch begins: `window` (a window parameter; what a record that
+        names no boundary states) or `event` (the act's observed onset); None without an occasion.
+        Another value is returned as written, for the validator to name."""
+        occ = self.raw.get("occasion")
+        if not isinstance(occ, dict):
+            return None
+        return occ.get("boundary") or "window"
 
     def claimed_concepts(self) -> set[str]:
         """The pipeline concepts the record claims, wherever it claims them: its elements, its
-        operationalizations and what marks its occasion's act under way."""
+        operationalizations, and what marks its occasion's act under way or its onset."""
         from .nodeid import is_concept_id
         return {c for c in self.claimed_atoms() if is_concept_id(c)}
 

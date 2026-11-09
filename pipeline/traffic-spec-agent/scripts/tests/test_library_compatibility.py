@@ -287,7 +287,7 @@ class AdmissionRecheck(unittest.TestCase):
         self.runs = collections.Counter()
         self.verdict = {}
 
-        def run_gate(n, reading, baseline, work, used, budget, accepted_concepts=None):
+        def run_gate(n, reading, baseline, work, used, budget, accepted_concepts=None, acquisition=None):
             self.runs[n.id] += 1
             return gate.Verdict(self.verdict.get(n.id, "OK"), ["scripted"])
 

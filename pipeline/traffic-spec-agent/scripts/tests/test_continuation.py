@@ -355,7 +355,7 @@ class AdmissionSelection(unittest.TestCase):
             if broken in registered or "<every file on disk>" in registered:
                 return gate.Verdict(gate.INFRA, ["the build failed outside the candidate's files"])
             return gate.Verdict("OK", [])
-        return seen, (lambda n, reading, baseline, work, used, budget, accepted_concepts=None: build(n.id, work)), \
+        return seen, (lambda n, reading, baseline, work, used, budget, accepted_concepts=None, acquisition=None: build(n.id, work)), \
             (lambda rec, reading, baseline, work, used, budget, mode="train", accepted=None: build(rec.id, work))
 
     def run_admission(self, broken, extra_concepts):

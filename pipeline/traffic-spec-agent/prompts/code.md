@@ -106,8 +106,8 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    with that atom; the node is wrong, and you report it. The gate holds every narrowing to a span of the
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed, nor written with a weaker fact than the qualified one
-   the record states: it is carried as the node maps it, or the node is wrong and you report it. The review judges the rule with your narrowings in view; a choice
-   written only in prose is lost. `narrowings` holds only the readings you chose: the record's own
+   the record states: it is carried as the node maps it, or the node is wrong and you report it. Your narrowings are kept on the rule's record and shown to every later planning and repair
+   session; a choice written only in prose is lost. `narrowings` holds only the readings you chose: the record's own
    narrowings, its observable readings included, are the plan's and are never restated there.
 3. **Formulas use only claimed names.** Every atom, primitive and concept in `applicability`, the
    binder classes and `obligation` is claimed by an element or operationalization of the node,
@@ -136,6 +136,9 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    The only literals are zero, enumeration spellings, and the node's declared `literals`, each
    written through the `Units` constructor of its unit (`Units.<unit> <figure>`). What a formula
    may not say is listed with the formula language; the gate returns `CHECK_FAIL` on it.
+   For `headingSince`, a shared concept takes the step bound through its own time formal; a rule
+   uses exactly the reviewed step parameter named by the run's acquisition profile. Do not
+   introduce a literal, alias, or expression for that bound.
 5. **Standards are the node's operationalizations**, nothing else: the concept and parameters
    named there, no substitute.
 6. **Compositions follow the node's `as`.** `exception`: `.not (.ruleApplies "<id>" map)` in the
@@ -155,18 +158,29 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    A declared intention the node carries (`intentions`) is the formula `intent` of the road user and
    the region the element of its place's span binds, read at the judged observation or in a window
    behind it, never in a window ahead.
-6b. **The occasion of an act.** Where the node declares `occasion`, a span read `at_recognition`
-   is written as it is; one read `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`,
-   and one read `throughout` as `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window`
-   parameter, `s` the subject and `U` the formula of the `under_way` element, written from its
-   atoms like any element and never `.tt`: the span is read over the instants of the window at
-   which the act is under way, never only where it is recognized and never before the act began.
-   Spans the applicability joins by `.and` and reads at the same occasion go inside one window
-   together (`.and U (.and φ ψ)`), so they hold at the same moment. The `occasion_<span>_outside`
-   witness is the scene in which the span holds only outside the act. An act concept holds from
-   the observation at which the act is recognized until its window has passed: where the node
-   reads the act as an event (the occasion, or a span placed before or after it), the act is
-   `.rises (<act>)`, so each act is judged once, at its recognition.
+6b. **The occasion of an act.** Where the node declares `occasion`, write a span read
+   `at_recognition` at the declared recognition point. For `boundary: "window"`, write one read
+   `some_moment` as `.not (.holdsFor .time W s (.not (.and U φ)))`, and one read `throughout` as
+   `.holdsFor .time W s (.implies U φ)`, with `W` the occasion's `window` parameter, `s` the subject
+   and `U` the formula of the `under_way` element, written from its atoms like any element and never
+   `.tt`. For `boundary: "event"`, write the onset formula from the record's `onset` element and
+   read `some_moment` or `throughout` over the declared act stretch from its observed onset to the
+   recognition being judged, respecting the concept contract's extent. Use the declared onset of
+   that occurrence; a fixed-length window, an unrelated edge, or an earlier occurrence is no
+   substitute. Use the available operators only where their semantics express that boundary and
+   quantification. Spans joined by `.and` and read at the same occasion are read together, so a
+   `some_moment` reading requires one common observation for their conjunction, not different
+   observations for its parts. Read `U` only as the record maps it. The contract states how long the
+   act concept holds and what ends it; do not infer an event act's extent from a window. Where the
+   record uses the act as an event, judge it once at its declared recognition, using
+   `.rises (<act>)` for recognition represented by the concept becoming true. Missing required
+   history leaves the dependent expression unknown where Core cannot decide it; other branches may
+   still decide the verdict. Where the declared boundary or quantification cannot be expressed,
+   report `no_operator` on its words instead of inventing a window. A named occasion `gap` follows
+   that same route. A concept declaring `act` must implement the boundary its record states: its
+   window formal is the actual look-back length for a window boundary, and its declared onset
+   supplies the boundary for an event act. The `occasion_<span>_outside` witness places the span
+   only outside the declared act stretch.
 6c. **A duty with a history bound.** Where the node's `obligation` states a history bound, a search
    into the past ends exactly where the record says and nowhere else. Do not invent a history
    boundary from the recording's start, a subject's first observation, or a cumulative quantity

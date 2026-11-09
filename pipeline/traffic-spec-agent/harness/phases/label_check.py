@@ -5,8 +5,10 @@ Reason: in training mode it is the one semantic signal; it trusts the verdict Le
 trace and compares it with the recording's label under the label contract (`recorded.labels`).
 
 Per recording, the monitor runs each of the law's expected rules in its own process, under the
-budget per rule and recording (a deadline and a memory cap); the results are joined and scored by
-`recorded.scoring` (only the groundings whose subject binder is the ego are joined).
+budget per rule and recording (a deadline and a memory cap), on the recording's trace with its
+source's manifest (one manifest per scene-graph generator or adapter version, never one per
+recording); the results are joined and scored by `recorded.scoring` (only the groundings whose
+subject binder is the ego are joined). Explain reads the same trace and manifest.
 
 The expected rules of a law are the nodes of its final plan (the run's ledger), whether or not each
 was accepted: a node that was not accepted, or is fenced, is not run, and every recording of the law
@@ -21,24 +23,19 @@ label (an explicit verdict that is not a judgment call). A law's outcome over th
   reported an incomplete rule set or no single subject: a performance or infrastructure
   question, never a semantic repair; an unknown recording the library could decide is still
   counted in the summary (`library_actionable`), never hidden by the failure;
-- `undecided`: none of the above, and some recording is unknown with a blocker whose evidence
-  points at the library (`scoring.library_actionable`): the law goes to a coverage repair, whose
-  goal is that more recordings are decided; the recording's other blockers stay what they are. An
-  unknown turned into a mismatch is that goal met, and the law then goes to a semantic repair;
+- `undecided`: none of the above, and some recording is unknown with a blocker whose evidence points
+  at the library, or a truncated-window blocker with an eligible window diagnosis
+  (`scoring.library_actionable`): the law goes to a coverage repair, whose goal is that more
+  recordings are decided; the recording's other blockers stay what they are. An unknown turned into
+  a mismatch is that goal met, and the law then goes to a semantic repair;
 - `unverified`: none of the above with some recording not a match (unknown, whatever its blockers,
   no_rule), or an empty set. The matches it has are kept and reported with the coverage; a gate
   that passed keeps its product, but the law is not reported aligned.
 Judgment-call labels (a verdict that turns on a parameter the pipeline chooses) never decide the
 outcome and never enter the evidence; they are listed apart for the operator's parameter review.
 
-Under label contract v2 (the dataset states it) each label carries a scoring interval chosen by the
-scenario design. The monitor still runs on the whole trace, with its reason-carrying segments;
-`scoring.within` keeps the observations inside the interval, and the verdict, the blockers, the
-Explain observations (`--from`/`--to` with `--scan`) and the non-regression comparison are all the
-interval's. The whole-recording verdict is kept beside it as a diagnosis, never counted. A label
-whose interval cannot be used is `label_unverified`: it is not run, keeps its place in the eligible
-set (the law can then be no better than `unverified`), and never enters the evidence or a repair.
-Nothing here sets, moves or guesses an interval: it is read from the label alone.
+A label judges the whole recording (`recorded.labels`). The monitor runs on the whole trace with
+each grounding's reason-carrying segments (`--segments`), which the window diagnosis reads.
 
 The evidence for an eligible recording that does not match is the Explain report of each of the
 law's rules for the groundings that judge the ego, with each grounding's whole binding, at the
@@ -47,6 +44,15 @@ decide it and come first, in report order, then the others; at most `Limits.expl
 are explained per rule, and a cut is stated with how many deciding groundings it left out. A report is pruned at structural boundaries to stay valid JSON, with every pruned list
 marked; the whole report is kept as a file when an artifact folder is given. An Explain that
 fails or passes its own deadline is a diagnostic failure and changes nothing in the score.
+
+Explain also reports, per grounding, the truncated windows its verdict carries at the unknown
+observations of the recording (`windows`). That section is taken from the whole report before
+anything is pruned and kept beside it (`Evidence.windows`), with the digests of the Explain source
+and the reading it was made on; the window diagnosis of an unknown recording
+(`scoring.diagnose_windows`) is decided on it, and rendered as its own block of facts: the located
+windows, the coverage, the eligibility, a statement when the coverage is partial and, where a window
+is eligible, that a window should be anchored to the event and how the limitation is left undecided.
+No new Explain run is made for it.
 """
 from __future__ import annotations
 
@@ -54,6 +60,7 @@ import json
 import resource
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -86,6 +93,8 @@ class Evidence:
     pruned: bool = False
     artifact: str = ""              # the whole report, when kept
     error: str = ""
+    windows: dict | None = None     # the report's truncated windows, whole (taken before pruning)
+    inputs: dict = field(default_factory=dict)     # the digests of the Explain source and reading it was made on
 
 
 @dataclass
@@ -99,7 +108,6 @@ class LawCheck:
     notes: list[str] = field(default_factory=list)
     versions: dict = field(default_factory=dict)   # what the check is bound to, when it ran on a candidate library
     source_check: dict = field(default_factory=dict)   # the source report of its recordings (`recorded.source_check`): reported, never scored
-    contract: str = "v1"                            # the label contract its recordings were scored under
 
     @property
     def summary(self) -> dict:
@@ -113,10 +121,43 @@ class LawCheck:
     def to_dict(self) -> dict:
         return {"law_id": self.law_id, "rules": self.rules, "outcome": self.outcome, "data_version": self.data_version,
                 "coverage": self.coverage, "summary": self.summary, "notes": self.notes,
-                "scored": [s.to_dict() for s in self.scored], "evidence": [asdict(e) for e in self.evidence],
+                "scored": [s.to_dict() for s in self.scored], "evidence": [_evidence_dict(e) for e in self.evidence],
                 **({"versions": self.versions} if self.versions else {}),
-                **({"source_check": self.source_check} if self.source_check else {}),
-                **({"label_contract": self.contract} if self.contract != "v1" else {})}
+                **({"source_check": self.source_check} if self.source_check else {})}
+
+
+def _evidence_dict(e: Evidence) -> dict:
+    """An evidence record; the window section and its digests only where Explain reported one."""
+    d = asdict(e)
+    if d["windows"] is None:
+        d.pop("windows")
+        d.pop("inputs")
+    return d
+
+
+class LabelsDeferred(Exception):
+    """A training-data entry point (the training context, the label monitor, Explain on a recording)
+    was called while this process defers its label checks (`deferred`): a defect of the caller, never
+    a check that did not run, so no handler that treats an unrun check as a wait catches it."""
+
+
+_DEFERRED: list[str] = []
+
+
+@contextmanager
+def deferred(reason: str):
+    """For its duration no training recording may be read by this process: every entry point that
+    would read one raises `LabelsDeferred` naming `reason`."""
+    _DEFERRED.append(reason)
+    try:
+        yield
+    finally:
+        _DEFERRED.remove(reason)
+
+
+def refuse_if_deferred(what: str) -> None:
+    if _DEFERRED:
+        raise LabelsDeferred(f"{what} was called while label checks are deferred ({_DEFERRED[-1]}): no training recording is read here")
 
 
 def _limit(memory_gb: float):
@@ -126,13 +167,13 @@ def _limit(memory_gb: float):
     return set_limit
 
 
-def run_rule(monitor: Path, files: dict[str, Path], rule: str, reading: Path, lim: Limits,
-             segments: bool = False) -> tuple[list[str] | None, str | None]:
-    """The monitor's JSON lines for one rule on one recording, or its failure (`deadline` for the
-    time or memory budget, `crash` otherwise); with `segments`, each grounding's reason-carrying
-    segments too (interval scoring)."""
+def run_rule(monitor: Path, files: dict[str, Path], rule: str, reading: Path,
+             lim: Limits) -> tuple[list[str] | None, str | None]:
+    """The monitor's JSON lines for one rule on one recording, with each grounding's reason-carrying
+    segments, or its failure (`deadline` for the time or memory budget, `crash` otherwise)."""
+    refuse_if_deferred("the label monitor")
     cmd = [str(monitor), "--manifest", str(files["manifest"]), "--reading", str(reading), "--rules", rule,
-           "--json"] + (["--segments"] if segments else []) + [str(files["trace"])]
+           "--json", "--segments", str(files["trace"])]
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=lim.deadline_s, preexec_fn=_limit(lim.memory_gb))
     except subprocess.TimeoutExpired:
@@ -180,15 +221,40 @@ def prune(obj, budget: int, items: int = 3):
     return out, True
 
 
+def explain_inputs(explain: Path, reading: Path) -> dict:
+    """The digests of what an Explain report depends on beside the library it was built in: its own
+    source (`Explain.lean` of the library whose build holds the binary) and the reading."""
+    lib = explain.resolve().parents[3] if len(explain.resolve().parents) > 3 else explain.parent
+    return {"explain": _file_sha(lib / "Explain.lean"), "reading": _file_sha(reading)}
+
+
+def reading_params(reading: Path) -> dict:
+    """The reading's parameters, name → (Core unit tag, value in that unit), as the decoder scales them."""
+    from fractions import Fraction
+    from ..model import units
+    try:
+        rows = json.loads(reading.read_text(encoding="utf-8")).get("params", [])
+    except (OSError, ValueError, AttributeError):
+        return {}
+    out = {}
+    for p in rows if isinstance(rows, list) else []:
+        try:
+            core, value = units.to_core(p["value"], p["unit"])
+            out[p["name"]] = (units.json_tag(core), Fraction(value))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out
+
+
 def run_explain(explain: Path, files: dict[str, Path], rule: str, binding: dict, reading: Path, lim: Limits,
-                artifacts: Path | None = None, window: tuple[int, int] | None = None) -> Evidence:
-    """Explain's report of one grounding at the observations `--scan` chooses; with `window` (a
-    scoring interval) it chooses them only inside it, on the verdicts of the whole trace."""
+                artifacts: Path | None = None) -> Evidence:
+    """Explain's report of one grounding at the observations `--scan` chooses on the whole trace; the
+    report's truncated windows are taken whole, before the report is pruned."""
+    refuse_if_deferred("Explain on a recording")
+    inputs = explain_inputs(explain, reading)
     cmd = [str(explain), "--manifest", str(files["manifest"]), "--reading", str(reading), "--rule", rule]
     for name, track in binding.items():
         cmd += ["--bind", f"{name}={track}"]
-    if window is not None:
-        cmd += ["--from", str(window[0]), "--to", str(window[1])]
     cmd += ["--scan", "--json", str(files["trace"])]
     rid = files["trace"].parent.name
     try:
@@ -201,6 +267,11 @@ def run_explain(explain: Path, files: dict[str, Path], rule: str, binding: dict,
         report = json.loads(p.stdout)
     except json.JSONDecodeError as e:
         return Evidence(rid, rule, binding, False, error=f"explain output is not JSON: {e}")
+    windows = None
+    for g in report.get("groundings", []) if isinstance(report, dict) else []:
+        w = g.pop("windows", None) if isinstance(g, dict) else None
+        if w is not None and g.get("binding") == binding:
+            windows = w
     kept = ""
     if artifacts is not None:
         artifacts.mkdir(parents=True, exist_ok=True)
@@ -208,7 +279,7 @@ def run_explain(explain: Path, files: dict[str, Path], rule: str, binding: dict,
         (artifacts / name).write_text(p.stdout, encoding="utf-8")
         kept = str(artifacts / name)
     small, pruned = prune(report, lim.evidence_chars)
-    return Evidence(rid, rule, binding, True, small, pruned, kept)
+    return Evidence(rid, rule, binding, True, small, pruned, kept, windows=windows, inputs=inputs)
 
 
 def outcome_of(scored: list[scoring.Scored], complete: bool = True) -> str:
@@ -231,6 +302,7 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
     recording of the law, score each, and explain each eligible recording that does not match.
     `unavailable` maps an expected rule that is not run to its state (not accepted, fenced). A rule
     that fails on a recording is not run again; the rules that finished there keep their results."""
+    refuse_if_deferred("the label check of a law")
     expected = sorted(r for r, law in law_of.items() if law == law_id)
     if sorted(rules) != expected:
         raise ValueError(f"{law_id}: the rules given {sorted(rules)} are not the law's expected rules {expected}")
@@ -241,46 +313,23 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
     if not expected:
         notes.append("the law's final plan has no node: nothing was generated for it")
 
-    v2 = ds.contract == "v2"
-
     def one(row: dict):
         rid = row["recording_id"]
         files = ds.files(rid)
         lab = ds.label(rid)
-        scope, window = None, None
-        if v2:
-            times = sorted(labels.observation_times(files["trace"]))
-            iv = lab.interval
-            scope = {"start_ms": iv.start_ms, "end_ms": iv.end_ms, "source": iv.source} if iv else {}
-            defect = labels.interval_defect(lab, times, law_id)
-            if defect:
-                return scoring.unverified(rid, law_id, lab.verdict, defect, lab.judgment_call, scope), []
-            window = (iv.start_ms, iv.end_ms)
         per_rule, failures = {}, {}
         for r in runnable:
-            lines, failure = run_rule(monitor, files, r, reading, lim, segments=v2)
+            lines, failure = run_rule(monitor, files, r, reading, lim)
             if failure:
                 failures[r] = failure
             else:
                 per_rule[r] = lines
         results = scoring.rule_results(merge_reports(per_rule)) if per_rule else {}
-        unusable = []
-        if v2:
-            if not failures:
-                scope["whole_verdict"] = scoring.score(rid, law_id, None, results, law_of).verdict     # a diagnosis, never counted
-            cut = {}
-            for r, x in results.items():
-                try:
-                    cut.update(scoring.within({r: x}, window[0], window[1], times))
-                except ValueError as e:
-                    failures[r] = "crash"
-                    unusable.append(f"{r}: {e}")
-            results = cut
         declared = json.loads(Path(files["manifest"]).read_text(encoding="utf-8")).get("atoms", {})
         s = scoring.score(rid, law_id, lab.verdict, results, law_of, judgment_call=lab.judgment_call,
-                          declared=declared, scope=scope, failed=failures)
+                          declared=declared, failed=failures)
         if failures:
-            s.note = "; ".join([f"{r}: {f}" for r, f in sorted(failures.items())] + unusable)
+            s.note = "; ".join(f"{r}: {f}" for r, f in sorted(failures.items()))
         ev: list[Evidence] = []
         if explain is not None and lab.verdict is not None and not lab.judgment_call and s.status != "match" \
                 and s.failure is None and results:
@@ -291,7 +340,7 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
                 deciding = [g for g in x.judged if g.verdict == x.verdict]
                 ordered = deciding + [g for g in x.judged if g.verdict != x.verdict]
                 for g in ordered[:lim.explain_groundings]:
-                    ev.append(run_explain(explain, files, r, g.binding, reading, lim, artifacts, window))
+                    ev.append(run_explain(explain, files, r, g.binding, reading, lim, artifacts))
                 if len(ordered) > lim.explain_groundings:
                     left = max(0, len(deciding) - lim.explain_groundings)
                     notes.append(f"{rid[:12]} {r}: {len(ordered) - lim.explain_groundings} of {len(ordered)} groundings "
@@ -299,14 +348,17 @@ def check_law(law_id: str, rules: list[str], law_of: dict[str, str], ds: dataset
                 if not x.judged:
                     notes.append(f"{rid[:12]} {r}: no grounding binds the ego, so nothing to explain "
                                  "(the rule never engaged the subject)")
+        if explain is not None:
+            now = explain_inputs(explain, reading)
+            scoring.diagnose_windows(s, [{"rule": e.rule, "binding": e.binding, "ok": e.ok, "windows": e.windows,
+                                          "current": e.inputs == now, "error": e.error} for e in ev], reading_params(reading))
         return s, ev
 
     with ThreadPoolExecutor(max(1, lim.jobs)) as pool:
         out = list(pool.map(one, rows))
     scored = [s for s, _ in out]
     complete = bool(expected) and not unavailable
-    return LawCheck(law_id, expected, outcome_of(scored, complete), scored, [e for _, ev in out for e in ev], ds.data_version, notes,
-                    contract=ds.contract)
+    return LawCheck(law_id, expected, outcome_of(scored, complete), scored, [e for _, ev in out for e in ev], ds.data_version, notes)
 
 
 def goal_for(outcome: str) -> str:
@@ -320,28 +372,20 @@ def render_evidence(chk: LawCheck, repair_goal: str | None = None) -> str:
     mapping, and no judgment-call recording."""
     eligible = [s for s in chk.scored if s.label is not None and not s.judgment_call]
     repair_goal = repair_goal or goal_for(chk.outcome)
-    c = labels.CONTRACTS[chk.contract]
-    scope = (f"the {c['scope']}" if chk.contract == "v1" else
-             "its scoring interval [start, end] ms, chosen by the scenario design: the whole recording is "
-             "evaluated, only the verdicts at observations inside the interval are joined")
+    c = labels.CONTRACT
     out = ["## Label mismatches", "",
            f"Law: {chk.law_id}. Rules checked together: {', '.join(chk.rules)}. Repair goal: {repair_goal}.",
-           f"Label contract: a label judges the {c['subject']} (the trace's subject) over {scope}; "
+           f"Label contract: a label judges the {c['subject']} (the trace's subject) over the {c['scope']}; "
            "violated = the situation was violated at least once, compliant = every occurrence complied, "
            "not_applicable = the situation never arose for the subject.",
            f"Fixed comparison set: {len(eligible)} labelled recording(s) of this law (data version {chk.data_version[:12]}); "
            f"{chk.coverage['matched']} match. Every match must stay a match and no decided recording may become undecided.", ""]
-    counts = {k: sum(s.status == k for s in eligible) for k in scoring.STATUSES_V2 if any(s.status == k for s in eligible)}
+    counts = {k: sum(s.status == k for s in eligible) for k in scoring.STATUSES if any(s.status == k for s in eligible)}
     out.append("Statuses: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
-    if counts.get("label_unverified"):
-        out.append("A label_unverified recording has no usable scoring interval: it is not compared and not shown.")
     for s in eligible:
-        if s.status in ("match", "label_unverified"):
+        if s.status == "match":
             continue
-        head = f"### Recording {s.recording_id[:12]}: label {s.label}, the law's verdict {s.verdict}, status {s.status}"
-        if s.scope is not None:
-            head += f"; scoring interval [{s.scope['start_ms']}, {s.scope['end_ms']}] ms"
-        out += ["", head]
+        out += ["", f"### Recording {s.recording_id[:12]}: label {s.label}, the law's verdict {s.verdict}, status {s.status}"]
         if s.note:
             out.append(s.note)
         if s.partial:
@@ -361,6 +405,8 @@ def render_evidence(chk: LawCheck, repair_goal: str | None = None) -> str:
                     + (f"; {b['evidence']}" if b.get("evidence") else "")
                     + (f"; {b['observations']} observation(s)" if b.get("observations") else "")
                     for b in s.blockers]
+        if s.windows:
+            out += window_block(s)
         for e in chk.evidence:
             if e.recording_id != s.recording_id:
                 continue
@@ -374,6 +420,67 @@ def render_evidence(chk: LawCheck, repair_goal: str | None = None) -> str:
     for n in chk.notes:
         out.append(f"Note: {n}")
     return "\n".join(out) + "\n"
+
+
+def _q(x) -> str:
+    from fractions import Fraction
+    if not isinstance(x, dict) or not x.get("den"):
+        return "?"
+    q = Fraction(x["num"], x["den"])
+    return str(q.numerator) if q.denominator == 1 else f"{float(q):.3f}"
+
+
+def window_block(s: scoring.Scored) -> list[str]:
+    """The window evidence of a recording, as facts: each located window (its rule, source, call
+    chain, binding, operator, direction and measure, its length as written and as substituted with the
+    reading's value, the requested and observed window, where it was met and evaluated), whether it is
+    eligible for a diagnosis and why not, the coverage, a statement when the coverage is partial, and,
+    where a window is eligible, that a window should be anchored to the event and the request-only route
+    for leaving the limitation undecided."""
+    w = s.windows or {}
+    out = ["Window diagnosis (the truncated windows this verdict carries in the recording, located by "
+           "Explain; the attribution above is unchanged, and an eligible window authorizes a diagnosis only):"]
+    for p in w.get("pieces", []):
+        src = p.get("source") or {}
+        chain = " → ".join(f"{c['concept']} (called at {c['owner']} {c['path']}, tag {c['tag']}"
+                           + (f"; params {', '.join(f'{k}={v}' for k, v in c.get('params', {}).items())}" if c.get("params") else "")
+                           + (f"; args {', '.join(f'{k}={v}' for k, v in c.get('args', {}).items())}" if c.get("args") else "") + ")"
+                           for c in p.get("calls", []))
+        ln, ex, sc, ev = p.get("length") or {}, p.get("example") or {}, p.get("scoring") or {}, p.get("evaluated") or {}
+        line = (f"  - {p.get('rule')}: `{p.get('op')}`" + (f" ({p.get('direction')}, {p.get('measure')})" if p.get("measure") else "")
+                + f" at {src.get('owner')} {src.get('path')} [expanded {p.get('expanded_path')}]"
+                + (f", through {chain}" if chain else "")
+                + f"; binding {', '.join(f'{k}={v}' for k, v in (p.get('binding') or {}).items())}")
+        if ln.get("written") is not None:
+            line += f"; length written `{ln.get('written')}`, after substitution `{ln.get('substituted')}`"
+            if ln.get("param"):
+                line += f" = {_q(ln.get('value'))} {ln.get('unit')}"
+        rq, ob = ex.get("requested"), ex.get("observed")
+        if rq and ob:
+            line += (f"; requested [{_q(rq.get('from'))}, {_q(rq.get('to'))}] {rq.get('unit')}, observed "
+                     f"[{_q(ob.get('from'))}, {_q(ob.get('to'))}] {rq.get('unit')}, {'covered' if ob.get('covered') else 'not covered'}")
+        line += (f"; met at {sc.get('instants')} unknown observation(s), scoring t={sc.get('first_ms')}…{sc.get('last_ms')} ms, "
+                 f"evaluated at t={ev.get('first_ms')}…{ev.get('last_ms')} ms")
+        line += "; eligible for diagnosis" if p.get("eligible") else f"; not eligible: {p.get('not_eligible')}"
+        out.append(line)
+    cov = w.get("coverage") or {}
+    out.append(f"  Coverage: of {cov.get('unknown_observations', 0)} unknown observation(s) with a truncated window, "
+               f"{cov.get('with_located_source', 0)} have at least one located source and the cause search was complete at "
+               f"{cov.get('search_complete', 0)}" + (f"; {cov['groundings_not_explained']} unknown grounding(s) not explained"
+                                                     if cov.get("groundings_not_explained") else "") + ".")
+    out += [f"  Note: {n}" for n in w.get("notes", [])]
+    if w.get("partial"):
+        out.append("  Partial: this evidence does not cover every unknown observation of the recording; it permits a diagnosis "
+                   "of the located windows only.")
+    eligible = [b for b in s.blockers if (b.get("window_diagnosis") or {}).get("eligible")]
+    out.append("  Window diagnosis eligible for: " + (", ".join(f"{b['rule']} `{b['reason']}`" for b in eligible) or "none") + ".")
+    if eligible:
+        out.append("  A window should be anchored to the event itself, for example by looking back to the start of the "
+                   "action, not depend on history from before the recording began.")
+        out.append("  Where the justified meaning still needs context the recordings do not give, the window is left as it is "
+                   "and the limitation is reported as a change request alone (`change_request.json` with type `coverage`, "
+                   "object `parameter`, target the parameter), with no record and no diff.")
+    return out
 
 
 def judgment_table(chk: LawCheck) -> list[dict]:
@@ -401,17 +508,19 @@ def _digest(x) -> str:
     return hashlib.sha256(json.dumps(x, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
-def contract_version(contract: str = "v1") -> str:
-    return _digest(labels.CONTRACTS[contract])
+def contract_version() -> str:
+    return _digest(labels.CONTRACT)
 
 
 def scoring_version() -> str:
     """The digest of the code that turns monitor reports into statuses and outcomes: the verdict joins
-    and statuses, the label reading, and this module."""
+    and statuses, the label reading, this module, and the Explain source whose window report decides
+    a window diagnosis and so a route."""
     import hashlib
+    from ..store import paths
     h = hashlib.sha256()
-    for f in (Path(scoring.__file__), Path(labels.__file__), Path(__file__)):
-        h.update(f.name.encode()); h.update(f.read_bytes())
+    for f in (Path(scoring.__file__), Path(labels.__file__), Path(__file__), paths.LIBRARY / "Explain.lean"):
+        h.update(f.name.encode()); h.update(f.read_bytes() if f.is_file() else b"(missing)")
     return h.hexdigest()
 
 
@@ -429,12 +538,10 @@ def comparison_set(ds: dataset_mod.Dataset, law_ids: set[str], lim: Limits | Non
     """What a run's label checks are fixed on, read from the files themselves: every recording of the
     dataset for each of `law_ids`, and among them the eligible ones (a plain label: an explicit verdict
     that is no judgment call) and the judgment calls; per recording its expected verdict, whether it is
-    a judgment call and the digests of its label, trace and manifest; the digest of the index, the
-    dataset's split and the library's active split; the data version, the label contract, the scoring
-    version and the execution limits. Under contract v2 each recording also carries its scoring
-    interval and source (`scope`) and, when the interval cannot be used on its trace, the defect, so
-    a changed interval, source or confirmation is a changed comparison set. A trace or manifest whose
-    digest differs from the index's is refused (`ValueError`)."""
+    a judgment call, the digest of its label fields in the index, of its trace and of its source's
+    manifest; the digest of the index, the dataset's split and the library's active split; the data
+    version, the label contract, the scoring version and the execution limits. A trace or manifest
+    whose digest differs from the one the dataset states is refused (`ValueError`)."""
     from ..store import paths
     laws: dict[str, dict] = {}
     cases: dict[str, dict] = {}
@@ -448,21 +555,17 @@ def comparison_set(ds: dataset_mod.Dataset, law_ids: set[str], lim: Limits | Non
         e["recordings"].append(rid)
         if lab.verdict is not None:
             e["judgment_calls" if lab.judgment_call else "eligible"].append(rid)
-        c = {"law": row["law_id"], "verdict": lab.verdict, "judgment_call": lab.judgment_call, "label": _file_sha(files["label"]),
+        c = {"law": row["law_id"], "verdict": lab.verdict, "judgment_call": lab.judgment_call,
+             "label": _digest([lab.recorded_label, lab.verdict, lab.judgment_call]),
              "trace": _file_sha(files["trace"]), "manifest": _file_sha(files["manifest"])}
-        if ds.contract == "v2":
-            iv = lab.interval
-            c["scope"] = {"start_ms": iv.start_ms, "end_ms": iv.end_ms, "source": iv.source} if iv else {}
-            c["defect"] = labels.interval_defect(lab, sorted(labels.observation_times(files["trace"])), row["law_id"])
-        for k in ("trace", "manifest"):
-            want = row.get(f"{k}_sha256") or ""
-            if want and want != c[k]:
-                bad.append(f"{rid}: its {k} is not the one the index names")
+        for k, want in ds.expected_sha256(rid).items():
+            if want != c[k]:
+                bad.append(f"{rid}: its {k} is not the one the dataset states")
         cases[rid] = c
     if bad:
         raise ValueError("the dataset's files differ from its index: " + "; ".join(bad[:6]))
     active = paths.LIBRARY / "splits" / "ACTIVE"
-    return {"data_version": ds.data_version, "dataset": str(ds.path), "label_contract": contract_version(ds.contract),
+    return {"data_version": ds.data_version, "dataset": str(ds.path), "label_contract": contract_version(),
             "scoring": scoring_version(), "index": _file_sha(ds.path / "INDEX.csv"), "split": ds.meta.get("split"),
             "library_split": active.read_text(encoding="utf-8").strip() if active.exists() else None,
             "limits": bound_limits(lim or Limits()), "laws": {k: laws[k] for k in sorted(laws)}, "cases": cases}
@@ -494,13 +597,9 @@ class Training:
         return source_check.summary({r: self.sources.get(r) for r in self.fixed["laws"].get(law, {}).get("recordings", [])})
 
     def versions(self) -> dict:
-        """The label versions a candidate is bound to; under contract v2 also the digest of the fixed
-        labels with their scoring intervals (`label_set`), so every report names the intervals it used."""
-        v = {"data": self.fixed["data_version"], "label_contract": self.fixed["label_contract"], "scoring": self.fixed["scoring"],
-             "limits": _digest(self.fixed["limits"])}
-        if self.fixed["label_contract"] != contract_version("v1"):
-            v["label_set"] = _digest(self.fixed["cases"])
-        return v
+        """The label versions a candidate is bound to."""
+        return {"data": self.fixed["data_version"], "label_contract": self.fixed["label_contract"], "scoring": self.fixed["scoring"],
+                "limits": _digest(self.fixed["limits"])}
 
     def bind(self, txn) -> None:
         """Bind a candidate to the versions its label checks rest on; a candidate bound to others is refused."""
@@ -511,13 +610,13 @@ class Training:
         txn.bind(**want)
 
     def check_inputs(self, rids: list[str]) -> None:
-        """Before a recording is consumed: its label is the one fixed (its digest, read again: small)
-        and its trace and manifest are the files this launch hashed (their size and modification
-        time unchanged); else `ValueError`, nothing is scored."""
+        """Before recordings are consumed: the index that holds their labels is the one fixed (its
+        digest, read again: small) and each trace and source manifest is the file this launch hashed
+        (its size and modification time unchanged); else `ValueError`, nothing is scored."""
+        if _file_sha(self.dataset.path / "INDEX.csv") != self.fixed["index"]:
+            raise ValueError("the dataset's index (its labels) changed since the run fixed its comparison set")
         for rid in rids:
             files = self.dataset.files(rid)
-            if _file_sha(files["label"]) != self.fixed["cases"][rid]["label"]:
-                raise ValueError(f"{rid}: its label changed since the run fixed its comparison set")
             for k in ("trace", "manifest"):
                 st = files[k].stat() if files[k].exists() else None
                 if (st and (st.st_size, st.st_mtime_ns)) != self.seen.get((rid, k)):
@@ -533,6 +632,7 @@ def training_context(run_dir: Path, law_ids: list[str], dataset_path: Path, limi
     Each recording of the set gets its source report once (`source_check.json` in the run's
     directory, bound to the trace and manifest digests the set fixes): a report, which no status,
     outcome or route reads."""
+    refuse_if_deferred("the training context")
     from ..store import jsonl
     import dataclasses
     lim = limits or Limits()
@@ -545,7 +645,9 @@ def training_context(run_dir: Path, law_ids: list[str], dataset_path: Path, limi
     f = run_dir / "comparison_set.json"
     was = jsonl.read_json(f, None)
     if was is not None:
-        changed = [k for k in sorted(set(was) | set(now)) if k not in ("cases", "laws") and was.get(k) != now.get(k)]
+        # the dataset's location is recorded, not compared: its content is (data version, index, every case's digests),
+        # so a clone that keeps the same dataset elsewhere resumes
+        changed = [k for k in sorted(set(was) | set(now)) if k not in ("cases", "laws", "dataset") and was.get(k) != now.get(k)]
         changed += ["laws"] if was.get("laws") != now.get("laws") else []
         changed += [f"recording {r}" for r in sorted(set(was.get("cases", {})) | set(now["cases"]))
                     if was.get("cases", {}).get(r) != now["cases"].get(r)][:6]
@@ -580,6 +682,7 @@ def check_in_candidate(txn, ctx: Training, laws: dict[str, list[str]], unavailab
     candidate, each law's expected rules (`laws`, its final plan) run on its recordings, every check
     bound to the candidate's versions (the label versions bound first) and to the run's fixed set,
     which the scored recordings must equal. Each check and its evidence are written under `out`."""
+    refuse_if_deferred("the label check in a candidate")
     from ..lean import index_sync
     from ..store import paths
     ctx.bind(txn)
@@ -611,13 +714,10 @@ def unrun_check(law: str, rules: list[str], unavailable: dict[str, str], ctx: Tr
     scored = []
     for rid in ctx.fixed["laws"].get(law, {}).get("recordings", []):
         c = ctx.fixed["cases"][rid]
-        if c.get("defect"):
-            scored.append(scoring.unverified(rid, law, c["verdict"], c["defect"], c["judgment_call"], c["scope"]))
-        else:
-            scored.append(scoring.score(rid, law, c["verdict"], {}, law_of, judgment_call=c["judgment_call"], scope=c.get("scope")))
+        scored.append(scoring.score(rid, law, c["verdict"], {}, law_of, judgment_call=c["judgment_call"]))
     notes = [f"{r}: not run ({s})" for r, s in sorted(unavailable.items()) if r in law_of]
     return LawCheck(law, sorted(rules), "incomplete", scored, [], ctx.fixed["data_version"], notes,
-                    source_check=ctx.source_summary(law), contract=ctx.dataset.contract)
+                    source_check=ctx.source_summary(law))
 
 
 def write_check(chk: LawCheck, out: Path) -> dict[str, str]:
@@ -638,23 +738,13 @@ def eligible_statuses(chk) -> dict[str, str]:
     return {s["recording_id"]: s["status"] for s in rows if s.get("label") is not None and not s.get("judgment_call")}
 
 
-def scopes(chk) -> dict[str, tuple | None]:
-    """Recording id → the scoring interval and source it was scored on (None: the whole recording)."""
-    rows = chk.to_dict()["scored"] if isinstance(chk, LawCheck) else chk.get("scored", [])
-    return {s["recording_id"]: (lambda x: x and (x.get("start_ms"), x.get("end_ms"), x.get("source")))(s.get("scope"))
-            for s in rows}
-
-
 def compare(prev, new, goal: str | None = None) -> dict:
     """A candidate's check of a law against the law's last committed check, over the fixed eligible
-    set: no match may be lost and no decided recording may become undecided; every recording must be
-    scored over the same stretch (the same scoring interval and source, or the whole recording both
-    times), so no repair gains by a changed interval; with `goal`, the repair's own target must be met
+    set: no match may be lost and no decided recording may become undecided; with `goal`, the repair's
+    own target must be met
     (`progress`). Progress and alignment are reported apart: meeting a goal does not make the law
     aligned, which only `outcome` says."""
     p, n = eligible_statuses(prev) if prev else {}, eligible_statuses(new)
-    sp, sn = (scopes(prev), scopes(new)) if prev else ({}, {})
-    moved = sorted(r for r in sp if r in sn and sp[r] != sn[r])
     limits = lambda c: ((c.versions if isinstance(c, LawCheck) else (c or {}).get("versions", {})) or {}).get("limits")
     if goal == "performance" and limits(prev) != limits(new):
         reasons = ["a performance goal compares runs under the same execution limits; these differ"]
@@ -665,10 +755,9 @@ def compare(prev, new, goal: str | None = None) -> dict:
     undecided = sorted(r for r, s in p.items() if s in DECIDED and n.get(r) not in DECIDED)
     met, why = progress(goal, p, n) if goal else (None, "")
     reasons = [f"match lost: {r}" for r in lost] + [f"decided, now undecided: {r} ({p[r]} → {n.get(r)})" for r in undecided]
-    reasons += [f"scored over another stretch of the recording: {r}" for r in moved]
     if goal and not met:
         reasons.append(f"repair goal `{goal}` not met: {why}")
-    return {"ok": not lost and not undecided and not moved and (goal is None or bool(met)), "lost": lost, "undecided": undecided,
+    return {"ok": not lost and not undecided and (goal is None or bool(met)), "lost": lost, "undecided": undecided,
             "goal": goal, "goal_met": met, "progress": why, "outcome": new.outcome if isinstance(new, LawCheck) else new.get("outcome"),
             "coverage": {"eligible": len(n), "matched": sum(s == "match" for s in n.values())}, "reasons": reasons}
 

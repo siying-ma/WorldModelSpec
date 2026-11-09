@@ -23,6 +23,7 @@ LAW_TEXT = "If the highway has a turn lane as described in subsection 2 [STA-900
 SRC_TEXT = "If a highway provides a turn lane to be used only for turning, a vehicle must stop before turning."
 DEF_TEXT = "“Turn lane” means a lane marked for turning movements only."
 QUOTE = "a turn lane to be used only for turning"
+WHY = "borrows what a turn lane is; the source's stop duty need not hold for this condition"
 LAW = corpus.Law(LAW_ID, "A duty", LAW_TEXT, "STA 900A.100")
 SRC = corpus.Law(SRC_ID, "The source", SRC_TEXT, "STA 900A.200")
 SOURCES = {LAW_ID: LAW_TEXT, SRC_ID: SRC_TEXT, DEF_ID: DEF_TEXT}
@@ -37,7 +38,7 @@ def record(**over) -> dict:
          "elements": [{"span": "c1", "atoms": ["st.turn_lane"], "source_spans": ["r1"],
                        "justification": f"the lane the source describes: \"{QUOTE}\""},
                       {"span": "s1", "atoms": ["ru.subject"]}, {"span": "o1", "atoms": ["kin.speed"]}],
-         "compositions": [{"span": "r1", "as": "definition", "source": SRC_ID, "quote": QUOTE}],
+         "compositions": [{"span": "r1", "as": "definition", "source": SRC_ID, "quote": QUOTE, "why": WHY}],
          "binders": [{"name": "veh"}], "applicability": "a", "obligation": "o",
          "scenarios": [{"name": "forbid", "expected": "violated"}]}
     r.update(over)
@@ -50,7 +51,7 @@ def errs(raw: dict, known: dict | None = None) -> list[str]:
 
 
 def with_comp(**c) -> dict:
-    return record(compositions=[{"span": "r1", "as": "definition", "source": SRC_ID, "quote": QUOTE, **c}])
+    return record(compositions=[{"span": "r1", "as": "definition", "source": SRC_ID, "quote": QUOTE, "why": WHY, **c}])
 
 
 class Validation(unittest.TestCase):

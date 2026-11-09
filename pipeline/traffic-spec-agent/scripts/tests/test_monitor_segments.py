@@ -1,13 +1,15 @@
-"""The real monitor's `--segments` export, interval scoring on its output and Explain's `--from`/`--to`
-observation choice, on a library of the
-test's own (the working Core, one rule registered by the test, the working `Main.lean`), built in a
-temporary directory so the result does not depend on the rules the working library holds.
+"""The real monitor's `--segments` export, whole-recording scoring on its output, and Explain's
+`--from`/`--to` observation choice and window report, on a library of the test's own (the working
+Core, one rule registered by the test, the working `Main.lean`), built in a temporary directory so
+the result does not depend on the rules the working library holds.
 
 The rule looks back (`since`): on a vehicle that is fast from the trace's start it is unknown, the
-window truncated at the start, until the vehicle is slow, then compliant. The segments carry those
-reasons; every other line is byte-identical with and without the flag; the whole recording is
-unknown while an interval after the prefix is compliant; and a violation after the interval does
-not change it; Explain, given the interval, explains observations inside it only. Skipped only where Lake is not installed or the working library is not built."""
+window truncated at the start, until the vehicle is slow, then compliant, and violated at the end.
+The segments carry those reasons; every other line is byte-identical with and without the flag; the
+whole recording is violated and its scored record keeps the ego's segments; Explain, given an
+interval, explains observations inside it only, and reports the truncated windows of the whole
+trace, or of the interval it is given. Skipped only where Lake is not installed or the working
+library is not built."""
 import json
 import shutil
 import subprocess
@@ -49,7 +51,8 @@ TRACE = {"scenes": [scene(0, 10, 10), scene(1000, 20, 10), scene(2000, 30, 0.5),
                     scene(4000, 41, 10), scene(5000, 0, 10)]}
 
 
-def own_library(root: Path) -> Path:
+def own_library(root: Path, index: str = INDEX) -> Path:
+    """The working Core and tools built in `root` with `index` as the registry; returns the monitor."""
     lib = root / "library"
     (lib / "TrafficSpec").mkdir(parents=True)
     for f in ("lakefile.lean", "lean-toolchain", "lake-manifest.json", "Main.lean", "Explain.lean", "TrafficSpec.lean"):
@@ -62,7 +65,7 @@ def own_library(root: Path) -> Path:
         shutil.copytree(built / "Core", dest / "Core")
         for f in built.glob("Core.*"):
             shutil.copy2(f, dest / f.name)
-    (lib / "TrafficSpec" / "Index.lean").write_text(INDEX, encoding="utf-8")
+    (lib / "TrafficSpec" / "Index.lean").write_text(index, encoding="utf-8")
     code, out = lean.lake_build(lib, ["monitor", "explain"])
     if code != 0:
         raise AssertionError(f"the test's own monitor did not build: {out[-1500:]}")
@@ -109,15 +112,15 @@ class MonitorSegments(unittest.TestCase):
                          [(s["from"], s["to"], s["verdict"]) for s in segs])     # the same runs, with reasons
         self.assertNotEqual(self.run_monitor("--segments").returncode, 0)          # JSON only
 
-    def test_interval_scoring_on_the_real_report(self):
+    def test_whole_recording_scoring_on_the_real_report(self):
         out = self.run_monitor("--json", "--segments").stdout.splitlines()
         whole = scoring.rule_results(out)
-        times = [s["t"] for s in TRACE["scenes"]]
-        self.assertEqual(whole["t/slow_once"].verdict, "violated")
-        mid = scoring.within(whole, 2000, 4000, times)["t/slow_once"]
-        self.assertEqual(mid.verdict, "compliant")                 # the prefix's unknown and the later violation not joined
-        start = scoring.within(whole, 0, 4000, times)["t/slow_once"]
-        self.assertEqual((start.verdict, start.judged[0].unknowns), ("unknown", {"window_truncated:since": 2}))
+        self.assertEqual(whole["t/slow_once"].verdict, "violated")       # the prefix's unknown does not hide the later violation
+        s = scoring.score("rec", "L", "violated", whole, {"t/slow_once": "L"})
+        self.assertEqual(s.status, "match")
+        segs = s.rules["t/slow_once"]["judged"][0]["segments"]
+        self.assertEqual([(x["from"], x["to"], x["verdict"], x["reasons"]) for x in segs],
+                         [(0, 1000, "unknown", ["window_truncated:since"]), (2000, 4000, "compliant", []), (5000, 5000, "violated", [])])
 
     def test_explain_chooses_its_observations_inside_the_window(self):
         explain = self.monitor.with_name("explain")
@@ -130,6 +133,9 @@ class MonitorSegments(unittest.TestCase):
         self.assertEqual(at(whole), [5000])                         # the violation, outside the windows below
         self.assertTrue(at(inside) and all(2000 <= t <= 4000 for t in at(inside)), at(inside))
         self.assertEqual(at(prefix), [0])                           # the first unknown observation
+        wins = lambda p: json.loads(p.stdout)["groundings"][0]["windows"]
+        self.assertEqual([(wins(p)["from_ms"], wins(p)["to_ms"], wins(p)["unknown_instants"]) for p in (whole, inside, prefix)],
+                         [(0, 5000, 2), (2000, 4000, 0), (0, 1000, 2)])
         self.assertNotEqual(run("--from", "2500", "--to", "2600").returncode, 0)     # no observation inside
         self.assertNotEqual(run("--from", "2000").returncode, 0)                     # --from without --to
 

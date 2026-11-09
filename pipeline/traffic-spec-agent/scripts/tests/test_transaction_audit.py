@@ -23,7 +23,7 @@ from harness.phases import label_check as lc
 from harness.store import jsonl, paths
 from harness.store.state import Run
 from scripts.tests.test_candidate import CA, CD, NN, Base, Txn, files, node_rec, passing, standard, world
-from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, make_dataset, write_exe
+from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, make_dataset, set_label, write_exe
 from scripts.tests.test_label_repair import L, N, RECS, prior, setting
 
 
@@ -72,7 +72,7 @@ class FullPlan(Base):
         from harness.phases import label_repair, plan
         from scripts.tests.test_label_repair_session import repair, repairing
 
-        def empty_plan(view, laws, defs, tag="", pending=None):
+        def empty_plan(view, laws, defs, tag="", pending=None, label_repair=False):
             d = view.iter / "plan" / tag
             d.mkdir(parents=True, exist_ok=True)
             (d / "blueprint.jsonl").write_text("")
@@ -115,8 +115,7 @@ class Inputs(unittest.TestCase):
         self.again()                                                            # unchanged inputs resume
 
     def test_a_flipped_label_is_refused(self):
-        f = self.ds.files("a")["label"]
-        f.write_text(json.dumps({**json.loads(f.read_text()), "recorded_label": "violation"}))
+        set_label(self.ds, "a", "violation")
         self.refused("recording a")
 
     def test_a_changed_trace_or_manifest_is_refused(self):
@@ -124,7 +123,7 @@ class Inputs(unittest.TestCase):
             f = self.ds.files("a")[k]
             old = f.read_text()
             f.write_text(old[:-1] + ',"x":1}')
-            self.refused("recording a")
+            self.refused(f"a: its {k} is not the one the dataset states")
             f.write_text(old)
 
     def test_a_changed_index_is_refused(self):
@@ -141,7 +140,7 @@ class Inputs(unittest.TestCase):
             w = csv.DictWriter(f, list(rows[0]))
             w.writeheader(); w.writerows(rows)
         (self.t / "run2").mkdir()
-        with self.assertRaisesRegex(SystemExit, "not the one the index names"):
+        with self.assertRaisesRegex(SystemExit, "not the one the dataset states"):
             lc.training_context(self.t / "run2", ["TEST-LAW"], self.ds.path)
 
     def test_inputs_that_drift_during_the_run_are_refused(self):
@@ -150,6 +149,12 @@ class Inputs(unittest.TestCase):
         f.write_text('{"scenes":[], "later": true}')
         with self.assertRaisesRegex(ValueError, "trace changed"):
             self.first.check_inputs(["a"])
+
+    def test_a_label_that_changes_during_the_run_is_refused(self):
+        self.first.check_inputs(["b"])
+        set_label(self.ds, "a", "violation")
+        with self.assertRaisesRegex(ValueError, "index .* changed"):
+            self.first.check_inputs(["b"])
 
     def test_other_limits_are_another_configuration(self):
         self.refused("limits", lc.Limits(deadline_s=1800, memory_gb=48))

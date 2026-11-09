@@ -89,10 +89,15 @@ def stop_in_adequacy(phase: str, out: str) -> str:
 
 
 def node_gate(planned: str = "not_applicable", declared: str = ".notApplicable", replay=None, rule: str = P.RULE,
-              edit=None) -> tuple[gate.Verdict, str, list[str]]:
+              edit=None, concept: str | None = None, aggregates: list | None = None,
+              accepted: dict | None = None, composed: str | None = None, params: list | None = None,
+              acquisition: str | None = None) -> tuple[gate.Verdict, str, list[str]]:
     """The fixture node of `test_precondition_continuity` through the gate, its last witness planned
-    `planned` and declared `declared`; `edit` changes the record. Returns the verdict, the harness
-    output the task directory keeps, and the phases run."""
+    `planned` and declared `declared`; `edit` changes the record; `concept` is the source of the
+    concept `CID`, registered beside the node; `aggregates` the reading's; `accepted` the catalogue;
+    `composed` the source of the accepted node `COMPOSED_ID`, registered beside it; `params` more
+    reading parameters; `acquisition` the run's acquisition profile.
+    Returns the verdict, the harness output the task directory keeps, and the phases run."""
     rec = copy.deepcopy(P.RECORD)
     rec["scenarios"][-1]["expected"] = planned
     if edit:
@@ -100,16 +105,27 @@ def node_gate(planned: str = "not_applicable", declared: str = ".notApplicable",
     with tempfile.TemporaryDirectory() as t:
         lib, work, dirs = _library(t)
         files = [nodeid.rule_path(P.NODE_ID), nodeid.witness_path(P.NODE_ID)]
-        for rel, src in zip(files, (rule, P.WITNESS.replace("BRANCH", declared))):
+        sources = [rule, P.WITNESS.replace("BRANCH", declared)]
+        own = {f"import {nodeid.rule_module(P.NODE_ID)}", f"import {nodeid.witness_module(P.NODE_ID)}"}
+        if concept is not None:
+            files, sources = [nodeid.concept_path(CID)] + files, [concept] + sources
+            own.add(f"import {nodeid.concept_module(CID)}")
+            (work / "registry.json").write_text(json.dumps({"nodes": [], "concepts": [CID]}))
+        if composed is not None:                           # an accepted node the rule composes, registered beside it
+            files, sources = [nodeid.rule_path(COMPOSED_ID)] + files, [composed] + sources
+            own.add(f"import {nodeid.rule_module(COMPOSED_ID)}")
+            (work / "registry.json").write_text(json.dumps({"nodes": [COMPOSED_ID], "concepts": []}))
+        for rel, src in zip(files, sources):
             (lib / rel).parent.mkdir(parents=True, exist_ok=True)
             (lib / rel).write_text(src, encoding="utf-8")
         (Path(t) / "reading.json").write_text(json.dumps({"params": [
             {"name": "p.halt_window", "value": 3, "unit": "s", "convention": "fixture"},
-            {"name": "p.crawl", "value": 3, "unit": "m/s", "convention": "fixture"}], "aggregates": []}))
-        ran = Ran(files, {f"import {nodeid.rule_module(P.NODE_ID)}", f"import {nodeid.witness_module(P.NODE_ID)}"}, replay)
+            {"name": "p.crawl", "value": 3, "unit": "m/s", "convention": "fixture"}] + list(params or []), "aggregates": aggregates or []}))
+        ran = Ran(files, own, replay)
         with mock.patch.multiple(paths, **dirs), mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), \
                 mock.patch.object(gate, "_toolchain", ran):
-            v = gate.run_gate(Node(rec), Reading(Path(t) / "reading.json"), {}, work, 0, 5, accepted_concepts={})
+            v = gate.run_gate(Node(rec), Reading(Path(t) / "reading.json"), {}, work, 0, 5, accepted_concepts=accepted or {},
+                              acquisition=acquisition)
         return v, (work / "gate_harness.out").read_text(), ran.phases
 
 
@@ -137,6 +153,28 @@ def concept : Concept :=
 
 end {nodeid.concept_namespace(CID)}
 '''
+CONCEPT_BODY = '.cmp (.measure "kin_speed" [aU]) .le (.param "tol")'
+# The same concept reading an aggregate in a `cond` guard whose branches agree: its verdicts are
+# those of the neutral body, whatever the membership. The id reaches the body through the literal
+# formal `w`, which the caller fills (the only form a shared concept may read an aggregate in);
+# `HARD_BODY` writes the id into the body itself, which the concept gate refuses.
+AID = "DEF-TST-1::wagon"
+AGG_ARGS = f'[("u", .track), ("w", .literal ["{AID}"])]'
+AGG_BODY = ('.cmp (.cond (.atom "ru_aggregate" [aU, .var "w"] []) (.measure "kin_speed" [aU]) '
+            '(.measure "kin_speed" [aU])) .le (.param "tol")')
+HARD_BODY = (f'.cmp (.cond (.atom "ru_aggregate" [aU, .lit "{AID}"] []) (.measure "kin_speed" [aU]) '
+             '(.measure "kin_speed" [aU])) .le (.param "tol")')
+AGG_DECLARED = [{"id": AID, "included": ["ru.motor_vehicle"]}]
+HARD_CODED = (f"{CID}: the body names the definition-scoped aggregate `{AID}` itself (here or in a concept it calls with that id); "
+              "a shared concept reads an aggregate only through a literal formal its caller fills, so that each calling law's "
+              "own gate checks the id against its definitions, its reading and its claims")
+
+
+def concept_source(body: str = CONCEPT_BODY, unit: str = ".metrePerSecond", args: str | None = None) -> str:
+    src = CONCEPT.replace("UNIT", unit).replace(f"def body : Formula := {CONCEPT_BODY}", f"def body : Formula := {body}")
+    return src if args is None else src.replace('args := [("u", .track)]', f"args := {args}")
+
+
 CONCEPT_WITNESS = f'''/- Its witnesses: one vehicle on a straight lane, at rest or creeping at 1.5 m/s. -/
 import {nodeid.concept_module(CID)}
 import TrafficSpec.Core.Evidence.Builders
@@ -179,20 +217,115 @@ CONCEPT_RECORD = {"concept_id": CID, "contract": CONTRACT, "kind": "formula", "a
                   "residues": [], "literals": []}
 
 
-def concept_gate(scenarios=(HOLDS, FAILS, BLIND), replay=None, unit: str = ".metrePerSecond") -> tuple[gate.Verdict, str, list[str]]:
-    """The neutral concept through the gate with these witnesses, its formal's unit `unit`."""
+def concept_gate(scenarios=(HOLDS, FAILS, BLIND), replay=None, unit: str = ".metrePerSecond", body: str = CONCEPT_BODY,
+                 claims: tuple = (), aggregates: list | None = None, formal: bool = False,
+                 callee: tuple[str, str, list[str]] | None = None) -> tuple[gate.Verdict, str, list[str]]:
+    """The neutral concept through the gate with these witnesses, its formal's unit `unit`, its body
+    `body`; `claims` are added to the record's element, `aggregates` are the reading's. `formal` gives
+    the concept the literal formal `w` admitting `AID`, which its witness instance fills with `AID`;
+    `callee` (id, source, the atoms its record reads) is an accepted concept registered beside it,
+    which the record's element maps to."""
     with tempfile.TemporaryDirectory() as t:
         lib, work, dirs = _library(t)
         files = [nodeid.concept_path(CID), nodeid.concept_witness_path(CID)]
-        for rel, src in zip(files, (CONCEPT.replace("UNIT", unit), CONCEPT_WITNESS.replace("SCENARIOS", "\n  , ".join(scenarios)))):
+        witness = CONCEPT_WITNESS.replace("SCENARIOS", "\n  , ".join(scenarios))
+        if formal:
+            witness = witness.replace("literals := []", f'literals := [("w", "{AID}")]')
+        sources = [concept_source(body, unit, AGG_ARGS if formal else None), witness]
+        own = {f"import {nodeid.concept_module(CID)}", f"import {nodeid.concept_witness_module(CID)}"}
+        accepted = {}
+        if callee is not None:
+            files, sources = [nodeid.concept_path(callee[0])] + files, [callee[1]] + sources
+            own.add(f"import {nodeid.concept_module(callee[0])}")
+            (work / "registry.json").write_text(json.dumps({"nodes": [], "concepts": [callee[0]]}))
+            accepted = {callee[0]: {"reads": callee[2], "params": []}}
+        for rel, src in zip(files, sources):
             (lib / rel).parent.mkdir(parents=True, exist_ok=True)
             (lib / rel).write_text(src, encoding="utf-8")
-        (Path(t) / "reading.json").write_text(json.dumps({"params": [], "aggregates": []}))
-        ran = Ran(files, {f"import {nodeid.concept_module(CID)}", f"import {nodeid.concept_witness_module(CID)}"}, replay)
+        (Path(t) / "reading.json").write_text(json.dumps({"params": [], "aggregates": aggregates or []}))
+        record = copy.deepcopy(CONCEPT_RECORD)
+        record["elements"][0]["atoms"] += list(claims)
+        if formal:
+            record["args"] = record["args"] + [{"name": "w", "sort": "literal", "values": [AID]}]
+        if callee is not None:
+            record["elements"][0]["concepts"] = [callee[0]]
+        ran = Ran(files, own, replay)
         with mock.patch.multiple(paths, **dirs), mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), \
                 mock.patch.object(gate, "_toolchain", ran):
-            v = gate.run_concept_gate(ConceptRecord(copy.deepcopy(CONCEPT_RECORD)), Reading(Path(t) / "reading.json"), {}, work, 0, 5, accepted={})
+            v = gate.run_concept_gate(ConceptRecord(record), Reading(Path(t) / "reading.json"), {}, work, 0, 5, accepted=accepted)
         return v, (work / "gate_harness.out").read_text(), ran.phases
+
+
+# A callee that a concept calls on its road user: whether the road user is a member of the aggregate.
+CALLEE = "drv.motion.gate_member_test"
+
+
+def callee_source(hard: bool) -> str:
+    """The callee: with `hard`, it names `AID` in its own body; else it reads the id its literal formal is given."""
+    args, arg = ('[("u", .track)]', f'.lit "{AID}"') if hard else (f'[("u", .track), ("w", .literal ["{AID}"])]', '.var "w"')
+    return f'''/- A callee for the gate's aggregate-context check. -/
+import TrafficSpec.Core.Language.Concept
+
+namespace {nodeid.concept_namespace(CALLEE)}
+
+def concept : Concept :=
+  {{ id := "{CALLEE}"
+    contract := "The road user is a member of the aggregate."
+    definition := none
+    args := {args}
+    params := []
+    body := .formula (.atom "ru_aggregate" [.var "u", {arg}] [])
+    residues := []
+    narrowings := []
+    supersedes := none }}
+
+end {nodeid.concept_namespace(CALLEE)}
+'''
+
+
+def calling(actual: str) -> str:
+    """A body that calls the callee in its `cond` guard, giving it `actual` beside the road user."""
+    return (f'.cmp (.cond (.derived "{CALLEE.replace(".", "_")}" [aU{actual}] []) (.measure "kin_speed" [aU]) '
+            '(.measure "kin_speed" [aU])) .le (.param "tol")')
+
+
+# A node whose obligation is the aggregate-reading concept with the tolerance `p.crawl`: the
+# fixture's own obligation, read through the concept.
+AGG_RULE = P.RULE.replace('def obligation : Formula := .cmp (.measure "kin_speed" [vV]) .le (.param "p.crawl")',
+                          f'def obligation : Formula := .derived "drv_motion_gate_rest_test" [vV, .lit "{AID}"] [.param "p.crawl"]')
+AGG_ACCEPTED = {CID: {"reads": ["kin.speed", "ru.aggregate"], "params": [{"name": "tol", "unit": "m/s"}]}}
+
+
+# An accepted node whose obligation is that its vehicle is a member of `AID`, and a caller that
+# composes it in a `cond` guard whose branches agree (the fixture's obligation, whatever the verdict
+# of the composed rule).
+COMPOSED_ID = "TEST_AGGREAD_9"
+COMPOSED_RULE = f'''/- A composed node reading an aggregate. -/
+import TrafficSpec.Core.Language.Rule
+
+namespace {nodeid.rule_namespace(COMPOSED_ID)}
+
+def rule : Rule :=
+  {{ id := "{COMPOSED_ID}"
+    laws := ["TEST-AGGREAD-9"]
+    binders := [ {{ name := "v", cls := .atom "ru_motor_vehicle" [.var "v"] [] }} ]
+    applicability := .tt
+    obligation := .atom "ru_aggregate" [.var "v", .lit "{AID}"] [] }}
+
+end {nodeid.rule_namespace(COMPOSED_ID)}
+'''
+COMPOSING_RULE = P.RULE.replace('def obligation : Formula := .cmp (.measure "kin_speed" [vV]) .le (.param "p.crawl")',
+                                f'def obligation : Formula := .cmp (.cond (.rule "{COMPOSED_ID}" [("v", "v")]) (.measure "kin_speed" [vV]) '
+                                '(.measure "kin_speed" [vV])) .le (.param "p.crawl")')
+
+
+def calls_concept(*claims: str):
+    """The record edit: the obligation's span maps to the concept, with these claims beside it."""
+    def edit(rec: dict) -> None:
+        e = next(e for e in rec["elements"] if e["span"] == "o1")
+        e["derived"] = [CID]
+        e["atoms"] = list(e["atoms"]) + list(claims)
+    return edit
 
 
 WITNESSES_ONLY = ["witnesses"]
@@ -206,7 +339,7 @@ class NodeHarness(unittest.TestCase):
         v, out, phases = node_gate()
         self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
         scen = [t for n in ("forbid", "permit", "idle", "blind", "branch_1") for t in ("SCEN", f"TIME\tscenario:{n}")]
-        self.assertEqual(_tags(out), ["DECL", "RULEJSON", "ATOMS", "COMPOSES", "AGGREGATES", "MANIFEST", "OCC",
+        self.assertEqual(_tags(out), ["DECL", "RULEJSON", "RULEXJSON", "ATOMS", "COMPOSES", "AGGREGATES", "MANIFEST", "OCC",
                                       "TIME\toccurrences", "TIME\tchecks", "TIME\tlint"] + scen + ["TIME\twitnesses", "DONE_WITNESSES",
                                       "ADEQ_SIZE", "TIME\tadequacy_start", "TIME\tadequacy", "DONE"])
         self.assertIn(f"ADEQ_SIZE\t{P.NODE_ID}\t6\t4\n", out)       # six leaves; four witnesses expect a decided verdict
@@ -239,6 +372,53 @@ class NodeHarness(unittest.TestCase):
         self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
         self.assertIn("\nDIM\t", out)
         self.assertRegex(out, r"\nSCEN\tbranch_1\tcompliant\t\?")              # the witness failed too
+
+    def test_an_aggregate_named_inside_a_term_is_held_against_the_reading(self):
+        rule = P.RULE.replace('def obligation : Formula := .cmp (.measure "kin_speed" [vV]) .le (.param "p.crawl")',
+                              'def obligation : Formula := .cmp (.cond (.atom "ru_aggregate" [vV, .lit "DEF-TST-1::wagon"] []) '
+                              '(.measure "kin_speed" [vV]) (.measure "kin_speed" [vV])) .le (.param "p.crawl")')
+        v, out, phases = node_gate(rule=rule)
+        self.assertIn("\nAGGREGATES\tDEF-TST-1::wagon\n", out)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertIn(f"{P.NODE_ID}: aggregate `DEF-TST-1::wagon` is not declared by the reading", v.details)
+
+    def test_an_undeclared_aggregate_read_through_a_concept_is_refused(self):
+        v, out, phases = node_gate(rule=AGG_RULE, concept=concept_source(AGG_BODY, args=AGG_ARGS), edit=calls_concept(f"ru.aggregate={AID}"),
+                                   accepted=AGG_ACCEPTED)
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertIn(f"{P.NODE_ID}: aggregate `{AID}` is not declared by the reading", v.details)
+
+    def test_a_declared_aggregate_read_through_a_concept_and_not_claimed_is_refused(self):
+        v, _out, phases = node_gate(rule=AGG_RULE, concept=concept_source(AGG_BODY, args=AGG_ARGS), edit=calls_concept(),
+                                    aggregates=AGG_DECLARED, accepted=AGG_ACCEPTED)
+        self.assertEqual((v.verdict, phases), ("UNCLAIMED_ATOM", WITNESSES_ONLY), v.details)
+        self.assertEqual(v.details, [f'ru_aggregate "{AID}" (the record claims no aggregate)'])
+
+    def test_an_admitted_and_claimed_aggregate_read_through_a_concept_passes(self):
+        v, out, phases = node_gate(rule=AGG_RULE, concept=concept_source(AGG_BODY, args=AGG_ARGS), edit=calls_concept(f"ru.aggregate={AID}"),
+                                   aggregates=AGG_DECLARED, accepted=AGG_ACCEPTED)
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
+
+    def test_an_id_the_caller_gives_is_held_against_the_callers_reading(self):
+        v, out, phases = node_gate(rule=AGG_RULE, concept=concept_source(AGG_BODY, args=AGG_ARGS), edit=calls_concept(f"ru.aggregate={AID}"),
+                                   aggregates=[{"id": "DEF-TST-1::cart", "included": ["ru.motor_vehicle"]}], accepted=AGG_ACCEPTED)
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertIn(f"{P.NODE_ID}: aggregate `{AID}` is not declared by the reading", v.details)
+
+    # A composed node claims the aggregates it reads; its caller does not claim them again, and the
+    # reading check still covers the whole composition closure.
+    def test_a_composed_nodes_aggregate_is_not_claimed_again_by_its_caller(self):
+        v, out, phases = node_gate(rule=COMPOSING_RULE, composed=COMPOSED_RULE, aggregates=AGG_DECLARED)
+        self.assertIn("\nAGGREGATES\t\n", out)
+        self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
+
+    def test_a_composed_nodes_undeclared_aggregate_is_refused_to_its_caller(self):
+        v, _out, phases = node_gate(rule=COMPOSING_RULE, composed=COMPOSED_RULE)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertIn(f"{COMPOSED_ID}: aggregate `{AID}` is not declared by the reading", v.details)
 
     def test_a_witness_that_failed_before_the_deadline_is_a_witness_failure(self):
         v, _out, phases = node_gate(replay=stop_after("TIME\tscenario:permit", ("SCEN\tpermit\tcompliant\tcompliant\tok",
@@ -274,7 +454,7 @@ class ConceptHarness(unittest.TestCase):
         v, out, phases = concept_gate()
         self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
         scen = [t for n in ("holds", "fails", "blind") for t in ("SCEN", f"TIME\tscenario:{CID}@w/{n}")]
-        self.assertEqual(_tags(out), ["DECL", "ATOMS", "READS", "BODY", "WITNESS", "OCC", "INST", "TIME\tchecks", "TIME\tlint"] + scen
+        self.assertEqual(_tags(out), ["DECL", "ATOMS", "READS", "AGGREGATES", "HARDAGG", "BODY", "WITNESS", "OCC", "INST", "TIME\tchecks", "TIME\tlint"] + scen
                          + ["TIME\twitnesses", "DONE_WITNESSES", "ADEQ_SIZE", "TIME\tadequacy_start", "TIME\tadequacy", "DONE"])
         self.assertIn(f"ADEQ_SIZE\t{CID}@w\t1\t2\n", out)
 
@@ -299,6 +479,55 @@ class ConceptHarness(unittest.TestCase):
         self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
         self.assertIn("\nDIM\t", out)
         self.assertRegex(out, r"\nSCEN\tfails\t\S+\tcompliant\t\?")
+
+    def test_an_undeclared_aggregate_in_the_body_is_refused(self):
+        v, out, phases = concept_gate(body=AGG_BODY, claims=(f"ru.aggregate={AID}",), formal=True)
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertIn(f"{CID}: aggregate `{AID}` is not declared by the reading", v.details)
+
+    def test_a_declared_aggregate_in_the_body_not_claimed_by_its_id_is_refused(self):
+        v, _out, phases = concept_gate(body=AGG_BODY, claims=("ru.aggregate",), aggregates=AGG_DECLARED, formal=True)
+        self.assertEqual((v.verdict, phases), ("UNCLAIMED_ATOM", WITNESSES_ONLY), v.details)
+        self.assertEqual(v.details, [f'ru_aggregate "{AID}" (the record claims no aggregate)'])
+
+    def test_an_admitted_and_claimed_aggregate_in_the_body_passes(self):
+        v, out, phases = concept_gate(body=AGG_BODY, claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED, formal=True)
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertIn("\nHARDAGG\t\n", out)                      # the id comes through the formal
+        self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
+
+    # A shared concept that writes a definition-scoped aggregate id into its body would apply that
+    # membership to every law that calls it, whatever definition governs that law: refused, however
+    # well the run's reading admits the id and the record claims it.
+    def test_an_aggregate_id_written_into_the_body_is_refused_though_admitted_and_claimed(self):
+        v, out, phases = concept_gate(body=HARD_BODY, claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED)
+        self.assertIn(f"\nHARDAGG\t{AID}\n", out)
+        self.assertEqual((v.verdict, phases), ("CHECK_FAIL", WITNESSES_ONLY), v.details)
+        self.assertEqual(v.details, [HARD_CODED])
+
+    def test_an_aggregate_id_written_into_the_body_beside_a_formal_is_refused(self):
+        v, _out, _phases = concept_gate(body=HARD_BODY, claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED, formal=True)
+        self.assertEqual(v.verdict, "CHECK_FAIL", v.details)
+        self.assertIn(HARD_CODED, v.details)
+
+    def test_an_id_given_to_a_callee_as_a_literal_is_refused(self):
+        v, out, _phases = concept_gate(body=calling(f', .lit "{AID}"'), claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED,
+                                       callee=(CALLEE, callee_source(hard=False), ["ru.aggregate"]))
+        self.assertIn(f"\nHARDAGG\t{AID}\n", out)
+        self.assertEqual((v.verdict, v.details), ("CHECK_FAIL", [HARD_CODED]))
+
+    def test_a_callee_that_names_the_id_itself_makes_its_caller_refused(self):
+        v, _out, _phases = concept_gate(body=calling(""), claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED,
+                                        callee=(CALLEE, callee_source(hard=True), ["ru.aggregate"]))
+        self.assertEqual((v.verdict, v.details), ("CHECK_FAIL", [HARD_CODED]))
+
+    def test_a_formal_forwarded_to_a_callee_passes(self):
+        v, out, phases = concept_gate(body=calling(', .var "w"'), claims=(f"ru.aggregate={AID}",), aggregates=AGG_DECLARED, formal=True,
+                                      callee=(CALLEE, callee_source(hard=False), ["ru.aggregate"]))
+        self.assertIn(f"\nAGGREGATES\t{AID}\n", out)
+        self.assertIn("\nHARDAGG\t\n", out)
+        self.assertEqual((v.verdict, phases), ("OK", BOTH), v.details)
 
     def test_a_witness_that_failed_before_the_deadline_is_a_witness_failure(self):
         v, _out, phases = concept_gate(replay=stop_after(f"TIME\tscenario:{CID}@w/holds", (f"SCEN\tholds\t{CID}@w\tcompliant\tcompliant\tok",

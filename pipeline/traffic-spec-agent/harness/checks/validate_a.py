@@ -2,7 +2,7 @@
 from __future__ import annotations
 import re
 from dataclasses import dataclass, field
-from ..model import nodeid
+from ..model import acquisition, nodeid
 from ..model.blueprint import (Node, ConceptRecord, span_offsets, PLANNED_NARROWING_KINDS, ROLES, SUBSTANTIVE, SCENARIOS, GAP_KINDS, AS_KINDS, DEFINITION, concepts_of,
                         normalize_verdict, CONCEPT_SCENARIOS, CONCEPT_KINDS, ARG_SORTS)
 from ..model.units import FACTORS, stated_figures, to_core, unsupported_figures
@@ -76,9 +76,12 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
     for sid, s in spans.items():
         role, n = s.get("role"), len(carriers[sid])
         if role == "reference":
-            # a reference names one or several rules: one composition per rule named, or one residue
-            if n == 0 or (n > 1 and set(carriers[sid]) != {"compositions"}):
-                errs.append(f"{node.id}: reference span {sid} must be carried by compositions (one per rule it names) or by one residue")
+            # a reference names one or several rules: one composition per rule named, or one residue; never
+            # the node's own atoms, which would restate the named rule instead of composing it
+            if n == 0 or (set(carriers[sid]) != {"compositions"} and carriers[sid] != ["residues"]):
+                errs.append(f"{node.id}: reference span {sid} is carried by compositions (one per rule it names) or by one residue, never by "
+                            f"{sorted(set(carriers[sid]) - {'compositions'}) or 'nothing'}: a reference to a rule composes that rule, "
+                            "a reference that only borrows words is a `definition` reference")
             if corpus_ids and "residues" in carriers[sid]:
                 named = [i for i in corpus.cited_law_ids(s.get("text", "")) if i in corpus_ids]
                 if named:
@@ -93,6 +96,102 @@ def check_accounting(node: Node, corpus_ids: set[str] | None = None) -> list[str
             errs.append(f"{node.id}: sibling span {sid} belongs to another node of the same law and carries nothing here")
         if role == "definitional" and n == 0 and not re.search(r"\[DEF-", s.get("text", "")):
             errs.append(f"{node.id}: definitional span {sid} cites no definition and carries nothing")
+    return errs
+
+
+#: The phrases by which a law's words require compliance with, or apply or except, the law they then
+#: name in brackets: an unambiguous normative reference, as opposed to words that only mention or
+#: borrow from another law ("as described in", "pursuant to the criteria set forth in").
+NORMATIVE_PHRASE = r"(?:(?:except\s+)?as\s+(?:otherwise\s+)?provided\s+in|in\s+compliance\s+with|as\s+required\s+(?:by|pursuant\s+to))"
+#: The words of a citation, and nothing else: unit words, designators (a number with its letters and
+#: dotted parts, or a letter or number in parentheses, then any further levels in parentheses written
+#: against it: "2(a)", "(2)(a)", "484B.287(1)(b)"), a code's upper-case abbreviation, "of this section"
+#: and the list words inside one designation ("(1) or (2)", "(a) to (f)").
+_CITATION_WORD = (r"(?:(?:sub)?sections?|(?:sub)?paragraphs?|chapters?|titles?|(?-i:[A-Z]{2,6})|of|this|and|or|to"
+                  r"|(?:[0-9]+[A-Za-z]*(?:\.[0-9]+[A-Za-z]*)*|\([A-Za-z0-9]+\))(?:\([A-Za-z0-9]+\))*)")
+_CITATION = rf"(?:{_CITATION_WORD}\s+)*"
+#: What the rule a compliance phrase points at may be called before its citation.
+_OBJECT = r"(?:the\s+(?:manner\s+prescribed|provisions|requirements)\s+(?:in|of)\s+)?"
+_BRACKET = r"\[[^\]]*\]"
+#: A further citation of the same list: a comma, "and", "or" or "and/or", then citation words.
+_LIST_JOIN = rf"(?:\s*,\s*(?:(?:and/or|and|or)\s+)?|\s+(?:and/or|and|or)\s+){_CITATION}{_BRACKET}"
+NORMATIVE_REFERENCE = re.compile(rf"\b{NORMATIVE_PHRASE}\s+{_OBJECT}{_CITATION}{_BRACKET}(?:{_LIST_JOIN})*", re.IGNORECASE)
+
+
+def normative_references(text: str, own: str) -> list[tuple[int, int, list[str]]]:
+    """The unambiguous normative references of a law's posted text: a normative phrase, then only
+    citation words and a bracket naming a law, then further citations joined only by a list
+    connector. Any other word (a new clause, a subject, a borrowing phrase, a noun with its own
+    qualifier) ends the reference, or leaves no reference when it comes before the first bracket.
+    Each as (start, end, the law ids its brackets name other than the law's own); a phrase whose
+    brackets name no other law is left out."""
+    out = []
+    for m in NORMATIVE_REFERENCE.finditer(text):
+        named = [i for i in corpus.cited_law_ids(m.group(0)) if i != own]
+        if named:
+            out.append((m.start(), m.end(), named))
+    return out
+
+
+def _carried_targets(node: Node, sids: list[str], known: dict[str, Node]) -> set[str]:
+    """The laws whose nodes `node`'s execution compositions on spans `sids` compose, counting only a
+    target the validator knows and that is not fenced."""
+    return {known[c["rule"]].law for c in node.dependencies()
+            if c.get("span") in sids and c.get("rule") in known and not known[c["rule"]].get("fenced")}
+
+
+def check_reference_positions(node: Node, law: Law, law_ids: set[str] | None = None,
+                              known: dict[str, Node] | None = None, law_nodes: list[Node] | None = None) -> list[str]:
+    """Read from the law's text, not from the plan's roles: every span of the record that overlaps an
+    unambiguous normative reference is a `reference` span (or a `sibling` span), and it is carried by
+    execution compositions or a residue, never by a `definition` reference. Each law the reference
+    names that is a law of the corpus (`law_ids`) is the target of at least one execution composition
+    of a usable node (known, not fenced): on this record's reference spans there, or, where this
+    record marks the whole position `sibling`, on the spans of the law's other nodes (`law_nodes`)
+    that overlap it. How the targets combine is the plan's; none is dropped. A law outside the corpus
+    follows the residue rule."""
+    errs = []
+    known = known or {}
+    offs = span_offsets(node.get("segmentation", []), law.text)
+    spans = node.spans()
+    defined = {c.get("span") for c in node.definition_references()}
+    for a, z, named in normative_references(law.text, law.id):
+        words = " ".join(law.text[a:z].split())
+        overlap = [sid for sid, (i, j) in offs.items() if i < z and a < j]
+        mine = [sid for sid in overlap if spans.get(sid, {}).get("role") != "sibling"]
+        in_corpus = [lid for lid in named if lid in (law_ids or set())]
+        if mine and all(spans.get(sid, {}).get("role") == "reference" for sid in mine) and node.dependencies():
+            targets = _carried_targets(node, mine, known)
+            composed = any(c.get("span") in mine for c in node.dependencies())
+            for lid in in_corpus if composed else []:      # none composed: the carrier rules already refuse it
+                if lid not in targets:
+                    errs.append(f"{node.id}: the normative reference “{words[:120]}” names {lid}, and no composition of a usable node on its "
+                                f"span {'/'.join(mine)} composes a node of {lid}: each law the reference names is composed (how they "
+                                "combine is stated by the compositions' kinds), even one not yet accepted")
+        elif overlap and not mine and in_corpus:
+            carriers: dict[str, set[str]] = {}
+            for m in law_nodes or []:
+                if m.id == node.id:
+                    continue
+                m_offs, m_spans = span_offsets(m.get("segmentation", []), law.text), m.spans()
+                sids = [sid for sid, (i, j) in m_offs.items() if i < z and a < j and m_spans.get(sid, {}).get("role") != "sibling"]
+                if sids:
+                    carriers[m.id] = _carried_targets(m, sids, known)
+            missing = [lid for lid in in_corpus if lid not in set().union(*carriers.values())] if carriers else []
+            if missing:                                   # no carrier at all: `check_decomposition` refuses the sibling span
+                errs.append(f"{node.id}: marks the normative reference “{words[:120]}” `sibling`, but the nodes that segment it "
+                            f"({', '.join(sorted(carriers))}) compose no usable node of {missing}: a sibling carries a reference only "
+                            "by composing a usable node of each law it names")
+        for sid in mine:
+            role = spans.get(sid, {}).get("role")
+            if role != "reference":
+                errs.append(f"{node.id}: span {sid} ({role}) covers the normative reference “{words[:120]}” to {named}; these words require "
+                            "the named rule to be complied with, to apply or not to apply: cut them into a `reference` span carried by "
+                            "compositions of the named law's nodes (or by a residue where that law is outside the corpus)")
+            elif sid in defined:
+                errs.append(f"{node.id}: reference span {sid} “{words[:120]}” cannot be carried by a `definition` reference: its words "
+                            f"require the rule of {named} to be complied with, to apply or not to apply, which an execution composition "
+                            "states (`exception`, `condition`, `compliance` or `unless`)")
     return errs
 
 
@@ -199,7 +298,9 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
     reading as a proposal the operator reviews; a parameter neither the reading has nor the node
     proposes returns the node. A proposed value may not be a figure the law states. A value the
     catalogue holds is named as it is, unless a node of this law proposed it, the operator has not
-    reviewed it, and no node of another law (`foreign_params`) names the parameter."""
+    reviewed it, and no node of another law (`foreign_params`) names the parameter. A parameter an
+    acquisition profile names (the step bound of `heading_since`) is the operator's: no node proposes
+    it or a value for it."""
     errs, proposals = [], []
     spans = node.spans()
     op_spans = {o.get("span") for o in node.get("operationalizations", [])}
@@ -240,7 +341,13 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
             errs.append(f"{node.id}: span {sid} states `{u.words}`, which the harness cannot read as a figure; the operator extends the "
                         "figure parser (`harness/model/units.py`) before this law can be checked")
     proposed = {pr.get("name"): pr for pr in node.get("param_proposals", []) if isinstance(pr, dict)}
+    reserved = acquisition.reserved_parameters()
     for name, pr in proposed.items():
+        if name in reserved:
+            errs.append(f"{node.id}: `{name}` is the `heading_since` step parameter of acquisition profile(s) "
+                        f"{', '.join(reserved[name])}: the operator enters and reviews its value; no plan or repair proposes it "
+                        "or a value for it — name it as it is")
+            continue
         if not name or not _PARAM.match(str(name)):
             errs.append(f"{node.id}: proposed parameter {name!r} is not of the form `p.<snake_case>`")
         if pr.get("unit") not in FACTORS:
@@ -263,7 +370,11 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
             pass
     for p in node.params():
         if not reading.has(p):
-            if p in proposed:
+            if p in reserved:
+                if p not in proposed:
+                    errs.append(f"{node.id}: `{p}` is the `heading_since` step parameter of acquisition profile(s) "
+                                f"{', '.join(reserved[p])} and the reading lacks it: the operator enters its reviewed value")
+            elif p in proposed:
                 proposals.append(proposed[p])
             else:
                 errs.append(f"{node.id}: parameter `{p}` is in no catalogue and the node proposes none: add it to `param_proposals` "
@@ -402,19 +513,25 @@ def check_scenarios(node: Node, onto: Ontology, concept_atoms: dict[str, set[str
 
 OCCASIONS = {"at_recognition", "some_moment", "throughout"}
 OCCASION_ROLES = {"trigger", "condition", "exception"}
+#: Where an act's stretch begins: a window of fixed length behind its recognition (`window`, the
+#: default when a record names none), or the act's observed onset (`event`).
+BOUNDARIES = {"window", "event"}
+#: What a concept that declares an act states in its contract, each in words of the contract.
+ACT_WORDS = {"onset": "observed beginning", "recognition": "point of recognition", "extent": "extent (how long it holds, or what ends it)",
+             "history": "history boundary for conduct before the act"}
 
 
-def acts_over_time(node: Node, concept_params: dict[str, list[dict]]) -> list[str]:
-    """The concepts the obligation span maps to that are observed over a stretch of time: those
-    with a parameter in a unit of time. Such an act is recognized only after it has been under way."""
+def acts_over_time(node: Node, acts: dict[str, dict] | None = None) -> list[str]:
+    """The concepts the obligation span maps to that recognize an act over a stretch of time: those
+    whose record declares it (`act`, in `acts` by concept id). Nothing else makes a concept an act:
+    neither a parameter in a unit of time, which may bound a sampling or a recognition, nor the
+    temporal operators of its body. Such an act is recognized only after it has been under way."""
     spans = node.spans()
     out = []
     for e in node.get("elements", []):
         if spans.get(e.get("span"), {}).get("role") != "obligation":
             continue
-        for c in e.get("derived", []):
-            if any(FACTORS.get(str(p.get("unit")), ("",))[0] == "second" for p in concept_params.get(c, []) if isinstance(p, dict)):
-                out.append(c)
+        out += [c for c in e.get("derived", []) if c in (acts or {})]
     return out
 
 
@@ -438,9 +555,13 @@ def reads_motion(ids: list[str], onto: Ontology, concept_atoms: dict[str, set[st
 def occasion_requirements(acts: list[str], scoped: list[str]) -> str:
     """Everything the occasion of an act observed over time requires, stated at once, so that a
     record returned for one part of it learns every other part in the same message."""
-    return (f"declare `occasion` {{act, window, under_way, spans}}: `act` the obligation's concept observed over time "
-            f"({', '.join(f'`{a}`' for a in acts) or 'none found'}), or the list of them where the obligation names alternative acts; "
-            "`window` the act's window parameter, which the node names; `spans` saying, for each trigger, condition and exception span "
+    return (f"declare `occasion` {{act, boundary, window | onset and recognition, under_way, spans}}: `act` the obligation's concept "
+            f"whose record declares an act ({', '.join(f'`{a}`' for a in acts) or 'none found'}), or the list of them where the obligation "
+            "names alternative acts; `boundary` the boundary those records declare: `window`, with `window` the act's window "
+            "parameter, which the node names, or `event`, for an act no window of fixed length bounds, with `onset` an element "
+            "{words, atoms, derived, justification} mapping what marks the act's observed beginning, `recognition` the words saying "
+            "where the act is recognized, no `window`, and, where the formula language cannot write that boundary, `gap` the span "
+            "of the record's `operator` gap; `spans` saying, for each trigger, condition and exception span "
             f"the node maps ({', '.join(f'`{k}`' for k in scoped) or 'none'}), whether it is read `at_recognition` (where the act is "
             "recognized), `some_moment` (at some moment while the act is under way) or `throughout` (at every moment while it is under "
             "way). Where a span is read `some_moment` or `throughout`, also: `under_way`, an element {words, atoms, derived, "
@@ -451,13 +572,18 @@ def occasion_requirements(acts: list[str], scoped: list[str]) -> str:
             "different verdicts")
 
 
-def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Ontology | None = None,
+def check_occasion(node: Node, acts_declared: dict[str, dict], onto: Ontology | None = None,
                    concept_ids: set[str] | None = None, concept_atoms: dict[str, set[str]] | None = None) -> list[str]:
-    """A node whose obligation names an act observed over time, and whose rule reads trigger,
+    """A node whose obligation names an act (a concept whose record declares `act`; `acts_declared`
+    maps each such concept id to its declaration), and whose rule reads trigger,
     condition or exception spans, declares when each of those spans is read relative to the act:
     where the act is recognized, at some moment while it is under way, or throughout it. Where the
-    obligation names alternative acts, `act` lists them and they share the window, `under_way` and
-    the scenarios. A span read
+    obligation names alternative acts, `act` lists them and they share the boundary, `under_way` and
+    the scenarios. The boundary is the one the acts' records declare: a window parameter the node
+    names (`window`), or the act's observed onset (`event`), an element claimed and coded like any
+    other, with the words saying where the act is recognized; a window is never required of an act
+    whose record declares an event boundary. Where the formula language cannot write an event boundary,
+    `gap` names the span of the record's `operator` gap, which the coder confirms. A span read
     while the act is under way needs `under_way`, an element mapping the words that say the act is
     in progress to atoms or concepts that read the road user's motion (where the act is or is not
     under way is what the reading turns on, so it is claimed and coded like any element), and two
@@ -468,7 +594,7 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     alike. The first message of a returned record states all of these requirements
     (`occasion_requirements`); the messages after it name each one the record misses."""
     spans = node.spans()
-    acts = acts_over_time(node, concept_params)
+    acts = acts_over_time(node, acts_declared)
     scoped = sorted({e.get("span") for e in node.get("elements", []) if spans.get(e.get("span"), {}).get("role") in OCCASION_ROLES})
     occ = node.get("occasion")
     if occ is None:
@@ -482,10 +608,38 @@ def check_occasion(node: Node, concept_params: dict[str, list[dict]], onto: Onto
     act = occ.get("act")
     named = act if isinstance(act, list) else [act]       # alternatives the obligation names share one occasion
     if not named or any(a not in acts for a in named):
-        errs.append(f"{node.id}: occasion `act` must be the concept of the obligation span observed over time, or the list of "
-                    f"them when the obligation names alternative acts ({acts or 'none here'}); got {act!r}")
-    if occ.get("window") not in node.params():
-        errs.append(f"{node.id}: occasion `window` must be a parameter the node names (the act's window), got {occ.get('window')!r}")
+        errs.append(f"{node.id}: occasion `act` must be the concept of the obligation span whose record declares an act (`act`), "
+                    f"or the list of them when the obligation names alternative acts ({acts or 'none here'}); got {act!r}")
+    boundary = node.occasion_boundary()
+    declared = {a: (acts_declared or {}).get(a, {}).get("boundary") for a in named if a in acts}
+    other = {a: b for a, b in declared.items() if b != boundary}
+    if other:
+        errs.append(f"{node.id}: occasion `boundary` is {boundary!r}, but the record of {sorted(other)} declares "
+                    + ", ".join(f"`{a}`: {b!r}" for a, b in sorted(other.items()))
+                    + "; the occasion states the boundary its acts declare, and alternative acts share one")
+    if boundary == "window":
+        if occ.get("window") not in node.params():
+            errs.append(f"{node.id}: occasion `window` must be a parameter the node names (the act's window), got {occ.get('window')!r}")
+        errs += [f"{node.id}: occasion `{k}` belongs to `boundary: \"event\"`; a window boundary names only `window`"
+                 for k in ("onset", "recognition", "gap") if k in occ]
+    elif boundary == "event":
+        if "window" in occ:
+            errs.append(f"{node.id}: occasion `window` belongs to `boundary: \"window\"`; an event boundary is the act's `onset`, and a "
+                        "justified observation or recognition bound is a parameter of the act's concept")
+        on = occ.get("onset")
+        ids = (list(on.get("atoms") or []) + list(on.get("derived") or [])) if isinstance(on, dict) else []
+        if not isinstance(on, dict) or not _ws(on.get("words")) or not _ws(on.get("justification")) or not ids:
+            errs.append(f"{node.id}: occasion `onset` must be an element {{words, atoms, derived, justification}}: the words that "
+                        "mark the act's observed beginning, mapped to at least one atom or concept the rule reads")
+        else:
+            unknown = [i for i in ids if onto is not None and not onto.knows(i) and i not in (concept_ids or set())]
+            if unknown:
+                errs.append(f"{node.id}: occasion `onset` names {unknown}, neither atoms of the ontology nor concepts of the catalogue or this plan")
+        if not _ws(occ.get("recognition")):
+            errs.append(f"{node.id}: occasion `recognition` must state where the act is recognized")
+        if "gap" in occ and not any(g.get("span") == occ["gap"] and g.get("kind") == "operator" for g in node.gaps() if isinstance(g, dict)):
+            errs.append(f"{node.id}: occasion `gap` names span {occ['gap']!r}, which carries no `operator` gap of this record; the gap "
+                        "states the boundary the formula language cannot write")
     read = occ.get("spans")
     if not isinstance(read, dict):
         errs.append(f"{node.id}: occasion `spans` must map each trigger, condition or exception span to one of {sorted(OCCASIONS)}")
@@ -797,6 +951,10 @@ def check_compositions(node: Node, known: dict[str, Node], sources: dict[str, st
         if target is None:
             errs.append(unknown_target(node.id, c.get("rule")))
             continue
+        named = [i for i in corpus.cited_law_ids(node.spans().get(c.get("span"), {}).get("text", "")) if i != node.law]
+        if named and target.law not in named:
+            errs.append(f"{node.id}: composition on span {c.get('span')} composes `{target.id}` of law {target.law}, but the span names {named}: "
+                        "a reference that names a law composes a node of that law")
         if target.get("fenced"):
             errs.append(f"{node.id}: composes `{target.id}`, {fence_words(target.get('fenced'))}: its law is planned again, compose its new node")
         names = {b["name"] for b in target.get("binders", [])}
@@ -832,6 +990,9 @@ def check_definition_reference(node: Node, c: dict, sources: dict[str, str]) -> 
                        "carry the words as this law's own, or propose a gap"]
     if quote and quote not in _ws(sources[src]):
         errs.append(f"{at}: the quote “{quote[:120]}” does not occur verbatim in `{src}`")
+    if not src.startswith("DEF-") and not _ws(c.get("why")):
+        errs.append(f"{at} borrows from the law `{src}` and states no `why`: say which qualifiers it borrows and why that law's rule need "
+                    "not apply, hold or be complied with here (where it must, the reference is an execution composition)")
     return errs
 
 
@@ -944,8 +1105,8 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
     proposal_conflicts = _guarded("the plan's nodes", proposal_conflicts_of, list(known_nodes) + nodes)   # earlier batches first
     concept_ids = set(accepted_concepts) | {c.id for c in plan_concepts}
     concept_atoms = _guarded("the plan's concepts", concept_atom_map, onto, accepted_concepts, plan_concepts)
-    concept_params = {cid: rec.get("params", []) for cid, rec in accepted_concepts.items()}
-    concept_params.update({c.id: c.params() for c in plan_concepts})
+    acts_declared = {cid: rec["act"] for cid, rec in accepted_concepts.items() if isinstance(rec.get("act"), dict)}
+    acts_declared.update({c.id: c.get("act") for c in plan_concepts if isinstance(c.get("act"), dict)})
     known = dict(accepted); known.update({n.id: n for n in (known_nodes or [])}); known.update({n.id: n for n in nodes})
     for n in nodes:
         _guarded(n.id, resolve_rule_ids, n, known)
@@ -992,12 +1153,13 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += std_errs + proposal_conflicts.get(n.id, [])
         errs += check_anchoring(n)
         errs += check_scenarios(n, onto, concept_atoms)
-        errs += check_occasion(n, concept_params, onto, concept_ids, concept_atoms)
+        errs += check_occasion(n, acts_declared, onto, concept_ids, concept_atoms)
         errs += check_literals(n)
         errs += check_identity(n, by_law[law.id], law)
         errs += [e for e in check_decomposition(by_law[law.id], law) if re.search(rf"(?<![\w]){re.escape(n.id)}(?![\w])", e)]   # law-wide, each error to the nodes it names
         errs += check_segment_roles(n, index)
         errs += check_compositions(n, known, sources)
+        errs += check_reference_positions(n, law, set(laws) | {m.law for m in known.values()}, known, by_law[law.id])
         errs += check_source_spans(n)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps, law.text)
@@ -1088,13 +1250,15 @@ NODE_SCHEMA = {
                               "convention?": "str", "surrogate?": "bool"}],
     "assumptions?": [{"span": "id", "id": "id", "meaning?": "str"}],
     "intentions?": [{"span": "id", "id": "id", "meaning?": "str"}],
-    "compositions?": [{"span": "id", "rule?": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id", "source?": "id", "quote?": "str"}],
+    "compositions?": [{"span": "id", "rule?": "id", "map?": {"*": "str"}, "as": "str", "scopes?": "id", "source?": "id", "quote?": "str", "why?": "str"}],
     "residues?": [{"span": "id", "why?": "str", "scope?": "str"}],
     "binders": [{"name": "id", "class_elements?": ["str"]}],
     "params?": ["id"],
     "narrowings?": [{"span": "id", "why?": "str", "kind?": PLANNED_NARROWING_KINDS, "category?": "str", "gap?": "id"}],
     "scenarios": [_NODE_SCENARIO],
-    "occasion?": {"act?": ("id", ["id"]), "window?": "id", "spans?": {"*": "str"},
+    "occasion?": {"act?": ("id", ["id"]), "boundary?": BOUNDARIES, "window?": "id", "spans?": {"*": "str"},
+                  "onset?": {"words?": "str", "atoms?": ["id"], "derived?": ["id"], "justification?": "str"},
+                  "recognition?": "str", "gap?": "id",
                   "under_way?": {"words?": "str", "atoms?": ["id"], "derived?": ["id"], "params?": ["id"], "justification?": "str"}},
     "literals?": [{"span": "id", "text": "str", "value?": "any", "unit?": "str"}],
     "param_proposals?": [{"name": "id", "unit?": "str", "value?": "any", "convention?": "any", "source?": "any"}],
@@ -1104,6 +1268,7 @@ CONCEPT_SCHEMA = {
     "concept_id": "id", "kind": "str", "contract": "str", "definition?": "str",
     "args": [{"name": "id", "sort": "str", "values?": ["str"]}],
     "params": [{"name": "id", "unit": "unit", "meaning?": "str"}],
+    "act?": {"boundary": BOUNDARIES, "window?": "id", "onset": "str", "recognition": "str", "extent": "str", "history": "str"},
     "elements": [{"span?": "str", "atoms?": ["id"], "concepts?": ["id"], "justification?": "str"}],
     "residues?": [{"span?": "str", "why?": "str"}],
     "literals?": [{"value?": "any", "unit?": "str", "why?": "str"}],
@@ -1346,6 +1511,19 @@ def check_concept(c: ConceptRecord, defs: dict[str, dict], onto: Ontology, accep
             errs.append(f"{cid}: parameter `{n}` has unit {p.get('unit')!r}; use one of {sorted(FACTORS)}")
         if not _ws(p.get("meaning")):
             errs.append(f"{cid}: parameter `{n}` states no meaning")
+    # an act: the contract states its onset, its recognition, its extent and its history boundary,
+    # and its formals carry what the boundary needs
+    act = c.get("act")
+    if isinstance(act, dict):
+        errs += [f"{cid}: `act.{k}` must be words of the contract, verbatim: the contract states the act's {what}"
+                 for k, what in ACT_WORDS.items() if not _ws(act.get(k)) or _ws(act.get(k)) not in contract]
+        times = [p.get("name") for p in c.params() if FACTORS.get(str(p.get("unit")), ("",))[0] == "second"]
+        if act.get("boundary") == "window" and act.get("window") not in times:
+            errs.append(f"{cid}: `act.window` must name the concept's parameter in a unit of time that bounds the act "
+                        f"({times or 'none declared'}); got {act.get('window')!r}")
+        elif act.get("boundary") == "event" and "window" in act:
+            errs.append(f"{cid}: an event boundary names no `act.window`: the act runs from its observed onset; a justified sampling "
+                        "or recognition bound stays a parameter whose meaning says so")
     # elements: contract words → atoms and concepts
     if not c.elements():
         errs.append(f"{cid}: no elements: the contract's words map to nothing")

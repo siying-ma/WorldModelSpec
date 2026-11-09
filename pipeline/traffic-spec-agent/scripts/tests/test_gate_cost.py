@@ -554,7 +554,7 @@ class Counts(unittest.TestCase):
                 got = asdict(entry)
                 self.assertEqual({k: got[k] for k in row}, row, name)            # every recorded field as written
                 self.assertEqual({k: v for k, v in got.items() if k not in row},
-                                 {"ledger.jsonl": {"cost_failures": {}, "core_panics": []},
+                                 {"ledger.jsonl": {"cost_failures": {}, "core_panics": [], "waits_on": []},
                                   "concept_ledger.jsonl": {"cost_failures": 0, "core_panics": 0, "held_laws": []},
                                   "node_ledger.jsonl": {}}[name], name)           # the new counts start at zero
                 led.save()

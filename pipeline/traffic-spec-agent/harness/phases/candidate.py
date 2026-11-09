@@ -70,11 +70,8 @@ CANDIDATE_ENV = "TRAFFIC_SPEC_CANDIDATE"
 UNJUDGED = (gate.INFRA, gate.GATE_TIMEOUT, "BUDGET_EXHAUSTED")
 #: The run's state a transaction holds in its view, commits into the snapshot and leaves in the run's memory.
 OWNED = ("accepted_nodes", "accepted_concepts", "fenced", "fence_history", "rechecked")
-#: The versions every label check binds besides the candidate's own (the label check's data and contract).
+#: The versions a label check binds besides the candidate's own (the label check's data and contract).
 LABEL_VERSIONS = ("data", "label_contract", "scoring", "limits")
-#: Every version a later check may bind: those above, and `label_set`, the digest of the fixed labels
-#: with their scoring intervals, which only a label contract that scores inside an interval binds.
-EXTERNAL_VERSIONS = LABEL_VERSIONS + ("label_set",)
 
 
 class NotDrained(RuntimeError):
@@ -206,11 +203,25 @@ def _ws(s) -> str:
 
 def interface(rec: dict) -> dict:
     """What a concept's callers rely on under its id: its contract's text, verbatim, its kind, its formals
-    (name, sort and the admissible values of a literal formal) and its parameters (name and unit)."""
+    (name, sort and the admissible values of a literal formal), its parameters (name and unit), and the
+    act it declares (whether its callers need an occasion, and over which boundary)."""
     c = ConceptRecord(rec)
     return {"contract": str(rec.get("contract") or ""), "kind": rec.get("kind"),
             "args": [(a.get("name"), a.get("sort"), list(a.get("values", [])) if a.get("sort") == "literal" else []) for a in c.args()],
-            "params": [(p.get("name"), p.get("unit")) for p in c.params()]}
+            "params": [(p.get("name"), p.get("unit")) for p in c.params()],
+            "act": act_declaration(rec.get("act"))}
+
+
+def act_declaration(act) -> dict | None:
+    """A concept's act declaration in the form compared under its id: each part with its whitespace
+    normalized, the window only for a window boundary; None where the record declares no act."""
+    if not isinstance(act, dict):
+        return None
+    ws = lambda v: " ".join(str(v or "").split())
+    out = {k: ws(act.get(k)) for k in ("boundary", "onset", "recognition", "extent", "history")}
+    if act.get("boundary") == "window":
+        out["window"] = ws(act.get("window"))
+    return out
 
 
 ACCEPTED, DEPENDED_ON, UNBOUND = "accepted", "depended on by an accepted record", "neither accepted nor depended on by an accepted record"
@@ -394,6 +405,23 @@ def validate_records(txn: "Candidate", nodes: list[Node], concepts: list[Concept
                 out.append(CheckResult("validate", o.node.id, "pass" if o.kind == validate_a.ACCEPT else "fail", list(o.reasons)))
     except validate_a.ValidatorFault as e:
         out.append(CheckResult("validate", "validator", "unavailable", [str(e)]))
+    return out
+
+
+def unavailable_compositions(view: Run, idents) -> dict[str, list[str]]:
+    """Each node of `idents` that composes, directly or through the nodes it composes, a node its own
+    law may not use (`Run.usable_nodes`): its id → those nodes. A node of its own law (a sibling) is
+    usable; a node this run generated for another law is usable only once that law is formally
+    accepted."""
+    from .integrate import admission_selection
+    nodes, out = view.all_nodes(), {}
+    for ident in idents:
+        if ident not in nodes:
+            continue
+        ok = view.usable_nodes(Node(nodes[ident]).law)
+        bad = sorted(n for n in admission_selection(view, "node", ident)["nodes"] if n != ident and n not in ok)
+        if bad:
+            out[ident] = bad
     return out
 
 
@@ -673,10 +701,10 @@ class Candidate:
             jsonl.append_atomic(self.view.rulings_file, r)
 
     def bind(self, **versions) -> None:
-        """Bind a version a later check depends on (`data`, `label_contract`, `scoring`, `limits`, and
-        under an interval-scoring label contract `label_set`); a result verified before a binding that
-        changes a version is stale at the commit, whether the key was unbound or bound to another value."""
-        unknown = set(versions) - set(EXTERNAL_VERSIONS)
+        """Bind a version a later check depends on (`data`, `label_contract`, `scoring`, `limits`); a
+        result verified before a binding that changes a version is stale at the commit, whether the key
+        was unbound or bound to another value."""
+        unknown = set(versions) - set(LABEL_VERSIONS)
         if unknown:
             raise ValueError(f"unknown version(s) {sorted(unknown)}")
         self.bound.update(versions)
@@ -742,7 +770,8 @@ class Candidate:
     # -- checks ----------------------------------------------------------------------------------
     def verify(self) -> list[CheckResult]:
         """Every check of the closure, in the candidate: the validator on every affected record; the
-        gate on each one the validator passed whose dependencies passed, concepts before their
+        availability of every changed node's compositions to its own law (`unavailable_compositions`),
+        however its Lean was written; the gate on each one those passed whose dependencies passed, concepts before their
         callers and nodes after what they compose, each registering only its own dependency
         selection; the whole candidate registry built with every witness run; then the hooks. Every
         result is bound to the versions it ran on, and kept in `checks.jsonl`."""
@@ -757,6 +786,8 @@ class Candidate:
             concepts = concept_order([ConceptRecord(view.all_concepts()[i]) for i, k in aff.closure.items() if k == "concept"])
             nodes = topological([Node(view.all_nodes()[i]) for i, k in aff.closure.items() if k == "node"])
             results += self.validator(self, nodes, concepts)
+            for ident, bad in unavailable_compositions(view, [i for i, k in aff.changed.items() if k == "node"]).items():
+                results.append(CheckResult("availability", ident, "fail", [f"composes {', '.join(bad)}, of a law not yet formally accepted"]))
             failed = {r.subject for r in results if r.status != "pass"}
             if "validator" in failed:
                 failed |= set(aff.closure)
@@ -777,7 +808,8 @@ class Candidate:
                     v = gate.run_concept_gate(r, reading, self.scope_baseline, work, 0, 1, mode=view.opts.mode,
                                               accepted={k: x for k, x in view.all_concepts().items() if k != r.id})
                 else:
-                    v = gate.run_gate(r, reading, self.scope_baseline, work, 0, 1, accepted_concepts=view.all_concepts())
+                    v = gate.run_gate(r, reading, self.scope_baseline, work, 0, 1, accepted_concepts=view.all_concepts(),
+                                      acquisition=view.opts.acquisition_profile)
                 (work / "verdict.json").write_text(json.dumps(v.to_dict(), ensure_ascii=False, indent=1, default=str), encoding="utf-8")
                 status = "pass" if v.verdict == "OK" else "unavailable" if v.verdict in UNJUDGED else "fail"
                 results.append(CheckResult("gate", r.id, status, [v.verdict] + v.details[:8]))

@@ -187,7 +187,7 @@ class PreviousRecord(unittest.TestCase):
     def test_the_plan_prompt_has_the_section_and_its_rule(self):
         text = (paths.REPO / "prompts" / "plan.md").read_text(encoding="utf-8")
         self.assertIn("{previous_records}", text)
-        self.assertIn("an upheld structural finding or another returned reason", text)
+        self.assertIn("a validator defect or another returned reason requires it", text)
 
 
 class DrivingDistinctions(unittest.TestCase):

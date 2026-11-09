@@ -8,6 +8,7 @@
   index         regenerate Index.lean and TrafficSpecWitness.lean (rules, concepts, witnesses)
   verify        rebuild the library and run every witness, against a run's reading
   label_check   score a run's frozen library on the labelled training recordings
+  handoff       export a run's checkpoint for another machine, or verify one before continuing it
   status        the run's ledger counts
   reopen        put a run's failed or decision-blocked laws back to open
   gap           list the gaps, or record the operator's decision on one
@@ -155,12 +156,16 @@ class Cli:
         `model` (the Claude model of every planning, coding and judge session); the efforts; `session_budget_usd`, `repair_budget_usd`, `judge_budget_usd` (each role's cap), `session_retries`, `retry_wait`; `reviewer_model`
         (required), `review_effort`, `allow_same_vendor`, `review_checks`, `review_submissions`,
         `review_passes`, `max_divergences`, `reviewer_max_output_tokens`, `openai_budget_usd`,
-        `model_prices`; `feedback` (`review`: a node is accepted on its behaviour review; `labels`: that review
-        and its Stage A/B are suspended, the concept review stays, the frozen library is scored by `label_check`),
+        `model_prices`; `feedback` (required for a new run, refused before anything is spent when left out;
+        `review`: a node is accepted on its behaviour review; `labels`: that review and its Stage A/B are
+        suspended, the concept review stays, the frozen library is scored by `label_check`; a saved run whose
+        options name no mode is `review`),
         `aggregate_verifier_model` (required under `labels`), `aggregate_verifier_effort`,
         `aggregate_verifier_budget_usd`; `label_repair` (under `labels`: each law whose plan is gated is checked on
         the training recordings inside the loop and routed by its outcome) with `label_dataset` (those recordings,
-        by default the training package); `definition_precedence`; `restart` (discard an interrupted iteration);
+        by default the training package); `definition_precedence`; `acquisition_profile` (the operator's profile of the
+        recordings in `config/acquisition_profiles.json`: its reviewed parameter is every `heading_since` step bound; without
+        one no rule may read `heading_since`); `restart` (discard an interrupted iteration);
         `dry_run`; `force_takeover`. Returns 0 only when the run ends `complete`."""
         from dataclasses import fields
         from .loop import run_loop
@@ -171,14 +176,33 @@ class Cli:
         if "ontology_file" in given:
             given["ontology"] = given.pop("ontology_file")
         saved_f = paths.run_dir(run_id) / "options.json"
-        saved = json.loads(saved_f.read_text(encoding="utf-8")) if saved_f.exists() else {}
+        try:
+            saved = json.loads(saved_f.read_text(encoding="utf-8")) if saved_f.exists() else {}
+        except json.JSONDecodeError:
+            saved = {}                                         # the loop refuses a run whose options cannot be read
+        from .store.state import FEEDBACK_MODES, feedback_refusal   # the mode is settled before anything is spent
+        if paths.run_is_new(paths.run_dir(run_id)) and "feedback" not in given:
+            raise SystemExit(f"a new run names its feedback mode: give --feedback {' | '.join(FEEDBACK_MODES)} "
+                             f"(run `{run_id}` has no saved options)")
+        refusal = feedback_refusal(given.get("feedback", saved.get("feedback", Options.__dataclass_fields__["feedback"].default)))
+        if refusal:
+            raise SystemExit(refusal)
+        paths.register_roots(saved.get("repo_roots"))          # a run saved at another root (another machine, a clone)
+        for k in ("laws", "ontology", "reading", "base_reading", "definition_precedence", "model_prices"):
+            if saved.get(k):
+                saved[k] = str(paths.local(saved[k]))
         if saved.get("base_reading"):
             saved["reading"] = saved["base_reading"]
-        kw = {k: v for k, v in saved.items() if k in names and k not in ("run_id", "restart", "force_takeover", "dry_run")}
+        # the stage options name what this launch does: each launch states its own, never the last one's
+        kw = {k: v for k, v in saved.items() if k in names and k not in ("run_id", "restart", "force_takeover", "dry_run",
+                                                                          "label_deferred", "label_stage", "label_dataset")}
         kw.update(given)
         kw.setdefault("laws", DEFAULT_LAWS); kw.setdefault("ontology", DEFAULT_ONTOLOGY); kw.setdefault("reading", DEFAULT_READING)
-        if kw.get("label_repair") and not kw.get("label_dataset"):
-            kw["label_dataset"] = DEFAULT_DATASET
+        if kw.get("label_deferred"):                           # no dataset on a machine that defers its label checks
+            if kw.get("label_dataset"):
+                raise SystemExit("--label_deferred reads no training recording: do not give --label_dataset")
+        elif kw.get("label_repair") and not kw.get("label_dataset"):
+            kw["label_dataset"] = saved.get("label_dataset") or DEFAULT_DATASET
         for k in ("laws", "ontology", "reading", "definition_precedence", "model_prices", "label_dataset"):
             if kw.get(k):
                 kw[k] = _p(str(kw[k]))
@@ -284,6 +308,31 @@ class Cli:
             bad += o.kind != validate_a.ACCEPT
         return 1 if bad else 0
 
+    def handoff(self, action: str, run_id: str, source_baseline: str = "") -> int:
+        """`export`: write the run's handoff at a consistent checkpoint (`results/<run>/handoff/manifest.json`
+        and `files.txt`, the exported paths relative to this directory), refused while another process
+        owns the library, while a commit is pending, short of a finished iteration, or for a run with a
+        base_run chain or budget_peers; `--source_baseline` names the commit the run branch started from
+        (kept from the first export). `verify`: the checks a machine runs before continuing the run (the
+        code that decides results and the semantic inputs equal to the run's baseline, every handed file
+        as exported); prints the refusals and warnings, and returns 1 on a refusal."""
+        from .tools import handoff as handoff_mod
+        if action == "export":
+            m = handoff_mod.export(run_id, source_baseline)
+            print(f"handoff {m['export_id']}: iteration {m['iteration']} ({m['stage']}), status {m['status']}, "
+                  f"{len(m['artifacts'])} file(s); list in results/{run_id}/handoff/files.txt")
+            return 0
+        if action == "verify":
+            refusals, warnings = handoff_mod.verify(run_id)
+            for w in warnings:
+                print(f"warning  {w}")
+            for r in refusals:
+                print(f"refused  {r}")
+            print("not verified" if refusals else "verified, except the acceptance policy (policy anchor missing: not verified)"
+                  if any(w.startswith("policy anchor missing") for w in warnings) else "verified")
+            return 1 if refusals else 0
+        raise SystemExit("handoff: give `export` or `verify`")
+
     def gate(self, run_id: str, node_id: str) -> int:
         """The gate for one node or one concept (`node_id` is either id). Run from a coding session,
         it passes only while the run that started the session owns the library; run on its own, it
@@ -350,7 +399,7 @@ class Cli:
         results, judgment = {}, []
         rows = [r for r in ds.rows if r["law_id"] in set(wanted)]
         sources = source_check.ensure(run.dir / "source_check.json", ds, [r["recording_id"] for r in rows],
-                                      {r["recording_id"]: {"trace": r["trace_sha256"], "manifest": r["manifest_sha256"]} for r in rows},
+                                      {r["recording_id"]: ds.expected_sha256(r["recording_id"]) for r in rows},
                                       jobs=lc.SOURCE_CHECK_JOBS)
         frozen_sha = hashlib.sha256((run.dir / "frozen" / "manifest.json").read_bytes()).hexdigest()
         for law in wanted:
@@ -386,8 +435,9 @@ class Cli:
         it; then the active selection (every record not fenced) in the registries, every witness
         against the run's reading, the accepted records whose files the library lacks, and those
         whose dependency context changed (their obligations certified again). The active selection's
-        result and each fenced record's recorded failure are reported apart; exits 0 only when the
-        active selection verifies and nothing is fenced."""
+        result and each fenced record's recorded failure are reported apart; a check that could not be
+        made (an obligation whose certificate program did not run) leaves the result incomplete, never
+        OK; exits 0 only when the active selection verifies and nothing is fenced."""
         from .phases.integrate import verify_library, recheck_contexts, admission_recheck, fence_closure, AdmissionUnavailable
         from .store import owner
         from .store.state import Run
@@ -413,8 +463,14 @@ class Cli:
         status, problems, _owners = verify_library(work, reading, active_nodes, active_concepts)
         problems = problems + [f"accepted, but its files are not in the library: `{i}`" for i in missing] + failing + unresolved
         good = status == "verified" and not missing and not failing and not unresolved
+        if status == "verified" and unresolved and not missing and not failing:
+            status = f"incomplete: {len(unresolved)} check(s) could not be made, so nothing is verified for them"
         print(f"active selection ({len(active_nodes)} node(s), {len(active_concepts)} concept(s)): "
               + ("OK" if good else f"{status}\n" + "\n".join(problems)))
+        from .store.state import node_reviews                  # what an OK covers: no review the run did not run is certified
+        print("node semantic review: " + ("the only check is the old behaviour review's upheld obligations (feedback `review`), "
+                                          "certified again where a record's context changed; no other semantic review is certified"
+                                          if node_reviews(run.opts) else f"not run (feedback `{run.opts.feedback}`); none is certified"))
         if run.fenced:
             print(f"fenced ({len(run.fenced)}), each with its recorded failure:")
             for ident, ev in sorted(run.fenced.items()):

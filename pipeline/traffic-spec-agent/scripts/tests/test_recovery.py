@@ -214,7 +214,7 @@ class Fixture:
         s.enter_context(mock.patch.object(aggregate_phase, "correct_claims", lambda *a, **k: ([], {})))
         s.enter_context(mock.patch.object(aggregate_phase, "claimed_ids", lambda nodes: {}))
 
-        def run_plan(run, laws, defs, tag="", pending=None):
+        def run_plan(run, laws, defs, tag="", pending=None, label_repair=False):
             d = run.iter / "plan" / (tag or "")
             d.mkdir(parents=True, exist_ok=True)
             rows = [r for l in laws for r in w.plan_for(l.id, run.iteration)]
@@ -288,7 +288,7 @@ class Fixture:
             return gate.Verdict(gate.GATE_TIMEOUT, ["scripted panic"], extras={"panic": ["PANIC at scripted"]}) if v == "PANIC" \
                 else gate.Verdict(v, [f"scripted {v}"])
 
-        def run_gate(n, reading, baseline, d, budget_used=0, budget=0, accepted_concepts=None):
+        def run_gate(n, reading, baseline, d, budget_used=0, budget=0, accepted_concepts=None, acquisition=None):
             v = admitted(n.id, d) or w.gate.get((n.id, _iteration_of(Path(d))), "OK")
             return gate.Verdict(v, [], extras={"rule_json": {"id": n.id}}) if v == "OK" else failing(v)
 
@@ -810,7 +810,7 @@ class Persistence(unittest.TestCase):
         with Fixture(w) as f:
             given = dict(laws=str(f.root / "corpus" / "laws.jsonl"), ontology_file=str(f.root / "ontology.md"), reading=str(f.root / "reading.json"),
                          definition_precedence=str(f.root / "precedence.json"), model="claude-test", reviewer_model="gpt-test",
-                         max_iterations=3, workers=4, plan_batch=2)
+                         max_iterations=3, workers=4, plan_batch=2, feedback="review")
             seen = []
             real = loop.run_loop
 
@@ -892,7 +892,7 @@ class Persistence(unittest.TestCase):
         w = life_cycle()
         with Fixture(w) as f:
             rd = paths.RESULTS / "r"
-            rd.mkdir(parents=True)
+            f.drive(launches=1, max_iterations=1)                  # a run with its options and snapshot
             (rd / "rulings.jsonl").write_bytes(b'{"schema": "case/1"}\nnot json\n')
             before = (rd / "rulings.jsonl").read_bytes()
             self.assertEqual(loop.run_loop(f.options())["status"], "data_integrity_failure")

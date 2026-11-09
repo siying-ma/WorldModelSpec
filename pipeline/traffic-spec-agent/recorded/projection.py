@@ -15,8 +15,12 @@ The projection:
 - copies the trace scene by scene, changing nothing but the retired road-user classes listed as
   unobserved (dropped from `unobserved_classes`); a road user positively classified with a retired
   class is an error, since it needs a mapping the source supports;
-- records the split, the excluded ids with their states, the atoms added as absent, and the sha256
-  of the input and output trace and manifest.
+- records, for a manifest, the split, the excluded ids with their states, the atoms added as absent
+  and the sha256 of the input and output manifest; for a trace, its scenes, the retired classes
+  dropped and the sha256 of the input and output trace.
+
+A manifest belongs to a source (one scene-graph generator or adapter version), so it is projected
+once per source; each trace is projected on its own.
 """
 from __future__ import annotations
 
@@ -57,14 +61,25 @@ def split_ids(library: Path, split: str) -> list[str]:
 
 @dataclass
 class ProjectionRecord:
+    """A manifest's projection."""
     split: str
     excluded: dict[str, str] = field(default_factory=dict)           # id -> original state
     excluded_kind: dict[str, str] = field(default_factory=dict)      # id -> held_out | retired
     added_absent: list[str] = field(default_factory=list)
+    input_sha256: str = ""
+    output_sha256: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class TraceRecord:
+    """A trace's projection."""
     scenes: int = 0
     retired_unobserved_classes_dropped: int = 0
-    input_sha256: dict[str, str] = field(default_factory=dict)
-    output_sha256: dict[str, str] = field(default_factory=dict)
+    input_sha256: str = ""
+    output_sha256: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -168,12 +183,24 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def project(trace: BinaryIO, manifest_bytes: bytes, out_dir: Path, active: Iterable[str], full: Iterable[str],
-            split: str) -> ProjectionRecord:
-    """Write `trace.json`, `manifest.json` and `projection.json` for the active split into `out_dir`."""
+def write_manifest(manifest_bytes: bytes, out_dir: Path, active: Iterable[str], full: Iterable[str],
+                   split: str) -> ProjectionRecord:
+    """Write the training `manifest.json` and its `projection.json` for the active split into `out_dir`."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest, rec = project_manifest(json.loads(manifest_bytes), active, full, split)
+    mbytes = (json.dumps(manifest, indent=2) + "\n").encode("utf-8")
+    (out_dir / "manifest.json").write_bytes(mbytes)
+    rec.input_sha256, rec.output_sha256 = _sha(manifest_bytes), _sha(mbytes)
+    (out_dir / "projection.json").write_text(json.dumps(rec.to_dict(), indent=2) + "\n", encoding="utf-8")
+    return rec
+
+
+def project_trace(trace: BinaryIO, out_path: Path) -> TraceRecord:
+    """Write the projected trace to `out_path`, streaming it scene by scene."""
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    rec = TraceRecord()
     in_hash = hashlib.sha256()
     out_hash = hashlib.sha256()
 
@@ -183,7 +210,7 @@ def project(trace: BinaryIO, manifest_bytes: bytes, out_dir: Path, active: Itera
             in_hash.update(b)
             return b
 
-    with (out_dir / "trace.json").open("wb") as out:
+    with out_path.open("wb") as out:
         def w(s: str) -> None:
             b = s.encode("utf-8")
             out_hash.update(b)
@@ -196,9 +223,5 @@ def project(trace: BinaryIO, manifest_bytes: bytes, out_dir: Path, active: Itera
             w(json.dumps(scene, separators=(",", ":"), allow_nan=False))
             rec.scenes += 1
         w("]}")
-    mbytes = (json.dumps(manifest, indent=2) + "\n").encode("utf-8")
-    (out_dir / "manifest.json").write_bytes(mbytes)
-    rec.input_sha256 = {"trace.json": in_hash.hexdigest(), "manifest.json": _sha(manifest_bytes)}
-    rec.output_sha256 = {"trace.json": out_hash.hexdigest(), "manifest.json": _sha(mbytes)}
-    (out_dir / "projection.json").write_text(json.dumps(rec.to_dict(), indent=2) + "\n", encoding="utf-8")
+    rec.input_sha256, rec.output_sha256 = in_hash.hexdigest(), out_hash.hexdigest()
     return rec

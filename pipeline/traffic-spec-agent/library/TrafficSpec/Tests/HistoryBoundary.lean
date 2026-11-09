@@ -54,7 +54,8 @@ def oneScene : Trace := [{ t := 0, subject := some 1, users := [mover 1 0] }]
 def back : List Formula :=
   [ .since .tt .ff, .rises .tt, .holdsFor .time (.lit (seconds 1) .second) "v" .tt
   , .atLast .time (.lit (seconds 1) .second) "v" .tt .tt, .count .tt .tt .ge 1
-  , .cmp (.sinceRise .tt) .ge (.lit (seconds 1) .second), .cmp (.distanceWhile "v" .tt) .ge (.lit (metres 1) .metre) ]
+  , .cmp (.sinceRise .tt) .ge (.lit (seconds 1) .second), .cmp (.distanceWhile "v" .tt) .ge (.lit (metres 1) .metre)
+  , .cmp (.headingSince "v" (.lit (seconds 1) .second) .tt) .ge (.lit (degrees 0) .degree) ]
 #guard back.all fun φ =>
   let r : Rule := { slowOnce with id := "t/back", obligation := φ }
   let τ := oneScene.map fun s => { s with users := s.users.map fun x => { x with kin := { x.kin with pathLength := some Q.zero } } }

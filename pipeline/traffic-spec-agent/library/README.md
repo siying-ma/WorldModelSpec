@@ -27,6 +27,7 @@ layer or of the layers above it, and every file imports only files above it in t
 | | `Foundations/Handles.lean` | `TrackId`, `RegionId`, `DeviceId`, `AsmId`: the identifiers by which a scene, a formula and a reason for unknown name a track, a region, a device and an assumption. |
 |  | `Foundations/Unknown.lean` | `UnknownReason` (why a value is `u`), `R` = value + reasons, `QR` = quantity or reason, `RangeAgg`. |
 |  | `Foundations/Temporal.lean` | Whole-trace operators (always, eventually, until, since, holdsFor, within, untilWithin, edge counts, distance-while), one pass each. |
+|  | `Foundations/Accumulate.lean` | A rate integrated since a condition last became true (`sinceRiseIntegralAll`, the heading change of `Term.headingSince`), one forward pass, with its specification over `Rat` and the theorems that characterise its start, values and unknowns. |
 | `Vocab/` | `Vocab/Ontology/Ids.lean` | `atomIds`, `primitiveIds`. **Generated.** |
 |  | `Vocab/Ontology/{RoadUser,Structure,Device,Signal}.lean` | Enumerations the ontology lists (`RoadUserClass`, `StructureKind`, `DeviceKind`, `SignalIndication`, …) with their string codecs. **Generated.** |
 |  | `Vocab/World.lean` | The scene as data: `Scene`, `RoadUser`, `Kin`, `Structure`, `LaneInfo`, `Device`, `Env`, `MeasuredRelation`, `Trace`. Every observable field is `Option`; `none` means *not observed*. |
@@ -35,7 +36,7 @@ layer or of the layers above it, and every file imports only files above it in t
 |  | `Vocab/RegionTable.lean` | What a region quantifier reads of a trace, built once per trace and kind and shared by the context: each scene's structures by id, each kind's candidate regions and kind rows; proved equal to the direct reading. |
 |  | `Vocab/Params.lean` | `Reading`: parameter values, operationalizations, legal aggregates (§2). |
 |  | `Vocab/Primitives.lean` | The evaluation context and one definition per primitive (§2): computations the language cannot express. |
-| `Language/` | `Language/Formula.lean` | The specification language as data: `Term` (with `sinceRise`, `aggregate`), `Formula` (with `rises`, `definedWhen`, `same`, quantifiers whose kind is an `Arg`), `Arg`, `CmpOp`, `AggOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |
+| `Language/` | `Language/Formula.lean` | The specification language as data: `Term` (with `sinceRise`, `headingSince`, `aggregate`), `Formula` (with `rises`, `definedWhen`, `same`, quantifiers whose kind is an `Arg`), `Arg`, `CmpOp`, `AggOp`, and the inspectors the gate uses (`atoms`, `params`, `literals`, `composed`, `leaves`, `replaceLeaf`). |
 |  | `Language/Semantics.lean` | `evalAll`: a formula's value at every instant; dispatches atom and primitive names; the finite-trace policy. |
 |  | `Language/Rule.lean` | `Binder`, `Rule`, `Verdict`, `verdictAt`. **The only Core module a rule file imports.** |
 |  | `Language/Concept.lean` | `Concept` (contract, typed formals, formal parameters, a `Formula` or `Term` body), capture-avoiding `expand`, cycle detection, `Instance` and `asRule` for a concept's witnesses. **The only Core module a concept file imports.** |

@@ -336,7 +336,8 @@ def obligations_version(run: Run, ident: str) -> str:
 
 
 #: The modules every gate check is made of: a change to any of them is a change to the gate.
-GATE_SOURCES = ("harness/checks", "harness/lean", "harness/model/units.py", "harness/model/reading.py", "harness/model/blueprint.py")
+GATE_SOURCES = ("harness/checks", "harness/lean", "harness/model/units.py", "harness/model/reading.py", "harness/model/blueprint.py",
+                "harness/model/acquisition.py")
 
 
 def gate_digest() -> str:
@@ -351,9 +352,10 @@ def gate_digest() -> str:
 def admission_key(run: Run, kind: str, ident: str, reading: Reading, base: dict, record: dict | None = None,
                   catalogue: dict | None = None) -> str:
     """What a gate verdict on a record rests on: the record's context without its obligations,
-    and the gate's implementation."""
+    the gate's implementation, and the acquisition standard the run holds `heading_since` to."""
+    from ..model import acquisition
     return _digest({"context": context_version(run, kind, ident, reading, base, record=record, catalogue=catalogue),
-                    "gate": gate_digest()})[:24]
+                    "gate": gate_digest(), "acquisition": acquisition.standard_digest(getattr(run.opts, "acquisition_profile", None))})[:24]
 
 
 def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: set[str] | None = None) -> tuple[list[str], list[str], list[str]]:
@@ -592,7 +594,8 @@ def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str
                 v = gate.run_concept_gate(rec, reading, gate.repo_digest(), work, 0, 1, mode="train",
                                           accepted={k: r for k, r in run.all_concepts().items() if k != ident})
             else:
-                v = gate.run_gate(rec, reading, gate.repo_digest(), work, 0, 1, accepted_concepts=run.all_concepts())
+                v = gate.run_gate(rec, reading, gate.repo_digest(), work, 0, 1, accepted_concepts=run.all_concepts(),
+                                  acquisition=run.opts.acquisition_profile)
             if v.verdict == gate.GATE_TIMEOUT and unjudged is not None:
                 what = "panicked in isolation (a Core defect)" if v.extras.get("panic") else "exceeded the gate's deadline"
                 unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation {what} "

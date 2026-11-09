@@ -27,7 +27,7 @@ from harness.store.gaps import GapLedger
 from scripts.tests.test_candidate import (CA, CB, CD, NN, Base, Gates, Txn, concept_rec, files, node_rec, passing, standard,
                                           world)
 from scripts.tests.test_label_check import make_dataset
-from scripts.tests.test_label_repair import L, N, RECS, RECS_V2, setting
+from scripts.tests.test_label_repair import L, N, RECS, setting
 
 RULE5 = nodeid.rule_path(N[5])
 DIFF5 = f"--- {RULE5}\n+++ {RULE5}\n@@ -3 +3 @@\n--- v1\n+-- v2\n"
@@ -172,7 +172,7 @@ class Repair(Base):
     def test_a_law_planned_again_in_the_candidate_keeps_its_repair_count(self):
         new = [f"{N[5]}_o1", f"{N[5]}_o2"]
 
-        def fake_plan(view, laws, defs, tag="", pending=None):
+        def fake_plan(view, laws, defs, tag="", pending=None, label_repair=False):
             d = view.iter / "plan" / tag
             d.mkdir(parents=True, exist_ok=True)
             (d / "blueprint.jsonl").write_text("".join(json.dumps(node_rec(i) | {"law_refs": [L[5]]}) + "\n" for i in new))
@@ -232,29 +232,17 @@ class Repair(Base):
             self.assertEqual(calls, [])
 
 
-class LabelSetV2(Base):
-    """A label repair under label contract v2 binds its candidate to the run's label set, and a
-    candidate that cannot be bound is a part that did not run, never a charged attempt."""
-
-    def test_a_v2_label_repair_binds_and_commits_its_label_set(self):
-        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
-        with repairing(RECS_V2, outputs={"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}) as (run, ledger, training, by_id):
-            self.assertEqual(run.label_states[L[5]]["outcome"], "mismatch")
-            set_verdict(training, "r5a", N[5], "compliant")
-            self.assertEqual(repair(run, ledger, training, by_id), "committed")
-            want = training.versions()["label_set"]
-            st = run.label_states[L[5]]
-            self.assertEqual((st["repairs"], st["versions"]["label_set"]), (1, want))
-            self.assertEqual(json.loads((run.dir / st["check"]).read_text())["versions"]["label_set"], want)
-            self.assertEqual(jsonl.read_json(run.state_file, {})["label_states"][L[5]]["versions"]["label_set"], want)
+class Binding(Base):
+    """A candidate that cannot be bound to the run's label versions is a part that did not run, never
+    a charged attempt."""
 
     def test_a_candidate_that_cannot_be_bound_is_never_charged(self):
         rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
         calls = []
-        with repairing(RECS_V2, outputs={"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}, calls=calls) as (run, ledger, training, by_id):
+        with repairing(RECS, outputs={"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}, calls=calls) as (run, ledger, training, by_id):
             before = dict(run.label_states[L[5]])
             to_user = []
-            with mock.patch.object(cand, "EXTERNAL_VERSIONS", ("data", "label_contract", "scoring", "limits")):
+            with mock.patch.object(cand, "LABEL_VERSIONS", ("data", "label_contract", "scoring")):
                 self.assertEqual(repair(run, ledger, training, by_id, to_user), "unavailable")
             st = run.label_states[L[5]]
             self.assertEqual((st.get("repairs", 0), st.get("sessions", 0)), (before.get("repairs", 0), before.get("sessions", 0)))
@@ -321,9 +309,8 @@ class Evidence(Base):
             laws = [corpus.Law(nodeid.law_of(NN)[0], "t", "text", "s")]
             with mock.patch.object(plan.review_phase, "upheld_block", lambda run_, laws_: "SENTINEL-UPHELD\n"):
                 self.assertEqual(plan.evidence_block(run, laws), "SENTINEL-UPHELD\n")
-                run.opts.feedback = "labels"                       # smoke 1: no node obligation, the empty block as before
-                self.assertEqual(plan.evidence_block(run, laws), plan.node_upheld_block(run, {laws[0].id}))
-                self.assertIn("(none)", plan.evidence_block(run, laws))
+                run.opts.feedback = "labels"                       # no node obligation is rendered: the neutral block
+                self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
             values = {k: f"({k})" for k in plan.PLACEHOLDERS_NODE_REPAIR}
             values["evidence"] = "SENTINEL-UPHELD"
             text = render.render("node_repair.md", values)
@@ -332,8 +319,9 @@ class Evidence(Base):
 
     def test_label_repair_shows_the_label_evidence(self):
         with repairing() as (run, ledger, training, by_id):
-            run.opts.label_repair = True
-            block = plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]])
+            run.opts.label_repair, run.opts.feedback = True, "labels"
+            self.assertEqual(plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]]), plan.NO_LABEL_EVIDENCE)   # the option gives no scope
+            block = plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]], label_repair=True)
             self.assertTrue(block.startswith("## Label mismatches"))
             self.assertIn("r5a", block)
             self.assertNotIn("r1j", block)                              # a judgment call never enters it
@@ -410,8 +398,8 @@ class SourceDiagnostics(Base):
     def test_a_plan_session_is_never_shown_it(self):
         with self.routed(SOURCES) as (run, ledger, training, by_id):
             run.opts.label_repair, run.opts.dry_run = True, True
-            self.assertNotIn("Source diagnostics", plan.evidence_block(run, [by_id[L[5]]]))
-            d = plan.run_plan(run, [by_id[L[5]]], [])
+            self.assertNotIn("Source diagnostics", plan.evidence_block(run, [by_id[L[5]]], label_repair=True))
+            d = plan.run_plan(run, [by_id[L[5]]], [], label_repair=True)
             text = (d / "prompt.md").read_text()
             self.assertIn("## Label mismatches", text)
             self.assertNotIn("Source diagnostics", text)
@@ -441,6 +429,85 @@ class SourceDiagnostics(Base):
 def tree(root: Path) -> dict[str, bytes]:
     return {str(p): p.read_bytes() for p in sorted(root.rglob("*")) if p.is_file() and ".lake" not in p.parts
             and p.name not in ("Index.lean", "TrafficSpecWitness.lean")}
+
+
+class PromptScope(unittest.TestCase):
+    """Which sessions are shown label evidence is decided by the entry point, never by the run's
+    `label_repair` option: a gate-returned node repair and an ordinary plan batch of a labels run are
+    shown the neutral `## Repair evidence` block; only a law-level label repair (its session and its
+    re-plan) is shown `## Label mismatches`, with the label contract and the repair goal. No prompt a
+    labels run renders carries the old node review's wording."""
+
+    OLD = ("behaviour review", "upheld by the excuse judge", "Situations decided against earlier records", "Under review feedback")
+
+    @contextmanager
+    def labels_run(self):
+        from dataclasses import replace
+        with repairing() as (run, ledger, training, by_id):
+            run.opts = replace(run.opts, feedback="labels", label_repair=True, dry_run=True)
+            run.law_entries = ledger.entries
+            self.assertEqual(run.label_states[L[5]]["state"], "awaiting_label_repair")     # a law of the run awaits its repair
+            yield run, ledger, training, by_id
+
+    def node_repair_prompt(self, run, by_id) -> str:
+        import tempfile
+        from harness.model import ontology
+        from harness.model.blueprint import Node
+        from harness.model.reading import Reading
+        with tempfile.TemporaryDirectory() as last:
+            d = plan.run_node_repair(run, Node(run.all_nodes()[N[5]]), ["gate CHECK_FAIL: a witness fails"], Path(last), by_id[L[5]],
+                                     [], [], Reading(run.reading_file), ontology.load(run.opts.ontology))
+        return (d / "prompt.md").read_text(encoding="utf-8")
+
+    def label_repair_prompt(self, run, by_id) -> str:
+        with cand.SCHEDULING.pause():
+            txn = cand.Candidate.open(run, hooks=())
+            try:
+                return (label_repair.prompt_for(run, txn, by_id[L[5]], [], label_repair.ontology.load(run.opts.ontology), 0)
+                        + label_repair.where_to_write(run.dir / "x", txn))
+            finally:
+                txn.close("test")
+
+    def code_prompt(self, run) -> str:
+        from harness.model.blueprint import Node
+        from harness.model.reading import Reading
+        from harness.phases import code as code_phase
+        n = Node(run.all_nodes()[N[5]])
+        code_phase.run_code(run, n, Reading(run.reading_file))
+        return (code_phase.node_dir(run, n.id) / "prompt.md").read_text(encoding="utf-8")
+
+    def test_a_gate_returned_node_repair_is_shown_the_neutral_block(self):
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            text = self.node_repair_prompt(run, by_id)
+            self.assertIn("\n" + plan.NO_LABEL_EVIDENCE, text)
+            self.assertNotIn("## Label mismatches", text)
+
+    def test_a_plan_batch_with_no_awaiting_law_is_shown_the_neutral_block(self):
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            for laws in ([by_id[L[1]]], [by_id[L[5]]]):               # a law awaiting its repair gives an ordinary batch no scope
+                text = (plan.run_plan(run, laws, [], tag=f"t-{laws[0].id}") / "prompt.md").read_text(encoding="utf-8")
+                self.assertIn("\n" + plan.NO_LABEL_EVIDENCE, text)
+                self.assertNotIn("## Label mismatches", text)
+
+    def test_a_law_level_label_repair_is_shown_its_label_evidence(self):
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            for text in (self.label_repair_prompt(run, by_id),
+                         (plan.run_plan(run, [by_id[L[5]]], [], tag="replan", label_repair=True) / "prompt.md").read_text(encoding="utf-8")):
+                self.assertIn("## Label mismatches", text)
+                self.assertIn("Label contract: a label judges", text)
+                self.assertIn("Repair goal:", text)
+                self.assertNotIn(plan.NO_LABEL_EVIDENCE, text)
+            self.assertIn("during a law-level label repair: `record.jsonl`", self.label_repair_prompt(run, by_id))
+
+    def test_no_prompt_of_a_labels_run_carries_the_old_node_review_wording(self):
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            prompts = {"plan": (plan.run_plan(run, [by_id[L[1]]], [], tag="plain") / "prompt.md").read_text(encoding="utf-8"),
+                       "replan": (plan.run_plan(run, [by_id[L[5]]], [], tag="replan", label_repair=True) / "prompt.md").read_text(encoding="utf-8"),
+                       "code": self.code_prompt(run), "node_repair": self.node_repair_prompt(run, by_id),
+                       "label_repair": self.label_repair_prompt(run, by_id)}
+            for name, text in prompts.items():
+                for words in self.OLD:
+                    self.assertNotIn(words.lower(), text.lower(), f"{name}: {words}")
 
 
 if __name__ == "__main__":

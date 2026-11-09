@@ -9,6 +9,9 @@ repair is paid for, which recordings carry such contradictions.
 It is a report and nothing else: no recording is rejected, no status, outcome, route or evidence
 changes because of it, and a recording with no finding is not certified correct.
 
+A recording's manifest is its source's (one per scene-graph generator or adapter version, shared by
+every recording of that source), so a declaration finding speaks of the source, seen on one trace.
+
 Each finding has one case:
 - `i`: the manifest declares the atom observed and the recording holds no entity it applies to (a
   legally empty list: the recording has no such thing);
@@ -499,7 +502,8 @@ def run(items: list[tuple[str, Path, Path]], jobs: int = 8, library: Path | None
 
 def ensure(path: Path, ds, rids: list[str], bound: dict[str, dict] | None = None, jobs: int = 8,
            library: Path | None = None) -> dict[str, dict]:
-    """The reports of `rids` of dataset `ds`, kept in `path` with the run: a report already there is
+    """The reports of `rids` of dataset `ds` (each recording's trace against its source's manifest),
+    kept in `path` with the run: a report already there is
     reused when it was made by this version on the same trace and manifest (`bound`, recording id →
     {"trace", "manifest"} sha256, as the run's fixed comparison set has them); every other one is
     computed once and the file rewritten. A report whose files differ from `bound` says so in its
@@ -564,7 +568,8 @@ def summary(reports: dict[str, dict], per_recording: bool = True) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    """python -m recorded.source_check <dataset folder> [--out FILE] [--laws A,B] [--jobs N]"""
+    """python -m recorded.source_check <dataset folder> [--out FILE] [--laws A,B] [--jobs N]: each
+    recording's trace against its source's manifest"""
     import argparse
     from . import dataset as dataset_mod
     p = argparse.ArgumentParser(prog="python -m recorded.source_check", description=main.__doc__)
@@ -579,9 +584,9 @@ def main(argv: list[str]) -> int:
     reports = run([(r["recording_id"], ds.files(r["recording_id"])["trace"], ds.files(r["recording_id"])["manifest"]) for r in rows], a.jobs)
     index = {r["recording_id"]: r for r in rows}
     for rid, r in reports.items():
-        bad = [k for k in ("trace", "manifest") if index[rid].get(f"{k}_sha256") and index[rid][f"{k}_sha256"] != r.get(f"{k}_sha256")]
+        bad = [k for k, want in ds.expected_sha256(rid).items() if want != r.get(f"{k}_sha256")]
         if bad and not r.get("error"):
-            r["error"] = f"its {' and '.join(bad)} differ from the dataset index"
+            r["error"] = f"its {' and '.join(bad)} differ from what the dataset states"
     per_law = {law: summary({rid: rep for rid, rep in reports.items() if index[rid]["law_id"] == law}, per_recording=False)
                for law in sorted({r["law_id"] for r in rows})}
     whole = summary(reports)

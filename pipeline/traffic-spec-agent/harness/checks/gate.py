@@ -213,6 +213,7 @@ partial def occT : TrafficSpec.Term → List (List String)
   | .quantity _ as ps => argVars as :: ps.flatMap occT
   | .distanceWhile s φ => [s] :: occF φ
   | .sinceRise φ => occF φ
+  | .headingSince s g φ => [s] :: (occT g ++ occF φ)
   | .aggregate _ v φ t => ["?" ++ v] :: (occF φ ++ occT t)
   | .add a b | .sub a b | .mul a b | .div a b => occT a ++ occT b
   | .neg a | .abs a => occT a
@@ -303,10 +304,11 @@ def main (args : List String) : IO Unit := do
     ("narrowings", Json.arr (r.narrowings.map fun n => Json.mkObj [("span", n.span), ("why", n.why), ("kind", n.kind)]).toArray), ("surrogate", r.surrogate)]
   IO.println s!"DECL\\t{{decl.compress}}"
   IO.println s!"RULEJSON\\t{{(Rule.toJson r).compress}}"
+  IO.println s!"RULEXJSON\\t{{(Rule.toJson (Concept.expandRule allConcepts r)).compress}}"
   out.flush
   IO.println s!"ATOMS\\t{{String.intercalate "," r.atoms}}"
   IO.println s!"COMPOSES\\t{{String.intercalate "," r.composes}}"
-  IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (r.formulas.flatMap Formula.aggregateIds).eraseDups}}"
+  IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (Concept.ruleAggregateIds allConcepts r)}}"
   for sc in scs do IO.println s!"MANIFEST\\t{{sc.name}}\\t{{String.intercalate "," sc.manifest.absentIds}}"
   for sc in scs do if !sc.boundary.isEmpty then IO.println s!"BOUNDARY\\t{{sc.name}}"
   let tOcc ← IO.monoMsNow
@@ -319,7 +321,7 @@ def main (args : List String) : IO Unit := do
   let rulesX := rules.map (Concept.expandRule allConcepts)
   for e in Rule.check rulesX (Concept.expandRule allConcepts r) do IO.println s!"CHECK\\t{{e}}"
   for e in Concept.ruleCallDefects allConcepts r do IO.println s!"CHECK\\t{{e}}"
-  for e in Rule.checkReading rules r ρ do IO.println s!"READING\\t{{e}}"
+  for e in Rule.checkReading rules r ρ allConcepts do IO.println s!"READING\\t{{e}}"
   for e in DimCheck.rule (DimCheck.envOf ρ allConcepts) r do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
   IO.println s!"TIME\\tchecks\\t{{(← IO.monoMsNow) - tChk}}"
   out.flush
@@ -506,9 +508,10 @@ def _imports(text: str) -> set[str]:
 
 
 def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path, budget_used: int, budget: int,
-             accepted_concepts: dict[str, dict] | None = None) -> Verdict:
+             accepted_concepts: dict[str, dict] | None = None, acquisition: str | None = None) -> Verdict:
     """The gate for one node. `work` is the node's task directory (harness file, reports);
-    `accepted_concepts` the catalogue, whose recorded reads count a claim as used."""
+    `accepted_concepts` the catalogue, whose recorded reads count a claim as used; `acquisition` the
+    run's acquisition profile, whose parameter every `heading_since` step bound of the rule must be."""
     work.mkdir(parents=True, exist_ok=True)
     lib = paths.LIBRARY
     rule_rel, wit_rel = nodeid.rule_path(node.id), nodeid.witness_path(node.id)
@@ -576,8 +579,10 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
 
     # 4. static check
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
-    checks += divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else []
-    checks += slot_range_defects(json.loads(col("RULEJSON")[0][0]), reading, accepted_concepts) if col("RULEJSON") else []
+    checks += deep_checks(lambda: (divisions_by_measure(json.loads(col("RULEJSON")[0][0])) if col("RULEJSON") else [])
+                          + (slot_range_defects(json.loads(col("RULEJSON")[0][0]), reading, accepted_concepts) if col("RULEJSON") else [])
+                          + (rule_step_defects(node.id, json.loads(col("RULEXJSON")[0][0]), acquisition, reading)
+                             if col("RULEXJSON") else []))
     if checks:
         return Verdict("CHECK_FAIL", checks + cut.note())
     if cut.stopped and not cut.reached("checks"):
@@ -652,7 +657,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     unused = sorted(c for c in claimed if not any(canon(n) == c for n in used) and c not in used_via)
     if unused:
         return Verdict("UNUSED_CLAIM", unused)
-    # an aggregate the rule reads is one its record claims, by id (`ru.aggregate=<id>`)
+    # an aggregate the rule reads, through the concepts it calls too, is one its record claims, by id (`ru.aggregate=<id>`)
     agg_used = {a for row in col("AGGREGATES") for a in row if a}
     agg_claimed = {c.split("=", 1)[1] for c in node.claimed_atoms() if c.startswith("ru.aggregate=")}
     if agg_used - agg_claimed:
@@ -672,6 +677,7 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     if used_lits != declared:
         return Verdict("BARE_LITERAL", [f"formula literals {[(str(q), u) for q, u in used_lits]} ≠ the node's declared literals {[(str(q), u) for q, u in declared]}; a figure the law states is declared on its span, any other magnitude belongs in the reading"])
     mism = param_mismatches(json.loads(col("RULEJSON")[0][0]), accepted_concepts, node.literals())
+    mism += occasion_window_defects(node, json.loads(col("RULEJSON")[0][0]), accepted_concepts)
     if mism:
         return Verdict("PARAM_MISMATCH", mism)
 
@@ -768,9 +774,11 @@ def slot_range_defects(tree, reading: Reading, concepts: dict[str, dict] | None 
                 return units.to_core(prm["value"], prm["unit"])[1], f"`{t['param']}`"
         return None
 
-    def walk(x, env, depth=0) -> None:
-        if depth > 30:
-            return
+    # an explicit stack, so no nesting hides a slot; `calls` are the concepts expanded on the way,
+    # each entered once per path (accepted concepts are acyclic; this only keeps the walk finite)
+    stack = [(tree, {}, ())]
+    while stack:
+        x, env, calls = stack.pop()
         if isinstance(x, dict):
             if x.get("atom") in slots:
                 for t in x.get("params") or []:
@@ -778,17 +786,14 @@ def slot_range_defects(tree, reading: Reading, concepts: dict[str, dict] | None 
                     if v is not None and not (-1 <= v[0] <= 1):
                         out.append(f"`{x['atom']}` reads its tolerance as a cosine, between -1 and 1; {v[1]} gives {float(v[0]):g}")
             name = x.get("derived") or x.get("quantity")
-            if isinstance(name, str) and name in by_lean:
+            if isinstance(name, str) and name in by_lean and name not in calls:
                 rec = by_lean[name]
                 formals = [f.get("name") for f in rec.get("params", [])]
                 inner = {f: v for f, t in zip(formals, x.get("params") or []) if (v := value(t, env)) is not None}
-                walk(rec.get("body_json"), inner, depth + 1)
-            for v in x.values():
-                walk(v, env, depth + 1)
+                stack.append((rec.get("body_json"), inner, calls + (name,)))
+            stack.extend((v, env, calls) for v in x.values())
         elif isinstance(x, list):
-            for v in x:
-                walk(v, env, depth + 1)
-    walk(tree, {})
+            stack.extend((v, env, calls) for v in x)
     return sorted(set(out))
 
 
@@ -990,6 +995,179 @@ def harness_failure(hout: str) -> Verdict:
     return Verdict(INFRA, ["gate harness did not run"] + hout.splitlines()[:3])
 
 
+#: Operators whose reading starts at an observed event: an edge, a past-time "since", the time, the
+#: distance or the heading change since a formula rose or held, and edges counted since one. The step
+#: bound of `heading_since` is a sampling standard, not a window: it never stands as a look-back length.
+ONSET_OPERATORS = {"rises", "since", "since_rise", "count", "distance_while", "heading_since"}
+#: Operators whose `length` is a window behind the judged observation. `within` and `until_within`
+#: look ahead and are not among them.
+LOOKBACK_OPERATORS = {"holds_for", "at_last"}
+#: The parameter position of each primitive that is a window behind the judged observation, from the
+#: primitive's semantics: the heading change is taken over the window behind. A closest-approach
+#: horizon projects motion ahead and is no look-back; the other primitives take no time parameter.
+LOOKBACK_PRIMITIVE_PARAMS = {"prim_heading_change": 0}
+#: Every primitive that takes no look-back parameter; with the table above it covers every primitive.
+NO_LOOKBACK_PRIMITIVES = {"prim_closest_approach_within", "prim_closest_approach_time", "prim_closest_approach_distance",
+                          "prim_conditions_hold", "prim_region_lateral_offset", "prim_region_offset_along"}
+
+
+def heading_steps(x) -> list:
+    """The step bound of every `heading_since` in a formula or term as Core exports it, at any depth
+    (walked with an explicit stack, so no nesting hides one)."""
+    out, stack = [], [x]
+    while stack:
+        y = stack.pop()
+        if isinstance(y, dict):
+            if "heading_since" in y:
+                out.append(y.get("max_step"))
+            stack.extend(reversed(list(y.values())))
+        elif isinstance(y, list):
+            stack.extend(reversed(y))
+    return out
+
+
+#: The refusal of a formula nested deeper than Python reads it: the static checks have not read it
+#: whole, so nothing they would find is ruled out.
+TOO_DEEP = ("the formula nests deeper than the gate's static checks can read: it is refused, not taken as passing; "
+            "write it with less nesting")
+
+
+def deep_checks(run) -> list[str]:
+    """The defects `run` finds on exported formulas, or the refusal `TOO_DEEP` when parsing or walking
+    them exceeds Python's recursion limit."""
+    try:
+        return run()
+    except RecursionError:
+        return [TOO_DEEP]
+
+
+def rule_step_defects(node_id: str, rule_json, profile: str | None, reading) -> list[str]:
+    """A step bound of `heading_since` is a sampling standard of the recordings, shared by every rule
+    of the run: on the rule with its concept calls expanded (`RULEXJSON`), every one is exactly the
+    reading parameter the run's acquisition profile names, and the reading holds that parameter as a
+    value the operator reviewed. A literal, any other parameter or an expression is refused, as is a
+    rule reading `heading_since` in a run whose profile does not resolve. Empty for a rule that reads
+    no `heading_since`."""
+    from ..model import acquisition as acq
+    steps = heading_steps(rule_json)
+    if not steps:
+        return []
+    try:
+        param = acq.step_parameter(profile)
+    except acq.ProfileError as e:
+        return [f"{node_id}: the rule reads `heading_since`, and {e}; until the operator names a profile with a reviewed "
+                "parameter, no rule of this run may read `heading_since`"]
+    want = {"param": param}
+    out = [f"{node_id}: a `heading_since` step bound is {json.dumps(s, sort_keys=True)}; under the run's acquisition profile "
+           f"`{profile}` it is the operator-reviewed parameter `{param}`, written `.param \"{param}\"` in the rule or passed to "
+           "the step formal of the concept that reads it: no literal, no other parameter, no expression"
+           for s in steps if s != want]
+    data = getattr(reading, "data", None) or {}
+    return list(dict.fromkeys(out)) + [f"{node_id}: {d}" for d in acq.review_defects(param, data)]
+
+
+def concept_step_defects(cid: str, body_json, formals: list[str]) -> list[str]:
+    """A shared concept serves every caller, so it takes the step bound of each `heading_since` in its
+    expanded body from its caller, as one of its own formal parameters; the caller's node gate then
+    holds the actual to the run's acquisition-profile parameter. A literal there, written in the body
+    or given to a concept it calls, is refused."""
+    out = [f"{cid}: a `heading_since` step bound is {json.dumps(s, sort_keys=True)}; a shared concept takes it from its caller "
+           f"as one of its formal parameters ({', '.join(f'`{f}`' for f in formals) or 'it declares none'}), and the caller passes "
+           "the run's acquisition-profile parameter: no literal, here or given to a concept it calls"
+           for s in heading_steps(body_json)
+           if not (isinstance(s, dict) and set(s) == {"param"} and s["param"] in formals)]
+    return list(dict.fromkeys(out))
+
+
+def act_support_defects(act: dict | None, body_json) -> list[str]:
+    """Whether a concept's body supports the act its record declares, read on the body as Core
+    expands it (`Concept.expand`: every called concept inlined with its actuals substituted, so a
+    formal forwarded to a callee appears where the callee reads it). A window boundary needs the
+    window formal, as it stands, to be the length of a look-back: the window behind of `holds_for`
+    over time or of `at_last`, or a primitive's look-back parameter. An event boundary needs an
+    operator that starts at an observed event. This is a capability precheck: it does not show that
+    the onset the record declares is the one the body anchors to. Empty when the body supports the
+    declaration, or when the record declares no act."""
+    if not isinstance(act, dict):
+        return []
+    window = {"param": act.get("window")}
+    found = {"window": False, "event": False}
+
+    def visit(x, depth=0) -> None:
+        if depth > 200:
+            return
+        if isinstance(x, dict):
+            if any(x.get(op) == "time" for op in LOOKBACK_OPERATORS) and x.get("length") == window:
+                found["window"] = True
+            pos = LOOKBACK_PRIMITIVE_PARAMS.get(x.get("quantity")) if isinstance(x.get("quantity"), str) else None
+            ps = x.get("params") or []
+            if pos is not None and len(ps) > pos and ps[pos] == window:
+                found["window"] = True
+            if any(k in x for k in ONSET_OPERATORS):
+                found["event"] = True
+            for v in x.values():
+                visit(v, depth + 1)
+        elif isinstance(x, list):
+            for v in x:
+                visit(v, depth + 1)
+    visit(body_json)
+    if act.get("boundary") == "window" and not found["window"]:
+        return [f"the record declares a window act over `{act.get('window')}`, but the expanded body never reads that parameter as "
+                "the length of a window behind the judged observation (`holds_for` or `at_last` over time, or a primitive's "
+                "look-back parameter); a window ahead, a horizon of projected motion or another use is no look-back"]
+    if act.get("boundary") == "event" and not found["event"]:
+        return ["the record declares an act that starts at its observed onset, but the expanded body reads no operator that "
+                f"starts at an event ({', '.join(sorted(ONSET_OPERATORS))}): write the onset, or report `no_operator` on the "
+                "words of the contract the language cannot state"]
+    return []
+
+
+def occasion_window_defects(node: Node, rule_json, concepts: dict[str, dict] | None) -> list[str]:
+    """Whether a node's window occasion reads the window its acts are recognized over: every call of
+    each occasion act in the rule passes, at the position of the formal the act's record declares
+    as its window, the occasion's `window` parameter itself. Read on the rule as written, where each
+    call's actuals stand at their formals' positions; a parameter of the right unit that is not the
+    one passed is no binding. Empty for an event boundary or without an occasion."""
+    occ = node.get("occasion")
+    if not isinstance(occ, dict) or node.occasion_boundary() != "window":
+        return []
+    acts = occ.get("act") if isinstance(occ.get("act"), list) else [occ.get("act")]
+    want = {"param": occ.get("window")}
+    out = []
+    for cid in acts:
+        rec = (concepts or {}).get(cid)
+        decl = rec.get("act") if isinstance(rec, dict) else None
+        if not isinstance(decl, dict) or decl.get("boundary") != "window":
+            out.append(f"occasion act `{cid}`: its record declares no window act, so the occasion's window cannot be bound to it")
+            continue
+        formals = [f.get("name") for f in rec.get("params", [])]
+        if decl.get("window") not in formals:
+            out.append(f"occasion act `{cid}`: its declared window `{decl.get('window')}` is not one of its formals {formals}")
+            continue
+        pos, lean = formals.index(decl["window"]), cid.replace(".", "_")
+        calls = []
+
+        def visit(x) -> None:
+            if isinstance(x, dict):
+                if lean in (x.get("derived"), x.get("quantity")):
+                    calls.append(x.get("params") or [])
+                for v in x.values():
+                    visit(v)
+            elif isinstance(x, list):
+                for v in x:
+                    visit(v)
+        visit(rule_json)
+        if not calls:
+            out.append(f"occasion act `{cid}` is not called by the rule, so its window cannot be bound to the occasion's `{occ.get('window')}`")
+        for ps in calls:
+            got = ps[pos] if len(ps) > pos else None
+            if got != want:
+                out.append(f"occasion act `{cid}` is called with {got!r} for its window `{decl['window']}`, but the occasion reads the "
+                           f"act over `{occ.get('window')}`: pass the occasion's window to the act, or declare the window the act is "
+                           "recognized over")
+    return out
+
+
 def param_mismatches(formula_json, concepts: dict[str, dict] | None, literals: list[dict]) -> list[str]:
     """What a concept call passes for a parameter the concept declares, apart from its unit (which
     the Core unit check holds): a named parameter, or a figure declared in `literals` in the declared
@@ -1109,6 +1287,8 @@ def main (args : List String) : IO Unit := do
   IO.println s!"DECL\\t{{(Concept.toJson c).compress}}"
   IO.println s!"ATOMS\\t{{String.intercalate "," c.atoms}}"
   IO.println s!"READS\\t{{String.intercalate "," (Formula.atoms (Concept.expand cs c.bodyFormula)).eraseDups}}"
+  IO.println s!"AGGREGATES\\t{{String.intercalate "\\t" (Concept.aggregateIds cs c)}}"
+  IO.println s!"HARDAGG\\t{{String.intercalate "\\t" (Formula.aggregateIds (Concept.expand cs c.bodyFormula)).eraseDups}}"
   let bodyJson := match c.body with
     | .formula φ => (Formula.toJson (Concept.expand cs φ)).compress
     | .quantity t => (Term.toJson (Concept.expandTerm cs t)).compress
@@ -1120,6 +1300,7 @@ def main (args : List String) : IO Unit := do
   for (q, u) in Formula.literals c.bodyFormula do IO.println s!"LITERAL\\t{{q.num}}/{{q.den}}\\t{{repr u}}"
   for id in Concept.onCycle cs do IO.println s!"CYCLE\\t{{id}}"
   for e in Concept.check cs c do IO.println s!"CHECK\\t{{e}}"
+  for e in Concept.checkReading cs c ρ do IO.println s!"READING\\t{{e}}"
   for e in DimCheck.concept (DimCheck.envOf ρ cs c.params) c do IO.println s!"DIM\\t{{e.tag}}\\t{{e.render}}"
   for i in insts do
     for e in Concept.Instance.defects cs i do IO.println s!"CHECK\\t{{e}}"
@@ -1171,6 +1352,18 @@ def main (args : List String) : IO Unit := do
           IO.println s!"DIFF\\t{{i.name}}\\t{{status}}"
   IO.println "DONE_WITNESSES"
 '''
+
+
+def hard_coded_aggregates(cid: str, ids: list[str]) -> list[str]:
+    """A shared concept reads an aggregate only through a literal formal its caller fills. `ids` are
+    the aggregate ids its body names as written, its calls expanded with its own formals left
+    unfilled (`HARDAGG`): such an id is written into the body or given to a callee as a literal, and
+    whether a road user is a member of it depends on the definition that governs each calling law,
+    which no check of the concept alone can verify. An id the caller passes reaches the body as the
+    formal, and the caller's own gate holds it against that caller's reading and claims."""
+    return [f"{cid}: the body names the definition-scoped aggregate `{a}` itself (here or in a concept it calls with that id); "
+            "a shared concept reads an aggregate only through a literal formal its caller fills, so that each calling law's "
+            "own gate checks the id against its definitions, its reading and its claims" for a in ids]
 
 
 def _lean_concept_id(lean_name: str) -> str:
@@ -1256,7 +1449,10 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     if cyc:
         return Verdict("CONCEPT_CYCLE", cyc + cut.note())
     checks = [r[0] for r in col("CHECK")] + [r[0] for r in col("READING")] + [f"units: {r[1]}" for r in col("DIM")]
-    checks += divisions_by_measure(json.loads(col("BODY")[0][0])) if col("BODY") else []
+    checks += hard_coded_aggregates(cid, [a for row in col("HARDAGG") for a in row if a])
+    checks += deep_checks(lambda: (divisions_by_measure(json.loads(col("BODY")[0][0]))
+                                   + concept_step_defects(cid, json.loads(col("BODY")[0][0]), [p.get("name") for p in rec.params()]))
+                          if col("BODY") else [])
     if checks:
         return Verdict("CHECK_FAIL", checks + cut.note())
     if cut.stopped and not cut.reached("checks"):
@@ -1320,6 +1516,11 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     unused = sorted(cl for cl in claimed if not any(canon(n) == cl for n in used) and cl not in used_via)
     if unused:
         return Verdict("UNUSED_CLAIM", unused)
+    # an aggregate the body reads, through the concepts it calls too, is one its record claims, by id
+    agg_used = {a for row in col("AGGREGATES") for a in row if a}
+    agg_claimed = {c.split("=", 1)[1] for c in rec.claimed_atoms() if c.startswith("ru.aggregate=")}
+    if agg_used - agg_claimed:
+        return Verdict("UNCLAIMED_ATOM", [f"ru_aggregate \"{a}\" (the record claims {sorted(agg_claimed) or 'no aggregate'})" for a in sorted(agg_used - agg_claimed)])
     from fractions import Fraction
     used_lits = sorted((Fraction(q), u.split(".")[-1].strip()) for q, u in col("LITERAL"))
     declared = []
@@ -1336,6 +1537,9 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     mism = param_mismatches(json.loads(col("BODY")[0][0]), accepted, rec.get("literals", []))
     if mism:
         return Verdict("PARAM_MISMATCH", mism)
+    mism = act_support_defects(rec.get("act"), json.loads(col("BODY")[0][0]))
+    if mism:
+        return Verdict("DECLARATION_MISMATCH", mism)
 
     # 7. witnesses
     fails = [f"instance {name}: a formal is unfilled" for name, status in col("INST") if status != "ok"]

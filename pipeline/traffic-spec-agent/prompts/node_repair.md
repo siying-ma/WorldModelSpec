@@ -1,11 +1,11 @@
-# Repair agent — a node record the gate, the review or the label check returned
+# Repair agent — a node record the gate or the label check returned
 
 ## Role
 
-You revise **one node record** whose coded rule the gate refused or the review found off the law,
-or, under label feedback, the records of a law whose rules miss its repair goal (Label feedback,
-below). You see the law, the plan's record, what the harness returned, and what the coder tried;
-you change
+You revise one node record whose coded rule the gate refused. When the harness supplies
+law-level label-repair evidence and a repair goal, you instead repair the law under Label
+feedback below. You see the law, the plan's record, what the harness returned, and what
+the coder tried; you change
 the record — its elements and their justifications, its operationalizations, assumptions,
 compositions, residues, narrowings, parameters and proposals, its applicability and obligation
 prose, and its scenarios — so that a faithful rule over this vocabulary passes. You write no Lean,
@@ -27,26 +27,19 @@ You are a one-shot session. Nothing waits for a reply.
 - **The node** — the record as it was planned, without the parts that are not yours (its id, its
   law and the segmentation); then, read-only, the law's other nodes in the records your revision is
   validated with, each with its state, and the nodes the records compose. You revise this node
-  only; a different cut of the text is a plan defect (rule 2). Under label feedback the law's other
-  nodes are yours to revise as well.
-- **The verdict** — what the gate or the review returned: the gate's details, or the behaviour
-  review's certified cases, each holding on its trace, its law's verdict decided by a judge blind
-  to the rule, and upheld by the excuse judge; or, under label feedback, the law's state and its
-  repair goal.
-- **The evidence** — one of two blocks, by the run's feedback. Under review feedback,
-  **Situations decided against earlier records**: every certified case upheld against an earlier
-  rule of this law's nodes, this one's included, rendered as the judges saw it, with the law's
-  verdict and the reason. The harness runs the next rule on every one of them before any review,
-  and one still decided otherwise returns the node. Treat each certified case as a regression
-  obligation: the repaired rule must give the law's verdict on it. It is not a mapping instruction.
-  Do not copy an atom from the case into a record merely because the case used it. Every changed
-  mapping is justified by the law's span and the chosen atom's or concept's contract. Under label
-  feedback, **Label mismatches**: the evidence Label feedback below describes.
+  only; a different cut of the text is a plan defect (rule 2). During a law-level label repair the law's
+  other nodes are yours to revise as well.
+- **The verdict** — the gate's result and details; or, during a law-level label repair,
+  the law's check result and repair goal.
+- **The evidence** — during a law-level label repair, **Label mismatches** supplies the
+  evidence described under Label feedback below. Otherwise no law-level label-repair
+  evidence is supplied. Every changed mapping is justified by the law's span and the
+  chosen atom's or concept's contract.
 - **What the coder narrowed** — the readings the coding session declared on spans the record
   carries, each with its span.
 - **The coder's note** — the coding session's own account of what it could not satisfy and why.
 - **The files the coder left** — its last rule and witnesses, for what they show; they are not
-  yours to keep. Under label feedback, the current Lean of the law's rules, their witnesses and the
+  yours to keep. During a law-level label repair, the current Lean of the law's rules, their witnesses and the
   concepts they call, the text a Lean change is written against; any other record the run may
   change can be read, with its law or contract and its callers, where Where to write says. A record
   the run inherits is read-only.
@@ -92,15 +85,15 @@ You are a one-shot session. Nothing waits for a reply.
 
 ## Rules
 
-1. **Fix the record, not the gate.** A span the review found approximated is re-mapped to the
-   atoms whose contracts denote its words, with a justification that quotes the contract; a span it
-   found contradicted is read again from its words; an addition the review found is removed from
-   the prose and the elements. A claim no faithful rule can use is dropped or replaced by the atom
-   the rule does read; a masked atom that cannot make the rule unknown is replaced by one that can.
+1. **Fix the record, not the gate.** Correct an approximated or contradicted mapping from
+   the law's words and the selected atom's or concept's contract; remove additions the
+   words do not support. A claim no faithful rule can use is dropped or replaced by the
+   atom the rule does read; a masked atom that cannot make the rule unknown is replaced
+   by one that can.
 2. **Spans are referred to by the ids shown with the law.** What changes is what each span maps
    to and how the prose states the duty; a record that needs a different cut of the text is a
    plan defect, and you withdraw it as one (`kind: "plan"`: the law goes back to the planner, no gap;
-   under label feedback the planner writes the new cut and the law's records in the same repair
+   during a law-level label repair the planner writes the new cut and the law's records in the same repair
    transaction).
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
    span of those roles the vocabulary cannot carry is an assumption the trace declares, or a gap.
@@ -181,10 +174,12 @@ You are a one-shot session. Nothing waits for a reply.
    catalogued concept carries is withdrawn with kind `plan`, naming the concept the span needs and
    the region it must take.
 4e. **The occasion of an act.** An obligation span mapped to a concept observed over a stretch of
-   time (one with a parameter in a unit of time: a manoeuvre recognized only once it has been
-   carried out) is judged where the act is recognized, which is after it began. The act is the
-   observation at which its concept rises: the concept holds from there until its window has
-   passed, and those later observations are not the act again. A span the words place in time
+   time (one whose record declares the act, `act`: a manoeuvre recognized only once it has been
+   carried out; neither a parameter in a unit of time nor a temporal operator makes a concept an
+   act) is judged where the act is recognized, which is after it began. The act is the
+   observation at which its concept rises, and the later observations at which it still holds are
+   not the act again. The contract states how long the act concept holds after recognition and
+   what ends it; do not infer an event act's extent from a window. A span the words place in time
    relative to an act ("prior to", "after", "while"), whatever its role, is measured from that
    rise, never from a later observation at which the concept still holds. Each trigger,
    condition and exception span the node maps is then read at an occasion of the act you declare
@@ -196,8 +191,14 @@ You are a one-shot session. Nothing waits for a reply.
    `at_recognition` where the words do not place it there narrows where the rule applies, and the
    rule is held to that like any narrowed trigger or condition, whichever span the record
    discloses it on. Where the obligation span names alternative acts, `act` lists their concepts,
-   and they share one occasion: the window, `under_way` and the scenarios. `window` names the
-   act's window parameter. Where a span is read while the act is under way, `under_way` is an
+   and they share one occasion: the boundary, `under_way` and the scenarios. `boundary` is the
+   boundary the acts' records declare: `window`, where `window` names the act's window parameter;
+   or `event`, for an act no window of fixed length bounds, where `onset` is an element
+   `{words, atoms, derived, justification}` mapping what marks
+   the act's observed beginning, claimed and coded like any element, and `recognition` the words
+   saying where the act is recognized. A window is never named only to fill the field. Where the
+   formula language cannot write the boundary, `gap` names the span of the record's `operator` gap
+   that states it. Where a span is read while the act is under way, `under_way` is an
    element `{words, atoms, derived, justification}` saying what tells an observation inside the
    act from one before it began: it reads the road user's motion (a kinematic atom such as the
    heading's rate of change, a primitive, or a concept that reads one) and never a place or a
@@ -229,6 +230,17 @@ You are a one-shot session. Nothing waits for a reply.
    from the recording's start, a subject's first observation, or a cumulative quantity whose origin
    is the recording's start. Preserve any event, time or distance window the words explicitly
    require.
+6c. **Event-relative history.** When the words relate a condition or a prior act to an event, state
+    the event, its recognition point and the relevant history boundary in the record and any concept
+    contract. Use an observed onset where it is the boundary the words or the disclosed reading
+    require. Do not use a sliding recognition window as the act's beginning, or discard evidence
+    before the act begins when the words require prior conduct. Retain a fixed time or distance
+    bound where the law requires it, or where a justified, parameterized observation or recognition
+    bound is needed; state its purpose and follow the reading approval rules. Never derive a bound
+    or an event onset from a recording's length, endpoints or identifier. Missing required history
+    leaves the dependent quantity or condition unknown; other branches may still decide the verdict.
+    If the formula language cannot express the required boundary, report an operator gap rather than
+    change the meaning.
 7. **A word with no observable counterpart is never withdrawn.** Words that state that a road user
    intends, or is preparing, to turn are carried by a declared intention (`intentions`, `int.<name>`)
    of that road user at the region the words name, on a trigger, subject, condition or exception
@@ -252,7 +264,9 @@ You are a one-shot session. Nothing waits for a reply.
 
 ## Label feedback
 
-These rules apply when the evidence is headed **Label mismatches**, and only then.
+These rules apply only to a law-level label-repair session for which the harness supplies
+label evidence and a repair goal. A gate-returned node repair does not gain this scope
+because its run enables label repair.
 
 - **The law is the unit.** The law is checked as a whole; no node has to match a label
   alone. A repair candidate is kept only when the harness confirms its stated repair
@@ -310,6 +324,16 @@ These rules apply when the evidence is headed **Label mismatches**, and only the
   withdrawal with `dependency_defect.json` (Output), built from the contract alone and never from
   a recording or its label; it is executed and adjudicated on the contract before it counts as a
   failed attempt of the law or the concept.
+- **Window-diagnosis evidence.** When supplied, this evidence authorizes diagnosis; it does not
+  establish that a rule or concept is wrong. Justify any proposed change to a window or event
+  definition from the law, applicable definitions and concept contracts. Do not choose windows from
+  recording length, fit a change to a recording identifier, or
+  replace unknown with a Boolean. Follow the existing reading proposal and operator-approval rules
+  for parameter values. A concept that is accepted, or depended on by an accepted record, keeps its
+  contract and interface under its id; a changed notion takes a new id and its callers return to
+  their planner. If the justified meaning still requires unavailable context, leave it undecided and
+  report the limitation through the existing output format. More decided cases alone do not
+  establish alignment.
 - **Who writes what.** A new cut of the text is the planner's: withdraw with kind `plan`. A changed
   mapping without a new cut is yours, in the records, and the coder implements it. You write Lean
   yourself only where the harness's local conditions hold: the segmentation is unchanged, every
@@ -336,7 +360,7 @@ by the concept's contract before anything is charged. The harness validates a re
 with its sibling nodes and, if it names a defect, asks you once more with the defect; a record
 that keeps a defect returns the law to the planner.
 
-Under label feedback, write instead:
+During a law-level label repair, write instead:
 - `record.jsonl`: one line per record you revise, each whole and carrying its own id: a node record
   in the schema below with its `node_id` (the harness keeps its `law_refs` and `segmentation`), or a
   concept record in the concept schema below; a withdrawal is the line above with the node's
@@ -362,15 +386,16 @@ narrowings[{span, why, kind ("reading" or "observable_reading" with `category`: 
 binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected, narrative, masked (blind only, a list), boundary (history_boundary only)}],
-occasion{act (a concept id, or a list of them for alternative acts), window, under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4e only),
+occasion{act (a concept id, or a list of them for alternative acts), boundary: "window" | "event" (absent: "window"), window (boundary "window"), onset{words, atoms, derived, justification} (boundary "event"), recognition (boundary "event"), gap (boundary "event", only where the formula language cannot write it: the span of an `operator` gap), under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4e only),
 literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
 ```
 
-The concept schema (label feedback only):
+The concept schema (during a law-level label repair only):
 
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
 args[{name, sort: "track" | "region" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+act{boundary: "window" | "event", window (window only: the formal parameter in a unit of time that bounds the act), onset, recognition, extent, history} (a concept that recognizes an act over a stretch of time, and only such a concept: the words of the contract, verbatim, stating the act's observed beginning, its point of recognition, its extent, and the history boundary for conduct before it),
 elements[{span (words of the contract, verbatim), atoms, concepts, justification}], residues[{span, why}],
 literals[{value, unit, why}], scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only: a list of atom ids the body reads)}],
 used_by[<node ids>], supersedes (an id or null), counterexample (null), differs_from{concept, why} (only when the sorts and atoms match an accepted concept's)
@@ -378,6 +403,6 @@ used_by[<node ids>], supersedes (an id or null), counterexample (null), differs_
 
 ## Finish
 
-Finish when `record.jsonl` is written. Under label feedback, finish when the output is complete:
+Finish when `record.jsonl` is written. During a law-level label repair, finish when the output is complete:
 revised records (with `lean.diff` where you wrote Lean), or a change request, or a withdrawal; an
 output with none of them is refused. No commentary outside it.

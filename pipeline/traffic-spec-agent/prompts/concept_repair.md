@@ -91,7 +91,28 @@ Users: {users}
    whether a plan can be carried out); the laws that used the concept go back to their planner, and
    the operator sees it as a gap. That a word has no atom of its own is never, by itself, a reason
    to withdraw.
-7. Decide; do not ask.
+7. **Window-diagnosis evidence.** When supplied, this evidence authorizes diagnosis; it does not
+   establish that a rule or concept is wrong. Justify any proposed change to a window or event
+   definition from the law, applicable definitions and concept contracts. Do not choose windows from
+   recording length, fit a change to a recording identifier, or
+   replace unknown with a Boolean. Follow the existing reading proposal and operator-approval rules
+   for parameter values. A concept that is accepted, or depended on by an accepted record, keeps its
+   contract and interface under its id; a changed notion takes a new id and its callers return to
+   their planner. If the justified meaning still requires unavailable context, leave it undecided
+   and report the limitation through the existing output format. More decided cases alone do not
+   establish alignment.
+8. **Event-relative history.** When the words relate a condition or a prior act to an event, state
+   the event, its recognition point and the relevant history boundary in the record and any concept
+   contract. Use an observed onset where it is the boundary the words or the disclosed reading
+   require. Do not use a sliding recognition window as the act's beginning, or discard evidence
+   before the act begins when the words require prior conduct. Retain a fixed time or distance bound
+   where the law requires it, or where a justified, parameterized observation or recognition bound
+   is needed; state its purpose and follow the reading approval rules. Never derive a bound or an
+   event onset from a recording's length, endpoints or identifier. Missing required history leaves
+   the dependent quantity or condition unknown; other branches may still decide the verdict. If the
+   formula language cannot express the required boundary, report an operator gap rather than change
+   the meaning.
+9. Decide; do not ask.
 
 ## Output
 
@@ -106,6 +127,7 @@ accepted.
 ```
 concept_id, kind: "formula" | "quantity", contract, definition ("DEF-…" or null),
 args[{name, sort: "track" | "region" | "literal" | "nat", values (literal only)}], params[{name, unit, meaning}],
+act{boundary: "window" | "event", window (window only: the formal parameter in a unit of time that bounds the act), onset, recognition, extent, history} (a concept that recognizes an act over a stretch of time, and only such a concept: the words of the contract, verbatim, stating the act's observed beginning, its point of recognition, its extent, and the history boundary for conduct before it),
 elements[{span (words of the contract, verbatim), atoms, concepts, justification}], residues[{span, why}],
 literals[{value, unit, why}], scenarios[{name: "holds" | "fails" | "blind", expected, narrative, masked (blind only: a list of atom ids the body reads)}],
 used_by[<node ids>], supersedes (null), counterexample (null), differs_from{concept, why} (only when the sorts and atoms match an accepted concept's)

@@ -99,7 +99,15 @@ class LibraryV2Checks:
         # the training contents are exactly what their sources give: ATOMS_train.md and the training
         # Atoms.lean from the full files by the split's tool, the other split files by the harness's
         import sys, tempfile
-        sys.path.insert(0, str(self.repo.parent / "ontology_provenance"))
+        from harness.store import paths as paths_mod
+        tool = paths_mod.ontology_tool("atoms_train")
+        if tool is None:
+            return Result("training split", FAIL,
+                          f"nrs_tools.atoms_train is not found: neither {paths_mod.ONTOLOGY_TOOLS / 'nrs_tools'} nor PYTHONPATH has it. "
+                          "A run's checkout is the whole WorldModelSpec repository, with pipeline/ontology_provenance/ beside "
+                          "pipeline/traffic-spec-agent/ (the run branch carries it); elsewhere put the directory holding "
+                          "nrs_tools/ on PYTHONPATH", src)
+        sys.path.insert(0, str(tool.parent.parent))
         from nrs_tools import atoms_train
         from harness.tools import split as split_tool
         stale = []
