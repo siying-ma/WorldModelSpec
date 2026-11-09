@@ -1,0 +1,276 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": "tt",
+   "assumptions": [
+    "asm.inside_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "v"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_113_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-113-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "v"
+        }
+       ],
+       "derived": "drv_motion_reverse_travel",
+       "params": [
+        {
+         "param": "p.reverse_speed_tolerance"
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "i"
+             }
+            ],
+            "atom": "st_intersection",
+            "params": []
+           },
+           {
+            "rises": {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "intersection"
+         },
+         "var": "i"
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "cw"
+               }
+              ],
+              "atom": "st_crosswalk",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "v"
+               },
+               {
+                "var": "cw"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "crosswalk"
+           },
+           "var": "cw"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "j"
+                 }
+                ],
+                "atom": "st_intersection",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "v"
+                   },
+                   {
+                    "var": "j"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "h1"
+                      }
+                     ],
+                     "atom": "st_highway",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "j"
+                        },
+                        {
+                         "var": "h1"
+                        }
+                       ],
+                       "atom": "st_on_way",
+                       "params": []
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "h2"
+                           }
+                          ],
+                          "atom": "st_highway",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "not": {
+                             "same": [
+                              {
+                               "var": "h1"
+                              },
+                              {
+                               "var": "h2"
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "j"
+                             },
+                             {
+                              "var": "h2"
+                             }
+                            ],
+                            "atom": "st_on_way",
+                            "params": []
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "highway"
+                       },
+                       "var": "h2"
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "highway"
+                  },
+                  "var": "h1"
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "asm": "asm.inside_city_limits"
+               },
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 }
+                ],
+                "derived": "drv_motion_turning",
+                "params": [
+                 {
+                  "param": "p.turn_recognition_window"
+                 },
+                 {
+                  "param": "p.heading_change_noise_floor"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "intersection"
+           },
+           "var": "j"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "1069c76b4b6531e3a65764e9",
+  "candidate_digest": "2f33e8f1078a74c457c31d282b07aad208f50be16cfa6e1c8bf4b264bd9feace"
+ }
+}

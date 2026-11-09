@@ -1,132 +1,19 @@
-# Feedback from iteration 1
+# Feedback from iteration 2
 
-selection: 5 aggregate, 17 not an aggregate, 0 gap, of 22 defined term(s)
-aggregate `DEF-NRS-484A-050::combination_of_vehicles` admitted: included 0, covered 0, unresolved 16; downgraded to unresolved: ru.electric_scooter (underdetermined), ru.rail_vehicle (underdetermined), ru.trailer_or_combination (underdetermined), ru.bus (cover_target_not_admitted), ru.commercial_motor_vehicle (cover_target_not_admitted), ru.emergency_vehicle (cover_target_not_admitted), ru.fire_apparatus (cover_target_not_admitted), ru.moped (cover_target_not_admitted), ru.motor_vehicle (cover_target_not_admitted), ru.motorcycle (cover_target_not_admitted), ru.official_vehicle (cover_target_not_admitted), ru.school_bus (cover_target_not_admitted), ru.taxicab (cover_target_not_admitted), ru.tour_bus_or_limousine (cover_target_not_admitted), ru.transit_bus (cover_target_not_admitted), ru.truck (cover_target_not_admitted)
-aggregate `DEF-NRS-484A-130::motor_vehicle` admitted: included 7, covered 1, unresolved 6; downgraded to unresolved: ru.commercial_motor_vehicle (underdetermined), ru.emergency_vehicle (underdetermined), ru.fire_apparatus (underdetermined), ru.official_vehicle (underdetermined), ru.taxicab (underdetermined), ru.tour_bus_or_limousine (underdetermined)
-aggregate `DEF-NRS-484A-285::traffic` admitted: included 21, covered 0, unresolved 0
-aggregate `DEF-NRS-484A-305::truck` admitted: included 1, covered 12, unresolved 1
-aggregate `DEF-NRS-484A-320::vehicle` admitted: included 14, covered 0, unresolved 0
-concept `drv.motion.standstill`: gate OK — 3 witnesses, 1 names, reads 1 atom(s)
-concept `drv.motion.region_entry`: gate OK — 3 witnesses, 1 names, reads 1 atom(s)
-concept `drv.motion.reverse_travel`: gate SCOPE_VIOLATION — changed outside the concept's files: ['library/TrafficSpec/Concepts/position/direction_component.lean.tmp.871211.c48d135072e5']
-concept `drv.position.direction_component`: gate OK — 3 witnesses, 2 names, reads 2 atom(s); narrowings declared by the coder: 1
-concept `drv.motion.region_exit`: gate OK — 3 witnesses, 1 names, reads 1 atom(s)
-concept `drv.motion.turning`: gate OK — 3 witnesses, 1 names, reads 1 atom(s)
-concept `drv.interaction.vehicle_file`: gate OK — 3 witnesses, 3 names, reads 3 atom(s); narrowings declared by the coder: 3
-concept `drv.interaction.following`: gate OK — 3 witnesses, 2 names, reads 2 atom(s)
-concept `drv.interaction.following`: accepted; the review's notes are recorded on it — dismissed: divergence 1 (fails_wrongly) at t=0 ms: Both road users occupy the same eastbound lane, with b ahead of a and their headings identical. At the admissible cosine tolerance 1, their zero head
-concept `drv.lane.lane_change`: gate OK — 3 witnesses, 3 names, reads 3 atom(s); narrowings declared by the coder: 2
-concept `drv.motion.left_turn`: gate OK — 3 witnesses, 2 names, reads 2 atom(s); narrowings declared by the coder: 1
-concept `drv.interaction.overtaking`: gate OK — 3 witnesses, 4 names, reads 4 atom(s); narrowings declared by the coder: 1
-concept `drv.interaction.overtaking`: accepted; the review's notes are recorded on it — The disclosed reading of projection overlap as strictly positive shared length, excluding projections that merely touch, is permitted by the contract's wording and is not a demonstrated divergence.
-concept `drv.motion.u_turn`: gate OK — 3 witnesses, 4 names, reads 4 atom(s); narrowings declared by the coder: 2
-concept `drv.motion.u_turn`: accepted; the review's notes are recorded on it — The onset-boundary test agreed with the contract: at the observed onset itself, the body fails rather than counting heading change from the preceding interval.; A test with a sampling gap before a fresh onset was dropped because the harness rejected its heading_since history as too sparsely sampled; it established no evaluable divergence.
-`NRS_484B_113_2`: held — uses ['drv.motion.reverse_travel'], pending (under repair or waiting); no attempt counted
-`NRS_484B_250_1`: not coded, composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], not accepted yet; kept for the next iteration, no attempt counted
-`NRS_484B_250_2`: not coded, composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], not accepted yet; kept for the next iteration, no attempt counted
-`NRS_484B_257_2_o1`: not coded, composes ['NRS_484B_257_1_o1'], not accepted yet; kept for the next iteration, no attempt counted
-`NRS_484A_450_2` proposed `p.standstill_speed_tolerance` = 0.1 m/s: Standstill convention: the speed at or below which a sampled speed reading is read as the definition's complete cessatio
-`NRS_484A_450_2` proposed `p.stop_point_tolerance` = 1.0 m: Stop-point convention of the approach reading: the bound within which a halt counts as at the place the words name (the 
-`NRS_484A_450_2` proposed `p.intersecting_way_view_distance` = 100.0 m: Intersection sight-distance convention: the length of the intersecting way that must be visible in each direction from t
-`NRS_484B_127_1` proposed `p.same_direction_cosine_tolerance` = 0.866 ratio: Heading-agreement convention: the cosine of the largest angle between two headings still read as the same direction, set
-`NRS_484B_127_1` proposed `p.following_headway_time_dry` = 2.0 s: Time-headway convention on a dry surface: the headway that multiplies the follower's speed to give the gap within which 
-`NRS_484B_127_1` proposed `p.following_headway_time_wet` = 3.0 s: Time-headway convention on a wet surface: the dry headway increased for the longer braking distance of a wet pavement.
-`NRS_484B_127_1` proposed `p.following_headway_time_ice` = 4.5 s: Time-headway convention on ice or snow: the dry headway increased for the much longer braking distance of an icy or snow
-`NRS_484B_127_1` proposed `p.following_headway_time_adverse_geometry` = 3.0 s: Time-headway convention on a steep or curved stretch: the dry headway increased where a downgrade lengthens braking dist
-`NRS_484B_127_1` proposed `p.following_reaction_time` = 1.5 s: Perception-reaction convention: the time over which a closing speed is carried before the follower's brakes act, which t
-`NRS_484B_127_1` proposed `p.following_grade_threshold` = 0.04 ratio: Grade convention: the magnitude of longitudinal slope above which the design correction to braking distance becomes mate
-`NRS_484B_127_1` proposed `p.following_curvature_threshold` = 0.01 1/m: Curvature convention: the horizontal curvature above which a bend materially shortens the view of the vehicle ahead on a
-`NRS_484B_127_1` proposed `p.following_dense_traffic_count` = 5 count: Traffic-density convention: the number of road users of the traffic aggregate on the subject's highway at which the stre
-`NRS_484B_127_1` proposed `p.following_dense_traffic_gap_increment` = 5.0 m: Traffic-density convention: the gap added to the headway bound in dense traffic, covering the shorter warning a follower
-`NRS_484B_127_2` proposed `p.overtaking_min_speed_excess` = 0.5 m/s: Passing convention: the excess of the overtaking road user's speed over the overtaken one's below which the two are keep
-`NRS_484B_127_2` proposed `p.conditions_permit_min_speed` = 5.0 m/s: Traffic-flow feasibility convention: the speed below which running is queued or stop-and-go, so that holding a long spac
-`NRS_484B_127_2` proposed `p.conditions_permit_max_intervening_users` = 0 count: Traffic-flow feasibility convention: the number of other vehicles that may occupy the space ahead before the subject is 
-`NRS_484B_127_3` proposed `p.caravan_min_members` = 3 count: Procession convention: the number of road users travelling one behind another at which the group is read as a file rathe
-`NRS_484B_127_3` proposed `p.caravan_max_member_gap` = 50.0 m: Procession convention: the reach within which another road user is read as travelling with the subject in the same file,
-`NRS_484B_127_3` proposed `p.entry_vehicle_length` = 6.0 m: Gap-acceptance convention: the length of the design vehicle that must fit into the space, used where no entering road us
-`NRS_484B_127_3` proposed `p.entry_clearance_headway_time` = 1.5 s: Gap-acceptance convention: the clear headway in front of and behind an entering vehicle, at the speed of the stream, bel
-`NRS_484B_220_1` proposed `p.wrong_way_speed_tolerance` = 0.5 m/s: Direction-of-travel convention: the magnitude of the velocity component along a designated direction below which travel 
-`NRS_484B_223_1b` proposed `p.turn_signal_advance_window` = 3.0 s: Signalling convention: the window behind the movement within which an indication counts as the signal given for it, take
-`NRS_484B_223_1b` proposed `p.lane_change_entry_headway_time` = 1.5 s: Gap-acceptance convention: the headway, at the speed of the faster of the two road users, that the longitudinal clearanc
-`NRS_484B_223_1b` proposed `p.lane_change_min_clearance` = 2.0 m: Conflict-avoidance convention: the clearance between bodies below which an approach is read as a conflict rather than a 
-`NRS_484B_223_1b` proposed `p.lane_change_conflict_horizon` = 3.0 s: Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities
-`NRS_484B_227_1_o1` proposed `p.lateral_offset_resolution` = 0.5 m: Lateral-offset convention: the magnitude of a signed lateral offset below which the side a region lies on is not disting
-`NRS_484B_227_1_o2` proposed `p.turn_onset_yaw_rate` = 3.0 deg/s: Manoeuvre-onset convention: the rate of change of heading above which a body is read as turning rather than running stra
-`NRS_484B_227_1_o2` proposed `p.left_turn_angle` = 45.0 deg: Turn-recognition convention: the heading change accumulated since the onset at which a turn to the left is recognized as
-`NRS_484B_227_1_o2` proposed `p.u_turn_reversal_angle` = 150.0 deg: Reversal convention: the accumulated heading change at which the definition's proceeding in the opposite direction is re
-`NRS_484B_250_4_o2` proposed `p.cautious_proceed_max_speed` = 4.5 m/s: Low-speed stopping-distance convention: the speed at or below which a vehicle moving off from a required halt into a jun
-`NRS_484B_250_4_o2` proposed `p.yield_conflict_horizon` = 3.0 s: Conflict-avoidance convention: the time ahead of the observation over which a closest approach under constant velocities
-`NRS_484B_250_4_o2` proposed `p.yield_min_clearance` = 2.0 m: Conflict-avoidance convention: the clearance between the nearest points of two bodies below which a closest approach is 
-`NRS_484B_253_o1` proposed `p.yield_headway_time` = 1.5 s: Gap-acceptance convention: the headway, at the approaching vehicle's own speed, within which that vehicle is read as so 
-`NRS_484B_257_1_o1` proposed `p.yield_sign_slowed_max_speed` = 4.5 m/s: Yield-sign approach convention: the speed at or below which a vehicle at a yield-controlled entrance counts as having sl
-`NRS_484B_227_1_o1`: gate OK — 8 witnesses, 11 names, composes nothing; narrowings declared by the coder: 1
-behaviour review of `NRS_484B_227_1_o1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_220_1`: gate OK — 6 witnesses, 13 names, composes nothing; narrowings declared by the coder: 1
-behaviour review of `NRS_484B_220_1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_127_3`: gate OK — 9 witnesses, 9 names, composes nothing; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_127_3`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_127_1`: gate OK — 14 witnesses, 11 names, composes nothing; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_127_1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_400_2a` proposed `p.centerline_adjacent_distance` = 3.6 m: Lane-position convention: the lateral distance from the centre line within which a place on the right half of a two-dire
-`NRS_484A_450_2`: gate OK — 11 witnesses, 18 names, composes nothing; narrowings declared by the coder: 3
-behaviour review of `NRS_484A_450_2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_127_2`: gate UNUSED_CLAIM — dev_temporary_traffic_control
-`NRS_484B_127_2`: gate UNUSED_CLAIM — sent to a node repair session; no attempt counted
-`NRS_484B_407` proposed `p.curvature_resolution` = 0.001 1/m: Map-geometry resolution convention: the magnitude of horizontal curvature below which a surveyed road alignment is indis
-`NRS_484B_407` proposed `p.crest_approach_distance` = 150.0 m: Crest sight-distance convention: the distance from a crest within which the crest's vertical curve restricts the view of
-`NRS_484B_223_1b`: gate OK — 15 witnesses, 16 names, composes nothing; narrowings declared by the coder: 1
-behaviour review of `NRS_484B_223_1b`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_250_4_o1`: gate OK — 10 witnesses, 19 names, composes nothing; narrowings declared by the coder: 4
-behaviour review of `NRS_484B_250_4_o1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_600_1a` proposed `p.reasonable_speed_base_limit` = 29.0 m/s: Design-speed convention: the speed a dry, wide, level, straight and unobstructed open-road stretch supports, before any 
-`NRS_484B_600_1a` proposed `p.reasonable_speed_wet_decrement` = 2.8 m/s: Wet-pavement convention: the reduction from the dry design speed that keeps the braking distance of the stopping-distanc
-`NRS_484B_600_1a` proposed `p.reasonable_speed_ice_decrement` = 8.0 m/s: Winter-surface convention: the larger reduction from the dry design speed that keeps the braking distance unchanged on a
-`NRS_484B_600_1a` proposed `p.reasonable_speed_traffic_decrement_per_user` = 0.5 m/s: Traffic-density convention: the reduction of the bound for each road user of the scene present on the highway the subjec
-`NRS_484B_600_1a` proposed `p.reasonable_speed_grade_decrement_per_unit_grade` = 30.0 m/s: Grade-correction convention: the reduction of the bound per unit of longitudinal slope magnitude, taken from the grade c
-`NRS_484B_600_1a` proposed `p.reasonable_speed_lane_width_time` = 0.12 s: Lateral-recovery convention: the time within which a driver must correct a lateral excursion of the order of the lane's 
-`NRS_484B_600_1a` proposed `p.reasonable_speed_sight_time` = 2.5 s: Stopping-sight-distance convention: the perception-reaction plus braking time over which the available sight must cover 
-`NRS_484B_307_6a`: gate OK — 8 witnesses, 9 names, composes nothing
-behaviour review of `NRS_484B_307_6a`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_253_o1`: gate OK — 11 witnesses, 12 names, composes nothing; narrowings declared by the coder: 3
-behaviour review of `NRS_484B_253_o1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_600_1c`: gate OK — 8 witnesses, 11 names, composes nothing
-behaviour review of `NRS_484B_600_1c`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_600_1a`: gate OK — 11 witnesses, 15 names, composes nothing; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_600_1a`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_400_2a`: gate OK — 8 witnesses, 14 names, composes nothing; narrowings declared by the coder: 3
-behaviour review of `NRS_484B_400_2a`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_227_1_o2`: gate OK — 12 witnesses, 13 names, composes nothing
-behaviour review of `NRS_484B_227_1_o2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_257_1_o2`: gate OK — 16 witnesses, 26 names, composes nothing; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_257_1_o2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_257_1_o1`: gate OK — 13 witnesses, 24 names, composes nothing; narrowings declared by the coder: 3
-behaviour review of `NRS_484B_257_1_o1`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_600_1e`: gate OK — 5 witnesses, 3 names, composes nothing
-behaviour review of `NRS_484B_600_1e`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_413_2`: gate OK — 12 witnesses, 6 names, composes nothing; narrowings declared by the coder: 1
-behaviour review of `NRS_484B_413_2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_257_2_o2`: gate OK — 16 witnesses, 17 names, composes nothing; narrowings declared by the coder: 4
-behaviour review of `NRS_484B_257_2_o2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_250_4_o2`: gate OK — 14 witnesses, 24 names, composes nothing; narrowings declared by the coder: 3
-behaviour review of `NRS_484B_250_4_o2`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_400_2b`: gate OK — 7 witnesses, 15 names, composes nothing; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_400_2b`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_407`: gate OK — 13 witnesses, 10 names, composes nothing
-behaviour review of `NRS_484B_407`, advisory: node behaviour review suspended (feedback: labels)
-`NRS_484B_253_o2`: gate OK — 12 witnesses, 15 names, composes NRS_484B_253_o1; narrowings declared by the coder: 2
-behaviour review of `NRS_484B_253_o2`, advisory: node behaviour review suspended (feedback: labels)
-dependency context changed and rechecked: `drv.motion.standstill`
-dependency context changed and rechecked: `drv.motion.region_entry`
-dependency context changed and rechecked: `drv.position.direction_component`
-dependency context changed and rechecked: `drv.motion.region_exit`
-dependency context changed and rechecked: `drv.motion.turning`
-dependency context changed and rechecked: `drv.interaction.vehicle_file`
-dependency context changed and rechecked: `drv.interaction.following`
-dependency context changed and rechecked: `drv.lane.lane_change`
-dependency context changed and rechecked: `drv.motion.left_turn`
-dependency context changed and rechecked: `drv.interaction.overtaking`
-dependency context changed and rechecked: `drv.motion.u_turn`
-`NRS-484B-253` span c1 composes accepted `NRS_484B_253_o1` (as: compliance)
+`NRS_484B_127_2`: revised by a repair session; coded again this iteration
+concept `drv.motion.reverse_travel`: re-proposed by a repair session
+concept `drv.motion.reverse_travel`: gate OK — 3 witnesses, 2 names, reads 2 atom(s)
+`NRS_484B_250_1`: not coded, composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], whose law(s) ['NRS-484B-250-4'] are not formally accepted yet; kept for the next iteration, no attempt counted
+`NRS_484B_250_2`: not coded, composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], whose law(s) ['NRS-484B-250-4'] are not formally accepted yet; kept for the next iteration, no attempt counted
+`NRS_484B_257_2_o1`: not coded, composes ['NRS_484B_257_1_o1'], whose law(s) ['NRS-484B-257-1'] are not formally accepted yet; kept for the next iteration, no attempt counted
+`NRS_484B_113_2` proposed `p.reverse_speed_tolerance` = 0.1 m/s: Rearward-motion convention: the magnitude of the velocity component along the body's heading below which a rearward read
+`NRS_484B_113_2` proposed `p.turn_recognition_window` = 3.0 s: Manoeuvre-recognition convention: the window behind an observation over which a yaw rate is integrated to tell a bending
+`NRS_484B_113_2` proposed `p.heading_change_noise_floor` = 5.0 deg: Resolution convention: the heading change over the recognition window below which an integrated yaw reading is indisting
+`NRS_484B_113_2`: gate OK — 9 witnesses, 8 names, composes nothing
+behaviour review of `NRS_484B_113_2`, advisory: node behaviour review suspended (feedback: labels)
+`NRS_484B_127_2`: gate OK — 14 witnesses, 19 names, composes nothing
+behaviour review of `NRS_484B_127_2`, advisory: node behaviour review suspended (feedback: labels)
+dependency context changed and rechecked: `drv.motion.reverse_travel`
 
 ## Laws by state
 
@@ -134,68 +21,10 @@ dependency context changed and rechecked: `drv.motion.u_turn`
 
 ## Concepts by state
 
-- accepted: 11
-- returned: 1
-
-## Returned concepts and why
-
-- `drv.motion.reverse_travel` (returned, attempt 1; used by NRS_484B_113_2): gate SCOPE_VIOLATION; changed outside the concept's files: ['library/TrafficSpec/Concepts/position/direction_component.lean.tmp.871211.c48d135072e5']
+- accepted: 12
 
 ## Nodes held for a later iteration, and why (no attempt counted)
 
-- `NRS_484B_113_2` waits on `drv.motion.reverse_travel`
-- `NRS_484B_250_1` held: composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], not accepted yet
-- `NRS_484B_250_2` held: composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], not accepted yet
-- `NRS_484B_257_2_o1` held: composes ['NRS_484B_257_1_o1'], not accepted yet
-
-## Readings the coding sessions narrowed (span, and what the formulas state more narrowly than its words)
-
-- `drv.position.direction_component` The component, in metres per second, of a road user's velocity along the designated direction of travel of a structure region: Written as the planar scalar projection vx·dx + vy·dy over the two world-frame components the vector atoms expose (`kin_velocity`, `st_lane_direction`, each read with a component literal), the direction being the normalised one its atom states. The contract names a component along a direction without saying how it is formed; this is the only reading the available atoms allow, and it leaves the height out because the world is planar.
-- `drv.interaction.vehicle_file` are within the file reach of u, a distance the caller sets measured between the nearest points of the bodies: The gap is read without a component — the distance between the nearest points of the two bodies — and the bound is inclusive: a road user whose body is exactly the file reach from u's is a member. The contract says `within` without fixing the boundary.
-- `drv.interaction.vehicle_file` counting u itself: u is counted as a member by identity (`same v u`), not by the three relations holding of u with itself: u is neither ahead of nor behind itself, so the conjunction would exclude it and no file could ever reach its member count. Every other road user is counted only through the relations.
-- `drv.interaction.vehicle_file` lie ahead of or behind u in the same lane: rel.ahead_behind_in_lane states one road user ahead of another along the direction of the lane they share, so the clause is written as that atom in both directions: v ahead of u, or u ahead of v (v behind u).
-- `drv.lane.lane_change` its footprint overlapped the region at the observation before: The language names no past instant of its own; `rises φ` (φ here and not at the observation before) is the only operator that reaches the preceding observation, so the overlap at the observation before is written through it, per branch of the contract's own disjunction: `rises (not occupies r)` where it no longer overlaps the region, and `occupies r and not rises (occupies r)` — overlapping here and not newly so — where it still does.
-- `drv.lane.lane_change` overlaps a lane neighbouring it in the same direction of travel: st.lane_adjacency reads a side (left or right); the contract reads none, since the side the crossing is made towards is excluded, so the body holds the neighbour to be the lane adjacent on either side, disjunctively.
-- `drv.motion.left_turn` the observation at which its rate of change of heading to the left first rose above the onset yaw rate: The onset is read as the latest observation at which `kin.yaw_rate` of the road user rose definitely above the onset yaw rate (false at the observation before, true there), not the first such rise of the recording: the contract's own words "until a later onset starts the count again" make the count restart at every later onset, so "first rose" is read relative to the judged observation.
-- `drv.interaction.overtaking` the two bodies' projections on a's heading overlap: read as a strictly positive shared length of the two projections: the atom is signed, zero where the projections abut and negative for the gap between them, and projections that merely touch at a point are no overlap, so the bound is strict rather than at-or-above zero.
-- `drv.motion.u_turn` the observation at which the magnitude of its rate of change of heading first rose above the onset yaw rate: The count is anchored to the latest observation at which that magnitude rose above the onset yaw rate (false at the observation before, true there), not to the first such rise of the recording: the contract's own extent fixes this, since "the count runs on until the angle is reached or a later onset starts it again". "First" is therefore read as the first rise of the run the count belongs to.
-- `drv.motion.u_turn` while the road user's footprint overlaps a way: Read at the observation the concept speaks about — the one at which the angle is reached, and each later one at which the accumulated change still holds it — and not as a condition required at every observation from the onset onwards; the contract makes the overlap a circumstance of the reversal it recognizes, not a further bound on the manoeuvre's course.
-- `NRS_484B_227_1_o1` s2: “the right-hand roadway” has “the dividing space, barrier or section” of the way to its left: the side is read of some dividing section of that way, not of every one. A divided highway's barrier is mapped as a run of sections — a crossover or a junction interrupts it — and the words name the division of the way, so the section whose side the duty reads is the one beside the vehicle.
-- `NRS_484B_220_1` s3: Where the vehicle occupies several of the regions the trigger selects, the duty is written as holding at each of them (a universal quantifier over the selected regions): a component of the velocity at or below the negative of p.wrong_way_speed_tolerance at any one of them is a violation, even where another selected region's component complies. The record leaves selected regions that disagree undecided; the duty here is decided against the vehicle.
-- `NRS_484B_127_3` s5: “each such vehicle or combination of vehicles” is written as every member of the subject's file that lies ahead of or behind it in the same lane (rel.ahead_behind_in_lane in either order) and within the file's reach of it (the space between the bodies at most p.caravan_max_member_gap, the reach the file concept uses). The space to the nearest such member is the binding one, since the space to a member further along the file is larger; a further member carries the same bound and never a weaker one, so the duty states the record's “immediately ahead of and behind” reading without an operator for “immediately”.
-- `NRS_484B_127_3` s6: “any other vehicle or combination of vehicles” whose length the bound reads is every road user of the scene that is neither the subject nor a member of the subject's file; where several are present, the space must hold each of them, which is the greater length the convention names. The clear headway is written as the headway term twice, fore and aft, because no figure of this file's own — not even a factor of two — may enter a formula.
-- `NRS_484B_127_1` s3: “the condition of the highway” and “the traffic upon … the highway” are read at a highway the subject occupies: the standard is written `existsRegion highway` with `st_highway` and `rel_occupies` of the binder, that being the only tie the node's claimed names give between a way and the subject. Where the subject occupies more than one highway region, the adverse-geometry selection and the traffic count are read at some such region and not at all of them.
-- `NRS_484B_127_1` s3: “the traffic upon … the highway” counts every road user occupying that highway, the subject included: the posted definition of traffic covers every road user using the way for travel and names no exception for the one whose duty is judged, so the count is not reduced by one for the subject.
-- `NRS_484A_450_2` s3: The record bounds the search for the halt by the mark's stopping zone (off the mark, short of it, farther from it than p.stop_point_tolerance) and leaves the third place — the point at which the view of s4 is met — without a zone for the search to end at. The zone of that place is read as the stretch of the carrier, outside the junction, on which that view is met: the search back from the entry ends at the last observation at which the vehicle was on the carrier, outside the junction, and the view was not met. Nothing else ends it, as with a mark.
-- `NRS_484A_450_2` s3: st.lane_direction, which the record claims beside prim.region_offset_along for the side of the mark, is read on its own as the carrier carrying a designated direction at the observation judged: the magnitude of the direction a formula reads (normalised, so at least one) is above zero exactly where the source records one, and is unknown where it records none. The place of the halt is read only where that direction is recorded, since the side of the mark is read along it.
-- `NRS_484A_450_2` s3: “the carrier the vehicle approaches through” is written as every carrier the vehicle occupies whose entrance end is the junction entered and which the stop sign governs: the duty must be met through each of them, as st.lane_enters directs (“a rule never picks the carrier that favours the road user”). Where the vehicle occupies one such carrier, the ordinary case, this reading and a reading that picks one agree.
-- `NRS_484B_223_1b` s3: Where the lane the subject has moved into is no neighbour of the lane left in that lane's direction, the record admits “either indication given for the side the body moves towards”. The side the body moves towards is read by no atom this node claims, so the third limb of the signal requirement accepts either indication — the turn indicator showing left or right, or an arm signal meaning left or right — within the window behind the movement. The duty still requires an indication for such a movement; only which side it names is left open.
-- `NRS_484B_250_4_o1` ob1: 'the point nearest the intersection where the driver has a view of approaching traffic' is written as: at rest on the approach carrier, its footprint not yet over the junction, with the sight along the crossing way at least p.intersecting_way_view_distance. No region of a scene marks that point, and a trace carries sampled positions only, so the place is not stated as the minimum over the points of the carrier at which the view holds; every point of the carrier, short of the junction, from which the way is visible that far counts as the place.
-- `NRS_484B_250_4_o1` ob1: 'the through highway' on which the traffic approaches is written as a highway region the junction lies on (st.on_way) that the subject's carrier does not lie on — the way the approach crosses there. Where the source records several such ways, the view along any one of them satisfies the place; a way the source does not record leaves no view, so the place is not reached.
-- `NRS_484B_250_4_o1` ob1: Where the place is the view point, the start of the approach that ends the search back has no mark to be measured from: it is written as the stretch of the carrier, short of the junction, at which the sight along the crossing way does not yet reach p.intersecting_way_view_distance — the same relation to the place that the mark's upstream zone has to a mark.
-- `NRS_484B_250_4_o1` ob1: The end of the search at 'the previous entry of the same subject into the same intersection' is written as the subject's own presence in that junction (rel.occupies), read at an observation before the judged entry: a formula read at the judged entry cannot tell that entry from an earlier one, and the two bounds decide this duty alike, because no halt at the place can be found while the subject's footprint overlaps the junction. The duty is judged at the observation before the entry for the same reason.
-- `NRS_484B_253_o1` ob1: 'Its closest approach to it' is read as: the centres approach each other within p.yield_conflict_horizon (prim.closest_approach_within), and at that approach either the centre distance (prim.closest_approach_distance) or the gap between the nearest points of the two bodies (rel.surface_gap, the measure the convention names) lies below p.yield_min_clearance. Where no approach of the centres falls within the horizon the clearance is not read as lost: two bodies drawing apart are no failure to grant precedence, and contact is read beside this by rel.contact.
-- `NRS_484B_253_o1` ob1: 'The carrier by which the subject came to the junction' is read existentially: some carrier of kind st.travel_region that the subject occupies and whose entrance end is that junction. The ontology fixes a road user's approach by occupancy and entrance topology, and the words name no further way to single one carrier out.
-- `NRS_484B_253_o1` ob1: A carrier read as an approach to the junction is not the junction region itself. The kind the record names, st.travel_region, covers the intersection, but st.lane_enters is the source's record of an approach segment's entrance end and is never recorded on the junction that segment enters ('A carrier enters one intersection at most'), so on the junction region the relation is unrecorded rather than false and asking it there could only add an unknown. The junction is therefore excluded as its own approach carrier, which removes no case that relation could decide and no vehicle the duty could reach.
-- `NRS_484B_600_1a` s3: The standard's conditions are read at the regions the subject occupies and that lie on the highway it occupies: the longitudinal slope (st.grade) and the sight distance (st.sight_distance) at the roadway region, read as 'the subject's place', and the width (st.lane_width) at the lane region, read as the 'width of the highway' the record narrows to the lane the vehicle runs in. The record names st.highway, st.roadway, st.lane and st.on_way without saying which region carries which figure; this is the assignment chosen.
-- `NRS_484B_600_1a` s3: 'the highway' and 'the lane' are definite in the words; where more than one occupied region of a kind qualifies, the bound is required at every one of them (a universal over the selected regions) rather than at one of them, which is the stricter of the readings the words allow.
-- `NRS_484B_400_2a` ob1: 'that portion of the right half of the highway nearest the centerline thereof' is written, where the carrier is a recorded lane, as the lane with no neighbouring lane of its own direction on its left: st.lane_adjacency counts ordinals from the left looking along the lane's designated direction, so the leftmost lane of that direction is the record's ordinal 1, and the relation states it without a magnitude of this file's own.
-- `NRS_484B_400_2a` ob1: 'where the carriageway carries no recorded lane' is written as the approach carrier the subject occupies not being a recorded lane (st.lane): the duty is read carrier by carrier, so the centre-line reading applies exactly at a carrier whose lanes the source does not record.
-- `NRS_484B_400_2a` ob1: 'The approach for a left turn must be made in' is read at every carrier the subject occupies whose entrance end is that junction, not at one of them: where it occupies several, no carrier that favours the subject is picked.
-- `NRS_484B_257_1_o2` ob1: 'the closest approach ... below p.yield_min_clearance' is read as either the centre distance at the closest approach within p.yield_conflict_horizon (prim.closest_approach_within, prim.closest_approach_distance, which compute on the centres under constant velocities) falling below the clearance, or the gap between the nearest points of the two bodies (rel.surface_gap, the clearance the convention names) falling below it: the primitive gives the approach, the relation the measure between the bodies.
-- `NRS_484B_257_1_o2` st1: the standard's two figures are read as alternatives, as the node's own obligation states them ('its distance to the junction at most its speed times p.yield_headway_time, or its closest approach to the subject ... below p.yield_min_clearance'): a vehicle on the through highway that meets either is approaching so closely as to constitute an immediate hazard.
-- `NRS_484B_257_1_o1` ob1: The point the third place names has no region in a scene: it is written as an observation at which the subject, on the approach carrier and not yet in the junction, has the sight along the crossing way at or above p.intersecting_way_view_distance. 'Nearest the intersection' is not read as a spatial minimum, and the start of the approach for that place is the last observation on the carrier at which that sight fell short of the distance.
-- `NRS_484B_257_1_o1` ob1: 'the through highway' is read as a highway region the junction lies on that the subject's own approach carrier does not lie on. dev.governs records the carrier a sign governs and no atom places a sign at a way's entrance, so the crossing way is identified by the junction and the carrier, not by the sign's position on it.
-- `NRS_484B_257_1_o1` ob1: The search back from the entry counts the act at its onset — the rising edges of the act since the start of the search's latest run — so an act that already held at the first observation after the end of the search is not counted.
-- `NRS_484B_413_2` s1: The hand of the course change is read from the sign of kin.yaw_rate at the judged observation: strictly positive is left, strictly negative is right. At an observation whose rate of change of heading is exactly zero no hand is read, so the duty of s1 is stated for a course change whose rate of change of heading is non-zero where it is recognized; the signal is required on the hand the sign gives and a signal on the other hand does not satisfy it.
-- `NRS_484B_257_2_o2` ob1: The clearance the duty keeps is read with both measures the span's justification names, because no primitive gives the closest approach between the nearest points of two bodies: where the two draw together within p.yield_conflict_horizon (prim.closest_approach_within), the duty is breached when the centre distance at that closest approach (prim.closest_approach_distance) is below p.yield_min_clearance, and also when the present distance between the nearest points of the bodies (rel.surface_gap) is below it, which catches two long bodies passing closer than the clearance while their centres stay further apart. Where the two do not draw together at all, neither figure is read: a road user moving away is granted precedence.
-- `NRS_484B_257_2_o2` ob1: The duty is read at every intersection the applicability's selection picks: the obligation quantifies universally over regions of kind st.intersection and rewrites that whole selection (the subject's footprint overlapping the junction, its moving, and a stop or yield sign at one of the junction's entrances) as the guard of the implication, since a region bound in the applicability is not in scope in the obligation.
-- `NRS_484B_257_2_o2` ob1: The approach carrier through which a protected vehicle reached the junction is read as a travel region other than the junction itself: a junction is no approach to itself, and st.lane_enters is not recorded on it, so reading the junction as its own entrance would leave the vehicle's obligation unknown wherever it stands in the junction.
-- `NRS_484B_257_2_o2` st2: The two figures of the hazard convention are read as alternatives: a vehicle approaches so closely as to constitute an immediate hazard where its ground distance to the junction is at most its own speed times p.yield_headway_time, or where the closest approach of the two centres within p.yield_conflict_horizon falls below p.yield_min_clearance. The record states both in one breath without saying which governs where, and either alone is enough to make the approach an immediate one. The nearest-point figure is not read a second time here: it measures the clearance of the duty itself (ob1), so that the set of vehicles the duty protects is decided by the approach and not by the breach.
-- `NRS_484B_250_4_o2` ob1: 'which have previously completed a stop' is read as a standstill of that road user, on a carrier whose entrance end is this junction, at some observation of the recording up to and including the judged one: the language looks back to an observation at or before the one it judges, and a road user standing at an entrance at the judged observation has come to the halt the words describe.
-- `NRS_484B_250_4_o2` ob1: the clearance of p.yield_min_clearance is read on two measurements the record names together: the centre distance at the closest approach under constant velocities within p.yield_conflict_horizon (prim.closest_approach_distance), and the clearance between the nearest points of the two bodies at the observation (rel.surface_gap); precedence is denied where either falls below it while the centres approach within the horizon.
-- `NRS_484B_250_4_o2` st1: the duty is read at every observation from the qualified entry at which the subject's footprint still overlaps the junction region, that unbroken occupancy carrying 'from that entry on, while the subject is moving across or within the intersection'; it is not read after the subject's footprint has left the junction.
-- `NRS_484B_400_2b` s7: The junction whose departure the duty judges is the one the applicability selects, and that selection is restated in the obligation as having held at the judged observation or at an earlier one: the carrier whose entrance end is the junction, the subject's presence on it, and the declaration of a turn at that junction. A carrier is an approach to the junction, so the subject is no longer on it at the observation at which its footprint leaves the junction, which is the observation this duty judges.
-- `NRS_484B_400_2b` s7: 'the highway being entered' is read for every highway region the subject occupies at the departure, not for one of them: where the subject's footprint lies on more than one way at that observation, the centre line of each must lie to its left, so no way is picked in the subject's favour.
-- `NRS_484B_253_o2` ob1: Granting precedence is read as a duty on the subject's own proceeding: where the subject's speed is zero it grants precedence by standing, and the clearance bounds are read on a subject that is itself moving. Contact is forbidden whether or not the subject moves.
-- `NRS_484B_253_o2` ob1: The clearance the span's atoms measure is bounded in both of the ways they give, each at p.yield_min_clearance: the gap between the nearest points of the two bodies at the observation (rel.surface_gap), and, where the centres approach within p.yield_conflict_horizon, the centre distance at that closest approach (prim.closest_approach_distance), which is undefined where they do not approach and then bounds nothing.
+- `NRS_484B_250_1` held: composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], whose law(s) ['NRS-484B-250-4'] are not formally accepted yet
+- `NRS_484B_250_2` held: composes ['NRS_484B_250_4_o1', 'NRS_484B_250_4_o2'], whose law(s) ['NRS-484B-250-4'] are not formally accepted yet
+- `NRS_484B_257_2_o1` held: composes ['NRS_484B_257_1_o1'], whose law(s) ['NRS-484B-257-1'] are not formally accepted yet

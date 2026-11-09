@@ -1,0 +1,65 @@
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.inside_city_limits"],"binders":["v"],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":"tt","assumptions":["asm.inside_city_limits"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"and":[{"args":[{"var":"v"}],"derived":"drv_motion_reverse_travel","params":[{"param":"p.reverse_speed_tolerance"}]},{"or":[{"body":{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"rises":{"args":[{"var":"v"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"intersection"},"var":"i"},{"or":[{"body":{"and":[{"args":[{"var":"cw"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"v"},{"var":"cw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"cw"},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"h1"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"j"},{"var":"h1"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"h2"}],"atom":"st_highway","params":[]},{"and":[{"not":{"same":[{"var":"h1"},{"var":"h2"}]}},{"args":[{"var":"j"},{"var":"h2"}],"atom":"st_on_way","params":[]}]}]},"exists_region":{"lit":"highway"},"var":"h2"}]}]},"exists_region":{"lit":"highway"},"var":"h1"}]}]},{"and":[{"asm":"asm.inside_city_limits"},{"args":[{"var":"v"}],"derived":"drv_motion_turning","params":[{"param":"p.turn_recognition_window"},{"param":"p.heading_change_noise_floor"}]}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":"tt","assumptions":["asm.inside_city_limits"],"binders":[{"cls":{"args":[{"var":"v"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"v"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"and":[{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"v"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"v"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"v"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"v"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"p.reverse_speed_tolerance"}}},{"or":[{"body":{"and":[{"args":[{"var":"i"}],"atom":"st_intersection","params":[]},{"rises":{"args":[{"var":"v"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"intersection"},"var":"i"},{"or":[{"body":{"and":[{"args":[{"var":"cw"}],"atom":"st_crosswalk","params":[]},{"args":[{"var":"v"},{"var":"cw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"crosswalk"},"var":"cw"},{"body":{"and":[{"and":[{"args":[{"var":"j"}],"atom":"st_intersection","params":[]},{"and":[{"args":[{"var":"v"},{"var":"j"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"h1"}],"atom":"st_highway","params":[]},{"and":[{"args":[{"var":"j"},{"var":"h1"}],"atom":"st_on_way","params":[]},{"body":{"and":[{"args":[{"var":"h2"}],"atom":"st_highway","params":[]},{"and":[{"not":{"same":[{"var":"h1"},{"var":"h2"}]}},{"args":[{"var":"j"},{"var":"h2"}],"atom":"st_on_way","params":[]}]}]},"exists_region":{"lit":"highway"},"var":"h2"}]}]},"exists_region":{"lit":"highway"},"var":"h1"}]}]},{"and":[{"asm":"asm.inside_city_limits"},{"cmp":"ge","lhs":{"abs":{"args":[{"var":"v"}],"params":[{"param":"p.turn_recognition_window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"p.heading_change_noise_floor"}}]}]},"exists_region":{"lit":"intersection"},"var":"j"}]}]}]}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_reverse_travel,st_intersection,rel_occupies,st_crosswalk,st_highway,st_on_way,drv_motion_turning
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	v
+OCC	v
+OCC	?i
+OCC	i
+OCC	v,i
+OCC	?cw
+OCC	cw
+OCC	v,cw
+OCC	?j
+OCC	j
+OCC	v,j
+OCC	?h1
+OCC	h1
+OCC	j,h1
+OCC	?h2
+OCC	h2
+OCC	h1,h2
+OCC	j,h2
+OCC	v
+TIME	occurrences	0
+TIME	checks	20
+TIME	lint	2420
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	314
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	322
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	328
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	313
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	296
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	311
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	287
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	316
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	312
+TIME	witnesses	2799
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_113_2	13	8
+TIME	adequacy_start	74
+TIME	adequacy	40251
+DONE

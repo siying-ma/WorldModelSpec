@@ -1,16 +1,15 @@
 {
  "run": "demo22-1109-0108",
- "iteration": 1,
- "status": "incomplete",
- "stop_reason": "the iteration bound (1) was reached",
+ "iteration": 2,
+ "status": "awaiting_labels",
+ "stop_reason": "generation paused: nothing runnable is left without a label check; 19 law(s) await their labels: ['NRS-484A-450-2', 'NRS-484B-113-2', 'NRS-484B-127-1', 'NRS-484B-127-2', 'NRS-484B-127-3', 'NRS-484B-220-1', 'NRS-484B-223-1b', 'NRS-484B-227-1', 'NRS-484B-250-4', 'NRS-484B-253', 'NRS-484B-257-1', 'NRS-484B-307-6a', 'NRS-484B-400-2a', 'NRS-484B-400-2b', 'NRS-484B-407', 'NRS-484B-413-2', 'NRS-484B-600-1a', 'NRS-484B-600-1c', 'NRS-484B-600-1e']",
  "laws": {
   "planned": 22
  },
- "accepted_nodes": 22,
- "accepted_concepts": 11,
+ "accepted_nodes": 24,
+ "accepted_concepts": 12,
  "concepts": {
-  "accepted": 11,
-  "returned": 1
+  "accepted": 12
  },
  "gate_costs": {
   "cost_failures": 0,
@@ -20,12 +19,14 @@
  "gaps_total": 0,
  "gaps_created_by_this_run": 0,
  "never_planned": [],
- "stop": "iteration_limit",
+ "stop": "",
  "stage": "done",
  "pending": {
   "awaiting_labels": [
    "NRS-484A-450-2",
+   "NRS-484B-113-2",
    "NRS-484B-127-1",
+   "NRS-484B-127-2",
    "NRS-484B-127-3",
    "NRS-484B-220-1",
    "NRS-484B-223-1b",
@@ -44,8 +45,6 @@
   ],
   "awaiting_label_repair": [],
   "generating": [
-   "NRS-484B-113-2",
-   "NRS-484B-127-2",
    "NRS-484B-250-1",
    "NRS-484B-250-2",
    "NRS-484B-257-2"

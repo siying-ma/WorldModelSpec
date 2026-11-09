@@ -183,6 +183,27 @@
   "node": "NRS_484B_400_2b",
   "role": "condition"
  },
+ "but this shall not prevent a truck or combination of vehicles from overtaking and passing any vehicle or combination of vehicles.": {
+  "atoms": [
+   "drv.interaction.overtaking",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "ru.aggregate=DEF-NRS-484A-305::truck",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_127_2",
+  "role": "exception"
+ },
+ "corner.": {
+  "atoms": [
+   "drv.motion.turning",
+   "rel.occupies",
+   "st.highway",
+   "st.intersection",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_113_2",
+  "role": "condition"
+ },
  "during the time such driver is moving across or within the intersection.": {
   "atoms": [
    "kin.speed",
@@ -285,6 +306,14 @@
   "node": "NRS_484B_600_1e",
   "role": "subject"
  },
+ "leave a space of 500 feet": {
+  "atoms": [
+   "rel.ahead_behind_in_lane",
+   "rel.surface_gap"
+  ],
+  "node": "NRS_484B_127_2",
+  "role": "obligation"
+ },
  "may make such left turn": {
   "atoms": [
    "drv.motion.left_turn",
@@ -375,6 +404,16 @@
    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
   ],
   "node": "NRS_484B_127_3",
+  "role": "obligation"
+ },
+ "shall not back into an intersection, on or over a crosswalk, or around a": {
+  "atoms": [
+   "drv.motion.reverse_travel",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_113_2",
   "role": "obligation"
  },
  "shall not be turned so as to proceed in the opposite direction": {
@@ -542,6 +581,22 @@
   "node": "NRS_484B_257_2_o2",
   "role": "subject"
  },
+ "the driver of a vehicle:": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_113_2",
+  "role": "subject"
+ },
+ "the driver of any truck or combination of vehicles 80 inches or more in overall width,": {
+  "atoms": [
+   "kin.extent",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "ru.aggregate=DEF-NRS-484A-305::truck"
+  ],
+  "node": "NRS_484B_127_2",
+  "role": "subject"
+ },
  "the driver of the vehicle": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
@@ -555,6 +610,21 @@
   ],
   "node": "NRS_484B_400_2b",
   "role": "condition"
+ },
+ "this subsection does not apply to any vehicle or combination of vehicles while moving on a highway on which there are two or more lanes available for traffic moving in the same direction.": {
+  "atoms": [
+   "drv.motion.standstill",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.lane",
+   "st.lane_adjacency",
+   "st.lane_direction",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_127_2",
+  "role": "exception"
  },
  "until the driver has given the appropriate turn signal": {
   "atoms": [
@@ -661,6 +731,16 @@
    "dev.traffic_signal"
   ],
   "node": "NRS_484B_307_6a",
+  "role": "trigger"
+ },
+ "which is following a truck, or combination of vehicles 80 inches or more in overall width,": {
+  "atoms": [
+   "drv.interaction.following",
+   "kin.extent",
+   "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles",
+   "ru.aggregate=DEF-NRS-484A-305::truck"
+  ],
+  "node": "NRS_484B_127_2",
   "role": "trigger"
  },
  "within an intersection": {

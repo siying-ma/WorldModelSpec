@@ -5,7 +5,9 @@
 import TrafficSpec
 import TrafficSpec.Core.Evidence.Builders
 import TrafficSpecWitness.NRS_484A.NRS_484A_450_2
+import TrafficSpecWitness.NRS_484B.NRS_484B_113_2
 import TrafficSpecWitness.NRS_484B.NRS_484B_127_1
+import TrafficSpecWitness.NRS_484B.NRS_484B_127_2
 import TrafficSpecWitness.NRS_484B.NRS_484B_127_3
 import TrafficSpecWitness.NRS_484B.NRS_484B_220_1
 import TrafficSpecWitness.NRS_484B.NRS_484B_223_1b
@@ -33,6 +35,7 @@ import TrafficSpecWitness.Concepts.lane.lane_change
 import TrafficSpecWitness.Concepts.motion.left_turn
 import TrafficSpecWitness.Concepts.motion.region_entry
 import TrafficSpecWitness.Concepts.motion.region_exit
+import TrafficSpecWitness.Concepts.motion.reverse_travel
 import TrafficSpecWitness.Concepts.motion.standstill
 import TrafficSpecWitness.Concepts.motion.turning
 import TrafficSpecWitness.Concepts.motion.u_turn
@@ -41,7 +44,9 @@ namespace TrafficSpecWitness
 open TrafficSpec
 /-- Every registered node scenario, in file order. -/
 def allScenarios : List Scenario := TrafficSpecWitness.NRS_484A_450_2.scenarios ++
+  TrafficSpecWitness.NRS_484B_113_2.scenarios ++
   TrafficSpecWitness.NRS_484B_127_1.scenarios ++
+  TrafficSpecWitness.NRS_484B_127_2.scenarios ++
   TrafficSpecWitness.NRS_484B_127_3.scenarios ++
   TrafficSpecWitness.NRS_484B_220_1.scenarios ++
   TrafficSpecWitness.NRS_484B_223_1b.scenarios ++
@@ -70,6 +75,7 @@ def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.interact
   TrafficSpecWitness.Concepts.motion.left_turn.instances ++
   TrafficSpecWitness.Concepts.motion.region_entry.instances ++
   TrafficSpecWitness.Concepts.motion.region_exit.instances ++
+  TrafficSpecWitness.Concepts.motion.reverse_travel.instances ++
   TrafficSpecWitness.Concepts.motion.standstill.instances ++
   TrafficSpecWitness.Concepts.motion.turning.instances ++
   TrafficSpecWitness.Concepts.motion.u_turn.instances ++
@@ -81,6 +87,7 @@ def allConceptScenarios : List Scenario := TrafficSpecWitness.Concepts.interacti
   TrafficSpecWitness.Concepts.motion.left_turn.scenarios ++
   TrafficSpecWitness.Concepts.motion.region_entry.scenarios ++
   TrafficSpecWitness.Concepts.motion.region_exit.scenarios ++
+  TrafficSpecWitness.Concepts.motion.reverse_travel.scenarios ++
   TrafficSpecWitness.Concepts.motion.standstill.scenarios ++
   TrafficSpecWitness.Concepts.motion.turning.scenarios ++
   TrafficSpecWitness.Concepts.motion.u_turn.scenarios ++
@@ -90,7 +97,9 @@ def witnessRules : List Rule := allRules ++ allInstances.filterMap (Concept.asRu
 /-- Every registered witness list, under the id of the node or concept that owns it. -/
 def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484A_450_2", TrafficSpecWitness.NRS_484A_450_2.scenarios),
+  ("NRS_484B_113_2", TrafficSpecWitness.NRS_484B_113_2.scenarios),
   ("NRS_484B_127_1", TrafficSpecWitness.NRS_484B_127_1.scenarios),
+  ("NRS_484B_127_2", TrafficSpecWitness.NRS_484B_127_2.scenarios),
   ("NRS_484B_127_3", TrafficSpecWitness.NRS_484B_127_3.scenarios),
   ("NRS_484B_220_1", TrafficSpecWitness.NRS_484B_220_1.scenarios),
   ("NRS_484B_223_1b", TrafficSpecWitness.NRS_484B_223_1b.scenarios),
@@ -118,6 +127,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("drv.motion.left_turn", TrafficSpecWitness.Concepts.motion.left_turn.scenarios),
   ("drv.motion.region_entry", TrafficSpecWitness.Concepts.motion.region_entry.scenarios),
   ("drv.motion.region_exit", TrafficSpecWitness.Concepts.motion.region_exit.scenarios),
+  ("drv.motion.reverse_travel", TrafficSpecWitness.Concepts.motion.reverse_travel.scenarios),
   ("drv.motion.standstill", TrafficSpecWitness.Concepts.motion.standstill.scenarios),
   ("drv.motion.turning", TrafficSpecWitness.Concepts.motion.turning.scenarios),
   ("drv.motion.u_turn", TrafficSpecWitness.Concepts.motion.u_turn.scenarios),

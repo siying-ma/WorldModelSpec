@@ -4,7 +4,9 @@
 -/
 import TrafficSpec.Core
 import TrafficSpec.Rules.NRS_484A.NRS_484A_450_2
+import TrafficSpec.Rules.NRS_484B.NRS_484B_113_2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_127_1
+import TrafficSpec.Rules.NRS_484B.NRS_484B_127_2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_127_3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_220_1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_223_1b
@@ -32,6 +34,7 @@ import TrafficSpec.Concepts.lane.lane_change
 import TrafficSpec.Concepts.motion.left_turn
 import TrafficSpec.Concepts.motion.region_entry
 import TrafficSpec.Concepts.motion.region_exit
+import TrafficSpec.Concepts.motion.reverse_travel
 import TrafficSpec.Concepts.motion.standstill
 import TrafficSpec.Concepts.motion.turning
 import TrafficSpec.Concepts.motion.u_turn
@@ -40,7 +43,9 @@ namespace TrafficSpec
 /-- Every registered rule, in file order. -/
 def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484A_450_2.rule,
+  TrafficSpec.Rules.NRS_484B_113_2.rule,
   TrafficSpec.Rules.NRS_484B_127_1.rule,
+  TrafficSpec.Rules.NRS_484B_127_2.rule,
   TrafficSpec.Rules.NRS_484B_127_3.rule,
   TrafficSpec.Rules.NRS_484B_220_1.rule,
   TrafficSpec.Rules.NRS_484B_223_1b.rule,
@@ -71,6 +76,7 @@ def allConcepts : List Concept := [
   TrafficSpec.Concepts.motion.left_turn.concept,
   TrafficSpec.Concepts.motion.region_entry.concept,
   TrafficSpec.Concepts.motion.region_exit.concept,
+  TrafficSpec.Concepts.motion.reverse_travel.concept,
   TrafficSpec.Concepts.motion.standstill.concept,
   TrafficSpec.Concepts.motion.turning.concept,
   TrafficSpec.Concepts.motion.u_turn.concept,

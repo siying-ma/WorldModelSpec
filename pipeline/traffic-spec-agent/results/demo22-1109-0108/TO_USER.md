@@ -103,3 +103,13 @@
 - `NRS-484B-600-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-600-1c`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-600-1e`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 2
+
+- parameter `p.reverse_speed_tolerance` = 0.1 m/s proposed by `NRS_484B_113_2` (Rearward-motion convention: the magnitude of the velocity component along the bo); review it in /local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.turn_recognition_window` = 3.0 s proposed by `NRS_484B_113_2` (Manoeuvre-recognition convention: the window behind an observation over which a ); review it in /local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.heading_change_noise_floor` = 5.0 deg proposed by `NRS_484B_113_2` (Resolution convention: the heading change over the recognition window below whic); review it in /local-scratch2/sma407/scratch_core/launch/remote/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `NRS-484B-113-2` (NRS_484B_113_2) reads "The driver of a vehicle:" (agency) through conduct: “The driver of a vehicle” is read as the vehicle whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “the driver” through the vehicle's controlled motion, the duty binding that vehicle's co
+- `NRS-484B-127-2` (NRS_484B_127_2) reads "The driver of any truck or combination of vehicles 80 inches or more in overall width," (agency) through conduct: “The driver of any truck or combination of vehicles” is read as that truck or combination, the road user whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “the driver” through the vehicle
+- `NRS-484B-113-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-127-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

@@ -1,0 +1,173 @@
+{
+ "node_id": "NRS_484B_113_2",
+ "law_refs": [
+  "NRS-484B-113-2"
+ ],
+ "subject": {
+  "binder": "v",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "Shall not back into an intersection, on or over a crosswalk, or around a",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "street",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "corner.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines and the run admits as DEF-NRS-484A-320::vehicle, so the span claims ru.aggregate with that id: “membership of a legal aggregate … true when the user carries an included class, unknown when no included class holds and the user carries an unresolved class”. The exclusion “not a stand-in for a named road-user class” is respected (the aggregate is claimed as the aggregate, never expanded into classes), and the exclusion of relational roles is respected by reading “driver” through controlled motion (narrowing on this span)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.intersection",
+    "st.crosswalk",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.reverse_travel"
+   ],
+   "justification": "“back” is rearward motion: drv.motion.reverse_travel states that the component of the road user's velocity along its own heading is rearward beyond a tolerance, which is how the ontology directs the word to be read — kin.gear “is not a stand-in for the direction of motion — a vehicle in a forward gear rolls backwards on a grade; backing is read from kinematics”. “into an intersection” is the entry event into st.intersection, “the region where two roadways meet, bounded by the prolongation of their edges”, whose contract also carries the definition's third clause, since “a junction where an alley meets another way … is no intersection but a st.driveway_or_alley_entrance”, matching DEF-NRS-484A-105(3). “on or over a crosswalk” is st.crosswalk, “marked crossing, or the unmarked prolongation of sidewalks at an intersection; marked attribute”, which is DEF-NRS-484A-065's two limbs. rel.occupies, “a road user's footprint overlaps a lane / region (… intersection, crosswalk …)”, is the anchor for both places: the entry is its rise for the junction, and being on or over the crossing is the overlap itself."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.intersection",
+    "st.highway",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.turning"
+   ],
+   "justification": "A corner is the corner of a junction of ways: st.intersection is “the region where two roadways meet”, st.highway “the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic” — DEF-NRS-484A-265's observable content for “street” — and st.on_way, “the public way (a highway region) a structure region lies on … an intersection lies on every way that meets there”, is what makes the junction one of two ways rather than a bare region. rel.occupies anchors the corner to the subject: the vehicle's footprint overlaps that junction region. “around” is the bending of the path through the corner, carried by drv.motion.turning, whose heading change over the window behind the observation stands clear of the source's resolution; the words name no angle, so the turn is read by its presence, with parameters that name only the window and the resolution."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s3",
+   "id": "asm.inside_city_limits",
+   "meaning": "the map or trace declares that the highway the road user occupies at the observation lies inside the territorial limits of a city"
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "v",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "The bound road user is a vehicle of DEF-NRS-484A-320::vehicle whose motion is observed. The prohibition has no further trigger: it bites at any observation at which the vehicle is travelling rearward.",
+ "obligation": "At no observation may the vehicle, while travelling rearward (drv.motion.reverse_travel with p.reverse_speed_tolerance), (a) first bring its footprint to overlap an intersection region — the rise of rel.occupies on that region, which is the backing into it; (b) have its footprint overlap a crosswalk region; or (c) be turning (drv.motion.turning with p.turn_recognition_window and p.heading_change_noise_floor) while its footprint overlaps the region where two highways meet and the assumption asm.inside_city_limits holds for that highway. The three limbs are read as a disjunction, so a decided limb decides the duty even where another is unknown for want of the city-limits declaration.",
+ "params": [
+  "p.reverse_speed_tolerance",
+  "p.turn_recognition_window",
+  "p.heading_change_noise_floor"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“The driver of a vehicle” is read as the vehicle whose motion is controlled: who or what controls a road user is not observable, and the ontology reads “the driver” through the vehicle's controlled motion, the duty binding that vehicle's conduct.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "“back into an intersection” is read as the observation at which the rearward-moving vehicle's footprint first overlaps the junction, not as the whole period in which it stands within it: the words forbid the backing into the region, so the event is its entry, while “on or over a crosswalk” is read as the overlap itself, which is what those words state.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car stops just short of a four-way junction, selects reverse and then — having overshot — reverses the other way: at one observation its velocity has a rearward component of 1.5 m/s along its heading and its footprint first overlaps the junction region. It has backed into an intersection.",
+   "masked": []
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car reverses 10 m along a straight stretch of roadway midway between two junctions to leave a parking bay. Through the whole reverse its footprint overlaps no intersection and no crosswalk, and it occupies no region where two highways meet, so no limb of the prohibition is met.",
+   "masked": []
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A pedal cycle propelled by human power, which the vehicle definition leaves out, is wheeled backwards over a marked crossing at a junction. No vehicle is bound and the rule does not engage.",
+   "masked": []
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source declaring road-user velocity absent: the junction, the footprint overlap and its rise are recorded, but whether the car's motion was rearward along its heading cannot be read, so the prohibition is unknown rather than satisfied.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A van reverses out of a loading bay and its footprint comes to overlap a marked crossing laid across the roadway away from any junction, its rearward speed 1 m/s. It has backed on or over a crosswalk.",
+   "masked": []
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A car reverses through the corner of a junction of two highways inside a city, the trace declaring the city-limits assumption true: while its footprint overlaps the junction its heading change over the window behind exceeds the resolution, so it is turning, and its motion is rearward throughout.",
+   "masked": []
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.reverse_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Rearward-motion convention: the magnitude of the velocity component along the body's heading below which a rearward reading is indistinguishable from measurement noise in a standing vehicle, set at the noise floor of vehicle speed measurement.",
+   "source": "stop-detection and direction-of-travel thresholds in vehicle-dynamics data reduction"
+  },
+  {
+   "name": "p.turn_recognition_window",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Manoeuvre-recognition convention: the window behind an observation over which a yaw rate is integrated to tell a bending path from straight running at a junction, taken from the duration of a low-speed corner manoeuvre.",
+   "source": "manoeuvre-segmentation windows used in naturalistic-driving analyses"
+  },
+  {
+   "name": "p.heading_change_noise_floor",
+   "unit": "deg",
+   "value": 5.0,
+   "convention": "Resolution convention: the heading change over the recognition window below which an integrated yaw reading is indistinguishable from straight running at the acquisition profile's sampling rate; it names the source's resolution only and no size of turn.",
+   "source": "yaw-rate sensor and scene-graph heading resolution figures"
+  }
+ ],
+ "gaps": []
+}

@@ -1,0 +1,965 @@
+{
+ "verdict": "OK",
+ "details": [
+  "14 witnesses, 19 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "u"
+           },
+           {
+            "var": "v"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "u"
+              },
+              {
+               "lit": "DEF-NRS-484A-305::truck"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "u"
+                },
+                {
+                 "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "cmp": "ge",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "u"
+                 },
+                 {
+                  "lit": "width"
+                 }
+                ],
+                "measure": "kin_extent"
+               },
+               "rhs": {
+                "lit": {
+                 "den": 125,
+                 "num": 254
+                },
+                "unit": "metre"
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "var": "u"
+            }
+           ],
+           "derived": "drv_interaction_following",
+           "params": [
+            {
+             "param": "p.same_direction_cosine_tolerance"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_user": "u"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "args": [
+               {
+                "var": "v"
+               }
+              ],
+              "derived": "drv_motion_standstill",
+              "params": [
+               {
+                "param": "p.standstill_speed_tolerance"
+               }
+              ]
+             }
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "v"
+                    },
+                    {
+                     "var": "l"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "l"
+                      },
+                      {
+                       "var": "h"
+                      }
+                     ],
+                     "atom": "st_on_way",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "cmp": "gt",
+                       "lhs": {
+                        "add": [
+                         {
+                          "mul": [
+                           {
+                            "args": [
+                             {
+                              "var": "l"
+                             },
+                             {
+                              "lit": "x"
+                             }
+                            ],
+                            "measure": "st_lane_direction"
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "l"
+                             },
+                             {
+                              "lit": "x"
+                             }
+                            ],
+                            "measure": "st_lane_direction"
+                           }
+                          ]
+                         },
+                         {
+                          "mul": [
+                           {
+                            "args": [
+                             {
+                              "var": "l"
+                             },
+                             {
+                              "lit": "y"
+                             }
+                            ],
+                            "measure": "st_lane_direction"
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "l"
+                             },
+                             {
+                              "lit": "y"
+                             }
+                            ],
+                            "measure": "st_lane_direction"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "rhs": {
+                        "lit": {
+                         "den": 1,
+                         "num": 0
+                        },
+                        "unit": "ratio"
+                       }
+                      },
+                      {
+                       "cmp": "ge",
+                       "lhs": {
+                        "args": [
+                         {
+                          "var": "l"
+                         },
+                         {
+                          "lit": "count"
+                         }
+                        ],
+                        "measure": "st_lane_adjacency"
+                       },
+                       "rhs": {
+                        "lit": {
+                         "den": 1,
+                         "num": 2
+                        },
+                        "unit": "count"
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "lane"
+                },
+                "var": "l"
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "highway"
+             },
+             "var": "h"
+            }
+           ]
+          }
+         ]
+        }
+       },
+       {
+        "not": {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "lit": "DEF-NRS-484A-305::truck"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "w"
+                },
+                {
+                 "var": "v"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "w"
+                   },
+                   {
+                    "lit": "DEF-NRS-484A-320::vehicle"
+                   }
+                  ],
+                  "atom": "ru_aggregate",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "w"
+                   },
+                   {
+                    "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+                   }
+                  ],
+                  "atom": "ru_aggregate",
+                  "params": []
+                 }
+                ]
+               },
+               {
+                "args": [
+                 {
+                  "var": "v"
+                 },
+                 {
+                  "var": "w"
+                 }
+                ],
+                "derived": "drv_interaction_overtaking",
+                "params": [
+                 {
+                  "param": "p.same_direction_cosine_tolerance"
+                 },
+                 {
+                  "param": "p.overtaking_min_speed_excess"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_user": "w"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "v"
+         },
+         {
+          "lit": "DEF-NRS-484A-305::truck"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "v"
+           },
+           {
+            "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "cmp": "ge",
+          "lhs": {
+           "args": [
+            {
+             "var": "v"
+            },
+            {
+             "lit": "width"
+            }
+           ],
+           "measure": "kin_extent"
+          },
+          "rhs": {
+           "lit": {
+            "den": 125,
+            "num": 254
+           },
+           "unit": "metre"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "name": "v"
+    }
+   ],
+   "id": "NRS_484B_127_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-127-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "u"
+             },
+             {
+              "var": "v"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "u"
+                },
+                {
+                 "lit": "DEF-NRS-484A-305::truck"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "u"
+                  },
+                  {
+                   "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                },
+                {
+                 "cmp": "ge",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "u"
+                   },
+                   {
+                    "lit": "width"
+                   }
+                  ],
+                  "measure": "kin_extent"
+                 },
+                 "rhs": {
+                  "lit": {
+                   "den": 125,
+                   "num": 254
+                  },
+                  "unit": "metre"
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "args": [
+              {
+               "var": "v"
+              },
+              {
+               "var": "u"
+              }
+             ],
+             "derived": "drv_interaction_following",
+             "params": [
+              {
+               "param": "p.same_direction_cosine_tolerance"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "args": [
+          {
+           "var": "u"
+          },
+          {
+           "var": "v"
+          }
+         ],
+         "atom": "rel_ahead_behind_in_lane",
+         "params": []
+        }
+       ]
+      },
+      {
+       "implies": [
+        {
+         "and": [
+          {
+           "cmp": "ge",
+           "lhs": {
+            "args": [
+             {
+              "var": "v"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           "rhs": {
+            "param": "p.conditions_permit_min_speed"
+           }
+          },
+          {
+           "and": [
+            {
+             "cmp": "le",
+             "lhs": {
+              "aggregate": "count",
+              "of": {
+               "lit": {
+                "den": 1,
+                "num": 0
+               },
+               "unit": "count"
+              },
+              "var": "w",
+              "where": {
+               "and": [
+                {
+                 "not": {
+                  "same": [
+                   {
+                    "var": "w"
+                   },
+                   {
+                    "var": "v"
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "w"
+                     },
+                     {
+                      "var": "u"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "body": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "v"
+                         },
+                         {
+                          "var": "rw"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "w"
+                         },
+                         {
+                          "var": "rw"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "roadway"
+                     },
+                     "var": "rw"
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "w"
+                        },
+                        {
+                         "var": "v"
+                        }
+                       ],
+                       "atom": "rel_ahead_behind_in_lane",
+                       "params": []
+                      },
+                      {
+                       "cmp": "lt",
+                       "lhs": {
+                        "args": [
+                         {
+                          "var": "v"
+                         },
+                         {
+                          "var": "w"
+                         },
+                         {
+                          "lit": "longitudinal"
+                         }
+                        ],
+                        "measure": "rel_surface_gap"
+                       },
+                       "rhs": {
+                        "args": [
+                         {
+                          "var": "v"
+                         },
+                         {
+                          "var": "u"
+                         },
+                         {
+                          "lit": "longitudinal"
+                         }
+                        ],
+                        "measure": "rel_surface_gap"
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             },
+             "rhs": {
+              "param": "p.conditions_permit_max_intervening_users"
+             }
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "v"
+                    },
+                    {
+                     "var": "ol"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "ol"
+                       },
+                       {
+                        "var": "ow"
+                       }
+                      ],
+                      "atom": "st_on_way",
+                      "params": []
+                     },
+                     {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "ob"
+                          },
+                          {
+                           "var": "ow"
+                          }
+                         ],
+                         "atom": "st_on_way",
+                         "params": []
+                        },
+                        {
+                         "cmp": "lt",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "v"
+                           },
+                           {
+                            "var": "ob"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "args": [
+                           {
+                            "var": "v"
+                           },
+                           {
+                            "var": "u"
+                           },
+                           {
+                            "lit": "longitudinal"
+                           }
+                          ],
+                          "measure": "rel_surface_gap"
+                         }
+                        }
+                       ]
+                      },
+                      "exists_region": {
+                       "lit": "obstruction"
+                      },
+                      "var": "ob"
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "highway"
+                   },
+                   "var": "ow"
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "lane"
+                },
+                "var": "ol"
+               }
+              },
+              {
+               "not": {
+                "body": {
+                 "or": [
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "dl"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "dl"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "lane"
+                   },
+                   "var": "dl"
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "v"
+                       },
+                       {
+                        "var": "dr"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "d"
+                       },
+                       {
+                        "var": "dr"
+                       }
+                      ],
+                      "atom": "dev_governs",
+                      "params": []
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "roadway"
+                   },
+                   "var": "dr"
+                  }
+                 ]
+                },
+                "exists_device": {
+                 "lit": "temporary_traffic_control"
+                },
+                "var": "d"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "cmp": "ge",
+         "lhs": {
+          "args": [
+           {
+            "var": "v"
+           },
+           {
+            "var": "u"
+           },
+           {
+            "lit": "longitudinal"
+           }
+          ],
+          "measure": "rel_surface_gap"
+         },
+         "rhs": {
+          "lit": {
+           "den": 5,
+           "num": 762
+          },
+          "unit": "metre"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "u"
+   },
+   "residues": [
+    "The purpose clause explains the figure the law itself fixes: the space is 500 feet, and the words “so that an overtaking vehicle may enter and occupy such space without danger” state what that space is for, adding no further requirement to the duty, which is met by leaving the stated space and breached by not leaving it. The ontology reads a purpose through the conduct it explains, and here that conduct is the leaving of the space the next words measure. The rule is held to this: no verdict of the node turns on these words."
+   ],
+   "surrogate": false
+  },
+  "context": "db019432bf6a8306d78a4b35",
+  "candidate_digest": "349791b5d5e5246547333b388ed715ad9ebbf0a08e552847855f6495071de88a"
+ }
+}
