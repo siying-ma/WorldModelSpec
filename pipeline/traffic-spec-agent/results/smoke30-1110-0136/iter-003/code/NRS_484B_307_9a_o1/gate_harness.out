@@ -1,0 +1,150 @@
+'TrafficSpec.Rules.NRS_484B_307_9a_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"operationalizations":[],"residues":["An advisory statement of the signal phasing (opposing traffic faces a steady red while the arrow is lit); it permits, requires and forbids nothing, and no duty of the road user turns on it."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"not":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}},{"and":[{"body":{"body":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"or":[{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"intersection"},"var":"i"},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o2"}},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o3"}},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o4"}}]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"or":[{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]},{"and":[{"implies":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.left_turn_min_angle"},{"param":"p.reversal_min_angle"}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"and":[{"implies":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.right_turn_min_angle"},{"param":"p.reversal_min_angle"}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"implies":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["An advisory statement of the signal phasing (opposing traffic faces a steady red while the arrow is lit); it permits, requires and forbids nothing, and no duty of the road user turns on it."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"not":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}},{"and":[{"body":{"body":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"or":[{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"intersection"},"var":"i"},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o2"}},{"and":[{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o3"}},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o4"}}]}]}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"or":[{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]},{"body":{"and":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"rises":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]}]},{"and":[{"implies":[{"rises":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.left_turn_min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.reversal_min_angle"}}]}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"and":[{"implies":[{"rises":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.right_turn_min_angle"}}},{"cmp":"gt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.reversal_min_angle"}}}]}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},{"implies":[{"rises":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]}},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"s"},{"lit":"green_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["An advisory statement of the signal phasing (opposing traffic faces a steady red while the arrow is lit); it permits, requires and forbids nothing, and no duty of the road user turns on it."],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,dev_traffic_signal,rel_occupies,dev_governs,st_travel_region,st_lane_enters,dev_traffic_signal_shows,drv_motion_left_turn_through_region,drv_motion_right_turn_through_region,drv_motion_straight_through_region
+COMPOSES	NRS_484B_307_9b_o1,NRS_484B_307_9b_o2,NRS_484B_307_9b_o3,NRS_484B_307_9b_o4
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.yaw_rate
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	x
+OCC	?i
+OCC	?s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s,i
+OCC	?c
+OCC	s,c
+OCC	c,i
+OCC	x,c
+OCC	x,c
+OCC	x,c
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	$,x
+OCC	$,x
+OCC	$,x
+OCC	$,x
+OCC	?i
+OCC	?s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s,i
+OCC	?c
+OCC	s,c
+OCC	c,i
+OCC	x,c
+OCC	x,c
+OCC	x,c
+OCC	s
+OCC	s
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+TIME	occurrences	0
+TIME	checks	85
+REF	permit	scene t=250: track 1 keeps the heading it had at t=200, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=300: track 1 keeps the heading it had at t=250, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=350: track 1 keeps the heading it had at t=300, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=400: track 1 keeps the heading it had at t=350, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=450: track 1 keeps the heading it had at t=400, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=500: track 1 keeps the heading it had at t=450, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=550: track 1 keeps the heading it had at t=500, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=600: track 1 keeps the heading it had at t=550, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=650: track 1 keeps the heading it had at t=600, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=700: track 1 keeps the heading it had at t=650, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=750: track 1 keeps the heading it had at t=700, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=800: track 1 keeps the heading it had at t=750, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=850: track 1 keeps the heading it had at t=800, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=900: track 1 keeps the heading it had at t=850, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=950: track 1 keeps the heading it had at t=900, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=1000: track 1 keeps the heading it had at t=950, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=1050: track 1 keeps the heading it had at t=1000, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=1100: track 1 keeps the heading it had at t=1050, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=1150: track 1 keeps the heading it had at t=1100, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	permit	scene t=1200: track 1 keeps the heading it had at t=1150, but its yaw rate turns it 9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=250: track 1 keeps the heading it had at t=200, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=300: track 1 keeps the heading it had at t=250, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=350: track 1 keeps the heading it had at t=300, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=400: track 1 keeps the heading it had at t=350, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=450: track 1 keeps the heading it had at t=400, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=500: track 1 keeps the heading it had at t=450, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=550: track 1 keeps the heading it had at t=500, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=600: track 1 keeps the heading it had at t=550, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=650: track 1 keeps the heading it had at t=600, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=700: track 1 keeps the heading it had at t=650, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=750: track 1 keeps the heading it had at t=700, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=800: track 1 keeps the heading it had at t=750, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=850: track 1 keeps the heading it had at t=800, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=900: track 1 keeps the heading it had at t=850, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=950: track 1 keeps the heading it had at t=900, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1000: track 1 keeps the heading it had at t=950, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1050: track 1 keeps the heading it had at t=1000, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1100: track 1 keeps the heading it had at t=1050, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1150: track 1 keeps the heading it had at t=1100, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1200: track 1 keeps the heading it had at t=1150, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=250: track 1 keeps the heading it had at t=200, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=300: track 1 keeps the heading it had at t=250, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=350: track 1 keeps the heading it had at t=300, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=400: track 1 keeps the heading it had at t=350, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=450: track 1 keeps the heading it had at t=400, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=500: track 1 keeps the heading it had at t=450, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=550: track 1 keeps the heading it had at t=500, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=600: track 1 keeps the heading it had at t=550, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=650: track 1 keeps the heading it had at t=600, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=700: track 1 keeps the heading it had at t=650, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=750: track 1 keeps the heading it had at t=700, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=800: track 1 keeps the heading it had at t=750, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=850: track 1 keeps the heading it had at t=800, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=900: track 1 keeps the heading it had at t=850, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=950: track 1 keeps the heading it had at t=900, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1000: track 1 keeps the heading it had at t=950, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1050: track 1 keeps the heading it had at t=1000, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1100: track 1 keeps the heading it had at t=1050, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1150: track 1 keeps the heading it had at t=1100, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1200: track 1 keeps the heading it had at t=1150, but its yaw rate turns it -9/2° over the interval (the rate at a scene is held over the interval before it)
+TIME	lint	393
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:forbid	185
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	185
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	175
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter], not for an atom the manifest masks
+TIME	scenario:blind	187
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	173
+SCEN	branch_2	violated	?	branch_2: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_2	177
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	185
+SCEN	branch_4	violated	?	branch_4: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_4	184
+SCEN	branch_5	compliant	?	branch_5: expected compliant, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_5	186
+TIME	witnesses	1637
+DONE_WITNESSES

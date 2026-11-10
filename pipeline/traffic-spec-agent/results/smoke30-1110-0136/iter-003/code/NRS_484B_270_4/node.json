@@ -1,0 +1,140 @@
+{
+ "node_id": "NRS_484B_270_4",
+ "law_refs": [
+  "NRS-484B-270-4"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except as otherwise provided in subsection 3 [NRS-484B-270-3],",
+   "role": "reference"
+  },
+  {
+   "id": "s2",
+   "text": "the driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall not enter or proceed through an intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "while driving within a pathway or lane provided for bicycles, electric bicycles or electric scooters.",
+   "role": "condition"
+  }
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "Motor vehicle aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'; 'does not include an electric bicycle or an electric scooter'), claimed as the admitted aggregate and never expanded; the driver is a relational role, read through the vehicle's controlled motion (ontology §9: 'the driver' is read through the vehicle's controlled motion and the duty binds that vehicle's conduct)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Entering or proceeding through an intersection: the observation at which x's footprint begins to overlap a region of kind st.intersection ('the region where two roadways meet, bounded by the prolongation of their edges', matching DEF-NRS-484A-105 'the area embraced within the prolongation or connection of the lateral curb lines ... of the roadways of two highways which join', and excluding an alley junction as the definition's (3) does) — rel.occupies ('a road user's footprint overlaps a lane / region') true at this observation and false at the observation before; every passage through an intersection begins with that entry."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Driving within a pathway or lane provided for bicycles, electric bicycles or electric scooters: x in motion (drv.motion.moving: kin.speed above the speed-resolution tolerance, 'whoever or whatever controls the road user') with its footprint overlapping a region of kind st.bicycle_lane_or_path ('lane or separate path reserved for bicycles and the devices a jurisdiction groups with them') through rel.occupies; the words name the lane's purpose, not road users, so no aggregate is claimed."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s1",
+   "rule": "NRS_484B_270_3_o2",
+   "map": {
+    "x": "x"
+   },
+   "as": "condition"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a motor vehicle. Judged at each observation at which x is moving (drv.motion.moving with p.motion_speed_tolerance) with its footprint on a bicycle lane or path (rel.occupies, st.bicycle_lane_or_path), and where NRS_484B_270_3_o2 applies to x (its x mapped to x): none of subsection 3's exceptions (a)-(f) excuses x's presence in the lane.",
+ "obligation": "x does not enter an intersection at the judged observation: it is not the case that, for some intersection i, x's footprint overlaps i (rel.occupies, st.intersection) here and did not at the observation before.",
+ "params": [
+  "p.motion_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'Proceed through' is read at the entry into the intersection, where every passage through it begins.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x drives in bicycle lane b up to intersection i and its footprint enters i while still on b; no exception holds and the trace declares asm.vehicle_disabled, asm.performing_official_duties and asm.emergency false."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x drives in b mid-block (no exception holds) and does not enter an intersection while in it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x enters i from a general traffic lane, never on a bicycle lane or path."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but kin.speed is not observed, so whether x is driving (in motion) in the bicycle lane when it enters i cannot be read; occupancy stays observed, so subsection 3's rule remains decided.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but a dev.human_direction with role police_officer governs b and directs x through it: subsection 3's exception (e) holds, so NRS_484B_270_3_o2 does not apply."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {
+  "NRS_484B_270_3_o2": "145f863d7c771f1750778199f46c99adb61dc6495bf429a6cb519ddbc69dd76c"
+ }
+}

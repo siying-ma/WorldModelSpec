@@ -214,8 +214,8 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle"
   ],
-  "node": "NRS_484B_769",
-  "role": "subject"
+  "node": "NRS_484B_270_3_o1",
+  "role": "condition"
  },
  "an operator of a bicycle,": {
   "atoms": [
@@ -382,6 +382,23 @@
   "node": "NRS_484B_250_4_o1",
   "role": "condition"
  },
+ "but must yield the right-of-way to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.": {
+  "atoms": [
+   "drv.motion.moving",
+   "prim.closest_approach_distance",
+   "prim.closest_approach_within",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9a_o2",
+  "role": "obligation"
+ },
  "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered,": {
   "atoms": [
    "dev.governs",
@@ -501,7 +518,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o2",
+  "node": "NRS_484B_307_9a_o2",
   "role": "condition"
  },
  "from such through highway": {
@@ -703,6 +720,14 @@
   "node": "NRS_484B_297_6_o2",
   "role": "condition"
  },
+ "on the pathway or lane.": {
+  "atoms": [
+   "rel.occupies",
+   "st.bicycle_lane_or_path"
+  ],
+  "node": "NRS_484B_270_3_o1",
+  "role": "condition"
+ },
  "operation of vehicles": {
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
@@ -721,6 +746,13 @@
   "node": "NRS_484B_363_3",
   "role": "exception"
  },
+ "or a pedestrian": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "NRS_484B_270_3_o1",
+  "role": "condition"
+ },
  "or a traffic-control signal:": {
   "atoms": [
    "dev.governs",
@@ -734,8 +766,8 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_769",
-  "role": "subject"
+  "node": "NRS_484B_270_3_o1",
+  "role": "condition"
  },
  "or around a": {
   "atoms": [
@@ -887,6 +919,14 @@
   "node": "NRS_484B_113_2",
   "role": "obligation"
  },
+ "shall not enter or proceed through an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_270_4",
+  "role": "obligation"
+ },
  "shall not enter, stop, stand, park or drive within a pathway or lane provided for bicycles, electric bicycles or electric scooters": {
   "atoms": [
    "rel.occupies",
@@ -964,9 +1004,9 @@
   "atoms": [
    "drv.motion.moving",
    "rel.occupies",
-   "st.controlled_access"
+   "st.bicycle_lane_or_path"
   ],
-  "node": "NRS_484B_263_o1",
+  "node": "NRS_484B_270_3_o1",
   "role": "obligation"
  },
  "such a pedestrian:": {
@@ -987,7 +1027,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
   ],
-  "node": "NRS_484B_270_3_o2",
+  "node": "NRS_484B_270_3_o1",
   "role": "subject"
  },
  "the driver of a vehicle": {
@@ -1020,6 +1060,13 @@
    "st.highway"
   ],
   "node": "NRS_484B_263_o2",
+  "role": "condition"
+ },
+ "to any person riding a bicycle,": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle"
+  ],
+  "node": "NRS_484B_270_3_o1",
   "role": "condition"
  },
  "to any vehicle approaching from the opposite direction": {
@@ -1108,6 +1155,14 @@
   "node": "NRS_484B_440_1_o1",
   "role": "condition"
  },
+ "vehicular traffic": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_307_9a_o2",
+  "role": "subject"
+ },
  "walking or otherwise traveling on a sidewalk": {
   "atoms": [
    "drv.motion.moving",
@@ -1163,7 +1218,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o2",
+  "node": "NRS_484B_307_9a_o2",
   "role": "trigger"
  },
  "which is within the intersection": {
@@ -1172,6 +1227,15 @@
    "st.intersection"
   ],
   "node": "NRS_484B_253_o1",
+  "role": "condition"
+ },
+ "while driving within a pathway or lane provided for bicycles, electric bicycles or electric scooters.": {
+  "atoms": [
+   "drv.motion.moving",
+   "rel.occupies",
+   "st.bicycle_lane_or_path"
+  ],
+  "node": "NRS_484B_270_4",
   "role": "condition"
  },
  "while on the paved or main-traveled portion of a highway": {

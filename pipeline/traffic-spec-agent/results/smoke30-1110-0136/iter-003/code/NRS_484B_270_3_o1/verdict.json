@@ -1,0 +1,374 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 6 names, composes NRS_484B_297_6_o2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "b"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "derived": "drv_motion_moving",
+         "params": [
+          {
+           "param": "p.motion_speed_tolerance"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "not": {
+           "same": [
+            {
+             "var": "y"
+            },
+            {
+             "var": "x"
+            }
+           ]
+          }
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "y"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "or": [
+             {
+              "args": [
+               {
+                "var": "y"
+               },
+               {
+                "lit": "DEF-NRS-484A-025::bicycle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "lit": "DEF-NRS-484B-017::electric_bicycle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "lit": "DEF-NRS-484B-018::electric_scooter"
+                   }
+                  ],
+                  "atom": "ru_aggregate",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "y"
+                     },
+                     {
+                      "lit": "DEF-NRS-484A-165::pedestrian"
+                     }
+                    ],
+                    "atom": "ru_aggregate",
+                    "params": []
+                   },
+                   {
+                    "map": {
+                     "x": "y"
+                    },
+                    "rule_applies": "NRS_484B_297_6_o2"
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_user": "y"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "bicycle_lane_or_path"
+    },
+    "var": "b"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_270_3_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "b"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "derived": "drv_motion_moving",
+         "params": [
+          {
+           "param": "p.motion_speed_tolerance"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "y"
+              },
+              {
+               "var": "x"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "y"
+               },
+               {
+                "var": "b"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "or": [
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-025::bicycle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "or": [
+                 {
+                  "args": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "lit": "DEF-NRS-484B-017::electric_bicycle"
+                   }
+                  ],
+                  "atom": "ru_aggregate",
+                  "params": []
+                 },
+                 {
+                  "or": [
+                   {
+                    "args": [
+                     {
+                      "var": "y"
+                     },
+                     {
+                      "lit": "DEF-NRS-484B-018::electric_scooter"
+                     }
+                    ],
+                    "atom": "ru_aggregate",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "y"
+                       },
+                       {
+                        "lit": "DEF-NRS-484A-165::pedestrian"
+                       }
+                      ],
+                      "atom": "ru_aggregate",
+                      "params": []
+                     },
+                     {
+                      "map": {
+                       "x": "y"
+                      },
+                      "rule_applies": "NRS_484B_297_6_o2"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "y"
+              }
+             ],
+             "derived": "prim_closest_approach_within",
+             "params": [
+              {
+               "param": "p.conflict_time_horizon"
+              }
+             ]
+            },
+            {
+             "cmp": "lt",
+             "lhs": {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "y"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.conflict_time_horizon"
+               }
+              ],
+              "quantity": "prim_closest_approach_distance"
+             },
+             "rhs": {
+              "param": "p.conflict_centre_clearance"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "forall_user": "y"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "bicycle_lane_or_path"
+    },
+    "var": "b"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "8d01c20e19dcca25ca637c96",
+  "candidate_digest": "f4348c372566949124f294e09fd65e251ba7c975e62831749b866278749860ff"
+ }
+}

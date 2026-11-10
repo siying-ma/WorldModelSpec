@@ -124,3 +124,16 @@
 - `NRS-484B-263`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-307-9b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-769`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 3
+
+- `NRS-484B-270-4` (NRS_484B_270_4) reads "the driver of a motor vehicle" (agency) through conduct: The driver is read through the vehicle's controlled motion.
+- `NRS-484B-270-4` span s1 composes accepted `NRS_484B_270_3_o2` (as: condition) — both rules can flag the same episode
+- `NRS-484B-270-3` (NRS_484B_270_3_o1) reads "The driver of a motor vehicle" (agency) through conduct: The driver is read through the vehicle's controlled motion.
+- `NRS-484B-270-3` span s8 composes accepted `NRS_484B_297_6_o2` (as: condition) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o3` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o4` (as: exception) — both rules can flag the same episode
+- `NRS-484B-270-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-270-4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

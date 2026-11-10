@@ -1,0 +1,105 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 5 names, composes NRS_484B_270_3_o2"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "x"
+         }
+        ],
+        "derived": "drv_motion_moving",
+        "params": [
+         {
+          "param": "p.motion_speed_tolerance"
+         }
+        ]
+       },
+       {
+        "body": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "b"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "bicycle_lane_or_path"
+        },
+        "var": "b"
+       }
+      ]
+     },
+     {
+      "map": {
+       "x": "x"
+      },
+      "rule_applies": "NRS_484B_270_3_o2"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_270_4",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-4"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "rises": {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     },
+     "exists_region": {
+      "lit": "intersection"
+     },
+     "var": "i"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "ee23748eb1555586cb6465b6",
+  "candidate_digest": "195eac6be610c246bc109786a4f538d619544cdfdc57a19e384907a4c4f87b5f"
+ }
+}

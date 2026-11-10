@@ -1,0 +1,208 @@
+{
+ "node_id": "NRS_484B_307_9a_o2",
+ "law_refs": [
+  "NRS-484B-307-9a"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "a2",
+   "text": "Except as otherwise provided in paragraph (b) [NRS-484B-307-9b],",
+   "role": "reference"
+  },
+  {
+   "id": "a3",
+   "text": "vehicular traffic",
+   "role": "subject"
+  },
+  {
+   "id": "a4",
+   "text": "facing the signal",
+   "role": "condition"
+  },
+  {
+   "id": "a5",
+   "text": "may enter the intersection only to make the movement indicated by the green turn arrow,",
+   "role": "sibling"
+  },
+  {
+   "id": "a6",
+   "text": "but must yield the right-of-way to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "obligation"
+  },
+  {
+   "id": "a7",
+   "text": "Drivers turning in the direction of the arrow are thereby advised that so long as the turn arrow is illuminated, oncoming or opposing traffic simultaneously faces a steady red signal.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The signal is a dev.traffic_signal, 'several states may be displayed at once': circular_red displayed with green_arrow(dir), governing (dev.governs) the approach carrier (st.travel_region, rel.occupies) whose entrance end is the intersection (st.lane_enters), or the intersection (st.intersection); read at the entry, the event the words fix it to."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ...'); the qualifier 'vehicular' leaves out pedestrians, read by the admitted aggregate DEF-NRS-484A-165::pedestrian as a condition beside it (x is not a pedestrian), and ridden or herded animals, which no class atom carries."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Facing the signal: the signal governs the approach carrier x occupies at the observation before its entry whose entrance end is the intersection (st.lane_enters, dev.governs, rel.occupies), or the intersection itself."
+  },
+  {
+   "span": "a6",
+   "atoms": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.lane_enters",
+    "st.intersection",
+    "st.travel_region",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Yielding the right-of-way (DEF-NRS-484A-210: the other's right 'to proceed in a lawful manner in preference to another ... approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash') is read as x, while moving (drv.motion.moving) in the intersection, never standing in a predicted conflict with the parties: prim.closest_approach_within over the conflict horizon with prim.closest_approach_distance below the conflict clearance. Pedestrians are the admitted aggregate DEF-NRS-484A-165::pedestrian occupying (rel.occupies) an adjacent crosswalk, a st.crosswalk recorded as marking the entrance (st.entrance_of) of a carrier (st.travel_region) that enters the intersection (st.lane_enters); other traffic is the admitted aggregate DEF-NRS-484A-285::traffic, other than x, occupying the intersection (st.intersection)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "a2",
+   "rule": "NRS_484B_307_9b_o1",
+   "map": {
+    "x": "x"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "a2",
+   "rule": "NRS_484B_307_9b_o2",
+   "map": {
+    "x": "x"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "a2",
+   "rule": "NRS_484B_307_9b_o3",
+   "map": {
+    "x": "x"
+   },
+   "as": "exception"
+  },
+  {
+   "span": "a2",
+   "rule": "NRS_484B_307_9b_o4",
+   "map": {
+    "x": "x"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [
+  {
+   "span": "a7",
+   "why": "An advisory statement of the signal phasing (opposing traffic faces a steady red while the arrow is lit); it permits, requires and forbids nothing, and no duty of the road user turns on it."
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-285::traffic and not of DEF-NRS-484A-165::pedestrian; at the judged observation x occupies an intersection i and has occupied it at every observation since its entry (the rise of its overlap with i), and at that entry a traffic signal s governing the approach carrier c x occupied at the observation before it (dev.governs(s, c) with st.lane_enters(c, i), or dev.governs(s, i)) displayed circular_red together with at least one green_arrow(dir) (read with since: occupancy of i since the entry under that display). The duty does not apply where a node of paragraph (b) applies (NRS_484B_307_9b_o1 to _o4, ruleApplies with x mapped to x).",
+ "obligation": "Wherever x is moving (drv.motion.moving with p.motion_speed_tolerance): for every pedestrian p (ru.aggregate DEF-NRS-484A-165::pedestrian) occupying a crosswalk w with st.entrance_of(w, c2) and st.lane_enters(c2, i) for some carrier c2, and every member z of DEF-NRS-484A-285::traffic other than x occupying i, not both prim.closest_approach_within(x, ·) over p.conflict_time_horizon and prim.closest_approach_distance(x, ·) over that horizon below p.conflict_centre_clearance. With no such party present the duty is met.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "a6",
+   "why": "'lawfully within' and 'lawfully using' are read as within and using: the lawfulness of the other road user's own conduct is the verdict of rules this corpus does not state, so every pedestrian in an adjacent crosswalk and every other member of traffic in the intersection is yielded to. The yield is judged while x crosses the intersection it entered under the arrow."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car enters on circular_red with green_arrow(left) and turns left while a pedestrian walks in the crosswalk marking the entrance of the cross street's approach; while the car moves their predicted closest approach within the horizon is below the conflict clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car halts inside the intersection until the pedestrian has cleared and turns with no predicted conflict while it moves."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car enters on circular_green and turns left."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car turns on the arrow while a pedestrian on a crosswalk at the intersection is in predicted conflict with it; the source does not record which approach the crosswalk marks.",
+   "masked": [
+    "st.entrance_of"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car enters on red with a green left arrow and turns left with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {
+  "NRS_484B_307_9b_o1": "b6e7a61f68b229e753c72cb1ca6629856488c72331d53df586c13b75d824a4a2",
+  "NRS_484B_307_9b_o2": "6feb57b937dfa213b69575c1d6b63c7730dc7f7137aa574c1a2beae79d3d02a3",
+  "NRS_484B_307_9b_o3": "e026e8094ae0ff359472532cbe25d086a6ce9dcb7ec7aca7e47cc4a8e486769a",
+  "NRS_484B_307_9b_o4": "31643c721956669ac518418ca0f1d1e6a69f5beedd761294d007f5919690b940"
+ }
+}

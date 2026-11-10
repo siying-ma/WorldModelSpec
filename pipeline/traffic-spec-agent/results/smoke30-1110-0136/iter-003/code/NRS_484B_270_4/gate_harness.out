@@ -1,0 +1,41 @@
+'TrafficSpec.Rules.NRS_484B_270_4.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_270_4.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},{"map":{"x":"x"},"rule_applies":"NRS_484B_270_3_o2"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"obligation":{"not":{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},{"map":{"x":"x"},"rule_applies":"NRS_484B_270_3_o2"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"obligation":{"not":{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_moving,st_bicycle_lane_or_path,rel_occupies,st_intersection
+COMPOSES	NRS_484B_270_3_o2
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+OCC	x
+OCC	x
+OCC	?b
+OCC	x,b
+OCC	$,x
+OCC	?i
+OCC	x,i
+TIME	occurrences	0
+TIME	checks	62
+TIME	lint	1381
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	312
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	299
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	296
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	319
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	328
+TIME	witnesses	1554
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_270_4.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_270_4.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_270_4	4	4
+TIME	adequacy_start	21
+TIME	adequacy	5153
+DONE

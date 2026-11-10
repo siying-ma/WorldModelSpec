@@ -1,14 +1,13 @@
 {
  "run": "smoke30-1110-0136",
- "iteration": 2,
+ "iteration": 3,
  "status": "incomplete",
- "stop_reason": "the iteration bound (2) was reached",
+ "stop_reason": "the iteration bound (3) was reached",
  "laws": {
-  "planned": 25,
-  "returned": 2,
+  "planned": 27,
   "blocked": 2
  },
- "accepted_nodes": 37,
+ "accepted_nodes": 40,
  "accepted_concepts": 16,
  "concepts": {
   "accepted": 16
@@ -37,6 +36,8 @@
    "NRS-484B-253",
    "NRS-484B-257-1",
    "NRS-484B-263",
+   "NRS-484B-270-3",
+   "NRS-484B-270-4",
    "NRS-484B-270-7b",
    "NRS-484B-297-6",
    "NRS-484B-307-9b",
@@ -51,13 +52,10 @@
   ],
   "awaiting_label_repair": [],
   "generating": [
-   "NRS-484B-270-3",
-   "NRS-484B-270-4"
-  ],
-  "to_plan": [
    "NRS-484B-250-1",
    "NRS-484B-307-9a"
   ],
+  "to_plan": [],
   "blocked": [
    "NRS-484D-100-1",
    "NRS-484D-215-1"
@@ -79,6 +77,8 @@
     "NRS-484B-253",
     "NRS-484B-257-1",
     "NRS-484B-263",
+    "NRS-484B-270-3",
+    "NRS-484B-270-4",
     "NRS-484B-270-7b",
     "NRS-484B-297-6",
     "NRS-484B-307-9b",
@@ -94,14 +94,11 @@
     "LVMC-11-43-010-A"
    ],
    "generating": [
-    "NRS-484B-270-3",
-    "NRS-484B-270-4"
+    "NRS-484B-250-1",
+    "NRS-484B-307-9a"
    ],
    "waiting_provider": {},
-   "to_plan": {
-    "NRS-484B-250-1": "`NRS_484B_250_1` composes or calls `NRS_484B_250_4_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted",
-    "NRS-484B-307-9a": "`NRS_484B_307_9a_o2` composes or calls `NRS_484B_307_9b_o1` (pin_mismatch), `NRS_484B_307_9b_o2` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted"
-   },
+   "to_plan": {},
    "blocked": {
     "NRS-484D-100-1": [
      "G17"
