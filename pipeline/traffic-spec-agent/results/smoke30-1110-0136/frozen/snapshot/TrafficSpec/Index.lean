@@ -19,11 +19,14 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_253_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_253_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_257_1_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_257_1_o2
+import TrafficSpec.Rules.NRS_484B.NRS_484B_263_o1
+import TrafficSpec.Rules.NRS_484B.NRS_484B_263_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_3_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7b
 import TrafficSpec.Rules.NRS_484B.NRS_484B_297_6_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_297_6_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_9b_o1
+import TrafficSpec.Rules.NRS_484B.NRS_484B_307_9b_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_9b_o3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_307_9b_o4
 import TrafficSpec.Rules.NRS_484B.NRS_484B_363_3
@@ -36,6 +39,7 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_440_1_o3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_450_1c
 import TrafficSpec.Rules.NRS_484B.NRS_484B_560_7a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1a
+import TrafficSpec.Rules.NRS_484B.NRS_484B_769
 import TrafficSpec.Concepts.interaction.overtaking
 import TrafficSpec.Concepts.interaction.passing_on_right
 import TrafficSpec.Concepts.lane.facing_against_direction
@@ -71,11 +75,14 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_253_o2.rule,
   TrafficSpec.Rules.NRS_484B_257_1_o1.rule,
   TrafficSpec.Rules.NRS_484B_257_1_o2.rule,
+  TrafficSpec.Rules.NRS_484B_263_o1.rule,
+  TrafficSpec.Rules.NRS_484B_263_o2.rule,
   TrafficSpec.Rules.NRS_484B_270_3_o2.rule,
   TrafficSpec.Rules.NRS_484B_270_7b.rule,
   TrafficSpec.Rules.NRS_484B_297_6_o1.rule,
   TrafficSpec.Rules.NRS_484B_297_6_o2.rule,
   TrafficSpec.Rules.NRS_484B_307_9b_o1.rule,
+  TrafficSpec.Rules.NRS_484B_307_9b_o2.rule,
   TrafficSpec.Rules.NRS_484B_307_9b_o3.rule,
   TrafficSpec.Rules.NRS_484B_307_9b_o4.rule,
   TrafficSpec.Rules.NRS_484B_363_3.rule,
@@ -87,7 +94,8 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_440_1_o3.rule,
   TrafficSpec.Rules.NRS_484B_450_1c.rule,
   TrafficSpec.Rules.NRS_484B_560_7a.rule,
-  TrafficSpec.Rules.NRS_484B_600_1a.rule
+  TrafficSpec.Rules.NRS_484B_600_1a.rule,
+  TrafficSpec.Rules.NRS_484B_769.rule
 ]
 /-- Every registered concept, in file order. -/
 def allConcepts : List Concept := [

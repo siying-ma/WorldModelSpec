@@ -108,3 +108,19 @@
 - `NRS-484B-600-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-38-030`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-43-010-A`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 2
+
+- gap G17 filed for `NRS-484D-100-1` by a node repair session; decide with `python -m harness gap decide G17 ...`
+- `NRS-484B-769` (NRS_484B_769) reads "An operator of a bicycle," (agency) through conduct: 'An operator of' is read through the controlled motion of the bicycle, electric bicycle or electric scooter, whoever or whatever controls it.
+- `NRS-484B-769` span c6 borrows from `DEF-NRS-484B-420` the words “extended horizontally” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-263` (NRS_484B_263_o1) reads "The driver of a vehicle" (agency) through conduct: The driver is read through the vehicle's controlled motion.
+- `NRS-484B-263` (NRS_484B_263_o1) reads "about to enter or exit a controlled-access highway" (intention) through conduct: 'About to enter or exit' is an imminent movement, read by the movement it leads to: the observation of entry into, or exit from, the controlled-access region.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2): the plan proposed a atom gap on span b3, but the coding session wrote the span with the mapped atoms and the rule was accepted; no gap is filed
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "A person driving a motorcycle," (agency) through conduct: 'A person driving' is read through the vehicle's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change" (status) through conduct: The 'applicable official traffic-control device' is the signal head present and governing the approach; its official status is presumed from its presence.
+- `NRS-484B-263` (NRS_484B_263_o2) reads "The driver of a vehicle" (agency) through conduct: The driver is read through the vehicle's controlled motion.
+- `NRS-484B-263` (NRS_484B_263_o2) reads "about to enter or exit a controlled-access highway" (intention) through conduct: 'About to enter or exit' is read by the movement it leads to: the entry into or exit from the controlled-access region.
+- `NRS-484B-263`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-307-9b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-769`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

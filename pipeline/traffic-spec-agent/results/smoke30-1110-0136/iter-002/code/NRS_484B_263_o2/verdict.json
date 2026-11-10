@@ -1,0 +1,873 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "y"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "y"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "y"
+            },
+            {
+             "lit": "DEF-NRS-484A-285::traffic"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "body": {
+            "or": [
+             {
+              "and": [
+               {
+                "rises": {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "a"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               },
+               {
+                "body": {
+                 "since": [
+                  {
+                   "or": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "a"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    },
+                    {
+                     "rises": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "a"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "a"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "y"
+                        }
+                       ],
+                       "derived": "drv_motion_moving",
+                       "params": [
+                        {
+                         "param": "p.motion_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "y"
+                          },
+                          {
+                           "var": "a"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        },
+                        {
+                         "cmp": "le",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "y"
+                           }
+                          ],
+                          "measure": "rel_surface_gap"
+                         },
+                         "rhs": {
+                          "mul": [
+                           {
+                            "args": [
+                             {
+                              "var": "y"
+                             }
+                            ],
+                            "measure": "kin_speed"
+                           },
+                           {
+                            "param": "p.immediate_hazard_time_gap"
+                           }
+                          ]
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "defined_when": {
+                 "rises": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "a"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                }
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "rises": {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "a"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                }
+               },
+               {
+                "body": {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "h"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "since": [
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "a"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "rises": {
+                         "not": {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "a"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        }
+                       }
+                      ]
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "a"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "y"
+                           }
+                          ],
+                          "derived": "drv_motion_moving",
+                          "params": [
+                           {
+                            "param": "p.motion_speed_tolerance"
+                           }
+                          ]
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "y"
+                             },
+                             {
+                              "var": "h"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "cmp": "le",
+                            "lhs": {
+                             "args": [
+                              {
+                               "var": "x"
+                              },
+                              {
+                               "var": "y"
+                              }
+                             ],
+                             "measure": "rel_surface_gap"
+                            },
+                            "rhs": {
+                             "mul": [
+                              {
+                               "args": [
+                                {
+                                 "var": "y"
+                                }
+                               ],
+                               "measure": "kin_speed"
+                              },
+                              {
+                               "param": "p.immediate_hazard_time_gap"
+                              }
+                             ]
+                            }
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "highway"
+                 },
+                 "var": "h"
+                },
+                "defined_when": {
+                 "rises": {
+                  "not": {
+                   "args": [
+                    {
+                     "var": "x"
+                    },
+                    {
+                     "var": "a"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "controlled_access"
+           },
+           "var": "a"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "y"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_263_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-263"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "implies": [
+     {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "derived": "drv_motion_moving",
+      "params": [
+       {
+        "param": "p.motion_speed_tolerance"
+       }
+      ]
+     },
+     {
+      "body": {
+       "implies": [
+        {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "y"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "y"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "y"
+                },
+                {
+                 "lit": "DEF-NRS-484A-285::traffic"
+                }
+               ],
+               "atom": "ru_aggregate",
+               "params": []
+              },
+              {
+               "body": {
+                "or": [
+                 {
+                  "and": [
+                   {
+                    "rises": {
+                     "args": [
+                      {
+                       "var": "x"
+                      },
+                      {
+                       "var": "a"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   },
+                   {
+                    "body": {
+                     "since": [
+                      {
+                       "or": [
+                        {
+                         "not": {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "a"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        },
+                        {
+                         "rises": {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "a"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "not": {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "a"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "y"
+                            }
+                           ],
+                           "derived": "drv_motion_moving",
+                           "params": [
+                            {
+                             "param": "p.motion_speed_tolerance"
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "y"
+                              },
+                              {
+                               "var": "a"
+                              }
+                             ],
+                             "atom": "rel_occupies",
+                             "params": []
+                            },
+                            {
+                             "cmp": "le",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "y"
+                               }
+                              ],
+                              "measure": "rel_surface_gap"
+                             },
+                             "rhs": {
+                              "mul": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "y"
+                                 }
+                                ],
+                                "measure": "kin_speed"
+                               },
+                               {
+                                "param": "p.immediate_hazard_time_gap"
+                               }
+                              ]
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "defined_when": {
+                     "rises": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "a"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    }
+                   }
+                  ]
+                 },
+                 {
+                  "and": [
+                   {
+                    "rises": {
+                     "not": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "a"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    }
+                   },
+                   {
+                    "body": {
+                     "body": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "h"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       },
+                       {
+                        "since": [
+                         {
+                          "or": [
+                           {
+                            "args": [
+                             {
+                              "var": "x"
+                             },
+                             {
+                              "var": "a"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "rises": {
+                             "not": {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "a"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            }
+                           }
+                          ]
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "x"
+                             },
+                             {
+                              "var": "a"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "y"
+                               }
+                              ],
+                              "derived": "drv_motion_moving",
+                              "params": [
+                               {
+                                "param": "p.motion_speed_tolerance"
+                               }
+                              ]
+                             },
+                             {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "y"
+                                 },
+                                 {
+                                  "var": "h"
+                                 }
+                                ],
+                                "atom": "rel_occupies",
+                                "params": []
+                               },
+                               {
+                                "cmp": "le",
+                                "lhs": {
+                                 "args": [
+                                  {
+                                   "var": "x"
+                                  },
+                                  {
+                                   "var": "y"
+                                  }
+                                 ],
+                                 "measure": "rel_surface_gap"
+                                },
+                                "rhs": {
+                                 "mul": [
+                                  {
+                                   "args": [
+                                    {
+                                     "var": "y"
+                                    }
+                                   ],
+                                   "measure": "kin_speed"
+                                  },
+                                  {
+                                   "param": "p.immediate_hazard_time_gap"
+                                  }
+                                 ]
+                                }
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "highway"
+                     },
+                     "var": "h"
+                    },
+                    "defined_when": {
+                     "rises": {
+                      "not": {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "a"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      }
+                     }
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "controlled_access"
+               },
+               "var": "a"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "not": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "y"
+             }
+            ],
+            "derived": "prim_closest_approach_within",
+            "params": [
+             {
+              "param": "p.conflict_time_horizon"
+             }
+            ]
+           },
+           {
+            "cmp": "lt",
+            "lhs": {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "y"
+              }
+             ],
+             "params": [
+              {
+               "param": "p.conflict_time_horizon"
+              }
+             ],
+             "quantity": "prim_closest_approach_distance"
+            },
+            "rhs": {
+             "param": "p.conflict_centre_clearance"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "forall_user": "y"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "6844171f50712c66a11ca759",
+  "candidate_digest": "b0fb9d99c899e8b0b11943a2a522a5130fc45dc04b653bf0542fa92966cc416e"
+ }
+}

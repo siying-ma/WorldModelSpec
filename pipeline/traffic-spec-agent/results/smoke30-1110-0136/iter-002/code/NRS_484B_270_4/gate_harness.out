@@ -1,0 +1,35 @@
+'TrafficSpec.Rules.NRS_484B_270_4.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_270_4.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},{"map":{"x":"x"},"rule_applies":"NRS_484B_270_3_o2"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"obligation":{"not":{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}]},{"map":{"x":"x"},"rule_applies":"NRS_484B_270_3_o2"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_4","intentions":[],"laws":["NRS-484B-270-4"],"narrowings":[],"obligation":{"not":{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_moving,st_bicycle_lane_or_path,rel_occupies,st_intersection
+COMPOSES	NRS_484B_270_3_o2
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+MANIFEST	branch_1	
+OCC	x
+OCC	x
+OCC	?b
+OCC	x,b
+OCC	$,x
+OCC	?i
+OCC	x,i
+TIME	occurrences	0
+TIME	checks	55
+TIME	lint	41
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	70
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	68
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	63
+SCEN	blind	unknown	?	blind: unknown for [window_truncated:since, window_truncated:until], not for an atom the manifest masks
+TIME	scenario:blind	67
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	65
+TIME	witnesses	333
+DONE_WITNESSES

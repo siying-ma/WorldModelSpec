@@ -1,0 +1,188 @@
+'TrafficSpec.Rules.NRS_484B_307_9b_o2.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_307_9b_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[],"operationalizations":[],"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"body":{"or":[{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.right_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.left_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-135::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-125::moped"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"}],"atom":"ru_motorcycle","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]},"name":"x"}],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[],"obligation":{"body":{"body":{"body":{"and":[{"implies":[{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.right_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]},{"implies":[{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.left_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"body":{"or":[{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.right_turn_min_angle"}}},{"cmp":"gt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.reversal_min_angle"}}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.left_turn_min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.reversal_min_angle"}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-135::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-125::moped"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"}],"atom":"ru_motorcycle","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]},"name":"x"}],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[],"obligation":{"body":{"body":{"body":{"and":[{"implies":[{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.right_turn_min_angle"}}},{"cmp":"gt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.reversal_min_angle"}}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]},{"implies":[{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.left_turn_min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.reversal_min_angle"}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"and":[{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]}]}]}]}]}]}]}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"and":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},{"and":[{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+ATOMS	ru_aggregate,ru_motorcycle,st_intersection,dev_traffic_signal,st_travel_region,drv_motion_straight_through_region,drv_motion_right_turn_through_region,rel_occupies,dev_traffic_signal_shows,st_lane_enters,dev_governs,drv_motion_left_turn_through_region,drv_motion_stopped
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-135::motorcycle	DEF-NRS-484A-125::moped	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.traffic_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	?i
+OCC	?s
+OCC	?c
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	?i
+OCC	?s
+OCC	?c
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+TIME	occurrences	0
+TIME	checks	73
+TIME	lint	256
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	126
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	127
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	125
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	128
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	129
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	124
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	124
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	124
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	123
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	124
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	124
+TIME	witnesses	1378
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_9b_o2.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_307_9b_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_9b_o2	124	10
+TIME	adequacy_start	23
+TIME	adequacy	27264
+DONE

@@ -15,6 +15,19 @@
   "node": "NRS_484B_307_9b_o1",
   "role": "obligation"
  },
+ "(2) the person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change": {
+  "atoms": [
+   "dev.governs",
+   "dev.traffic_signal",
+   "drv.motion.stopped",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9b_o2",
+  "role": "obligation"
+ },
  "(3) no other device at the place prohibits the turn,": {
   "atoms": [
    "dev.governs",
@@ -105,7 +118,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "subject"
  },
  "a person shall not stop, stand or park": {
@@ -150,6 +163,15 @@
   "node": "NRS_484B_450_1c",
   "role": "subject"
  },
+ "about to enter or exit a controlled-access highway": {
+  "atoms": [
+   "rel.occupies",
+   "st.controlled_access",
+   "st.highway"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "trigger"
+ },
  "after having stopped": {
   "atoms": [
    "drv.motion.stopped",
@@ -192,7 +214,14 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle"
   ],
-  "node": "NRS_484B_270_7b",
+  "node": "NRS_484B_769",
+  "role": "subject"
+ },
+ "an operator of a bicycle,": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle"
+  ],
+  "node": "NRS_484B_769",
   "role": "subject"
  },
  "and (4) the person yields the right-of-way to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.": {
@@ -250,6 +279,15 @@
   ],
   "node": "NRS_484B_413_2",
   "role": "condition"
+ },
+ "and shall continue to yield": {
+  "atoms": [
+   "drv.motion.moving",
+   "rel.occupies",
+   "st.controlled_access"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "obligation"
  },
  "and the drivers of all other vehicles": {
   "atoms": [
@@ -416,6 +454,13 @@
   "node": "NRS_484B_227_1_o3",
   "role": "subject"
  },
+ "except that the operator may give a signal for a right turn by extending his or her right hand and arm horizontally and to the right side of the bicycle, electric bicycle or electric scooter.": {
+  "atoms": [
+   "sig.hand_signal"
+  ],
+  "node": "NRS_484B_769",
+  "role": "exception"
+ },
  "except through an opening in the barrier or dividing section or space": {
   "atoms": [
    "rel.occupies",
@@ -456,7 +501,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "condition"
  },
  "from such through highway": {
@@ -558,7 +603,7 @@
    "rel.occupies",
    "st.intersection"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "trigger"
  },
  "moped or trimobile": {
@@ -566,7 +611,7 @@
    "ru.aggregate=DEF-NRS-484A-125::moped",
    "ru.motorcycle"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "subject"
  },
  "motor vehicles": {
@@ -689,7 +734,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_270_7b",
+  "node": "NRS_484B_769",
   "role": "subject"
  },
  "or around a": {
@@ -753,7 +798,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "subject"
  },
  "or stopped,": {
@@ -825,6 +870,14 @@
    "st.sidewalk"
   ],
   "node": "LVMC_11_38_030",
+  "role": "obligation"
+ },
+ "shall give all signals by hand and arm": {
+  "atoms": [
+   "sig.hand_signal",
+   "sig.turn_indicator"
+  ],
+  "node": "NRS_484B_769",
   "role": "obligation"
  },
  "shall not back": {
@@ -911,9 +964,9 @@
   "atoms": [
    "drv.motion.moving",
    "rel.occupies",
-   "st.intersection"
+   "st.controlled_access"
   ],
-  "node": "NRS_484B_253_o2",
+  "node": "NRS_484B_263_o1",
   "role": "obligation"
  },
  "such a pedestrian:": {
@@ -941,8 +994,8 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_253_o2",
-  "role": "condition"
+  "node": "NRS_484B_263_o2",
+  "role": "subject"
  },
  "the driver of the vehicle": {
   "atoms": [
@@ -957,6 +1010,17 @@
   ],
   "node": "NRS_484B_270_7b",
   "role": "subject"
+ },
+ "to all vehicles approaching on the highway": {
+  "atoms": [
+   "drv.motion.moving",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.controlled_access",
+   "st.highway"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "condition"
  },
  "to any vehicle approaching from the opposite direction": {
   "atoms": [
@@ -1003,6 +1067,13 @@
   "node": "NRS_484B_257_1_o2",
   "role": "condition"
  },
+ "to that traffic": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_263_o2",
+  "role": "condition"
+ },
  "to the vehicle making the left turn.": {
   "atoms": [
    "drv.motion.turning_left",
@@ -1010,6 +1081,14 @@
    "st.intersection"
   ],
   "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
+ "upon a roadway": {
+  "atoms": [
+   "rel.occupies",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_769",
   "role": "condition"
  },
  "upon any highway": {
@@ -1084,7 +1163,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "trigger"
  },
  "which is within the intersection": {
