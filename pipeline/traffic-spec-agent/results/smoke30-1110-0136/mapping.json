@@ -528,7 +528,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9a_o2",
+  "node": "NRS_484B_307_9a_o1",
   "role": "condition"
  },
  "from a different highway.": {
@@ -620,6 +620,19 @@
   ],
   "node": "NRS_484B_560_7a",
   "role": "subject"
+ },
+ "may enter the intersection only to make the movement indicated by the green turn arrow,": {
+  "atoms": [
+   "dev.traffic_signal",
+   "drv.motion.left_turn_through_region",
+   "drv.motion.right_turn_through_region",
+   "drv.motion.straight_through_region",
+   "kin.yaw_rate",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_307_9a_o1",
+  "role": "obligation"
  },
  "may proceed": {
   "atoms": [
@@ -1222,7 +1235,7 @@
    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
    "ru.aggregate=DEF-NRS-484A-285::traffic"
   ],
-  "node": "NRS_484B_307_9a_o2",
+  "node": "NRS_484B_307_9a_o1",
   "role": "subject"
  },
  "walking or otherwise traveling on a sidewalk": {
@@ -1280,7 +1293,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9a_o2",
+  "node": "NRS_484B_307_9a_o1",
   "role": "trigger"
  },
  "which is within the intersection": {

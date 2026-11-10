@@ -1,14 +1,13 @@
 {
  "run": "smoke30-1110-0136",
- "iteration": 4,
- "status": "incomplete",
- "stop_reason": "the iteration bound (4) was reached",
+ "iteration": 5,
+ "status": "awaiting_labels",
+ "stop_reason": "generation paused: nothing runnable is left without a label check; 27 law(s) await their labels: ['LVMC-11-38-030', 'LVMC-11-43-010-A', 'NRS-484B-113-2', 'NRS-484B-127-3', 'NRS-484B-210-3', 'NRS-484B-223-4a', 'NRS-484B-223-4b', 'NRS-484B-227-1', 'NRS-484B-250-1', 'NRS-484B-250-4', 'NRS-484B-253', 'NRS-484B-257-1', 'NRS-484B-263', 'NRS-484B-270-3', 'NRS-484B-270-4', 'NRS-484B-270-7b', 'NRS-484B-297-6', 'NRS-484B-307-9a', 'NRS-484B-307-9b', 'NRS-484B-363-3', 'NRS-484B-400-1', 'NRS-484B-413-2', 'NRS-484B-440-1', 'NRS-484B-450-1c', 'NRS-484B-560-7a', 'NRS-484B-600-1a', 'NRS-484B-769']",
  "laws": {
-  "planned": 26,
-  "returned": 1,
+  "planned": 27,
   "blocked": 2
  },
- "accepted_nodes": 41,
+ "accepted_nodes": 42,
  "accepted_concepts": 16,
  "concepts": {
   "accepted": 16
@@ -21,7 +20,7 @@
  "gaps_total": 1,
  "gaps_created_by_this_run": 1,
  "never_planned": [],
- "stop": "iteration_limit",
+ "stop": "",
  "stage": "done",
  "pending": {
   "awaiting_labels": [
@@ -42,6 +41,7 @@
    "NRS-484B-270-4",
    "NRS-484B-270-7b",
    "NRS-484B-297-6",
+   "NRS-484B-307-9a",
    "NRS-484B-307-9b",
    "NRS-484B-363-3",
    "NRS-484B-400-1",
@@ -54,9 +54,7 @@
   ],
   "awaiting_label_repair": [],
   "generating": [],
-  "to_plan": [
-   "NRS-484B-307-9a"
-  ],
+  "to_plan": [],
   "blocked": [
    "NRS-484D-100-1",
    "NRS-484D-215-1"
@@ -83,6 +81,7 @@
     "NRS-484B-270-4",
     "NRS-484B-270-7b",
     "NRS-484B-297-6",
+    "NRS-484B-307-9a",
     "NRS-484B-307-9b",
     "NRS-484B-363-3",
     "NRS-484B-400-1",
@@ -97,9 +96,7 @@
    ],
    "generating": [],
    "waiting_provider": {},
-   "to_plan": {
-    "NRS-484B-307-9a": "gate WITNESS_FAIL; forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]"
-   },
+   "to_plan": {},
    "blocked": {
     "NRS-484D-100-1": [
      "G17"
@@ -127,7 +124,7 @@
   },
   "stop": {
    "budget": false,
-   "iteration_limit": true,
+   "iteration_limit": false,
    "infrastructure": false
   }
  }

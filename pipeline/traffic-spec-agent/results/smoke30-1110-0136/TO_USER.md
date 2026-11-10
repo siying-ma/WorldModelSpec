@@ -145,3 +145,12 @@
 - `NRS-484B-250-1` span s7 composes accepted `NRS_484B_250_4_o1` (as: unless) — both rules can flag the same episode
 - `NRS-484B-250-1` span s7 composes accepted `NRS_484B_250_4_o2` (as: unless) — both rules can flag the same episode
 - `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 5
+
+- `NRS-484B-307-9a` (NRS_484B_307_9a_o1) reads "may enter the intersection only to make the movement indicated by the green turn arrow," (purpose) through conduct: 'only to make the movement' states the purpose of the entry; it is read through the movement made through the intersection, recognized at the exit.
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o2` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o3` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o4` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

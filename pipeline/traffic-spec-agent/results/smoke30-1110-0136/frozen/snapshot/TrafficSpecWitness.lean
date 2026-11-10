@@ -29,6 +29,7 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_270_4
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_7b
 import TrafficSpecWitness.NRS_484B.NRS_484B_297_6_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_297_6_o2
+import TrafficSpecWitness.NRS_484B.NRS_484B_307_9a_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_9a_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_9b_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_307_9b_o2
@@ -89,6 +90,7 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_38_030.scenarios 
   TrafficSpecWitness.NRS_484B_270_7b.scenarios ++
   TrafficSpecWitness.NRS_484B_297_6_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_297_6_o2.scenarios ++
+  TrafficSpecWitness.NRS_484B_307_9a_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_307_9a_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_307_9b_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_307_9b_o2.scenarios ++
@@ -167,6 +169,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_270_7b", TrafficSpecWitness.NRS_484B_270_7b.scenarios),
   ("NRS_484B_297_6_o1", TrafficSpecWitness.NRS_484B_297_6_o1.scenarios),
   ("NRS_484B_297_6_o2", TrafficSpecWitness.NRS_484B_297_6_o2.scenarios),
+  ("NRS_484B_307_9a_o1", TrafficSpecWitness.NRS_484B_307_9a_o1.scenarios),
   ("NRS_484B_307_9a_o2", TrafficSpecWitness.NRS_484B_307_9a_o2.scenarios),
   ("NRS_484B_307_9b_o1", TrafficSpecWitness.NRS_484B_307_9b_o1.scenarios),
   ("NRS_484B_307_9b_o2", TrafficSpecWitness.NRS_484B_307_9b_o2.scenarios),
