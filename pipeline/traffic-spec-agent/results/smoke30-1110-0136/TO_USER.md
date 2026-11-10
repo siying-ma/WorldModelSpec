@@ -137,3 +137,11 @@
 - `NRS-484B-307-9a` span a2 composes accepted `NRS_484B_307_9b_o4` (as: exception) — both rules can flag the same episode
 - `NRS-484B-270-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-270-4`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 4
+
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "The driver of a vehicle" (agency) through conduct: The driver is read through the vehicle's controlled motion.
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "this section does not apply at intersections controlled by official traffic-control devices" (status) through conduct: The official status of a signal or sign is read from its presence on the road.
+- `NRS-484B-250-1` span s7 composes accepted `NRS_484B_250_4_o1` (as: unless) — both rules can flag the same episode
+- `NRS-484B-250-1` span s7 composes accepted `NRS_484B_250_4_o2` (as: unless) — both rules can flag the same episode
+- `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

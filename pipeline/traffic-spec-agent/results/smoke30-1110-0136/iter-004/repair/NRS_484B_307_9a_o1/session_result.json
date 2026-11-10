@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "0ee7cd4db6ae4ca29d339ee7040238bb",
+ "result": {
+  "duration_api_ms": 37627,
+  "stop_reason": "end_turn",
+  "session_id": "f98b1511-d135-4591-a721-05c2767b7075",
+  "total_cost_usd": 0.7266469999999999,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 76802,
+   "cache_read_input_tokens": 79050,
+   "output_tokens": 4457,
+   "output_tokens_details": {
+    "thinking_tokens": 627
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 76802,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 539,
+     "cache_read_input_tokens": 75900,
+     "cache_creation_input_tokens": 4052,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4052
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 72500,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007265,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 4457,
+    "cacheReadInputTokens": 79050,
+    "cacheCreationInputTokens": 76802,
+    "webSearchRequests": 0,
+    "costUSD": 0.719382,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 627,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote a revised record for `NRS_484B_307_9a_o1` to `record.jsonl` in the repair directory. It hasn't been re-gated yet.\n\n**What caused the gate's `UNUSED_CLAIM`:** the record listed `drv.motion.moving` under `occasion.under_way`, but no faithful rule could use it.\n- The occasion is an `event`, and the two spans it reads (`a1` and `a4`) are both read at the exit, where the act is recognized. No span is read while the act is under way, so the under-way element has nothing to do.\n- `drv.motion.moving` also needs a speed-tolerance parameter that the record never declared. The coder's diagnostic run confirmed this with a `PARAM_MISMATCH`.\n\n**Changes:**\n- I removed the `under_way` element, and `drv.motion.moving` with it.\n- The applicability now spells out the green turn arrow as `green_arrow(dir)` with dir left, right or u_turn, which matches the `a1` justification and the coder's rule.\n- The obligation now says it binds every selected intersection and signal again, with the whole selection, as the coder's Lean already does.\n- I made the second narrowing's kind explicit as `reading`.\n\nAll mappings, compositions, parameters and scenarios are unchanged. The coder's rule and witnesses should pass this record without edits, since the only thing removed is the claim they had no use for. None of the nine witnesses has run past the check that stopped the gate, so their verdicts are still untested. That includes `branch_1`, which depends on what the paragraph (b) nodes require.",
+  "ttft_ms": 7190,
+  "type": "result",
+  "duration_ms": 36715,
+  "uuid": "de328b77-f875-40b8-baf9-8964adc313f2",
+  "ttft_stream_ms": 816,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 19,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 102,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 5,
+   "cpu_ms": 11,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 816,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 72500,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.007265,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 4457,
+    "cacheReadInputTokens": 79050,
+    "cacheCreationInputTokens": 76802,
+    "webSearchRequests": 0,
+    "costUSD": 0.719382,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 627,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

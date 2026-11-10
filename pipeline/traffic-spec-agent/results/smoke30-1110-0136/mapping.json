@@ -310,6 +310,16 @@
   "node": "NRS_484B_440_1_o1",
   "role": "subject"
  },
+ "approaching an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "trigger"
+ },
  "approaching the intersection from the opposite direction": {
   "atoms": [
    "rel.occupies",
@@ -519,6 +529,14 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_307_9a_o2",
+  "role": "condition"
+ },
+ "from a different highway.": {
+  "atoms": [
+   "st.highway",
+   "st.on_way"
+  ],
+  "node": "NRS_484B_250_1",
   "role": "condition"
  },
  "from such through highway": {
@@ -785,6 +803,15 @@
   "node": "NRS_484B_227_1_o3",
   "role": "exception"
  },
+ "or is making a left turn.": {
+  "atoms": [
+   "drv.motion.turning_left",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
+ },
  "or make any left turn, semicircular turn or u-turn": {
   "atoms": [
    "drv.motion.left_turn",
@@ -848,6 +875,17 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_450_1c",
+  "role": "exception"
+ },
+ "or to vehicles approaching each other from opposite directions,": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
   "role": "exception"
  },
  "or which are approaching": {
@@ -1004,9 +1042,9 @@
   "atoms": [
    "drv.motion.moving",
    "rel.occupies",
-   "st.bicycle_lane_or_path"
+   "st.intersection"
   ],
-  "node": "NRS_484B_270_3_o1",
+  "node": "NRS_484B_250_1",
   "role": "obligation"
  },
  "such a pedestrian:": {
@@ -1034,7 +1072,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_263_o2",
+  "node": "NRS_484B_250_1",
   "role": "subject"
  },
  "the driver of the vehicle": {
@@ -1050,6 +1088,30 @@
   ],
   "node": "NRS_484B_270_7b",
   "role": "subject"
+ },
+ "this section does not apply at intersections controlled by official traffic-control devices": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.traffic_signal",
+   "dev.yield_sign",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
+ },
+ "to a vehicle which has entered the intersection": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "condition"
  },
  "to all vehicles approaching on the highway": {
   "atoms": [
