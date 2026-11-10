@@ -21,7 +21,7 @@ from harness import loop
 from harness.phases import candidate as cand
 from harness.phases import label_check as lc
 from harness.store import jsonl, paths
-from harness.store.state import Run
+from harness.store.state import Run, RUN_VERSION
 from scripts.tests.test_candidate import CA, CD, NN, Base, Txn, files, node_rec, passing, standard, world
 from scripts.tests.test_label_check import FAKE_EXPLAIN, FAKE_MONITOR, make_dataset, set_label, write_exe
 from scripts.tests.test_label_repair import L, N, RECS, prior, setting
@@ -230,7 +230,7 @@ class Boundary(Base):
                 txn.commit()
         cand._OPEN.discard(run.opts.run_id)
         import dataclasses
-        (run.dir / "options.json").write_text(json.dumps(dataclasses.asdict(run.opts), default=str))
+        (run.dir / "options.json").write_text(json.dumps({**dataclasses.asdict(run.opts), "semantic": {"run_version": RUN_VERSION}}, default=str))
 
     def test_a_reader_is_refused_and_an_owner_completes_it(self):
         concepts, nodes = standard()
@@ -275,7 +275,7 @@ class Verbatim(unittest.TestCase):
 
 class Resources(Base):
 
-    def test_a_law_known_incomplete_runs_no_monitor(self):
+    def test_a_law_with_a_fenced_node_runs_no_monitor(self):
         def forbidden(*a, **k):
             raise AssertionError("a monitor or Explain ran for a law that cannot be complete")
         recs = [r for r in RECS if r[1] == L[3]]
@@ -286,9 +286,8 @@ class Resources(Base):
             with mock.patch.object(lc, "build_tools", forbidden), mock.patch.object(lc, "check_law", forbidden), \
                     mock.patch.object(cand.Candidate, "open", forbidden):
                 routed = loop.label_route(run, ledger, training, [])
-            self.assertEqual(routed, {L[3]: "waiting"})
-            chk = json.loads((run.dir / run.label_states[L[3]]["check"]).read_text())
-            self.assertEqual([s["status"] for s in chk["scored"]], ["incomplete"])
+            self.assertEqual(routed, {})                          # a fenced node: its law is not label-ready, nothing is run
+            self.assertEqual(ledger.entries[L[3]].state, "planned")
 
     def test_concurrency_follows_the_memory_available(self):
         self.assertEqual(lc.jobs_for(1e9), 1)

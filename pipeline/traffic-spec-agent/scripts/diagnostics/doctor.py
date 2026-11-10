@@ -169,12 +169,9 @@ class Doctor:
                   "code_concept.md": ("harness.phases.code", "PLACEHOLDERS_CONCEPT"),
                   "concept_repair.md": ("harness.phases.plan", "PLACEHOLDERS_REPAIR"),
                   "node_repair.md": ("harness.phases.plan", "PLACEHOLDERS_NODE_REPAIR"),
-                  "review_code.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CODE"),
-                  "adjudicate.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE"),
                   "review_concept.md": ("harness.phases.review", "PLACEHOLDERS_REVIEW_CONCEPT"),
                   "adjudicate_concept.md": ("harness.phases.review", "PLACEHOLDERS_ADJUDICATE_CONCEPT"),
                   "recheck_concept.md": ("harness.phases.review", "PLACEHOLDERS_RECHECK_CONCEPT"),
-                  "judge_case.md": ("harness.phases.review", "PLACEHOLDERS_JUDGE_CASE"),
                   "plan_aggregates.md": ("harness.phases.aggregate", "PLACEHOLDERS_PLAN_AGGREGATES"),
                   "verify_aggregate.md": ("harness.phases.aggregate", "PLACEHOLDERS_VERIFY_AGGREGATE")}
         src = ("prompts/*.md → {placeholders}", "harness/phases/*.py → PLACEHOLDERS tables")
@@ -270,22 +267,28 @@ class Doctor:
         return Result("session isolation", OK, f"{len(need)} isolation flags; allow-list permissions; plan and code sessions jailed to their task directory with one exact shell command; readers and judges have no tool; reviewers have only the harness's checks and submission", src)
 
     def prompts_are_law_free(self) -> Result:
-        """The templates carry no law, no rule named by its subject, no figure."""
+        """The templates, and the text the harness generates into every prompt whatever the run's
+        state (`loop.generated_prompts`), carry no law, no rule named by its subject, no figure."""
+        import importlib
         import itertools
         patterns = dict(LAW_FREE_PATTERNS, **CAPTURE_FIGURE_PATTERNS)
-        src = ("prompts/*.md", "frozen before any corpus is seen")
+        src = ("prompts/*.md, the generated prompt text", "frozen before any corpus is seen")
         if not self.prompts:
             return Result("prompts law-free", FAIL, "no prompt templates found", src)
+        sys.path.insert(0, str(self.repo))
+        generated = importlib.import_module("harness.loop").generated_prompts()
+        texts = [(path.name, path.read_text(encoding="utf-8", errors="replace")) for path in self.prompts]
+        texts += [(f"generated {name}", text) for name, text in sorted(generated.items())]
         bad = []
-        for path in self.prompts:
-            text = path.read_text(encoding="utf-8", errors="replace")
+        for name, text in texts:
             for label, pat in patterns.items():
                 for m in itertools.islice(re.finditer(pat, text), 3):
                     line = text[:m.start()].count("\n") + 1
-                    bad.append(f"{path.name}:{line} {label} {m.group(0)!r}")
+                    bad.append(f"{name}:{line} {label} {m.group(0)!r}")
         if bad:
             return Result("prompts law-free", FAIL, "; ".join(bad[:5]), src)
-        return Result("prompts law-free", OK, f"{len(self.prompts)} templates clear on all {len(patterns)} categories", src)
+        return Result("prompts law-free", OK, f"{len(self.prompts)} templates and {len(generated)} generated blocks clear on all "
+                                              f"{len(patterns)} categories", src)
 
     def prompts_are_vocabulary_free(self) -> Result:
         """Everything project-specific reaches an agent through injected context, never through
@@ -576,12 +579,12 @@ class Doctor:
         return Result("reading proposals", OK, f"{n} parameter(s) and {len(decls)} declaration(s), none proposed and unreviewed",
                       tuple(decls) + src)
 
-    def case_blocks_cover(self) -> Result:
-        """The two blocks a reviewer is taught a case from are generated and cover what `Case.check`
-        admits: every Boolean atom of the dispatch tables (`ru_aggregate` aside), every class atom of
-        the codecs, every measured atom with a unit (`Dimensions.ofMeasure`) and every primitive, each
-        with a contract; every measured atom the dispatch knows has a unit; every admitted JSON form
-        of the case language has its keys."""
+    def catalogue_covers(self) -> Result:
+        """The catalogue of atoms and primitives (`surface.case_catalogue`, which the region-kind check
+        reads) is generated and covers what Core evaluates: every Boolean atom of the dispatch tables
+        (`ru_aggregate` aside), every class atom of the codecs, every measured atom with a unit
+        (`Dimensions.ofMeasure`) and every primitive, each with a contract; every measured atom the
+        dispatch knows has a unit; every primitive is in it."""
         sys.path.insert(0, str(self.repo))
         from harness.lean import surface
         from harness.model import ontology as onto_mod
@@ -595,21 +598,18 @@ class Doctor:
         bad += [f"measured atom `{m}` has no unit in Dimensions.lean (the units table of ATOMS.md)" for m in listed if m not in dims]
         names = {r["name"] for r in rows}
         bad += [f"primitive `{p}` is missing from the catalogue" for p in prims if p not in names]
-        lang = surface.case_language()
-        bad += [f"the case language lacks the `{k}` form" for k in ("atom", "cmp", "holds_for", "measure", "lit") if f'"{k}"' not in lang]
         if bad:
-            return Result("case blocks cover", FAIL, "; ".join(bad[:6]), src)
-        return Result("case blocks cover", OK, f"{len(rows)} catalogue entries with contracts; {len(dims)} measured atoms with units", src)
+            return Result("catalogue covers", FAIL, "; ".join(bad[:6]), src)
+        return Result("catalogue covers", OK, f"{len(rows)} catalogue entries with contracts; {len(dims)} measured atoms with units", src)
 
     def _active(self) -> str:
         f = self.lib / "splits" / "ACTIVE"
         return f.read_text().strip() if f.exists() else "full"
 
     def held_out_absent_from_training_tables(self) -> Result:
-        """No atom the test split holds out appears in the training `Dimensions.lean` or, under the
-        training split, in the case vocabulary a reviewer is shown."""
+        """No atom the test split holds out appears in the training `Dimensions.lean`."""
         sys.path.insert(0, str(self.repo))
-        src = ("laws/audit_and_scripts/split_atoms.json → test_only_atoms", "library/splits/train/**/Dimensions.lean; harness/lean/surface.py")
+        src = ("laws/audit_and_scripts/split_atoms.json → test_only_atoms", "library/splits/train/**/Dimensions.lean")
         split = self.repo / "laws" / "audit_and_scripts" / "split_atoms.json"
         if not split.exists():
             return Result("held-out atoms stay out", SKIP, "no split", src)
@@ -620,11 +620,6 @@ class Doctor:
         if train_dims.exists():
             t = _read(train_dims)
             bad += [f"training Dimensions.lean names `{n}`" for n in names if re.search(rf'"{re.escape(n)}(?:_\w+)?"', t)]
-        if self._active() == "train":
-            from harness.lean import surface
-            from harness.model import ontology as onto_mod
-            vocab = surface.case_vocabulary(onto_mod.load(self.repo / "ontology" / "ATOMS_train.md"))
-            bad += [f"the case vocabulary names `{h}`" for h, n in zip(held, names) if re.search(rf"`{re.escape(h)}`|`{re.escape(n)}[(`_]", vocab)]
         if bad:
             return Result("held-out atoms stay out", FAIL, "; ".join(bad[:6]), src)
         return Result("held-out atoms stay out", OK, f"none of {len(held)} held-out atoms in the training tables", src)
@@ -675,7 +670,7 @@ class Doctor:
         return Result("definition resolution", OK, summary, src)
 
     def checks(self) -> list[Callable[[], Result]]:
-        return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.case_blocks_cover,
+        return self.v2.checks() + [self.core_matches_active_split, self.held_out_rows_frozen, self.catalogue_covers,
                                    self.held_out_absent_from_training_tables, self.held_out_laws_out_of_gap_ledger,
                                    self.definition_resolution_report,
                                    self.placeholders_supplied, self.skeleton_tokens,

@@ -45,7 +45,7 @@ Then launch it with the given settings. Use `nohup` or `tmux`, because a run tak
 
 ```bash
 RUN_ID=<run id> LAWS=results/<run id>/laws/laws.jsonl \
-MODEL='claude-opus-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium WORKERS=12 \
+MODEL='claude-opus-5-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium WORKERS=12 \
 CLAUDE_BUDGET=300 OPENAI_BUDGET=25 TOTAL_BUDGET=325 ACQUISITION_PROFILE=carla_scene_graph \
 nohup scripts/run-generation.sh new > launch-<run id>.out 2>&1 &
 ```

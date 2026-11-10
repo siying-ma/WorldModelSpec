@@ -8,20 +8,74 @@ from . import jsonl, paths
 from ..model import corpus
 from ..model.blueprint import Node
 
-#: The feedback modes a run may name. A new run names one explicitly (`--feedback`); the dataclass
-#: default `review` is the meaning of a saved run whose options name none (one started before a new
-#: run had to name its mode), never a choice made for a new run.
-FEEDBACK_MODES = ("review", "labels")
+#: The run version this harness writes into a run's semantic inputs (`options.json` → `semantic` →
+#: `run_version`). A run is read and resumed only by the version that started it: a change that makes
+#: the records, their identities or the meaning of the saved options of earlier runs unsafe to
+#: continue raises it, whether or not any digest changed. Version 3: a run has no feedback mode (a
+#: gated node is accepted on its gate, its law by the label check when `label_repair` is on); a run of
+#: another version, or one that records none, is never taken for this one.
+RUN_VERSION = 3
 
 
-def feedback_refusal(mode) -> str | None:
-    """Why a run cannot be launched with feedback mode `mode`, or None. Only a mode of FEEDBACK_MODES
-    is accepted: every branch that routes by the mode (the node review, law-level acceptance, the
-    record contexts) knows only those, so any other value would run another mode silently. A new mode
-    enters FEEDBACK_MODES together with its routing, acceptance, dependency and run-version wiring."""
-    if mode in FEEDBACK_MODES:
+def run_version_refusal(saved_semantic: dict | None) -> str | None:
+    """Why a run whose saved semantic inputs are `saved_semantic` cannot be read or resumed by this
+    harness, or None when it was started by this run version. A missing or unknown version is refused,
+    never read as this one."""
+    was = (saved_semantic or {}).get("run_version") if isinstance(saved_semantic, dict) else None
+    if was == RUN_VERSION:
         return None
-    return f"--feedback must be one of {' | '.join(FEEDBACK_MODES)} (given {mode!r})"
+    return (f"it was started by harness run version {was if was is not None else '1 (recorded before run versions)'} and this "
+            f"harness is version {RUN_VERSION}: a run is resumed only by the version that started it, and both stages of a split "
+            "run (remote and local) run that same version — start a new run id (a fresh run), or resume from a checkout of the "
+            "code the run started on")
+
+
+def saved_version_refusal(run_dir: Path) -> str | None:
+    """Why the run saved in `run_dir` was not started by this run version, read from its raw
+    `options.json` before anything of it is loaded, recovered, restored or written; None when it was.
+    Options that cannot be read, or that record no version, are refused."""
+    f = Path(run_dir) / "options.json"
+    try:
+        saved = json.loads(f.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return "its options.json, which records the run version that started it, is missing"
+    except (OSError, ValueError) as e:
+        return f"its options.json cannot be read ({e})"
+    if not isinstance(saved, dict):
+        return "its options.json is not an object"
+    why = run_version_refusal(saved.get("semantic"))
+    return f"its options.json records that {why}" if why else None
+
+
+def chain_version_refusal(base_run: str, run_id: str | None = None) -> str | None:
+    """Why a `base_run` chain cannot be read by this harness: a run of the chain, read from its raw
+    `options.json` before any of its records, that another run version started or whose options are
+    missing or unreadable, or a chain that returns to a run; None when every run of the chain was
+    started by this version. The whole chain is checked by version, never by which files a run holds."""
+    seen = {run_id} if run_id else set()
+    rid = base_run
+    while rid:
+        if rid in seen:
+            return f"the base_run chain returns to `{rid}`"
+        seen.add(rid)
+        why = saved_version_refusal(paths.run_dir(rid))
+        if why:
+            return f"the base_run chain names `{rid}`: {why}"
+        rid = json.loads((paths.run_dir(rid) / "options.json").read_text(encoding="utf-8")).get("base_run")
+    return None
+
+
+def stored_run_refusal(run_id: str) -> str | None:
+    """Why the run `run_id`, read from its raw `options.json` and those of its base chain, cannot be
+    read by this harness (`saved_version_refusal`, then `chain_version_refusal`), or None: what every
+    command that reads or writes a stored run checks before it takes the library or reads anything
+    else of the run."""
+    d = paths.run_dir(run_id)
+    why = saved_version_refusal(d)
+    if why is None:
+        base = json.loads((d / "options.json").read_text(encoding="utf-8")).get("base_run")
+        why = chain_version_refusal(base, run_id) if base else None
+    return why
 
 
 @dataclass
@@ -35,7 +89,6 @@ class Options:
     plan_attempts: int = 2
     concept_attempts: int = 3      # coding attempts per concept, the first plus its repairs
     node_attempts: int = 2         # coding attempts per node, the first plus one after a node repair session
-    repeat_limit: int = 3          # the same upheld divergence on the same words of a node, drawn this many times across the law's plans and repairs, blocks the law for the operator
     gate_budget: int = 6
     max_turns: int = 80
     session_timeout: float = 3600.0
@@ -52,10 +105,9 @@ class Options:
     workers: int = 1               # coding tasks run at once (concepts, then nodes, each once its dependencies are accepted)
     plan_turns: int = 80           # turn cap for a plan or repair session (a coding session keeps `max_turns`)
     restart: bool = False          # discard an interrupted iteration instead of resuming it
-    reviewer_model: Optional[str] = None   # a second vendor's model for the reviews (required): the concept review, and the node behaviour review under `feedback: review`
+    reviewer_model: Optional[str] = None   # a second vendor's model for the concept review (required)
     review_effort: Optional[str] = "high"  # the reviewer's reasoning effort
-    feedback: str = "review"               # one of FEEDBACK_MODES, named by every new run (`review` only fills a saved run that names none). `review`: a node is accepted on its behaviour review; `labels`: the node behaviour review and its Stage A/B are suspended, the concept review stays, and the label check scores the frozen library (`harness label_check`)
-    aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required under `feedback: labels`; else the reviewer's)
+    aggregate_verifier_model: Optional[str] = None     # the second vendor's model that verifies an aggregate mapping (required)
     aggregate_verifier_effort: Optional[str] = None    # its reasoning effort (else the reviewer's)
     aggregate_verifier_budget_usd: Optional[float] = None   # the run-wide limit on its calls, within the second vendor's limit
     allow_same_vendor: bool = False        # permit a reviewer from the planner's own vendor
@@ -68,30 +120,28 @@ class Options:
     total_budget_usd: Optional[float] = None       # the run-wide limit over both vendors (requires every role's cap)
     budget_peers: list = field(default_factory=list)   # the runs sharing this run's limits, the same group named by each; reservations take one lock
     reviewer_max_output_tokens: int = 64000        # the output-token limit of every OpenAI call, reasoning included
-    max_divergences: int = 3                       # the most divergences one reviewer answer may carry
     model_prices: Optional[Path] = None            # the operator's price table (default config/model_prices.json)
     review_checks: int = 8                         # check calls of one reviewer session (each runs one divergence through Core)
     review_submissions: int = 3                    # submissions of one reviewer session; the last one stands
-    review_passes: int = 2                         # reviewer sessions per rule review, one after another, their challenges joined
     force_takeover: bool = False                   # end the live child process groups an earlier owner of the library left, instead of refusing
-    label_repair: bool = False                     # under `feedback: labels`, check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: the library is only scored after the run)
+    label_repair: bool = False                     # check each law whose plan is gated on the training recordings inside the loop and route its outcome (off: a gated node is accepted, and the library is only scored after the run)
     label_dataset: Optional[str] = None            # the training recordings the in-loop label check reads (required with `label_repair`)
     label_repair_attempts: int = 2                 # label repairs per law (a re-planned law keeps its count); each session call of one, its re-ask included, is capped by `repair_budget_usd`, and its planner and coder sessions by `session_budget_usd`
     label_deferred: bool = False                   # with `label_repair`: no training recording is read on this machine; a law whose plan is gated is kept, not accepted, and recorded `awaiting_labels` for a later launch with the recordings
     label_stage: bool = False                      # with `label_repair`: this launch only checks laws on the training recordings and repairs them; it plans and codes nothing new
     label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
+    dependency: str = "build_usable_v1"            # the cross-law dependency policy (`DEPENDENCY_POLICY`), declared by the code: fixed for the run's life
 
 
-def acceptance_by_law(opts) -> bool:
-    """Whether a law's formal acceptance waits on more than its nodes' gates: under `feedback: labels`
-    with `label_repair` a law is accepted only once its label check routes it there, so a node accepted
-    on its gate is generated, not formally accepted; otherwise a node's acceptance is formal."""
-    return getattr(opts, "feedback", "review") == "labels" and bool(getattr(opts, "label_repair", False))
+#: The cross-law dependency policy this harness implements: a node of one law may compose another
+#: law's node once that node is usable for building (`Run.provider_code`), whatever the formal
+#: acceptance of its law; a law's acceptance is checked on the usability of everything it reaches.
+DEPENDENCY_POLICY = "build_usable_v1"
 
-
-#: The fields of a run's acceptance policy (what `acceptance_by_law` reads), each with the test of a
-#: legal saved value: a saved contract holds every one, explicitly, with a legal value.
-POLICY_FIELDS = {"feedback": lambda v: v in FEEDBACK_MODES, "label_repair": lambda v: isinstance(v, bool)}
+#: The fields of a run's acceptance policy (whether a law is accepted by its label check, and the
+#: dependency policy its generation follows), each with the test of a legal saved value: a saved contract holds every
+#: one, explicitly, with a legal value; a missing field is never filled by a default.
+POLICY_FIELDS = {"label_repair": lambda v: isinstance(v, bool), "dependency": lambda v: v == DEPENDENCY_POLICY}
 
 
 def policy_defects(saved) -> list[str]:
@@ -104,36 +154,35 @@ def policy_defects(saved) -> list[str]:
 
 
 def acceptance_policy(opts) -> dict:
-    """What decides how a run's laws are accepted (`acceptance_by_law` reads it), from a launch's
-    options or a saved contract that `policy_defects` found whole: fixed for the run's life."""
-    get = opts.get if isinstance(opts, dict) else lambda k, d=None: getattr(opts, k, d)
-    return {k: get(k) for k in POLICY_FIELDS}
+    """What decides how a run's laws are accepted, from a launch's
+    options or a saved contract: the policy fields `opts` holds, as it holds them. A field it lacks is
+    left out, never filled, so `policy_defects` reports it missing; fixed for the run's life."""
+    if isinstance(opts, dict):
+        return {k: opts[k] for k in POLICY_FIELDS if k in opts}
+    return {k: getattr(opts, k) for k in POLICY_FIELDS if hasattr(opts, k)}
 
 
 def acceptance_policy_refusal(fixed, opts) -> str | None:
     """The one check of a run's acceptance policy: why a launch with options `opts` may not continue a
-    run whose policy is `fixed` (its saved options, or the policy a handoff recorded), or None. A saved
-    policy that is not whole (`policy_defects`) is refused, never completed by a default; any change
-    is refused: a run accepts its laws on one policy, and another policy is a new run. Which stage a
-    launch runs (`label_deferred`, `label_stage`), its dataset and its budgets are not part of it."""
+    run whose policy is `fixed` (its saved options, or the policy a handoff recorded), or None. Both
+    sides must be whole (`policy_defects`) before they are compared: a side that is not is refused,
+    never completed by a default or coerced. Any change is refused, a value of another type included
+    (`1` is not `True`): a run accepts its laws on one policy, and another policy is a new run. Which
+    stage a launch runs (`label_deferred`, `label_stage`), its dataset and its budgets are not part of it."""
     if fixed is None:
         return None
     bad = policy_defects(fixed)
     if bad:
         return "the run's saved acceptance policy is not whole (" + "; ".join(bad) + "); restore its checkpoint, or start a new run id"
     was, now = acceptance_policy(fixed), acceptance_policy(opts)
-    changed = sorted(k for k in set(was) | set(now) if was.get(k) != now.get(k))
+    bad = policy_defects(now)
+    if bad:
+        return "the options' acceptance policy is not whole (" + "; ".join(bad) + "); give each field a legal value"
+    changed = sorted(k for k in POLICY_FIELDS if type(was[k]) is not type(now[k]) or was[k] != now[k])
     if not changed:
         return None
     return ("the run's acceptance policy is fixed for its life (" + ", ".join(f"{k}: {was.get(k)!r} → {now.get(k)!r}" for k in changed)
             + "); start a new run id")
-
-
-def node_reviews(opts) -> bool:
-    """Whether the node behaviour review, its Stage A/B and the node obligations it upholds are in
-    use: not under `feedback: labels`, where a node is accepted on its gate and its law is scored by
-    the label check; the concept review is in use either way."""
-    return getattr(opts, "feedback", "review") != "labels"
 
 
 @dataclass
@@ -163,16 +212,23 @@ class Run:
         left in the middle of a candidate's commit is completed first by an owner, and refused to any
         other reader."""
         from ..phases import candidate
+        f = paths.run_dir(run_id) / "options.json"
+        if not f.exists():
+            raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
+        why = saved_version_refusal(f.parent)              # its raw version, before anything is recovered, restored or written
+        d = json.loads(f.read_text(encoding="utf-8")) if why is None else {}
+        why = why or (chain_version_refusal(d["base_run"], run_id) if d.get("base_run") else None)
+        bad = policy_defects(d) if why is None else []
+        if bad:                                            # the policy the run was started on, read raw: never completed
+            why = "its options.json holds no whole acceptance policy (" + "; ".join(bad) + ")"
+        if why:
+            raise SystemExit(f"run `{run_id}` cannot be read by this harness: {why} — nothing of it was read or rewritten")
         if candidate.pending() is not None:               # a library in the middle of a commit is never read as a whole
             from . import owner
             if not owner.holds():
                 raise SystemExit("the library holds a candidate transaction committed and not yet applied: any command that takes "
                                  "the library (the loop, verify, index) completes it first")
             candidate.recover_pending()
-        f = paths.run_dir(run_id) / "options.json"
-        if not f.exists():
-            raise SystemExit(f"no run `{run_id}` under {paths.RESULTS}")
-        d = json.loads(f.read_text(encoding="utf-8"))
         paths.register_roots(d.get("repo_roots"))
         fields = {k for k in Options.__dataclass_fields__}
         kw = {k: v for k, v in d.items() if k in fields}
@@ -206,7 +262,7 @@ class Run:
 
     @property
     def node_ledger_file(self) -> Path:
-        """Nodes the gate or the review returned, awaiting a repair session or spent."""
+        """Nodes the gate returned, awaiting a repair session or spent."""
         return self.dir / "node_ledger.jsonl"
 
     @property
@@ -361,29 +417,25 @@ class Run:
                 moved.append(ident)
         return moved
 
-    def usable_nodes(self, for_law: str | None) -> dict[str, dict]:
+    def usable_nodes(self, for_law: str | None, **view) -> dict[str, dict]:
         """The one rule of when a node may be composed (by a plan, a scheduled coding task, a registry
-        entry a caller relies on): the accepted nodes (`all_nodes`) a node of law `for_law` may use.
-        When a law's formal acceptance is the law's (`acceptance_by_law`), a node this run accepted on
-        its gate is usable only by a node of its own law (a sibling, built in dependency order inside
-        the pending law) until its law is `accepted`; an inherited node and a node of a law outside
-        this run's ledger stay usable. Otherwise every accepted node is usable. Concepts are not
-        governed here: an accepted concept is usable by every law. Generated nodes stay in
-        `all_nodes` for the label check, integration and the library."""
-        nodes = self.all_nodes()
-        if not acceptance_by_law(self.opts):
-            return nodes
-        entries = self.law_entries
-        if entries is None:
-            from .ledger import Entry, _load
-            entries = _load(self.ledger_file, Entry, "law")
-        out = {}
-        for nid, rec in nodes.items():
-            law = Node(rec).law
-            e = entries.get(law)
-            if nid not in self.accepted_nodes or law == for_law or e is None or e.state == "accepted":
-                out[nid] = rec
-        return out
+        entry a caller relies on): the published nodes (`all_nodes`) whose `provider_code` for a node
+        of `for_law` is `USABLE` (`for_law` None: a caller of no law). A fenced or superseded node, one
+        whose law waits for the operator or is planned again, and one without admission evidence are
+        left out; a law's formal acceptance plays no part. `view` as `Availability` takes it."""
+        av = Availability(self, **view)
+        return {nid: rec for nid, rec in self.all_nodes().items() if av.code(nid, for_law) == USABLE}
+
+    def provider_code(self, nid: str, for_law: str | None, **view) -> str:
+        """Whether node `nid` may be used to build a node of `for_law` (`USABLE`), or why not: the code
+        of `Availability.code`, computed from the run's state as it is now (`view` as
+        `Availability` takes it)."""
+        return Availability(self, **view).code(nid, for_law)
+
+    @property
+    def admission_file(self) -> Path:
+        """The admission evidence of the run's records (`integrate.admission_recheck`)."""
+        return self.dir / "admission.json"
 
     def all_nodes(self) -> dict[str, dict]:
         """Accepted nodes the plan may compose: the base chain's, then this run's; a fenced version
@@ -467,6 +519,185 @@ class Run:
         return d["text"] if d.get("present") else "(none)\n"
 
 
+# ---------------------------------------------------------------------------------------------
+# Build usability: whether one record may be used to build another, apart from formal acceptance
+# ---------------------------------------------------------------------------------------------
+USABLE, OPERATOR, REPLANNING, FENCED, SUPERSEDED, UNPUBLISHED, MISSING, UNJUDGED = (
+    "usable", "operator", "replanning", "fenced", "superseded", "unpublished", "missing", "unjudged")
+#: A record composing another law's node whose pin (`planned_on`) is not that node's current record.
+PIN_MISMATCH = "pin_mismatch"
+#: Codes that end only by the operator (`OPERATOR`, a fenced node), by the planner (`SUPERSEDED`,
+#: `MISSING`), or by waiting for generation, a publication or a later admission check.
+WAITING_CODES = (UNPUBLISHED, REPLANNING, UNJUDGED)
+PLANNER_CODES = (SUPERSEDED, MISSING, PIN_MISMATCH)
+
+
+def base_code(code: str) -> str:
+    """The code of a dependency's own unavailability, without its `via:<id>:` prefixes."""
+    return code.rsplit(":", 1)[-1]
+
+
+class Availability:
+    """Whether a node may be used to build a node of a given law: one pure computation over a run's
+    state as it is now (its view of nodes and concepts, its fences, its live law ledger, its base
+    records and the admission evidence on disk), with what it computed kept only for its own life.
+    It reads no model, recording or label, so another clone of the run gives the same codes.
+
+    `code(nid, for_law)` decides, in this order, with no caller exempt:
+    1. the owner law (from the record, else from the id) is in the ledger and blocked or failed:
+       `OPERATOR`; open or returned: `REPLANNING`;
+    2. owner planned or accepted: `FENCED` when the node is fenced; `SUPERSEDED` when it is published
+       but not in the owner's current plan (`nodes`); not published: `UNPUBLISHED` when the plan
+       lists it, else `MISSING`;
+    3. owner outside the ledger (an inherited node, a law the run does not list): `MISSING` when not
+       published, `FENCED` when fenced;
+    4. its closure: every node it composes and every concept it calls, directly or through others,
+       through the same rules (a concept fenced or not published is `FENCED`); the first that is not
+       `USABLE` gives its code with the prefix `via:<id>:`; a node fenced only for composing a fenced
+       node names that node the same way;
+    5. `UNJUDGED` without admission evidence: a verdict `OK` in the admission file under the record's
+       current admission key, or, in the view a caller gives, a gate passed within it (`gated`).
+    The one exemption: `siblings`, the records of the current iteration whose gate passed and which
+    are not yet published, count as published for a node of their own law (after steps 1–2), never
+    for another law's (`UNPUBLISHED`)."""
+
+    def __init__(self, run, *, siblings: dict[str, dict] | None = None, gated=(), entries: dict | None = None):
+        self.run = run
+        self.siblings = dict(siblings or {})
+        self.gated = set(gated) | set(getattr(run, "gated_ids", None) or ())   # a transaction's records its own gates passed
+        if entries is None:
+            entries = run.law_entries
+        if entries is None:
+            from .ledger import Entry, _load
+            entries = _load(run.ledger_file, Entry, "law")
+        self.entries = entries
+        self.nodes, self.concepts = run.all_nodes(), run.all_concepts()
+        self.fenced = dict(run.fenced)
+        self._memo: dict = {}
+        self._keys: dict = {}
+        self._cache = None
+        self._key_inputs = None
+
+    # -- admission evidence ------------------------------------------------------------------------
+    def admission(self) -> dict:
+        if self._cache is None:
+            from ..phases.integrate import read_admission
+            self._cache = read_admission(self.run)
+        return self._cache
+
+    def evidence(self, kind: str, ident: str) -> bool:
+        """Whether the record has admission evidence: a gate passed within this view (`gated`), or a
+        verdict `OK` in the admission file under its admission key as the run holds it now."""
+        if ident in self.gated:
+            return True
+        hit = self.admission().get(ident)
+        if not isinstance(hit, dict) or hit.get("verdict") != "OK":
+            return False
+        if ident not in self._keys:
+            from ..phases import integrate
+            if self._key_inputs is None:
+                from ..model.reading import Reading
+                base = getattr(self.run, "base", None)
+                if not base:
+                    from ..loop import semantic_inputs
+                    sem = semantic_inputs(self.run.opts)
+                    base = {"core": sem["core"], "ontology": sem["ontology"]}
+                self._key_inputs = (Reading(self.run.reading_file), base, integrate.gate_digest())
+            reading, base, gd = self._key_inputs
+            try:
+                self._keys[ident] = integrate.admission_key(self.run, kind, ident, reading, base, gate_value=gd)
+            except (ValueError, KeyError, OSError):
+                self._keys[ident] = None
+        return self._keys[ident] is not None and hit.get("key") == self._keys[ident]
+
+    # -- codes -------------------------------------------------------------------------------------
+    def concept_code(self, cid: str, seen: frozenset = frozenset()) -> str:
+        if cid in self._memo:
+            return self._memo[cid]
+        if cid in seen:
+            return USABLE                                  # visited: each record is still judged once
+        rec = self.concepts.get(cid)
+        if rec is None or cid in self.fenced:
+            code = FENCED
+        else:
+            from ..model.blueprint import ConceptRecord
+            from ..model.nodeid import is_concept_id
+            code = USABLE
+            for r in sorted(ConceptRecord(rec).refs()):
+                if is_concept_id(r):                       # a primitive of the ontology is no record
+                    c = self.concept_code(r, seen | {cid})
+                    if c != USABLE:
+                        code = f"via:{r}:{c}"
+                        break
+            if code == USABLE and not self.evidence("concept", cid):
+                code = UNJUDGED
+        self._memo[cid] = code
+        return code
+
+    def _fenced(self, nid: str, for_law: str | None, seen: frozenset) -> str:
+        """A fenced node's code: a node fenced only for composing a fenced node (reason `dependency`)
+        names that provider (`via:<provider>:`), so the code ends at the record the fence comes from."""
+        p = self.fenced[nid].get("provider")
+        if self.fenced[nid].get("reason") == "dependency" and isinstance(p, str) and p in self.nodes and (p, None) not in seen:
+            pc = self.code(p, for_law, seen | {(nid, None)})
+            if pc != USABLE:
+                return f"via:{p}:{pc}"
+        return FENCED
+
+    def code(self, nid: str, for_law: str | None, seen: frozenset = frozenset()) -> str:
+        from ..model import nodeid
+        rec = self.nodes.get(nid)
+        sibling = self.siblings.get(nid) if rec is None else None
+        owner = Node(rec or sibling).law if (rec or sibling) else nodeid.law_of(nid)[0]
+        same = owner == for_law
+        key = (nid, same)
+        if key in self._memo:
+            return self._memo[key]
+        if (nid, None) in seen:
+            return USABLE
+        e = self.entries.get(owner)
+        code, evidence_given = None, False
+        if e is not None:
+            if e.state in ("blocked", "failed"):
+                code = OPERATOR
+            elif e.state in ("open", "returned"):
+                code = REPLANNING
+            elif nid in self.fenced:
+                code = self._fenced(nid, for_law, seen)
+            elif rec is not None and nid not in e.nodes:
+                code = SUPERSEDED
+            elif rec is None:
+                if sibling is not None and same and nid in e.nodes:
+                    rec, evidence_given = sibling, True
+                else:
+                    code = UNPUBLISHED if nid in e.nodes else MISSING
+        elif rec is None:
+            code = MISSING
+        elif nid in self.fenced:
+            code = self._fenced(nid, for_law, seen)
+        if code is None:
+            code = USABLE
+            n = Node(rec)
+            for c in n.dependencies():
+                r = c.get("rule")
+                if not isinstance(r, str) or not r:
+                    continue
+                dc = self.code(r, for_law, seen | {(nid, None)})
+                if dc != USABLE:
+                    code = f"via:{r}:{dc}"
+                    break
+            if code == USABLE:
+                for cid in sorted(n.claimed_concepts()):
+                    cc = self.concept_code(cid)
+                    if cc != USABLE:
+                        code = f"via:{cid}:{cc}"
+                        break
+            if code == USABLE and not evidence_given and not self.evidence("node", nid):
+                code = UNJUDGED
+        self._memo[key] = code
+        return code
+
+
 def fences_of(snap: dict, run_id: str) -> dict[str, dict]:
     """A snapshot's fences, each naming the run that wrote it (the snapshot's run when it does not
     say). A snapshot written before fences had their own map holds the concept versions an
@@ -479,8 +710,9 @@ def fences_of(snap: dict, run_id: str) -> dict[str, dict]:
 
 
 #: Record fields that are not what the record means: its recorded context, the accepted callers and
-#: planned users other records add to it, its fence and its inheritance.
-NOT_SEMANTIC = ("context", "callers", "used_by", "fenced", "provenance")
+#: planned users other records add to it, its fence, its inheritance, and the versions of other laws'
+#: records it was planned on (`planned_on`).
+NOT_SEMANTIC = ("context", "callers", "used_by", "fenced", "provenance", "planned_on")
 
 
 def record_digest(rec: dict) -> str:
@@ -538,6 +770,10 @@ def base_view(run_id: str, seen: frozenset = frozenset()) -> dict:
     if not (d / "options.json").exists():
         raise SystemExit(f"the base_run chain names `{run_id}`, but {d} holds no options.json: its records cannot be read")
     opts = jsonl.read_json(d / "options.json", None) or {}
+    bad = policy_defects(opts)
+    if bad:                                              # every run of the chain was built on the same, whole policy
+        raise SystemExit(f"the base_run chain names `{run_id}`, whose options.json holds no whole acceptance policy ("
+                         + "; ".join(bad) + "): its records were not built on this harness's dependency policy")
     if opts.get("base_run"):
         view = base_view(opts["base_run"], seen | {run_id})
     else:

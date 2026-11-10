@@ -232,6 +232,389 @@ class Repair(Base):
             self.assertEqual(calls, [])
 
 
+class CandidateScope(Base):
+    """A coder's SCOPE_VIOLATION inside a label repair's candidate is the coder's, not the repair's: no
+    report of it is judged, the candidate is rolled back unpublished, no label repair is counted, the
+    record's scope count is kept in the law's ledger entry once per candidate, and the pass ends; a
+    later pass codes the same repair output again without a repair session, and the second violation
+    holds the law (`scope_budget`). A production file the session changed pauses the run as dirty."""
+
+    @contextmanager
+    def scoped(self, prod_file: str | None = None, legacy: bool = False, verdict: str = "SCOPE_VIOLATION", once: bool = False):
+        from harness.phases import code as code_phase, review as review_phase
+        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
+        rec["elements"] = [{"span": "o1", "atoms": ["kin.speed", "rel.occupies"], "derived": []}]
+        self.judged, self.coded, self.calls = [], [], []
+        outputs = {"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}
+        inner = stub_session(outputs, self.calls)
+
+        def repair_session(prompt, cwd=None, out_dir=None, label="session", **k):     # a finished launch leaves its record
+            inner(prompt, cwd=cwd, out_dir=out_dir, label=label, **k)
+            (Path(cwd) / f"{label}_result.json").write_text(json.dumps({"cost_usd": 0.5}))
+        with repairing(outputs=outputs) as (run, ledger, training, by_id), mock.patch.object(session, "run", repair_session):
+            prod = label_repair.paths.LIBRARY
+
+            def coding(view, n, reading, registry=None, saved=None):
+                task = code_phase.node_dir(view, n.id)
+                task.mkdir(parents=True, exist_ok=True)
+                (task / "dependency_defect.json").write_text("{}")
+                (task / "session_result.json").write_text(json.dumps({"cost_usd": 1.25}))
+                with open(run.dir / "usage.jsonl", "a") as fh:
+                    fh.write(json.dumps({"label": f"code {n.id}", "cost_usd": 1.25}) + "\n")
+                if legacy:                                            # a candidate opened with no per-file digest kept
+                    (task.parents[2] / getattr(cand, "PRODUCTION_DIGEST", "production_digest.json")).unlink(missing_ok=True)
+                if prod_file and not (once and self.coded):           # relative to the tree that holds the library
+                    (prod.parent / prod_file).parent.mkdir(parents=True, exist_ok=True)
+                    (prod.parent / prod_file).write_text("-- written into production\n")
+                self.coded.append((n.id, task))
+                if verdict == "OK":                                   # legal candidate files: the candidate's gate passes
+                    for rel, text in files("node", n.id).items():
+                        (label_repair.paths.LIBRARY / rel).write_text(text)
+                    return gate.Verdict("OK", [])
+                return gate.Verdict("SCOPE_VIOLATION", ["changed outside the node's files: ['library/x.lean']"],
+                                    extras={"stray": ["library/x.lean"]})
+            with mock.patch.object(code_phase, "run_code", coding), \
+                    mock.patch.object(loop, "report_of", lambda *a, **k: self.judged.append(a) or review_phase.DependencyReport("none")):
+                self.run_, self.ledger, self.prod = run, ledger, prod
+                self.args = (training, by_id, [], label_repair.ontology.load(run.opts.ontology),
+                             GapLedger.for_run(label_repair.paths.GAPS_DIR, run), [], [])
+                yield run, ledger
+
+    def published(self):
+        run, ledger = self.run_, self.ledger
+        rulings = run.dir / "rulings.jsonl"
+        st = run.label_states[L[5]]
+        return (tree(self.prod), rulings.read_bytes() if rulings.exists() else None, sorted(run.accepted_nodes), ledger.entries[L[5]].nodes,
+                st.get("state"), st.get("reports"), st.get("outcome"))
+
+    def repairs(self):
+        return label_repair.run_repairs(self.run_, self.ledger, *self.args)
+
+    def test_a_first_violation_charges_no_repair_keeps_the_spend_and_leaves_the_loop(self):
+        with self.scoped() as (run, ledger):
+            before, counted = self.published(), int(run.label_states[L[5]].get("repairs", 0))
+            self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+            self.assertEqual(len(self.calls), 1)                                  # one repair session, no other pass
+            self.assertEqual([i for i, _t in self.coded], [N[5]])
+            self.assertEqual(self.judged, [])
+            self.assertEqual(int(run.label_states[L[5]].get("repairs", 0)), counted)
+            self.assertEqual(ledger.entries[L[5]].scope_violations, {L[5]: 1})
+            self.assertEqual(ledger.entries[L[5]].state, "planned")
+            self.assertTrue(run.label_states[L[5]].get("active"))
+            self.assertEqual([json.loads(x)["label"] for x in (run.dir / "usage.jsonl").read_text().splitlines()], [f"code {N[5]}"])
+            self.assertTrue((self.coded[0][1] / "session_result.json").exists())
+            self.assertEqual(self.published(), before)
+
+    def test_the_same_output_is_coded_again_and_the_bound_holds_the_law(self):
+        with self.scoped() as (run, ledger):
+            before, counted = self.published(), int(run.label_states[L[5]].get("repairs", 0))
+            self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+            first = (run.dir / run.label_states[L[5]]["active"]["dir"] / "record.jsonl").read_text()
+            self.assertEqual(self.repairs(), {L[5]: ["scope_budget"]})
+            self.assertEqual(len(self.calls), 1)                                  # the second coding took up the same output
+            self.assertEqual([i for i, _t in self.coded], [N[5], N[5]])
+            self.assertNotEqual(self.coded[0][1], self.coded[1][1])               # coded again, in a new candidate
+            e = ledger.entries[L[5]]
+            self.assertEqual((e.state, e.gaps, e.scope_violations), ("blocked", [f"decision:{L[5]}"], {L[5]: 2}))
+            self.assertTrue(e.reasons[0].startswith("scope_budget:"), e.reasons)
+            self.assertEqual(int(run.label_states[L[5]].get("repairs", 0)), counted)
+            self.assertEqual(self.repairs(), {})                                  # held: no further session
+            self.assertEqual((len(self.calls), len(self.coded)), (1, 2))
+            self.assertEqual(self.published(), before)
+            self.assertTrue(first)
+
+    def test_a_restart_neither_loses_nor_repeats_the_count(self):
+        from types import SimpleNamespace
+        from harness.store.ledger import Ledger
+        with self.scoped() as (run, ledger):
+            self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+            ledger.save()
+            again = Ledger(run.ledger_file, list(L.values()), 2)                  # the ledger as a restart reads it
+            self.assertEqual(again.entries[L[5]].scope_violations, {L[5]: 1})
+            counted = SimpleNamespace(id=run.label_states[L[5]]["active"]["scope_candidate"],
+                                      baseline=cand.production_baseline(run), scope_baseline={})
+            self.assertEqual(label_repair.scope_failure(run, again, L[5], counted, [N[5]], []), "scope")
+            self.assertEqual(again.entries[L[5]].scope_violations, {L[5]: 1})
+
+    def test_a_production_change_pauses_the_run_until_it_is_restored(self):
+        from harness.phases import code as code_phase
+        for rel in ("library/TrafficSpec/Rules/Prod.lean", "harness/phases/stray.py", "prompts/stray.md"):
+            with self.subTest(rel=rel), self.scoped(prod_file=rel) as (run, ledger):
+                self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+                self.assertEqual(sorted(f for fs in code_phase.scope_unrestored(run).values() for f in fs), [rel])
+                (self.prod.parent / rel).unlink()                                 # the operator restores the one file
+                self.assertEqual(code_phase.scope_unrestored(run), {})
+
+    def test_a_production_only_change_behind_a_passing_gate_stops_the_candidate(self):
+        """The candidate's files are legal and its gate passes, but the session changed a production
+        prompt: no report is judged and nothing more is coded, the candidate is rolled back, no label
+        repair is counted, the spend is kept, and the run pauses naming the file; once it is restored the
+        repair goes on."""
+        from harness.phases import code as code_phase
+        rel = "prompts/stray.md"
+        with self.scoped(prod_file=rel, verdict="OK", once=True) as (run, ledger):
+            before, counted = self.published(), int(run.label_states[L[5]].get("repairs", 0))
+            self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+            self.assertEqual(self.judged, [])
+            self.assertEqual([i for i, _t in self.coded], [N[5]])
+            self.assertEqual(int(run.label_states[L[5]].get("repairs", 0)), counted)
+            self.assertEqual(ledger.entries[L[5]].scope_violations, {L[5]: 1})
+            self.assertEqual([json.loads(x)["label"] for x in (run.dir / "usage.jsonl").read_text().splitlines()], [f"code {N[5]}"])
+            self.assertEqual(self.published(), before)
+            self.assertEqual([f for fs in code_phase.scope_unrestored(run).values() for f in fs], [rel])
+            self.assertEqual(self.repairs(), {})                                  # paused: no repair starts on the dirty tree
+            (self.prod.parent / rel).unlink()                                     # until the operator restores the file
+            self.assertEqual(code_phase.scope_unrestored(run), {})
+            self.assertNotIn("scope", self.repairs().get(L[5], []))              # the repair goes on: coded again, its report judged
+            self.assertGreaterEqual(len(self.coded), 2)
+            self.assertTrue(self.judged)
+
+    def test_a_production_change_found_only_at_the_commit_still_pauses(self):
+        """No coder runs (the repair's change is local) and no session moves production, but the tree
+        moves before the commit (here, during the candidate's verification): the commit refuses it as
+        before, and the outcome is a scope outcome: no label repair counted, the law's scope count 1,
+        and the run pauses naming the file until it is restored."""
+        from harness.phases import code as code_phase
+        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
+        rel = "prompts/stray.md"
+        with repairing(outputs={"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}) as (run, ledger, training, by_id):
+            prod = label_repair.paths.LIBRARY.parent
+            real_verify = cand.Candidate.verify
+
+            def verify(txn, *a, **k):
+                results = real_verify(txn, *a, **k)
+                (prod / rel).parent.mkdir(parents=True, exist_ok=True)
+                (prod / rel).write_text("-- written into production\n")
+                return results
+            set_verdict(training, "r5a", N[5], "compliant")
+            counted = int(run.label_states[L[5]].get("repairs", 0))
+            to_user = []
+            with mock.patch.object(cand.Candidate, "verify", verify):
+                self.assertEqual(repair(run, ledger, training, by_id, to_user), "scope")
+            self.assertTrue(any("production baseline moved" in x for x in to_user), to_user)
+            self.assertEqual(int(run.label_states[L[5]].get("repairs", 0)), counted)
+            self.assertEqual(ledger.entries[L[5]].scope_violations, {L[5]: 1})
+            self.assertEqual([f for fs in code_phase.scope_unrestored(run).values() for f in fs], [rel])
+            (prod / rel).unlink()
+            self.assertEqual(code_phase.scope_unrestored(run), {})
+
+    def test_a_moved_tree_that_cannot_be_named_still_pauses(self):
+        """A candidate that kept no per-file digest (opened before it was kept): the moved tree is
+        recorded whole and pauses until the whole tree is back at the hash the candidate opened on."""
+        from harness.phases import code as code_phase
+        rel = "harness/phases/stray.py"
+        with self.scoped(prod_file=rel, legacy=True) as (run, ledger):
+            self.assertEqual(self.repairs(), {L[5]: ["scope"]})
+            self.assertTrue(code_phase.scope_unrestored(run))
+            self.assertEqual([f for fs in code_phase.scope_unrestored(run).values() for f in fs], [code_phase.WHOLE_TREE])
+            (self.prod.parent / rel).unlink()                                     # the tree restored to its recorded hash
+            self.assertEqual(code_phase.scope_unrestored(run), {})
+
+
+class CandidateSessionsWatched(Base):
+    """Every session a label repair's candidate runs (the repair session and its re-ask, a re-plan, a
+    concept repair) is followed by the production tree check: a session that changed a production file
+    stops the candidate at once (no further session, judgement or coding), rolls it back, counts no
+    label repair, keeps its spend, counts the law's scope once, and pauses the run naming the file; once
+    it is restored, the repair goes on."""
+
+    REL = "prompts/stray.md"
+
+    @contextmanager
+    def watched(self, outputs: dict, writes, concepts=None, coder_out=None):
+        """`writes(cwd, label)` says which session writes the production file (once); `coder_out(n)` what
+        the n-th coding (from 1) returns."""
+        self.calls, self.coded, self.wrote, self.drained = [], [], [], []
+        inner = stub_session(outputs)
+        with repairing(outputs={}, concepts=concepts) as (run, ledger, training, by_id):
+            prod = label_repair.paths.LIBRARY.parent
+
+            def any_session(prompt, cwd=None, out_dir=None, label="session", **k):
+                inner(prompt, cwd=cwd, out_dir=out_dir, label=label, **k)
+                (Path(cwd) / f"{label}_result.json").write_text(json.dumps({"cost_usd": 0.5}))
+                with open(run.dir / "usage.jsonl", "a") as fh:
+                    fh.write(json.dumps({"label": f"{Path(cwd).name} {label}", "cost_usd": 0.5}) + "\n")
+                self.calls.append((Path(cwd).name, label))
+                self.drained.append(cand.SCHEDULING.drained())
+                if not self.wrote and writes(Path(cwd), label):
+                    self.wrote.append(label)
+                    (prod / self.REL).parent.mkdir(parents=True, exist_ok=True)
+                    (prod / self.REL).write_text("-- written into production\n")
+
+            def coder(txn, recs, law=None, earlier=None):
+                self.coded.append(recs)
+                return coder_out(len(self.coded), recs) if coder_out else {}
+            with mock.patch.object(session, "run", any_session), mock.patch.object(label_repair, "code_in_candidate", coder):
+                self.prod = prod
+                yield run, ledger, training, by_id
+
+    def stopped(self, run, ledger, outcome, counted):
+        from harness.phases import code as code_phase
+        self.assertEqual(outcome, "scope")
+        self.assertEqual(int(run.label_states[L[5]].get("repairs", 0)), counted)
+        self.assertEqual(ledger.entries[L[5]].scope_violations, {L[5]: 1})
+        self.assertEqual(len((run.dir / "usage.jsonl").read_text().splitlines()), len(self.calls))   # every session's spend kept
+        self.assertEqual([f for fs in code_phase.scope_unrestored(run).values() for f in fs], [self.REL])
+        (self.prod / self.REL).unlink()
+        self.assertEqual(code_phase.scope_unrestored(run), {})
+
+    def test_a_planner_that_changes_production_stops_the_candidate(self):
+        withdraw = {"node_id": N[5], "withdraw": {"kind": "plan", "missing": "the law carries two duties"}}
+
+        def fake_plan(view, laws, defs, tag="", pending=None, label_repair=False):
+            d = view.iter / "plan" / tag
+            d.mkdir(parents=True, exist_ok=True)
+            session.run("plan", cwd=d, out_dir=d, label="session")
+            (d / "blueprint.jsonl").write_text(json.dumps(node_rec(f"{N[5]}_o1") | {"law_refs": [L[5]]}) + "\n")
+            return d
+        with self.watched({"record.jsonl": json.dumps(withdraw)}, lambda cwd, label: "plan" in cwd.parts) as (run, ledger, training, by_id), \
+                mock.patch.object(plan, "run_plan", fake_plan):
+            counted = int(run.label_states[L[5]].get("repairs", 0))
+            r = repair(run, ledger, training, by_id)
+            self.assertEqual(self.coded, [])                                      # nothing coded after the planner
+            self.assertEqual([c[1] for c in self.calls], ["session", "session"])   # the repair session, then the plan
+            self.stopped(run, ledger, r, counted)
+            self.assertNotEqual(repair(run, ledger, training, by_id), "scope")    # restored: the repair goes on
+            self.assertTrue(self.coded)
+
+    def test_a_concept_repair_that_changes_production_stops_the_candidate(self):
+        from harness.phases import review as review_phase
+        report = {"node_id": N[5], "withdraw": {"kind": "concept", "missing": "the concept computes what its contract excludes"}}
+
+        def fake_repair(view, rec, reasons, last_task, defs, users):
+            d = view.iter / "repair" / ("concept__" + rec.id)
+            d.mkdir(parents=True, exist_ok=True)
+            session.run("repair", cwd=d, out_dir=d, label="session")
+            return d
+        judged = []
+        with self.watched({"record.jsonl": json.dumps(report), "dependency_defect.json": "{}"},
+                          lambda cwd, label: cwd.name.startswith("concept__"), concepts={CA: concept_rec(CA)}) as (run, ledger, training, by_id), \
+                mock.patch.object(plan, "run_repair", fake_repair), \
+                mock.patch.object(label_repair, "judge_report",
+                                  lambda *a, **k: judged.append(a) or review_phase.DependencyReport("upheld", concept=CA, line="scripted")):
+            counted = int(run.label_states[L[5]].get("repairs", 0))
+            r = repair(run, ledger, training, by_id)
+            self.assertEqual(self.coded, [])
+            self.assertEqual(len(judged), 1)                                      # the one before the concept repair
+            self.stopped(run, ledger, r, counted)
+
+    def test_a_repair_session_re_asked_that_changes_production_stops_the_candidate_and_is_asked_anew(self):
+        with self.watched({}, lambda cwd, label: label == "session_again") as (run, ledger, training, by_id):
+            counted = int(run.label_states[L[5]].get("repairs", 0))
+            r = repair(run, ledger, training, by_id)
+            self.assertEqual([c[1] for c in self.calls], ["session", "session_again"])
+            self.assertEqual(self.coded, [])
+            self.stopped(run, ledger, r, counted)
+            # restored: the out-of-scope answer is kept on disk, never read again; a new session is asked in a new directory
+            old = run.dir / "iter-001" / "label_repair" / L[5] / "repair-01"
+            self.assertTrue((old / "session_again_result.json").exists())
+            self.assertEqual(repair(run, ledger, training, by_id), "refused")
+            self.assertEqual(self.calls[2:], [("repair-02", "session"), ("repair-02", "session_again")])
+            self.assertEqual(self.drained, [[]] * len(self.calls))                 # every session ran while scheduling was drained
+
+    def test_the_answer_of_a_repair_session_that_went_out_of_scope_is_never_read(self):
+        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
+        rec["elements"] = [{"span": "o1", "atoms": ["kin.speed", "rel.occupies"], "derived": []}]
+        with self.watched({"record.jsonl": json.dumps(rec), "lean.diff": DIFF5},
+                          lambda cwd, label: label == "session") as (run, ledger, training, by_id):
+            counted = int(run.label_states[L[5]].get("repairs", 0))
+            r = repair(run, ledger, training, by_id)
+            self.assertEqual(self.coded, [])                                      # its answer was not read
+            self.stopped(run, ledger, r, counted)
+            self.assertFalse(run.label_states[L[5]].get("active"))
+            repair(run, ledger, training, by_id)
+            self.assertEqual([c for c in self.calls if c[1] == "session"], [("repair-01", "session"), ("repair-02", "session")])
+            self.assertEqual(self.coded, [[("node", N[5])]])                       # the new answer is the one coded
+
+    def test_one_scope_count_per_law_a_coder_then_a_planner_reach_the_bound(self):
+        withdraw = {"node_id": N[5], "withdraw": {"kind": "plan", "missing": "the law carries two duties"}}
+        plans = []
+
+        def fake_plan(view, laws, defs, tag="", pending=None, label_repair=False):
+            d = view.iter / "plan" / tag
+            d.mkdir(parents=True, exist_ok=True)
+            plans.append(d)
+            session.run("plan", cwd=d, out_dir=d, label="session")
+            (d / "blueprint.jsonl").write_text(json.dumps(node_rec(f"{N[5]}_o1") | {"law_refs": [L[5]]}) + "\n")
+            return d
+        with self.watched({"record.jsonl": json.dumps(withdraw)}, lambda cwd, label: "plan" in cwd.parts and len(plans) == 2,
+                          coder_out=lambda n, recs: {i: {"verdict": "SCOPE_VIOLATION"} for _k, i in recs} if n == 1 else {}) \
+                as (run, ledger, training, by_id), mock.patch.object(plan, "run_plan", fake_plan):
+            self.assertEqual(repair(run, ledger, training, by_id), "scope")       # the coder went out of scope
+            self.assertEqual(ledger.entries[L[5]].scope_violations, {L[5]: 1})
+            self.assertEqual(repair(run, ledger, training, by_id), "scope_budget")   # then the planner: the law's second
+            e = ledger.entries[L[5]]
+            self.assertEqual((e.state, e.gaps, e.scope_violations), ("blocked", [f"decision:{L[5]}"], {L[5]: 2}))
+            self.assertEqual([c for c in self.calls if c[1] == "session" and c[0].startswith("repair-")], [("repair-01", "session")])
+
+    def test_a_trusted_repair_answer_is_coded_again_after_a_coder_went_out_of_scope(self):
+        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
+        rec["elements"] = [{"span": "o1", "atoms": ["kin.speed", "rel.occupies"], "derived": []}]
+        with self.watched({"record.jsonl": json.dumps(rec), "lean.diff": DIFF5}, lambda cwd, label: False,
+                          coder_out=lambda n, recs: {i: {"verdict": "SCOPE_VIOLATION"} for _k, i in recs} if n == 1 else {}) \
+                as (run, ledger, training, by_id):
+            self.assertEqual(repair(run, ledger, training, by_id), "scope")
+            self.assertTrue(run.label_states[L[5]].get("active"))
+            repair(run, ledger, training, by_id)
+            self.assertEqual(self.calls, [("repair-01", "session")])               # no new repair session
+            self.assertEqual(self.coded, [[("node", N[5])], [("node", N[5])]])     # the same answer coded again
+
+    def test_a_candidate_that_went_out_of_scope_files_no_change_request_or_gap(self):
+        rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
+        rec["elements"] = [{"span": "o1", "atoms": ["kin.speed", "rel.occupies"], "derived": []}]
+        outputs = {"record.jsonl": json.dumps(rec), "lean.diff": DIFF5, "change_request.json": json.dumps([REQUEST])}
+        with self.watched(outputs, lambda cwd, label: False,
+                          coder_out=lambda n, recs: {i: {"verdict": "SCOPE_VIOLATION"} for _k, i in recs}) as (run, ledger, training, by_id):
+            self.assertEqual(repair(run, ledger, training, by_id), "scope")
+            self.assertFalse((run.dir / label_repair.OUTER_FILE).exists())
+            self.assertFalse((run.dir / label_repair.OPERATOR_FILE).exists())
+            self.assertEqual(ledger.entries[L[5]].state, "planned")
+
+
+class ProductionWatch(unittest.TestCase):
+    """`production_watch` swaps `session.run` for the block only, restores it however the block ends,
+    checks the production tree after a session that raised too, and refuses to run unless scheduling is
+    drained (the assumption a merge must keep)."""
+
+    def setUp(self):
+        from types import SimpleNamespace
+        self.tree = {"library/a.lean": "1"}
+        self.txn = SimpleNamespace(baseline={"tree": cand._sha(dict(self.tree))}, scheduling=SimpleNamespace(drained=lambda: []))
+        p = mock.patch.object(label_repair.gate, "repo_digest", lambda root=None: dict(self.tree))
+        p.start()
+        self.addCleanup(p.stop)
+
+    def test_restored_on_a_normal_and_an_exceptional_exit(self):
+        real = session.run
+        with label_repair.production_watch(self.txn, L[5]):
+            self.assertIsNot(session.run, real)
+        self.assertIs(session.run, real)
+        with self.assertRaises(KeyError), label_repair.production_watch(self.txn, L[5]):
+            raise KeyError("stopped")
+        self.assertIs(session.run, real)
+
+    def test_a_session_that_raises_is_checked_too(self):
+        def failing(*a, **k):
+            self.tree["prompts/x.md"] = "2"
+            raise session.SessionUnavailable("cut off")
+        with mock.patch.object(session, "run", failing):
+            with self.assertRaises(label_repair.OutOfScope) as e, label_repair.production_watch(self.txn, L[5]):
+                session.run("p", cwd="/x/repair-01", out_dir="/x/repair-01")
+            self.assertIsInstance(e.exception.__cause__, session.SessionUnavailable)
+        self.tree.pop("prompts/x.md")
+        with mock.patch.object(session, "run", mock.Mock(side_effect=session.SessionUnavailable("cut off"))):
+            with self.assertRaises(session.SessionUnavailable), label_repair.production_watch(self.txn, L[5]):
+                session.run("p")                                      # nothing moved: the session's own failure stands
+
+    def test_it_runs_only_while_scheduling_is_drained(self):
+        from types import SimpleNamespace
+        real = session.run
+        busy = SimpleNamespace(baseline=self.txn.baseline, scheduling=SimpleNamespace(drained=lambda: ["a coding task runs"]))
+        with self.assertRaises(cand.NotDrained), label_repair.production_watch(busy, L[5]):
+            pass
+        self.assertIs(session.run, real)
+
+
 class Binding(Base):
     """A candidate that cannot be bound to the run's label versions is a part that did not run, never
     a charged attempt."""
@@ -304,22 +687,21 @@ class SameId(Base):
 
 class Evidence(Base):
 
-    def test_the_review_path_renders_the_upheld_block_as_before(self):
+    def test_a_session_that_is_no_label_repair_renders_the_neutral_block(self):
         with world(*standard()) as (run, _lib):
             laws = [corpus.Law(nodeid.law_of(NN)[0], "t", "text", "s")]
-            with mock.patch.object(plan.review_phase, "upheld_block", lambda run_, laws_: "SENTINEL-UPHELD\n"):
-                self.assertEqual(plan.evidence_block(run, laws), "SENTINEL-UPHELD\n")
-                run.opts.feedback = "labels"                       # no node obligation is rendered: the neutral block
-                self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
+            self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
+            run.opts.label_repair = True                           # the run's option gives the session no label scope
+            self.assertEqual(plan.evidence_block(run, laws), plan.NO_LABEL_EVIDENCE)
             values = {k: f"({k})" for k in plan.PLACEHOLDERS_NODE_REPAIR}
-            values["evidence"] = "SENTINEL-UPHELD"
+            values["evidence"] = "SENTINEL-EVIDENCE"
             text = render.render("node_repair.md", values)
-            self.assertIn("\nSENTINEL-UPHELD\n", text)
+            self.assertIn("\nSENTINEL-EVIDENCE\n", text)
             self.assertNotIn("{upheld}", text)
 
     def test_label_repair_shows_the_label_evidence(self):
         with repairing() as (run, ledger, training, by_id):
-            run.opts.label_repair, run.opts.feedback = True, "labels"
+            run.opts.label_repair = True
             self.assertEqual(plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]]), plan.NO_LABEL_EVIDENCE)   # the option gives no scope
             block = plan.evidence_block(run, [by_id[L[5]], by_id[L[1]]], label_repair=True)
             self.assertTrue(block.startswith("## Label mismatches"))
@@ -444,7 +826,7 @@ class PromptScope(unittest.TestCase):
     def labels_run(self):
         from dataclasses import replace
         with repairing() as (run, ledger, training, by_id):
-            run.opts = replace(run.opts, feedback="labels", label_repair=True, dry_run=True)
+            run.opts = replace(run.opts, label_repair=True, dry_run=True)
             run.law_entries = ledger.entries
             self.assertEqual(run.label_states[L[5]]["state"], "awaiting_label_repair")     # a law of the run awaits its repair
             yield run, ledger, training, by_id
@@ -498,6 +880,39 @@ class PromptScope(unittest.TestCase):
                 self.assertIn("Repair goal:", text)
                 self.assertNotIn(plan.NO_LABEL_EVIDENCE, text)
             self.assertIn("during a law-level label repair: `record.jsonl`", self.label_repair_prompt(run, by_id))
+
+    def test_every_planning_and_coding_prompt_carries_the_concept_interface(self):
+        """What a caller can state about a concept is part of the concept language every session that
+        plans, repairs or codes a record is shown, once."""
+        import tempfile
+        from harness.lean import surface
+        from harness.model.blueprint import ConceptRecord
+        from harness.model.reading import Reading
+        from harness.phases import code as code_phase
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            rec = ConceptRecord(concept_rec("drv.motion.interface_probe"))
+            with tempfile.TemporaryDirectory() as last:
+                concept_repair = (plan.run_repair(run, rec, ["gate CHECK_FAIL: a witness fails"], Path(last), [], []) / "prompt.md").read_text(encoding="utf-8")
+            code_phase.run_code_concept(run, rec, Reading(run.reading_file))
+            prompts = {"plan": (plan.run_plan(run, [by_id[L[1]]], [], tag="plain") / "prompt.md").read_text(encoding="utf-8"),
+                       "replan": (plan.run_plan(run, [by_id[L[5]]], [], tag="replan", label_repair=True) / "prompt.md").read_text(encoding="utf-8"),
+                       "concept_repair": concept_repair, "node_repair": self.node_repair_prompt(run, by_id),
+                       "label_repair": self.label_repair_prompt(run, by_id), "code": self.code_prompt(run),
+                       "code_concept": (code_phase.concept_dir(run, rec.id) / "prompt.md").read_text(encoding="utf-8")}
+        for name, text in prompts.items():
+            self.assertEqual(text.count(surface.CONCEPT_INTERFACE), 1, name)
+
+    def test_the_plan_prompt_describes_the_library_summary_it_shows(self):
+        """The planning prompts describe the library summary as rendered: published and planned nodes,
+        with the build availability and the law state as two columns, and a row not composable."""
+        with self.labels_run() as (run, _ledger, _training, by_id):
+            prompts = {"plan": (plan.run_plan(run, [by_id[L[1]]], [], tag="plain") / "prompt.md").read_text(encoding="utf-8"),
+                       "replan": (plan.run_plan(run, [by_id[L[5]]], [], tag="replan", label_repair=True) / "prompt.md").read_text(encoding="utf-8")}
+        for name, text in prompts.items():
+            self.assertEqual(text.count("**Library summary** — published and currently planned nodes"), 1, name)
+            self.assertIn("“not composable” is not\n  a usable build dependency", text, name)
+            self.assertNotIn("**Library summary** — accepted nodes", text, name)
+            self.assertIn("| node | law | binders | atoms claimed | build | law state |", text, name)
 
     def test_no_prompt_of_a_labels_run_carries_the_old_node_review_wording(self):
         with self.labels_run() as (run, _ledger, _training, by_id):

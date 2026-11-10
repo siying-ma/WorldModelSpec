@@ -18,12 +18,19 @@ OPEN, PLANNED, RETURNED, ACCEPTED, BLOCKED, FAILED = "open", "planned", "returne
 TERMINAL = {ACCEPTED, BLOCKED, FAILED}
 PLANNABLE = {OPEN, RETURNED}
 SEVERITY = {PLANNED: 1, RETURNED: 2, BLOCKED: 3, FAILED: 4}   # within one attempt, the higher outcome stands
-JUDGE_STAGES = {"stage_a", "stage_b", "concept_adjudication"}  # an invalid judge answer: two in a row close the item
+JUDGE_STAGES = {"concept_adjudication"}  # an invalid judge answer: two in a row close the item
 #: Gates of one node or concept that ended on the evaluation's cost (the deadline reached while its
 #: scenarios were evaluated, or a resource failure reproduced in isolation) before it is held for the
 #: operator: after the first, the saved candidate is gated again (or, when its context changed, the
 #: record is coded again) at the same deadline; the second holds it.
 GATE_COST_BOUND = 2
+#: Scope violations of one node or concept (its coding session changed a file outside its own two, or
+#: left them unbuildable as files: missing, a foreign import, another namespace) before it is held for
+#: the operator: they say nothing of its plan or contract, so none counts as an attempt; after the
+#: first, the same record is coded again once the library is confirmed restored; the second holds it.
+#: Two conditions are apart: the operator's `reopen` clears the count (and so this hold); only
+#: restoring the files a session changed outside its own lifts the pause on a dirty library.
+SCOPE_BOUND = 2
 
 
 def _saved(e) -> dict:
@@ -69,13 +76,22 @@ class Entry:
     cost_failures: dict[str, int] = field(default_factory=dict)   # node ↦ its gates ended on the evaluation's cost; never counted as attempts
     core_panics: list[str] = field(default_factory=list)          # nodes whose gate's evaluation panicked in isolation; never counted as attempts
     waits_on: list[str] = field(default_factory=list)             # blocked only because it composes these laws' nodes while they wait for the operator
+    scope_violations: dict[str, int] = field(default_factory=dict)  # node ↦ its coding sessions that ended SCOPE_VIOLATION; never counted as attempts
+    own_gaps: list[str] = field(default_factory=list)  # the tokens of `gaps` the law was blocked on itself, never one it inherited from a law it waits on
+
+
+class ReopenRefused(ValueError):
+    """An operator's reopen that may not run as asked; nothing of it was applied."""
+
+    def __init__(self, reasons: list[str]):
+        super().__init__("; ".join(reasons))
+        self.reasons = reasons
 
 
 class Ledger:
-    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int, repeat_limit: int = 3):
+    def __init__(self, path: Path, law_ids: list[str], plan_attempts: int):
         self.path = path
         self.plan_attempts = plan_attempts
-        self.repeat_limit = repeat_limit
         self.attempt = 0            # the current iteration, set by the loop: the attempt outcomes belong to
         self.entries: dict[str, Entry] = _load(path, Entry, "law")
         for lid in law_ids:
@@ -195,6 +211,14 @@ class Ledger:
         e.cost_failures = {**e.cost_failures, node: e.cost_failures.get(node, 0) + 1}
         return e.cost_failures[node] >= GATE_COST_BOUND
 
+    def scope_violation(self, law: str, node: str) -> bool:
+        """A coding session of the law's node ended `SCOPE_VIOLATION`: counted apart from the plan
+        attempts and the node's codings, never charged. Returns whether the node is now held for the
+        operator (`SCOPE_BOUND` reached)."""
+        e = self.entries[law]
+        e.scope_violations = {**e.scope_violations, node: e.scope_violations.get(node, 0) + 1}
+        return e.scope_violations[node] >= SCOPE_BOUND
+
     def defer(self, law: str, reasons: list[str]) -> None:
         """Nothing judged the law's plan or its code (an outage): its state and plan stay, no attempt
         is counted, the reasons are added; its held work is resumed, never re-planned."""
@@ -217,32 +241,31 @@ class Ledger:
         if e.state == PLANNED:
             e.iteration = iteration
 
-    def record_outcomes(self, law: str, keys: list[str], limit: int | None = None) -> list[str]:
-        """Count the outcomes a node of the law drew, across its plans and repairs, once per completed
-        review or gate run (the caller applies an outcome once); the keys whose consecutive count
-        reaches the limit (the repeat limit unless given) are returned, each with its count — the law
-        is not converging and the operator decides. A key is an open case's lineage, a structural
-        finding, or an occurrence of the law's words; `reset_outcomes` ends a streak."""
+    def record_outcomes(self, law: str, keys: list[str], limit: int) -> list[str]:
+        """Count the outcomes the law drew, across its plans and repairs, once per completed gate run
+        or plan session (the caller applies an outcome once); the keys whose count reaches `limit` are
+        returned, each with its count — the law is not converging, or the words cannot be stated. A
+        key is an occurrence of the law's words, or the law's own outcome."""
         e = self.entries[law]
         hit = []
         for k in keys:
             e.repeats[k] = e.repeats.get(k, 0) + 1
-            if e.repeats[k] >= (limit or self.repeat_limit):
+            if e.repeats[k] >= limit:
                 hit.append(f"{k} ×{e.repeats[k]}")
         return hit
 
-    def reset_outcomes(self, law: str, keys: list[str]) -> None:
-        """Outcomes that stopped recurring (a case the rule now satisfies): their streaks start again."""
-        e = self.entries.get(law)
-        if e is not None:
-            for k in keys:
-                e.repeats.pop(k, None)
-
-    def block(self, law: str, gap_ids: list[str], reasons: list[str]) -> None:
+    def block(self, law: str, gap_ids: list[str], reasons: list[str], inherited: bool = False) -> None:
+        """Block the law on tokens (gap ids, `decision:<law>`), recorded where they come from: a token
+        the law is blocked on itself joins `own_gaps` too; one it inherits from a law it waits on
+        (`inherited`) joins `gaps` only, except `decision:<law>`, which is always the law's own."""
         e = self.entries[law]
-        merged = e.gaps + [g for g in gap_ids if g not in e.gaps] if e.state == BLOCKED else list(gap_ids)
+        own = [g for g in gap_ids if not inherited or g == f"decision:{law}"]
+        was_blocked = e.state == BLOCKED
+        merged = e.gaps + [g for g in gap_ids if g not in e.gaps] if was_blocked else list(gap_ids)
+        mine = e.own_gaps + [g for g in own if g not in e.own_gaps] if was_blocked else list(own)
         if self._set(e, BLOCKED, reasons):
             e.gaps = merged
+            e.own_gaps = [g for g in mine if g in merged]
 
     def fail(self, law: str, reasons: list[str]) -> None:
         self._set(self.entries[law], FAILED, reasons)
@@ -252,35 +275,90 @@ class Ledger:
         if e.state == PLANNED:
             e.state, e.nodes, e.reasons = ACCEPTED, node_ids, []
 
+    def roots(self, law: str) -> set[str]:
+        """The laws whose own blocks hold `law`, through the laws it waits on: a failed law is its own
+        root, and so is a blocked law with a token of its own (`own_gaps`); a law's roots are itself
+        where that holds, and the roots of every law in its `waits_on` (each law visited once, so two
+        laws that wait on each other are both roots)."""
+        out, seen, stack = set(), set(), [law]
+        while stack:
+            l = stack.pop()
+            if l in seen or l not in self.entries:
+                continue
+            seen.add(l)
+            e = self.entries[l]
+            if e.state == FAILED or (e.state == BLOCKED and e.own_gaps):
+                out.add(l)
+            if e.state == BLOCKED:
+                stack += list(e.waits_on)
+        return out
+
+    def reopen_refusals(self, laws: list[str] | None = None) -> list[str]:
+        """Why an operator's reopen of `laws` (every failed or blocked law when None) may not run, the
+        whole request checked before anything changes: a law blocked on a gap not yet decided (only
+        `gap decide` decides it, for every law that holds it), and a law whose roots (`roots`) are not
+        all in the request. Empty when every part of it may run."""
+        asked = [e.law for e in self.entries.values() if e.state in (BLOCKED, FAILED)] if laws is None else list(laws)
+        out = []
+        for law in asked:
+            e = self.entries.get(law)
+            if e is None:                                   # a name the ledger does not hold reopens nothing
+                continue
+            if e.state == BLOCKED:
+                gaps = [g for g in e.gaps if not g.startswith("decision:")]
+                if gaps:
+                    out.append(f"`{law}` is blocked on gap(s) {gaps} not yet decided: a reopen never decides a gap — decide each with "
+                               "`python -m harness gap decide <id> --state retired|rejected --decision \"...\"`, which releases every law "
+                               "that holds it")
+                    continue
+            missing = sorted(self.roots(law) - set(asked))
+            if missing:
+                out.append(f"`{law}` waits on root law(s) {missing}, which hold it: reopen them in the same request")
+        return out
+
     def reopen(self, laws: list[str] | None = None) -> list[str]:
         """Operator action: failed laws, and laws blocked for the operator's decision (every token
-        `decision:<law>`), back to open with a fresh budget. Reopening a law decides its token
-        `decision:<law>` and the tokens it was blocked on: every blocked law loses the decided tokens,
-        and one left with none reopens too. A law blocked on a gap waits for the gap's decision instead."""
-        def decided_only(e: Entry) -> bool:
-            return e.state == BLOCKED and bool(e.gaps) and all(g.startswith("decision:") for g in e.gaps)
+        `decision:<…>`), back to open with a fresh budget. The request is checked whole first
+        (`reopen_refusals`): any refusal raises `ReopenRefused` naming every reason, nothing changed.
+        Reopening a law decides only its own decision tokens (`decision:<law>`, and the `decision:`
+        tokens of its `own_gaps`), never a gap id: every blocked law loses the decided tokens, and one
+        left with none reopens too."""
+        why = self.reopen_refusals(laws)
+        if why:
+            raise ReopenRefused(why)
         out, tokens = [], set()
         for e in self.entries.values():
-            if (laws is None or e.law in laws) and (e.state not in (ACCEPTED, BLOCKED) or decided_only(e)):
-                tokens |= {g for g in e.gaps if g.startswith("decision:")} | {f"decision:{e.law}"}
+            if (laws is None or e.law in laws) and e.state != ACCEPTED:
+                tokens |= {g for g in e.own_gaps if g.startswith("decision:")} | {f"decision:{e.law}"}
                 self._fresh(e, [])
                 out.append(e.law)
         for e in self.entries.values():
             if e.state == BLOCKED and set(e.gaps) & tokens:
                 left = [g for g in e.gaps if g not in tokens]
                 if left:
-                    e.gaps = left
+                    e.gaps, e.own_gaps = left, [g for g in e.own_gaps if g in left]
                 else:
                     self._fresh(e, [f"reopened with {sorted(tokens & set(e.gaps))}"])
                     out.append(e.law)
         return out
 
+    def revoke(self, law: str, reasons: list[str]) -> bool:
+        """An accepted law whose acceptance no longer holds (a provider it composes became unusable)
+        goes back to `planned`, its plan, attempts, counts and spend untouched, the reasons added once.
+        Nothing happens to a law that is not accepted. Returns whether it was revoked."""
+        e = self.entries[law]
+        if e.state != ACCEPTED:
+            return False
+        e.state = PLANNED
+        e.reasons = e.reasons + [r for r in reasons if r not in e.reasons]
+        return True
+
     @staticmethod
     def _fresh(e: Entry, reasons: list[str]) -> None:
-        e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps = OPEN, 0, reasons, [], {}, []
+        e.state, e.attempts, e.reasons, e.charged_concepts, e.repeats, e.gaps, e.own_gaps = OPEN, 0, reasons, [], {}, [], []
         e.outcome_iteration, e.charged_iteration = 0, 0
         e.dependency_returns, e.dependency_iteration = 0, 0
-        e.cost_failures, e.core_panics, e.waits_on = {}, [], []
+        e.cost_failures, e.core_panics, e.waits_on, e.scope_violations = {}, [], [], {}
 
     def reopen_for_gaps(self, decided: dict[str, tuple[str, str]]) -> list[tuple[str, list[str]]]:
         """A blocked law reopens once the operator has decided every gap it waits on: retired (the
@@ -295,9 +373,10 @@ class Ledger:
                 left = [g for g in e.gaps if g not in decided]
                 if left:                                   # a decided gap is struck; the law waits on the rest
                     e.gaps, e.reasons = left, e.reasons + [r for r in reasons if r not in e.reasons]
+                    e.own_gaps = [g for g in e.own_gaps if g in left]
                     continue
-                e.state, e.gaps, e.reasons = OPEN, [], reasons
-                e.cost_failures, e.core_panics, e.waits_on = {}, [], []
+                e.state, e.gaps, e.own_gaps, e.reasons = OPEN, [], [], reasons
+                e.cost_failures, e.core_panics, e.waits_on, e.scope_violations = {}, [], [], {}
                 out.append((e.law, reasons))
         return out
 
@@ -329,6 +408,7 @@ class ConceptEntry:
     cost_failures: int = 0       # its gates that ended on the evaluation's cost; never counted as attempts
     core_panics: int = 0         # its gates whose evaluation panicked in isolation; never counted as attempts
     held_laws: list[str] = field(default_factory=list)   # the laws its hold for the operator paused (directly or through other concepts) and still pauses
+    scope_violations: int = 0    # its coding sessions that ended SCOPE_VIOLATION; never counted as attempts
 
 
 class ConceptLedger:
@@ -410,10 +490,18 @@ class ConceptLedger:
         e.cost_failures += 1
         return e.cost_failures >= GATE_COST_BOUND
 
+    def scope_violation(self, cid: str) -> bool:
+        """A coding session of the concept ended `SCOPE_VIOLATION`: its state, users and attempts stay.
+        Returns whether its users are now held for the operator (`SCOPE_BOUND` reached)."""
+        e = self.entries.setdefault(cid, ConceptEntry(cid))
+        e.scope_violations += 1
+        return e.scope_violations >= SCOPE_BOUND
+
     def held(self, cid: str) -> bool:
-        """Whether the concept is held for the operator by its gate: a panic, or the cost bound reached."""
+        """Whether the concept is held for the operator by its gate: a panic, the cost bound or the
+        scope bound reached."""
         e = self.entries.get(cid)
-        return e is not None and (e.core_panics > 0 or e.cost_failures >= GATE_COST_BOUND)
+        return e is not None and (e.core_panics > 0 or e.cost_failures >= GATE_COST_BOUND or e.scope_violations >= SCOPE_BOUND)
 
     def release(self, reopened: list[str], paused: set[str]) -> tuple[list[str], dict[str, list[str]]]:
         """Laws were reopened (`reopened`; `paused` are the laws still blocked for the operator's
@@ -424,7 +512,7 @@ class ConceptLedger:
         released, and each concept left held with the laws it still waits on."""
         out, waiting = [], {}
         for e in self.entries.values():
-            if not (e.cost_failures or e.core_panics or e.held_laws):
+            if not (e.cost_failures or e.core_panics or e.scope_violations or e.held_laws):
                 continue
             if not (set(e.held_laws) | {nodeid.law_of(str(u))[0] for u in e.used_by}) & set(reopened):
                 continue
@@ -432,7 +520,7 @@ class ConceptLedger:
             if e.held_laws:
                 waiting[e.concept] = list(e.held_laws)
             else:
-                e.cost_failures, e.core_panics = 0, 0
+                e.cost_failures, e.core_panics, e.scope_violations = 0, 0, 0
                 out.append(e.concept)
         return out, waiting
 
@@ -461,7 +549,7 @@ class ConceptLedger:
 
 
 # ---------------------------------------------------------------------------------------------
-# Nodes: one entry per node the gate or the review returned, for the node repair path. A node has
+# Nodes: one entry per node the gate returned, for the node repair path. A node has
 # `attempts` coding sessions (default 2: the first and one after a repair); while it has budget
 # its law is held, not charged. Written by the harness only.
 # ---------------------------------------------------------------------------------------------
@@ -477,7 +565,6 @@ class NodeEntry:
     reasons: list[str] = field(default_factory=list)
     last_task: str = ""          # the task directory of the last coding attempt, for the repair session
     iteration: int = 0
-    judge_failures: dict[str, int] = field(default_factory=dict)   # review stage ↦ consecutive reviews left without a valid answer
 
 
 class NodeLedger:
@@ -527,20 +614,3 @@ class NodeLedger:
         e.state, e.reasons = FAILED, reasons
         e.last_task = last_task or e.last_task
         e.iteration = iteration or e.iteration
-
-    def defer_judge(self, node: str, law: str, stage: str, reasons: list[str], bound: int = 2) -> bool:
-        """The node's review was left without a valid answer at `stage`: only that stage's
-        consecutive count grows (the stages before it answered). Returns True when it reaches
-        `bound`."""
-        e = self.entries.setdefault(node, NodeEntry(node, law, state=PLANNED))
-        e.law = e.law or law
-        e.judge_failures = {stage: e.judge_failures.get(stage, 0) + 1}
-        e.reasons = reasons
-        return e.judge_failures[stage] >= bound
-
-    def clear_judge(self, node: str) -> None:
-        """The node's review ended with valid judgments: no stage's failure is consecutive any longer."""
-        e = self.entries.get(node)
-        if e is not None:
-            e.judge_failures = {}
-

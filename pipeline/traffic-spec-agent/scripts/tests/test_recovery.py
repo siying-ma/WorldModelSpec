@@ -2,7 +2,7 @@
 
 The real loop, ledgers, state snapshot, coding phase (its task directories, saved verdicts and
 rollbacks), integration and feedback run in a temporary repository; the sessions, the gates, the
-reviews, the aggregates, the doctor, the owner lock and Lean are scripted, each outcome keyed by the
+concept reviews, the aggregates, the doctor, the owner lock and Lean are scripted, each outcome keyed by the
 record and the iteration, never by the launch. Every scenario runs once to its end; then, for every
 point it passed (each snapshot commit, each projection written after it, each session's effects,
 each file restore), it is run again stopped at that point and resumed, and the stable state at the
@@ -31,6 +31,8 @@ from harness.phases import plan as plan_phase, review as review_phase, validate 
 from harness.store import jsonl, owner, paths
 from harness.store.state import Options
 
+#: The prompt text the harness generates from the real Core: a fixture's Core is a stand-in.
+GENERATED = loop.generated_prompts()
 PATH_NAMES = ("REPO", "LIBRARY", "CORE", "RULES_DIR", "CONCEPTS_DIR", "WITNESS_DIR", "CONCEPT_WITNESS_DIR", "INDEX_FILE",
               "WITNESS_ROOT_FILE", "RESULTS", "READINGS", "GAPS_DIR", "USER_HINTS")
 PROJECTIONS = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl"}
@@ -64,7 +66,7 @@ class World:
         self.plans: dict = {}            # (law, iteration) or law -> records the plan writes for it
         self.validate: dict = {}         # (id, iteration) -> (kind, reasons)
         self.gate: dict = {}             # (id, iteration) -> verdict, or "PANIC" (a reproduced panic)
-        self.review: dict = {}           # (id, iteration) -> "accepted" | "returned" | ("deferred", stage) | "outage"
+        self.review: dict = {}           # (concept id, iteration) -> "accepted" | "returned" | ("deferred", stage) | "outage"
         self.node_repair: dict = {}      # (id, iteration) -> record raw | {"withdraw": {...}} | None
         self.concept_repair: dict = {}
         self.integration_fail: dict = {}  # iteration -> ids whose files fail the library's verification
@@ -144,7 +146,7 @@ class Fixture:
 
     def options(self, **over) -> Options:
         kw = dict(run_id="r", laws=self.root / "corpus" / "laws.jsonl", ontology=self.root / "ontology.md", reading=self.root / "reading.json",
-                  model="claude-test", reviewer_model="gpt-test", max_iterations=3, workers=1, plan_batch=8,
+                  model="claude-test", reviewer_model="gpt-test", aggregate_verifier_model="gpt-test", max_iterations=3, workers=1, plan_batch=8,
                   definition_precedence=self.root / "precedence.json")
         kw.update(self.opt)
         kw.update(over)
@@ -177,6 +179,7 @@ class Fixture:
                 w.tick("projection", name)
         s.enter_context(mock.patch.object(jsonl, "write_atomic", locked(write_atomic)))
         s.enter_context(mock.patch.object(jsonl.os, "fsync", lambda fd: None))      # durability is not what is tested here
+        s.enter_context(mock.patch.object(loop, "generated_prompts", lambda: GENERATED))
         real_append = jsonl.append_atomic
 
         def append_atomic(path, row):
@@ -201,7 +204,7 @@ class Fixture:
         s.enter_context(mock.patch.object(lean, "library_lock", lambda *a, **k: contextlib.nullcontext()))
         s.enter_context(mock.patch.object(lean, "lake_build", lambda *a, **k: (0, "")))
         s.enter_context(mock.patch.object(code_phase, "worked_example", lambda run: ""))
-        s.enter_context(mock.patch.object(code_phase, "concept_example", lambda run: ""))
+        s.enter_context(mock.patch.object(code_phase, "concept_example", lambda *a: ""))
 
         def aggregate_call(name, value):
             def f(run, *a, **k):
@@ -311,21 +314,15 @@ class Fixture:
             if o == "outage":
                 raise session.SessionUnavailable("scripted review outage")
             if o == "returned":
-                return review_phase.ReviewOutcome("returned", reasons=[f"scripted upheld on {ident}"], keys=[f"case:{ident}"])
+                return review_phase.ReviewOutcome("returned", reasons=[f"scripted upheld on {ident}"])
             if isinstance(o, tuple) and o[0] == "deferred":
                 return review_phase.ReviewOutcome("deferred", reasons=["scripted deferral"], defer_stage=o[1])
             return review_phase.ReviewOutcome("accepted")
-
-        def review_behaviour(run, n, law, onto, reading, rule_json, added, out_dir):
-            o = w.review.get((n.id, run.iteration), "accepted")
-            w.call("review", n.id, run.iteration)
-            return outcome(o, n.id)
 
         def review_concept(run, c, extras, out_dir):
             o = w.review.get((c.id, run.iteration), "accepted")
             w.call("review", c.id, run.iteration)
             return outcome(o, c.id)
-        s.enter_context(mock.patch.object(review_phase, "review_behaviour", review_behaviour))
         s.enter_context(mock.patch.object(review_phase, "review_concept", review_concept))
 
         def run_node_repair(run, nrec, reasons, last_task, law, defs, siblings, reading, onto):
@@ -510,17 +507,17 @@ def integration() -> World:
 
 
 def outages() -> World:
-    """L-9's review and L-10's coding session do not run in iteration 1: the run stops, keeping the
-    work, and the next launch finishes; no attempt is charged."""
+    """L-9's and L-10's coding sessions do not run in iteration 1: the run stops, keeping the work,
+    and the next launch finishes; no attempt is charged."""
     w = World({"L-9": "shall stop.", "L-10": "shall yield."})
     w.plans = {"L-9": [node("L_9", "shall stop.", "L-9")], "L-10": [node("L_10", "shall yield.", "L-10")]}
-    w.review[("L_9", 1)] = "outage"
+    w.gate[("L_9", 1)] = "outage"
     w.gate[("L_10", 1)] = "outage"
     return w
 
 
 def siblings() -> World:
-    """L-11's two nodes are both returned by their reviews; the first one's repair withdraws it as a
+    """L-11's two nodes are both returned by their gates; the first one's repair withdraws it as a
     plan defect, so the law returns to the planner and the second repair is not run; the law's
     next plan is accepted. A plan record of a law the session was not given is not registered."""
     text = "shall stop. shall yield."
@@ -530,7 +527,7 @@ def siblings() -> World:
     o2["elements"] = [{"span": "s2", "atoms": ["kin.speed"], "derived": [], "justification": "j"}]
     w = World({"L-11": text})
     w.plans = {"L-11": [o1, o2, node("L_99", "shall go.", "L-99")]}
-    w.review[("L_11_o1", 1)] = w.review[("L_11_o2", 1)] = "returned"
+    w.gate[("L_11_o1", 1)] = w.gate[("L_11_o2", 1)] = "CHECK_FAIL"
     w.node_repair[("L_11_o1", 2)] = {"withdraw": {"span": "s1", "kind": "plan", "missing": "the text needs another cut"}}
     return w
 
@@ -545,12 +542,12 @@ def integration_outage() -> World:
 
 
 def same_iteration_replan() -> World:
-    """L-13's node is returned by its review; in iteration 2 its repair withdraws it as a plan defect
+    """L-13's node is returned by its gate; in iteration 2 its repair withdraws it as a plan defect
     (the law is returned and charged), the law is planned again in the same iteration and that plan
     is returned by the validator: one attempt, not two. Iteration 3's plan is accepted."""
     w = World({"L-13": "shall slow."})
     w.plans = {"L-13": [node("L_13", "shall slow.", "L-13")]}
-    w.review[("L_13", 1)] = "returned"
+    w.gate[("L_13", 1)] = "CHECK_FAIL"
     w.node_repair[("L_13", 2)] = {"withdraw": {"span": "s1", "kind": "plan", "missing": "the text needs another cut"}}
     w.validate[("L_13", 2)] = ("return", ["scripted plan defect"])
     return w
@@ -623,11 +620,11 @@ class Interruptions:
 # Scenarios: each builds its world afresh, so every run sees the same outcomes
 # ---------------------------------------------------------------------------------------------
 def life_cycle() -> World:
-    """L-1's node is returned by its review, repaired and accepted; L-2's plan is returned by the
+    """L-1's node is returned by its gate, repaired and accepted; L-2's plan is returned by the
     validator, planned again and accepted."""
     w = World({"L-1": "shall stop.", "L-2": "shall yield."})
     w.plans = {"L-1": [node("L_1", "shall stop.", "L-1")], "L-2": [node("L_2", "shall yield.", "L-2")]}
-    w.review[("L_1", 1)] = "returned"
+    w.gate[("L_1", 1)] = "CHECK_FAIL"
     w.validate[("L_2", 1)] = ("return", ["scripted plan defect"])
     return w
 
@@ -810,7 +807,7 @@ class Persistence(unittest.TestCase):
         with Fixture(w) as f:
             given = dict(laws=str(f.root / "corpus" / "laws.jsonl"), ontology_file=str(f.root / "ontology.md"), reading=str(f.root / "reading.json"),
                          definition_precedence=str(f.root / "precedence.json"), model="claude-test", reviewer_model="gpt-test",
-                         max_iterations=3, workers=4, plan_batch=2, feedback="review")
+                         max_iterations=3, workers=4, plan_batch=2, aggregate_verifier_model="gpt-test")
             seen = []
             real = loop.run_loop
 
@@ -843,6 +840,56 @@ class Persistence(unittest.TestCase):
                 loop.run_loop(f.options())
             self.assertIn("built against other inputs (corpus changed)", str(cm.exception))
             self.assertEqual(tree_bytes(paths.RESULTS), before)
+
+    def test_a_changed_generated_prompt_text_stops_before_any_write_or_session(self):
+        """The text the harness generates into the prompts is a semantic input of its own: the
+        concept language changed with every prompt file as it was refuses the resume, with nothing
+        written and no session called."""
+        language = surface.concept_language()
+        with mock.patch.object(surface, "concept_language", lambda: language + "One sentence more.\n"):
+            changed = loop.generated_prompts()                                  # from the real Core, the fixture's being a stand-in
+        self.assertEqual([k for k in GENERATED if changed[k] != GENERATED[k]], ["concept_language"])
+        w = life_cycle()
+        w.crash_at = 60
+        with Fixture(w) as f:
+            self.assertEqual(f.drive(launches=1), ["crash"])
+            before, calls, prompts = tree_bytes(paths.RESULTS), collections.Counter(w.calls), loop.semantic_inputs(f.options())["prompts"]
+            with mock.patch.object(loop, "generated_prompts", lambda: changed), \
+                    mock.patch.dict(loop._GENERATED_DIGESTS, clear=True):       # changed code is a new process
+                self.assertEqual(loop.semantic_inputs(f.options())["prompts"], prompts)        # the prompt files are as they were
+                with self.assertRaises(SystemExit) as cm:
+                    loop.run_loop(f.options())
+            self.assertIn("built against other inputs (generated_prompts changed)", str(cm.exception))
+            self.assertEqual(tree_bytes(paths.RESULTS), before)
+            self.assertEqual(w.calls, calls)
+
+    def test_the_generated_prompt_digest_follows_every_block_and_nothing_else(self):
+        """Each generated block, changed alone, changes the digest; a harness change that renders no
+        prompt text leaves it as it was."""
+        blocks = loop.generated_prompts()
+        digest = loop.aggregates.digest(blocks)
+        sources = {k: (surface, k) for k in blocks}
+        sources.update(concepts_table_empty=(surface, "concepts_table"), trace_conventions=(review_phase, "TRACE_CONVENTIONS"),
+                       no_label_evidence=(plan_phase, "NO_LABEL_EVIDENCE"))
+        for key, (mod, attr) in sources.items():
+            old = getattr(mod, attr)
+            new = old + "x" if isinstance(old, str) else (lambda *a, _f=old, **k: _f(*a, **k) + "x")
+            with mock.patch.object(mod, attr, new):
+                changed = loop.generated_prompts()
+            self.assertEqual([k for k in blocks if changed[k] != blocks[k]], [key])
+            self.assertNotEqual(loop.aggregates.digest(changed), digest, key)
+        with mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), mock.patch.object(surface, "region_kinds_export", lambda: []):
+            self.assertEqual(loop.aggregates.digest(loop.generated_prompts()), digest)
+
+    def test_the_doctor_holds_the_generated_text_to_the_templates_categories(self):
+        from scripts.diagnostics.doctor import FAIL, OK, Doctor
+        doctor = Doctor(paths.REPO, paths.LIBRARY)
+        self.assertEqual(doctor.prompts_are_law_free().status, OK)
+        blocks = loop.generated_prompts()
+        with mock.patch.object(loop, "generated_prompts", lambda: dict(blocks, builders=blocks["builders"] + "Rules/Body/Node\n")):
+            r = doctor.prompts_are_law_free()
+        self.assertEqual(r.status, FAIL)
+        self.assertIn("generated builders", r.detail)
 
     def test_a_failed_snapshot_write_keeps_the_previous_snapshot(self):
         """Every snapshot write in turn fails after its temporary file is written: the snapshot on
@@ -908,7 +955,7 @@ class Persistence(unittest.TestCase):
             Cli().reopen("r", laws="L-4,L-5")
             led = {e["law"]: e for e in f.state()["ledger"]}
             self.assertEqual((led["L-4"]["state"], led["L-4"]["attempts"], led["L-5"]["state"]), ("open", 0, "open"))
-            self.assertEqual(f.drive(max_iterations=4)[-1], "complete")
+            self.assertEqual(f.drive(max_iterations=5)[-1], "complete")      # L-5 composes L-4's node once it is published
             st = f.state()
         led = {e["law"]: (e["state"], e["attempts"]) for e in st["ledger"]}
         self.assertEqual(led, {"L-4": ("accepted", 0), "L-5": ("accepted", 0), "L-6": ("accepted", 0), "L-7": ("accepted", 0)})

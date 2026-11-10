@@ -80,22 +80,6 @@ class MissingContext(unittest.TestCase):
             self.assertNotIn("context", run.accepted_concepts[CID])
             self.assertIn("context", run.accepted_concepts["drv.motion.halt"])
 
-    def test_a_check_that_could_not_run_decides_nothing_and_is_made_again(self):
-        with Results() as r:
-            r.run("A", laws=["L-1"], nodes={"L_1": {**N("L_1", "L-1"), "binders": []}})
-            run = r.load("B", "A", ["L-2"])
-            row = {"subject": "L_1", "iteration": 1, "stage_a": {"verdict": "violated"}}
-            laws = loop.effective_laws(run, {})
-            with mock.patch.object(review, "obligations_of", return_value=[(row, True)]) as lookup, \
-                    mock.patch.object(review, "_to_node", return_value=({}, "")), \
-                    mock.patch.object(review, "certify", side_effect=review.HarnessFailure("no lean")):
-                ok, failing, unresolved = integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, laws)
-                self.assertEqual((ok, failing, run.fenced), ([], [], {}))
-                self.assertTrue(unresolved)
-                self.assertNotIn("L_1", run.rechecked)
-                integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, laws)
-                self.assertEqual(lookup.call_count, 2)           # checked again at the next launch
-
     def test_resume_keeps_a_recorded_context(self):
         with Results() as r:
             r.run("A", concepts={CID: C(CID)})
@@ -112,21 +96,6 @@ class MissingContext(unittest.TestCase):
             self.assertEqual(ok, [])
 
 
-class LegacyGrounding(unittest.TestCase):
-    """A case recorded before names were canonical grounds the binders under the node's own names
-    (demo12's rows: `{"v": 1}`); the check of a record with no stored context reaches such rows."""
-
-    def test_a_case_grounded_by_the_nodes_own_binder_names_is_read(self):
-        row = {"grounding": {"v": 1}, "case": {"atom": "p", "args": [{"var": "v"}]}, "at": 0, "trace": {"scenes": []}}
-        d, why = review._to_node(row, ["v"])
-        self.assertEqual((d["grounding"], d["case"], why), ({"v": 1}, row["case"], ""))
-
-    def test_canonical_names_still_map_and_a_mismatch_is_refused(self):
-        d, _ = review._to_node({"grounding": {"user1": 2}, "case": {"atom": "p", "args": [{"var": "user1"}]}}, ["v"])
-        self.assertEqual(d["grounding"], {"v": 2})
-        self.assertIsNone(review._to_node({"grounding": {"w": 1}}, ["v"])[0])
-
-
 # ---------------------------------------------------------------------------------------------
 # An inherited node's law is read from its base chain's corpus
 # ---------------------------------------------------------------------------------------------
@@ -136,25 +105,18 @@ class InheritedLaw(unittest.TestCase):
         r.run("A", laws=laws_of_A, nodes={"L_1": {**N("L_1", "L-1"), "binders": [], "context": "old"}})
         r.run("B", base="A", laws=["L-2"])
         run = r.load("C", "B", ["L-3"])
-        row = {"subject": "L_1", "iteration": 1, "stage_a": {"verdict": "violated"}}
-        certificate = {1: {"case_value": {"value": "true"}, "rule_result": {"verdict": "compliant"}}}
-        with mock.patch.object(review, "obligations_of", return_value=[(row, True)]) as lookup, \
-                mock.patch.object(review, "_to_node", return_value=({}, "")), \
-                mock.patch.object(review, "certify", return_value=certificate):
-            out = integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, loop.effective_laws(run, {}))
-        return run, out, lookup.call_count
+        return run, integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, loop.effective_laws(run, {}))
 
-    def test_three_generations_the_inherited_case_is_checked(self):
+    def test_three_generations_the_inherited_node_is_checked(self):
         with Results() as r:
-            run, (ok, failing, unresolved), looked = self.check(r, ["L-1"])
-            self.assertEqual(looked, 1)
-            self.assertIn("L_1", run.fenced)                    # the rule now contradicts the recorded law verdict
-            self.assertTrue(failing)
+            run, (ok, failing, unresolved) = self.check(r, ["L-1"])
+            self.assertEqual((ok, failing, unresolved), (["L_1"], [], []))
+            self.assertIn("L_1", run.rechecked)
 
-    def test_a_law_in_no_corpus_is_diagnosed_not_read_as_no_obligation(self):
+    def test_a_law_in_no_corpus_is_diagnosed_not_read_as_checked(self):
         with Results() as r:
-            run, (ok, failing, unresolved), looked = self.check(r, ["L-9"])
-            self.assertEqual((looked, ok, failing), (0, [], []))
+            run, (ok, failing, unresolved) = self.check(r, ["L-9"])
+            self.assertEqual((ok, failing), ([], []))
             self.assertTrue(unresolved and "L-1" in unresolved[0])
             self.assertNotIn("L_1", run.fenced)
             self.assertNotIn("L_1", run.rechecked)
@@ -314,7 +276,8 @@ class LateFence(R.Interruptions, unittest.TestCase):
         a = Node(R.node("L_1", "x", "L-1", derived=[CID]))
         b = Node(R.node("L_2", "y", "L-2", compositions=["L_1"]))
         c = Node(R.node("L_3", "z", "L-3"))
-        out = integrate.unavailable_candidates(run, [a, b, c], {"drv.motion.other": {CID}})
+        run.law_entries = {}
+        out = loop.integration_holds(run, [a, b, c], [], {"drv.motion.other": {CID}})
         self.assertEqual(sorted(out), ["L_1", "L_2", "drv.motion.other"])
 
 
@@ -337,9 +300,19 @@ class AdmissionSelection(unittest.TestCase):
                              "drv.motion.zz_broken": C("drv.motion.zz_broken")})
         run = self.r.load("B", "A", ["L-3"])
         self.assertEqual(integrate.admission_selection(run, "node", "L_2"),
-                         {"nodes": ["L_1", "L_2"], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["L_2"]})
+                         {"nodes": ["L_1", "L_2"], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["L_2"], "missing": []})
         self.assertEqual(integrate.admission_selection(run, "concept", "drv.motion.alpha"),
-                         {"nodes": [], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["drv.motion.alpha"]})
+                         {"nodes": [], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["drv.motion.alpha"], "missing": []})
+
+    def test_a_missing_provider_is_named_never_dropped(self):
+        """T15 (missing): a target the view holds no record of, directly or through a node it
+        composes, is named in `missing`; the availability rule gives the dependency's code."""
+        self.r.run("A", laws=["L-1", "L-2", "L-3"], nodes={"L_1": N("L_1", "L-1", composes=["L_9"]), "L_2": N("L_2", "L-2", composes=["L_1"])})
+        run = self.r.load("B", "A", ["L-4"])
+        run.law_entries = {}
+        self.assertEqual(integrate.admission_selection(run, "node", "L_2")["missing"], ["L_9"])
+        self.assertEqual(integrate.admission_selection(run, "node", "L_1")["missing"], ["L_9"])
+        self.assertEqual(run.provider_code("L_2", None), "via:L_1:via:L_9:missing")
 
     def scripted(self, broken):
         """Gates whose build fails when the registry they are given carries the broken record (as a
@@ -489,7 +462,7 @@ class AggregateOrder(R.Interruptions, unittest.TestCase):
             return [], []
         real = integrate.admission_recheck
 
-        def admission_recheck(run, reading, base, unjudged=None):
+        def admission_recheck(run, reading, base, unjudged=None, notes=None):
             has = any(a.get("id") == AGG for a in (jsonl.read_json(run.reading_file, {}) or {}).get("aggregates", []))
             w.admission["L_1"] = "OK" if has or not run.opts.base_run else "CHECK_FAIL"
             return real(run, reading, base)

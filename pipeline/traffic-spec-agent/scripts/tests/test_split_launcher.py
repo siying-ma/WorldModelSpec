@@ -196,7 +196,7 @@ class Launcher(unittest.TestCase):
 
     def test_rehearsal_subset_new_launches_spent_then_resume(self):
         """subset → new → checkpoint → launches spent on an iteration limit (exit 0, summary
-        incomplete / iteration_limit, the log says to resume, as the operators' guide does) → resume
+        incomplete / iteration_limit, the log says to resume) → resume
         from the persisted progress with the saved options."""
         lf = self.subset()
         out = self.launch("new", [{"status": "incomplete", "stop": "iteration_limit"}], LAWS=str(lf.relative_to(self.agent)), LAUNCHES="1")
@@ -204,8 +204,6 @@ class Launcher(unittest.TestCase):
         summary = json.loads(git(self.remote, "show", "runs/t1:pipeline/agent/results/t1/summary.json").stdout)
         self.assertEqual((summary["status"], summary["stop"]), ("incomplete", "iteration_limit"))
         self.assertIn("resume with: RUN_ID=t1 STAGE=generation", (self.agent / ".runtime" / "t1" / "launcher.log").read_text())
-        guide = (LAUNCHER.parents[1] / "REMOTE_LAUNCH.md").read_text()
-        self.assertRegex(guide, r"\| `incomplete` / `iteration_limit` \|[^\n]*\| `resume` \|")
         out = self.launch("resume", [{"status": "awaiting_labels"}], unset=("LAWS", "ONTOLOGY", "READING"))
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         first, second = self.loops()
@@ -334,8 +332,9 @@ class Launcher(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         resumed = self.loops()[1]
         for flag in ("--claude_budget_usd", "--openai_budget_usd", "--total_budget_usd", "--label_repair_attempts", "--label_repair_budget",
-                     "--model", "--judge_effort", "--plan_effort", "--session_budget_usd", "--workers", "--feedback"):
+                     "--model", "--judge_effort", "--plan_effort", "--session_budget_usd", "--workers"):
             self.assertNotIn(flag, resumed["argv"])                       # nothing passed that this invocation did not set
+        self.assertFalse(any("--feedback" in l["argv"] for l in self.loops()))   # the harness has no feedback mode
         self.assertIn("--label_stage", resumed["argv"])
         self.assertEqual(resumed["argv"][resumed["argv"].index("--label_dataset") + 1], str(ds))
         eff = resumed["effective"]

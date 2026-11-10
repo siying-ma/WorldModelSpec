@@ -63,7 +63,7 @@ READING|--reading|library/TrafficSpec/Readings/lasvegas.json
 WORKERS|--workers|4
 PLAN_BATCH|--plan_batch|8
 GATE_BUDGET|--gate_budget|6
-MODEL|--model|claude-opus-5[1m]
+MODEL|--model|claude-opus-5-5[1m]
 REVIEWER_MODEL|--reviewer_model|gpt-6.1-sol
 VERIFIER_MODEL|--aggregate_verifier_model|
 PLAN_EFFORT|--plan_effort|high
@@ -237,7 +237,7 @@ fi
 
 STAGE_FLAGS=(--label_deferred)
 [ "$STAGE" = labels ] && STAGE_FLAGS=(--label_stage --label_dataset "$LABEL_DATASET")
-[ "$ACTION" = new ] && STAGE_FLAGS=(--feedback labels --label_repair "${STAGE_FLAGS[@]}")   # a resume keeps the run's feedback
+[ "$ACTION" = new ] && STAGE_FLAGS=(--label_repair "${STAGE_FLAGS[@]}")   # a resume keeps the run's acceptance policy
 [ "$ACTION" = new ] && [ -n "${ACQUISITION_PROFILE:-}" ] && STAGE_FLAGS+=(--acquisition_profile "$ACQUISITION_PROFILE")
 log "options passed: ${LOOP_OPTS[*]:-none, the saved options of the run stand}"
 
@@ -261,7 +261,8 @@ for launch in $(seq 1 "$LAUNCHES"); do
     log "the loop exited ($code) without writing its status: stopped (see $LOG_DIR/diagnostics.txt)"; exit 1
   fi
   status=$(summary_field status); stop=$(summary_field stop)
-  log "loop exit $code: status $status${stop:+, stop $stop}"
+  generation=$("$PYTHON" -c 'import json,sys; g=json.load(open(sys.argv[1])).get("generation") or {}; print(g.get("complete"), g.get("reason_if_null") or "")' "$RUN_DIR/summary.json" 2>/dev/null || true)
+  log "loop exit $code: status $status${stop:+, stop $stop}; generation complete: ${generation:-unknown}"
   if ! "$PYTHON" -m harness handoff export "$RUN_ID" --source_baseline "$(git rev-parse HEAD)" >>"$LOG_DIR/launcher.log" 2>&1; then
     cp "$RUN_DIR/summary.json" "$LOG_DIR/diagnostics-summary.json"; tail -n 40 "$LOG_DIR/loop.log" > "$LOG_DIR/diagnostics.txt"
     log "no checkpoint after status $status (see $LOG_DIR/launcher.log and $LOG_DIR/diagnostics.txt): stopped"; exit 1

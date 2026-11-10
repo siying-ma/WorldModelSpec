@@ -5,6 +5,7 @@ shown (every node of the latest plan, later versions, true states, compositions 
 import contextlib
 import copy
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,9 +15,12 @@ from unittest import mock
 from harness.checks import validate_a
 from harness.model import corpus
 from harness.model.blueprint import Node
-from harness.phases import plan, review
+from harness.phases import plan
 from harness.store import paths
 from scripts.tests.test_review_routing import ONTO
+
+#: the concept validator runs a Lean program over the built library (as test_precondition_continuity checks; it imports this module)
+CORE_BUILT = shutil.which("lake") is not None and (paths.LIBRARY / ".lake" / "build" / "lib" / "lean" / "TrafficSpec" / "Core" / "Evidence" / "Adequacy.olean").exists()
 
 NODE = {"node_id": "L_1", "law_refs": ["L-1"], "subject": {"binder": "v", "class_elements": ["ru.motor_vehicle"]},
         "binders": [{"name": "v", "class_elements": ["ru.motor_vehicle"]}],
@@ -395,11 +399,13 @@ class ConceptAct(unittest.TestCase):
                              "scenarios": [], "act": act})
         return [e for e in validate_a.check_concept(rec, {}, self.ONTO_NS, {}, set(), {}, {}, "train") if "`act." in e or "boundary" in e]
 
+    @unittest.skipUnless(CORE_BUILT, "the Lean toolchain or the built Core is absent: not verified")
     def test_the_act_words_are_the_contract_s(self):
         self.assertEqual(self.errs({"boundary": "event", **self.WORDS}), [])
         errs = self.errs({"boundary": "event", **self.WORDS, "onset": "starts a manoeuvre", "extent": ""})
         self.assertTrue(any("`act.onset`" in e for e in errs) and any("`act.extent`" in e for e in errs), errs)
 
+    @unittest.skipUnless(CORE_BUILT, "the Lean toolchain or the built Core is absent: not verified")
     def test_the_boundary_is_carried_by_the_formals(self):
         window = [{"name": "turn_window", "unit": "s", "meaning": "m"}]
         self.assertEqual(self.errs({"boundary": "window", "window": "turn_window", **self.WORDS}, window), [])
@@ -490,14 +496,11 @@ class World:
             for nid, (kind, reasons) in kinds.items():
                 h.write(json.dumps({"node_id": nid, "kind": kind, "reasons": reasons}) + "\n")
 
-    def coded(self, n: int, raw: dict, verdict: str = "OK", upheld=None, dirname: str | None = None) -> None:
+    def coded(self, n: int, raw: dict, verdict: str = "OK", dirname: str | None = None) -> None:
         d = self.it(n) / "code" / (dirname or raw["node_id"])
         d.mkdir(parents=True, exist_ok=True)
         (d / "node.json").write_text(json.dumps(raw))
         (d / "verdict.json").write_text(json.dumps({"verdict": verdict, "details": [f"{verdict} detail"]}))
-        if upheld is not None:
-            (d / "review").mkdir()
-            (d / "review" / "review_outcome.json").write_text(json.dumps({"reviewer_verdict": "return" if upheld else "accept", "upheld": upheld}))
 
     def repaired(self, n: int, raw: dict, record: dict, validation: str = "accept") -> None:
         d = self.it(n) / "repair" / raw["node_id"]
@@ -551,7 +554,7 @@ class PreviousRecords(unittest.TestCase):
         with world() as w:
             w.plan(1, O1, O2, O3)
             w.validated(1, L_5_o1=("accept", []), L_5_o2=("accept", []), L_5_o3=("accept", []))
-            w.coded(1, O1, upheld=["a case"])
+            w.coded(1, O1)
             block = plan.previous_records(w.run, [LAW5])
         for nid, words in (("L_5_o2", "shall proceed slowly"), ("L_5_o3", "yielding to vehicles")):
             e = entry_of(block, nid, words)
@@ -563,7 +566,7 @@ class PreviousRecords(unittest.TestCase):
     def test_a_later_repair_is_shown_over_the_plan_and_the_siblings_stay(self):
         with world() as w:
             w.plan(1, O1, O2, O3)
-            w.coded(1, O1, upheld=["a case"])
+            w.coded(1, O1)
             w.repaired(2, O1, {**O1, "obligation": "the repaired obligation"})
             w.run.iteration = 3
             block = plan.previous_records(w.run, [LAW5])
@@ -579,7 +582,7 @@ class PreviousRecords(unittest.TestCase):
     def test_a_returned_repair_does_not_replace_the_coded_record(self):
         with world() as w:
             w.plan(1, O1, O2, O3)
-            w.coded(1, O1, upheld=["a case"])
+            w.coded(1, O1)
             w.repaired(2, O1, {**O1, "obligation": "a refused revision"}, validation="L_5_o1: a defect")
             w.run.iteration = 3
             e = entry_of(plan.previous_records(w.run, [LAW5]), "L_5_o1", "shall stop")
@@ -591,14 +594,15 @@ class PreviousRecords(unittest.TestCase):
         with world() as w:
             w.plan(1, O1, O2, O3)
             w.validated(1, L_5_o1=("accept", []), L_5_o2=("return", ["L_5_o2: a defect"]), L_5_o3=("accept", []))
-            w.coded(1, O1, upheld=["one", "two"])
+            w.coded(1, O1)
             w.coded(1, O3, verdict="WITNESS_FAIL")
             block = plan.previous_records(w.run, [LAW5])
             self.assertNotIn("state: accepted", block)
-            self.assertIn("gate OK (OK detail), the review returned it (2 upheld case(s))", entry_of(block, "L_5_o1", "shall stop"))
+            self.assertIn("coded: gate OK (OK detail)\n", entry_of(block, "L_5_o1", "shall stop"))
+            self.assertNotIn("review", block)                                    # a gated node's state is its gate's
             self.assertIn("- state: not accepted\n", entry_of(block, "L_5_o1", "shall stop") + "\n")
             self.assertIn("validator return: L_5_o2: a defect; not coded", entry_of(block, "L_5_o2", "proceed"))
-            self.assertIn("gate WITNESS_FAIL (WITNESS_FAIL detail), not reviewed", entry_of(block, "L_5_o3", "yielding"))
+            self.assertIn("gate WITNESS_FAIL (WITNESS_FAIL detail)\n", entry_of(block, "L_5_o3", "yielding"))
             w.accepted = {"L_5_o1": O1}
             block = plan.previous_records(w.run, [LAW5])
         self.assertIn("- state: accepted", entry_of(block, "L_5_o1", "shall stop"))
@@ -695,8 +699,8 @@ class RepairContext(unittest.TestCase):
         laws = (LAW5, corpus.Law("M-1", "", TEXT, ""))
         with world(laws) as w:
             w.plan(1, O1, o2, O3)
-            w.coded(1, O1, upheld=["a case"])
-            w.coded(1, o2, upheld=["a case"])
+            w.coded(1, O1)
+            w.coded(1, o2)
             w.accepted = {"M_1": m1}
             d = w.root / "iter"
             run = SimpleNamespace(iter=d, dir=d, iteration=2, mapping_file=d / "mapping.json", all_nodes=lambda: w.accepted,
@@ -705,8 +709,7 @@ class RepairContext(unittest.TestCase):
             last = d / "last"
             last.mkdir(parents=True)
             with mock.patch.object(plan.render, "render", lambda _name, b, **_k: blocks.update(b) or "prompt"), \
-                    mock.patch.object(plan, "definitions_for", lambda _run, _laws: []), \
-                    mock.patch.object(review, "upheld_block", lambda *_a, **_k: ""):
+                    mock.patch.object(plan, "definitions_for", lambda _run, _laws: []):
                 reading = SimpleNamespace(data={"params": []}, params=[], pending_aggregates=False)
                 plan.run_node_repair(run, Node(o2), ["r"], last, LAW5, [], [Node(O1), Node(O3)], reading, ONTO)
         node = blocks["node"]
@@ -747,7 +750,6 @@ class Smoke23Records(unittest.TestCase):
         e1 = entry_of(block, o1, w1)
         self.assertIn("The record, as coded in iteration 2:", e1)
         self.assertIn("- iteration 2: repaired; the validator accepted the revision; validator accept; coded: gate OK", e1)
-        self.assertIn("the review returned it (5 upheld case(s))", e1)
         self.assertNotIn("state: accepted", block)
 
 

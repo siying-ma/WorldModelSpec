@@ -56,7 +56,6 @@ def rendered_repair(prompts: Path | None = None) -> str:
                 mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: [DEFINITION]), \
                 mock.patch.object(plan_phase, "GapLedger", NS(for_run=lambda *_a: NS(cited_block=lambda _r: ""))), \
                 mock.patch.object(plan_phase, "repair_context", lambda *_a: ""), \
-                mock.patch.object(plan_phase.review_phase, "upheld_block", lambda *_a, **_k: ""), \
                 mock.patch.object(plan_phase, "parameter_catalogue", lambda *_a: ""), \
                 mock.patch.object(plan_phase, "declaration_catalogue", lambda *_a: ""), \
                 mock.patch.object(plan_phase.surface, "formula_language", lambda: ""), \

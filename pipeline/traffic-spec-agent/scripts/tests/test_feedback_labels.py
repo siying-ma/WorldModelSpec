@@ -1,6 +1,6 @@
-"""`--feedback labels`: a gated node is accepted without the node behaviour review (its Stage A/B
-never run), the concept review is untouched, the aggregate verifier has its own model, effort and
-budget, and `--feedback review` behaves as before."""
+"""A gated node is decided by its gate: no path of the loop, the planner or the context check reaches
+a node review, a node ruling or a node obligation; the aggregate verifier has its own model, effort
+and budget; the startup checks refuse an unusable budget or verifier."""
 import json
 import tempfile
 import unittest
@@ -20,29 +20,6 @@ def opts(**kw):
 
 def run_with(**kw):
     return SimpleNamespace(opts=opts(**kw))
-
-
-class NodeReviewUnderFeedback(unittest.TestCase):
-    def test_labels_accept_a_gated_node_without_the_behaviour_review(self):
-        def forbidden(*_a, **_k):
-            raise AssertionError("the node behaviour review was called under feedback labels")
-        with patch.object(review, "review_behaviour", forbidden):
-            out = loop.node_review(run_with(feedback="labels"), None, None, None, None, SimpleNamespace(extras={}), Path("."))
-        self.assertEqual(out.status, "accepted")
-        self.assertIn("suspended", out.advisories[0])
-
-    def test_review_still_runs_the_behaviour_review(self):
-        called = []
-        with patch.object(review, "review_behaviour", lambda *a, **k: called.append(a) or review.ReviewOutcome("returned")):
-            out = loop.node_review(run_with(feedback="review"), "n", "law", "onto", "reading",
-                                   SimpleNamespace(extras={"rule_json": {}, "narrowings_added": []}), Path("."))
-        self.assertEqual((out.status, len(called)), ("returned", 1))
-
-    def test_the_concept_review_is_not_touched_by_feedback(self):
-        # the loop's concept path calls review.review_concept directly, whatever the feedback
-        src = Path(loop.__file__).read_text()
-        self.assertIn("review_phase.review_concept(", src)
-        self.assertNotIn("feedback", src[src.index("review_phase.review_concept("):][:200])
 
 
 class AggregateVerifier(unittest.TestCase):
@@ -72,19 +49,8 @@ if __name__ == "__main__":
 
 
 # ---------------------------------------------------------------------------------------------
-# No other path reaches a node review, a node ruling or a node obligation under `labels`
+# No path reaches a node review, a node ruling or a node obligation
 # ---------------------------------------------------------------------------------------------
-def _forbid(*names):
-    """Patch every named review function to fail the test when called."""
-    from contextlib import ExitStack
-    stack = ExitStack()
-    for name in names:
-        def boom(*_a, _n=name, **_k):
-            raise AssertionError(f"review.{_n} was called under feedback labels")
-        stack.enter_context(patch.object(review, name, boom))
-    return stack
-
-
 NODE_REVIEW = ("review_behaviour", "obligations_of", "certify", "upheld_rows", "upheld_block", "replay_obligations")
 
 
@@ -99,42 +65,32 @@ class NoNodeReviewPath(unittest.TestCase):
             r.run("A", laws=["L-1"], nodes={"L_1": {**N("L_1", "L-1"), "binders": []}},
                   rulings=[{"subject": "L_1", "ruling": "upheld", "iteration": 1, "stage_a": {"verdict": "violated"}}])
             run = r.load("B", "A", ["L-2"])
-            run.opts.feedback = "labels"
             laws = loop.effective_laws(run, {})
-            with _forbid(*NODE_REVIEW):
-                ok, failing, unresolved = integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, laws)
-            self.assertIn("L_1", ok)
+            ok, failing, unresolved = integrate.recheck_contexts(run, Reading(r.tmp / "none.json"), {"core": "c"}, laws)
+            self.assertIn("L_1", ok)                            # a node's ruling row is no obligation: nothing certifies it
             self.assertEqual((failing, unresolved), ([], []))
 
-    def test_plan_and_repair_prompts_get_no_node_upheld_block(self):
-        from harness.phases import plan
-        with _forbid(*NODE_REVIEW):
-            block = plan.node_upheld_block(run_with(feedback="labels"), {"L-1"})
-        self.assertIn("(none)", block)
-        with patch.object(review, "upheld_block", lambda *_a, **_k: "upheld here"):
-            self.assertEqual(plan.node_upheld_block(run_with(feedback="review"), {"L-1"}), "upheld here")
-        src = Path(plan.__file__).read_text()
-        self.assertEqual(src.count("review_phase.upheld_block("), 1)          # only inside the guarded wrapper
-
-    def test_the_plan_registration_looks_up_no_node_obligation(self):
-        src = Path(loop.__file__).read_text()
-        i = src.index("review_phase.upheld_rows(run, {law})")
-        self.assertIn("if node_reviews(opts) else []", src[i:i + 200])
-        self.assertEqual(src.count("review_phase.review_behaviour("), 1)      # only inside `node_review`
+    def test_the_node_review_is_gone(self):
+        from harness.phases import integrate, plan
+        for name in NODE_REVIEW:
+            self.assertFalse(hasattr(review, name), name)
+        for mod in (loop, plan, integrate):
+            src = Path(mod.__file__).read_text()
+            for name in NODE_REVIEW:
+                self.assertNotIn(f"review_phase.{name}(", src, (mod.__name__, name))
 
 
 class StartupChecks(unittest.TestCase):
     def test_a_budget_must_be_finite_and_non_negative(self):
         for bad in (float("nan"), float("inf"), -1.0, True):
-            with self.subTest(bad=bad), self.assertRaises(SystemExit):
-                loop.check_options(opts(aggregate_verifier_budget_usd=bad))
-        loop.check_options(opts(aggregate_verifier_budget_usd=5.0, claude_budget_usd=200))
+            with self.subTest(bad=bad):
+                self.assertIn("finite, non-negative", loop.check_options(opts(aggregate_verifier_budget_usd=bad)))
+        self.assertIsNone(loop.check_options(opts(aggregate_verifier_budget_usd=5.0, claude_budget_usd=200)))
 
     def test_the_aggregate_verifier_is_a_second_vendor_with_its_key(self):
-        with self.assertRaises(SystemExit):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="claude-y"))
+        self.assertIn("share a vendor", loop.check_options(opts(model="claude-x", aggregate_verifier_model="claude-y")))
         from harness.agents import openai_runner
-        with patch.object(openai_runner, "available", lambda: False), self.assertRaises(SystemExit):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5"))
+        with patch.object(openai_runner, "available", lambda: False):
+            self.assertIn("OPENAI_API_KEY", loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5")))
         with patch.object(openai_runner, "available", lambda: True):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5"))
+            self.assertIsNone(loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5")))

@@ -1,6 +1,7 @@
 """A Lean program run beside other sessions' gates reads no generated registry: the gate harnesses
-and the review programs import Core and the modules of their own registry, which selects the same
-ids a build of that registry would, and a review registers what its subject's gate registered."""
+and the concept review's programs import Core and the modules of their own registry, which selects
+the same ids a build of that registry would, and a concept review registers what its subject's gate
+registered."""
 import contextlib
 import json
 import re
@@ -100,6 +101,10 @@ class NoGeneratedImport(Library):
 
 
 class ReviewRegistersWhatItsGateRegistered(Library):
+    """A concept review's program registers what the concept's gate registered: the registry the
+    review passes to its program (`_registry` over the concept's coding task, as `review_concept`
+    calls it), with the concept itself registered."""
+    CID = "drv.motion.halted_c"
 
     def run_(self):
         d = self.tmp / "results" / "r"
@@ -108,38 +113,33 @@ class ReviewRegistersWhatItsGateRegistered(Library):
         return SimpleNamespace(dir=d, iteration=1, iter=d / "iter-001", reading_file=d / "reading.json",
                                all_nodes=lambda: {"L_1": {}, "L_2": {}}, all_concepts=lambda: {"drv.motion.halted_a": {}})
 
-    def certificate_source(self, run) -> str:
-        seen = {}
+    def program(self, run) -> str:
+        from harness.phases.code import concept_dir
+        task = concept_dir(run, self.CID) if run is not None else None
+        return review._concept_review_harness_source(self.CID, [], None, review._registry(run, self.CID, task))
 
-        def capture(lib, prog):
-            seen["src"] = Path(prog).read_text()
-            return 1, "stopped by the test"
-        n = SimpleNamespace(id="L_9")
-        with mock.patch.object(lean, "lean_run", capture), self.assertRaises(review.HarnessFailure):
-            review.certify(run, n, {1: {"trace": {}, "case": {}, "entities": {}, "at": 0, "grounding": {}}},
-                           SimpleNamespace(lean_json=lambda: "{}"), self.tmp / "cert")
-        return seen["src"]
-
-    def test_a_certificate_registers_its_gates_registry_and_its_subject(self):
-        self.write(nodeid.rule_path("L_9"))
+    def test_a_program_registers_its_gates_registry_and_its_subject(self):
+        self.write(nodeid.concept_path(self.CID))
         run = self.run_()
-        task = run.iter / "code" / "L_9"; task.mkdir(parents=True)
+        from harness.phases.code import concept_dir
+        task = concept_dir(run, self.CID); task.mkdir(parents=True)
         (task / "registry.json").write_text(json.dumps({"nodes": ["L_1"], "concepts": ["drv.motion.halted_a"]}))
-        rules, concepts = registered_in(self.certificate_source(run))
-        self.assertEqual(sorted(set(rules)), sorted({nodeid.rule_module("L_1"), nodeid.rule_module("L_9")}))
-        self.assertEqual(concepts, [nodeid.concept_module("drv.motion.halted_a")])
-        self.assertFalse(set(imports(self.certificate_source(run))) & GENERATED)
+        rules, concepts = registered_in(self.program(run))
+        self.assertEqual(rules, [nodeid.rule_module("L_1")])
+        self.assertEqual(sorted(set(concepts)), sorted({nodeid.concept_module("drv.motion.halted_a"), nodeid.concept_module(self.CID)}))
+        self.assertFalse(set(imports(self.program(run))) & GENERATED)
 
     def test_with_no_run_it_registers_every_active_record(self):
-        self.write(nodeid.rule_path("L_9"))
-        rules, concepts = registered_in(self.certificate_source(None))
-        self.assertEqual(sorted(set(rules)), sorted({nodeid.rule_module(i) for i in ("L_1", "L_2", "L_9")}))   # L_3 is inactive
-        self.assertEqual(concepts, [nodeid.concept_module("drv.motion.halted_a")])
+        self.write(nodeid.concept_path(self.CID))
+        rules, concepts = registered_in(self.program(None))
+        self.assertEqual(sorted(set(rules)), sorted({nodeid.rule_module(i) for i in ("L_1", "L_2")}))          # L_3 is inactive
+        self.assertEqual(sorted(set(concepts)), sorted({nodeid.concept_module(c) for c in ("drv.motion.halted_a", self.CID)}))
 
     def test_without_a_coding_task_it_registers_the_runs_accepted_records(self):
-        self.write(nodeid.rule_path("L_9"))
-        rules, _c = registered_in(self.certificate_source(self.run_()))
-        self.assertEqual(sorted(set(rules)), sorted({nodeid.rule_module(i) for i in ("L_1", "L_2", "L_9")}))
+        self.write(nodeid.concept_path(self.CID))
+        rules, concepts = registered_in(self.program(self.run_()))
+        self.assertEqual(sorted(set(rules)), sorted({nodeid.rule_module(i) for i in ("L_1", "L_2")}))
+        self.assertEqual(sorted(set(concepts)), sorted({nodeid.concept_module(c) for c in ("drv.motion.halted_a", self.CID)}))
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@ from harness.checks import aggregates as checks
 from harness.model import corpus
 from harness.model.reading import Reading
 from harness.phases import aggregate
-from harness.phases import review
 from harness.phases import validate as validate_phase
 from harness.store import jsonl, paths
 from scripts.tests.test_aggregate_gate import CLASSES, ONTO, FakeRun
@@ -269,7 +268,7 @@ class PersistenceAndDigests(Base):
 
 
 class Rendering(Base):
-    """The planner, the verifier, the ontology contract and Stage B carry the same meaning."""
+    """The planner, the verifier and the ontology contract carry the same meaning."""
     PHRASE = "no membership evidence"
 
     def test_every_role_is_shown_the_same_meaning(self):
@@ -284,17 +283,13 @@ class Rendering(Base):
         self.admit(mapping(), v)
         plan, verify = captured["plan"], v.prompts[0]
         contract = ONTO.contract("ru.aggregate")
-        stage_b = review.aggregates_block([self.entry()])
         law_local = (paths.PROMPTS / "plan.md").read_text()
-        adjudicate = (paths.PROMPTS / "adjudicate.md").read_text()
-        for name, text in (("plan_aggregates", plan), ("verify_aggregate", verify), ("ru.aggregate", contract), ("stage B", stage_b),
-                           ("adjudicate", adjudicate)):
+        for name, text in (("plan_aggregates", plan), ("verify_aggregate", verify), ("ru.aggregate", contract)):
             self.assertIn("covered", text, name)
             self.assertIn(self.PHRASE, " ".join(text.split()), name)
         for name, text in (("plan_aggregates", plan), ("verify_aggregate", verify), ("plan.md", law_local)):
             self.assertIn("covered_by", text, name)
             self.assertIn("basis", text, name)
-        self.assertIn(f"covered {GENERIC} by {SPECIFIC}", stage_b)
         self.assertIn('"covered_by"', verify)                                       # the proposal the verifier judges
         for name, text in (("plan_aggregates", plan), ("verify_aggregate", verify), ("ru.aggregate", contract)):
             self.assertRegex(" ".join(text.split()), r"leaves (it|the class) out", name)

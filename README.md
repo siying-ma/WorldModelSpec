@@ -28,6 +28,7 @@ Each run has its own folder under `pipeline/traffic-spec-agent/launch/`, with it
 | Run | Laws | Guide |
 |---|---|---|
 | **Demo** | the 22 demo laws | [`launch/demo/README.md`](pipeline/traffic-spec-agent/launch/demo/README.md) |
+| **smoke30** | 29 training laws, the rehearsal of the full run | [`launch/smoke30/README.md`](pipeline/traffic-spec-agent/launch/smoke30/README.md) |
 | **Full training** | all 221 training laws; not to be started on the current baseline | [`launch/full/README.md`](pipeline/traffic-spec-agent/launch/full/README.md) |
 
 Start only the run you were asked for. **What to do after any exit, how to resume and what to send back** is in the operator guide: [`pipeline/traffic-spec-agent/REMOTE_LAUNCH.md`](pipeline/traffic-spec-agent/REMOTE_LAUNCH.md).

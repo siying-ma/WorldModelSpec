@@ -15,7 +15,7 @@ The script writes the 22-law list and starts the launcher in the background with
 | Setting | Value |
 |---|---|
 | Laws | the 22 demo laws |
-| Claude model | `claude-opus-5[1m]` |
+| Claude model | `claude-opus-5-5[1m]` |
 | OpenAI model | `gpt-6.1-sol` |
 | Workers | 12 |
 | Budget | Claude $350, OpenAI $25, total $375 |

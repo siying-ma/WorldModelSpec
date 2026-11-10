@@ -25,7 +25,7 @@ from harness.model.blueprint import ConceptRecord, Node
 from harness.model.reading import Reading
 from harness.phases import code as code_phase, integrate, plan as plan_phase, review
 from harness.store import jsonl, paths
-from harness.store.state import Options, Run, base_view
+from harness.store.state import Options, Run, RUN_VERSION, base_view
 
 import test_recovery as R
 
@@ -62,7 +62,8 @@ class Results:
         d = paths.RESULTS / name
         d.mkdir(parents=True)
         lf = _laws(d / "laws" / "laws.jsonl", list(laws))
-        (d / "options.json").write_text(json.dumps({"run_id": name, "base_run": base, "laws": str(lf)}))
+        (d / "options.json").write_text(json.dumps({"run_id": name, "base_run": base, "laws": str(lf), "label_repair": False,
+                                                    "dependency": "build_usable_v1", "semantic": {"run_version": RUN_VERSION}}))
         (d / "accepted_nodes.jsonl").write_text("".join(json.dumps(v) + "\n" for v in (nodes or {}).values()))
         (d / "accepted_concepts.jsonl").write_text("".join(json.dumps(v) + "\n" for v in (concepts or {}).values()))
         if state is not None:
@@ -138,7 +139,7 @@ class BaseChain(unittest.TestCase):
     def test_inherited_obligations_are_read_only_and_qualified(self):
         rows_a = [{"ruling_id": "r1", "key": "concept:drv.motion.creep", "subject": "drv.motion.creep", "schema": review.CONCEPT_CASE_SCHEMA,
                    "case_id": "k1", "ruling": "upheld", "obligation": "satisfied"},
-                  {"ruling_id": "r2", "key": "law:L-1", "subject": "L_1", "schema": review.CASE_SCHEMA, "case_id": "k2", "duty": "d",
+                  {"ruling_id": "r2", "key": "law:L-1", "subject": "L_1", "schema": "case/1", "case_id": "k2", "duty": "d",
                    "ruling": "upheld", "obligation": "open"}]
         with Results() as r:
             r.run("A", laws=["L-1"], nodes={"L_1": N("L_1", "L-1")}, concepts={"drv.motion.creep": C("drv.motion.creep")}, rulings=rows_a)

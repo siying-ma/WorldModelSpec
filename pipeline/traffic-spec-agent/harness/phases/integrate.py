@@ -22,7 +22,7 @@ from ..checks import gate, validate_a
 from ..model import nodeid
 from ..model.blueprint import Node
 from ..model.reading import Reading
-from ..store.state import Run, node_reviews
+from ..store.state import Run
 from .code import rollback, rollback_concept, node_dir, concept_dir, _files_digest
 
 
@@ -164,10 +164,10 @@ def run_integrate(run: Run, accepted_now: list[Node], reading: Reading, baseline
                     remove(d)
     all_nodes = {k: Node(v) for k, v in run.accepted_nodes.items()}
     all_nodes.update(nodes)
-    for cyc in validate_a.acyclic(all_nodes):
-        for i in cyc:
+    for why, members in validate_a.acyclic(all_nodes):
+        for i in members:
             if i in nodes:
-                drop(i, f"composition cycle {cyc}")
+                drop(i, why)
     status, problems = "verified", []
     for _round in range(len(kind) + 1):
         st, problems, owners = verify_library(work, reading)
@@ -350,30 +350,68 @@ def gate_digest() -> str:
 
 
 def admission_key(run: Run, kind: str, ident: str, reading: Reading, base: dict, record: dict | None = None,
-                  catalogue: dict | None = None) -> str:
+                  catalogue: dict | None = None, gate_value: str | None = None) -> str:
     """What a gate verdict on a record rests on: the record's context without its obligations,
-    the gate's implementation, and the acquisition standard the run holds `heading_since` to."""
+    the gate's implementation (`gate_value`, when the caller computed `gate_digest` already), and the
+    acquisition standard the run holds `heading_since` to."""
     from ..model import acquisition
     return _digest({"context": context_version(run, kind, ident, reading, base, record=record, catalogue=catalogue),
-                    "gate": gate_digest(), "acquisition": acquisition.standard_digest(getattr(run.opts, "acquisition_profile", None))})[:24]
+                    "gate": gate_value or gate_digest(),
+                    "acquisition": acquisition.standard_digest(getattr(run.opts, "acquisition_profile", None))})[:24]
+
+
+#: Admission timeouts of one record under one admission key before its recheck at each launch is
+#: paused: the record stays without evidence (`unjudged`), an operational pause, never a fence; only
+#: `harness reopen --admission` (or a change of the key) lets it be timed again.
+ADMISSION_TIMEOUT_BOUND = 2
+
+
+def read_admission(run) -> dict:
+    """The admission file of a run (or of a candidate's view): {id: entry}; a file that cannot be read
+    is read as empty, as a cache."""
+    f = getattr(run, "admission_file", None) or run.dir / "admission.json"
+    try:
+        d = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+    except (OSError, json.JSONDecodeError):
+        d = {}
+    return d if isinstance(d, dict) else {}
+
+
+def entry_kind(entry) -> str:
+    """What an admission entry is, decided before it is used: `verdict` (it holds a `verdict`; only a
+    verdict `OK` under the record's current key is evidence), `timeout` (it holds `timeouts` and no
+    verdict: never evidence) or `other` (any other shape: no evidence, the gate is run again and the
+    entry overwritten)."""
+    if isinstance(entry, dict) and "verdict" in entry:
+        return "verdict"
+    if isinstance(entry, dict) and isinstance(entry.get("timeouts"), int) and not isinstance(entry.get("timeouts"), bool):
+        return "timeout"
+    return "other"
+
+
+def admission_paused(run, ident: str, key: str) -> dict | None:
+    """The record's timeout entry when it has reached `ADMISSION_TIMEOUT_BOUND` under `key`, else None."""
+    hit = read_admission(run).get(ident)
+    if entry_kind(hit) == "timeout" and hit.get("key") == key and hit["timeouts"] >= ADMISSION_TIMEOUT_BOUND:
+        return hit
+    return None
 
 
 def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: set[str] | None = None) -> tuple[list[str], list[str], list[str]]:
     """Every accepted record of the run's effective view (its base chain's and its own) whose
     dependency context changed since it was last checked, or that has no recorded context at all (a
-    record accepted before contexts were recorded is checked, never assumed sound): every
-    obligation recorded on it is certified again on the current rule, body and reading,
-    mechanically:
-    - a node's upheld cases, against the law's verdict a judge recorded; `laws` must hold the posted
-      law of every node of the view, the inherited ones included (`state.chain_laws`);
+    record accepted before contexts were recorded is checked, never assumed sound), mechanically:
+    - a node's `definition` references, against the posted sources they quote
+      (`borrowed_words_defects`); `laws` must hold the posted law of every node of the view, the
+      inherited ones included (`state.chain_laws`);
     - a concept's upheld challenges, run on its body: one the body confirms again, or one that can no
       longer be run as recorded (its record fails today's schema), is a failure;
-    - an open structural finding, on a node or a concept, is a failure (it was never discharged).
+    - a concept's open structural finding is a failure (it was never discharged).
     A record that passes has its context recorded (on the record for the run's own, in
     `run.rechecked` for an inherited one), only then. A record that fails is fenced (`fenced`, reason
     `context`), never reused silently. A check that could not be made (a node whose law is in no
-    corpus, a certificate or concept program that did not run) decides nothing: the record is
-    neither fenced nor given a context, and it is listed as unresolved. Returns (the ids rechecked
+    corpus, a concept program that did not run) decides nothing: the record is neither fenced nor
+    given a context, and it is listed as unresolved. Returns (the ids rechecked
     and found sound; lines for the operator about those fenced; lines about those unresolved). With
     `only`, the records checked are those it names."""
     from . import review as review_phase
@@ -398,44 +436,17 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: s
             if was == now:
                 continue
             problems, undecided = [], []
-            mine = [r for r in rows if r.get("subject") == ident and r.get("ruling") == "upheld"]
-            if kind == "node" and not node_reviews(run.opts):
-                mine = []                                   # no node obligation is in use under `feedback: labels`
-            problems += [f"an open structural finding of iteration {r.get('iteration')} was never discharged"
-                         for r in mine if r.get("schema") in (review_phase.WORD_LEVEL_SCHEMA, review_phase.CONCEPT_STRUCTURAL_SCHEMA)
-                         and r.get("obligation") in ("open", None)]
             if kind == "node":
                 n, law = Node(rec), laws.get(Node(rec).law)
-                binders = [b["name"] for b in n.get("binders", [])]
                 if law is None:
-                    unresolved.append(f"`{ident}`: its law `{n.law}` is in no corpus of the run or its base chain, so its "
-                                      "obligations cannot be read; nothing was decided")
+                    unresolved.append(f"`{ident}`: its law `{n.law}` is in no corpus of the run or its base chain, so it cannot "
+                                      "be checked; nothing was decided")
                     continue
                 problems += borrowed_words_defects(run, n)
-                cases = [r for r, own_row in review_phase.obligations_of(run, n, law) if own_row] if node_reviews(run.opts) else []
-                divs = {}
-                for k, r in enumerate(cases, 1):
-                    d, why = review_phase._to_node(r, binders)
-                    if d is None:
-                        problems.append(f"an obligation of iteration {r.get('iteration')} no longer grounds: {why}")
-                    else:
-                        divs[k] = (d, r)
-                if divs:
-                    try:
-                        certs = review_phase.certify(run, n, {k: d for k, (d, _r) in divs.items()}, reading, run.iter / "recheck" / ident)
-                    except review_phase.HarnessFailure as e:
-                        undecided.append(f"the certificate program did not run: {e}")
-                        certs = None
-                    for k, (d, r) in (divs.items() if certs is not None else []):
-                        c = certs.get(k) or {}
-                        law_says = (r.get("stage_a") or {}).get("verdict")
-                        rule_says = (c.get("rule_result") or {}).get("verdict")
-                        if (c.get("case_value") or {}).get("value") != "true":
-                            problems.append(f"the case of iteration {r.get('iteration')} no longer holds on its trace")
-                        elif not review_phase._equivalent(rule_says or "", law_says or ""):
-                            problems.append(f"the rule now gives {rule_says} where the law's verdict is {law_says} "
-                                            f"(the case of iteration {r.get('iteration')})")
             else:
+                mine = [r for r in rows if r.get("subject") == ident and r.get("ruling") == "upheld"]
+                problems += [f"an open structural finding of iteration {r.get('iteration')} was never discharged"
+                             for r in mine if r.get("schema") == review_phase.CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)]
                 c = ConceptRecord(rec)
                 cases = [r for r in mine if r.get("schema") == review_phase.CONCEPT_CASE_SCHEMA]
                 if cases:
@@ -473,27 +484,6 @@ class AdmissionUnavailable(Exception):
     """A gate that did not judge a record (the toolchain, a deadline): the record is not fenced."""
 
 
-def unavailable_candidates(run: Run, nodes: list[Node], concepts: dict[str, set[str]]) -> dict[str, str]:
-    """The pending candidates that use a fenced record: a node that calls or composes one, a concept
-    that calls one, or a candidate that uses such a candidate, directly or through others. Returns
-    {id: why}; each waits, uncharged, until its provider has a usable successor."""
-    from ..loop import concept_deps
-    uses = {cid: set(refs) for cid, refs in concepts.items()}
-    uses.update({n.id: concept_deps(n) | {c.get("rule") for c in n.dependencies()} for n in nodes})
-    out: dict[str, str] = {}
-    grown = True
-    while grown:
-        grown = False
-        for ident, used in uses.items():
-            if ident in out:
-                continue
-            hit = sorted(used & set(run.fenced)) or sorted(used & set(out))
-            if hit:
-                out[ident] = (f"uses the fenced `{hit[0]}`" if hit[0] in run.fenced else f"uses `{hit[0]}`, which waits")
-                grown = True
-    return out
-
-
 def fence_closure(run: Run) -> list[str]:
     """Fence every accepted record that calls or composes a fenced one, directly or through others
     (reason `dependency`, naming the provider), to a fixed point. Returns the ids fenced here."""
@@ -520,19 +510,21 @@ def admission_selection(run: Run, kind: str, ident: str) -> dict:
     """What one record's admission gate registers: the record, the nodes it composes and, through
     them, theirs, and every concept those nodes or it call, directly or through other concepts.
     Nothing else of the library enters its build, so an unrelated record that does not compile is
-    not this record's verdict."""
+    not this record's verdict. `missing` names the composed ids the view holds no record of: they
+    are never silently dropped, and a caller that needs the whole closure treats them as an error."""
     from ..model.blueprint import ConceptRecord
     from ..loop import concept_deps, concept_closure
     nodes, concepts = run.all_nodes(), run.all_concepts()
     refs = {c: set(ConceptRecord(r).refs()) for c, r in concepts.items()}
     if kind == "concept":
-        return {"nodes": [], "concepts": sorted(concept_closure({ident}, refs) & set(concepts)), "keep": [ident]}
+        return {"nodes": [], "concepts": sorted(concept_closure({ident}, refs) & set(concepts)), "keep": [ident], "missing": []}
     seen, frontier = set(), {ident}
     while frontier:
         seen |= frontier
         frontier = {c.get("rule") for i in frontier if i in nodes for c in Node(nodes[i]).dependencies()} - seen
     used = {c for i in seen if i in nodes for c in concept_deps(Node(nodes[i]))}
-    return {"nodes": sorted(seen & (set(nodes) | {ident})), "concepts": sorted(concept_closure(used, refs) & set(concepts)), "keep": [ident]}
+    return {"nodes": sorted(seen & (set(nodes) | {ident})), "concepts": sorted(concept_closure(used, refs) & set(concepts)), "keep": [ident],
+            "missing": sorted(i for i in seen if i not in nodes and i != ident)}
 
 
 def record_admitted(run: Run, records: list[tuple[str, str]], reading: Reading, base: dict, iteration: int) -> None:
@@ -540,75 +532,173 @@ def record_admitted(run: Run, records: list[tuple[str, str]], reading: Reading, 
     iteration, under the key the next loop start's admission recheck computes, so that recheck runs
     no gate for it while nothing its verdict rests on has changed. A fenced record is left out."""
     from ..store import jsonl
-    cache_file = run.dir / "admission.json"
-    try:
-        cache = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
-    except json.JSONDecodeError:
-        cache = {}
+    cache = read_admission(run)
     for kind, ident in records:
         if ident not in run.fenced:
-            cache[ident] = {"key": admission_key(run, kind, ident, reading, base), "verdict": "OK",
-                            "details": [f"accepted by the run's own gate in iteration {iteration}"]}
-    jsonl.write_atomic(cache_file, json.dumps(cache, indent=1, ensure_ascii=False))
+            cache[ident] = verdict_entry(cache.get(ident), admission_key(run, kind, ident, reading, base), "OK",
+                                         [f"accepted by the run's own gate in iteration {iteration}"])
+    jsonl.write_atomic(run.dir / "admission.json", json.dumps(cache, indent=1, ensure_ascii=False))
 
 
-def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str] | None = None) -> dict[str, dict]:
-    """Rerun today's gates on every accepted record of the effective view not fenced, the concepts
-    a record calls before it, each gate registering only that record and what it uses
-    (`admission_selection`). A verdict is cached under the record's admission key (its context
-    without its obligations, and the gate's implementation) in `admission.json`, so an unchanged
-    record is not run again. A record the gate rejects is fenced (`fenced`, reason `gate`, its
-    verdict as evidence), and so is everything that calls it; the operational selection
-    (`.inactive.json`) is rewritten before the next gate. Returns {id: verdict} of the records
-    fenced here. Raises `AdmissionUnavailable` when a gate does not judge a record because the
-    toolchain did not run. With `unjudged`, a record whose evaluation exceeded the gate's deadline or
-    panicked in isolation (`GATE_TIMEOUT`) is no outage and no judgement: it stays as accepted, is not
-    cached, so the next launch checks it again, and a line naming it, and a panic as a Core defect,
-    is appended to `unjudged`."""
+def verdict_entry(was, key: str, verdict: str, details: list[str]) -> dict:
+    """A verdict entry; a pass keeps the record's earlier timeouts as `timeout_history` (history: no
+    evidence, and no longer counted towards a pause)."""
+    out = {"key": key, "verdict": verdict, "details": details}
+    if verdict == "OK" and entry_kind(was) == "timeout":
+        out["timeout_history"] = {"timeouts": was["timeouts"], "timeout_seconds": was.get("timeout_seconds", 0.0),
+                                  "resets": list(was.get("resets", []))}
+    return out
+
+
+def dependency_blocker(run: Run, kind: str, ident: str) -> str | None:
+    """Of the records a dependency-fenced record uses now (the nodes it composes, the concepts it
+    calls, as its record names them), the first that still blocks it: fenced, or not usable
+    (`Run.provider_code`); None when none does."""
+    from ..model.blueprint import ConceptRecord
+    from ..store.state import Availability, USABLE
+    from ..model.nodeid import is_concept_id
+    av = Availability(run)
+    rec = run.all_concepts().get(ident) if kind == "concept" else run.all_nodes().get(ident)
+    if rec is None:
+        return None
+    if kind == "concept":
+        uses = [("concept", c) for c in sorted(ConceptRecord(rec).refs()) if is_concept_id(c)]
+    else:
+        n = Node(rec)
+        uses = [("node", str(c.get("rule"))) for c in n.dependencies() if c.get("rule")] + [("concept", c) for c in sorted(n.claimed_concepts())]
+        law = n.law
+    for k, p in uses:
+        if p in run.fenced:
+            return p
+        code = av.concept_code(p) if k == "concept" else av.code(p, law)
+        if code != USABLE:
+            return p
+    return None
+
+
+def lift_fence(run: Run, ident: str, why: str) -> None:
+    """A fence that no longer holds goes to `fence_history`, with why it was lifted."""
+    f = run.fenced.pop(ident, None)
+    if f is not None:
+        run.fence_history.append({**f, "id": ident, "lifted": why})
+
+
+def admission_recheck(run: Run, reading: Reading, base: dict, unjudged: list[str] | None = None,
+                      notes: list[str] | None = None) -> dict[str, dict]:
+    """Rerun today's gates on every accepted record of the effective view, the concepts a record calls
+    before it, each gate registering only that record and what it uses (`admission_selection`). Each
+    record's entry in `admission.json` is read by its kind (`entry_kind`) before it is used:
+    - a verdict entry under the record's current admission key (its context without its obligations,
+      the gate's implementation, the acquisition standard) is reused: no gate runs for it;
+    - a timeout entry under the current key below `ADMISSION_TIMEOUT_BOUND` lets the gate run once
+      more; at the bound the record is not timed again (an operational pause: it stays without
+      evidence, `unjudged`, and is listed in `unjudged`);
+    - an entry under another key, or of another shape (reported in `notes`), is no entry.
+    A gate that rejects the record fences it (reason `gate`, its verdict as evidence and the key it
+    was rejected under), and everything that calls it (`fence_closure`); the operational selection
+    (`.inactive.json`) is rewritten before the next gate. A fence of reason `gate` holds only while the
+    record's admission key is the one it names: under another key it goes to `fence_history` at once
+    and the current version is held to today's gate: a pass gives it evidence, a rejection fences it
+    under the new key, a timeout or a panic leaves it unjudged (never fenced). A fence of reason `dependency` is evaluated again from the record's current
+    providers (`dependency_blocker`): it stays, naming the provider that still blocks it, until every
+    provider is usable; then it is lifted and the record is held to its own recheck here under its
+    current key. Every other fence (`context`, a concept's `dependency_defect`, a fence without a key)
+    stays. Returns {id: verdict} of the records fenced here.
+
+    With `unjudged`, a gate that exceeded its deadline is no judgement: the record gets no evidence
+    and is not fenced, its timeout entry counts it (`timeouts` + 1, `timeout_seconds` summed) under the
+    current key, and a line naming it is appended to `unjudged`; a panic in isolation is reported as
+    a Core defect and counted nowhere. A pass writes a verdict entry, the earlier timeouts kept as
+    `timeout_history`. Without `unjudged`, such a gate raises `AdmissionUnavailable`, as does a gate
+    that did not judge the record because the toolchain did not run."""
     from ..checks import gate
     from ..model.blueprint import ConceptRecord
-    from ..loop import concept_order, topological, concept_deps
+    from ..loop import concept_order, topological
+    from ..store import jsonl
+    cache = read_admission(run)
     cache_file = run.dir / "admission.json"
-    try:
-        cache = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
-    except json.JSONDecodeError:
-        cache = {}
+    notes = notes if notes is not None else []
     out: dict[str, dict] = {}
+    gd = gate_digest()
     concepts = [ConceptRecord(r) for r in run.all_concepts().values()]
     nodes = [Node(r) for r in run.all_nodes().values()]
     order = [("concept", c.id, c) for c in concept_order(concepts)] + [("node", n.id, n) for n in topological(nodes)]
     for kind, ident, rec in order:
         if fence_closure(run) or out:
             index_sync.set_inactive(set(run.fenced), run.opts.run_id)
-        if ident in run.fenced:
-            continue
-        key = admission_key(run, kind, ident, reading, base)
+        f = run.fenced.get(ident)
+        key = None
+        if f is not None:
+            if f.get("reason") == "gate" and f.get("key"):
+                key = admission_key(run, kind, ident, reading, base, gate_value=gd)
+                if key == f["key"]:
+                    continue                                  # rejected under the key it has now
+                # a rejection holds only for its own key: retired now, whatever the new key's gate says (a pass, a
+                # rejection fenced under the new key, or a timeout or panic, which leave the record unjudged)
+                lift_fence(run, ident, "its admission key changed; the earlier rejection held only for its own key")
+                notes.append(f"`{ident}`: its admission key changed, so its earlier rejection no longer stands; it is held to "
+                             "today's gate under the new key")
+                index_sync.set_inactive(set(run.fenced), run.opts.run_id)
+            elif f.get("reason") == "dependency":
+                blocker = dependency_blocker(run, kind, ident)
+                if blocker is not None:
+                    if blocker != f.get("provider"):
+                        run.fenced[ident] = {**f, "provider": blocker, "evidence": f"calls or composes `{blocker}`, which is fenced or not usable"}
+                    continue
+                lift_fence(run, ident, "every record it calls or composes is usable again")
+                notes.append(f"`{ident}`: its dependency fence is lifted, every record it uses being usable again; it is held to its "
+                             "own admission and context checks before it is used")
+                index_sync.set_inactive(set(run.fenced), run.opts.run_id)
+            else:
+                continue
+        key = key or admission_key(run, kind, ident, reading, base, gate_value=gd)
         hit = cache.get(ident)
-        if hit and hit.get("key") == key:
+        k = entry_kind(hit)
+        if k == "verdict" and hit.get("key") == key:
             verdict, details = hit["verdict"], hit.get("details", [])
+        elif k == "timeout" and hit.get("key") == key and hit["timeouts"] >= ADMISSION_TIMEOUT_BOUND:
+            if unjudged is not None:
+                unjudged.append(f"`{ident}`: not rechecked — its admission gate exceeded its deadline {hit['timeouts']} times under its "
+                                f"current key ({hit.get('timeout_seconds', 0.0):.0f} s in all); it stays unjudged, an operational pause, "
+                                f"until `python -m harness reopen {run.opts.run_id} --laws <a law waiting on it> --admission`")
+            continue
         else:
+            if hit is not None and k == "other":
+                notes.append(f"`{ident}`: its admission entry has no known shape; it is not evidence, the gate runs again and replaces it")
             work = run.dir / "admission" / ident.replace(".", "_")
             work.mkdir(parents=True, exist_ok=True)
             (work / "registry.json").write_text(json.dumps(admission_selection(run, kind, ident)), encoding="utf-8")
+            t0 = time.monotonic()
             if kind == "concept":
                 v = gate.run_concept_gate(rec, reading, gate.repo_digest(), work, 0, 1, mode="train",
-                                          accepted={k: r for k, r in run.all_concepts().items() if k != ident})
+                                          accepted={k2: r for k2, r in run.all_concepts().items() if k2 != ident})
             else:
                 v = gate.run_gate(rec, reading, gate.repo_digest(), work, 0, 1, accepted_concepts=run.all_concepts(),
                                   acquisition=run.opts.acquisition_profile)
+            took = time.monotonic() - t0
             if v.verdict == gate.GATE_TIMEOUT and unjudged is not None:
-                what = "panicked in isolation (a Core defect)" if v.extras.get("panic") else "exceeded the gate's deadline"
-                unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation {what} "
-                                f"({'; '.join(v.details[:1])[:200]}); it stays as accepted and is checked again at the next launch")
+                if v.extras.get("panic"):
+                    unjudged.append(f"`{ident}`: not rechecked at this launch — its evaluation panicked in isolation (a Core defect) "
+                                    f"({'; '.join(v.details[:1])[:200]}); it has no admission evidence and is checked again at the next launch")
+                    continue
+                was = hit if k == "timeout" and hit.get("key") == key else {}
+                entry = {"key": key, "timeouts": int(was.get("timeouts", 0)) + 1,
+                         "timeout_seconds": float(was.get("timeout_seconds", 0.0)) + took, "last": time.strftime("%Y-%m-%dT%H:%M:%S")}
+                if was.get("resets"):
+                    entry["resets"] = list(was["resets"])
+                cache[ident] = entry
+                jsonl.write_atomic(cache_file, json.dumps(cache, indent=1, ensure_ascii=False))
+                unjudged.append(f"`{ident}`: not judged at this launch — its admission gate exceeded its deadline "
+                                f"({'; '.join(v.details[:1])[:200]}); timeout {entry['timeouts']} of {ADMISSION_TIMEOUT_BOUND} under its "
+                                f"current key, {entry['timeout_seconds']:.0f} s in all; it has no admission evidence and is not fenced")
                 continue
             if v.verdict in (gate.INFRA, gate.GATE_TIMEOUT, "BUDGET_EXHAUSTED"):
                 raise AdmissionUnavailable(f"`{ident}`: the gate did not judge it ({v.verdict}: {'; '.join(v.details[:2])})")
             verdict, details = v.verdict, v.details[:6]
-            cache[ident] = {"key": key, "verdict": verdict, "details": details}
-            from ..store import jsonl
+            cache[ident] = verdict_entry(hit, key, verdict, details)
             jsonl.write_atomic(cache_file, json.dumps(cache, indent=1, ensure_ascii=False))
         if verdict != "OK":
-            run.fence(ident, kind, "gate", verdict=verdict, evidence=f"{verdict}: " + "; ".join(details[:3])[:500])
+            run.fence(ident, kind, "gate", verdict=verdict, key=key, evidence=f"{verdict}: " + "; ".join(details[:3])[:500])
             out[ident] = {"verdict": verdict, "details": details}
             index_sync.set_inactive(set(run.fenced), run.opts.run_id)
     fence_closure(run)

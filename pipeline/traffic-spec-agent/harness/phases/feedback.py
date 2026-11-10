@@ -101,20 +101,75 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
     A split stage with no work of its own says why: `awaiting_labels` (the generation stage, while the
     label stage has work), `awaiting_generation` (the label stage, while the generation stage has
     work), `paused_budget` (also when the run's label repair budget no longer funds a law awaiting its
-    repair), `awaiting_operator` (neither stage has work and a law is open).
+    repair), `awaiting_operator` (neither stage has work and a law is open). `awaiting_operator` also
+    when a coding session changed files outside its own and they are not yet restored: no session
+    starts until the operator restores them.
     `never_planned` names the laws still open that no plan was ever registered or returned for.
     `stop` is `iteration_limit` when the launch stopped at its iteration bound with work left (the one
     stop after which a launcher starts the next iteration), else empty; `stage` is the stage the last
-    iteration reached; `pending` lists the laws by what each waits on."""
+    iteration reached; `pending` lists the laws by what each waits on; `generation` says, computed
+    again now, whether every law's generation is complete (`generation_report`)."""
     f = run.dir / "summary.json"
     f.parent.mkdir(parents=True, exist_ok=True)
     summary = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"run": run.opts.run_id}
     summary.update({"status": status, "stop_reason": reason, "laws": ledger.counts(), "iteration": run.iteration,
                     "never_planned": sorted(e.law for e in ledger.entries.values() if e.state == "open" and not e.iteration),
                     "stop": stop, "stage": ((run.load_state() or {}).get("prog") or {}).get("stage") if hasattr(run, "load_state") else None,
-                    "pending": pending_lists(run, ledger)})
+                    "pending": pending_lists(run, ledger),
+                    "generation": generation_report(run, ledger, status, stop)})
     f.write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
     return summary
+
+
+def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = "") -> dict:
+    """Whether the generation of the run's laws (every law of its ledger, from `--laws`) is complete,
+    computed again from the run's state each time, an accepted law included: `complete` is true when
+    every law is generated (its own nodes and those of every law it reaches usable for building,
+    `loop.label_ready`'s conditions), false otherwise, and null, with `reason_if_null`, when it cannot
+    be computed (a record or file that cannot be read). The laws are listed by what holds each one:
+    a provider it waits on ([node, provider, code]), the planner, the operator (with its tokens),
+    a failure, a revoked acceptance; with the composition cycles a validator found, the providers
+    whose laws wait for the operator, the gaps, and the launch's stop."""
+    if status in ("data_integrity_failure", "stale_aggregate"):   # the state it would be read from is not trusted: never an earlier `true`
+        return {"complete": None, "reason_if_null": f"the run stopped on `{status}`: its state cannot be read as it stands"}
+    try:
+        from ..loop import own_generated, reached_laws, unready
+        from ..store.state import Availability
+        av = Availability(run, entries=ledger.entries)
+        laws = {"generated": [], "generating": [], "waiting_provider": {}, "to_plan": {}, "blocked": {}, "failed": [], "revoked": {}}
+        provider_failures, gaps = {}, {}
+        for e in ledger.entries.values():
+            st = (getattr(run, "label_states", None) or {}).get(e.law, {})
+            if st.get("revoked_reason"):
+                laws["revoked"][e.law] = st["revoked_reason"].get("reason")
+            g = [t for t in e.gaps if not t.startswith("decision:")]
+            if g:
+                gaps[e.law] = g
+            if e.state in ("planned", "accepted") and own_generated(run, ledger, e.law, av) \
+                    and all(own_generated(run, ledger, l, av) for l in reached_laws(run, ledger, e.law)):
+                laws["generated"].append(e.law)
+            elif e.state in ("open", "returned"):
+                laws["to_plan"][e.law] = "; ".join(e.reasons[:2]) or e.state
+            elif e.state == "blocked":
+                laws["blocked"][e.law] = list(e.gaps)
+                if e.waits_on:
+                    provider_failures[e.law] = list(e.waits_on)
+            elif e.state == "failed":
+                laws["failed"].append(e.law)
+            else:
+                waits = [w for w in unready(run, ledger, e.law, av) if w[0] not in e.nodes or w[1] != w[0]]   # another record holds it
+                if waits:
+                    laws["waiting_provider"][e.law] = waits
+                else:
+                    laws["generating"].append(e.law)
+        complete = len(laws["generated"]) == len(ledger.entries)
+        return {"complete": complete, "reason_if_null": None, "laws": laws,
+                "cycles": [r for e in ledger.entries.values() for r in e.reasons if r.startswith("composition cycle")],
+                "provider_failures": provider_failures, "gaps": gaps,
+                "stop": {"budget": status == "paused_budget", "iteration_limit": stop == "iteration_limit",
+                         "infrastructure": status in ("infrastructure_failure", "data_integrity_failure")}}
+    except Exception as e:                           # a state that cannot be read decides nothing: never an earlier `true`
+        return {"complete": None, "reason_if_null": f"{type(e).__name__}: {str(e)[:300]}"}
 
 
 def pending_lists(run: Run, ledger: Ledger) -> dict[str, list[str]]:

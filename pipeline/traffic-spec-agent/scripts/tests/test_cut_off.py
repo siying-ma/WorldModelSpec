@@ -16,7 +16,7 @@ from harness.agents import runner, session                  # noqa: E402
 from harness.model import nodeid                            # noqa: E402
 from harness.phases import code as code_phase               # noqa: E402
 from harness.store import owner, paths                      # noqa: E402
-from harness.store.state import Options                     # noqa: E402
+from harness.store.state import RUN_VERSION, Options        # noqa: E402
 
 ONTO = Path(__file__).resolve().parents[2] / "ontology" / "ATOMS_train.md"
 OK = (0, {"type": "result", "subtype": "success", "num_turns": 9, "usage": {"output_tokens": 50}, "result": "done"}, False)
@@ -131,7 +131,7 @@ class Wiring(unittest.TestCase):
             task = root / "r" / "iter-001" / "code" / "L_1"; task.mkdir(parents=True)
             (task / "baseline.json").write_text("{}"); (task / "gate_runs.txt").write_text("2")
             (task / "node.json").write_text(json.dumps(R.node("L_1", "shall creep.", "L-1")))
-            (root / "r" / "options.json").write_text(json.dumps({"reading": str(root / "reading.json"), "gate_budget": 10}))
+            (root / "r" / "options.json").write_text(json.dumps({"reading": str(root / "reading.json"), "gate_budget": 10, "semantic": {"run_version": RUN_VERSION}}))
             (root / "reading.json").write_text(json.dumps({"params": [], "aggregates": []}))
             with mock.patch.object(paths, "RESULTS", root), \
                     mock.patch.object(gate, "run_gate", lambda *a, **k: gate.Verdict("CHECK_FAIL", ["scenario x errs"])), \

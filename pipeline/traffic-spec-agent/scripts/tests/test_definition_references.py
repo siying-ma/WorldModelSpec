@@ -15,7 +15,7 @@ from harness import loop
 from harness.checks import validate_a
 from harness.model import corpus, definitions
 from harness.model.blueprint import Node
-from harness.phases import code as code_phase, integrate, plan as plan_phase, review
+from harness.phases import code as code_phase, integrate, plan as plan_phase
 from harness.store.ledger import Ledger
 
 LAW_ID, SRC_ID, DEF_ID = "STA-900A-100-1", "STA-900A-200-2", "DEF-STA-900A-010"
@@ -131,8 +131,11 @@ class ExecutionPaths(unittest.TestCase):
 
     def test_a_fenced_or_failed_source_does_not_hold_the_borrower_but_holds_a_real_dependency(self):
         caller = comp_node("STA_900A_300", "STA-900A-300", SOURCE_NODE)
-        run = NS(fenced={SOURCE_NODE: {"reason": "gate"}})
-        self.assertEqual(integrate.unavailable_candidates(run, [BORROWER, caller], {}), {caller.id: f"uses the fenced `{SOURCE_NODE}`"})
+        from harness.store.state import Options, Run
+        run = Run(Options("r", Path("l"), Path("o"), Path("r")))
+        run.law_entries, run.accepted_nodes = {}, {SOURCE_NODE: {"node_id": SOURCE_NODE, "law_refs": [SRC_ID]}}
+        run.fenced = {SOURCE_NODE: {"reason": "gate"}}
+        self.assertEqual(loop.integration_holds(run, [BORROWER, caller], [], {}), {caller.id: f"composes or calls `{SOURCE_NODE}` (fenced), not usable for building"})
 
     def test_fence_closure_and_admission_follow_dependencies_only(self):
         caller = comp_node("STA_900A_300", "STA-900A-300", SOURCE_NODE)
@@ -148,7 +151,7 @@ class ExecutionPaths(unittest.TestCase):
     def test_a_replan_does_not_wait_on_a_law_it_only_borrows_from(self):
         with tempfile.TemporaryDirectory() as t:
             led = Ledger(Path(t) / "l.jsonl", [LAW_ID, SRC_ID], 3)
-            led.mark_planned(SRC_ID, [SOURCE_NODE], 1)                  # the source is planned, held: not accepted
+            led.block(SRC_ID, ["g1"], ["held for a gap"])               # the source waits for the operator (a planned one is no wait)
             led.return_law(LAW_ID, ["r"], 1)
             by_id = {LAW_ID: LAW, SRC_ID: SRC}
             _b, waiting, _d = loop.plan_batches(led.plannable(), led, by_id, 8)
@@ -253,7 +256,6 @@ class RolesSeeTheFetchedText(unittest.TestCase):
                     mock.patch.object(plan_phase, "MappingIndex", lambda _p: NS(render=lambda: "")), \
                     mock.patch.object(plan_phase, "Reading", lambda _p: NS()), \
                     mock.patch.object(plan_phase, "GapLedger", lambda _p: NS(render=lambda *_a: "")), \
-                    mock.patch.object(plan_phase.review_phase, "upheld_block", lambda *_a, **_k: ""), \
                     mock.patch.object(plan_phase.surface, "formula_language", lambda: ""), \
                     mock.patch.object(plan_phase.surface, "concept_language", lambda: ""):
                 with self.assertRaises(Stop):
@@ -270,7 +272,6 @@ class RolesSeeTheFetchedText(unittest.TestCase):
                     mock.patch.object(plan_phase, "definitions_for", lambda *_a: []), \
                     mock.patch.object(plan_phase, "repair_context", lambda *_a: ""), \
                     mock.patch.object(plan_phase, "GapLedger", NS(for_run=lambda *_a: NS(cited_block=lambda _r: ""))), \
-                    mock.patch.object(plan_phase.review_phase, "upheld_block", lambda *_a, **_k: ""), \
                     mock.patch.object(plan_phase, "parameter_catalogue", lambda *_a: ""), \
                     mock.patch.object(plan_phase, "declaration_catalogue", lambda *_a: ""), \
                     mock.patch.object(plan_phase.ontology, "anchors_text", lambda *_a, **_k: ""):
@@ -293,48 +294,6 @@ class RolesSeeTheFetchedText(unittest.TestCase):
                 with self.assertRaises(Stop):
                     code_phase.run_code(f.run, BORROWER, NS())
         self.shows(got["node"])
-
-    def context(self, run) -> review.Context:
-        with mock.patch.object(review.validate_phase, "glosses_for", lambda *_a: {}), \
-                mock.patch.object(review.render_formula, "render_rule", lambda *_a: "the rendering"), \
-                mock.patch.object(review, "duty_of", lambda *_a: {}), mock.patch.object(review, "duty_block", lambda *_a: ""), \
-                mock.patch.object(review, "precedent_rows", lambda *_a: []), \
-                mock.patch.object(review.ontology, "not_atoms_text", lambda _o: ""), \
-                mock.patch("harness.phases.aggregate.certificate_digests", lambda _r: {}):
-            return review.build_context(run, BORROWER, LAW, NS(), NS(data={"params": []}, aggregate=lambda _a: None), {}, [])
-
-    def test_the_judges(self):
-        with tempfile.TemporaryDirectory() as t:
-            f = Fixture(Path(t))
-            ctx = self.context(f.run)
-        a = review.stage_a_prompt(ctx, "the case", {})
-        self.shows(a)
-        self.assertIn("its own duties are not judged here", a)
-        self.assertNotIn("source_spans", a)                               # stage A sees no record
-        with mock.patch.object(review, "GapLedger", NS(for_run=lambda *_a: NS(cited_block=lambda _r: ""))):
-            b = review.stage_b_prompt(NS(), ctx, "the item", {})
-        self.shows(b)
-        ok = {"verdict": "violated", "decisive": True, "law_words": QUOTE, "reason": "r"}
-        self.assertEqual(review.stage_a_defects(ok, review.context_haystack(ctx)), [])  # the source's words may be quoted
-
-    def test_the_reviewer(self):
-        with tempfile.TemporaryDirectory() as t:
-            f = Fixture(Path(t))
-            ctx = self.context(f.run)
-            out = Path(t) / "review"
-            f.run.opts.max_divergences, f.run.opts.review_passes = 3, 1
-            f.run.opts.review_checks = f.run.opts.review_submissions = 1
-            stubs = {"enabled": lambda _r: True, "build_context": lambda *_a: ctx, "history_of": lambda *_a: [], "history_text": lambda _n: "",
-                     "replay_obligations": lambda *_a: NS(reasons=[], evidence=[], notes=[], keys=[], satisfied=[]),
-                     "atoms_read_block": lambda *_a: "", "_parameters_block": lambda *_a: "", "trace_format_block": lambda: "",
-                     "obligations_of": lambda *_a: [], "BehaviourTools": lambda *_a, **_k: NS(), "window_params": lambda _p: {}}
-            with mock.patch.multiple(review, **stubs), \
-                    mock.patch.object(review, "GapLedger", NS(for_run=lambda *_a: NS(cited_block=lambda _r: ""))), \
-                    mock.patch.object(review.surface, "case_language", lambda: ""), \
-                    mock.patch.object(review.surface, "case_vocabulary", lambda _o: ""):
-                review.review_behaviour(f.run, BORROWER, LAW, NS(), NS(data={"params": []}), {"binders": []}, [], out)
-            text = (out / "review_behaviour_prompt.md").read_text(encoding="utf-8")
-        self.shows(text)
 
 
 if __name__ == "__main__":

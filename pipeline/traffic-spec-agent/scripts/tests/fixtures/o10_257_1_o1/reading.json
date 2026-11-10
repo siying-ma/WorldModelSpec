@@ -1,0 +1,73 @@
+{
+ "params": [
+  {
+   "name": "p.standstill_speed_tolerance",
+   "value": 0.1,
+   "unit": "m/s"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "value": 1.0,
+   "unit": "m"
+  },
+  {
+   "name": "p.intersecting_way_view_distance",
+   "value": 100.0,
+   "unit": "m"
+  },
+  {
+   "name": "p.yield_sign_slowed_max_speed",
+   "value": 4.5,
+   "unit": "m/s"
+  }
+ ],
+ "aggregates": [
+  {
+   "id": "DEF-NRS-484A-285::traffic",
+   "included": [
+    "ru.bicycle",
+    "ru.bus",
+    "ru.child",
+    "ru.commercial_motor_vehicle",
+    "ru.electric_bicycle",
+    "ru.electric_scooter",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.pedestrian",
+    "ru.pedestrian_with_white_cane_or_guide_animal",
+    "ru.rail_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": []
+  },
+  {
+   "id": "DEF-NRS-484A-320::vehicle",
+   "included": [
+    "ru.bus",
+    "ru.commercial_motor_vehicle",
+    "ru.emergency_vehicle",
+    "ru.fire_apparatus",
+    "ru.moped",
+    "ru.motor_vehicle",
+    "ru.motorcycle",
+    "ru.official_vehicle",
+    "ru.school_bus",
+    "ru.taxicab",
+    "ru.tour_bus_or_limousine",
+    "ru.trailer_or_combination",
+    "ru.transit_bus",
+    "ru.truck"
+   ],
+   "unresolved": []
+  }
+ ]
+}

@@ -2,9 +2,8 @@
 
 The session starts from two files the harness wrote (`skeleton.py`): every declaration the gate
 compares, the parameters as terms, the four scenarios with their verdicts. It is shown the Core
-surface, the contracts of what its record claims and of what those read (the ones its reviewer is
-shown), the run's reading (the values its witnesses must be built against), and the most recently
-accepted node as a worked example. Core is readable, not writable; the harness is neither.
+surface, the contracts of what its record claims and of what those read, the run's reading (the values its witnesses must be built against), and the most recent node of a
+formally accepted law as a worked example. Core is readable, not writable; the harness is neither.
 """
 from __future__ import annotations
 import json
@@ -39,32 +38,47 @@ def _files_digest(rels: tuple[str, ...]) -> str | None:
     return h.hexdigest()
 
 
-def task_context(run: Run, kind: str, ident: str, raw: dict, reading: Reading) -> str | None:
+def task_context(run: Run, kind: str, ident: str, raw: dict, reading: Reading, catalogue: dict | None = None) -> str | None:
     """The admission key a task's gate ran on: the candidate record's context (what it calls and
     composes, the reading values it reads, Core and the ontology) and the gate's implementation,
     computed from the candidate as given, before it is accepted. In a candidate transaction, Core and
     the ontology are the production digests it opened on (`base`), so the key does not depend on
-    where the candidate lies."""
+    where the candidate lies. `catalogue` (`{"nodes", "concepts"}`) is the view the task is coded in,
+    by default the published records: in the loop, its own law's siblings gated in the same iteration
+    and not yet published are in it, so their records and files are part of the key."""
     from . import integrate as integrate_phase
     from ..loop import semantic_inputs
     try:
         base = getattr(run, "base", None) or {k: v for k, v in semantic_inputs(run.opts).items() if k in ("core", "ontology")}
         return integrate_phase.admission_key(run, kind, ident, reading, base,
-                                             record=raw, catalogue={"nodes": run.all_nodes(), "concepts": run.all_concepts()})
+                                             record=raw, catalogue=catalogue or {"nodes": run.all_nodes(), "concepts": run.all_concepts()})
     except (ValueError, KeyError, OSError):
         return None
 
 
-def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None) -> gate.Verdict | None:
+#: The composed nodes a task's key was computed with, beside its verdict (`run_code`).
+COMPOSED = "composed.json"
+
+
+def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None, required=()) -> gate.Verdict | None:
     """The verdict a task directory already holds, when the loop was interrupted after the gate:
     the task is finished and a resume applies its outcome instead of coding it again. A failing
     verdict rolled its files back already. A verdict is reused only on the context its gate ran on
     (`context`, the task's admission key); `OK` only while both candidate files are in the library
     as the gate passed them. `SESSION_FAILED` (the session never ran) and `INFRA` (the toolchain or the
-    run's own stop kept the gate from judging the candidate) decide nothing, and are not reused."""
+    run's own stop kept the gate from judging the candidate) decide nothing, and are not reused. A
+    verdict whose key was computed without one of the nodes the record composes (`required`, against
+    the `composed.json` beside it) has no whole dependency key and is not reused either."""
     f = d / "verdict.json"
     if not f.exists():
         return None
+    if required:
+        try:
+            had = set(json.loads((d / COMPOSED).read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError):
+            had = set()
+        if not set(required) <= had:
+            return None
     try:
         v = json.loads(f.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
@@ -91,6 +105,51 @@ def last_task(run: Run, ident: str) -> Path | None:
     name = concept_dirname(ident) if nodeid.is_concept_id(ident) else ident
     done = [p.parent for p in run.dir.glob(f"iter-*/code/{name}/verdict.json") if int(p.parent.parent.parent.name[5:]) < run.iteration]
     return max(done, key=lambda p: p.parent.parent.name) if done else None
+
+
+#: Written into a task directory whose session changed files outside its own once those files are
+#: found back at the digests its `baseline.json` holds: that violation no longer pauses the run.
+SCOPE_RESTORED = "scope_restored.json"
+#: The `stray` entry of a production tree that moved and whose changed files could not be named:
+#: restored only when the whole tree's digest is again the recorded one.
+WHOLE_TREE = "<the production tree, unnamed>"
+
+
+def scope_unrestored(run: Run) -> dict[str, list[str]]:
+    """The run's coding tasks whose session changed files outside its own (a `SCOPE_VIOLATION` verdict
+    naming them under `stray`) and whose library is not yet restored, each with the files still not
+    at the digest the task's `baseline.json` recorded before the session (absent where it was absent).
+    The task's own rollback restores only its two files; the others are the operator's to restore,
+    file by file, never by a restore of the whole tree, which would undo other tasks' work. Only that
+    restoration lifts the pause: a task found restored here is marked (`SCOPE_RESTORED`, written by
+    this check alone) and never checked again, so a later legitimate change to one of those files
+    pauses nothing. Reopening a law clears its scope count (`SCOPE_BOUND`), never this check: it is no
+    acceptance of the files as they are. Empty: no coding session starts from a library a session
+    left dirty."""
+    pending = []
+    for f in sorted(run.dir.glob("iter-*/code/*/verdict.json")):
+        if (f.parent / SCOPE_RESTORED).exists():
+            continue
+        try:
+            v = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        stray = v.get("extras", {}).get("stray") if v.get("verdict") == "SCOPE_VIOLATION" else None
+        if stray:
+            pending.append((f.parent, stray))
+    if not pending:
+        return {}
+    from .candidate import _sha
+    now, out = gate.repo_digest(paths.LIBRARY.parent), {}          # the tree that holds the library, as the candidate's baseline digests it
+    digest_of = lambda p: _sha(now) if p == WHOLE_TREE else now.get(p)
+    for d, stray in pending:
+        before = json.loads((d / "baseline.json").read_text(encoding="utf-8"))
+        left = [p for p in stray if digest_of(p) != before.get(p)]
+        if left:
+            out[str(d)] = left
+        else:
+            (d / SCOPE_RESTORED).write_text(json.dumps({"files": stray}), encoding="utf-8")
+    return out
 
 
 def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | None, verdict: str = gate.GATE_TIMEOUT) -> Path | None:
@@ -256,9 +315,9 @@ def reading_table(node: Node, reading: Reading) -> str:
 
 def contracts_block(run: Run, rec: Node | ConceptRecord) -> str:
     """The contracts a coding session writes by, from the run's ontology and catalogue through the
-    one gloss path the reviewer and the judges are shown: for a node, its reviewer's own contracts
-    (every id it claims, the atoms its claimed primitives and concepts read, its declared facts and
-    its compositions); for a concept, every atom, primitive and concept its elements map to and the
+    one gloss path the concept reviewer and its judges are shown: for a node, every id it claims,
+    the atoms its claimed primitives and concepts read, its declared facts and its compositions; for
+    a concept, every atom, primitive and concept its elements map to and the
     atoms those primitives and concepts read."""
     onto = ontology.load(run.opts.ontology)
     if isinstance(rec, Node):
@@ -273,8 +332,17 @@ def contracts_block(run: Run, rec: Node | ConceptRecord) -> str:
 
 
 def worked_example(run: Run) -> str:
-    """The most recently accepted node's two files, as the pattern to follow; the skeletons alone when there is none."""
+    """The two files of the most recent unfenced node of a law this run's ledger holds `accepted`, a node
+    that acceptance named, as the pattern to follow; the skeletons alone when there is none. A node that
+    only passed its gate, or one inherited from a base run, is no example."""
+    entries = run.law_entries
+    if entries is None:
+        from ..store.ledger import Entry, _load
+        entries = _load(run.ledger_file, Entry, "law")
     for nid in reversed(list(run.accepted_nodes)):
+        e = entries.get(Node(run.accepted_nodes[nid]).law)
+        if nid in run.fenced or e is None or e.state != "accepted" or nid not in e.nodes:
+            continue
         rp, wp = paths.LIBRARY / nodeid.rule_path(nid), paths.LIBRARY / nodeid.witness_path(nid)
         if rp.exists() and wp.exists():
             return (f"An accepted node of this library, `{nid}` — its header records its reading, its formulas use only "
@@ -294,7 +362,8 @@ def write_skeletons(node: Node) -> tuple[str, str]:
     return r, w
 
 
-def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, saved: Path | None = None) -> gate.Verdict:
+def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, saved: Path | None = None,
+             catalogue: dict | None = None) -> gate.Verdict:
     """One coding session for a node, then the harness's own gate call. `registry` names the ids
     the gate registers (the accepted ones and this node); `saved` an earlier task whose candidate is
     gated again instead of a session when `_saved_candidate` admits it, and so is a candidate the task's
@@ -303,11 +372,14 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     d = node_dir(run, node.id)
     d.mkdir(parents=True, exist_ok=True)
     rels = (nodeid.rule_path(node.id), nodeid.witness_path(node.id))
-    context = task_context(run, "node", node.id, node.raw, reading)
-    done = _finished_verdict(d, rels, context)
+    context = task_context(run, "node", node.id, node.raw, reading, catalogue)
+    required = sorted({str(c.get("rule")) for c in node.dependencies() if c.get("rule")})
+    done = _finished_verdict(d, rels, context, required)
     if done is not None:                                     # a resume: the session ran and the gate decided
         print(f"[code] {node.id}: reusing the {done.verdict} verdict of the finished session")
         return done
+    nodes_now = (catalogue or {}).get("nodes") if catalogue else run.all_nodes()
+    (d / COMPOSED).write_text(json.dumps(sorted(r for r in required if r in nodes_now)), encoding="utf-8")
     (d / "node.json").write_text(json.dumps(node.raw, ensure_ascii=False, indent=1), encoding="utf-8")
     _task_files(d, registry)
     only_nodes = None if registry is None else sorted(set(registry.get("nodes", [])) | {node.id})
@@ -379,8 +451,12 @@ def gate_from_cli(run_id: str, node_id: str) -> gate.Verdict:
     gates in the candidate: its library, its scope and its task directories."""
     import os
     from .candidate import CANDIDATE_ENV, CANDIDATE_ITER
+    from ..store.state import stored_run_refusal
     area = os.environ.get(CANDIDATE_ENV)
     if not area:
+        why = stored_run_refusal(run_id)                 # its raw version first: nothing of another version's run is read or written
+        if why:
+            raise SystemExit(f"run `{run_id}` cannot be gated by this harness: {why} — nothing of it was read or rewritten")
         return _gate_from_cli(run_id, node_id, paths.run_dir(run_id))
     sc = json.loads((Path(area) / "scope.json").read_text(encoding="utf-8"))
     with paths.at_library(Path(sc["tree"]) / "library"), gate.candidate_scope(gate.CandidateScope(Path(sc["tree"]), frozenset(sc["write_set"]))):
@@ -436,9 +512,15 @@ def rollback_concept(cid: str, baseline: dict[str, str], work: Path) -> None:
     _restore(work, baseline, (nodeid.concept_path(cid), nodeid.concept_witness_path(cid)))
 
 
-def concept_example(run: Run) -> str:
-    """The most recently accepted concept's two files, as the pattern to follow."""
-    for cid in reversed(list(run.all_concepts())):
+def concept_example(run: Run, target: str | None = None) -> str:
+    """The two files of the most recent concept a review accepted, as the pattern to follow: never a
+    fenced version, never `target` (the concept being coded), and inside a candidate never one the
+    candidate adds or changes and has not committed (`unverified_concepts`); the skeletons alone when
+    there is none."""
+    unverified = getattr(run, "unverified_concepts", ())     # set on a candidate's view only
+    for cid, rec in reversed(list(run.all_concepts().items())):
+        if cid == target or rec.get("fenced") or cid in unverified:
+            continue
         cp, wp = paths.LIBRARY / nodeid.concept_path(cid), paths.LIBRARY / nodeid.concept_witness_path(cid)
         if cp.exists() and wp.exists():
             return (f"An accepted concept of this library, `{cid}` — its body uses only claimed names over its formals, "
@@ -500,7 +582,7 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
     prompt = render.render("code_concept.md", {
         "concept": json.dumps(rec.raw, ensure_ascii=False, indent=1), "files": files,
         "core_surface": surface.core_surface(run.all_concepts(), claimed=rec.claimed_atoms() | rec.refs()), "contracts": contracts_block(run, rec),
-        "example": concept_example(run), "skeletons": skeletons,
+        "example": concept_example(run, rec.id), "skeletons": skeletons,
         "gate": gate_text, "concept_path": str(c_abs), "witness_path": str(w_abs), "concept_id": rec.id,
         "mode": run.opts.mode, "core_dir": str(paths.CORE.resolve()),
         "anchors": ontology.anchors_text(ontology.load(run.opts.ontology), lean=True)})

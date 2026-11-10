@@ -269,7 +269,7 @@ class LoopStart(unittest.TestCase):
             (Path(t) / "laws.jsonl").write_text("")
             (Path(t) / "definitions.jsonl").write_text("")
             opts = Options(run_id="acq_start", laws=Path(t) / "laws.jsonl", ontology=ONTO.path, reading=base, model="m",
-                           acquisition_profile=profile)
+                           acquisition_profile=profile, dry_run=True)      # no reviewer or verifier named: their checks pass
             layout = {**paths.library_layout(paths.LIBRARY), "RESULTS": Path(t) / "results"}
             with mock.patch.multiple(paths, **layout), mock.patch("harness.store.owner.acquire", lambda *a, **k: None), \
                     mock.patch("harness.tools.handoff.check_on_launch", lambda run: None), \

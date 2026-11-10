@@ -25,7 +25,7 @@ from harness.phases import plan, review
 from harness.store import jsonl, paths
 from harness.store.gaps import GapLedger
 from harness.store.ledger import ConceptLedger, Ledger, NodeLedger
-from harness.store.state import Run, commit_state
+from harness.store.state import Run, RUN_VERSION, commit_state
 from scripts.tests.test_candidate import Base, concept_rec, files, node_rec
 from scripts.tests.test_label_repair import L, N, RECS
 from scripts.tests.test_label_repair_session import DIFF5, REQUEST, repair, repairing, set_verdict
@@ -139,6 +139,26 @@ class Collateral(Base):
             self.assertIn(L[1], lr.awaiting(run, ledger))
             snap = jsonl.read_json(run.state_file, {})
             self.assertEqual({e["law"]: e["state"] for e in snap["ledger"]}[L[1]], "planned")     # committed with the candidate
+
+    def test_a_committed_repair_ends_its_session_and_another_law_keeps_its_own(self):
+        """T34: the commit ends the target's session (no `active` left, `sessions` and `repairs` up by
+        exactly one), so its next repair opens a new session; a law checked again by the same
+        commit keeps its own active session."""
+        with self._scenario(False) as (run, ledger, training, by_id):
+            run.accepted_nodes[N[1]]["compositions"] = [{"span": "o1", "rule": N[5], "map": {"v": "v"}, "as": "condition"}]
+            run.label_states[L[1]]["active"] = {"dir": "its/own", "input": "k", "stage": "session"}
+            before = {k: int(run.label_states[L[5]].get(k, 0)) for k in ("sessions", "repairs")}
+            set_verdict(training, "r5a", N[5], "compliant")
+            set_verdict(training, "r1a", N[1], "violated")
+            self.assertEqual(repair(run, ledger, training, by_id), "committed")
+            st = run.label_states[L[5]]
+            self.assertNotIn("active", st)
+            self.assertEqual({k: int(st.get(k, 0)) for k in ("sessions", "repairs")}, {k: v + 1 for k, v in before.items()})
+            self.assertEqual(run.label_states[L[1]]["active"], {"dir": "its/own", "input": "k", "stage": "session"})
+            self.assertTrue(str(lr.repair_dir(run, L[5])).endswith(f"repair-{before['sessions'] + 2:02d}"))   # a new session next
+            snap = jsonl.read_json(run.state_file, {})
+            self.assertNotIn("active", snap["label_states"][L[5]])
+            self.assertEqual(snap["label_states"][L[1]]["active"]["dir"], "its/own")
 
     def test_an_operators_hold_is_kept(self):
         with self._scenario(True) as (run, ledger, training, by_id):
@@ -394,7 +414,8 @@ class CandidateValidator(Base):
         from harness.__main__ import _candidate_view
         with repairing() as (run, ledger, training, by_id):
             import dataclasses
-            (run.dir / "options.json").write_text(json.dumps(dataclasses.asdict(run.opts), default=str))
+            (run.dir / "options.json").write_text(json.dumps({**dataclasses.asdict(run.opts), "semantic": {"run_version": RUN_VERSION}},
+                                                             default=str))
             with cand.SCHEDULING.pause(), cand.Candidate.open(run, hooks=()) as txn:
                 txn.apply([cand.Change("node", N[1], None)])
                 txn.write_scope()

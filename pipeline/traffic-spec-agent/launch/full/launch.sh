@@ -16,7 +16,7 @@ export PYTHONDONTWRITEBYTECODE=1        # a doctor import must not rewrite a tra
 
 # No law subset: LAWS defaults to the training split, laws/example/train/laws.jsonl.
 env RUN_ID="$RUN_ID" \
-    MODEL='claude-opus-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium \
+    MODEL='claude-opus-5-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium \
     ACQUISITION_PROFILE=carla_scene_graph WORKERS=12 LAUNCHES=40 \
     CLAUDE_BUDGET=2500 OPENAI_BUDGET=40 TOTAL_BUDGET=2540 \
   nohup scripts/run-generation.sh new > "launch-$RUN_ID.out" 2>&1 < /dev/null &

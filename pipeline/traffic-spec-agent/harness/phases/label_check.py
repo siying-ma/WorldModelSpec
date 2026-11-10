@@ -707,19 +707,6 @@ def check_in_candidate(txn, ctx: Training, laws: dict[str, list[str]], unavailab
     return checks
 
 
-def unrun_check(law: str, rules: list[str], unavailable: dict[str, str], ctx: Training) -> LawCheck:
-    """The check of a law an expected rule of which is not available (fenced, or not in the library):
-    incomplete on every recording of its fixed set, with no monitor or Explain run."""
-    law_of = {r: law for r in rules}
-    scored = []
-    for rid in ctx.fixed["laws"].get(law, {}).get("recordings", []):
-        c = ctx.fixed["cases"][rid]
-        scored.append(scoring.score(rid, law, c["verdict"], {}, law_of, judgment_call=c["judgment_call"]))
-    notes = [f"{r}: not run ({s})" for r, s in sorted(unavailable.items()) if r in law_of]
-    return LawCheck(law, sorted(rules), "incomplete", scored, [], ctx.fixed["data_version"], notes,
-                    source_check=ctx.source_summary(law))
-
-
 def write_check(chk: LawCheck, out: Path) -> dict[str, str]:
     """A check's record, its evidence block and its judgment-call table under `out`; returns their paths."""
     paths_ = {"check": out / "laws" / f"{chk.law_id}.json", "evidence": out / "evidence" / f"{chk.law_id}.md",

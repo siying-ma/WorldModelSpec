@@ -1,7 +1,8 @@
 """Development regression tests for records, scheduling and accounting: one charge per law per
 iteration with every outcome recorded, a returned or malformed record never used as a key, a
 dependency report no one could judge never charged, concepts claimed anywhere in a record as its
-dependencies, waits closed over the reference chain, and a figure after a conjunction read."""
+dependencies, waits closed over the reference chain, a figure after a conjunction read, and the
+accepted nodes a re-plan leaves out registered with their law."""
 import copy
 import json
 import tempfile
@@ -16,12 +17,13 @@ from harness.checks import validate_a
 from harness.model.blueprint import Node, ConceptRecord
 from harness.model.corpus import Law
 from harness.model.units import stated_figures, unsupported_figures
-from harness.phases import plan as plan_phase, review as review_phase, validate as validate_phase
+from harness.phases import candidate as cand, plan as plan_phase, review as review_phase, validate as validate_phase
 from harness.agents import session
 from harness.store import paths
 from harness.store.ledger import Ledger, ConceptLedger, NodeLedger
 from harness.store.state import Options, Run
 from scripts.tests import test_recovery as rec
+from scripts.tests.test_candidate import Base, Txn, node_rec, world
 
 
 class OneChargePerIteration(unittest.TestCase):
@@ -189,14 +191,14 @@ class ClaimedAnywhere(unittest.TestCase):
 class HeldNodeFeedback(unittest.TestCase):
     """A held node is described by the state it is held in, not as waiting on the run."""
 
-    def test_a_deferred_review_is_named_by_its_stage(self):
+    def test_a_held_node_is_named_by_its_state(self):
         w = rec.World({"L-1": "shall stop."})
         w.plans = {"L-1": [rec.node("L_1", "shall stop.", "L-1")]}
-        w.review[("L_1", 1)] = ("deferred", "evidence")
+        w.gate[("L_1", 1)] = "GATE_TIMEOUT"
         with rec.Fixture(w, max_iterations=1) as f:
             f.drive(launches=1)
             notes = (paths.RESULTS / "r" / "AUTO_NOTES.md").read_text(encoding="utf-8")
-        self.assertIn("- `L_1` held: its behaviour review was deferred at stage `evidence`: scripted deferral", notes)
+        self.assertIn("- `L_1` held: its gate's evaluation ended on its cost; its saved candidate is gated again", notes)
         self.assertNotIn("waits on the run", notes)
 
 
@@ -235,8 +237,7 @@ class RepairReask(unittest.TestCase):
             return [NS(node=nodes[0], reasons=["L_9_o1: scripted defect"] if first else [])]
         patches = [mock.patch.object(plan_phase.session, "run", session_run), mock.patch.object(validate_a, "validate", validate),
                    mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"),
-                   mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []),
-                   mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: "")]
+                   mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: [])]
         reading = NS(data={"params": []}, params=[], pending_aggregates=False)
         with ExitStack() as st:
             for p_ in patches:
@@ -270,8 +271,7 @@ class RepairReask(unittest.TestCase):
         with mock.patch.object(plan_phase.session, "run", lambda *a, **k: launched.append(k.get("label"))), \
                 mock.patch.object(validate_a, "validate", lambda nodes, *a, **k: [NS(node=nodes[0], reasons=[])]), \
                 mock.patch.object(plan_phase.render, "render", lambda _name, b, **_k: "prompt"), \
-                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []), \
-                mock.patch.object(review_phase, "upheld_block", lambda *_a, **_k: ""):
+                mock.patch.object(plan_phase, "definitions_for", lambda _run, _laws: []):
             plan_phase.run_node_repair(run, n, ["r"], last, LAW, [], [], NS(data={"params": []}, params=[], pending_aggregates=False), ONTO)
         self.assertEqual(launched, [])
         self.assertEqual((d / "validation.txt").read_text(), "accept")
@@ -326,9 +326,10 @@ class Chains(unittest.TestCase):
             return [[l.id for l in b] for b in batches], waiting, dead
 
     def test_a_wait_closes_over_the_chain_and_a_failed_root_stops_nothing(self):
-        for state in ("pending", "blocked"):
-            batches, waiting, dead = self.plan(state)
-            self.assertEqual((batches, waiting, dead), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}), state)
+        batches, waiting, dead = self.plan("blocked")
+        self.assertEqual((batches, waiting, dead), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}))
+        batches, waiting, dead = self.plan("pending")           # a planned provider is no wait: its usable nodes are composed
+        self.assertEqual((batches, waiting, dead), ([["S-2", "S-1"]], {}, {}))
         batches, waiting, dead = self.plan("failed")
         self.assertEqual((batches, waiting, dead), ([["S-2", "S-1"]], {}, {"S-2": ["S-3"]}))
 
@@ -435,6 +436,88 @@ class AcceptedReemission(rec.Interruptions, unittest.TestCase):
             (d / "blueprint.jsonl").write_text(json.dumps(raw) + "\n" + json.dumps(other) + "\n")
             defects, _ = plan_phase.settle_identity(d, {})
             self.assertTrue(any("different records under one id" in x for x in defects.get("L-1", [])))
+
+
+# ---------------------------------------------------------------------------------------------
+# A re-plan that leaves an accepted node out registers it with the law
+# ---------------------------------------------------------------------------------------------
+def accepted_sibling_left_out(second_plan: str):
+    """L-20 has two duties, L-21 one. In iteration 1 L-20's first node and L-21's node pass their
+    gates, L-20's second fails and returns its law; in iteration 2 the planner re-plans L-20, leaving
+    the accepted first node out (`second_plan == "left_out"`) or writing both again (`"kept"`)."""
+    def build():
+        w = rec.World({"L-20": "shall slow. shall stop.", "L-21": "shall wait."})
+        o1 = rec.node("L_20_o1", "shall slow. shall stop.", "L-20")
+        o2 = rec.node("L_20_o2", "shall slow. shall stop.", "L-20", span="s2")
+        w.plans[("L-20", 1)] = [o1, o2]
+        w.plans[("L-20", 2)] = [o2] if second_plan == "left_out" else [o1, o2]
+        w.plans["L-21"] = [rec.node("L_21", "shall wait.", "L-21")]
+        w.gate[("L_20_o2", 1)] = "CHECK_FAIL"
+        return w
+    build.opts = {"label_repair": True, "node_attempts": 1, "plan_attempts": 2, "max_iterations": 2}
+    return build
+
+
+class LeftOutAcceptedNode(unittest.TestCase):
+    """The law's registered nodes are those the validator counts as its own: the plan's, and its
+    accepted nodes the plan leaves out. Whether a left-out node may be composed by another law is a
+    question of the run's availability rule, not of this registration, and is not asserted here."""
+
+    def generate(self, second_plan: str):
+        from scripts.tests.test_split_handoff import label_stage_stand_ins
+        build = accepted_sibling_left_out(second_plan)
+        w = build()
+        with rec.Fixture(w, **build.opts) as f:
+            self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+            snap = json.loads((paths.RESULTS / "r" / "state.json").read_text())
+            checked = []
+            real_ready = loop.label_ready
+            with label_stage_stand_ins(set()), mock.patch.object(loop, "label_ready", lambda run, ledger: checked.append(
+                    real_ready(run, ledger)) or checked[-1]):
+                f.drive(1, label_stage=True, label_dataset="ds", max_iterations=2)
+        self.assertEqual(sorted(it for (k, i, it) in w.calls if k == "plan" and "L-20" in i.split(",")), [1, 2])
+        return {e["law"]: e for e in snap["ledger"]}, snap, checked
+
+    def test_a_left_out_accepted_node_stays_the_laws(self):
+        ledger, snap, checked = self.generate("left_out")
+        self.assertEqual(sorted(snap["accepted_nodes"]), ["L_20_o1", "L_20_o2", "L_21"])
+        self.assertEqual((ledger["L-20"]["state"], ledger["L-20"]["nodes"]), ("planned", ["L_20_o1", "L_20_o2"]))
+        self.assertEqual(snap["label_states"]["L-20"]["nodes"], ["L_20_o1", "L_20_o2"])
+        self.assertEqual(checked[0]["L-20"], ["L_20_o1", "L_20_o2"])        # the law's label check takes both
+
+    def test_a_plan_that_keeps_every_node_is_registered_as_written(self):
+        ledger, snap, checked = self.generate("kept")
+        self.assertEqual(ledger["L-20"]["nodes"], ["L_20_o1", "L_20_o2"])
+        self.assertEqual(checked[0]["L-20"], ["L_20_o1", "L_20_o2"])
+
+    def test_another_laws_node_is_never_added(self):
+        for second_plan in ("left_out", "kept"):
+            with self.subTest(second_plan=second_plan):
+                ledger, _snap, checked = self.generate(second_plan)
+                self.assertNotIn("L_21", ledger["L-20"]["nodes"])
+                self.assertEqual(ledger["L-21"]["nodes"], ["L_21"])
+                self.assertEqual(checked[0]["L-21"], ["L_21"])
+
+
+class WithdrawnNode(Base):
+
+    def test_a_node_a_candidate_withdrew_is_not_registered_again(self):
+        """The withdrawal a candidate re-plan writes for a node it does not keep is committed; a later
+        plan of the law that writes a third node registers the first and the third only, inside the
+        candidate and after it."""
+        a, b, c, other = "TEST_CAND_9_o1", "TEST_CAND_9_o2", "TEST_CAND_9_o3", "TEST_CAND_8"
+        with world({}, {a: node_rec(a), b: node_rec(b), other: node_rec(other)}) as (run, _lib):
+            self.assertEqual(loop.registered_nodes(run, "TEST-CAND-9", [c]), [a, b, c])
+            with Txn(run) as txn:
+                txn.apply([cand.Change("node", b, None)])
+                self.assertEqual(loop.registered_nodes(txn.view, "TEST-CAND-9", [c]), [a, c])
+                self.assertTrue(all(r.status == "pass" for r in txn.verify()))
+                txn.commit()
+            fresh = Run(run.opts)
+            fresh.restore_state()
+            fresh.load_accepted()
+            self.assertEqual(sorted(fresh.accepted_nodes), [other, a])
+            self.assertEqual(loop.registered_nodes(fresh, "TEST-CAND-9", [c]), [a, c])
 
 
 if __name__ == "__main__":

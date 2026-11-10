@@ -17,7 +17,7 @@ The script starts the launcher in the background over the whole training split, 
 | Setting | Value |
 |---|---|
 | Laws | the training split, 221 laws (`laws/example/train/laws.jsonl`) |
-| Claude model | `claude-opus-5[1m]` |
+| Claude model | `claude-opus-5-5[1m]` |
 | OpenAI model | `gpt-6.1-sol` |
 | Workers | 12 |
 | Launches per invocation | 40 |

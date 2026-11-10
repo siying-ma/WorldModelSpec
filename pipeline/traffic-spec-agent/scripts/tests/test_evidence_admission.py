@@ -11,10 +11,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from harness.lean import lean, relations, render_formula
-from harness.model.blueprint import ConceptRecord, Node
+from harness.model.blueprint import ConceptRecord
 from harness.phases import review
 from harness.store import paths
-from scripts.tests.test_review_routing import FakeRun, cert, div, node, scripted_reviewer, submit, ctx, LAW, ONTO
+from scripts.tests.test_review_routing import FakeRun, scripted_reviewer, submit
 
 
 def two_users(rel: str = "", heading2=(1, 0), extra_scene: dict | None = None) -> dict:
@@ -101,35 +101,6 @@ class SuppliedRelations(unittest.TestCase):
         self.assertEqual(tr["scenes"][1]["relations"][0]["contact"], True)       # the saved record is untouched
 
 
-class SavedAndFreshCertificates(unittest.TestCase):
-    """Through the real certificate program: a fresh trace supplying a relation Core computes is
-    invalid; the same trace saved with an obligation is stripped and certified again."""
-    def setUp(self):
-        from harness.lean import index_sync
-        recs = {}
-        f = paths.RESULTS / "demo12" / "accepted_nodes.jsonl"
-        if f.exists():
-            recs = {json.loads(l)["node_id"]: json.loads(l) for l in f.read_text().splitlines() if l.strip()}
-        have = [i for i in index_sync.node_ids() if i in recs]
-        if not have:
-            self.skipTest("no accepted node in the library to certify against")
-        self.n = Node(recs[have[0]])
-
-    def test_fresh_refused_saved_stripped(self):
-        from harness.model.reading import Reading
-        b = [x["name"] for x in self.n.get("binders", [])]
-        d = {"trace": two_users('{"a": 1, "b": 2, "same_direction": false}'), "case": "tt", "entities": {}, "at": 0,
-             "grounding": {b[0]: 1, **{x: 2 for x in b[1:]}}}
-        with tempfile.TemporaryDirectory() as t:
-            rf = Path(t) / "reading.json"; rf.write_text(json.dumps({"params": [], "aggregates": []}))
-            fresh = review.certify(None, self.n, {1: d}, Reading(rf), Path(t) / "fresh")[1]
-            saved = review.certify(None, self.n, {1: d}, Reading(rf), Path(t) / "saved", saved=True)[1]
-        self.assertTrue(fresh.get("relation_errors"))
-        self.assertEqual(review.admission(d, fresh, review._Need())[0], "invalid")
-        self.assertFalse(saved.get("relation_errors"))
-        self.assertTrue(saved.get("relations_stripped"))
-
-
 class SchemaBoundary(unittest.TestCase):
     """Every value a concept review or a dependency report states is typed before it is used."""
     REC = ConceptRecord({"concept_id": "drv.motion.audit", "kind": "formula", "contract": "Movement holds.",
@@ -186,43 +157,24 @@ class SchemaBoundary(unittest.TestCase):
 
 class Continuity(unittest.TestCase):
     """An extension counts only where it continues the recorded evidence."""
-    PRIOR = {"case_id": "c1", "trace": {"scenes": [{"t": 0, "users": [{"track": 1, "kin": {"heading": [1, 0]}}]}]},
-             "case": "tt", "entities": {}, "grounding": {"user1": 1}, "at": 0, "stage_a": {"verdict": "violated"}}
-
-    def defects(self, **kw):
-        d = {**div(), "trace": copy.deepcopy(self.PRIOR["trace"]), **kw}
-        return review.node_extension_defects(self.PRIOR, d, cert(), ["v"])
+    PRIOR = {"scenes": [{"t": 0, "users": [{"track": 1, "kin": {"heading": [1, 0]}}]}]}
 
     def test_a_continuation_is_admitted(self):
-        self.assertEqual(self.defects(), [])
-        longer = {"scenes": [{"t": -500, "users": [{"track": 1}]}] + copy.deepcopy(self.PRIOR["trace"]["scenes"])}
-        self.assertEqual(self.defects(trace=longer), [])                                   # an earlier scene added
-        filled = copy.deepcopy(self.PRIOR["trace"]); filled["scenes"][0]["users"][0]["kin"]["speed"] = 3
-        self.assertEqual(self.defects(trace=filled), [])                                   # an unobserved field filled
+        longer = {"scenes": [{"t": -500, "users": [{"track": 1}]}] + copy.deepcopy(self.PRIOR["scenes"])}
+        self.assertEqual(review.trace_extension_defects(self.PRIOR, longer), [])            # an earlier scene added
+        filled = copy.deepcopy(self.PRIOR); filled["scenes"][0]["users"][0]["kin"]["speed"] = 3
+        self.assertEqual(review.trace_extension_defects(self.PRIOR, filled), [])            # an unobserved field filled
         body = lambda t, x: {"track": t, "kin": {"position": [x, 0], "heading": [1, 0], "velocity": [5, 0], "speed": 5, "extent": [2, 1, 1]}}
         geo = {"scenes": [{"t": 0, "users": [body(1, 0), body(2, 30)]}]}
         rel = copy.deepcopy(geo); rel["scenes"][0]["relations"] = [{"a": 1, "b": 2, "contact": True}]
         self.assertEqual(review.trace_extension_defects(rel, geo), [])                     # a relation field Core computes is left to Core
-        measured = copy.deepcopy(self.PRIOR["trace"]); measured["scenes"][0]["relations"] = [{"a": 1, "b": 2, "contact": True}]
-        self.assertTrue(review.trace_extension_defects(measured, self.PRIOR["trace"]))      # one it cannot compute is evidence, kept
+        measured = copy.deepcopy(self.PRIOR); measured["scenes"][0]["relations"] = [{"a": 1, "b": 2, "contact": True}]
+        self.assertTrue(review.trace_extension_defects(measured, self.PRIOR))               # one it cannot compute is evidence, kept
 
-    def test_unrelated_or_changed_evidence_is_refused(self):
-        self.assertTrue(self.defects(grounding={"v": 2}))                                  # another track
-        turned = copy.deepcopy(self.PRIOR["trace"]); turned["scenes"][0]["users"][0]["kin"]["heading"] = [-1, 0]
-        self.assertTrue(self.defects(trace=turned))                                        # an old heading changed
-        self.assertTrue(self.defects(at=100, trace={"scenes": self.PRIOR["trace"]["scenes"] + [{"t": 100}]}))   # another instant
-        self.assertTrue(self.defects(trace={"scenes": [{"t": 0, "users": [{"track": 9}]}]}))   # an easy unrelated trace
-
-    def test_a_fact_left_out_is_refused(self):
-        prior = {**self.PRIOR, "case": {"and": [{"atom": "p", "args": [{"var": "user1"}], "params": []},
-                                                {"atom": "q", "args": [{"var": "user1"}], "params": []}]}}
-        c = {**cert(), "canonical_case": {"atom": "p", "args": [{"var": "v"}], "params": []}}
-        d = {**div(), "trace": copy.deepcopy(self.PRIOR["trace"])}
-        self.assertTrue(review.node_extension_defects(prior, d, c, ["v"]))
-        c2 = {**cert(), "canonical_case": {"and": [{"atom": "q", "args": [{"var": "v"}], "params": []},
-                                                    {"atom": "r", "args": [{"var": "v"}], "params": []},
-                                                    {"atom": "p", "args": [{"var": "v"}], "params": []}]}}
-        self.assertEqual(review.node_extension_defects(prior, d, c2, ["v"]), [])          # facts may be added
+    def test_changed_evidence_is_refused(self):
+        turned = copy.deepcopy(self.PRIOR); turned["scenes"][0]["users"][0]["kin"]["heading"] = [-1, 0]
+        self.assertTrue(review.trace_extension_defects(self.PRIOR, turned))                 # an old heading changed
+        self.assertTrue(review.trace_extension_defects(self.PRIOR, {"scenes": [{"t": 0, "users": [{"track": 9}]}]}))   # an unrelated trace
 
     def test_concept_formals(self):
         rec = ConceptRecord({"concept_id": "drv.motion.x_v2", "contract": "c", "kind": "formula",
@@ -234,51 +186,6 @@ class Continuity(unittest.TestCase):
         self.assertTrue(review.concept_extension_defects(old, new(grounding={"driver": 3, "other": 2}), rec))   # the value lost
         self.assertTrue(review.concept_extension_defects(old, new(grounding={"driver": 1, "other": 1}), rec))   # ambiguous
         self.assertTrue(review.concept_extension_defects(old, new(contract_verdict="holds"), rec))   # another claim
-
-
-class NodeExtensionInTheReview(unittest.TestCase):
-    """Through `review_behaviour`: a divergence that `extends` an obligation without continuing it is
-    refused, so the obligation is not discharged and the review defers."""
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.run = FakeRun(Path(self.tmp.name))
-        self.run.opts.max_divergences = 3
-        self.run.all_concepts = lambda: {}
-        self.saved = (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
-                      review.session.run_tools, review.obligations_of)
-        prior = {**Continuity.PRIOR}
-        review.build_context = lambda *_a, **_kw: ctx()
-        review.replay_obligations = lambda *_a, **_kw: review.Replayed(evidence=[{"case_id": "c1", "case_rendered": "x", "trace": prior["trace"],
-                                                                                  "remedy": "earlier scenes"}])
-        review.obligations_of = lambda *_a, **_kw: [(prior, True)]
-        review.append_ruling = lambda *_a, **_kw: None
-        review.certify = lambda _run, _n, divs, _reading, _out, **_k: {k: cert(rule="compliant") for k in divs}
-        self.judged = []
-
-        def judge(*_a, **_kw):
-            self.judged.append(1)
-            return SimpleNamespace(route="rule_agrees", line="the case", key="k", question="q", row={"stage_a": {"verdict": "violated"}, "case_id": "c2"})
-        review.judge_divergence = judge
-
-    def tearDown(self):
-        (review.build_context, review.replay_obligations, review.judge_divergence, review.certify, review.append_ruling,
-         review.session.run_tools, review.obligations_of) = self.saved
-        self.tmp.cleanup()
-
-    def review(self, d):
-        answer = {"verdict": "return", "divergences": [d], "advisories": [], "gap_candidates": []}
-        review.session.run_tools = scripted_reviewer([submit(answer)] * 3)
-        return review.review_behaviour(self.run, node(), LAW, ONTO, SimpleNamespace(data={"params": []}), {}, [], Path(self.tmp.name))
-
-    def test_an_unrelated_extension_discharges_nothing(self):
-        out = self.review(div(extends="c1", trace={"scenes": [{"t": 0, "users": [{"track": 9}]}]}))
-        self.assertEqual((out.status, self.judged), ("deferred", []))
-        self.assertTrue(any("does not continue" in r for r in out.reasons))
-
-    def test_a_continuing_extension_is_judged(self):
-        out = self.review(div(extends="c1", trace=copy.deepcopy(Continuity.PRIOR["trace"])))
-        self.assertEqual(self.judged, [1])
-        self.assertNotEqual(out.defer_stage, "evidence")
 
 
 class ExecutedFacts(unittest.TestCase):
