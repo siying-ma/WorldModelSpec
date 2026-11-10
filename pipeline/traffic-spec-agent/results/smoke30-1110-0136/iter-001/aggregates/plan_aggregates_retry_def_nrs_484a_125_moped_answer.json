@@ -1,0 +1,391 @@
+{
+ "digest": "4604379c25b53fc37315d4918198905b1bb9b89b3e64685cd3c37483e412bc29",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-125",
+    "term": "moped",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-125::moped",
+    "quote": "“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine",
+    "reason": "The definition denotes a set of road vehicles, defined by kind and engine limits, that the ru.* classes can classify."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-125::moped",
+    "term": "moped",
+    "definition": "DEF-NRS-484A-125",
+    "classifications": [
+     {
+      "class": "ru.moped",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine"
+       }
+      ],
+      "reason": "The class is the low-power small-engine two- or three-wheeler that the admitting clause names."
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "motor-driven cycle or similar vehicle that is propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "The words admit a motor-driven cycle only when it has a small engine and no more than three wheels, and every such cycle is a low-power two- or three-wheeler that carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.motorcycle",
+        "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+       }
+      ]
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "Any self-propelled vehicle the words admit is a small-engine vehicle on no more than three wheels, so it carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.motor_vehicle",
+        "words": "excludes the powered two-wheelers a jurisdiction classes separately below"
+       }
+      ]
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "An emergency-designated vehicle is admitted only if it is a small-engine vehicle on no more than three wheels, and every such vehicle carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "An official vehicle is admitted only if it is a small-engine vehicle on no more than three wheels, and every such vehicle carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.official_vehicle",
+        "words": "a vehicle in official or contracted road service, identifiable by livery or equipment"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "A commercially licensed vehicle is admitted only if it is a small-engine vehicle on no more than three wheels, and every such vehicle carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.commercial_motor_vehicle",
+        "words": "marked as commercially licensed"
+       }
+      ]
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine which produces not more than 2 gross brake horsepower, has a displacement of not more than 50 cubic centimeters or produces not more than 1500 watts final output"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ],
+      "reason": "A vehicle for hire is admitted only if it is a small-engine vehicle on no more than three wheels, and every such vehicle carries ru.moped.",
+      "covered_by": [
+       "ru.moped"
+      ],
+      "basis": [
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       },
+       {
+        "class": "ru.taxicab",
+        "words": "passenger vehicle for hire, identifiable by its markings"
+       }
+      ]
+     },
+     {
+      "class": "ru.bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "The term does not include an electric bicycle"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "The term does not include an electric bicycle or an electric scooter."
+       }
+      ]
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "used exclusively upon stationary rails"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "propelled by a small engine"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.truck",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "Is designed to travel on not more than three wheels in contact with the ground"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device"
+       }
+      ]
+     },
+     {
+      "class": "ru.child",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "a motor-driven scooter, motor-driven cycle or similar vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,60 @@
+'TrafficSpec.Rules.NRS_484B_210_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_210_3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_210_3","intentions":[],"laws":["NRS-484B-210-3"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"or":[{"body":{"and":[{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]}}]},"exists_region":{"lit":"shoulder"},"var":"s"},{"body":{"and":[{"args":[{"var":"x"},{"var":"e"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"e"}],"atom":"st_road_edge_paved","params":[]}}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_210_3","intentions":[],"laws":["NRS-484B-210-3"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"not":{"args":[{"var":"x"},{"var":"y"}],"derived":"drv_interaction_passing_on_right","params":[{"param":"p.same_direction_cos_tolerance"},{"param":"p.motion_speed_tolerance"}]}}]},"forall_user":"y"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"or":[{"body":{"and":[{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"s"}],"atom":"st_shoulder_paved","params":[]}}]},"exists_region":{"lit":"shoulder"},"var":"s"},{"body":{"and":[{"args":[{"var":"x"},{"var":"e"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"e"}],"atom":"st_road_edge_paved","params":[]}}]},"exists_region":{"lit":"road_edge"},"var":"e"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_210_3","intentions":[],"laws":["NRS-484B-210-3"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},{"not":{"and":[{"args":[{"var":"x"},{"var":"y"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cos_tolerance"}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"args":[{"var":"x"},{"var":"y"},{"lit":"left"}],"atom":"rel_bearing","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"add":[{"args":[{"var":"y"}],"measure":"kin_speed"},{"param":"p.motion_speed_tolerance"}]}}]}]}]}}]},"forall_user":"y"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_shoulder,rel_occupies,st_shoulder_paved,st_road_edge,st_road_edge_paved,drv_interaction_passing_on_right
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.longitudinal_overlap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	x
+OCC	?s
+OCC	x,s
+OCC	s
+OCC	?e
+OCC	x,e
+OCC	e
+OCC	?y
+OCC	x,y
+OCC	y
+OCC	x,y
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	72
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	9
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	8
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	7
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	12
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	7
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	7
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	7
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	7
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	6
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	8
+TIME	witnesses	78
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_210_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_210_3.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_210_3	6	9
+TIME	adequacy_start	9
+TIME	adequacy	214
+DONE

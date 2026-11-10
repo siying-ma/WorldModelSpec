@@ -1,0 +1,226 @@
+{
+ "node_id": "NRS_484B_270_3_o2",
+ "law_refs": [
+  "NRS-484B-270-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a motor vehicle shall yield the right-of-way to any person riding a bicycle, an electric bicycle or an electric scooter or a pedestrian as provided in subsection 6 of NRS 484B.297 [NRS-484B-297-6] on the pathway or lane.",
+   "role": "sibling"
+  },
+  {
+   "id": "s2",
+   "text": "The driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall not enter, stop, stand, park or drive within a pathway or lane provided for bicycles, electric bicycles or electric scooters",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "except:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s5",
+   "text": "(a) When entering or exiting an alley or driveway;",
+   "role": "exception"
+  },
+  {
+   "id": "s6",
+   "text": "(b) When operating or parking a disabled vehicle;",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "(c) To avoid conflict with other traffic;",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "(d) In the performance of official duties;",
+   "role": "exception"
+  },
+  {
+   "id": "s9",
+   "text": "(e) In compliance with the directions of a police officer;",
+   "role": "exception"
+  },
+  {
+   "id": "s10",
+   "text": "or (f) In an emergency.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "Motor vehicle aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'); the driver read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [],
+   "justification": "Entering, stopping, standing, parking and driving within a region jointly cover every observation at which the vehicle's footprint overlaps it, moving or halted (DEF-NRS-484A-260 stop 'any halting, even momentarily'; DEF-NRS-484A-250 stand 'the halting of a vehicle'; DEF-NRS-484A-155 park 'the standing of a vehicle'): rel.occupies 'a road user's footprint overlaps a lane / region'. The definitions' own exclusions (a halt to avoid conflict or on an officer's direction) coincide with exceptions (c) and (e). A pathway or lane provided for bicycles, electric bicycles or electric scooters is st.bicycle_lane_or_path 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; the words name the lane's purpose, not road users, so no aggregate is claimed."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.driveway_or_alley_entrance",
+    "st.alley"
+   ],
+   "derived": [],
+   "justification": "Entering or exiting an alley or driveway: during x's current stay on the lane (the run of observations its footprint overlaps it), x's footprint overlaps a st.driveway_or_alley_entrance 'private road, alley or driveway meeting the highway' or a st.alley 'a narrow way within a block serving the rear of properties' (rel.occupies) - at an observation before in the stay (exiting) or after it in the stay (entering)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [],
+   "justification": "To avoid conflict with other traffic is a purpose read through the conduct it explains: at the observation at which x's current stay on the lane began, some road user z other than x that is traffic (DEF-NRS-484A-285::traffic, 'pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway') and not on the lane had a predicted closest approach to x within p.conflict_time_horizon (prim.closest_approach_within) at a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance)."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "In compliance with the directions of a police officer: a dev.human_direction 'a person directing traffic and the direction given' with role police_officer governs (dev.governs) a region x's footprint overlaps at the observation; x's presence in the lane is read as following that direction."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s6",
+   "id": "asm.vehicle_disabled",
+   "meaning": "The road user's vehicle is disabled: it cannot proceed under its own power at the observation."
+  },
+  {
+   "span": "s8",
+   "id": "asm.performing_official_duties",
+   "meaning": "The road user is engaged in the performance of official duties at the observation."
+  },
+  {
+   "span": "s10",
+   "id": "asm.emergency",
+   "meaning": "An emergency is in progress for the road user at the observation."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a motor vehicle. Judged at every observation. Where x's footprint overlaps a bicycle lane or path b, not applicable where any exception holds at the observation: (a) during x's current stay on b, x's footprint overlaps a driveway or alley entrance or an alley at some observation of the stay; (b) asm.vehicle_disabled; (c) at the observation at which the current stay on b began, a road user z other than x that is traffic and not on b had a predicted closest approach to x within p.conflict_time_horizon below p.conflict_centre_clearance; (d) asm.performing_official_duties; (e) a police officer's direction (dev.human_direction role police_officer) governs a region x's footprint overlaps; (f) asm.emergency. Where x's footprint overlaps no bicycle lane or path, no exception is read and the rule applies.",
+ "obligation": "x's footprint overlaps no bicycle lane or path (rel.occupies, st.bicycle_lane_or_path).",
+ "params": [
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The five acts are read jointly as the footprint overlapping the lane; the exclusion in the definition of stopping of a halt in compliance with an official traffic-control device is not read (such a halt within the lane is still driving within it)."
+  },
+  {
+   "span": "s7",
+   "why": "The purpose of avoiding conflict is read through a predicted conflict with other traffic at the moment the vehicle moved onto the lane.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s9",
+   "why": "Compliance with the officer's direction is read as an officer's direction governing the region the vehicle is in.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x drives 50 m along bicycle lane b mid-block; no driveway or alley, no officer, no conflict at entry; the trace declares asm.vehicle_disabled, asm.performing_official_duties and asm.emergency false."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x drives in the general lane next to b, never overlapping b."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x crosses b to turn into a driveway: during the stay its footprint overlaps a st.driveway_or_alley_entrance."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.occupies is not observed, so whether x is on b is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x drives in b while a dev.human_direction with role police_officer governs b and directs traffic through it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "x swerves onto b at the moment a vehicle merging from the left has a predicted closest approach to x of 1 m in 1 s."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict: about a passenger car's half-length plus a crossing road user's half-length with a small margin, since the distance is between reference points.",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

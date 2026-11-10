@@ -1,0 +1,204 @@
+{
+ "node_id": "NRS_484B_270_7b",
+ "law_refs": [
+  "NRS-484B-270-7b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "v1",
+   "text": "The operator of a bicycle,",
+   "role": "subject"
+  },
+  {
+   "id": "v2",
+   "text": "an electric bicycle",
+   "role": "subject"
+  },
+  {
+   "id": "v3",
+   "text": "or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "v4",
+   "text": "shall not: Overtake and pass a motor vehicle",
+   "role": "obligation"
+  },
+  {
+   "id": "v5",
+   "text": "unless the operator can do so safely without endangering himself or herself or the occupants of the motor vehicle.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "v1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle"
+   ],
+   "derived": [],
+   "justification": "'bicycle' is the admitted aggregate DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride, having two tandem wheels ... except a moped'); claimed as the aggregate, never expanded into classes. 'The operator of' names who controls the device, read through the device's controlled motion (agency reading below), so the aggregate is the subject's class."
+  },
+  {
+   "span": "v2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle"
+   ],
+   "derived": [],
+   "justification": "'an electric bicycle' is the admitted aggregate DEF-NRS-484B-017::electric_bicycle ('a device upon which a person may ride, having two or three wheels ... an electric motor which produces not more than 750 watts'); claimed as the aggregate."
+  },
+  {
+   "span": "v3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'an electric scooter' is the admitted aggregate DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor that is designed to be ridden on'); claimed as the aggregate."
+  },
+  {
+   "span": "v4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [
+    "drv.interaction.overtaking"
+   ],
+   "justification": "Overtaking and passing is drv.interaction.overtaking(x, y): the two head the same way, are side by side (footprints overlapping along x's heading) and x gains on y; the concept states no side, as the words state none. The overtaken party is 'a motor vehicle', the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails. The term does not include an electric bicycle or an electric scooter'), as the mapping index maps 'The driver of a motor vehicle'. The motor vehicle is quantified in the rule, not a binder: the duty arises only where one is overtaken."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "v5",
+   "standard": "can do so safely without endangering himself or herself or the occupants of the motor vehicle",
+   "concepts": [
+    "rel.surface_gap",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.overtaking_lateral_clearance",
+    "p.conflict_time_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Endangering the occupants of the motor vehicle and the rider himself or herself is read through the measured clearance of the pass and through predicted conflicts: the lateral component of rel.surface_gap between the rider and the overtaken motor vehicle ('distance between the nearest points of two bodies ... its longitudinal and lateral components') is compared with the lateral clearance of the bicycle operating envelope, so the bound moves with the measured gap; and no other road user stands in a predicted conflict with the rider under the traffic-conflict technique (closest approach within the time horizon at a centre distance below the conflict clearance), the magnitude of the predicted closest approach entering the bound. A rel.surface_gap is a clearance, not a centre distance, so the side-by-side pass itself is judged on the bodies' gap.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a member of one of the admitted aggregates DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter that, at the judged observation, overtakes some road user y other than x that is a member of DEF-NRS-484A-130::motor_vehicle: drv.interaction.overtaking(x, y) with p.same_direction_cos_tolerance and p.motion_speed_tolerance.",
+ "obligation": "For every motor vehicle y (ru.aggregate DEF-NRS-484A-130::motor_vehicle, not x) that x overtakes at the observation: the lateral component of rel.surface_gap between x and y is at least p.overtaking_lateral_clearance, and no road user z other than x and y is in a predicted conflict with x, that is, not both prim.closest_approach_within(x, z) over p.conflict_time_horizon and prim.closest_approach_distance(x, z) over that horizon below p.conflict_centre_clearance. Violated where x overtakes a motor vehicle while either bound fails.",
+ "params": [
+  "p.same_direction_cos_tolerance",
+  "p.motion_speed_tolerance",
+  "p.overtaking_lateral_clearance",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "v1",
+   "why": "'The operator of' names who controls the bicycle, electric bicycle or electric scooter; it is read through the device's controlled motion, whoever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "v4",
+   "why": "Overtaking and passing is judged in its side-by-side phase, where the rider gains on the motor vehicle with the footprints overlapping along the rider's heading; the approach from behind and the moment of drawing clear ahead are not separately judged."
+  },
+  {
+   "span": "v5",
+   "why": "Safety and endangering are read only through the lateral clearance to the overtaken motor vehicle and predicted conflicts of the rider with other road users; other hazards of the manoeuvre (surface, visibility) are not read."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A bicycle travels beside a car in the same direction, footprints overlapping along its heading, 2 m/s faster than the car, with the lateral surface gap between them well below the lateral clearance; no other road user is present."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same pass with a lateral surface gap above the lateral clearance and no other road user in predicted conflict."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "An electric scooter rides alone on the road; no motor vehicle is present, so nothing is overtaken."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "An electric bicycle overtakes a car side by side; the source does not supply surface gaps.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A bicycle overtakes a car with an ample lateral gap while a truck approaching head-on is predicted to come within the conflict clearance of the bicycle within the horizon."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cos_tolerance",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "Heading alignment: cosine of the largest angle between two headings still read as the same way of travel (about a quarter of a right angle).",
+   "source": "Trajectory-based heading classification of road users."
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of tracked road users."
+  },
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Traffic-conflict technique and time-to-collision studies (Hayward 1972; Hyden 1987)."
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict.",
+   "source": "Traffic-conflict technique; passenger-car design vehicle dimensions (AASHTO)."
+  },
+  {
+   "name": "p.overtaking_lateral_clearance",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Lateral clearance of the bicycle operating envelope: the shy distance between a bicyclist's body and a motor vehicle beside it below which the pass is close enough to endanger either.",
+   "source": "AASHTO Guide for the Development of Bicycle Facilities (bicyclist operating space and shy distance to motor vehicles, about 1 m)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

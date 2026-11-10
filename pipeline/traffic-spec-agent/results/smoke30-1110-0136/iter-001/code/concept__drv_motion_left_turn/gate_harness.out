@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.left_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"and":[{"cmp":"ge","lhs":{"args":[{"var":"x"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"min_angle"}},{"cmp":"lt","lhs":{"args":[{"var":"x"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"max_angle"}}]},"contract":"A road user has turned to the left: over the window of length `window` behind the observation, its heading changed to the left (prim.heading_change, left positive) by at least `min_angle` and by less than `max_angle`, the change at which the heading has come round to the opposite direction (a reversal, not a left turn). The act is recognized at the observation at which the window's heading change entered that band. The act began within the window behind that observation. The concept holds while the window's change stays in the band, and ends when the change leaves it. No conduct before the window is read. Not denoted: a right turn; a reversal of direction; a lane change or a bend's drift below `min_angle`; where the turn is made, which the caller states.","definition":null,"id":"drv.motion.left_turn","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"min_angle","unit":"degree"},{"name":"max_angle","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	prim_heading_change
+READS	prim_heading_change
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"ge","lhs":{"args":[{"var":"x"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"min_angle"}},{"cmp":"lt","lhs":{"args":[{"var":"x"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"},"rhs":{"param":"max_angle"}}]}
+WITNESS	holds	drv.motion.left_turn@w
+WITNESS	fails	drv.motion.left_turn@w
+WITNESS	blind	drv.motion.left_turn@w
+OCC	x
+OCC	x
+INST	drv.motion.left_turn@w	ok
+TIME	checks	3
+TIME	lint	5
+SCEN	holds	drv.motion.left_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.left_turn@w/holds	32
+SCEN	fails	drv.motion.left_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.left_turn@w/fails	30
+SCEN	blind	drv.motion.left_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.left_turn@w/blind	43
+TIME	witnesses	105
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.left_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.left_turn@w	2	2
+TIME	adequacy_start	6
+TIME	adequacy	187
+DONE

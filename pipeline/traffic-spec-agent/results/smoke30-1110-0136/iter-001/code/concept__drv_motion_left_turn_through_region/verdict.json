@@ -1,0 +1,89 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}},\"rhs\":{\"param\":\"$p1\"}},{\"cmp\":\"lt\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}},\"rhs\":{\"param\":\"$p2\"}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "ge",
+       "lhs": {
+        "heading_since": "x",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       },
+       "rhs": {
+        "param": "min_angle"
+       }
+      },
+      {
+       "cmp": "lt",
+       "lhs": {
+        "heading_since": "x",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       },
+       "rhs": {
+        "param": "max_angle"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "324e2035936f86fd27ed5534",
+  "candidate_digest": "a688eec59b4374beb894ff66d4435c9502044e44b7fbd870946336d40e0a69de"
+ }
+}

@@ -1,0 +1,365 @@
+{
+ "digest": "00759dbd6de0f4f514d4a4a0082c4e0be10d9316a1da913d7e2a14cb247fcb21",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-285",
+    "term": "traffic",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-285::traffic",
+    "quote": "“Traffic” means pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel.",
+    "reason": "The definition enumerates the road users that make up traffic: pedestrians, vehicles and other conveyances, with highway use for travel being a contextual condition rather than membership."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-285::traffic",
+    "term": "traffic",
+    "definition": "DEF-NRS-484A-285",
+    "classifications": [
+     {
+      "class": "ru.bicycle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles and other conveyances"
+       },
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "“Bicycle” means a device propelled by human power upon which a person may ride"
+       }
+      ],
+      "reason": "Bicycles are excluded from vehicle as devices moved by human power, but traffic admits other conveyances besides vehicles, and a bicycle is a device upon which a person may ride."
+     },
+     {
+      "class": "ru.bus",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A bus is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.child",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "pedestrians"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device as defined in NRS 482.029."
+       }
+      ],
+      "reason": "Traffic admits a child only as a pedestrian, and every member of ru.child is by its contract a pedestrian, so every admitted child already carries the included class ru.pedestrian.",
+      "covered_by": [
+       "ru.pedestrian"
+      ],
+      "basis": [
+       {
+        "class": "ru.child",
+        "words": "pedestrian who is visibly a child"
+       },
+       {
+        "class": "ru.pedestrian",
+        "words": "a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A commercial motor vehicle is a device in which persons or property are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles and other conveyances"
+       },
+       {
+        "definition": "DEF-NRS-484B-017",
+        "words": "“Electric bicycle” means a device upon which a person may ride"
+       }
+      ],
+      "reason": "Electric bicycles are excluded from vehicle, but traffic admits other conveyances besides vehicles, and an electric bicycle is a device upon which a person may ride."
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles and other conveyances"
+       },
+       {
+        "definition": "DEF-NRS-484B-018",
+        "words": "“Electric scooter” means a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position"
+       }
+      ],
+      "reason": "Electric scooters are excluded from vehicle, but traffic admits other conveyances besides vehicles, and an electric scooter is designed to be ridden on."
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "An emergency vehicle is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "Fire apparatus is a device in which persons and property are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.moped",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle"
+       }
+      ],
+      "reason": "A moped is defined as a vehicle and is not among the exceptions to vehicle."
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A motor vehicle is a device in which persons or property are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A motorcycle is a device upon which a person is transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "An official vehicle is a device in which persons or property are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "pedestrians"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device as defined in NRS 482.029."
+       }
+      ],
+      "reason": "Traffic expressly admits pedestrians."
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "pedestrians"
+       },
+       {
+        "definition": "DEF-NRS-484A-165",
+        "words": "“Pedestrian” means a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device as defined in NRS 482.029."
+       }
+      ],
+      "reason": "Traffic admits this class only as pedestrians, and every member of it is by its contract a pedestrian, so every admitted member already carries the included class ru.pedestrian.",
+      "covered_by": [
+       "ru.pedestrian"
+      ],
+      "basis": [
+       {
+        "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+        "words": "pedestrian carrying a white or white-and-red cane, accompanied by a guide animal, or led by another person"
+       },
+       {
+        "class": "ru.pedestrian",
+        "words": "a person on foot, in a wheelchair, or on a device the jurisdiction treats as on foot"
+       }
+      ]
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles and other conveyances"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power or used exclusively upon stationary rails"
+       }
+      ],
+      "reason": "Rail equipment is excepted from vehicle, but traffic admits other conveyances besides vehicles, and on-track equipment is a device in which persons or property are transported."
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A school bus is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A taxicab is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A tour bus or limousine is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles and other conveyances either singly or together"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A trailer is a device by which property is drawn upon a highway, and traffic admits vehicles singly or together."
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A transit bus is a device in which persons are transported upon a highway, so it is a vehicle."
+     },
+     {
+      "class": "ru.truck",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-285",
+        "words": "vehicles"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ],
+      "reason": "A truck is a device in which property is transported upon a highway, so it is a vehicle."
+     }
+    ]
+   }
+  ]
+ }
+}

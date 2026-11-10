@@ -1,0 +1,255 @@
+{
+ "node_id": "NRS_484B_227_1_o3",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "or make any left turn, semicircular turn or U-turn",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "or at a crossover or intersection established by a public authority",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'); 'Every' gives the duty to each member."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.highway",
+    "st.median_or_divider",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Divided highway' (DEF-NRS-484A-070: 'a highway divided into two or more roadways by means of a physical barrier or dividing section') is a st.highway region ('the entire public way between its boundary lines') on which a st.median_or_divider region ('physical barrier or dividing section between roadways') lies (st.on_way: 'the public way ... a structure region lies on'). 'upon' anchors the subject: rel.occupies on that highway. 'driven' is read through the vehicle's presence on the road (agency); the definition's 'constructed so as to impede the conflict of vehicular traffic traveling in opposite directions' is read through the divider's presence (purpose)."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.left_turn",
+    "drv.motion.u_turn"
+   ],
+   "justification": "The 'must not' of the preceding words governs this list ('must not be driven over ... or make any ...'). 'left turn' is drv.motion.left_turn (heading change to the left over the recognition window, short of a reversal); 'U-turn' (DEF-NRS-484B-077: 'the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not') is drv.motion.u_turn; a 'semicircular turn' turns the vehicle through a half circle so that it proceeds the opposite way, a reversal of heading that drv.motion.u_turn recognizes however the turn is made."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'an opening in the barrier or dividing section or space' is the st.median_or_divider region carrying its 'opening attribute where a crossover exists'; 'through' it is the footprint overlapping that opening region (rel.occupies)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a crossover' is the divider's opening (st.median_or_divider: 'opening attribute where a crossover exists'); 'intersection' (DEF-NRS-484A-105; on a divided highway 'every crossing of each roadway ... shall be regarded as a separate intersection') is st.intersection: 'the region where two roadways meet', 'not a stand-in for a crosswalk or a stop line', neither of which is read. 'at' is the footprint overlapping the opening or the intersection (rel.occupies). 'established by a public authority' is read through the feature's presence (status reading)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and either x occupies a divided highway at the observation (existsRegion st.highway h: rel.occupies(x, h) and existsRegion st.median_or_divider m: st.on_way(m, h)), or it did so at some observation of the window of p.turn_recognition_window behind at which drv.motion.turning(x; p.yaw_rate_tolerance) held (some moment of a turn under way).",
+ "obligation": "At an observation at which drv.motion.left_turn(x; p.turn_recognition_window, p.left_turn_min_angle, p.reversal_min_angle) or drv.motion.u_turn(x; p.turn_recognition_window, p.reversal_min_angle, p.reversal_max_angle) rises (the act's recognition), the act is excepted only where, at some observation of the window of p.turn_recognition_window behind at which drv.motion.turning(x; p.yaw_rate_tolerance) held, x's footprint overlapped a st.median_or_divider region whose opening attribute holds or a st.intersection region; otherwise violated. At observations at which neither act rises the duty is met.",
+ "params": [
+  "p.turn_recognition_window",
+  "p.left_turn_min_angle",
+  "p.reversal_min_angle",
+  "p.reversal_max_angle",
+  "p.yaw_rate_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's presence on the road: a vehicle on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "'established by a public authority' (the legal status of the crossover or intersection) is read through the opening's or the intersection's presence on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "The turns are recognized over a window of fixed length: a turn or reversal that takes longer than the window is not recognized, and the moments of the act are read as the turning observations of that window, which may include a separate turn made just before.",
+   "kind": "reading"
+  }
+ ],
+ "occasion": {
+  "act": [
+   "drv.motion.left_turn",
+   "drv.motion.u_turn"
+  ],
+  "boundary": "window",
+  "window": "p.turn_recognition_window",
+  "under_way": {
+   "words": "or make any left turn, semicircular turn or U-turn",
+   "atoms": [],
+   "derived": [
+    "drv.motion.turning"
+   ],
+   "justification": "An observation is inside the turn where it lies in the recognition window behind the act's recognition and the vehicle's heading is changing there (drv.motion.turning, its yaw rate above the resolution); observations of the window at which it drives straight, before the turn began, are not inside it."
+  },
+  "spans": {
+   "s2": "some_moment",
+   "s6": "some_moment",
+   "s7": "some_moment"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a divided highway a car makes a U-turn within its right-hand roadway between intersections, nowhere near a median opening: heading reverses within the window; no intersection or opening is overlapped while it turns."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car drives straight along the right-hand roadway of the divided highway; no turn rises."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car makes a U-turn on an undivided highway; it was on no divided highway in the window."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with kin.yaw_rate declared absent, so the heading change over the window is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "occasion_s2",
+   "expected": "violated",
+   "narrative": "A car begins a left turn on the divided highway mid-block, crossing toward a side driveway without an opening, and completes the turn off the divided highway; it was on the divided highway at turning observations of the window."
+  },
+  {
+   "name": "occasion_s2_outside",
+   "expected": "not_applicable",
+   "narrative": "A car leaves the divided highway onto an undivided road, drives straight on it, then turns left there; at no turning observation of the window was it on the divided highway."
+  },
+  {
+   "name": "occasion_s6",
+   "expected": "compliant",
+   "narrative": "A car makes a U-turn through a median opening: at some turning observations its footprint overlaps the median region whose opening attribute holds."
+  },
+  {
+   "name": "occasion_s6_outside",
+   "expected": "violated",
+   "narrative": "A car drives straight past and over a median opening region, then later, mid-block, reverses its heading within the roadway; while it turns it overlaps no opening and no intersection."
+  },
+  {
+   "name": "occasion_s7",
+   "expected": "compliant",
+   "narrative": "A car turns left at an intersection of the divided highway: its footprint overlaps the st.intersection region at turning observations."
+  },
+  {
+   "name": "occasion_s7_outside",
+   "expected": "violated",
+   "narrative": "A car drives straight through an intersection, then mid-block makes a U-turn within the roadway; while it turns it overlaps no intersection and no opening."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_recognition_window",
+   "unit": "s",
+   "value": 15.0,
+   "convention": "The time within which a turn or a reversal, a reversal made in several moves included, is completed: the window over which the heading change that recognizes it is measured.",
+   "source": "Intersection turning times and three-point-turn durations in naturalistic driving data."
+  },
+  {
+   "name": "p.left_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "The heading change to the left beyond which a manoeuvre is a turn rather than a lane change or a bend's drift.",
+   "source": "Turning-movement classification practice in trajectory studies."
+  },
+  {
+   "name": "p.reversal_min_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "The heading change magnitude from which the heading has come round to the opposite direction (a reversal); also the upper end of a left turn's band.",
+   "source": "U-turn classification practice in trajectory studies."
+  },
+  {
+   "name": "p.reversal_max_angle",
+   "unit": "deg",
+   "value": 210.0,
+   "convention": "The heading change magnitude beyond which the heading has come round past the opposite direction (a loop rather than a reversal).",
+   "source": "U-turn classification practice in trajectory studies."
+  },
+  {
+   "name": "p.yaw_rate_tolerance",
+   "unit": "deg/s",
+   "value": 2.0,
+   "convention": "Yaw-rate resolution: the noise floor of a source's yaw-rate estimate, below which a heading is read as not changing.",
+   "source": "Vehicle IMU and tracker yaw-rate noise figures."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

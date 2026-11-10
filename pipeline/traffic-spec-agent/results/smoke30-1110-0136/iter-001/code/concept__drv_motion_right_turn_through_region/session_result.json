@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 86170,
+  "stop_reason": "end_turn",
+  "session_id": "d33fe5ec-2440-4803-9a9d-b59dceed9f9a",
+  "total_cost_usd": 0.7069271,
+  "usage": {
+   "input_tokens": 16,
+   "cache_creation_input_tokens": 55446,
+   "cache_read_input_tokens": 354157,
+   "output_tokens": 9457,
+   "output_tokens_details": {
+    "thinking_tokens": 3094
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 55446,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 637,
+     "cache_read_input_tokens": 58779,
+     "cache_creation_input_tokens": 1105,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1105
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33152,
+    "outputTokens": 17,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033237,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 9457,
+    "cacheReadInputTokens": 354157,
+    "cacheCreationInputTokens": 55446,
+    "webSearchRequests": 0,
+    "costUSD": 0.7036034,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3094,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The concept `drv.motion.right_turn_through_region` passes the gate with **OK** on the second of 6 runs. The concept file, the witness file and `task_result.md` are written.\n\n**What the concept says:** it holds only at the observation where the road user leaves the region and its heading has changed to the right by at least `min_angle` but less than `max_angle` since it entered.\n- **Leaving the region:** `rises (not (rel_occupies x i))`, meaning it overlapped the region at the previous observation but not at this one.\n- **Heading change since entry:** `Term.headingSince \"x\" step (rel_occupies x i)`, which adds up the yaw rate from the last time the overlap began. If the recording doesn't show the entry, the change is unknown.\n- **The band:** written as `≤ -min_angle` and `> -max_angle`.\n- **Narrowings:** none. Every phrase of the contract maps directly onto an atom or operator the record names.\n\n**Witnesses:**\n- **Setup:** one car at 8 m/s, an intersection from (0, −10) to (20, 10) m, and five observations one second apart: entry at t=1000, exit at t=4000.\n- **Instance values:** `step` = 1 s, `min_angle` = 45°, `max_angle` = 180°.\n- **holds:** a right turn ending heading south, a change of −90°.\n- **fails:** the mirror-image left turn ending heading north, +90°.\n- **blind:** the right turn with `kin.yaw_rate` masked, so the result is unknown.\n- **Judging window:** all three are judged only at the exit observation (`window = [4000, 4000]`), the one instant where the concept can hold.\n\n**Gate runs:**\n1. **WITNESS_FAIL:** in the last step the car's position moved about 9.05 m, but its recorded path length grew only 8 m. I moved the exit point to (15, ∓13).\n2. **OK.**",
+  "ttft_ms": 11368,
+  "type": "result",
+  "duration_ms": 93534,
+  "uuid": "f6cc22c0-5f60-4d6c-9a07-2e13e131b2b4",
+  "ttft_stream_ms": 602,
+  "time_to_request_ms": 86,
+  "time_to_request_phases_ms": {
+   "other": 15,
+   "system_prompt": 23,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 15,
+   "input_hooks": 3,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 36,
+  "time_to_request_cpu_ms": 128,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "mcp_resources",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 21,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 602,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33152,
+    "outputTokens": 17,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033237,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 9457,
+    "cacheReadInputTokens": 354157,
+    "cacheCreationInputTokens": 55446,
+    "webSearchRequests": 0,
+    "costUSD": 0.7036034,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3094,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

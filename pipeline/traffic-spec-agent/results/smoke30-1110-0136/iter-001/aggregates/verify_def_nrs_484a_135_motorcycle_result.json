@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-135::motorcycle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes human-powered devices, which the quoted vehicle definition expressly excludes.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract specifies passenger capacity but no wheel count, so the three-wheel ceiling does not exclude every member.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons, whereas the admitting words require motor vehicles.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the admitting words nor the commercial-vehicle contract requires riding astride, so admitted members need not carry ru.motorcycle.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The express electric-bicycle exception reaches the class identified through the jurisdiction's electric-bicycle taxonomy.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract omits the statutory weight and speed limits, leaving both excluded scooters and potentially qualifying motorcycles within its scope.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation does not require riding astride, so a member satisfying the admitting words need not satisfy ru.motorcycle's contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting-vehicle contract imposes no wheel count, so the quoted ceiling does not establish exclusion of every member.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition expressly excludes mopeds, matching the contract's reliance on the jurisdiction's moped classification.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Excluding separately classed powered two-wheelers does not ensure that every admitted remaining vehicle is ridden astride as ru.motorcycle requires.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract supplies a motor vehicle ridden astride on two or three wheels, matching the admitting requirements without an exception removing this class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official road service and identifying equipment do not require riding astride, so admitted members need not carry ru.motorcycle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons rather than the motor vehicles required by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes pedestrians with specified assistance, not motor vehicles admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes on-track equipment, which the quoted exclusion of vehicles operated upon rails removes.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School designation and markings impose no wheel count, so the quoted three-wheel ceiling does not exclude every member.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The passenger-for-hire contract does not require riding astride, so admitted members need not satisfy ru.motorcycle's contract.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither branch of the contract specifies a wheel count that necessarily exceeds the quoted three-wheel ceiling.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The self-propulsion requirement rules out a merely drawn vehicle but does not establish that every combination falls outside the definition.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying displays impose no wheel count, so the quoted ceiling does not establish exclusion.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The goods-carrying body requirement does not entail more than three wheels, so the quoted ceiling does not exclude every member.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 47178,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5141,
+   "input_tokens_details": {
+    "cache_write_tokens": 5138,
+    "cached_tokens": 0
+   },
+   "output_tokens": 2245,
+   "output_tokens_details": {
+    "reasoning_tokens": 1162
+   },
+   "total_tokens": 7386
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_0f45f3db90f233ff016af2dfdd229c87d08d4e30e63c199ede",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

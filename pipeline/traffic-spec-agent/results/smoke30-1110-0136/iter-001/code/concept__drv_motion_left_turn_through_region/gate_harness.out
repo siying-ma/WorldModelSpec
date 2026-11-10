@@ -1,0 +1,35 @@
+'TrafficSpec.Concepts.motion.left_turn_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"i","sort":{"sort":"region"}}],"body":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"max_angle"}}]}]},"contract":"A road user has turned to the left through a region, such as an intersection the caller passes: at the observation it leaves the region (its footprint overlaps the region, rel.occupies, at the observation before and not at this one), and its heading change since its entry, integrated from its yaw rate (kin.yaw_rate, left positive) with sampling step bound `step`, is at least `min_angle` and below `max_angle`, the band in which the crossing counts as a left turn rather than a through movement or a reversal. The act begins at the entry, the observation at which the overlap last became true. The act is recognized at the observation it leaves the region. The concept holds only at the exit observation, ending at the next observation. Conduct before the entry is not read. Not denoted: a through movement or a heading change to the left below `min_angle`; a turn to the right; a reversal, a change at or beyond `max_angle`; a road user still within the region; which carrier it entered from, which the caller states; a crossing whose entry the recording does not show, for which the heading change since entry is unknown.","definition":null,"id":"drv.motion.left_turn_through_region","kind":"formula","narrowings":[],"params":[{"name":"step","unit":"second"},{"name":"min_angle","unit":"degree"},{"name":"max_angle","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	rel_occupies,kin_yaw_rate,kin_time
+READS	rel_occupies,kin_yaw_rate,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"max_angle"}}]}]}
+WITNESS	holds	drv.motion.left_turn_through_region@w
+WITNESS	fails	drv.motion.left_turn_through_region@w
+WITNESS	blind	drv.motion.left_turn_through_region@w
+OCC	x,i
+OCC	x
+OCC	x,i
+OCC	x
+OCC	x,i
+INST	drv.motion.left_turn_through_region@w	ok
+TIME	checks	1
+TIME	lint	13
+SCEN	holds	drv.motion.left_turn_through_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.left_turn_through_region@w/holds	15
+SCEN	fails	drv.motion.left_turn_through_region@w	violated	violated	ok
+TIME	scenario:drv.motion.left_turn_through_region@w/fails	12
+SCEN	blind	drv.motion.left_turn_through_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.left_turn_through_region@w/blind	19
+TIME	witnesses	46
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.left_turn_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.left_turn_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.left_turn_through_region@w	3	2
+TIME	adequacy_start	6
+TIME	adequacy	105
+DONE

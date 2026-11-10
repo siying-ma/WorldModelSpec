@@ -1,0 +1,110 @@
+{
+  "aggregate_id": "DEF-NRS-484A-050::combination_of_vehicles",
+  "classifications": [
+    {
+      "class": "ru.trailer_or_combination",
+      "verdict": "supported",
+      "reason": "The contract expressly includes a combination, matching the admitting words 'two or more vehicles coupled together', and no exception removes that class."
+    },
+    {
+      "class": "ru.bicycle",
+      "verdict": "supported",
+      "reason": "The exception for devices moved by human power describes the human-powered devices in this class's contract."
+    },
+    {
+      "class": "ru.electric_bicycle",
+      "verdict": "supported",
+      "reason": "The vehicle definition expressly excepts electric bicycles, which this class identifies according to the jurisdiction's taxonomy."
+    },
+    {
+      "class": "ru.electric_scooter",
+      "verdict": "supported",
+      "reason": "The vehicle definition expressly names electric scooters as an exception."
+    },
+    {
+      "class": "ru.rail_vehicle",
+      "verdict": "contradicted",
+      "reason": "The contract does not require exclusive stationary-rail use, so it permits non-excepted coupled combinations that satisfy the admitted combination branch of ru.trailer_or_combination."
+    },
+    {
+      "class": "ru.pedestrian",
+      "verdict": "supported",
+      "reason": "The contract describes a person rather than two or more coupled vehicles, including when that person uses a wheelchair or another pedestrian device."
+    },
+    {
+      "class": "ru.child",
+      "verdict": "supported",
+      "reason": "A pedestrian who is visibly a child is a person, not the coupled vehicles required by the admitting words."
+    },
+    {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "verdict": "supported",
+      "reason": "The contract describes a pedestrian with specified assistance, none of which makes that person two or more coupled vehicles."
+    },
+    {
+      "class": "ru.motor_vehicle",
+      "verdict": "supported",
+      "reason": "Any member admitted as two or more coupled vehicles necessarily satisfies the combination branch of the quoted ru.trailer_or_combination contract."
+    },
+    {
+      "class": "ru.truck",
+      "verdict": "supported",
+      "reason": "Any truck-class road user admitted by the coupled-vehicles definition is itself a combination and therefore carries ru.trailer_or_combination under its quoted contract."
+    },
+    {
+      "class": "ru.bus",
+      "verdict": "supported",
+      "reason": "Any bus-class road user admitted by the definition must be a combination, which the quoted ru.trailer_or_combination contract expressly covers."
+    },
+    {
+      "class": "ru.school_bus",
+      "verdict": "supported",
+      "reason": "School-bus designation alone does not satisfy the definition, and every admitted school-bus-class combination satisfies the covering contract's combination branch."
+    },
+    {
+      "class": "ru.transit_bus",
+      "verdict": "supported",
+      "reason": "Transit service alone does not satisfy the definition, and every admitted transit-bus-class combination carries ru.trailer_or_combination under the quoted contract."
+    },
+    {
+      "class": "ru.tour_bus_or_limousine",
+      "verdict": "supported",
+      "reason": "For either branch of this class's contract, an admitted road user must be a coupled combination and thus satisfy the covering contract's combination branch."
+    },
+    {
+      "class": "ru.taxicab",
+      "verdict": "supported",
+      "reason": "Passenger-for-hire status does not establish a combination, while every admitted taxicab-class combination satisfies the quoted covering contract."
+    },
+    {
+      "class": "ru.commercial_motor_vehicle",
+      "verdict": "supported",
+      "reason": "Commercial mass or licensing does not establish coupling, and every admitted commercial-class combination carries ru.trailer_or_combination under its quoted contract."
+    },
+    {
+      "class": "ru.emergency_vehicle",
+      "verdict": "supported",
+      "reason": "Emergency designation alone does not establish a combination, and every admitted emergency-class combination satisfies the quoted covering contract without requiring responding conduct."
+    },
+    {
+      "class": "ru.fire_apparatus",
+      "verdict": "supported",
+      "reason": "Fire-fighting function alone does not satisfy the definition, and any admitted fire-apparatus-class combination satisfies the covering contract's combination branch."
+    },
+    {
+      "class": "ru.official_vehicle",
+      "verdict": "supported",
+      "reason": "Official road service alone does not establish coupling, and every admitted official-class combination satisfies the quoted ru.trailer_or_combination contract."
+    },
+    {
+      "class": "ru.motorcycle",
+      "verdict": "supported",
+      "reason": "Any motorcycle-class road user admitted as two or more coupled vehicles necessarily satisfies the combination branch of the quoted covering contract."
+    },
+    {
+      "class": "ru.moped",
+      "verdict": "supported",
+      "reason": "The posted words identify a moped as a vehicle without excepting that class, and any admitted moped-class combination necessarily satisfies the quoted covering contract."
+    }
+  ]
+}

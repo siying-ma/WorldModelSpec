@@ -1,0 +1,167 @@
+{
+ "node_id": "NRS_484B_227_1_o2",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "or make any left turn, semicircular turn or U-turn",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "or at a crossover or intersection established by a public authority",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'); 'Every' gives the duty to each member."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.highway",
+    "st.median_or_divider",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Divided highway' (DEF-NRS-484A-070: 'a highway divided into two or more roadways by means of a physical barrier or dividing section') is a st.highway region ('the entire public way between its boundary lines') on which a st.median_or_divider region ('physical barrier or dividing section between roadways') lies (st.on_way: 'the public way ... a structure region lies on'). 'upon' anchors the subject: rel.occupies on that highway. 'driven' is read through the vehicle's presence on the road (agency); the definition's 'constructed so as to impede the conflict of vehicular traffic traveling in opposite directions' is read through the divider's presence (purpose)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'any dividing space, barrier or section' is st.median_or_divider: 'physical barrier or dividing section between roadways'. 'driven over, across or within' it is the footprint overlapping it at the observation: rel.occupies ('a road user's footprint overlaps a lane / region (... median ...)'), which holds over, across and within alike."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'an opening in the barrier or dividing section or space' is the st.median_or_divider region carrying its 'opening attribute where a crossover exists'; 'through' it is the footprint overlapping that opening region (rel.occupies)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a crossover' is the divider's opening (st.median_or_divider: 'opening attribute where a crossover exists'); 'intersection' (DEF-NRS-484A-105; on a divided highway 'every crossing of each roadway ... shall be regarded as a separate intersection') is st.intersection: 'the region where two roadways meet', 'not a stand-in for a crosswalk or a stop line', neither of which is read. 'at' is the footprint overlapping the opening or the intersection (rel.occupies). 'established by a public authority' is read through the feature's presence (status reading)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and existsRegion st.highway h: rel.occupies(x, h) and existsRegion st.median_or_divider m: st.on_way(m, h).",
+ "obligation": "forallRegion st.median_or_divider m: (rel.occupies(x, m) and st.on_way(m, h) for a highway h x occupies) implies (the opening attribute of m holds, or existsRegion st.intersection i: rel.occupies(x, i)).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's presence on the road: a vehicle on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s7",
+   "why": "'established by a public authority' (the legal status of the crossover or intersection) is read through the opening's or the intersection's presence on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car drives across a raised median section without an opening, between intersections: its footprint overlaps a st.median_or_divider region whose opening attribute is false, and no intersection."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car moves along the right-hand roadway; its footprint overlaps no median or divider region."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car on an undivided highway (no st.median_or_divider on it) crosses its painted centre line."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car moves next to the median; rel.occupies is declared absent.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car crosses the median through a crossover: its footprint overlaps a median region whose opening attribute is true."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car turning at an intersection of the divided highway clips the median nose: its footprint overlaps the median and the st.intersection region."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

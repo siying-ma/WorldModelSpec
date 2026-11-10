@@ -1,0 +1,72 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.heading",
+   "st.lane_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"sub\":[{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]}]}",
+  "body_json": {
+   "sub": [
+    {
+     "mul": [
+      {
+       "args": [
+        {
+         "var": "c"
+        },
+        {
+         "lit": "x"
+        }
+       ],
+       "measure": "st_lane_direction"
+      },
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "lit": "y"
+        }
+       ],
+       "measure": "kin_heading"
+      }
+     ]
+    },
+    {
+     "mul": [
+      {
+       "args": [
+        {
+         "var": "c"
+        },
+        {
+         "lit": "y"
+        }
+       ],
+       "measure": "st_lane_direction"
+      },
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "lit": "x"
+        }
+       ],
+       "measure": "kin_heading"
+      }
+     ]
+    }
+   ]
+  },
+  "context": "2534207cf8524debb69aba1d",
+  "candidate_digest": "ea6aea7423741b4324f8b5325ca5d82f97a7fedb29089e6e708000438732aec1"
+ }
+}

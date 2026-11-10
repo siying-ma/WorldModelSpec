@@ -1,0 +1,38 @@
+'TrafficSpec.Concepts.lane.heading_offset_from_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.heading_offset_from_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.heading_offset_from_direction.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"c","sort":{"sort":"region"}}],"body":{"sub":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]}]},"contract":"The signed departure of a road user's heading from a carrier's designated direction of travel at the observation, left positive: the sine of the angle from the carrier's direction (st.lane_direction) to the road user's heading (kin.heading), computed as the cross product of the two normalised vectors, the direction's first component times the heading's second minus the direction's second component times the heading's first. A ratio between -1 and 1 up to the normalisation factor both atoms carry; positive where the heading points to the left of the direction, negative where it points to the right, zero where it is aligned with or exactly opposed to it. Not denoted: occupancy of the carrier, which the caller states; whether the road user points with or against the direction, since a heading and its mirror across the perpendicular give the same value, which the caller states where it matters; the direction of motion, since the concept reads where the road user points, not where it moves; a carrier with no designated direction, for which the value is unknown.","definition":null,"id":"drv.lane.heading_offset_from_direction","kind":"quantity","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	st_lane_direction,kin_heading
+READS	st_lane_direction,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"sub":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]}]}
+WITNESS	holds	drv.lane.heading_offset_from_direction@w
+WITNESS	fails	drv.lane.heading_offset_from_direction@w
+WITNESS	blind	drv.lane.heading_offset_from_direction@w
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+INST	drv.lane.heading_offset_from_direction@w	ok
+TIME	checks	3
+TIME	lint	9
+SCEN	holds	drv.lane.heading_offset_from_direction@w	compliant	compliant	ok
+TIME	scenario:drv.lane.heading_offset_from_direction@w/holds	8
+SCEN	fails	drv.lane.heading_offset_from_direction@w	violated	violated	ok
+TIME	scenario:drv.lane.heading_offset_from_direction@w/fails	7
+SCEN	blind	drv.lane.heading_offset_from_direction@w	unknown	unknown	ok
+TIME	scenario:drv.lane.heading_offset_from_direction@w/blind	10
+TIME	witnesses	25
+DONE_WITNESSES
+'TrafficSpec.Concepts.lane.heading_offset_from_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.heading_offset_from_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.heading_offset_from_direction.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.lane.heading_offset_from_direction@w	2	2
+TIME	adequacy_start	6
+TIME	adequacy	60
+DONE

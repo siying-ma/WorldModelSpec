@@ -1,0 +1,256 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 7 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "rw"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "rw"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "roadway"
+       },
+       "var": "rw"
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "h"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "asm": "asm.business_or_residence_district"
+        }
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "derived": "drv_motion_stopped",
+          "params": [
+           {
+            "param": "p.motion_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "asm": "asm.vehicle_disabled"
+            },
+            {
+             "and": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "r"
+              },
+              {
+               "asm": "asm.disabled_vehicle_immovable"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.business_or_residence_district",
+    "asm.vehicle_disabled",
+    "asm.disabled_vehicle_immovable"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_440_1_o3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-440-1"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "e10",
+     "why": "x's place is read as each roadway x occupies on the highway it occupies (the e1/e6 selection repeated): the sight distance the source records for that roadway region must be at least 200 ft, for every such roadway."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "rw"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "rw"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "cmp": "ge",
+        "lhs": {
+         "args": [
+          {
+           "var": "rw"
+          }
+         ],
+         "measure": "st_sight_distance"
+        },
+        "rhs": {
+         "lit": {
+          "den": 25,
+          "num": 1524
+         },
+         "unit": "metre"
+        }
+       }
+      ]
+     },
+     "forall_region": {
+      "lit": "roadway"
+     },
+     "var": "rw"
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [
+    "Attended or unattended, the duty is the same: the words name both cases and exclude neither."
+   ],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "e10",
+    "why": "x's place is read as each roadway x occupies on the highway it occupies (the e1/e6 selection repeated): the sight distance the source records for that roadway region must be at least 200 ft, for every such roadway."
+   }
+  ],
+  "context": "7be13f6a06dc9f1be1c55515",
+  "candidate_digest": "104ba1ea352238cbddc1fc1b7d832127a16ed1be89d53e17cf401be7d1d667ea"
+ }
+}

@@ -1,0 +1,187 @@
+{
+ "node_id": "NRS_484B_400_1_o2",
+ "law_refs": [
+  "NRS-484B-400-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "r1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "r2",
+   "text": "intends to turn",
+   "role": "trigger"
+  },
+  {
+   "id": "r3",
+   "text": "at an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "r4",
+   "text": "and: The turn is a right turn,",
+   "role": "trigger"
+  },
+  {
+   "id": "r5",
+   "text": "both the approach for the right turn and the right turn must be made from the right turn lane",
+   "role": "sibling"
+  },
+  {
+   "id": "r6",
+   "text": "if the highway has a right turn lane",
+   "role": "condition"
+  },
+  {
+   "id": "r7",
+   "text": "as set forth in subsection 4 of NRS 484B.223 [NRS-484B-223-4a, NRS-484B-223-4b],",
+   "role": "reference"
+  },
+  {
+   "id": "r8",
+   "text": "or must be made from the extreme right lane.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "r1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, as the mapping index maps 'The driver of a vehicle'; 'the driver' is read through the vehicle's controlled motion."
+  },
+  {
+   "span": "r3",
+   "atoms": [
+    "st.intersection",
+    "st.lane_enters",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The intersection is the region the intention is declared at and the vehicle enters: a st.intersection, anchored by the carrier x occupies (rel.occupies) of kind st.travel_region whose entrance end is that intersection (st.lane_enters)."
+  },
+  {
+   "span": "r6",
+   "atoms": [
+    "st.turn_lane",
+    "st.lane_adjacency",
+    "st.on_way",
+    "st.highway",
+    "st.lane_enters",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The highway has a right turn lane 'as set forth in subsection 4', whose words are 'If a highway has been designed to provide a single right lane to be used only for turning': a st.turn_lane of side right that is the rightmost lane of its direction (st.lane_adjacency, ordinal equal to count) on (st.on_way) the highway (st.highway) of the carrier x occupies (rel.occupies), entering the intersection x enters (st.lane_enters, st.intersection). This node applies where the highway has none (the 'or' of the words).",
+   "source_spans": [
+    "r7"
+   ]
+  },
+  {
+   "span": "r8",
+   "atoms": [
+    "rel.occupies",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The extreme right lane is the st.lane ('a longitudinal strip of roadway for one line of vehicles') whose ordinal equals the count of lanes in its direction (st.lane_adjacency: 'ordinal 1 is the leftmost lane, looking along the lane's direction'); the turn is made from it when, at the observation before the entry, the carrier x occupies (rel.occupies) that enters the intersection (st.lane_enters, st.intersection) is that lane. Not a stand-in for a lateral offset: lane membership is the lane x occupies, not its distance to the edge."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "r2",
+   "id": "int.turn_right",
+   "meaning": "The road user's current plan includes a right turn at the target region."
+  },
+  {
+   "span": "r4",
+   "id": "int.turn_right",
+   "meaning": "The road user's current plan includes a right turn at the target region."
+  }
+ ],
+ "compositions": [
+  {
+   "span": "r7",
+   "as": "definition",
+   "source": "NRS-484B-223-4a",
+   "quote": "If a highway has been designed to provide a single right lane to be used only for turning",
+   "why": "Borrows the qualifiers 'single', 'right lane' and 'to be used only for turning', which set forth what the highway's right turn lane is; this duty needs only that such a lane exists, and whether subsection 4's own duty (driving in that lane only to turn right) applies or is complied with decides nothing here."
+  },
+  {
+   "span": "r7",
+   "as": "definition",
+   "source": "NRS-484B-223-4b",
+   "quote": "If a highway has been designed to provide a single right lane to be used only for turning",
+   "why": "Borrows the same qualifiers from the same opening words of subsection 4; this duty needs only that such a lane exists, and whether subsection 4's own duty (not travelling through an intersection from that lane) applies or is complied with decides nothing here."
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-320::vehicle that enters an intersection i at the judged observation (rel.occupies(x, i) rises), with int.turn_right(x, i) declared true at that observation; and the highway has no right turn lane: at the observation before the entry no st.turn_lane of side right that enters i, lies on the highway of a carrier x occupies entering i, and is the rightmost lane of its direction (st.lane_adjacency ordinal equal to count) exists.",
+ "obligation": "At the observation before the entry, x occupies a st.lane l with st.lane_enters(l, i) whose st.lane_adjacency ordinal equals the count of lanes in its direction, and every lane x occupies there that enters i is such a lane. Violated where x enters i with its intention to turn right from a lane entering i that is not the extreme right lane.",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "r8",
+   "why": "The turn is judged at the observation before the entry, by the lane through which x approaches the intersection then; an approach on a roadway without marked lanes, where no lane ordinal exists, leaves the extreme right lane unknown."
+  },
+  {
+   "span": "r8",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a two-lane approach without a right turn lane, a car with int.turn_right declared at the intersection enters it from the lane of ordinal 1 of 2."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car enters the intersection from the lane of ordinal 2 of 2."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The approach has a right turn lane entering the intersection; the extreme-right-lane requirement does not apply."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car with int.turn_right enters from one of two lanes; the source does not supply lane ordinals.",
+   "masked": [
+    "st.lane_adjacency"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

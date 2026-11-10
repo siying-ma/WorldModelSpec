@@ -1,0 +1,33 @@
+'TrafficSpec.Concepts.motion.straight_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.straight_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.straight_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"i","sort":{"sort":"region"}}],"body":{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"max_angle"}}]},"contract":"A road user has travelled straight through a region, such as an intersection the caller passes: at the observation it leaves the region (its footprint overlaps the region, rel.occupies, at the observation before and not at this one), and the magnitude of its heading change since its entry, the observation at which the overlap last became true, integrated from its yaw rate with sampling step bound `step`, is below `max_angle`, the heading change below which a crossing counts as straight. The act begins at the entry, the observation at which the overlap last became true. The act is recognized at the observation it leaves the region. The concept holds only at the exit observation, ending at the next observation. Conduct before the entry is not read. Not denoted: a turn, a heading change at or beyond `max_angle`; a road user still within the region; which carrier it entered from, which the caller states; a crossing whose entry the recording does not show, for which the heading change since entry is unknown.","definition":null,"id":"drv.motion.straight_through_region","kind":"formula","narrowings":[],"params":[{"name":"step","unit":"second"},{"name":"max_angle","unit":"degree"}],"residues":[],"supersedes":null}
+ATOMS	rel_occupies,kin_yaw_rate,kin_time
+READS	rel_occupies,kin_yaw_rate,kin_time
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"max_angle"}}]}
+WITNESS	holds	drv.motion.straight_through_region@w
+WITNESS	fails	drv.motion.straight_through_region@w
+WITNESS	blind	drv.motion.straight_through_region@w
+OCC	x,i
+OCC	x
+OCC	x,i
+INST	drv.motion.straight_through_region@w	ok
+TIME	checks	2
+TIME	lint	9
+SCEN	holds	drv.motion.straight_through_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.straight_through_region@w/holds	12
+SCEN	fails	drv.motion.straight_through_region@w	violated	violated	ok
+TIME	scenario:drv.motion.straight_through_region@w/fails	7
+SCEN	blind	drv.motion.straight_through_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.straight_through_region@w/blind	11
+TIME	witnesses	30
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.straight_through_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.straight_through_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.straight_through_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.straight_through_region@w	2	2
+TIME	adequacy_start	7
+TIME	adequacy	42
+DONE

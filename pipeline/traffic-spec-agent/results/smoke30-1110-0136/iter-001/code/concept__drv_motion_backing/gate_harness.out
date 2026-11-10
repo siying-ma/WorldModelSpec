@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.backing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.backing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.backing.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"tol"}}},"contract":"A road user moves backwards at the observation: the component of its velocity (kin.velocity) along the direction it points (kin.heading) is below minus `tol`, a tolerance that names only the source's speed resolution. Not denoted: the gear selected, since a vehicle in reverse gear standing still is not backing and one rolling backwards in a forward gear is; motion across the direction it points, such as a sideways slide; a road user standing still.","definition":null,"id":"drv.motion.backing","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,kin_heading
+READS	kin_velocity,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"tol"}}}
+WITNESS	holds	drv.motion.backing@w
+WITNESS	fails	drv.motion.backing@w
+WITNESS	blind	drv.motion.backing@w
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+INST	drv.motion.backing@w	ok
+TIME	checks	3
+TIME	lint	2
+SCEN	holds	drv.motion.backing@w	compliant	compliant	ok
+TIME	scenario:drv.motion.backing@w/holds	8
+SCEN	fails	drv.motion.backing@w	violated	violated	ok
+TIME	scenario:drv.motion.backing@w/fails	7
+SCEN	blind	drv.motion.backing@w	unknown	unknown	ok
+TIME	scenario:drv.motion.backing@w/blind	18
+TIME	witnesses	33
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.backing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.backing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.backing.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.backing@w	1	2
+TIME	adequacy_start	7
+TIME	adequacy	26
+DONE

@@ -1,0 +1,65 @@
+{
+ "concept_id": "drv.motion.stopping_distance",
+ "kind": "quantity",
+ "contract": "The distance a road user would travel from the observation to a halt if it kept its current speed for a reaction time and then slowed at a constant deceleration: its speed at the observation (kin.speed) times `reaction_time`, plus the square of that speed divided by twice `decel`, in metres along its path. It is a quantity of the road user's own motion at the one observation, whoever or whatever controls it, and is zero for a road user standing still. Not denoted: the distance an actual later halt takes; the grade or the surface, which the caller states through the deceleration it passes.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "reaction_time",
+   "unit": "s",
+   "meaning": "the time the road user keeps its speed before it begins to slow"
+  },
+  {
+   "name": "decel",
+   "unit": "m/s^2",
+   "meaning": "the constant rate at which it slows once it begins to; strictly positive"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed at the observation (kin.speed)",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the 'magnitude of velocity' in m/s; the distance to a halt depends on that magnitude alone, so neither the direction of motion nor the heading is read."
+  }
+ ],
+ "residues": [],
+ "literals": [
+  {
+   "value": 2,
+   "unit": "count",
+   "why": "The kinematic factor of constant deceleration: the distance to halt from a speed is the square of the speed over twice the deceleration."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A road user moves at a steady speed; the instance's bounds bracket its speed times the reaction time plus the square of its speed over twice the deceleration, read at that observation."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The same road user; the instance's bounds lie wholly below the value the contract computes."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.speed absent; the value is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_600_1a",
+  "NRS_484D_215_1_o1"
+ ]
+}

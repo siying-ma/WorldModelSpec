@@ -1,0 +1,156 @@
+{
+ "node_id": "NRS_484B_227_1_o1",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "and must not be driven over, across or within any dividing space, barrier or section",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "or make any left turn, semicircular turn or U-turn",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "or at a crossover or intersection established by a public authority",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'); 'Every' gives the duty to each member."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.highway",
+    "st.median_or_divider",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Divided highway' (DEF-NRS-484A-070: 'a highway divided into two or more roadways by means of a physical barrier or dividing section') is a st.highway region ('the entire public way between its boundary lines') on which a st.median_or_divider region ('physical barrier or dividing section between roadways') lies (st.on_way: 'the public way ... a structure region lies on'). 'upon' anchors the subject: rel.occupies on that highway. 'driven' is read through the vehicle's presence on the road (agency); the definition's 'constructed so as to impede the conflict of vehicular traffic traveling in opposite directions' is read through the divider's presence (purpose)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.roadway",
+    "st.lane",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.lane.facing_against_direction"
+   ],
+   "justification": "'Roadway' (DEF-NRS-484A-220: 'that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder') is st.roadway, whose contract says 'separate roadways of a divided highway are separate'; it is 'not a stand-in for the sidewalk', not read here. The right-hand roadway is the one on the vehicle's right of the divider, the one whose designated direction is the vehicle's own; the left-hand one is designated for the opposite direction. The duty is read as: on every roadway, or lane of it (st.lane: 'a longitudinal strip of roadway'), lying on the divided highway (st.on_way) that x's footprint overlaps (rel.occupies), x does not point against the designated direction (drv.lane.facing_against_direction). st.lane is 'not a stand-in for a half of the roadway', which is not read."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and existsRegion st.highway h: rel.occupies(x, h) and existsRegion st.median_or_divider m: st.on_way(m, h).",
+ "obligation": "forallRegion st.highway h (re-bound: x occupies h and a st.median_or_divider lies on h): forallRegion st.roadway c: (st.on_way(c, h) and rel.occupies(x, c)) implies not drv.lane.facing_against_direction(x, c; p.against_direction_cos_tolerance); and the same for forallRegion st.lane c.",
+ "params": [
+  "p.against_direction_cos_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'driven' is read through the vehicle's presence on the road: a vehicle on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "'only upon the right-hand roadway' is read as never pointing against the designated direction of a roadway or lane of the divided highway that the vehicle occupies. Crossing a roadway across its direction (at an intersection or a crossover) is not against it; occupying a shoulder is not read; occupying the divider is the duty of NRS_484B_227_1_o2. Where a roadway or lane carries no direction the verdict is unknown.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a highway with a median, a car moves along the left-hand roadway, its kin.heading opposed to that roadway's st.lane_direction (wrong-way driving)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car moves along the right-hand roadway, its heading along the designated direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "On an undivided two-way highway (no st.median_or_divider on it) a car moves in the opposing lane while passing."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with kin.heading declared absent.",
+   "masked": [
+    "kin.heading"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car turning left at an intersection of the divided highway crosses the left-hand roadway across its direction; its heading is never opposed to that roadway's direction."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.against_direction_cos_tolerance",
+   "unit": "ratio",
+   "value": 0.7,
+   "convention": "Cosine of the largest angle off exactly opposed at which a heading still points against a carrier's designated direction (about half a right angle).",
+   "source": "Wrong-way-driving detection practice (heading opposed to the lane direction beyond a cone)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

@@ -1,0 +1,219 @@
+{
+ "node_id": "NRS_484B_127_3",
+ "law_refs": [
+  "NRS-484B-127-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Motor vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "being driven",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "upon any highway",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "outside of a business district",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "in a caravan or motorcade",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "whether or not towing other vehicles",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "shall be operated to allow",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "sufficient space between each such vehicle or combination of vehicles so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "The definitions table admits 'motor vehicle' as DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'); ru.aggregate is claimed whole, never replaced by ru.motor_vehicle, whose own contract says it is 'not a stand-in for: \"vehicle\" as a legal aggregate'."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'being driven' is the vehicle in controlled motion (agency reading): drv.motion.moving, in motion beyond the speed resolution; the progressive form places the caravan in motion."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Highway' (DEF-NRS-484A-095: 'the entire width between the boundary lines of every way dedicated to a public authority') is st.highway: 'the entire public way between its boundary lines, including sidewalks and shoulders'; its exclusion ('not a stand-in for the roadway') holds, as the words name the whole way. 'upon' anchors the subject: rel.occupies."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+   ],
+   "derived": [],
+   "justification": "'operated to allow ... space between each such vehicle or combination of vehicles' is the space the subject keeps to the vehicle ahead of it in the line, a member of the admitted vehicle aggregate DEF-NRS-484A-320::vehicle or of the admitted aggregate DEF-NRS-484A-050::combination_of_vehicles ('two or more vehicles coupled together'), each claimed whole (ru.aggregate: 'membership of a legal aggregate'): rel.ahead_behind_in_lane ('a is ahead of / behind b in the same lane, along the lane direction') selects that vehicle and rel.surface_gap ('distance between the nearest points of two bodies') measures the space, rather than rel.centre_distance, which is 'not a stand-in for a clearance between bodies'. 'operated' is read through the vehicle's controlled motion (agency)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "sufficient space ... so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger",
+   "concepts": [
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane",
+    "kin.speed"
+   ],
+   "params": [
+    "p.caravan_entry_vehicle_length",
+    "p.caravan_entry_time_headway"
+   ],
+   "convention": "Gap-acceptance convention for a merging vehicle: the space must hold the entering design vehicle (the longest combination of vehicles, so that 'any other vehicle or combination' fits) plus an accepted time headway ahead of it and another behind it at the caravan's speed. The bound is p.caravan_entry_vehicle_length plus p.caravan_entry_time_headway times x's kin.speed, the headway term counted once for the gap ahead of the entering vehicle and once for the gap behind it; the bound grows with the speed, so the degree of the speed factor is read. 'each such vehicle or combination of vehicles' is the road user ahead in the lane, a member of the vehicle aggregate or of the combination-of-vehicles aggregate.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.outside_business_district",
+   "meaning": "The stretch of highway at the observation lies outside every territory classed as a business district."
+  },
+  {
+   "span": "s5",
+   "id": "asm.caravan_or_motorcade",
+   "meaning": "The motor vehicles of the trace that travel one behind another in the same lane travel together as an organised caravan or motorcade."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s6",
+   "why": "The words extend the duty to vehicles towing others and to those not towing alike: whether a caravan vehicle tows adds no condition, and a towed unit ahead is already a member of the vehicle or combination-of-vehicles aggregate the obligation reads.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the motor-vehicle aggregate, drv.motion.moving(x; p.motion_speed_tolerance) holds, existsRegion st.highway h: rel.occupies(x, h), and asm.outside_business_district and asm.caravan_or_motorcade hold.",
+ "obligation": "forallUser y: (not same(x, y) and (ru.aggregate(y, DEF-NRS-484A-320::vehicle) or ru.aggregate(y, DEF-NRS-484A-050::combination_of_vehicles)) and rel.ahead_behind_in_lane(y, x)) implies rel.surface_gap(x, y) >= p.caravan_entry_vehicle_length + p.caravan_entry_time_headway * kin.speed(x) + p.caravan_entry_time_headway * kin.speed(x). With no road user ahead in the lane the duty is met.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.caravan_entry_vehicle_length",
+  "p.caravan_entry_time_headway"
+ ],
+ "narrowings": [
+  {
+   "span": "s7",
+   "why": "'operated' is read through the vehicle's controlled motion: the space it keeps to the vehicle ahead in its lane.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s8",
+   "why": "'without danger' is read only through the time headway the entering vehicle keeps ahead of and behind it at the subject's speed; the closing speed of the vehicle ahead, the road surface and the sight distance are not read. 'any other vehicle or combination of vehicles' is read through the length of the design combination, the longest an entrant may be.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Two cars travel one behind the other in the same lane of a highway at cruising speed; asm.caravan_or_motorcade and asm.outside_business_district are true; the follower's rel.surface_gap to the leader is about one car length, below the bound."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, with the follower's surface gap well above the design length plus both headways at its speed."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "As forbid, with asm.outside_business_district false (the stretch is in a business district)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with rel.surface_gap declared absent by the source.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A single car moves on the highway with both assumptions true and no road user ahead of it in its lane: the duty binds it and is met."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, with asm.caravan_or_motorcade false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Simulator ground-truth and tracker speed-noise figures (a few tenths of a metre per second)."
+  },
+  {
+   "name": "p.caravan_entry_vehicle_length",
+   "unit": "m",
+   "value": 22.4,
+   "convention": "Overall length of the longest design combination a highway is designed for (an interstate semitrailer combination), so that any vehicle or combination can occupy the space.",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, WB-67 design vehicle overall length."
+  },
+  {
+   "name": "p.caravan_entry_time_headway",
+   "unit": "s",
+   "value": 1.0,
+   "convention": "Minimum accepted lead and lag time gap of a merging or lane-changing vehicle, applied once ahead of and once behind the entering vehicle.",
+   "source": "Lane-change gap-acceptance studies (critical lead and lag gaps of about one second)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

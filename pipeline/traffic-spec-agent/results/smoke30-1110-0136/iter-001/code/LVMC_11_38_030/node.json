@@ -1,0 +1,152 @@
+{
+ "node_id": "LVMC_11_38_030",
+ "law_refs": [
+  "LVMC-11-38-030"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.moped",
+   "ru.electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No motorcycle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "or motor scooter",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "shall be ridden upon any sidewalk",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "of the City",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
+   ],
+   "derived": [],
+   "justification": "The definitions table admits 'motorcycle' as the aggregate DEF-NRS-484A-135::motorcycle ('every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground, excluding an electric bicycle, a tractor or a moped'). ru.aggregate is 'membership of a legal aggregate' and is claimed whole, never expanded into ru.motorcycle. Its 'not a stand-in for' clauses do not apply: the words name a class, not a role described by conduct or a relational role. The word 'No' negates the duty the obligation span s3 states."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.moped",
+    "ru.electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'Motor scooter' has no applicable definition, so its words are mapped by contract. A scooter driven by a motor is, in the taxonomy the corpus posts, either a moped (DEF-NRS-484A-125: 'a motor-driven scooter, motor-driven cycle or similar vehicle' with a small engine; ru.moped: 'a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it') or an electric scooter (DEF-NRS-484A-082: 'a vehicle with handlebars and an electric motor'; ru.electric_scooter: 'a standing or seated electric scooter with handlebars'). A motor scooter above the moped's power is a motorcycle under DEF-NRS-484A-135 and is carried by s1. The ontology carries no body-style attribute, so a moped of cycle body is read with the scooters the moped definition groups it with. Neither class atom carries a 'not a stand-in for' clause."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.sidewalk",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'Sidewalk' (DEF-NRS-484A-240: 'that portion of a highway between the curb lines or the lateral lines of a highway and the adjacent property lines intended for the use of pedestrians') is st.sidewalk: 'area for pedestrians between roadway and property line'; its exclusion (not a crosswalk) applies as the definition does: a crosswalk lies across the roadway and is not that portion. 'upon any sidewalk' places the subject on the feature, anchored by rel.occupies: 'a road user's footprint overlaps a lane / region (... sidewalk ...)', for every sidewalk region of the scene. 'ridden' is read through the machine's controlled motion: drv.motion.moving (the road user in motion beyond the speed resolution); a machine standing on the sidewalk is not being ridden."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.within_city_limits",
+   "meaning": "The place of the observation lies within the territorial limits of an incorporated city."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.moped",
+    "ru.electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the motorcycle aggregate (ru.aggregate=DEF-NRS-484A-135::motorcycle) or carries ru.moped or ru.electric_scooter, and asm.within_city_limits holds.",
+ "obligation": "Not (drv.motion.moving(x; p.motion_speed_tolerance) and existsRegion st.sidewalk s: rel.occupies(x, s)): at the observation x is not in motion while its footprint overlaps any sidewalk region.",
+ "params": [
+  "p.motion_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'ridden' (who or what rides the machine is not observable) is read through the machine's controlled motion: the machine in motion with its footprint on a sidewalk is ridden there; a machine pushed along the sidewalk is read the same way.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle (ru.motorcycle, an included class of the aggregate) moves along a sidewalk: its footprint overlaps a st.sidewalk region and kin.speed is above the tolerance; asm.within_city_limits is declared true."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same motorcycle moves along the roadway beside the sidewalk; rel.occupies holds for the st.roadway and for no st.sidewalk region; asm.within_city_limits true."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle (ru.bicycle: neither in the motorcycle aggregate nor a moped or electric scooter) is ridden along the sidewalk; asm.within_city_limits true."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A motorcycle moves beside a sidewalk; the source declares rel.occupies absent, so whether its footprint overlaps the sidewalk is unknown.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A motorcycle stands parked on the sidewalk: kin.speed is zero at every observation; asm.within_city_limits true."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A moped (ru.moped) moves along the sidewalk; asm.within_city_limits true."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "A motorcycle moves along a sidewalk; asm.within_city_limits is declared false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Simulator ground-truth and tracker speed-noise figures (a few tenths of a metre per second)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

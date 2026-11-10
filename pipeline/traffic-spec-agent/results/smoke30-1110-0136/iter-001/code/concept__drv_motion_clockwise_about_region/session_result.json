@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 54157,
+  "stop_reason": "end_turn",
+  "session_id": "48db09df-4418-4835-9b2e-1acae8bb84d9",
+  "total_cost_usd": 0.555625,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 46752,
+   "cache_read_input_tokens": 264477,
+   "output_tokens": 6282,
+   "output_tokens_details": {
+    "thinking_tokens": 1221
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 46752,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 620,
+     "cache_read_input_tokens": 50369,
+     "cache_creation_input_tokens": 821,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 821
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30076,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030176,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 6282,
+    "cacheReadInputTokens": 264477,
+    "cacheCreationInputTokens": 46752,
+    "webSearchRequests": 0,
+    "costUSD": 0.5526074,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1221,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote the concept and its three witnesses, and the gate returned **OK** on the first run (1 of 6 used). It reported 3 witnesses, 3 names, and 3 atoms read.\n\n**The body** (`library/TrafficSpec/Concepts/motion/clockwise_about_region.lean`):\n- **Offset:** the road user's position (`kin_position`) minus the region's reference point (`st_region_geometry`), taken component by component.\n- **Cross product:** c = offset's first component × velocity's second − offset's second component × velocity's first, with velocity from `kin_velocity`.\n- **Condition:** the concept holds where both of these are true:\n  - c is negative. I wrote this as \"offset-x × velocity-y < offset-y × velocity-x\", which says the same thing without needing a zero literal.\n  - c × c exceeds tol × tol × the squared length of the offset, exactly as the contract states it.\n\nThe contract spells out the formula completely, so I declared no narrowings.\n\n**The witnesses** (`library/TrafficSpecWitness/Concepts/motion/clockwise_about_region.lean`): region 100 is a roundabout island, a 20 m square with its reference point at the origin. Car 1 drives at 10 m/s on a 20 m circle around it, seen at three instants. The instance sets tol to 1 m/s.\n- **holds:** the car heads east, then south, then west (clockwise). c is −200 at each instant, so the result is compliant.\n- **fails:** the car heads west, then north, then east (counterclockwise). c is +200, so the result is violated.\n- **blind:** the same clockwise drive, but the island is mapped without its reference point and `st.region_geometry` is marked absent. The result is unknown.\n\n`task_result.md` is in the working directory, with the verdict, the gate run log and why I finished.",
+  "ttft_ms": 2182,
+  "type": "result",
+  "duration_ms": 58833,
+  "uuid": "f6e77f17-1752-47ad-b562-af8d9eee96de",
+  "ttft_stream_ms": 682,
+  "time_to_request_ms": 87,
+  "time_to_request_phases_ms": {
+   "other": 15,
+   "system_prompt": 23,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 16,
+   "input_hooks": 2,
+   "transcript_persist": 9,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 3,
+  "time_to_request_cpu_ms": 128,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 10,
+   "cpu_ms": 24,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 683,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30076,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030176,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 6282,
+    "cacheReadInputTokens": 264477,
+    "cacheCreationInputTokens": 46752,
+    "webSearchRequests": 0,
+    "costUSD": 0.5526074,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1221,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

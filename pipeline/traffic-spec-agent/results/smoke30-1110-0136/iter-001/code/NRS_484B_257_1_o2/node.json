@@ -1,0 +1,400 @@
+{
+ "node_id": "NRS_484B_257_1_o2",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except when traffic is being controlled by a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "When proper signs have been erected,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "After having stopped",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "or, in the event of a yield sign,",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "slowed",
+   "role": "standard"
+  },
+  {
+   "id": "s9",
+   "text": "or stopped,",
+   "role": "condition"
+  },
+  {
+   "id": "s10",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "s11",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s12",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s13",
+   "text": "to other vehicles which have entered the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s14",
+   "text": "from such through highway",
+   "role": "condition"
+  },
+  {
+   "id": "s15",
+   "text": "or which are approaching",
+   "role": "condition"
+  },
+  {
+   "id": "s16",
+   "text": "so closely on such through highway as to constitute an immediate hazard",
+   "role": "standard"
+  },
+  {
+   "id": "s17",
+   "text": "during the time such driver is moving across or within the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Traffic (DEF-NRS-484A-285::traffic) controlled by a police officer: dev.human_direction 'a person directing traffic and the direction given; role ... police_officer' governing x's approach carrier or i (dev.governs); x is a member of the traffic controlled."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "A dev.traffic_signal governing x's approach carrier or i (dev.governs), not dev.inoperative and not dark: traffic 'alternately directed to stop or proceed' (DEF-NRS-484A-290)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "dev.stop_sign 'regulatory sign requiring a full halt' or dev.yield_sign 'regulatory sign requiring yielding without a mandatory halt' governing (dev.governs) the carrier x approaches through (rel.occupies, st.lane_enters) or i; status read from presence."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Vehicle aggregate; the driver read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "Having stopped: a halt (drv.motion.stopped, 'complete cessation from movement') at an observation at which x occupies its approach carrier c (rel.occupies, st.lane_enters c i) with its footprint outside i, since x last came onto c and before its current occupancy of i began - the words name a stop and no place, so the halt is read wherever on the approach it was made."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "dev.yield_sign",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "In the event of a yield sign: a dev.yield_sign governs c or i (dev.governs) and no stop sign does."
+  },
+  {
+   "span": "s9",
+   "atoms": [],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "Or stopped: the halt of s6 (drv.motion.stopped) also meets the yield-sign alternative."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The same driver, read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Yielding is not moving into or within the intersection (drv.motion.moving with rel.occupies of st.intersection) into a predicted conflict with a vehicle owed precedence."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Other vehicles y (aggregate) which have entered i: y's footprint overlaps i (rel.occupies) and has since an observation at which y occupied a carrier cy with st.lane_enters cy i."
+  },
+  {
+   "span": "s14",
+   "atoms": [
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "From such through highway: cy lies on (st.on_way) a st.highway that i lies on and x's approach carrier c does not, the through highway the sibling node's place reads."
+  },
+  {
+   "span": "s15",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Approaching: y occupies a carrier cy with st.lane_enters cy i ('a road user occupying one such carrier approaches through it'), outside i."
+  },
+  {
+   "span": "s17",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "During the time the driver is moving across or within the intersection: x is moving (drv.motion.moving) with its footprint overlapping i (rel.occupies, st.intersection), its entry included."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "slowed (in the event of a yield sign)",
+   "concepts": [
+    "kin.speed"
+   ],
+   "params": [
+    "p.yield_sign_check_speed"
+   ],
+   "convention": "A vehicle at a yield-controlled approach has slowed where its speed (kin.speed, 'magnitude of velocity') fell to or below the yield-control check speed of the intersection-sight-distance model at some observation on its approach carrier outside the intersection since it last came onto it.",
+   "surrogate": false
+  },
+  {
+   "span": "s12",
+   "standard": "the right-of-way (DEF-NRS-484A-210: 'circumstances of direction, speed and proximity as to give rise to the danger of a crash')",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_time_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: the danger of a crash is a predicted closest approach of the two centres under constant velocities within the time-to-collision horizon at a centre distance below the clearance.",
+   "surrogate": false
+  },
+  {
+   "span": "s16",
+   "standard": "approaching so closely on such through highway as to constitute an immediate hazard",
+   "concepts": [
+    "st.region_geometry",
+    "kin.speed",
+    "st.on_way",
+    "st.highway"
+   ],
+   "params": [
+    "p.immediate_hazard_time_gap"
+   ],
+   "convention": "Gap acceptance: a vehicle approaching on the through highway (its carrier on the through way, st.on_way, st.highway) is an immediate hazard during the subject's crossing where its time to reach the intersection is at most the critical gap: its ground distance to i (st.region_geometry) is at most its speed (kin.speed) times the critical gap.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle. Judged at each observation at which x's footprint overlaps an intersection i and x is moving (drv.motion.moving with p.motion_speed_tolerance), where x's approach carrier c (the carrier with st.lane_enters c i x occupied when its current occupancy of i began) or i is governed by a stop sign or a yield sign (dev.governs), and, at the entry of the current occupancy, no police officer's direction (dev.human_direction role police_officer) and no traffic signal that is neither inoperative nor dark governed c or i; where x, at some observation since it last came onto c and before that entry, with its footprint on c outside i, was halted (drv.motion.stopped with p.motion_speed_tolerance), or - where only a yield sign governs - had a speed (kin.speed) at or below p.yield_sign_check_speed; and where there is a vehicle y other than x such that (a) y's footprint overlaps i and has since an observation at which y occupied a carrier cy with st.lane_enters cy i lying on (st.on_way) a highway that i lies on and c does not, or (b) y occupies such a carrier cy outside i and its ground distance to i (st.region_geometry) is at most its speed (kin.speed) times p.immediate_hazard_time_gap.",
+ "obligation": "No vehicle y of the applicability (bound again with its whole selection) has its centre and x's approach within p.conflict_time_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.yield_sign_check_speed",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance",
+  "p.immediate_hazard_time_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'Proper signs ... erected' is read from the presence of a stop or yield sign governing the approach.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s10",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A dev.stop_sign governs c on highway A. x halts at the stop line, then moves into i while y, which entered i from highway B, crosses x's path; predicted closest approach 1 m in 1.3 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x halts at the stop line and moves into i while y on highway B, 30 m from i at 10 m/s, is predicted to pass 12 m from x."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No stop or yield sign governs c or i; x crosses i while y crosses."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.on_way is not observed, so whether y came from the through highway is unknown.",
+   "masked": [
+    "st.on_way"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but x never halted (and a stop sign, not a yield sign, governs): the condition 'after having stopped' does not hold."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Only a dev.yield_sign governs c; x slows to 4 m/s on c and moves into i while y on highway B, outside i, is 25 m from i at 12 m/s; predicted closest approach 2 m in 2 s."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "A stop sign governs c; x halts, then crosses i with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.yield_sign_check_speed",
+   "unit": "m/s",
+   "value": 6.7,
+   "convention": "Speed to which a vehicle at a yield-controlled approach slows so that it can still halt before the conflict (about 15 mph).",
+   "source": "AASHTO Green Book intersection sight distance, Case C yield control (approach speed reduction)"
+  },
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict: about a passenger car's half-length plus a crossing road user's half-length with a small margin, since the distance is between reference points.",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.immediate_hazard_time_gap",
+   "unit": "s",
+   "value": 4.0,
+   "convention": "Critical gap of gap acceptance: an approaching vehicle whose time to reach the conflict (its distance over its speed) is at most this gap is an immediate hazard to a turning, crossing or merging manoeuvre.",
+   "source": "Highway Capacity Manual, base critical headway (4.1 s for a major-street left turn)"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

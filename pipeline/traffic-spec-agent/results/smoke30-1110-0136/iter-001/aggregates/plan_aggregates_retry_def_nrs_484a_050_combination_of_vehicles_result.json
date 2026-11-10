@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 61636,
+  "stop_reason": "end_turn",
+  "session_id": "88ffa517-86ab-4d9d-9a8e-efda406bcb31",
+  "total_cost_usd": 0.21662000000000003,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7132,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 7926,
+   "output_tokens_details": {
+    "thinking_tokens": 3661
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7132,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 7926,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 7132,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7132
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7155,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.000727,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 7926,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7132,
+    "webSearchRequests": 0,
+    "costUSD": 0.21589300000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3661,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484A-050\", \"term\": \"combination of vehicles\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484A-050::combination_of_vehicles\", \"quote\": \"“Combination of vehicles” means two or more vehicles coupled together.\", \"reason\": \"The definition denotes a set of tracked road users, coupled vehicles, whose eligibility the ru.* classes can classify.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484A-050::combination_of_vehicles\", \"term\": \"combination of vehicles\", \"definition\": \"DEF-NRS-484A-050\",\n   \"classifications\": [\n     {\"class\": \"ru.trailer_or_combination\", \"status\": \"included\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"},\n                 {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}]},\n     {\"class\": \"ru.bicycle\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Devices moved by human power\"}]},\n     {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(2) Electric bicycles\"}]},\n     {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(4) An electric scooter\"}]},\n     {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"used exclusively upon stationary rails\"}]},\n     {\"class\": \"ru.pedestrian\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"},\n                 {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported\"},\n                 {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Electric personal assistive mobility devices as defined in NRS 482.029\"}]},\n     {\"class\": \"ru.child\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"},\n                 {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported\"}]},\n     {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"},\n                 {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported\"}]},\n     {\"class\": \"ru.motor_vehicle\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A motor vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.motor_vehicle\", \"words\": \"a self-propelled vehicle other than a rail vehicle\"}]},\n     {\"class\": \"ru.truck\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A truck is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.truck\", \"words\": \"motor vehicle for carrying goods, with a body built for that purpose\"}]},\n     {\"class\": \"ru.bus\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.bus\", \"words\": \"motor vehicle designed to carry many passengers\"}]},\n     {\"class\": \"ru.school_bus\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A school bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.school_bus\", \"words\": \"bus designated for carrying school children, with the jurisdiction's markings\"}]},\n     {\"class\": \"ru.transit_bus\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A transit bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.transit_bus\", \"words\": \"bus in public transit service, identifiable by its livery or route display\"}]},\n     {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A tour bus or limousine is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.tour_bus_or_limousine\", \"words\": \"a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery\"}]},\n     {\"class\": \"ru.taxicab\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A taxicab is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.taxicab\", \"words\": \"passenger vehicle for hire, identifiable by its markings\"}]},\n     {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A commercial motor vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.commercial_motor_vehicle\", \"words\": \"vehicle over the jurisdiction's commercial mass class or marked as commercially licensed\"}]},\n     {\"class\": \"ru.emergency_vehicle\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"An emergency vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.fire_apparatus\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A fire apparatus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.fire_apparatus\", \"words\": \"a fire-fighting vehicle\"}]},\n     {\"class\": \"ru.official_vehicle\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"An official vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.official_vehicle\", \"words\": \"a vehicle in official or contracted road service, identifiable by livery or equipment\"}]},\n     {\"class\": \"ru.motorcycle\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"}],\n      \"reason\": \"A motorcycle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.motorcycle\", \"words\": \"motor vehicle on two or three wheels ridden astride, including three-wheeled variants\"}]},\n     {\"class\": \"ru.moped\", \"status\": \"covered\",\n      \"quotes\": [{\"definition\": \"DEF-NRS-484A-050\", \"words\": \"two or more vehicles coupled together\"},\n                 {\"definition\": \"DEF-NRS-484A-125\", \"words\": \"“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle\"}],\n      \"reason\": \"A moped, a vehicle not excepted by NRS 484A.320, is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.\",\n      \"covered_by\": [\"ru.trailer_or_combination\"],\n      \"basis\": [{\"class\": \"ru.trailer_or_combination\", \"words\": \"vehicle drawn by another, or the combination\"},\n                {\"class\": \"ru.moped\", \"words\": \"a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it\"}]}\n   ]}]}\n```",
+  "ttft_ms": 34285,
+  "type": "result",
+  "duration_ms": 61132,
+  "uuid": "d6d28506-9f21-4369-b724-3caac0fb9f0f",
+  "ttft_stream_ms": 690,
+  "time_to_request_ms": 75,
+  "time_to_request_phases_ms": {
+   "other": 14,
+   "system_prompt": 23,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "transcript_persist": 7,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 115,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 690,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7155,
+    "outputTokens": 23,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.000727,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 7926,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7132,
+    "webSearchRequests": 0,
+    "costUSD": 0.21589300000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3661,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

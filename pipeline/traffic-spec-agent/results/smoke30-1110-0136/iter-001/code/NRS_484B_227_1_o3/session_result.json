@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 322103,
+  "stop_reason": "end_turn",
+  "session_id": "24e93bcb-a6ef-4b13-8887-a91965e910b1",
+  "total_cost_usd": 1.5904602,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 96890,
+   "cache_read_input_tokens": 695349,
+   "output_tokens": 33603,
+   "output_tokens_details": {
+    "thinking_tokens": 23686
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 96890,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 814,
+     "cache_read_input_tokens": 100122,
+     "cache_creation_input_tokens": 1206,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1206
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41159,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041304,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 33603,
+    "cacheReadInputTokens": 695349,
+    "cacheCreationInputTokens": 96890,
+    "webSearchRequests": 0,
+    "costUSD": 1.5863298000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23686,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01LkDiFXuxJWGMzx2im8vwrj",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke30-1110-0136 --node_id NRS_484B_227_1_o3 --help 2>/dev/null | head -0; true",
+     "description": "(skipped)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed on the first run: **OK**, with all 11 witnesses passing. I used 1 of the 6 gate runs and found nothing wrong with the node.\n\nI broke the shell rule twice. I ran one `ls` to list the Core directory, and I tried a second command chained after the gate command, which the harness blocked.\n\n**Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_227_1_o3.lean`)\n- **Class:** `x` is a member of the `DEF-NRS-484A-320::vehicle` aggregate.\n- **Divided highway (s2):** `x` occupies a highway on which some median or divider lies.\n- **Applicability:** `x` is on a divided highway now, or was at some moment of the turn. \"Some moment of the turn\" means an observation in the 15 s window behind at which the vehicle was turning (`drv.motion.turning`), written the way the occasion rule requires.\n- **Obligation:** wherever a left turn or a U-turn rises, the vehicle must have overlapped a median opening or an intersection at some moment of the turn.\n  - The crossover in s7 is written as the same median opening as s6.\n  - Each act is judged where it rises, so a left U-turn is judged twice: once when its heading change passes the left-turn threshold, and again when it reaches a reversal. Both checks read the same exception.\n- No narrowings of my own were needed.\n\n**Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_227_1_o3.lean`)\n- All 10 planned scenarios have their planned verdicts.\n- I added `branch_1` (violated): a U-turn made to the right, which never counts as a left turn. Without it nothing would test the U-turn check on its own, because in `forbid` the left-turn check alone already gives \"violated\".\n- Each trace has 30 one-second samples. The car drives straight for about the first 20 s so the 15 s window has full history. Each witness is judged only from 16 s on (from 19 s for `occasion_s2_outside`, once the car has left the divided highway).\n- Every trace ends before the turn's samples drop out of the 15 s window. Otherwise, as they dropped out, the window's heading change would fall back through the left-turn range and trigger a second left-turn judgement.\n\n`task_result.md` is in the working directory.",
+  "ttft_ms": 23024,
+  "type": "result",
+  "duration_ms": 331405,
+  "uuid": "ae91b4e5-25b4-421c-b3a4-41883bb111ed",
+  "ttft_stream_ms": 1153,
+  "time_to_request_ms": 62,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 1,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 97,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1154,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41159,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041304,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 33603,
+    "cacheReadInputTokens": 695349,
+    "cacheCreationInputTokens": 96890,
+    "webSearchRequests": 0,
+    "costUSD": 1.5863298000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23686,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

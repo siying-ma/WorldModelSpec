@@ -1,0 +1,53 @@
+{
+ "concept_id": "drv.motion.turning",
+ "kind": "formula",
+ "contract": "A road user's heading is changing at the observation: the magnitude of its yaw rate (kin.yaw_rate) exceeds `tol`, a tolerance that names only the source's yaw-rate resolution, to either hand and whether the road user moves forwards or backwards. Not denoted: the curvature of the road, which the concept does not read; a completed turn or the angle turned; the hand of the turn.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "tol",
+   "unit": "deg/s",
+   "meaning": "The source's yaw-rate resolution: a yaw rate at or below it in magnitude counts as none."
+  }
+ ],
+ "elements": [
+  {
+   "span": "the magnitude of its yaw rate (kin.yaw_rate)",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading', deg/s, signed; its magnitude is turning to either hand. It is 'not a stand-in for road curvature': the concept reads the road user's own yaw."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car rounds a corner with a yaw rate well above the tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car drives straight: its yaw rate is zero."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2",
+  "NRS_484B_227_1_o3"
+ ]
+}

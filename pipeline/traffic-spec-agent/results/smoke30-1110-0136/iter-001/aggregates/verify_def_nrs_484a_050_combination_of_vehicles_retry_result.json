@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-050::combination_of_vehicles\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly includes a combination, matching the admitting words 'two or more vehicles coupled together', and no exception removes that class.\"\n    },\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The exception for devices moved by human power describes the human-powered devices in this class's contract.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition expressly excepts electric bicycles, which this class identifies according to the jurisdiction's taxonomy.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The vehicle definition expressly names electric scooters as an exception.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract does not require exclusive stationary-rail use, so it permits non-excepted coupled combinations that satisfy the admitted combination branch of ru.trailer_or_combination.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person rather than two or more coupled vehicles, including when that person uses a wheelchair or another pedestrian device.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A pedestrian who is visibly a child is a person, not the coupled vehicles required by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian with specified assistance, none of which makes that person two or more coupled vehicles.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any member admitted as two or more coupled vehicles necessarily satisfies the combination branch of the quoted ru.trailer_or_combination contract.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any truck-class road user admitted by the coupled-vehicles definition is itself a combination and therefore carries ru.trailer_or_combination under its quoted contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any bus-class road user admitted by the definition must be a combination, which the quoted ru.trailer_or_combination contract expressly covers.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"School-bus designation alone does not satisfy the definition, and every admitted school-bus-class combination satisfies the covering contract's combination branch.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Transit service alone does not satisfy the definition, and every admitted transit-bus-class combination carries ru.trailer_or_combination under the quoted contract.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"For either branch of this class's contract, an admitted road user must be a coupled combination and thus satisfy the covering contract's combination branch.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Passenger-for-hire status does not establish a combination, while every admitted taxicab-class combination satisfies the quoted covering contract.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial mass or licensing does not establish coupling, and every admitted commercial-class combination carries ru.trailer_or_combination under its quoted contract.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation alone does not establish a combination, and every admitted emergency-class combination satisfies the quoted covering contract without requiring responding conduct.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Fire-fighting function alone does not satisfy the definition, and any admitted fire-apparatus-class combination satisfies the covering contract's combination branch.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official road service alone does not establish coupling, and every admitted official-class combination satisfies the quoted ru.trailer_or_combination contract.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any motorcycle-class road user admitted as two or more coupled vehicles necessarily satisfies the combination branch of the quoted covering contract.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The posted words identify a moped as a vehicle without excepting that class, and any admitted moped-class combination necessarily satisfies the quoted covering contract.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 180706,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5561,
+   "input_tokens_details": {
+    "cache_write_tokens": 5558,
+    "cached_tokens": 0
+   },
+   "output_tokens": 6755,
+   "output_tokens_details": {
+    "reasoning_tokens": 5610
+   },
+   "total_tokens": 12316
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_06e641fbb3ccd18c016af2e0f363f087d0b566798a7ecf6ec8",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

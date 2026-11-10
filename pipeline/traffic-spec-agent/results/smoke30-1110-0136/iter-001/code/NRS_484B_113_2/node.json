@@ -1,0 +1,199 @@
+{
+ "node_id": "NRS_484B_113_2",
+ "law_refs": [
+  "NRS-484B-113-2"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "Shall not back",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "into an intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "on or over a crosswalk",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "or around a",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "street",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "corner",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'). 'The driver' (DEF-NRS-484A-080: 'every person who drives or is in actual physical control of a vehicle') is a relational role, which ru.aggregate is 'not a stand-in for'; it is read through the vehicle's controlled motion, so the duty binds the vehicle's conduct (agency reading)."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.backing"
+   ],
+   "justification": "'back' is the vehicle moving backwards: drv.motion.backing, its velocity along the direction it points below minus the speed resolution. The concept reads kinematics, not kin.gear, whose contract is 'not a stand-in for: the direction of motion ... backing is read from kinematics'. The places the words name (s3 to s7) are read as conditions of the same observation, so the forbidden act is backing at one of them."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Intersection' (DEF-NRS-484A-105: 'the area embraced within the prolongation or connection of the lateral curb lines ... of the roadways of two highways'; the junction of an alley is none) is st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges; a junction where an alley meets another way ... is no intersection'. Its exclusions (not a crosswalk or a stop line) hold: the words name the junction itself. 'into' is the entry: the observation at which rel.occupies(x, i) ('a road user's footprint overlaps a lane / region') becomes true (rises)."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.crosswalk",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Crosswalk' (DEF-NRS-484A-065: the unmarked part at an intersection within the prolonged sidewalk lines, or 'any portion of a highway ... distinctly indicated for pedestrian crossing by lines or other markings') is st.crosswalk: 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', both senses. 'on or over' is the footprint overlapping it at the observation: rel.occupies."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.turning"
+   ],
+   "justification": "'around' a corner is a path that bends: the vehicle's heading is changing at the observation, drv.motion.turning (yaw-rate magnitude above its resolution). kin.yaw_rate is 'not a stand-in for road curvature'; the concept reads the vehicle's own yaw, not the road."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "A street corner is the corner where two streets meet, which lies at the boundary of the intersection region (st.intersection: 'the region where two roadways meet, bounded by the prolongation of their edges'); a vehicle rounding it overlaps that region (rel.occupies)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s6",
+   "id": "asm.within_city_limits",
+   "meaning": "The place of the observation lies within the territorial limits of an incorporated city."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and at least one of: (a) existsRegion st.intersection i: rises(rel.occupies(x, i)) - x enters an intersection at this observation; (b) existsRegion st.crosswalk c: rel.occupies(x, c); (c) asm.within_city_limits and drv.motion.turning(x; p.yaw_rate_tolerance) and existsRegion st.intersection j: rel.occupies(x, j) - x rounds a street corner.",
+ "obligation": "not drv.motion.backing(x; p.motion_speed_tolerance) at the observation.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.yaw_rate_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver' is read through the vehicle's controlled motion; who or what controls the vehicle is not observable.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "Each place is read at the observation: 'into an intersection' as backing at the observation at which the footprint begins to overlap the intersection (backing further within an intersection already entered is not 'into'); 'on or over a crosswalk' as backing while the footprint overlaps a crosswalk; 'around a street corner' as backing while yawing with the footprint on an intersection inside a city (street: DEF-NRS-484A-265 'every highway inside the territorial limits of a city'). A corner rounded without the footprint touching the intersection region is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car moves backwards (kin.velocity opposite kin.heading) and at this observation its footprint begins to overlap a st.intersection region."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car drives forwards into the intersection."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car backs straight along a roadway mid-block; no intersection or crosswalk is overlapped and it is not yawing."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car enters an intersection; the source declares kin.velocity absent, so whether it is backing is unknown.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car backs over a marked mid-block st.crosswalk (no intersection)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Having entered an intersection forwards, a car backs while yawing round its corner, its footprint on the intersection and on no crosswalk; asm.within_city_limits true."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "As branch_2, with asm.within_city_limits false: the corner is no street corner, the car entered forwards and overlaps no crosswalk."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Simulator ground-truth and tracker speed-noise figures (a few tenths of a metre per second)."
+  },
+  {
+   "name": "p.yaw_rate_tolerance",
+   "unit": "deg/s",
+   "value": 2.0,
+   "convention": "Yaw-rate resolution: the noise floor of a source's yaw-rate estimate, below which a heading is read as not changing.",
+   "source": "Vehicle IMU and tracker yaw-rate noise figures."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

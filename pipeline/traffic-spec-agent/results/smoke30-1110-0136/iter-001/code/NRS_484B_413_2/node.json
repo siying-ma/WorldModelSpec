@@ -1,0 +1,193 @@
+{
+ "node_id": "NRS_484B_413_2",
+ "law_refs": [
+  "NRS-484B-413-2"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "in a business or residential district",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "and not less than the last 300 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "in any other area",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "prior to changing the course",
+   "role": "trigger"
+  },
+  {
+   "id": "s8",
+   "text": "of a vehicle.",
+   "role": "subject"
+  },
+  {
+   "id": "s9",
+   "text": "This rule shall be observed, regardless of the weather.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal",
+    "kin.path_length",
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.lane.heading_offset_from_direction"
+   ],
+   "justification": "A signal of intention is the signal itself, never a declared intention (the ontology: 'a signal \"of intention\" is the signal'): sig.turn_indicator ('state ∈ {off, left, right}') or sig.hand_signal ('a driver's or rider's arm signal; meaning ∈ {no_signal, left, right, ...}'), of the side of the turn; not a stand-in for the turn itself, which is judged separately through motion. Turning right or left, or otherwise from a direct course, is the heading departing to that side from the designated direction of the carrier the vehicle occupies: drv.lane.heading_offset_from_direction, the signed departure (left positive) of kin.heading from st.lane_direction, on a carrier of kind st.travel_region x occupies (rel.occupies). 'continuously during not less than the last 100 feet traveled' is a window in distance travelled (a .path window), which reads kin.path_length ('distance travelled along the body's path'); the figure is the law's literal."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "'not less than the last 300 feet traveled' is the same .path window over kin.path_length with the law's other literal, the bound selected outside a business or residence district."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "kin.heading",
+    "st.lane_direction",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.lane.heading_offset_from_direction"
+   ],
+   "justification": "Changing the course is the event at which the heading's departure from the occupied carrier's direction (drv.lane.heading_offset_from_direction over kin.heading and st.lane_direction, on a st.travel_region x occupies) first exceeds the course-change tolerance to a side: the observation at which that condition became true. The signal window lies behind it ('prior to')."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway')."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.business_or_residence_district",
+   "meaning": "The stretch of highway at the observation lies within territory classed as a business district or as a residence district."
+  },
+  {
+   "span": "s6",
+   "id": "asm.business_or_residence_district",
+   "meaning": "The stretch of highway at the observation lies within territory classed as a business district or as a residence district."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s9",
+   "why": "The words say the rule holds in every weather; no weather condition restricts or extends the duty, which is the same whether or not it rains, snows or is clear.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-320::vehicle that changes course at the judged observation: x occupies a travel region c with a designated direction, and drv.lane.heading_offset_from_direction(x, c) rises above p.course_change_sin_tolerance (a change to the left) or below its negative (a change to the right) at this observation, not having done so at the observation before (rises).",
+ "obligation": "At that observation, a signal of the side of the change held at every observation of the window of path length x travelled behind it (holdsFor .path): for a change to the left, sig.turn_indicator state left or sig.hand_signal meaning left; for a change to the right, state right or meaning right. The window's length is selected with Term.cond: the literal 100 ft where asm.business_or_residence_district holds, the literal 300 ft where it does not. A window reaching before the start of the trace leaves the verdict unknown.",
+ "params": [
+  "p.course_change_sin_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "Turning right or left and otherwise turning from a direct course are read as the heading departing from the designated direction of the carrier the vehicle occupies; a change of course made where the vehicle occupies no carrier with a designated direction is not judged."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A vehicle in a lane with a designated direction, asm.business_or_residence_district declared true, lights sig.turn_indicator left only over the last 10 m of path before its heading departs to the left of the lane direction beyond the tolerance; the trace covers more than 100 ft behind the change."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same vehicle and district, with sig.turn_indicator left lit at every observation of the last 50 m of path before the heading departs to the left."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A vehicle drives along its lane with its heading aligned with the lane direction throughout; no change of course occurs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A vehicle changes course to the left in its lane in a district; the source observes neither turn indicators nor arm signals.",
+   "masked": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "asm.business_or_residence_district declared false; the vehicle signals right over the last 50 m of path (above 100 ft but below 300 ft) before its heading departs to the right of the lane direction."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s1",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "s5",
+   "text": "300 feet",
+   "value": 300,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.course_change_sin_tolerance",
+   "unit": "ratio",
+   "value": 0.05,
+   "convention": "Lane-change kinematics: the heading of a vehicle changing lanes or turning departs from the lane direction by about three degrees or more, a smaller departure being in-lane steering correction; the bound is the sine of that angle.",
+   "source": "Naturalistic lane-change trajectory studies (heading-angle distributions of lane changes, e.g. Toledo and Zohar 2007; NGSIM lane-change analyses)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

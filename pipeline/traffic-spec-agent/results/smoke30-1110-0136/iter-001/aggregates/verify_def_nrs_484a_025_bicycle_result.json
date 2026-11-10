@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-025::bicycle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clauses describe human-powered, rideable wheeled devices matching this contract, and the moped exception does not describe the bicycle contract itself.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Neither the bus contract nor the definition forbids combined motor and human propulsion, and any qualifying non-moped member necessarily satisfies the proposed included ru.bicycle contract.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"This class describes a person, whereas the admitting words describe a device upon which a person may ride.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Commercial mass or licensing does not preclude an otherwise qualifying human-powered cycle, and every such admitted member satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every electric bicycle admitted by the human-power, riding and wheel requirements necessarily satisfies the quoted ru.bicycle contract, regardless of its additional motor.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every electric scooter meeting the definition's human-power, riding and wheel requirements necessarily carries ru.bicycle under the quoted contract.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Emergency designation does not rule out an otherwise qualifying human-powered cycle, whose admission necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The fire-fighting vehicle contract imposes no incompatible propulsion or wheel requirement, and any admitted member necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The express words \\\"except a moped\\\" exclude the jurisdictionally classified moped class.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Self-propulsion does not expressly prohibit additional human propulsion, and any non-moped member satisfying the complete bicycle definition necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The motorcycle contract does not prohibit human propulsion alongside motor propulsion, and any qualifying non-moped member necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Official road-service use and identifying equipment do not exclude otherwise qualifying human-powered cycles, all of which satisfy ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The pedestrian contract describes a person rather than the ridden device required by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"This class describes a pedestrian person, not a device upon which a person may ride.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"On-track operation does not itself prohibit human propulsion or the specified wheel arrangement, and any admitted rail device necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"School designation and markings do not prohibit an otherwise qualifying motor-assisted human-powered cycle, whose admission necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The marked passenger-for-hire contract does not require incompatible propulsion or wheels, and any admitted member necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The stated passenger-service, length and livery attributes do not rule out every qualifying human-powered cycle, and every admitted member necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Being drawn by another device does not prohibit human propulsion, rideability or the specified wheels, and any admitted member necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"Public transit service and identifying displays do not prohibit an otherwise qualifying motor-assisted human-powered cycle, whose admission necessarily satisfies ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"A goods-carrying body and motor propulsion do not expressly prohibit supplementary human propulsion or qualifying wheels, and any admitted non-moped member necessarily satisfies ru.bicycle.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 215347,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4083,
+   "input_tokens_details": {
+    "cache_write_tokens": 4080,
+    "cached_tokens": 0
+   },
+   "output_tokens": 7649,
+   "output_tokens_details": {
+    "reasoning_tokens": 6482
+   },
+   "total_tokens": 11732
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_00082277679915db016af2db25ab9c87d099632a1f92d7534e",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

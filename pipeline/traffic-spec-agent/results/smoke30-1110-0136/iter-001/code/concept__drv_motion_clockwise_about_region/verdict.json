@@ -1,0 +1,415 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.position",
+   "kin.velocity",
+   "st.region_geometry"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"lt\",\"lhs\":{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"}]},\"rhs\":{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"}]}},{\"cmp\":\"gt\",\"lhs\":{\"mul\":[{\"sub\":[{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"}]},{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"}]}]},{\"sub\":[{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"}]},{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_region_geometry\"}]},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"}]}]}]},\"rhs\":{\"mul\":[{\"mul\":[{\"param\":\"$p0\"},{\"param\":\"$p0\"}]},{\"add\":[{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_region_geometry\"}]},{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_region_geometry\"}]}]},{\"mul\":[{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_region_geometry\"}]},{\"sub\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_position\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_region_geometry\"}]}]}]}]}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "lt",
+     "lhs": {
+      "mul": [
+       {
+        "sub": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "kin_position"
+         },
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "st_region_geometry"
+         }
+        ]
+       },
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "y"
+         }
+        ],
+        "measure": "kin_velocity"
+       }
+      ]
+     },
+     "rhs": {
+      "mul": [
+       {
+        "sub": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "kin_position"
+         },
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "st_region_geometry"
+         }
+        ]
+       },
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "x"
+         }
+        ],
+        "measure": "kin_velocity"
+       }
+      ]
+     }
+    },
+    {
+     "cmp": "gt",
+     "lhs": {
+      "mul": [
+       {
+        "sub": [
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "sub": [
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "rhs": {
+      "mul": [
+       {
+        "mul": [
+         {
+          "param": "tol"
+         },
+         {
+          "param": "tol"
+         }
+        ]
+       },
+       {
+        "add": [
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "x"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           },
+           {
+            "sub": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "kin_position"
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "lit": "y"
+               }
+              ],
+              "measure": "st_region_geometry"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "context": "52012acbd5007b712cc72953",
+  "candidate_digest": "9e2570dc9ce0796a4601b60d5e10019d9ca3e0b31b0797e80be1227c02619fd2"
+ }
+}

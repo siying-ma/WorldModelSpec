@@ -1,0 +1,295 @@
+{
+ "node_id": "NRS_484B_253_o2",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "within an intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "intending to turn to the left",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "shall yield the right-of-way to any vehicle approaching from the opposite direction which is within the intersection or so close thereto as to constitute an immediate hazard,",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "but such driver,",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s6",
+   "text": "having so yielded",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "and having given a signal when and as required,",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "may make such left turn",
+   "role": "condition"
+  },
+  {
+   "id": "s9",
+   "text": "and the drivers of all other vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "s10",
+   "text": "approaching the intersection from the opposite direction",
+   "role": "trigger"
+  },
+  {
+   "id": "s11",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s12",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s13",
+   "text": "to the vehicle making the left turn.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The left-turning party y is a vehicle: DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported')."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "y's footprint overlaps the intersection (rel.occupies 'a road user's footprint overlaps a lane / region', st.intersection); the region y's intention is declared at."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ],
+   "derived": [],
+   "justification": "A signal of a left turn is sig.turn_indicator state left ('the left or the right one') or sig.hand_signal meaning left ('a driver's or rider's arm signal'); 'not a stand-in for the turn itself' respected - the signal is read as the signal. 'When and as required' points to signalling rules outside this corpus; carried as the words say: a left signal shown by y at some observation since it last came onto its approach carrier, continuing into the turn."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The other drivers are drivers of vehicles: the vehicle aggregate, the subject x, read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.lane_direction",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "x approaches i through a carrier cx it occupies with st.lane_enters cx i ('the intersection region a directed approach carrier runs into'); 'from the opposite direction' is read, per rel.oncoming's contract, through the carriers' designated directions: st.lane_direction of cx and of y's approach carrier cy have a dot product below minus p.opposed_approach_cos_tolerance."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Yielding is not moving into the intersection (drv.motion.moving with rel.occupies of st.intersection) while the turning vehicle's precedence is owed."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.turning_left"
+   ],
+   "justification": "The vehicle making the left turn: y's heading is turning to the left (drv.motion.turning_left) while its footprint overlaps the intersection (rel.occupies, st.intersection)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s12",
+   "standard": "the right-of-way (DEF-NRS-484A-210: 'circumstances of direction, speed and proximity as to give rise to the danger of a crash')",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_time_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: the danger of a crash is a predicted closest approach of the two centres under constant velocities within the time-to-collision horizon at a centre distance below the clearance.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s3",
+   "id": "int.turn_left",
+   "meaning": "The road user's current plan includes a left turn at the target region."
+  }
+ ],
+ "compositions": [
+  {
+   "span": "s6",
+   "rule": "NRS_484B_253_o1",
+   "map": {
+    "x": "y"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [
+  {
+   "span": "s8",
+   "why": "The permission to make the turn adds nothing to the condition: the vehicle yielded to is the one 'making the left turn' (s13), which already requires the turn under way.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle occupying a carrier cx with st.lane_enters cx i (approaching intersection i; its entry observation, overlapping both, included), and there is a vehicle y other than x such that: y's footprint overlaps i; the declaration current at the observation states y intends to turn left at i (int.turn_left y i); y's approach carrier cy (the carrier with st.lane_enters cy i it occupied when its current occupancy of i began) has a designated direction opposed to cx's (dot product of st.lane_direction below minus p.opposed_approach_cos_tolerance); y has complied with NRS_484B_253_o1 (x of that rule mapped to y) at every observation since its current occupancy of i began; y showed a left signal (sig.turn_indicator left or sig.hand_signal left) at some observation since it last came onto cy; and y is turning left within i (drv.motion.turning_left with p.yaw_rate_tolerance).",
+ "obligation": "At an observation at which x's footprint overlaps i and x is moving (drv.motion.moving with p.motion_speed_tolerance), there is no vehicle y meeting every condition of the applicability (bound again with the whole selection) whose centres and x's approach within p.conflict_time_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.yaw_rate_tolerance",
+  "p.opposed_approach_cos_tolerance",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s9",
+   "why": "The drivers are read through the vehicles' controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s11",
+   "why": "Yielding is judged where x moves into or within the intersection; slowing on the approach is not separately checked."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "y occupies i with int.turn_left y i, entered from cy heading north, showed sig.turn_indicator left on cy, yielded to oncoming traffic (no conflict while it moved), and is now turning left (yaw rate 15 deg/s). x approaches on cx heading south and moves into i; predicted closest approach 1 m in 1.2 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but x halts on cx short of i until y has cleared, then enters."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x approaches i on cx; no vehicle within i is turning left."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but neither the turn indicator nor arm signals are observed, so whether y gave a signal is unknown.",
+   "masked": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but y showed no signal (sig.turn_indicator off and sig.hand_signal no_signal throughout its approach)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but y moved into its turn earlier while an oncoming vehicle within i was in predicted conflict, so y has not complied with NRS_484B_253_o1."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict: about a passenger car's half-length plus a crossing road user's half-length with a small margin, since the distance is between reference points.",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.opposed_approach_cos_tolerance",
+   "unit": "ratio",
+   "value": 0.7,
+   "convention": "Cosine of the largest angle off exactly opposed at which two approach carriers' designated directions are still opposite directions (about 45 degrees), separating opposite approaches from crossing ones at junctions whose legs meet near right angles.",
+   "source": "Intersection leg geometry convention (AASHTO Green Book: legs intersecting at angles near 90 degrees)"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  },
+  {
+   "name": "p.yaw_rate_tolerance",
+   "unit": "deg/s",
+   "value": 2.0,
+   "convention": "Yaw-rate resolution: the noise floor of a source's yaw-rate estimate, below which a heading is read as not changing.",
+   "source": "Yaw-rate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

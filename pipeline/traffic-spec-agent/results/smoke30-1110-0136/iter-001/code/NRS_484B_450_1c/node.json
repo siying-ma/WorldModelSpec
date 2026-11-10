@@ -1,0 +1,226 @@
+{
+ "node_id": "NRS_484B_450_1c",
+ "law_refs": [
+  "NRS-484B-450-1c"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "A person shall not stop, stand or park",
+   "role": "obligation"
+  },
+  {
+   "id": "c2",
+   "text": "a vehicle,",
+   "role": "subject"
+  },
+  {
+   "id": "c3",
+   "text": "except when necessary to avoid conflict with other traffic",
+   "role": "exception"
+  },
+  {
+   "id": "c4",
+   "text": "or in compliance with law",
+   "role": "exception"
+  },
+  {
+   "id": "c5",
+   "text": "or the directions of a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "c6",
+   "text": "or official traffic-control device,",
+   "role": "exception"
+  },
+  {
+   "id": "c7",
+   "text": "in any of the following places:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c8",
+   "text": "Within an intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "Stop, when prohibited, is DEF-NRS-484A-260 ('any halting, even momentarily, of a vehicle, whether occupied or not'); stand is DEF-NRS-484A-250 ('the halting of a vehicle, whether occupied or not, otherwise than for the purpose of ... receiving or discharging passengers'); park is DEF-NRS-484A-155 ('the standing of a vehicle ... otherwise than temporarily for the purpose of ... loading or unloading'). Each is a halt: drv.motion.stopped (kin.speed at or below its resolution). The stopping definition's exclusions (conflict, officer, device) are the section's own exceptions, which spans c3 to c6 carry. 'A person' is read through the vehicle's conduct."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), the subject's class."
+  },
+  {
+   "span": "c3",
+   "atoms": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "rel.surface_gap",
+    "rel.bearing",
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "Other traffic is the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway'), other than x. A halt is necessary to avoid conflict with it where a member is in a predicted conflict with x (prim.closest_approach_within over the conflict horizon with prim.closest_approach_distance below the conflict clearance), as the mapping index maps '(c) To avoid conflict with other traffic;', or where a member stands ahead of x (rel.bearing, 'direction of b from a in a's frame', its longitudinal component positive) within the queue standstill gap of x's body (rel.surface_gap, 'distance between the nearest points of two bodies'), so that x cannot proceed without striking it."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The directions of a police officer are a dev.human_direction of role police_officer ('a person directing traffic and the direction given; role ∈ {police_officer, ...}; indication ∈ {stop, proceed, slow, turn(dir)}') with indication stop, governing (dev.governs) the travel region (st.travel_region) x occupies (rel.occupies), as the mapping index maps '(e) In compliance with the directions of a police officer;' to dev.governs, dev.human_direction, st.travel_region."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "An official traffic-control device (DEF-NRS-484A-145, 'every sign, signal, marking and device ... placed or erected by a public authority ... for the purpose of regulating ... traffic') directing a halt is a dev.traffic_signal displaying circular_red, a red_arrow or flashing_red, a dev.stop_sign or a dev.yield_sign, governing (dev.governs) the travel region (st.travel_region) x occupies (rel.occupies); its official status is presumed from its presence."
+  },
+  {
+   "span": "c8",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Within an intersection: x's footprint overlaps (rel.occupies) a st.intersection ('the region where two roadways meet, bounded by the prolongation of their edges'; DEF-NRS-484A-105, 'the area embraced within the prolongation or connection of the lateral curb lines'), as the mapping index maps 'within an intersection'. Not a stand-in for a crosswalk or a stop line, which lie outside it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "c4",
+   "id": "asm.halt_required_by_law",
+   "meaning": "The road user is required to be halted where it is at the observation by a legal duty other than the direction of an officer or a traffic-control device."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-320::vehicle whose footprint overlaps an intersection i (rel.occupies(x, i), st.intersection) at the judged observation.",
+ "obligation": "Violated where x is halted (drv.motion.stopped with p.motion_speed_tolerance) and none of the exceptions holds: (c3) some member z of DEF-NRS-484A-285::traffic other than x is in a predicted conflict with x (prim.closest_approach_within over p.conflict_time_horizon and prim.closest_approach_distance below p.conflict_centre_clearance) or stands ahead of x (rel.bearing longitudinal component positive) with rel.surface_gap below p.queue_standstill_gap; (c4) asm.halt_required_by_law; (c5) a dev.human_direction of role police_officer with indication stop governs a travel region x occupies or i; (c6) a dev.traffic_signal displaying circular_red, a red_arrow or flashing_red, a dev.stop_sign or a dev.yield_sign governs a travel region x occupies or i.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance",
+  "p.queue_standstill_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "c1",
+   "why": "'A person' is read through the vehicle's conduct: a vehicle halted in the intersection is judged whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c1",
+   "why": "The purposes that tell standing and parking from stopping (receiving passengers, loading) are not observable; every halt is read, as each of the three words forbids a halt.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car halts within an intersection for ten seconds; no other road user, officer or device directing a halt is present and asm.halt_required_by_law is declared false."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car crosses the intersection without halting."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car halts at the curb well away from any intersection."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car is within an intersection; the source supplies no speed, so whether it halts is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car waiting to turn left halts within the intersection while an oncoming car is in predicted conflict with it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car halts within the intersection at a police officer's stop indication governing the intersection; asm.halt_required_by_law declared false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of tracked road users."
+  },
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Traffic-conflict technique and time-to-collision studies (Hayward 1972; Hyden 1987)."
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict.",
+   "source": "Traffic-conflict technique; passenger-car design vehicle dimensions (AASHTO)."
+  },
+  {
+   "name": "p.queue_standstill_gap",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Standstill gap of queued vehicles: the clearance between a vehicle halted in a queue and the one ahead of it; car-following models put the jam gap at about 2 m and observed queues at signals reach about 4 m.",
+   "source": "Intelligent Driver Model jam distance (Treiber, Hennecke and Helbing 2000) and field observations of standstill spacing at signalized intersections."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

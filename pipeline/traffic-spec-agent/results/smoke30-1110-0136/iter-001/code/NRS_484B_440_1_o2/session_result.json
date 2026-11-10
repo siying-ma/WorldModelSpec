@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 117508,
+  "stop_reason": "end_turn",
+  "session_id": "13de8e4d-7f44-46b5-af3c-b7ca55c7fb5d",
+  "total_cost_usd": 0.7813112999999999,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 55380,
+   "cache_read_input_tokens": 316718,
+   "output_tokens": 13550,
+   "output_tokens_details": {
+    "thinking_tokens": 4989
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 55380,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 632,
+     "cache_read_input_tokens": 58340,
+     "cache_creation_input_tokens": 1478,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1478
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38567,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038716999999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 13550,
+    "cacheReadInputTokens": 316718,
+    "cacheCreationInputTokens": 55380,
+    "webSearchRequests": 0,
+    "costUSD": 0.7774395999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4989,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 10,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the first run (1 of 6 used): 11 witnesses, all passing. The rule and witness files for NRS_484B_440_1_o2 are finished, and `task_result.md` is written in the working directory.\n\n**What the rule says:**\n- **Who it covers:** any member of `DEF-NRS-484A-320::vehicle`.\n- **When it applies:**\n  - The vehicle is on a highway and on a roadway lying on that highway.\n  - It is not in a business or residence district.\n  - It is halted (speed at or below `p.motion_speed_tolerance`).\n  - The exception does not hold: disabled, on the roadway, and impossible to move.\n- **What it requires:** on that same highway, there is a lane the vehicle does not occupy that is:\n  - at least `p.free_passage_width` wide;\n  - not occupied by any other halted road user alongside it, where \"alongside\" means their lengths overlap along the vehicle's heading.\n\n  The obligation re-selects the same highway the applicability chose, so both parts talk about the same road.\n\n**Witnesses:** the six planned scenarios, plus five more so every part of the formula changes some verdict:\n- a truck driving past alongside: compliant;\n- a truck halted alongside on the shoulder, not in a lane: compliant;\n- the other lane only 2.5 m wide: violated;\n- the disabled-and-immovable exception: not applicable;\n- inside a business or residence district: not applicable.\n\n**Choices the node left open:**\n- I didn't add an explicit \"other than the vehicle itself\" test. The vehicle can never occupy the lane being checked, so it can never count as blocking it.\n- I kept \"some highway\" as an existential, as the record words it.\n- I declared no narrowings. The only narrowing (a whole free lane, and only halted road users count as blocking) is the node's own.\n\nI found nothing wrong with the node or the concept it calls.",
+  "ttft_ms": 37929,
+  "type": "result",
+  "duration_ms": 122316,
+  "uuid": "c9e4b6c7-1d5f-4252-95e8-144402979637",
+  "ttft_stream_ms": 679,
+  "time_to_request_ms": 63,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 13,
+  "time_to_request_cpu_ms": 97,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 679,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38567,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038716999999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 13550,
+    "cacheReadInputTokens": 316718,
+    "cacheCreationInputTokens": 55380,
+    "webSearchRequests": 0,
+    "costUSD": 0.7774395999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4989,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

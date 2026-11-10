@@ -1,0 +1,88 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "rel.longitudinal_overlap",
+   "rel.same_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}},{\"cmp\":\"gt\",\"lhs\":{\"sub\":[{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},{\"args\":[{\"var\":\"$a1\"}],\"measure\":\"kin_speed\"}]},\"rhs\":{\"param\":\"$p1\"}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "a"
+      },
+      {
+       "var": "b"
+      }
+     ],
+     "atom": "rel_same_direction",
+     "params": [
+      {
+       "param": "cos_tol"
+      }
+     ]
+    },
+    {
+     "and": [
+      {
+       "cmp": "ge",
+       "lhs": {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "var": "b"
+         }
+        ],
+        "measure": "rel_longitudinal_overlap"
+       },
+       "rhs": {
+        "lit": {
+         "den": 1,
+         "num": 0
+        },
+        "unit": "metre"
+       }
+      },
+      {
+       "cmp": "gt",
+       "lhs": {
+        "sub": [
+         {
+          "args": [
+           {
+            "var": "a"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         {
+          "args": [
+           {
+            "var": "b"
+           }
+          ],
+          "measure": "kin_speed"
+         }
+        ]
+       },
+       "rhs": {
+        "param": "speed_tol"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "fd7810b70791e32eaa149745",
+  "candidate_digest": "066ed0592780fbd5b68d4611a38541ebe32b581db8e07d727fd1bc51a8e7e73e"
+ }
+}

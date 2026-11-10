@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.turning.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"tol"}},"contract":"A road user's heading is changing at the observation: the magnitude of its yaw rate (kin.yaw_rate) exceeds `tol`, a tolerance that names only the source's yaw-rate resolution, to either hand and whether the road user moves forwards or backwards. Not denoted: the curvature of the road, which the concept does not read; a completed turn or the angle turned; the hand of the turn.","definition":null,"id":"drv.motion.turning","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"degree_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_yaw_rate
+READS	kin_yaw_rate
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"tol"}}
+WITNESS	holds	drv.motion.turning@w
+WITNESS	fails	drv.motion.turning@w
+WITNESS	blind	drv.motion.turning@w
+OCC	x
+INST	drv.motion.turning@w	ok
+TIME	checks	3
+TIME	lint	2
+SCEN	holds	drv.motion.turning@w	compliant	compliant	ok
+TIME	scenario:drv.motion.turning@w/holds	7
+SCEN	fails	drv.motion.turning@w	violated	violated	ok
+TIME	scenario:drv.motion.turning@w/fails	6
+SCEN	blind	drv.motion.turning@w	unknown	unknown	ok
+TIME	scenario:drv.motion.turning@w/blind	8
+TIME	witnesses	21
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.turning.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.turning@w	1	2
+TIME	adequacy_start	7
+TIME	adequacy	25
+DONE

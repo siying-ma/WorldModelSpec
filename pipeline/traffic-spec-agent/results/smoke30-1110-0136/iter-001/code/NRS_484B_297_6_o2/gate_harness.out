@@ -1,0 +1,58 @@
+'TrafficSpec.Rules.NRS_484B_297_6_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.sidewalk_section_missing_or_impassable"],"binders":["x"],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"operationalizations":[{"concepts":["kin.time","rel.occupies","st.obstruction","st.region_geometry","st.sidewalk"],"params":["p.sidewalk_return_time","p.obstruction_encounter_reach"],"standard":"as soon as practicable","surrogate":false}],"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to return applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"w0"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w0"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"w1"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w1"},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"assumptions":["asm.sidewalk_section_missing_or_impassable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"not":{"body":{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"w2"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w2"},{"body":{"cmp":"gt","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"forall_region":{"lit":"obstruction"},"var":"o"}]},"holds_for":"time","length":{"param":"p.sidewalk_return_time"},"subject":"x"}},"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to return applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"w0"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w0"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"w1"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w1"},{"body":{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]},"exists_region":{"lit":"sidewalk"},"var":"w"}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"assumptions":["asm.sidewalk_section_missing_or_impassable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"not":{"body":{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"w2"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"w2"},{"body":{"cmp":"gt","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"forall_region":{"lit":"obstruction"},"var":"o"}]},"holds_for":"time","length":{"param":"p.sidewalk_return_time"},"subject":"x"}},"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to return applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty."],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,st_sidewalk,st_on_way,drv_motion_moving,st_obstruction,st_region_geometry_distance,kin_time
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	x
+OCC	?h
+OCC	x,h
+OCC	?w0
+OCC	x,w0
+OCC	?w1
+OCC	x,w1
+OCC	?w
+OCC	x,w
+OCC	w,h
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	x
+OCC	?w2
+OCC	x,w2
+OCC	?o
+OCC	x,o
+TIME	occurrences	0
+TIME	checks	3
+TIME	lint	644
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	194
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	145
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	90
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	99
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	190
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	195
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	95
+TIME	witnesses	1008
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_297_6_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_297_6_o2	10	6
+TIME	adequacy_start	11
+TIME	adequacy	5881
+DONE

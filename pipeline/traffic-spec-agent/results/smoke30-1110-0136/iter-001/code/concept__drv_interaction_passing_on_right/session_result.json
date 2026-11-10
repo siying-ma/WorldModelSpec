@@ -1,0 +1,201 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 99548,
+  "stop_reason": "end_turn",
+  "session_id": "1e0c9378-cde7-4c60-928e-77a52b203f60",
+  "total_cost_usd": 1.1552506999999999,
+  "usage": {
+   "input_tokens": 34,
+   "cache_creation_input_tokens": 88443,
+   "cache_read_input_tokens": 1149616,
+   "output_tokens": 10730,
+   "output_tokens_details": {
+    "thinking_tokens": 2947
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 88443,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 752,
+     "cache_read_input_tokens": 92471,
+     "cache_creation_input_tokens": 410,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 410
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30370,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030475000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 34,
+    "outputTokens": 10730,
+    "cacheReadInputTokens": 1149616,
+    "cacheCreationInputTokens": 88443,
+    "webSearchRequests": 0,
+    "costUSD": 1.1522031999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2947,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01AYtDTa9nA23GKW4f3JNZQT",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke30-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core && grep -n \"rel_bearing\\|rel_longitudinal_overlap\\|rel_same_direction\\|def relOf\\|def measured\" -r . | head -50",
+     "description": "Find relation atom definitions in Core"
+    }
+   },
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01XGfewaGqrS5VrkQfCQiJTW",
+    "tool_input": {
+     "command": "python -m harness gate --help 2>&1 | head -5; true",
+     "description": "placeholder"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 24,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The concept `drv.interaction.passing_on_right` now passes the gate with **OK** (3 witnesses, 4 atoms read), using 4 of the 6 gate runs.\n\n**The body:** at each observation, all four of these must hold:\n- the two road users head the same way, within `cos_tol`;\n- their overlap along a's heading is at least zero, so they are side by side;\n- b is strictly to a's left;\n- a's speed is greater than b's speed plus `speed_tol` (strictly greater).\n\nThe contract decided every one of these readings, so there are no narrowings.\n\n**The witnesses:** two eastbound cars, with b 4 m to a's left, over three instants 1 s apart. The instance uses `cos_tol` = 0.98 and `speed_tol` = 0.5 m/s.\n- **holds:** a at 12 m/s, b at 10 m/s, side by side the whole time.\n- **fails:** a at 8 m/s, b at 10 m/s.\n- **blind:** the holds trace with `rel.longitudinal_overlap` masked, and the source also reports no body extents or occupancy. This was needed because masking that relation only removes a value the source supplied. Core still calculates the overlap from the two cars' outlines, so the scenario first came out compliant. Then the trace was rejected because a car with observed occupancy must have an outline, so occupancy is unobserved too. The body reads neither extents nor occupancy, so the overlap is still the only unknown.\n\n**Gate runs:**\n1. WITNESS_FAIL: blind came out compliant.\n2. The same failure again. I ran the gate by mistake when I meant to read a Core file, which used up one run.\n3. WITNESS_FAIL: the trace was rejected because of the occupancy issue.\n4. OK.\n\nTwo other shell commands were blocked because only the gate command is allowed: a `grep` over Core and a `harness --help`. I read the Core files with the Read tool instead.\n\nFiles are in `library/` and in the working directory:\n- `TrafficSpec/Concepts/interaction/passing_on_right.lean`\n- `TrafficSpecWitness/Concepts/interaction/passing_on_right.lean`\n- `task_result.md`",
+  "ttft_ms": 2359,
+  "type": "result",
+  "duration_ms": 114607,
+  "uuid": "b08259e0-7f5b-4080-86af-65d9890de6a3",
+  "ttft_stream_ms": 592,
+  "time_to_request_ms": 100,
+  "time_to_request_phases_ms": {
+   "other": 17,
+   "system_prompt": 30,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 17,
+   "input_hooks": 3,
+   "transcript_persist": 7,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 151,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 10,
+   "cpu_ms": 24,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 593,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30370,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030475000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 34,
+    "outputTokens": 10730,
+    "cacheReadInputTokens": 1149616,
+    "cacheCreationInputTokens": 88443,
+    "webSearchRequests": 0,
+    "costUSD": 1.1522031999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2947,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

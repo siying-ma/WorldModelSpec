@@ -1,0 +1,143 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "body": {
+       "rises": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      "exists_region": {
+       "lit": "intersection"
+      },
+      "var": "i"
+     },
+     {
+      "or": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "c"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "crosswalk"
+        },
+        "var": "c"
+       },
+       {
+        "and": [
+         {
+          "asm": "asm.within_city_limits"
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             }
+            ],
+            "derived": "drv_motion_turning",
+            "params": [
+             {
+              "param": "p.yaw_rate_tolerance"
+             }
+            ]
+           },
+           {
+            "body": {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "j"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            "exists_region": {
+             "lit": "intersection"
+            },
+            "var": "j"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.within_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_113_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-113-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "args": [
+      {
+       "var": "x"
+      }
+     ],
+     "derived": "drv_motion_backing",
+     "params": [
+      {
+       "param": "p.motion_speed_tolerance"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "cd56a7f66aed2c847822c1a1",
+  "candidate_digest": "8e4df54808a20551e558b0d92685151bbfb9c012b9dc2a1c769312febeb0ab38"
+ }
+}

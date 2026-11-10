@@ -1,0 +1,104 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (holds_wrongly) at t=0 ms: The heading is [-7,-1] and the carrier direction is [1,1], so their exact cosine is -8/sqrt(50·2) = -0.8. With cos_tol = 0.8 the strict comparison must fail, bu — contract: fails, body: holds; contract: \"the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), re\"",
+   "ruling": "dismissed",
+   "why": "The contract's normalised vectors are its two atoms, and each atom's contract defines its normalised reading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. At an exact cosine of -0.8 that factor puts the dot product just below -0.8, so the body's verdict follows from a reasonable reading of the contract's words; it also turns only on cos_tol sitting exactly at the boundary, a value the caller sets. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "b2570e9f40dfe0798e439285c897493e2ec700aef4a4b6ee449f7cfc2ea9648f",
+ "rulings_at": 0,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (holds_wrongly) at t=0 ms: The heading is [-7,-1] and the carrier direction is [1,1], so their exact cosine is -8/sqrt(50·2) = -0.8. With cos_tol = 0.8 the strict comparison must fail, bu — contract: fails, body: holds; contract: \"the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), re\" — The contract's normalised vectors are its two atoms, and each atom's contract defines its normalised reading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. At an exact cosine of -0.8 that factor puts the dot product just below -0.8, so the body's verdict follows from a reasonable reading of the contract's words; it also turns only on cos_tol sitting exactly at the boundary, a value the caller sets. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a\""
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "a72fcb0f87274fe320c9",
+   "row": {
+    "key": "concept:drv.lane.facing_against_direction",
+    "subject": "drv.lane.facing_against_direction",
+    "iteration": 1,
+    "item": "divergence 1 (holds_wrongly) at t=0 ms: The heading is [-7,-1] and the carrier direction is [1,1], so their exact cosine is -8/sqrt(50·2) = -0.8. With cos_tol = 0.8 the strict comparison must fail, bu — contract: fails, body: holds; contract: \"the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), re\"",
+    "ruling": "dismissed",
+    "reason": "The contract's normalised vectors are its two atoms, and each atom's contract defines its normalised reading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. At an exact cosine of -0.8 that factor puts the dot product just below -0.8, so the body's verdict follows from a reasonable reading of the contract's words; it also turns only on cos_tol sitting exactly at the boundary, a value the caller sets. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a\"",
+    "schema": "concept_case/1",
+    "case_id": "7902860edfab10ef2dc196d2d063cbaf5cfe62da22f6d9e82cf441f047a85cad",
+    "kind": "holds_wrongly",
+    "situation": "The heading is [-7,-1] and the carrier direction is [1,1], so their exact cosine is -8/sqrt(50·2) = -0.8. With cos_tol = 0.8 the strict comparison must fail, but the formula's truncated vector lengths inflate the negative dot product past the threshold.",
+    "contract_words": "the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), read as the dot product of the two normalised vectors, is below minus `cos_tol`",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "cos_tol": [
+       0.8,
+       "ratio"
+      ]
+     }
+    },
+    "grounding": {
+     "x": 1
+    },
+    "regions": {
+     "c": 1
+    },
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "heading": [
+           -7,
+           -1
+          ]
+         }
+        }
+       ],
+       "structures": [
+        {
+         "id": 1,
+         "kind": "lane",
+         "lane": {
+          "direction": [
+           1,
+           1
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 0,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "cce59f33fd87d60d0251e7a60700fb11d1bf138190e5e80e215093b44ff75a2a",
+    "body_digest": "68be7808f8dedb549fe0b3dc67de8875bec5cc7d1229a8ac300851458720491d",
+    "obligation": null,
+    "ruling_id": "a72fcb0f87274fe320c9",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

@@ -1,0 +1,48 @@
+'TrafficSpec.Rules.NRS_484D_100_1.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484D_100_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"f7","why":"'When directed by an official traffic control device' to display lighted lamps: no atom of the surface denotes such a direction. dev.regulatory_sign carries no code that directs lamps to be displayed (its codes are no_left_turn … no_trucks), dev.zone_sign no such kind, and dev.governs / rel.occupies / st.travel_region only locate a device; written with them the limb would be a device's presence, not its direction. The plan's gap (dev.lamp_use_sign) is the atom needed."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"or":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"lt","lhs":{"args":[],"measure":"env_visibility"},"rhs":{"lit":{"den":5,"num":1524},"unit":"metre"}}]},{"not":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}}]}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"f7","why":"'When directed by an official traffic control device' to display lighted lamps: no atom of the surface denotes such a direction. dev.regulatory_sign carries no code that directs lamps to be displayed (its codes are no_left_turn … no_trucks), dev.zone_sign no such kind, and dev.governs / rel.occupies / st.travel_region only locate a device; written with them the limb would be a device's presence, not its direction. The plan's gap (dev.lamp_use_sign) is the atom needed."}],"obligation":{"and":[{"or":[{"args":[{"var":"x"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"x"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]},{"args":[{"var":"x"}],"atom":"sig_position_lamp","params":[]}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"or":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"lt","lhs":{"args":[],"measure":"env_visibility"},"rhs":{"lit":{"den":5,"num":1524},"unit":"metre"}}]},{"not":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}}]}}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"f7","why":"'When directed by an official traffic control device' to display lighted lamps: no atom of the surface denotes such a direction. dev.regulatory_sign carries no code that directs lamps to be displayed (its codes are no_left_turn … no_trucks), dev.zone_sign no such kind, and dev.governs / rel.occupies / st.travel_region only locate a device; written with them the limb would be a device's presence, not its direction. The plan's gap (dev.lamp_use_sign) is the atom needed."}],"obligation":{"and":[{"or":[{"args":[{"var":"x"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"x"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]},{"args":[{"var":"x"}],"atom":"sig_position_lamp","params":[]}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,env_darkness,env_visibility,drv_motion_stopped,kin_engine_running,sig_headlamp,sig_position_lamp
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	env.darkness
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	x
+OCC	?h
+OCC	x,h
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+LITERAL	1524/5	TrafficSpec.PUnit'.metre
+TIME	occurrences	1
+TIME	checks	3
+TIME	lint	19
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	8
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	8
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	7
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	10
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	7
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	7
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	8
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	8
+TIME	witnesses	63
+DONE_WITNESSES

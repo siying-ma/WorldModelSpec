@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.interaction.passing_on_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.passing_on_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.passing_on_right.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"cos_tol"}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"left"}],"atom":"rel_bearing","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"add":[{"args":[{"var":"b"}],"measure":"kin_speed"},{"param":"speed_tol"}]}}]}]}]},"contract":"Road user a is passing road user b on b's right at the observation: the two head the same way (rel.same_direction with cosine tolerance `cos_tol`), their footprints overlap along a's heading (rel.longitudinal_overlap not negative, so the two are side by side), b lies to a's left (the lateral component of rel.bearing from a to b is positive, left positive), and a's speed (kin.speed) exceeds b's by more than `speed_tol`, a tolerance that names only the source's speed resolution. It holds at each observation of the side-by-side phase in which a gains on b. Not denoted: the approach from behind before the footprints overlap, or the moment a draws clear ahead; a pass on b's left; b gaining on a; a lane change; where either road user is, which the caller states.","definition":null,"id":"drv.interaction.passing_on_right","kind":"formula","narrowings":[],"params":[{"name":"cos_tol","unit":"ratio"},{"name":"speed_tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	rel_same_direction,rel_longitudinal_overlap,rel_bearing,kin_speed
+READS	rel_same_direction,rel_longitudinal_overlap,rel_bearing,kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"cos_tol"}]},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"left"}],"atom":"rel_bearing","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"add":[{"args":[{"var":"b"}],"measure":"kin_speed"},{"param":"speed_tol"}]}}]}]}]}
+WITNESS	holds	drv.interaction.passing_on_right@w
+WITNESS	fails	drv.interaction.passing_on_right@w
+WITNESS	blind	drv.interaction.passing_on_right@w
+OCC	a,b
+OCC	a
+OCC	b
+OCC	a,b
+OCC	a
+OCC	b
+INST	drv.interaction.passing_on_right@w	ok
+TIME	checks	4
+TIME	lint	2
+SCEN	holds	drv.interaction.passing_on_right@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.passing_on_right@w/holds	8
+SCEN	fails	drv.interaction.passing_on_right@w	violated	violated	ok
+TIME	scenario:drv.interaction.passing_on_right@w/fails	6
+SCEN	blind	drv.interaction.passing_on_right@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.passing_on_right@w/blind	9
+TIME	witnesses	23
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.passing_on_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.passing_on_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.passing_on_right.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.passing_on_right@w	4	2
+TIME	adequacy_start	6
+TIME	adequacy	82
+DONE

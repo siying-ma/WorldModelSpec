@@ -1,0 +1,1046 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "rises": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "int": "int.turn_right"
+        },
+        {
+         "not": {
+          "rises": {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            },
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "c"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "t"
+                        },
+                        {
+                         "lit": "right"
+                        }
+                       ],
+                       "atom": "st_turn_lane_side",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "t"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "body": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "var": "h"
+                               }
+                              ],
+                              "atom": "st_on_way",
+                              "params": []
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "c"
+                               },
+                               {
+                                "var": "h"
+                               }
+                              ],
+                              "atom": "st_on_way",
+                              "params": []
+                             }
+                            ]
+                           },
+                           "exists_region": {
+                            "lit": "highway"
+                           },
+                           "var": "h"
+                          },
+                          {
+                           "cmp": "eq",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "lit": "ordinal"
+                             }
+                            ],
+                            "measure": "st_lane_adjacency"
+                           },
+                           "rhs": {
+                            "args": [
+                             {
+                              "var": "t"
+                             },
+                             {
+                              "lit": "count"
+                             }
+                            ],
+                            "measure": "st_lane_adjacency"
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    {
+                     "or": [
+                      {
+                       "same": [
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "t"
+                        }
+                       ]
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "c"
+                           },
+                           {
+                            "lit": "right"
+                           },
+                           {
+                            "var": "l5"
+                           }
+                          ],
+                          "atom": "st_lane_adjacency",
+                          "params": []
+                         },
+                         {
+                          "or": [
+                           {
+                            "same": [
+                             {
+                              "var": "l5"
+                             },
+                             {
+                              "var": "t"
+                             }
+                            ]
+                           },
+                           {
+                            "body": {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "l5"
+                                },
+                                {
+                                 "lit": "right"
+                                },
+                                {
+                                 "var": "l4"
+                                }
+                               ],
+                               "atom": "st_lane_adjacency",
+                               "params": []
+                              },
+                              {
+                               "or": [
+                                {
+                                 "same": [
+                                  {
+                                   "var": "l4"
+                                  },
+                                  {
+                                   "var": "t"
+                                  }
+                                 ]
+                                },
+                                {
+                                 "body": {
+                                  "and": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "l4"
+                                     },
+                                     {
+                                      "lit": "right"
+                                     },
+                                     {
+                                      "var": "l3"
+                                     }
+                                    ],
+                                    "atom": "st_lane_adjacency",
+                                    "params": []
+                                   },
+                                   {
+                                    "or": [
+                                     {
+                                      "same": [
+                                       {
+                                        "var": "l3"
+                                       },
+                                       {
+                                        "var": "t"
+                                       }
+                                      ]
+                                     },
+                                     {
+                                      "body": {
+                                       "and": [
+                                        {
+                                         "args": [
+                                          {
+                                           "var": "l3"
+                                          },
+                                          {
+                                           "lit": "right"
+                                          },
+                                          {
+                                           "var": "l2"
+                                          }
+                                         ],
+                                         "atom": "st_lane_adjacency",
+                                         "params": []
+                                        },
+                                        {
+                                         "or": [
+                                          {
+                                           "same": [
+                                            {
+                                             "var": "l2"
+                                            },
+                                            {
+                                             "var": "t"
+                                            }
+                                           ]
+                                          },
+                                          {
+                                           "body": {
+                                            "and": [
+                                             {
+                                              "args": [
+                                               {
+                                                "var": "l2"
+                                               },
+                                               {
+                                                "lit": "right"
+                                               },
+                                               {
+                                                "var": "l1"
+                                               }
+                                              ],
+                                              "atom": "st_lane_adjacency",
+                                              "params": []
+                                             },
+                                             {
+                                              "same": [
+                                               {
+                                                "var": "l1"
+                                               },
+                                               {
+                                                "var": "t"
+                                               }
+                                              ]
+                                             }
+                                            ]
+                                           },
+                                           "exists_region": {
+                                            "lit": "travel_region"
+                                           },
+                                           "var": "l1"
+                                          }
+                                         ]
+                                        }
+                                       ]
+                                      },
+                                      "exists_region": {
+                                       "lit": "travel_region"
+                                      },
+                                      "var": "l2"
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 },
+                                 "exists_region": {
+                                  "lit": "travel_region"
+                                 },
+                                 "var": "l3"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "exists_region": {
+                             "lit": "travel_region"
+                            },
+                            "var": "l4"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "l5"
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_region": {
+                   "lit": "turn_lane"
+                  },
+                  "var": "t"
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "travel_region"
+             },
+             "var": "c"
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_400_1_o1",
+   "intentions": [
+    "int.turn_right"
+   ],
+   "laws": [
+    "NRS-484B-400-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "rises": {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "int": "int.turn_right"
+          },
+          {
+           "not": {
+            "rises": {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "atom": "st_lane_enters",
+                    "params": []
+                   },
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "t"
+                          },
+                          {
+                           "lit": "right"
+                          }
+                         ],
+                         "atom": "st_turn_lane_side",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "t"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "atom": "st_lane_enters",
+                           "params": []
+                          },
+                          {
+                           "and": [
+                            {
+                             "body": {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "t"
+                                 },
+                                 {
+                                  "var": "h"
+                                 }
+                                ],
+                                "atom": "st_on_way",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "c"
+                                 },
+                                 {
+                                  "var": "h"
+                                 }
+                                ],
+                                "atom": "st_on_way",
+                                "params": []
+                               }
+                              ]
+                             },
+                             "exists_region": {
+                              "lit": "highway"
+                             },
+                             "var": "h"
+                            },
+                            {
+                             "cmp": "eq",
+                             "lhs": {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "ordinal"
+                               }
+                              ],
+                              "measure": "st_lane_adjacency"
+                             },
+                             "rhs": {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "count"
+                               }
+                              ],
+                              "measure": "st_lane_adjacency"
+                             }
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      {
+                       "or": [
+                        {
+                         "same": [
+                          {
+                           "var": "c"
+                          },
+                          {
+                           "var": "t"
+                          }
+                         ]
+                        },
+                        {
+                         "body": {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "lit": "right"
+                             },
+                             {
+                              "var": "l5"
+                             }
+                            ],
+                            "atom": "st_lane_adjacency",
+                            "params": []
+                           },
+                           {
+                            "or": [
+                             {
+                              "same": [
+                               {
+                                "var": "l5"
+                               },
+                               {
+                                "var": "t"
+                               }
+                              ]
+                             },
+                             {
+                              "body": {
+                               "and": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "l5"
+                                  },
+                                  {
+                                   "lit": "right"
+                                  },
+                                  {
+                                   "var": "l4"
+                                  }
+                                 ],
+                                 "atom": "st_lane_adjacency",
+                                 "params": []
+                                },
+                                {
+                                 "or": [
+                                  {
+                                   "same": [
+                                    {
+                                     "var": "l4"
+                                    },
+                                    {
+                                     "var": "t"
+                                    }
+                                   ]
+                                  },
+                                  {
+                                   "body": {
+                                    "and": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "l4"
+                                       },
+                                       {
+                                        "lit": "right"
+                                       },
+                                       {
+                                        "var": "l3"
+                                       }
+                                      ],
+                                      "atom": "st_lane_adjacency",
+                                      "params": []
+                                     },
+                                     {
+                                      "or": [
+                                       {
+                                        "same": [
+                                         {
+                                          "var": "l3"
+                                         },
+                                         {
+                                          "var": "t"
+                                         }
+                                        ]
+                                       },
+                                       {
+                                        "body": {
+                                         "and": [
+                                          {
+                                           "args": [
+                                            {
+                                             "var": "l3"
+                                            },
+                                            {
+                                             "lit": "right"
+                                            },
+                                            {
+                                             "var": "l2"
+                                            }
+                                           ],
+                                           "atom": "st_lane_adjacency",
+                                           "params": []
+                                          },
+                                          {
+                                           "or": [
+                                            {
+                                             "same": [
+                                              {
+                                               "var": "l2"
+                                              },
+                                              {
+                                               "var": "t"
+                                              }
+                                             ]
+                                            },
+                                            {
+                                             "body": {
+                                              "and": [
+                                               {
+                                                "args": [
+                                                 {
+                                                  "var": "l2"
+                                                 },
+                                                 {
+                                                  "lit": "right"
+                                                 },
+                                                 {
+                                                  "var": "l1"
+                                                 }
+                                                ],
+                                                "atom": "st_lane_adjacency",
+                                                "params": []
+                                               },
+                                               {
+                                                "same": [
+                                                 {
+                                                  "var": "l1"
+                                                 },
+                                                 {
+                                                  "var": "t"
+                                                 }
+                                                ]
+                                               }
+                                              ]
+                                             },
+                                             "exists_region": {
+                                              "lit": "travel_region"
+                                             },
+                                             "var": "l1"
+                                            }
+                                           ]
+                                          }
+                                         ]
+                                        },
+                                        "exists_region": {
+                                         "lit": "travel_region"
+                                        },
+                                        "var": "l2"
+                                       }
+                                      ]
+                                     }
+                                    ]
+                                   },
+                                   "exists_region": {
+                                    "lit": "travel_region"
+                                   },
+                                   "var": "l3"
+                                  }
+                                 ]
+                                }
+                               ]
+                              },
+                              "exists_region": {
+                               "lit": "travel_region"
+                              },
+                              "var": "l4"
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "exists_region": {
+                          "lit": "travel_region"
+                         },
+                         "var": "l5"
+                        }
+                       ]
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "turn_lane"
+                    },
+                    "var": "t"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "not": {
+        "rises": {
+         "or": [
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "t"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "t"
+                   },
+                   {
+                    "lit": "right"
+                   }
+                  ],
+                  "atom": "st_turn_lane_side",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "t"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "atom": "st_lane_enters",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "body": {
+                       "args": [
+                        {
+                         "var": "t"
+                        },
+                        {
+                         "var": "h"
+                        }
+                       ],
+                       "atom": "st_on_way",
+                       "params": []
+                      },
+                      "exists_region": {
+                       "lit": "highway"
+                      },
+                      "var": "h"
+                     },
+                     {
+                      "cmp": "eq",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "t"
+                        },
+                        {
+                         "lit": "ordinal"
+                        }
+                       ],
+                       "measure": "st_lane_adjacency"
+                      },
+                      "rhs": {
+                       "args": [
+                        {
+                         "var": "t"
+                        },
+                        {
+                         "lit": "count"
+                        }
+                       ],
+                       "measure": "st_lane_adjacency"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             "exists_region": {
+              "lit": "turn_lane"
+             },
+             "var": "t"
+            },
+            {
+             "body": {
+              "implies": [
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 }
+                ]
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "st_turn_lane",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "lit": "right"
+                   }
+                  ],
+                  "atom": "st_turn_lane_side",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             },
+             "forall_region": {
+              "lit": "travel_region"
+             },
+             "var": "c"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "d700410177a5313f58d8ec83",
+  "candidate_digest": "8361e69a9fc00d44297756bad4864de2c24e1d40c3b40e56b879ed97535a7bf7"
+ }
+}

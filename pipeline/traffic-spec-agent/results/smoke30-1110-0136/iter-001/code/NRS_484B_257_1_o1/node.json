@@ -1,0 +1,260 @@
+{
+ "node_id": "NRS_484B_257_1_o1",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except when traffic is being controlled by a police officer",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "s3",
+   "text": "When proper signs have been erected,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "where the driver has a view of approaching traffic on the through highway.",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped, the driver shall yield the right-of-way to other vehicles which have entered the intersection from such through highway or which are approaching so closely on such through highway as to constitute an immediate hazard during the time such driver is moving across or within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Traffic (DEF-NRS-484A-285::traffic, 'vehicles and other conveyances ... using any highway for purposes of travel') being controlled by a police officer: dev.human_direction 'a person directing traffic and the direction given; role ... police_officer' governing (dev.governs) the approach carrier of x or the intersection i. The traffic controlled is the traffic on x's approach, x itself a member of it."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "Traffic being controlled by a traffic-control signal (DEF-NRS-484A-290 'by which traffic is alternately directed to stop or proceed'): a dev.traffic_signal head governing x's approach carrier or i (dev.governs) that is not dev.inoperative ('installed and uncovered but showing no valid indication') and not in state dark; an inoperative head directs nothing."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "Proper signs are dev.stop_sign 'regulatory sign requiring a full halt' or dev.yield_sign 'regulatory sign requiring yielding without a mandatory halt' governing (dev.governs) the carrier x approaches through (rel.occupies, st.lane_enters) or the intersection; propriety and erection by authority are read from the sign's presence."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Vehicle aggregate DEF-NRS-484A-320::vehicle; the driver read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "kin.speed",
+    "st.stop_line",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.region_geometry",
+    "prim.region_offset_along",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "'Stop' when required is DEF-NRS-484A-255 'complete cessation from movement' (drv.motion.stopped); 'yield' at the place, under a yield sign, is what the next sentence names, 'slowed or stopped': a halt or a speed (kin.speed 'magnitude of velocity') at or below the yield-control check speed. The place, in order: st.stop_line 'the transverse line marking where vehicles halt for a device' recorded as marking x's carrier (st.entrance_of 'the carrier whose entrance into an intersection a stop line or a crosswalk marks'); else st.crosswalk 'marked crossing, or the unmarked prolongation of sidewalks at an intersection' marking it, with the footprint not yet overlapping it (rel.occupies); else the carrier's entrance end at st.intersection, with the footprint outside it. At the place is within the stop-point tolerance (st.region_geometry body distance), upstream along the carrier's direction (prim.region_offset_along), on the carrier x occupies (rel.occupies, st.lane_enters, st.travel_region)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "has a view of approaching traffic on the through highway",
+   "concepts": [
+    "st.sight_along_way",
+    "st.highway",
+    "st.on_way"
+   ],
+   "params": [
+    "p.approach_view_sight_distance"
+   ],
+   "convention": "The view of approaching traffic on the through highway is a sight distance along that way (st.sight_along_way 'within which another vehicle on that way could be seen from the road user's eye') at least the stopping sight distance of the approach-speed design convention. The through highway is a st.highway the intersection lies on (st.on_way) and x's approach carrier does not: the way whose traffic the sign on x's approach makes x yield to (DEF-NRS-484A-275 'at the entrances to which vehicular traffic from intersecting highways is required by law to yield').",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle. Judged at each entry of x into an intersection i (x's footprint overlaps i and did not at the observation before), where at the observation before the entry x occupied a carrier c (st.travel_region) with st.lane_enters c i, and a stop sign or yield sign governs c or i (dev.governs). Not applicable where, at the entry observation, x's traffic is controlled by a police officer (a dev.human_direction with role police_officer governs c or i) or by a traffic signal (a dev.traffic_signal governing c or i that is not dev.inoperative and not in state dark).",
+ "obligation": "Event: the entry of x into i. Approach: the carrier c x occupies at the observation before the entry with st.lane_enters c i; where several such carriers give different verdicts, unknown. Act: where a stop sign governs c or i, a halt (drv.motion.stopped with p.motion_speed_tolerance); where only a yield sign governs, a halt or a speed (kin.speed) at or below p.yield_sign_check_speed. Place, in the words' order: (1) a stop line s recorded as marking c (st.entrance_of s c); (2) where c's stop-line association is observed and lists none, a crosswalk w recorded as marking c, the act made with x's footprint not overlapping w; (3) where neither is recorded (associations observed), the entrance end of c: with x's footprint outside i within p.stop_point_tolerance of i, at an observation at which st.sight_along_way from x to the through highway h (a st.highway i lies on and c does not, st.on_way) is at least p.approach_view_sight_distance. The act counts at an observation at which x is on c, outside i, on the upstream side of the place (prim.region_offset_along along c's designated direction, the place itself included) and within p.stop_point_tolerance of it (st.region_geometry distance between x's body and the place). History bound: the search runs back from the entry and ends at the approach start (the last observation before the entry at which x, on a carrier the place marks, is short of the place and farther from it than p.stop_point_tolerance) or at x's previous entry into i through the same place. Met where the act is found; violated where the search reaches either end without it; unknown only where it reaches neither (the recording begins inside the stopping zone with no act recorded), and unknown where the carrier association, its direction or the sight distance is unobserved and the verdict turns on it.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.yield_sign_check_speed",
+  "p.stop_point_tolerance",
+  "p.approach_view_sight_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "'Proper signs ... erected' is read from the presence of a stop or yield sign governing the approach.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'Clearly marked' is read as the stop line the scene represents.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s5",
+   "why": "'Yield' at the place under a yield sign is read, by the words of the next sentence, as slowing to at most the yield-control check speed or halting there; 'the point nearest the intersection where the driver has a view' is read as the entrance end of the approach carrier at which the view bound is met."
+  },
+  {
+   "span": "s6",
+   "why": "The driver's view is read as what could be seen from the place along the through way (st.sight_along_way), not as what the driver perceived.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "s6",
+   "why": "The through highway's designation is read from the stop or yield sign governing the subject's approach: every way the intersection lies on that the approach carrier does not.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A dev.stop_sign governs lane c (st.lane_enters c i); stop line s marks c. No signal or officer controls c or i. x approaches from 80 m at 12 m/s, slows to 2 m/s at s and enters i without kin.speed reaching the tolerance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same; x halts 0.3 m short of s, then enters i."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No stop or yield sign governs c or i; x enters without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but dev.governs is not observed, so whether the stop sign governs x's approach is unknown.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Only a dev.yield_sign governs c; x slows to 3 m/s within 1 m short of s without halting, then enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but a dev.human_direction with role police_officer governs i and directs x to proceed."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with x already within the stopping zone of s on c, creeping at 0.8 m/s; no halt is recorded and x enters i.",
+   "boundary": "the approach start of x on c (its last observation outside the stopping zone of s), before the recording begins"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.yield_sign_check_speed",
+   "unit": "m/s",
+   "value": 6.7,
+   "convention": "Speed to which a vehicle at a yield-controlled approach slows so that it can still halt before the conflict (about 15 mph).",
+   "source": "AASHTO Green Book intersection sight distance, Case C yield control (approach speed reduction)"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Stop-point tolerance of the approach convention: the distance between a road user's body and the governing mark (stop line, crosswalk or intersection edge) within which a halt counts as made at that mark, set from the spread of halting positions at stop-controlled approaches.",
+   "source": "Observational studies of stopping position at stop-controlled approaches (FHWA/ITE stop-sign compliance studies)"
+  },
+  {
+   "name": "p.approach_view_sight_distance",
+   "unit": "m",
+   "value": 61.0,
+   "convention": "Sight distance along a crossing way that gives a view of approaching traffic: the stopping sight distance at a 30 mph design speed.",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets, stopping sight distance table"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

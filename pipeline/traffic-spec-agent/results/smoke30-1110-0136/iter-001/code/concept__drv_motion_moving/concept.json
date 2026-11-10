@@ -1,0 +1,54 @@
+{
+ "concept_id": "drv.motion.moving",
+ "kind": "formula",
+ "contract": "A road user is in motion at the observation: the magnitude of its velocity (kin.speed) exceeds `tol`, a tolerance that names only the source's speed resolution, below which a reading counts as standing still. It denotes motion in any direction, forwards or backwards, whoever or whatever controls the road user. Not denoted: the direction of motion; a halt held over a window, since the concept reads the one observation.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "tol",
+   "unit": "m/s",
+   "meaning": "The source's speed resolution: a speed at or below it counts as standing still."
+  }
+ ],
+ "elements": [
+  {
+   "span": "the magnitude of its velocity (kin.speed)",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity', m/s; it carries no direction, which the concept does not need."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car's kin.speed is well above the tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car stands: kin.speed is zero."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.speed absent.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_38_030",
+  "LVMC_11_43_010_A",
+  "NRS_484B_127_3"
+ ]
+}

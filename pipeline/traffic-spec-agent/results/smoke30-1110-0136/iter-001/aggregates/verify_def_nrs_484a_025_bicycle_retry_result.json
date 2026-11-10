@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-025::bicycle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause describes human-powered wheeled riding devices matching the ru.bicycle contract, and the moped exception does not remove that class.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any bus member admitted by the definition must also satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person, while the admitting words reach riding devices rather than persons.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any commercially classified member admitted by the definition must also satisfy the contract of the proposed included ru.bicycle, regardless of its mass or licensing.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Both admitting branches require a human-powered wheeled riding device, so any admitted electric bicycle also carries the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"An electric scooter can be admitted only insofar as it satisfies the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation supplies no independent admission, and every admitted member must satisfy the contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A fire-fighting vehicle admitted by these words must also be a human-powered wheeled riding device carrying the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The words “except a moped” expressly exclude the jurisdictionally classified moped class.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any motor-vehicle member admitted despite the moped exception must satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any admitted motorcycle must satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle, with mopeds expressly excepted.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official or contracted service supplies no independent admission, and every admitted member must also carry the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The pedestrian contract describes a person, including a person using a wheelchair or qualifying device, whereas the definition admits the riding device itself.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"This contract describes a pedestrian person rather than a device upon which a person may ride.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any on-track equipment admitted by the definition must also satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"School-bus designation supplies no independent admission, and any admitted member must also satisfy the contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any marked passenger vehicle for hire admitted by the definition must also satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any admitted tour bus, shuttle bus or limousine must also satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any drawn vehicle or combination admitted by the definition must itself satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Transit service supplies no independent admission, and any admitted member must also satisfy the contract of the proposed included ru.bicycle.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Any goods-carrying motor vehicle admitted by the definition must also satisfy the human-powered wheeled riding-device contract of the proposed included ru.bicycle.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 78954,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 6440,
+   "input_tokens_details": {
+    "cache_write_tokens": 6437,
+    "cached_tokens": 0
+   },
+   "output_tokens": 3220,
+   "output_tokens_details": {
+    "reasoning_tokens": 2070
+   },
+   "total_tokens": 9660
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_04a16aee47f7b58e016af2dc30ad6087d0ac46c8c31e227029",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

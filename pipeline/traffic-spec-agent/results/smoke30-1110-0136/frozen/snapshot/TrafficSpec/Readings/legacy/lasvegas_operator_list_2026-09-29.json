@@ -1,0 +1,178 @@
+{
+ "run": "lasvegas",
+ "_note": "The parameter catalogue for this corpus: every number a statute did not state, with its unit (the corpus's own units are accepted and scaled by the decoder) and the convention its value comes from. Two tiers: entries the operator wrote (the original 28 are an operator-authored list from before any law was planned, without recorded sources; eight equal a figure some statute states and are under review), and entries a plan session proposed, marked `proposed` with the run, iteration and node that proposed them, their convention and source; the operator reviews a proposal by removing the marker or changing the value. Figures the law states are literals on the rule's span, never entries here.",
+ "params": [
+  {
+   "name": "p.stop_speed",
+   "value": 0.5,
+   "unit": "mph",
+   "convention": "speed below which a body counts as halted (sensor noise floor)"
+  },
+  {
+   "name": "p.stop_span",
+   "value": 2,
+   "unit": "s",
+   "convention": "span of speed below p.stop_speed that counts as a stop (a 'complete cessation from movement' must be observable across samples)"
+  },
+  {
+   "name": "p.standing_span",
+   "value": 30,
+   "unit": "s",
+   "convention": "span beyond which a halt is standing, not a momentary stop"
+  },
+  {
+   "name": "p.queue_gap",
+   "value": 15,
+   "unit": "ft",
+   "convention": "longitudinal gap within which a halted vehicle ahead makes the halt a queue"
+  },
+  {
+   "name": "p.following_gap",
+   "value": 300,
+   "unit": "ft",
+   "convention": "range within which a same-lane vehicle ahead is followed"
+  },
+  {
+   "name": "p.headway",
+   "value": 2,
+   "unit": "s",
+   "convention": "reasonable-and-prudent following: the two-second headway convention"
+  },
+  {
+   "name": "p.ttc_bound",
+   "value": 1.5,
+   "unit": "s",
+   "convention": "time to conflict below which proximity is a hazard (conflict-analysis convention)"
+  },
+  {
+   "name": "p.ttc_horizon",
+   "value": 6,
+   "unit": "s",
+   "convention": "projection horizon for time to conflict"
+  },
+  {
+   "name": "p.passing_clearance",
+   "value": 3,
+   "unit": "ft",
+   "convention": "lateral gap between the bodies when a road user passes another and the text states no clearance; a provisional engineering choice to be reviewed. The value equals a clearance the corpus states for passing a bicycle, which is that rule's literal and not this parameter"
+  },
+  {
+   "name": "p.turn_angle",
+   "value": 60,
+   "unit": "deg",
+   "convention": "heading change that counts as a turn"
+  },
+  {
+   "name": "p.turn_window",
+   "value": 6,
+   "unit": "s",
+   "convention": "window over which a turn's heading change is measured"
+  },
+  {
+   "name": "p.u_turn_window",
+   "value": 15,
+   "unit": "s",
+   "convention": "window over which a heading reversal is measured"
+  },
+  {
+   "name": "p.u_turn_tolerance",
+   "value": 30,
+   "unit": "deg",
+   "convention": "tolerance about a half turn"
+  },
+  {
+   "name": "p.lane_change_gap",
+   "value": 50,
+   "unit": "ft",
+   "convention": "gap the adjacent lane must offer for a feasible lane change"
+  },
+  {
+   "name": "p.approach_distance",
+   "value": 100,
+   "unit": "ft",
+   "convention": "distance from a region's boundary within which a body approaches it"
+  },
+  {
+   "name": "p.cleared_distance",
+   "value": 15,
+   "unit": "ft",
+   "convention": "distance past a line or rail beyond which it is cleared"
+  },
+  {
+   "name": "p.same_direction_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "heading cosine above which two users travel the same way (about 25 degrees)"
+  },
+  {
+   "name": "p.oncoming_cos",
+   "value": 0.9,
+   "unit": "ratio",
+   "convention": "heading cosine of opposition for oncoming traffic"
+  },
+  {
+   "name": "p.wrong_way_cos",
+   "value": 0.5,
+   "unit": "ratio",
+   "convention": "heading cosine of opposition to a lane's direction that counts as wrong way"
+  },
+  {
+   "name": "p.arrival_tolerance",
+   "value": 1,
+   "unit": "s",
+   "convention": "simultaneity of arrival at an intersection"
+  },
+  {
+   "name": "p.hard_decel",
+   "value": 3,
+   "unit": "m/s2",
+   "convention": "deceleration that counts as sudden"
+  },
+  {
+   "name": "p.stopping_decel",
+   "value": 3.4,
+   "unit": "m/s2",
+   "convention": "design deceleration of the stopping-sight-distance model"
+  },
+  {
+   "name": "p.reaction_time",
+   "value": 2.5,
+   "unit": "s",
+   "convention": "design perception-reaction time of the stopping-sight-distance model"
+  },
+  {
+   "name": "p.speed_margin",
+   "value": 10,
+   "unit": "mph",
+   "convention": "margin below the posted or prevailing speed that counts as impeding"
+  },
+  {
+   "name": "p.traffic_range",
+   "value": 300,
+   "unit": "ft",
+   "convention": "range within which same-direction users define prevailing speed"
+  },
+  {
+   "name": "p.impede_span",
+   "value": 30,
+   "unit": "s",
+   "convention": "span of impeding that counts"
+  },
+  {
+   "name": "p.loading_span",
+   "value": 3,
+   "unit": "min",
+   "convention": "span of a halt that counts as expeditious loading or unloading"
+  },
+  {
+   "name": "p.forced_halt_gap",
+   "value": 15,
+   "unit": "ft",
+   "convention": "gap to a halted vehicle ahead, a stop line or a sign that forces a halt"
+  }
+ ],
+ "aggregates": [],
+ "_fields": {
+  "aggregates": "optional operator overrides only: word, classes (ru.* ids or other words). The run derives every aggregate the laws use from the corpus definitions (results/<run>/reading.json, for review); an operator entry here takes precedence over the derived one."
+ }
+}

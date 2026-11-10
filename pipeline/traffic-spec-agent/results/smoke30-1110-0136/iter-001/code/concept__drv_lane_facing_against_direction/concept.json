@@ -1,0 +1,64 @@
+{
+ "concept_id": "drv.lane.facing_against_direction",
+ "kind": "formula",
+ "contract": "A road user points against the designated direction of travel of a carrier at the observation: the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), read as the dot product of the two normalised vectors, is below minus `cos_tol`, the cosine of the largest angle off exactly opposed that still counts as against. Not denoted: occupancy of the carrier, which the caller states; the direction of motion, since a vehicle pointing against the direction points against it whether it moves forwards or backs; travel across the carrier, with headings near perpendicular to it; a carrier with no designated direction, for which the concept is unknown.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "c",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "cos_tol",
+   "unit": "ratio",
+   "meaning": "Cosine of the largest angle off exactly opposed at which a heading still points against the direction."
+  }
+ ],
+ "elements": [
+  {
+   "span": "its heading (kin.heading)",
+   "atoms": [
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.heading: 'direction the body points', read normalised."
+  },
+  {
+   "span": "the carrier's designated direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in — a lane ... or a roadway, one-way roadway or shoulder', read normalised; a place no carrier covers has none (unknown)."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car on a one-way roadway points opposite its designated direction."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car points along the roadway's designated direction."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, with kin.heading declared absent.",
+   "masked": [
+    "kin.heading"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o1"
+ ]
+}

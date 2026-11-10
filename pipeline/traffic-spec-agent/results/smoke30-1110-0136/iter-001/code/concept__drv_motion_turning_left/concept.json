@@ -1,0 +1,58 @@
+{
+ "concept_id": "drv.motion.turning_left",
+ "kind": "formula",
+ "contract": "A road user's heading is turning to the left at the observation: its yaw rate (kin.yaw_rate, positive to the left, counter-clockwise) exceeds `tol`, a tolerance that names only the source's yaw-rate resolution, whether the road user moves forwards or backwards. Not denoted: a heading turning to the right or not changing; the angle turned or a completed turn; where the turn is made, which the caller states. The concept does not tell a turn at a junction from a lane change or a bend; the caller's place condition does.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "tol",
+   "unit": "deg/s",
+   "meaning": "the source's yaw-rate resolution: a yaw rate at or below it is read as no turning to the left"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its yaw rate (kin.yaw_rate, positive to the left, counter-clockwise) exceeds `tol`",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is the 'rate of change of heading, positive when the heading turns to the left (counter-clockwise)'; its exclusion 'not a stand-in for road curvature' is respected: the concept states a heading change, not a road shape, and leaves the place to the caller."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x's kin.yaw_rate is +12 deg/s with tol 2 deg/s: turning left."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x's kin.yaw_rate is -12 deg/s: turning right."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "kin.yaw_rate is not observed for x.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_1",
+  "NRS_484B_253_o2"
+ ],
+ "differs_from": {
+  "concept": "drv.motion.turning",
+  "why": "drv.motion.turning reads the magnitude of the yaw rate, a turn to either hand; this concept reads its sign, a turn to the left only."
+ }
+}

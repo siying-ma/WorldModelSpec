@@ -1,0 +1,346 @@
+{
+ "verdict": "OK",
+ "details": [
+  "11 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "h"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "rw"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "rw"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "rw"
+          },
+          "tt"
+         ]
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "h"
+     },
+     {
+      "and": [
+       {
+        "not": {
+         "asm": "asm.business_or_residence_district"
+        }
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "derived": "drv_motion_stopped",
+          "params": [
+           {
+            "param": "p.motion_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "not": {
+           "and": [
+            {
+             "asm": "asm.vehicle_disabled"
+            },
+            {
+             "and": [
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "r"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "roadway"
+               },
+               "var": "r"
+              },
+              {
+               "asm": "asm.disabled_vehicle_immovable"
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.business_or_residence_district",
+    "asm.vehicle_disabled",
+    "asm.disabled_vehicle_immovable"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_440_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-440-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "rw"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "rw"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "rw"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "l"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "l"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             },
+             {
+              "and": [
+               {
+                "cmp": "ge",
+                "lhs": {
+                 "args": [
+                  {
+                   "var": "l"
+                  }
+                 ],
+                 "measure": "st_lane_width"
+                },
+                "rhs": {
+                 "param": "p.free_passage_width"
+                }
+               },
+               {
+                "body": {
+                 "not": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "y"
+                     }
+                    ],
+                    "derived": "drv_motion_stopped",
+                    "params": [
+                     {
+                      "param": "p.motion_speed_tolerance"
+                     }
+                    ]
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "y"
+                       },
+                       {
+                        "var": "l"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "cmp": "ge",
+                      "lhs": {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "y"
+                        }
+                       ],
+                       "measure": "rel_longitudinal_overlap"
+                      },
+                      "rhs": {
+                       "lit": {
+                        "den": 1,
+                        "num": 0
+                       },
+                       "unit": "metre"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                },
+                "forall_user": "y"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "lane"
+         },
+         "var": "l"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [
+    "Attended or unattended, the duty is the same: the words name both cases and exclude neither."
+   ],
+   "surrogate": false
+  },
+  "context": "64712a0d79bce39cae532b47",
+  "candidate_digest": "5d5957abb2d5cfecffc0393f3d2472c54a910e8c43c3d68f50034cc79071c261"
+ }
+}

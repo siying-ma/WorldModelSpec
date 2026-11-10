@@ -1,0 +1,119 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "asm": "asm.within_city_limits"
+   },
+   "assumptions": [
+    "asm.within_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "DEF-NRS-484A-135::motorcycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "ru_moped",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "ru_electric_scooter",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "x"
+    }
+   ],
+   "id": "LVMC_11_38_030",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-38-030"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        }
+       ],
+       "derived": "drv_motion_moving",
+       "params": [
+        {
+         "param": "p.motion_speed_tolerance"
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "s"
+           }
+          ],
+          "atom": "st_sidewalk",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "s"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "sidewalk"
+       },
+       "var": "s"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "936b8c245156186e304500ac",
+  "candidate_digest": "d8d77f0d93aa8ebc9e7cf7637168fdc307c686bdc3025797d53e9865478f7eca"
+ }
+}

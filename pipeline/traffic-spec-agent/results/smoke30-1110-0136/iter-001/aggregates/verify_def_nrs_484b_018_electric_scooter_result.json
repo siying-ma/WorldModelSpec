@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484B-018::electric_scooter\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The incorporated vehicle definition excepts devices moved by human power, which describes this class's contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being designed to carry many passengers establishes no minimum weight that conflicts with the quoted 100-pound ceiling.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting words describe a vehicle, whereas this class consists of persons.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract permits membership through commercial licensing alone and supplies no mass threshold establishing that every member exceeds 100 pounds.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The incorporated vehicle definition expressly excepts electric bicycles, and the posted electric-bicycle definition also expressly disclaims electric scooters.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The incorporated definition of the required term 'vehicle' expressly excepts 'An electric scooter,' so the posted words do not merely leave this class unsettled by the weight and speed limits.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Jurisdictional designation as an emergency vehicle establishes no weight incompatible with the quoted ceiling.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting function specified by the contract establishes no minimum vehicle weight.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The posted moped definition expressly states that the term does not include an electric scooter, defeating the claimed unresolved overlap.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract supplies no minimum weight, and its exclusion of separately classed powered two-wheelers does not exclude every device described by the scooter definition.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract's wheel-count and astride-riding requirements establish neither a weight above 100 pounds nor a motor-only maximum speed above 20 miles per hour.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official or contracted road service and identifying equipment establish no minimum weight conflicting with the quoted ceiling.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class consists of persons, including persons using specified mobility devices, rather than the vehicle described by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The class consists of pedestrians with specified assistance, not vehicles designed to be ridden on.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract establishes neither weight above 100 pounds nor the exclusive use upon stationary rails required by the incorporated vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Designation for carrying school children and jurisdictional markings establish no minimum weight.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being a marked passenger vehicle for hire does not establish a weight above the quoted limit.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The service, body-description and livery requirements specify no minimum weight that establishes the proposed exclusion.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations, and the propulsion clause does not rule out a rideable combination propelled by its electric motor or rider.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying livery or route displays establish no minimum weight.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A body built for carrying goods establishes no minimum weight incompatible with the quoted 100-pound ceiling.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 114768,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4063,
+   "input_tokens_details": {
+    "cache_write_tokens": 4060,
+    "cached_tokens": 0
+   },
+   "output_tokens": 4829,
+   "output_tokens_details": {
+    "reasoning_tokens": 3737
+   },
+   "total_tokens": 8892
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_061774ecce3bb7b4016af2dd3e58f887d09c00b7f4936175ab",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

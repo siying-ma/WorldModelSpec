@@ -1,0 +1,440 @@
+{
+ "digest": "1384a7b69f24b65f2ae8a7e13ce0a9f7590dd8b2b54c6fb77b3ef524f1c92883",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-050",
+    "term": "combination of vehicles",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-050::combination_of_vehicles",
+    "quote": "“Combination of vehicles” means two or more vehicles coupled together.",
+    "reason": "The definition denotes a set of tracked road users, coupled vehicles, whose eligibility the ru.* classes can classify."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-050::combination_of_vehicles",
+    "term": "combination of vehicles",
+    "definition": "DEF-NRS-484A-050",
+    "classifications": [
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ]
+     },
+     {
+      "class": "ru.bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Devices moved by human power"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(2) Electric bicycles"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(4) An electric scooter"
+       }
+      ]
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "used exclusively upon stationary rails"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "Electric personal assistive mobility devices as defined in NRS 482.029"
+       }
+      ]
+     },
+     {
+      "class": "ru.child",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported"
+       }
+      ]
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A motor vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.motor_vehicle",
+        "words": "a self-propelled vehicle other than a rail vehicle"
+       }
+      ]
+     },
+     {
+      "class": "ru.truck",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A truck is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.truck",
+        "words": "motor vehicle for carrying goods, with a body built for that purpose"
+       }
+      ]
+     },
+     {
+      "class": "ru.bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.bus",
+        "words": "motor vehicle designed to carry many passengers"
+       }
+      ]
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A school bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.school_bus",
+        "words": "bus designated for carrying school children, with the jurisdiction's markings"
+       }
+      ]
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A transit bus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.transit_bus",
+        "words": "bus in public transit service, identifiable by its livery or route display"
+       }
+      ]
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A tour bus or limousine is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.tour_bus_or_limousine",
+        "words": "a tour or shuttle bus, or a lengthened passenger vehicle for hire, identifiable by its livery"
+       }
+      ]
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A taxicab is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.taxicab",
+        "words": "passenger vehicle for hire, identifiable by its markings"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A commercial motor vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.commercial_motor_vehicle",
+        "words": "vehicle over the jurisdiction's commercial mass class or marked as commercially licensed"
+       }
+      ]
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "An emergency vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A fire apparatus is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.fire_apparatus",
+        "words": "a fire-fighting vehicle"
+       }
+      ]
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "An official vehicle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.official_vehicle",
+        "words": "a vehicle in official or contracted road service, identifiable by livery or equipment"
+       }
+      ]
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       }
+      ],
+      "reason": "A motorcycle is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.motorcycle",
+        "words": "motor vehicle on two or three wheels ridden astride, including three-wheeled variants"
+       }
+      ]
+     },
+     {
+      "class": "ru.moped",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-050",
+        "words": "two or more vehicles coupled together"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle"
+       }
+      ],
+      "reason": "A moped, a vehicle not excepted by NRS 484A.320, is admitted only when coupled with another vehicle, and that coupled road user is the combination, which carries ru.trailer_or_combination.",
+      "covered_by": [
+       "ru.trailer_or_combination"
+      ],
+      "basis": [
+       {
+        "class": "ru.trailer_or_combination",
+        "words": "vehicle drawn by another, or the combination"
+       },
+       {
+        "class": "ru.moped",
+        "words": "a low-power two- or three-wheeler with a small engine or motor, as a jurisdiction classes it"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,55 @@
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.within_city_limits"],"binders":["x"],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"or":[{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"},{"or":[{"body":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"c"},{"and":[{"asm":"asm.within_city_limits"},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_turning","params":[{"param":"p.yaw_rate_tolerance"}]},{"body":{"args":[{"var":"x"},{"var":"j"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"j"}]}]}]}]},"assumptions":["asm.within_city_limits"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"args":[{"var":"x"}],"derived":"drv_motion_backing","params":[{"param":"p.motion_speed_tolerance"}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"or":[{"body":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"exists_region":{"lit":"intersection"},"var":"i"},{"or":[{"body":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"crosswalk"},"var":"c"},{"and":[{"asm":"asm.within_city_limits"},{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_tolerance"}},{"body":{"args":[{"var":"x"},{"var":"j"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"j"}]}]}]}]},"assumptions":["asm.within_city_limits"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_113_2","intentions":[],"laws":["NRS-484B-113-2"],"narrowings":[],"obligation":{"not":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"p.motion_speed_tolerance"}}}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,st_crosswalk,drv_motion_turning,drv_motion_backing
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.velocity
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	x
+OCC	?j
+OCC	x,j
+OCC	x
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	21
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	9
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	7
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	6
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	10
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	7
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	6
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	6
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	7
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	6
+TIME	witnesses	64
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_113_2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_113_2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_113_2	6	8
+TIME	adequacy_start	8
+TIME	adequacy	287
+DONE

@@ -1,0 +1,63 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"cmp\":\"lt\",\"lhs\":{\"abs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},\"rhs\":{\"param\":\"$p1\"}}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "cmp": "lt",
+     "lhs": {
+      "abs": {
+       "heading_since": "x",
+       "max_step": {
+        "param": "step"
+       },
+       "onset": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "i"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       }
+      }
+     },
+     "rhs": {
+      "param": "max_angle"
+     }
+    }
+   ]
+  },
+  "context": "04ff5d34d3c4f5f1059ae797",
+  "candidate_digest": "a0ef78ae141f930d5a6f5caa5456733ef394bd420b89e6c1b52e0a2457a2ec66"
+ }
+}

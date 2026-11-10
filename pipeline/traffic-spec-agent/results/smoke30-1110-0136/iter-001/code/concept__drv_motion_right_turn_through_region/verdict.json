@@ -1,0 +1,93 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.time",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"rises\":{\"not\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}},{\"and\":[{\"cmp\":\"le\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}},{\"cmp\":\"gt\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p0\"},\"onset\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}},\"rhs\":{\"neg\":{\"param\":\"$p2\"}}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "not": {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "le",
+       "lhs": {
+        "heading_since": "x",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       },
+       "rhs": {
+        "neg": {
+         "param": "min_angle"
+        }
+       }
+      },
+      {
+       "cmp": "gt",
+       "lhs": {
+        "heading_since": "x",
+        "max_step": {
+         "param": "step"
+        },
+        "onset": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       },
+       "rhs": {
+        "neg": {
+         "param": "max_angle"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "76e8e80680e02c40043a2b2a",
+  "candidate_digest": "beedf4447b751a5fe14441c1792c476c0ae0d0808dd93c256a9af2cfe8f620fa"
+ }
+}

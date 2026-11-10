@@ -1,0 +1,72 @@
+{
+ "concept_id": "drv.motion.clockwise_about_region",
+ "kind": "formula",
+ "contract": "A road user moves clockwise about a region's reference point at the observation: seen from above in the world frame, in the sense opposite to the one in which the ontology counts a left turn as counter-clockwise, the component of its velocity (kin.velocity) perpendicular to the line from the region's reference point (st.region_geometry) to the road user's reference point (kin.position) points clockwise about the region's reference point, and that component's magnitude exceeds `tol`, a tolerance that names only the source's speed resolution. It is computed from the cross product c of the offset of the road user's reference point from the region's reference point with the velocity (the offset's first component times the velocity's second, minus the offset's second component times the velocity's first), negative for clockwise motion: the concept holds where c is negative and c times c exceeds tol times tol times the squared length of the offset. Not denoted: the direction the road user points, since a vehicle backing clockwise moves clockwise; motion toward or away from the reference point, such as entering or leaving; whether the road user occupies the region, which the caller states; the designated direction of any carrier.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "tol",
+   "unit": "m/s",
+   "meaning": "The source's speed resolution: a tangential speed at or below it counts as no rotation."
+  }
+ ],
+ "elements": [
+  {
+   "span": "its velocity (kin.velocity)",
+   "atoms": [
+    "kin.velocity"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity: 'velocity vector', m/s, world frame."
+  },
+  {
+   "span": "the region's reference point (st.region_geometry)",
+   "atoms": [
+    "st.region_geometry"
+   ],
+   "concepts": [],
+   "justification": "st.region_geometry: 'the reference point and the boundary polygon of a structure region in the world frame'."
+  },
+  {
+   "span": "the road user's reference point (kin.position)",
+   "atoms": [
+    "kin.position"
+   ],
+   "concepts": [],
+   "justification": "kin.position: 'position of the body's reference point', m, world frame."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car circles a roundabout's island clockwise at speed: the cross product is negative and its tangential speed exceeds the tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The car circles the island counterclockwise."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The region is mapped without its reference point (st.region_geometry absent).",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_43_010_A"
+ ]
+}

@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.turning_left.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_left.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_left.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"},"rhs":{"param":"tol"}},"contract":"A road user's heading is turning to the left at the observation: its yaw rate (kin.yaw_rate, positive to the left, counter-clockwise) exceeds `tol`, a tolerance that names only the source's yaw-rate resolution, whether the road user moves forwards or backwards. Not denoted: a heading turning to the right or not changing; the angle turned or a completed turn; where the turn is made, which the caller states. The concept does not tell a turn at a junction from a lane change or a bend; the caller's place condition does.","definition":null,"id":"drv.motion.turning_left","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"degree_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_yaw_rate
+READS	kin_yaw_rate
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"},"rhs":{"param":"tol"}}
+WITNESS	holds	drv.motion.turning_left@w
+WITNESS	fails	drv.motion.turning_left@w
+WITNESS	blind	drv.motion.turning_left@w
+OCC	x
+INST	drv.motion.turning_left@w	ok
+TIME	checks	9
+TIME	lint	1
+SCEN	holds	drv.motion.turning_left@w	compliant	compliant	ok
+TIME	scenario:drv.motion.turning_left@w/holds	4
+SCEN	fails	drv.motion.turning_left@w	violated	violated	ok
+TIME	scenario:drv.motion.turning_left@w/fails	2
+SCEN	blind	drv.motion.turning_left@w	unknown	unknown	ok
+TIME	scenario:drv.motion.turning_left@w/blind	5
+TIME	witnesses	11
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.turning_left.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_left.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_left.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.turning_left@w	1	2
+TIME	adequacy_start	8
+TIME	adequacy	10
+DONE

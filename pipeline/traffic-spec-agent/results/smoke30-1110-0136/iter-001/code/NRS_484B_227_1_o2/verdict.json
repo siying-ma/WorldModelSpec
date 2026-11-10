@@ -1,0 +1,169 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "args": [
+         {
+          "var": "m"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "m"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_227_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "m"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "m"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "h"
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "args": [
+          {
+           "var": "m"
+          }
+         ],
+         "atom": "st_median_or_divider_opening",
+         "params": []
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "intersection"
+         },
+         "var": "i"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "median_or_divider"
+    },
+    "var": "m"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "c1a164fa0b0b88d9b3abd9e7",
+  "candidate_digest": "06e1addebb9af3299048a5cfd742eda958d146fef825d966826b79cf517dbb75"
+ }
+}

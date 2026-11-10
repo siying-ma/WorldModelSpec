@@ -1,0 +1,220 @@
+'TrafficSpec.Rules.NRS_484B_307_9b_o2.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_307_9b_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[{"kind":"reading","span":"b8","why":"The stretch of the wait is read up to the observation before the entry, the last at which the road user does not occupy the intersection; the entry observation itself belongs to the crossing, so the signal's indications there are read only by the applicability."}],"operationalizations":[],"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"or":[{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.right_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]}]},{"and":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.left_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-135::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-125::moped"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"}],"atom":"ru_motorcycle","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]},"name":"x"}],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[{"kind":"reading","span":"b8","why":"The stretch of the wait is read up to the observation before the entry, the last at which the road user does not occupy the intersection; the entry observation itself belongs to the crossing, so the signal's indications there are read only by the applicability."}],"obligation":{"body":{"and":[{"implies":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_right_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.right_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"count":{"and":[{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"n":2,"op":"ge","since":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"and":[{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"}]}]}]},{"implies":[{"or":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_straight_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.straight_through_max_heading_change"}]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_left_turn_through_region","params":[{"param":"p.heading_since_step_carla_scene_graph"},{"param":"p.left_turn_min_angle"},{"param":"p.reversal_min_angle"}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"count":{"and":[{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"not":{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"n":2,"op":"ge","since":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"and":[{"rises":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"}]}]}]}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"or":[{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.right_turn_min_angle"}}},{"cmp":"gt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.reversal_min_angle"}}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]}]},{"and":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.left_turn_min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.reversal_min_angle"}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-135::motorcycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-125::moped"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"}],"atom":"ru_motorcycle","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]}]}]}]},"name":"x"}],"id":"NRS_484B_307_9b_o2","intentions":[],"laws":["NRS-484B-307-9b"],"narrowings":[{"kind":"reading","span":"b8","why":"The stretch of the wait is read up to the observation before the entry, the last at which the road user does not occupy the intersection; the entry observation itself belongs to the crossing, so the signal's indications there are read only by the applicability."}],"obligation":{"body":{"and":[{"implies":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.right_turn_min_angle"}}},{"cmp":"gt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.reversal_min_angle"}}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"count":{"and":[{"not":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"n":2,"op":"ge","since":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"and":[{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"}]}]}]},{"implies":[{"or":[{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"cmp":"lt","lhs":{"abs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},"rhs":{"param":"p.straight_through_max_heading_change"}}]},{"and":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.left_turn_min_angle"}},{"cmp":"lt","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.reversal_min_angle"}}]}]}]},{"since":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"body":{"implies":[{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}}]}},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]},{"rises":{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"not":{"and":[{"count":{"and":[{"not":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}},{"since":[{"not":{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}}},{"rises":{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]},"n":2,"op":"ge","since":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]},{"and":[{"rises":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}},{"not":{"args":[{"var":"s"},{"lit":"circular_green"}],"atom":"dev_traffic_signal_shows","params":[]}}]}]}]}}]}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_device":{"lit":"traffic_signal"},"var":"s"}]}]}]}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["The cause the words name (a malfunction, or a failure to detect the road user) is what a signal's not changing for a waiting road user through two complete cycles consists in; once the obligation reads two complete cycles with no change, the cause adds no further restriction, so the duty is the same whether or not these words are read."],"surrogate":false}
+ATOMS	ru_aggregate,ru_motorcycle,st_intersection,drv_motion_straight_through_region,drv_motion_right_turn_through_region,rel_occupies,dev_traffic_signal,st_travel_region,st_lane_enters,dev_governs,dev_traffic_signal_shows,drv_motion_left_turn_through_region,drv_motion_stopped
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-135::motorcycle	DEF-NRS-484A-125::moped	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.traffic_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?s
+OCC	?c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,c
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?s
+OCC	?c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,c
+OCC	s
+OCC	s
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?s
+OCC	?c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,c
+OCC	s
+OCC	s
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?s
+OCC	?c
+OCC	c,i
+OCC	s,c
+OCC	s,i
+OCC	x,i
+OCC	x,c
+OCC	s
+OCC	s
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	x,i
+OCC	s
+OCC	x
+OCC	x,c
+OCC	x,i
+OCC	s
+TIME	occurrences	0
+TIME	checks	18
+REF	idle	scene t=1300: track 1 keeps the heading it had at t=1250, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1350: track 1 keeps the heading it had at t=1300, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1400: track 1 keeps the heading it had at t=1350, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1450: track 1 keeps the heading it had at t=1400, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1500: track 1 keeps the heading it had at t=1450, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1550: track 1 keeps the heading it had at t=1500, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1600: track 1 keeps the heading it had at t=1550, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1650: track 1 keeps the heading it had at t=1600, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1700: track 1 keeps the heading it had at t=1650, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1750: track 1 keeps the heading it had at t=1700, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1800: track 1 keeps the heading it had at t=1750, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1850: track 1 keeps the heading it had at t=1800, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1900: track 1 keeps the heading it had at t=1850, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=1950: track 1 keeps the heading it had at t=1900, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2000: track 1 keeps the heading it had at t=1950, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2050: track 1 keeps the heading it had at t=2000, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2100: track 1 keeps the heading it had at t=2050, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2150: track 1 keeps the heading it had at t=2100, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2200: track 1 keeps the heading it had at t=2150, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2250: track 1 keeps the heading it had at t=2200, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2300: track 1 keeps the heading it had at t=2250, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2350: track 1 keeps the heading it had at t=2300, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2400: track 1 keeps the heading it had at t=2350, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2450: track 1 keeps the heading it had at t=2400, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2500: track 1 keeps the heading it had at t=2450, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2550: track 1 keeps the heading it had at t=2500, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2600: track 1 keeps the heading it had at t=2550, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2650: track 1 keeps the heading it had at t=2600, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2700: track 1 keeps the heading it had at t=2650, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	idle	scene t=2750: track 1 keeps the heading it had at t=2700, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1300: track 1 keeps the heading it had at t=1250, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1350: track 1 keeps the heading it had at t=1300, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1400: track 1 keeps the heading it had at t=1350, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1450: track 1 keeps the heading it had at t=1400, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1500: track 1 keeps the heading it had at t=1450, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1550: track 1 keeps the heading it had at t=1500, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1600: track 1 keeps the heading it had at t=1550, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1650: track 1 keeps the heading it had at t=1600, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1700: track 1 keeps the heading it had at t=1650, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1750: track 1 keeps the heading it had at t=1700, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1800: track 1 keeps the heading it had at t=1750, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1850: track 1 keeps the heading it had at t=1800, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1900: track 1 keeps the heading it had at t=1850, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=1950: track 1 keeps the heading it had at t=1900, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2000: track 1 keeps the heading it had at t=1950, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2050: track 1 keeps the heading it had at t=2000, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2100: track 1 keeps the heading it had at t=2050, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2150: track 1 keeps the heading it had at t=2100, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2200: track 1 keeps the heading it had at t=2150, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2250: track 1 keeps the heading it had at t=2200, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2300: track 1 keeps the heading it had at t=2250, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2350: track 1 keeps the heading it had at t=2300, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2400: track 1 keeps the heading it had at t=2350, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2450: track 1 keeps the heading it had at t=2400, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2500: track 1 keeps the heading it had at t=2450, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2550: track 1 keeps the heading it had at t=2500, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2600: track 1 keeps the heading it had at t=2550, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2650: track 1 keeps the heading it had at t=2600, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2700: track 1 keeps the heading it had at t=2650, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_3	scene t=2750: track 1 keeps the heading it had at t=2700, but its yaw rate turns it -3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1300: track 1 keeps the heading it had at t=1250, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1350: track 1 keeps the heading it had at t=1300, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1400: track 1 keeps the heading it had at t=1350, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1450: track 1 keeps the heading it had at t=1400, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1500: track 1 keeps the heading it had at t=1450, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1550: track 1 keeps the heading it had at t=1500, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1600: track 1 keeps the heading it had at t=1550, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1650: track 1 keeps the heading it had at t=1600, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1700: track 1 keeps the heading it had at t=1650, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1750: track 1 keeps the heading it had at t=1700, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1800: track 1 keeps the heading it had at t=1750, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1850: track 1 keeps the heading it had at t=1800, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1900: track 1 keeps the heading it had at t=1850, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=1950: track 1 keeps the heading it had at t=1900, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2000: track 1 keeps the heading it had at t=1950, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2050: track 1 keeps the heading it had at t=2000, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2100: track 1 keeps the heading it had at t=2050, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2150: track 1 keeps the heading it had at t=2100, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2200: track 1 keeps the heading it had at t=2150, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2250: track 1 keeps the heading it had at t=2200, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2300: track 1 keeps the heading it had at t=2250, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2350: track 1 keeps the heading it had at t=2300, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2400: track 1 keeps the heading it had at t=2350, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2450: track 1 keeps the heading it had at t=2400, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2500: track 1 keeps the heading it had at t=2450, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2550: track 1 keeps the heading it had at t=2500, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2600: track 1 keeps the heading it had at t=2550, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2650: track 1 keeps the heading it had at t=2600, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2700: track 1 keeps the heading it had at t=2650, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+REF	branch_4	scene t=2750: track 1 keeps the heading it had at t=2700, but its yaw rate turns it 3° over the interval (the rate at a scene is held over the interval before it)
+TIME	lint	1704
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	196
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	194
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	191
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	192
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	188
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	195
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	194
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	192
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	197
+TIME	witnesses	1739
+DONE_WITNESSES

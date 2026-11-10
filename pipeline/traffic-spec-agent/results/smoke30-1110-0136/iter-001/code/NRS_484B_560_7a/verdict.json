@@ -1,0 +1,354 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 14 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "since": [
+      {
+       "cmp": "lt",
+       "lhs": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "r"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "lit": {
+         "den": 250,
+         "num": 1143
+        },
+        "unit": "metre"
+       }
+      },
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "r"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "r"
+   },
+   "assumptions": [
+    "asm.undercarriage_grounded"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_560_7a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-560-7a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "since": [
+        {
+         "cmp": "lt",
+         "lhs": {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "r"
+           }
+          ],
+          "measure": "st_region_geometry_distance"
+         },
+         "rhs": {
+          "lit": {
+           "den": 250,
+           "num": 1143
+          },
+          "unit": "metre"
+         }
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        }
+       ]
+      },
+      {
+       "not": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "derived": "drv_motion_stopped",
+          "params": [
+           {
+            "param": "p.motion_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "or": [
+             {
+              "body": {
+               "and": [
+                {
+                 "not": {
+                  "same": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "var": "x"
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "x"
+                    },
+                    {
+                     "var": "y"
+                    },
+                    {
+                     "lit": "ahead"
+                    }
+                   ],
+                   "atom": "rel_bearing",
+                   "params": []
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "y"
+                     }
+                    ],
+                    "measure": "rel_surface_gap"
+                   },
+                   "rhs": {
+                    "param": "p.queue_standstill_gap"
+                   }
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_user": "y"
+             },
+             {
+              "asm": "asm.undercarriage_grounded"
+             }
+            ]
+           },
+           {
+            "not": {
+             "or": [
+              {
+               "body": {
+                "and": [
+                 {
+                  "not": {
+                   "same": [
+                    {
+                     "var": "z"
+                    },
+                    {
+                     "var": "x"
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "z"
+                     },
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "derived": "prim_closest_approach_within",
+                    "params": [
+                     {
+                      "param": "p.conflict_time_horizon"
+                     }
+                    ]
+                   },
+                   {
+                    "cmp": "lt",
+                    "lhs": {
+                     "args": [
+                      {
+                       "var": "z"
+                      },
+                      {
+                       "var": "x"
+                      }
+                     ],
+                     "params": [
+                      {
+                       "param": "p.conflict_time_horizon"
+                      }
+                     ],
+                     "quantity": "prim_closest_approach_distance"
+                    },
+                    "rhs": {
+                     "param": "p.conflict_centre_clearance"
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_user": "z"
+              },
+              {
+               "body": {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "d"
+                   },
+                   {
+                    "lit": "police_officer"
+                   }
+                  ],
+                  "atom": "dev_human_direction_role",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "d"
+                     },
+                     {
+                      "lit": "stop"
+                     }
+                    ],
+                    "atom": "dev_human_direction_indication",
+                    "params": []
+                   },
+                   {
+                    "body": {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "d"
+                        },
+                        {
+                         "var": "q"
+                        }
+                       ],
+                       "atom": "dev_governs",
+                       "params": []
+                      },
+                      {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "q"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      }
+                     ]
+                    },
+                    "exists_region": {
+                     "lit": "travel_region"
+                    },
+                    "var": "q"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "exists_device": {
+                "lit": "human_direction"
+               },
+               "var": "d"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "railway_crossing"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "9b6bf19c9db29663bc2b2fff",
+  "candidate_digest": "c57220773449c0174ba308387d292ed400a2f00604f5997453e422466778ef9e"
+ }
+}

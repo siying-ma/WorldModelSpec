@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.stopped.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.stopped.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.stopped.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"tol"}},"contract":"A road user is at a complete halt at the observation: the definition's \"complete cessation from movement\", observed as the magnitude of its velocity (kin.speed) at or below `tol`, a tolerance that names only the source's speed resolution, below which a sampled speed counts as no movement. It denotes the halt whoever or whatever controls the road user. Not denoted: a halt held over a window, since the concept reads the one observation; where the road user halts, which the caller states.","definition":"DEF-NRS-484A-255","id":"drv.motion.stopped","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"metre_per_second"}],"residues":["The definition's scope ('when required'): which duty requires the halt is the caller's, not the concept's."],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"tol"}}
+WITNESS	holds	drv.motion.stopped@w
+WITNESS	fails	drv.motion.stopped@w
+WITNESS	blind	drv.motion.stopped@w
+OCC	x
+INST	drv.motion.stopped@w	ok
+TIME	checks	3
+TIME	lint	2
+SCEN	holds	drv.motion.stopped@w	compliant	compliant	ok
+TIME	scenario:drv.motion.stopped@w/holds	9
+SCEN	fails	drv.motion.stopped@w	violated	violated	ok
+TIME	scenario:drv.motion.stopped@w/fails	7
+SCEN	blind	drv.motion.stopped@w	unknown	unknown	ok
+TIME	scenario:drv.motion.stopped@w/blind	9
+TIME	witnesses	26
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.stopped.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.stopped.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.stopped.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.stopped@w	1	2
+TIME	adequacy_start	6
+TIME	adequacy	25
+DONE

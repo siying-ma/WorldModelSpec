@@ -1,0 +1,75 @@
+'TrafficSpec.Rules.NRS_484B_440_1_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_440_1_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.business_or_residence_district","asm.vehicle_disabled","asm.disabled_vehicle_immovable"],"binders":["x"],"id":"NRS_484B_440_1_o2","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[],"operationalizations":[{"concepts":["st.lane_width"],"params":["p.free_passage_width"],"standard":"free passage of other vehicles","surrogate":false}],"residues":["Attended or unattended, the duty is the same: the words name both cases and exclude neither."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"rw"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"rw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"rw"},"tt"]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"asm":"asm.business_or_residence_district"}},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"not":{"and":[{"asm":"asm.vehicle_disabled"},{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"asm":"asm.disabled_vehicle_immovable"}]}]}}]}]}]},"assumptions":["asm.business_or_residence_district","asm.vehicle_disabled","asm.disabled_vehicle_immovable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_440_1_o2","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[],"obligation":{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"rw"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"rw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"rw"},{"body":{"and":[{"args":[{"var":"l"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"l"}],"measure":"st_lane_width"},"rhs":{"param":"p.free_passage_width"}},{"body":{"not":{"and":[{"args":[{"var":"y"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"args":[{"var":"y"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}},"forall_user":"y"}]}]}]},"exists_region":{"lit":"lane"},"var":"l"}]}]},"exists_region":{"lit":"highway"},"var":"h"},"residues":["Attended or unattended, the duty is the same: the words name both cases and exclude neither."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"rw"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"rw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"rw"},"tt"]}]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"asm":"asm.business_or_residence_district"}},{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"not":{"and":[{"asm":"asm.vehicle_disabled"},{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"asm":"asm.disabled_vehicle_immovable"}]}]}}]}]}]},"assumptions":["asm.business_or_residence_district","asm.vehicle_disabled","asm.disabled_vehicle_immovable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_440_1_o2","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[],"obligation":{"body":{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"and":[{"args":[{"var":"rw"},{"var":"h"}],"atom":"st_on_way","params":[]},{"args":[{"var":"x"},{"var":"rw"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"roadway"},"var":"rw"},{"body":{"and":[{"args":[{"var":"l"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"not":{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]}},{"and":[{"cmp":"ge","lhs":{"args":[{"var":"l"}],"measure":"st_lane_width"},"rhs":{"param":"p.free_passage_width"}},{"body":{"not":{"and":[{"cmp":"le","lhs":{"args":[{"var":"y"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"args":[{"var":"y"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}},"forall_user":"y"}]}]}]},"exists_region":{"lit":"lane"},"var":"l"}]}]},"exists_region":{"lit":"highway"},"var":"h"},"residues":["Attended or unattended, the duty is the same: the words name both cases and exclude neither."],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,st_roadway,st_on_way,drv_motion_stopped,st_lane,st_lane_width,rel_longitudinal_overlap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.lane_width
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	x
+OCC	?h
+OCC	x,h
+OCC	?rw
+OCC	rw,h
+OCC	x,rw
+OCC	x
+OCC	?r
+OCC	x,r
+OCC	?h
+OCC	x,h
+OCC	?rw
+OCC	rw,h
+OCC	x,rw
+OCC	?l
+OCC	l,h
+OCC	x,l
+OCC	l
+OCC	?y
+OCC	y
+OCC	y,l
+OCC	x
+OCC	y
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	149
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	11
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	11
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	13
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	8
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	10
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	10
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	9
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	10
+SCEN	branch_7	not_applicable	not_applicable	ok
+TIME	scenario:branch_7	11
+TIME	witnesses	113
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_440_1_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_440_1_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_440_1_o2	17	10
+TIME	adequacy_start	7
+TIME	adequacy	1748
+DONE

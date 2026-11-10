@@ -1,0 +1,164 @@
+{
+ "node_id": "NRS_484B_223_4b",
+ "law_refs": [
+  "NRS-484B-223-4b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "If a highway has been designed to provide a single right lane to be used only for turning",
+   "role": "condition"
+  },
+  {
+   "id": "s2",
+   "text": "a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "must: While being driven in the right turn lane, not travel through an intersection",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "st.turn_lane",
+    "st.lane_adjacency",
+    "st.highway",
+    "st.on_way",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a right lane to be used only for turning' is st.turn_lane: 'a lane designated only for turning; side ∈ {left, right}', side right. 'single right lane' is the rightmost lane of its direction (st.lane_adjacency: 'lane ordinal within the carriageway and the count of lanes in that direction; ordinal 1 is the leftmost lane', so ordinal equals count) whose left neighbour of the same direction is not itself a right turn lane; st.lane_adjacency is 'not a stand-in for the marking between two lanes', which is not read. 'a highway' (DEF-NRS-484A-095) is st.highway, the way x is on (rel.occupies anchors it), and st.on_way ('the public way ... a structure region lies on') ties the lane to that highway. 'has been designed to provide' is read through the lane's presence (status reading)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'); it names a class, not a role."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.turn_lane",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.straight_through_region"
+   ],
+   "justification": "'travel through an intersection' is drv.motion.straight_through_region(x, i): x leaves the intersection region with a heading change since its entry below the turn bound, called on the intersection i the right turn lane runs into (st.lane_enters: 'the intersection region a directed approach carrier runs into at its entrance end'; st.intersection: 'the region where two roadways meet'). 'While being driven in the right turn lane' ties the crossing to the lane: x's footprint overlapped that lane (rel.occupies on the st.turn_lane s1 selects, re-bound) at some observation since its entry into i, that is, it entered i out of the lane. st.lane_enters is 'not a stand-in for the lane a lane leads into' or for x's presence in the intersection, which rel.occupies reads."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and existsRegion st.highway h: rel.occupies(x, h) and existsRegion st.turn_lane L: L's side is right, st.on_way(L, h), L is the rightmost lane of its direction (st.lane_adjacency ordinal equals count) and its left neighbour of the same direction is not a right turn lane.",
+ "obligation": "Not (existsRegion st.turn_lane L, re-bound with the whole selection of s1 (side right, on a highway, single and rightmost), and existsRegion st.intersection i: st.lane_enters(L, i) and drv.motion.straight_through_region(x, i; p.heading_since_step_carla_scene_graph, p.straight_through_max_heading_change) and rel.occupies(x, L) held at some observation since x's entry into i, the observation at which rel.occupies(x, i) last rose). The act is judged at its recognition, the observation at which x leaves i.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.straight_through_max_heading_change"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'has been designed to provide' (the lane's legal designation) is read through the marked turn lane's presence on the highway.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'travel through' is read as leaving the intersection the lane enters with a heading change since the entry below the turn bound (a straight crossing); 'While being driven in the right turn lane' is read as the footprint overlapping that lane at some observation of the crossing, which it does at the entry made out of the lane. A vehicle in the lane is taken to be driven (agency).",
+   "kind": "reading"
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.straight_through_region",
+  "boundary": "event",
+  "onset": {
+   "words": "travel through an intersection",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The crossing begins at the entry: the observation at which rel.occupies(x, i) last became true for the intersection i the lane enters."
+  },
+  "recognition": "The observation at which x's footprint stops overlapping the intersection it entered, with its heading change since the entry below the turn bound.",
+  "under_way": {
+   "words": "travel through an intersection",
+   "atoms": [
+    "rel.occupies",
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "An observation is inside the crossing where it lies from the entry onwards and the heading change since the entry is being integrated from kin.yaw_rate; before the entry nothing is integrated, so the motion read, not the region alone, tells the inside of the act from what precedes it."
+  },
+  "spans": {
+   "s1": "at_recognition"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car in the single right turn lane enters the intersection the lane runs into and leaves it on the far side heading as it entered (heading change since entry below the bound)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car turns right in the intersection and leaves it heading to the right of its entry heading."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A highway without any turn lane; a car crosses an intersection straight."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with kin.yaw_rate declared absent, so the heading change since entry is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car in the through lane beside the single right turn lane crosses the intersection straight; its footprint never overlapped the turn lane since its entry."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.straight_through_max_heading_change",
+   "unit": "deg",
+   "value": 30.0,
+   "convention": "Turning-movement classification at a junction: a crossing whose net heading change stays below this bound is a through movement, not a turn.",
+   "source": "Intersection turning-movement classification practice in trajectory studies."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

@@ -1,0 +1,238 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "h"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "body": {
+        "args": [
+         {
+          "var": "m"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "m"
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_227_1_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "h"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "m"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "m"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           {
+            "not": {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "derived": "drv_lane_facing_against_direction",
+             "params": [
+              {
+               "param": "p.against_direction_cos_tolerance"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "forall_region": {
+          "lit": "roadway"
+         },
+         "var": "c"
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "c"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             }
+            ]
+           },
+           {
+            "not": {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "c"
+              }
+             ],
+             "derived": "drv_lane_facing_against_direction",
+             "params": [
+              {
+               "param": "p.against_direction_cos_tolerance"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "forall_region": {
+          "lit": "lane"
+         },
+         "var": "c"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "45346901cd1ca711c452e95d",
+  "candidate_digest": "dfc8040f4b038ca7b9d4f6f9821fa05c10a5173f8422d9e943e04b50f8180329"
+ }
+}

@@ -1,0 +1,140 @@
+{
+ "node_id": "NRS_484B_210_3",
+ "law_refs": [
+  "NRS-484B-210-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall not overtake and pass another vehicle upon the right",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "when such movement requires driving off the paved portion of the highway",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole (ru.aggregate: 'membership of a legal aggregate'). 'The driver' (DEF-NRS-484A-080) is a relational role, which ru.aggregate is 'not a stand-in for'; it is read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.interaction.passing_on_right"
+   ],
+   "justification": "'overtake and pass ... upon the right' is drv.interaction.passing_on_right(x, y): the two heading the same way, side by side, y on x's left, x gaining on y. 'another vehicle' is the admitted vehicle aggregate, claimed whole, for the road user y passed, quantified inside the obligation (a party present only when one is there)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.shoulder",
+    "st.road_edge",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'driving off the paved portion of the highway' is the vehicle's footprint on an unpaved surface of the way: st.shoulder ('the part of the highway beside the roadway not intended for vehicular traffic; paved attribute') with paved false, or st.road_edge ('curb or edge of the roadway; paved attribute for the surface beyond it') whose surface beyond is unpaved and which the footprint straddles; rel.occupies anchors the subject on that feature. Neither atom carries a 'not a stand-in for' clause. 'requires' is read through the conduct: the movement made while off the pavement."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate and is off the paved portion: (existsRegion st.shoulder s: rel.occupies(x, s) and the paved attribute of s is false) or (existsRegion st.road_edge e: rel.occupies(x, e) and the paved attribute of e, for the surface beyond it, is false).",
+ "obligation": "forallUser y: (not same(x, y) and ru.aggregate(y, DEF-NRS-484A-320::vehicle)) implies not drv.interaction.passing_on_right(x, y; p.same_direction_cos_tolerance, p.motion_speed_tolerance). With no other vehicle beside x the duty is met.",
+ "params": [
+  "p.same_direction_cos_tolerance",
+  "p.motion_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver' is read through the vehicle's controlled motion; who or what controls the vehicle is not observable.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "The pass is judged at each observation of its side-by-side phase in which x, gaining on a vehicle on its left, is off the pavement; 'requires driving off the paved portion' is read through that conduct, so a pass that would have required leaving the pavement but was not made is not read, and an off-pavement position that is neither an unpaved shoulder nor a straddled unpaved edge is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car's footprint overlaps an unpaved st.shoulder; a slower car travels the same way in the adjacent lane on its left; their footprints overlap along the subject's heading and the subject is gaining."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car on the unpaved shoulder moves slower than the car beside it on its left: it is being passed, not passing."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car passes a slower car on its right within the paved roadway; no unpaved shoulder or edge is overlapped."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with rel.longitudinal_overlap declared absent, so whether the two are side by side is unknown.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car moves alone along the unpaved shoulder; no other road user is in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cos_tolerance",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "Heading alignment: cosine of the largest angle between two headings still read as the same way of travel (about a quarter of a right angle), covering lane changes and road bends.",
+   "source": "Lane-change trajectory geometry in naturalistic driving data."
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Simulator ground-truth and tracker speed-noise figures (a few tenths of a metre per second)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

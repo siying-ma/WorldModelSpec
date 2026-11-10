@@ -1,0 +1,154 @@
+{
+ "node_id": "LVMC_11_43_010_A",
+ "law_refs": [
+  "LVMC-11-43-010-A"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The following regulations pertain to the",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s2",
+   "text": "operation of vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "s3",
+   "text": "within a roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "All vehicular travel",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "shall be in a counterclockwise direction",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "The definitions table admits 'vehicle' as DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exceptions); ru.aggregate: 'membership of a legal aggregate', claimed whole. It is not a relational role: 'operation' is read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.roundabout",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'Roundabout' (DEF-LVMC-11-02-130: 'an intersection characterized by a circulatory roadway, channelized approaches and yield control of entering traffic', encompassing 'the area bounded by the outermost curb line') is st.roundabout: 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches'; the atom has no 'not a stand-in for' clause, and the defined word keeps its whole extent, approaches and crosswalks included. 'within' places the subject in the feature: rel.occupies, 'a road user's footprint overlaps a lane / region'."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'vehicular' is the admitted vehicle aggregate (claimed whole); 'travel' is the vehicle's motion, drv.motion.moving: in motion beyond the speed resolution. A vehicle standing in the roundabout is not travelling."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.clockwise_about_region"
+   ],
+   "justification": "Counterclockwise travel within a roundabout is travel around its central island (DEF-LVMC-11-02-040: the circulatory roadway is 'used by vehicles to travel counterclockwise around a central island'). drv.motion.clockwise_about_region, called on the roundabout region x occupies, denotes motion clockwise about the region's reference point; the duty is that it does not hold. The concept reads velocity, not heading, so a vehicle backing clockwise around the island is caught, and radial travel on an approach (entering, leaving) has no clockwise component."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of the vehicle aggregate, drv.motion.moving(x; p.motion_speed_tolerance) holds, and existsRegion st.roundabout r: rel.occupies(x, r).",
+ "obligation": "forallRegion st.roundabout r: rel.occupies(x, r) implies not drv.motion.clockwise_about_region(x, r; p.motion_speed_tolerance). The roundabout is re-bound in the obligation with the same selection (a roundabout region x's footprint overlaps), so each roundabout x is within is the one judged.",
+ "params": [
+  "p.motion_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'operation of vehicles' is read through the vehicle's controlled motion; who or what controls it is not observable.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s5",
+   "why": "'in a counterclockwise direction' is read as: no motion clockwise about the roundabout's reference point beyond the speed resolution. Radial motion (entering or leaving along an approach) is not clockwise and complies. The roundabout region's reference point (st.region_geometry) is read as the centre the circulatory roadway runs around.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car (an included class of the vehicle aggregate) occupies a st.roundabout region and moves around the central island clockwise: the cross product of its offset from the region's reference point and its kin.velocity is negative with a tangential speed above the tolerance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same car moves around the island counterclockwise within the roundabout region."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car moves along a straight roadway; no st.roundabout region is in the scene."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car occupies a roundabout region and moves clockwise around the island; the source maps the region without its outline and reference point (st.region_geometry absent), so the sense of rotation is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car on the right-hand entry approach inside the roundabout region moves straight toward the island; its tangential component about the reference point is counterclockwise or below the tolerance."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A car stands still inside the roundabout region, yielding: kin.speed is zero."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Simulator ground-truth and tracker speed-noise figures (a few tenths of a metre per second)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

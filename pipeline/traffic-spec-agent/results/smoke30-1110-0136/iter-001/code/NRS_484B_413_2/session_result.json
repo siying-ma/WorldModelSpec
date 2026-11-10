@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 126749,
+  "stop_reason": "end_turn",
+  "session_id": "fce581b5-214c-4f10-8275-96d11d5c2b3b",
+  "total_cost_usd": 0.8929547,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 63332,
+   "cache_read_input_tokens": 471793,
+   "output_tokens": 14402,
+   "output_tokens_details": {
+    "thinking_tokens": 5317
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 63332,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 864,
+     "cache_read_input_tokens": 66342,
+     "cache_creation_input_tokens": 1428,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1428
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38151,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038281,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 14402,
+    "cacheReadInputTokens": 471793,
+    "cacheCreationInputTokens": 63332,
+    "webSearchRequests": 0,
+    "costUSD": 0.8891266,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5317,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 16,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed: `OK` on the third of six allowed runs, with six witnesses and no composed rules.\n\n**One departure from the blueprint.** The record says to choose the signal window's length with `Term.cond` over the business/residence district assumption. Core's rule check refuses that, because a window length must be a constant term and an assumption isn't one. So the rule picks the window in the formula instead: if the district assumption holds, the signal must have held over the last 100 ft of path; if not, over the last 300 ft. This gives the same verdict wherever the assumption is decided, so I didn't declare it as a narrowing. I noted in `task_result.md` that the plan should write this kind of selection the same way in future records.\n\n**The rule:**\n- **Who it covers:** members of the vehicle aggregate `DEF-NRS-484A-320::vehicle`.\n- **When it applies:** the vehicle is in a travel region, and its heading's offset from that region's direction first goes above the tolerance (a change to the left) or below its negative (a change to the right).\n- **What it requires:** on each side, a matching turn indicator or arm signal at every observation of the distance window behind the change. The obligation picks the region again with the same occupancy and the same first crossing, so both formulas refer to the same region.\n\n**The witnesses:**\n- **Scene:** one eastbound lane; the vehicle covers 10 m per observation and changes course at 150 m of path, so even the 300 ft window (91.44 m) fits inside the recording.\n- **The five planned scenarios** (forbid, permit, idle, blind, branch_1) each give their planned verdict.\n- **One addition, `branch_2` (compliant):** a left arm signal with the indicator off. Without it, the arm signal never decides a verdict on its own.\n- **Window:** every witness leaves out the first observation, because it has no previous observation to compare against.\n\n**Gate runs:**\n1. `BUILD_FAIL`: I'd used the Lean keyword `from` as a parameter name.\n2. `CHECK_FAIL`: the `Term.cond` window length described above.\n3. `OK`.\n\nFiles are in `/local-scratch2/sma407/smoke30-run/pipeline/traffic-spec-agent/`:\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_413_2.lean`\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_413_2.lean`\n- `results/smoke30-1110-0136/iter-001/code/NRS_484B_413_2/task_result.md`",
+  "ttft_ms": 39843,
+  "type": "result",
+  "duration_ms": 134729,
+  "uuid": "d06dc9ad-cb94-4d3c-a4be-586011e5e1a8",
+  "ttft_stream_ms": 1182,
+  "time_to_request_ms": 66,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 19,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 16,
+  "time_to_request_cpu_ms": 99,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1182,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38151,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038281,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 14402,
+    "cacheReadInputTokens": 471793,
+    "cacheCreationInputTokens": 63332,
+    "webSearchRequests": 0,
+    "costUSD": 0.8891266,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5317,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

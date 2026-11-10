@@ -1,0 +1,264 @@
+{
+ "node_id": "NRS_484B_297_6_o2",
+ "law_refs": [
+  "NRS-484B-297-6"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "walking or otherwise traveling on a sidewalk",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "who encounters an obstruction to his or her mobility on the sidewalk,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "including, without limitation, a short section of the sidewalk that is missing or impassable,",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "may proceed",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "with due care",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "on the immediately adjacent highway",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "to move around such an obstruction.",
+   "role": "condition"
+  },
+  {
+   "id": "s9",
+   "text": "Such a pedestrian:",
+   "role": "subject"
+  },
+  {
+   "id": "s10",
+   "text": "(a) Must walk or otherwise travel as far to the side of the highway near the sidewalk as possible; (b) May walk or otherwise travel on the highway in the direction he or she was walking or traveling on the sidewalk, regardless of the direction of traffic; (c) May walk or otherwise travel in a lane provided for bicycles, electric bicycles or electric scooters if the area between the lane and the sidewalk is impassable;",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "and (d) Must return to the sidewalk",
+   "role": "obligation"
+  },
+  {
+   "id": "s12",
+   "text": "as soon as practicable.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "Pedestrian aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair ...')."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Moving (drv.motion.moving) with the footprint on st.sidewalk 'area for pedestrians between roadway and property line' (rel.occupies)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "st.obstruction 'a physical object on or beside the roadway that is not a road user' within p.obstruction_encounter_reach of the pedestrian's body (st.region_geometry) while it is on the sidewalk (rel.occupies)."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Proceeding: the pedestrian moves on (drv.motion.moving) off the sidewalk; the detour episode."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "The pedestrian's footprint on the st.highway the sidewalk lies on (st.on_way), and on no st.sidewalk."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "Purpose read through conduct: the detour about the encountered obstruction (st.region_geometry distance to it)."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "The same pedestrian on its detour."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "Returning to the sidewalk: the pedestrian's footprint overlaps a st.sidewalk again (rel.occupies)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s12",
+   "standard": "as soon as practicable",
+   "concepts": [
+    "rel.occupies",
+    "st.sidewalk",
+    "st.obstruction",
+    "st.region_geometry",
+    "kin.time"
+   ],
+   "params": [
+    "p.sidewalk_return_time",
+    "p.obstruction_encounter_reach"
+   ],
+   "convention": "Walking-time convention: once clear of the obstruction (farther than the encounter reach from every obstruction, st.region_geometry), a pedestrian can step back onto the sidewalk within the time needed to walk a few metres at the design walking speed; staying off the sidewalk (rel.occupies of st.sidewalk false) and clear of every obstruction for longer than that time (a .time window, kin.time) is not as soon as practicable.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.sidewalk_section_missing_or_impassable",
+   "meaning": "A short section of the sidewalk on which the pedestrian is travelling is missing or cannot be passed on foot, at the place the pedestrian leaves it."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s6",
+   "why": "'With due care' qualifies the permission to leave the sidewalk; the duty to return applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "x is a pedestrian. Judged at each observation of a detour: x's footprint overlaps a highway region h (st.highway) and no sidewalk, and x has been off every sidewalk continuously since an observation at which x was moving (drv.motion.moving with p.motion_speed_tolerance) on a sidewalk w lying on h (st.on_way w h), at which either an obstruction (st.obstruction) was within p.obstruction_encounter_reach of x's body (st.region_geometry) or asm.sidewalk_section_missing_or_impassable held.",
+ "obligation": "It is not the case that, at every observation of the time window of length p.sidewalk_return_time behind the judged observation, x's footprint overlapped no sidewalk and x's body was farther than p.obstruction_encounter_reach from every obstruction (st.region_geometry); a window reaching before the start of the recording is unknown.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.obstruction_encounter_reach",
+  "p.sidewalk_return_time"
+ ],
+ "narrowings": [
+  {
+   "span": "s8",
+   "why": "The purpose of moving around the obstruction is read through the detour conduct.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s12",
+   "why": "'As soon as practicable' is read from the moment the pedestrian is clear of every obstruction; where the detour was triggered only by the declared missing or impassable section, being clear of it is read as being clear of every obstruction object."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x leaves sidewalk w at a st.obstruction (barrier), passes it on the roadway, and keeps walking on the roadway 20 s after it is more than 2 m from the barrier, a sidewalk beside it."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but x steps back onto w 2 s after clearing the barrier."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x walks on the sidewalk throughout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.region_geometry is absent, so neither the encounter nor clearing the obstruction can be read.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.obstruction_encounter_reach",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Distance between a pedestrian's body and an obstruction within which the pedestrian is at the obstruction (encountering it, or moving around it).",
+   "source": "Pedestrian lateral clearance and shy distance (AASHTO Guide for the Planning, Design and Operation of Pedestrian Facilities)"
+  },
+  {
+   "name": "p.sidewalk_return_time",
+   "unit": "s",
+   "value": 5.0,
+   "convention": "Time within which a pedestrian who has cleared an obstruction steps back onto the sidewalk: the walking time to cover a few metres at the design walking speed.",
+   "source": "MUTCD pedestrian walking speed 3.5 ft/s (1.07 m/s)"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

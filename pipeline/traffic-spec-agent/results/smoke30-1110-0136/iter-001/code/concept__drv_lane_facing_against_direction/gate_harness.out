@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.lane.facing_against_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.facing_against_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.facing_against_direction.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"c","sort":{"sort":"region"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"cos_tol"}}},"contract":"A road user points against the designated direction of travel of a carrier at the observation: the cosine of the angle between its heading (kin.heading) and the carrier's designated direction (st.lane_direction), read as the dot product of the two normalised vectors, is below minus `cos_tol`, the cosine of the largest angle off exactly opposed that still counts as against. Not denoted: occupancy of the carrier, which the caller states; the direction of motion, since a vehicle pointing against the direction points against it whether it moves forwards or backs; travel across the carrier, with headings near perpendicular to it; a carrier with no designated direction, for which the concept is unknown.","definition":null,"id":"drv.lane.facing_against_direction","kind":"formula","narrowings":[],"params":[{"name":"cos_tol","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	kin_heading,st_lane_direction
+READS	kin_heading,st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"},{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"},{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"cos_tol"}}}
+WITNESS	holds	drv.lane.facing_against_direction@w
+WITNESS	fails	drv.lane.facing_against_direction@w
+WITNESS	blind	drv.lane.facing_against_direction@w
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+INST	drv.lane.facing_against_direction@w	ok
+TIME	checks	3
+TIME	lint	8
+SCEN	holds	drv.lane.facing_against_direction@w	compliant	compliant	ok
+TIME	scenario:drv.lane.facing_against_direction@w/holds	8
+SCEN	fails	drv.lane.facing_against_direction@w	violated	violated	ok
+TIME	scenario:drv.lane.facing_against_direction@w/fails	6
+SCEN	blind	drv.lane.facing_against_direction@w	unknown	unknown	ok
+TIME	scenario:drv.lane.facing_against_direction@w/blind	9
+TIME	witnesses	23
+DONE_WITNESSES
+'TrafficSpec.Concepts.lane.facing_against_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.lane.facing_against_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.lane.facing_against_direction.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.lane.facing_against_direction@w	1	2
+TIME	adequacy_start	11
+TIME	adequacy	26
+DONE

@@ -1,0 +1,253 @@
+{
+ "node_id": "NRS_484B_253_o1",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "within an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "intending to turn to the left",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s6",
+   "text": "to any vehicle approaching from the opposite direction",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "which is within the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "or so close thereto as to constitute an immediate hazard,",
+   "role": "standard"
+  },
+  {
+   "id": "s9",
+   "text": "but such driver, having so yielded and having given a signal when and as required, may make such left turn and the drivers of all other vehicles approaching the intersection from the opposite direction shall yield the right-of-way to the vehicle making the left turn.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Vehicle aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported'); the driver read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "rel.occupies 'a road user's footprint overlaps a lane / region' on st.intersection 'the region where two roadways meet'; the region the intention is declared at."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Yielding within the intersection is not moving (drv.motion.moving) there (rel.occupies, st.intersection) into a predicted conflict with a vehicle owed precedence."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.lane_direction"
+   ],
+   "derived": [],
+   "justification": "Any vehicle y (aggregate) approaching from the opposite direction: per rel.oncoming's contract the approach direction is 'read through the carrier it approaches through ... and through that carrier's direction (st.lane_direction)'. y's approach carrier cy (occupied with st.lane_enters cy i, or for y within i the one it occupied when its current occupancy of i began) and x's approach carrier cx (the one x occupied when its current occupancy of i began) have designated directions with dot product below minus p.opposed_approach_cos_tolerance. A turn does not change the approach direction."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "y's footprint overlaps the intersection (rel.occupies, st.intersection)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "the right-of-way (DEF-NRS-484A-210: 'circumstances of direction, speed and proximity as to give rise to the danger of a crash')",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_time_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: the danger of a crash is a predicted closest approach of the two centres under constant velocities within the time-to-collision horizon at a centre distance below the clearance.",
+   "surrogate": false
+  },
+  {
+   "span": "s8",
+   "standard": "so close thereto as to constitute an immediate hazard",
+   "concepts": [
+    "st.region_geometry",
+    "kin.speed"
+   ],
+   "params": [
+    "p.immediate_hazard_time_gap"
+   ],
+   "convention": "Gap acceptance: an approaching vehicle outside the intersection is an immediate hazard where its time to reach the intersection is at most the critical gap, i.e. its ground distance to the intersection (st.region_geometry) is at most its speed (kin.speed) times the critical gap; the bound moves with the vehicle's speed and distance.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s3",
+   "id": "int.turn_left",
+   "meaning": "The road user's current plan includes a left turn at the target region."
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle. Judged at each observation at which x's footprint overlaps an intersection i (rel.occupies), the declaration current at that observation states that x intends to turn left at i (int.turn_left x i), and there is a vehicle y other than x approaching from the opposite direction - the designated direction (st.lane_direction) of y's approach carrier cy (a carrier y occupies with st.lane_enters cy i, or, for y within i, the carrier it occupied when its current occupancy of i began) and that of x's approach carrier cx (the carrier with st.lane_enters cx i that x occupied when its current occupancy of i began) have a dot product below minus p.opposed_approach_cos_tolerance - which either overlaps i (rel.occupies) or, outside i, has a ground distance to i (st.region_geometry) at most its speed (kin.speed) times p.immediate_hazard_time_gap.",
+ "obligation": "Where x is moving (drv.motion.moving with p.motion_speed_tolerance), no vehicle y of the applicability (bound again with its whole selection) has its centre and x's approach within p.conflict_time_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.opposed_approach_cos_tolerance",
+  "p.immediate_hazard_time_gap",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "Yielding is judged where x moves within the intersection; a stationary x yields."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x occupies i with int.turn_left x i, entered from lane cx heading north. y approaches on cy heading south (directions opposed), 20 m from i at 14 m/s. x moves into its left turn; predicted closest approach 1.5 m in 1.4 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but x stays halted within i until y has passed through, then turns."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x occupies i but the declaration states int.turn_left x i false (it plans to go straight)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.lane_direction is not observed, so whether y approaches from the opposite direction is unknown.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "y approaches on the opposed carrier 150 m from i at 14 m/s (more than speed times the critical gap) and outside i; x turns: no vehicle within i or near enough to be an immediate hazard."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "x turns left within i with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict: about a passenger car's half-length plus a crossing road user's half-length with a small margin, since the distance is between reference points.",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.opposed_approach_cos_tolerance",
+   "unit": "ratio",
+   "value": 0.7,
+   "convention": "Cosine of the largest angle off exactly opposed at which two approach carriers' designated directions are still opposite directions (about 45 degrees), separating opposite approaches from crossing ones at junctions whose legs meet near right angles.",
+   "source": "Intersection leg geometry convention (AASHTO Green Book: legs intersecting at angles near 90 degrees)"
+  },
+  {
+   "name": "p.immediate_hazard_time_gap",
+   "unit": "s",
+   "value": 4.0,
+   "convention": "Critical gap of gap acceptance: an approaching vehicle whose time to reach the conflict (its distance over its speed) is at most this gap is an immediate hazard to a turning, crossing or merging manoeuvre.",
+   "source": "Highway Capacity Manual, base critical headway (4.1 s for a major-street left turn)"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

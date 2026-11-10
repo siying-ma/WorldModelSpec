@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-130::motor_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes human-powered devices, which the vehicle definition expressly excepts.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes motor vehicles, which the quoted admitting clause reaches.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons rather than the transport devices reached by the admitting words.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The quoted contracts do not establish that every admitted commercial vehicle within ru.motor_vehicle's separately classed powered-two-wheeler carve-out must satisfy the motorcycle or moped contract.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"An assisting motor and a jurisdiction-labelled class attribute do not themselves establish the statutory power and assistance-speed limits required for the exclusion to reach every member.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract does not establish the statutory weight and speed limits, so the defined exclusion does not decide the entire class.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation does not establish that every admitted separately classed powered two-wheeler satisfies either the motorcycle or moped covering contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting-vehicle contract does not establish that every admitted member excluded from ru.motor_vehicle as a separately classed powered two-wheeler is a motorcycle or moped.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The jurisdiction-qualified contract and the small-engine propulsion language establish self-propelled vehicles without an applicable stated exception.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting words match the contract's self-propelled, non-rail vehicles, with separately classed powered two-wheelers set aside.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes motor vehicles, and the posted definition states no motorcycle exception.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official or contracted road service does not ensure that every admitted separately classed powered two-wheeler carries one of the proposed covering classes.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes persons, including persons using mobility devices, rather than the devices admitted as motor vehicles.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes pedestrians rather than transport devices, so the admitting words reach no member as described.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract's on-track equipment falls outside the express requirement that a motor vehicle not be operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes buses, whose supplied contract expressly makes them motor vehicles reached by the admitting clause.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The passenger-for-hire contract does not establish that every admitted separately classed powered two-wheeler must satisfy the motorcycle or moped covering contract.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The lengthened-passenger-vehicle branch does not establish that every admitted member outside ru.motor_vehicle's contract satisfies either remaining covering contract.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The self-propulsion requirement excludes a merely drawn trailer but does not establish whether a combination as a whole qualifies or carries a covering class.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes buses, whose supplied contract expressly makes them motor vehicles reached by the admitting clause.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes motor vehicles for carrying goods, which the admitting clause reaches without a stated truck exception.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 152780,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5543,
+   "input_tokens_details": {
+    "cache_write_tokens": 5540,
+    "cached_tokens": 0
+   },
+   "output_tokens": 6084,
+   "output_tokens_details": {
+    "reasoning_tokens": 4967
+   },
+   "total_tokens": 11627
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_02ccabbf03aad69a016af2da8cd86087d08e77289d5a8a9fae",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 129915,
+  "stop_reason": "end_turn",
+  "session_id": "fe6f1ce2-ba57-45db-a8fc-9284b9e1862a",
+  "total_cost_usd": 1.4029757,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 114657,
+   "cache_read_input_tokens": 1037910,
+   "output_tokens": 13706,
+   "output_tokens_details": {
+    "thinking_tokens": 4695
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 114657,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 777,
+     "cache_read_input_tokens": 117855,
+     "cache_creation_input_tokens": 1240,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1240
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39082,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003921699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 13706,
+    "cacheReadInputTokens": 1037910,
+    "cacheCreationInputTokens": 114657,
+    "webSearchRequests": 0,
+    "costUSD": 1.3990540000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4695,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 19,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for NRS_484B_127_3 (6 witnesses), on the third of six allowed runs.\n\n**The rule** (`NRS_484B_127_3.lean`) follows the node exactly:\n- **Class of x:** a member of the motor-vehicle aggregate (`DEF-NRS-484A-130::motor_vehicle`).\n- **When it applies:** x is moving (`drv_motion_moving` with `p.motion_speed_tolerance`), x occupies some highway region, and both assumptions hold (outside a business district, in a caravan or motorcade).\n- **What it requires:** for every other road user y that is ahead of x in its lane and belongs to the vehicle or combination-of-vehicles aggregate, the surface gap from x to y must be at least the design length plus the time headway times x's speed, counted twice.\n\n**One open choice:** I read `rel_surface_gap` without a component, which its contract defines as the distance between the nearest points of the two bodies. That matches how the record writes it, so I declared no narrowing.\n\n**The witnesses** use one straight highway with one lane. Cars move east at 25 m/s, so with the run's values the required gap is 72.4 m:\n- **forbid:** gap 5 m (violated).\n- **permit:** gap 146 m (compliant).\n- **idle / branch_2:** the forbid scene with one assumption set false (not applicable).\n- **branch_1:** x alone on the road (compliant).\n\n**What failed first:** the blind witness was still violated. Masking `rel.surface_gap` only removes a measured gap, and Core still computed it from the two car outlines. In the blind scene the source now gives no body size for the leader, so Core can't compute the gap. The source reports the gap and \"leader ahead in x's lane\" as measured values instead, and the mask removes only the gap. The adapter also rejects occupancy for a track with no outline, so only x's occupancy is observed in that scene.\n\nOutside the gate command, I ran one `ls` to list the Core directory. It went through, but your rules allow only the gate command in the shell.\n\nThe run log and choices are in `task_result.md` in the working directory.",
+  "ttft_ms": 6676,
+  "type": "result",
+  "duration_ms": 139883,
+  "uuid": "2c5f12a2-504c-40b6-8160-e9ca57f6806d",
+  "ttft_stream_ms": 1559,
+  "time_to_request_ms": 62,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 4,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 94,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1559,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39082,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003921699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 13706,
+    "cacheReadInputTokens": 1037910,
+    "cacheCreationInputTokens": 114657,
+    "webSearchRequests": 0,
+    "costUSD": 1.3990540000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4695,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

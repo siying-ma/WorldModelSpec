@@ -1,0 +1,305 @@
+{
+ "node_id": "NRS_484B_297_6_o1",
+ "law_refs": [
+  "NRS-484B-297-6"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "walking or otherwise traveling on a sidewalk",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "who encounters an obstruction to his or her mobility on the sidewalk,",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "including, without limitation, a short section of the sidewalk that is missing or impassable,",
+   "role": "trigger"
+  },
+  {
+   "id": "s5",
+   "text": "may proceed",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "with due care",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "on the immediately adjacent highway",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "to move around such an obstruction.",
+   "role": "condition"
+  },
+  {
+   "id": "s9",
+   "text": "Such a pedestrian:",
+   "role": "subject"
+  },
+  {
+   "id": "s10",
+   "text": "(a) Must walk or otherwise travel as far to the side of the highway near the sidewalk",
+   "role": "obligation"
+  },
+  {
+   "id": "s11",
+   "text": "as possible;",
+   "role": "standard"
+  },
+  {
+   "id": "s12",
+   "text": "(b) May walk or otherwise travel on the highway in the direction he or she was walking or traveling on the sidewalk, regardless of the direction of traffic;",
+   "role": "exception"
+  },
+  {
+   "id": "s13",
+   "text": "(c) May walk or otherwise travel in a lane provided for bicycles, electric bicycles or electric scooters",
+   "role": "exception"
+  },
+  {
+   "id": "s14",
+   "text": "if the area between the lane and the sidewalk is impassable;",
+   "role": "exception"
+  },
+  {
+   "id": "s15",
+   "text": "and (d) Must return to the sidewalk as soon as practicable.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is admitted as DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'); ru.aggregate 'membership of a legal aggregate', not expanded."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Walking or otherwise traveling on a sidewalk: the pedestrian moves (drv.motion.moving, 'in motion ... in any direction') with its footprint on st.sidewalk 'area for pedestrians between roadway and property line' (rel.occupies); not a crosswalk."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "An obstruction to mobility is st.obstruction 'a physical object on or beside the roadway that is not a road user' (kinds include sidewalk_fixture, excavation, barrier, debris); encountering it on the sidewalk is the pedestrian, on the sidewalk (rel.occupies st.sidewalk), coming within p.obstruction_encounter_reach of it (st.region_geometry 'the ground distance from a road user's body outline to it'), a reach relating a region to a road user."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Proceeding: the pedestrian moves on (drv.motion.moving) off the sidewalk; it marks the start of the detour."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.on_way",
+    "st.sidewalk"
+   ],
+   "derived": [],
+   "justification": "On the immediately adjacent highway: the pedestrian's footprint overlaps the st.highway ('the entire public way between its boundary lines') that the sidewalk it left lies on (st.on_way), and no st.sidewalk."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "To move around the obstruction is a purpose read through the conduct it explains: the detour episode, from the pedestrian leaving the sidewalk at an obstruction it encountered (within reach, st.region_geometry) until it is back on a sidewalk."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "Such a pedestrian: the same pedestrian aggregate member, on its detour."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.sidewalk",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "Walking or traveling on the highway during the detour (rel.occupies st.highway) as far to the side near the sidewalk: the ground distance from the pedestrian's body to the sidewalk it left (st.region_geometry, st.sidewalk)."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "rel.occupies",
+    "st.bicycle_lane_or_path"
+   ],
+   "derived": [],
+   "justification": "A lane provided for bicycles, electric bicycles or electric scooters is st.bicycle_lane_or_path 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; the pedestrian's footprint overlaps it (rel.occupies). The words name the lane's purpose, not road users of those classes, so no aggregate is claimed."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s11",
+   "standard": "as far to the side of the highway near the sidewalk as possible",
+   "concepts": [
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.pedestrian_detour_side_distance"
+   ],
+   "convention": "Pedestrian facility design: a detouring pedestrian keeps as close to the sidewalk as possible where its body stays within one pedestrian width plus a shy distance of the sidewalk (st.region_geometry distance).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "s4",
+   "id": "asm.sidewalk_section_missing_or_impassable",
+   "meaning": "A short section of the sidewalk on which the pedestrian is travelling is missing or cannot be passed on foot, at the place the pedestrian leaves it."
+  },
+  {
+   "span": "s14",
+   "id": "asm.area_beside_bicycle_lane_impassable",
+   "meaning": "The area of the highway between the bicycle lane or path the pedestrian occupies and the adjacent sidewalk cannot be passed on foot at the observation."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s6",
+   "why": "'With due care' qualifies the permission to leave the sidewalk; the duty to keep to the side applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty.",
+   "scope": "none"
+  },
+  {
+   "span": "s12",
+   "why": "Permission (b) concerns the direction of travel on the highway; the duty to keep to the side near the sidewalk is the same in either direction, so the words add no restriction to this duty.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "x is a pedestrian. Judged at each observation of a detour: x's footprint overlaps a highway region h (st.highway) and no sidewalk, and x has been off every sidewalk continuously since an observation at which x was moving (drv.motion.moving with p.motion_speed_tolerance) on a sidewalk w lying on h (st.on_way w h), at which either an obstruction o (st.obstruction) was within p.obstruction_encounter_reach of x's body (st.region_geometry) or asm.sidewalk_section_missing_or_impassable held. Not applicable (exception c) where x's footprint overlaps a bicycle lane or path (st.bicycle_lane_or_path) and asm.area_beside_bicycle_lane_impassable holds.",
+ "obligation": "x's body is within p.pedestrian_detour_side_distance of the sidewalk w it left (st.region_geometry ground distance from x to w).",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.obstruction_encounter_reach",
+  "p.pedestrian_detour_side_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "s8",
+   "why": "The purpose of moving around the obstruction is read through the detour conduct: off the sidewalk since leaving it at an encountered obstruction.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s11",
+   "why": "'As possible' is read as a fixed lateral bound from the sidewalk; an obstruction that itself extends into the highway beyond that bound is not read."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Pedestrian x walks on sidewalk w (on highway h), comes within 1 m of a st.obstruction of kind excavation, steps onto the roadway of h and walks 4 m from w."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same, but x walks on the roadway 0.4 m from the edge of w."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x walks on the sidewalk throughout."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.region_geometry is absent, so neither the encounter nor x's distance to the sidewalk can be read.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "On its detour x walks in a bicycle lane 3 m from w and the trace declares asm.area_beside_bicycle_lane_impassable true."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "As branch_1, but the trace declares asm.area_beside_bicycle_lane_impassable false."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.obstruction_encounter_reach",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Distance between a pedestrian's body and an obstruction within which the pedestrian is at the obstruction (encountering it, or moving around it).",
+   "source": "Pedestrian lateral clearance and shy distance (AASHTO Guide for the Planning, Design and Operation of Pedestrian Facilities)"
+  },
+  {
+   "name": "p.pedestrian_detour_side_distance",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Largest distance between a detouring pedestrian's body and the sidewalk that is still as far to the side near the sidewalk as possible: one pedestrian width plus a shy distance from the curb.",
+   "source": "AASHTO Pedestrian Guide: pedestrian space width (about 0.75 m) plus shy distance"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

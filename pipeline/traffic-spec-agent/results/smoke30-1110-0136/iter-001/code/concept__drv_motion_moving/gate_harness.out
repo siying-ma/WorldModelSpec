@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.moving.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"tol"}},"contract":"A road user is in motion at the observation: the magnitude of its velocity (kin.speed) exceeds `tol`, a tolerance that names only the source's speed resolution, below which a reading counts as standing still. It denotes motion in any direction, forwards or backwards, whoever or whatever controls the road user. Not denoted: the direction of motion; a halt held over a window, since the concept reads the one observation.","definition":null,"id":"drv.motion.moving","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"tol"}}
+WITNESS	holds	drv.motion.moving@w
+WITNESS	fails	drv.motion.moving@w
+WITNESS	blind	drv.motion.moving@w
+OCC	x
+INST	drv.motion.moving@w	ok
+TIME	checks	3
+TIME	lint	1
+SCEN	holds	drv.motion.moving@w	compliant	compliant	ok
+TIME	scenario:drv.motion.moving@w/holds	7
+SCEN	fails	drv.motion.moving@w	violated	violated	ok
+TIME	scenario:drv.motion.moving@w/fails	6
+SCEN	blind	drv.motion.moving@w	unknown	unknown	ok
+TIME	scenario:drv.motion.moving@w/blind	8
+TIME	witnesses	21
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.moving.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.moving.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.moving.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.moving@w	1	2
+TIME	adequacy_start	8
+TIME	adequacy	28
+DONE

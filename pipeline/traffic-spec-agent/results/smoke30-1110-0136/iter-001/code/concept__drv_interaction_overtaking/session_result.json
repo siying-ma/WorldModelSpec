@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 55411,
+  "stop_reason": "end_turn",
+  "session_id": "ed1e5f61-e780-41e0-8f5e-9542c5aa2e69",
+  "total_cost_usd": 0.5329674,
+  "usage": {
+   "input_tokens": 12,
+   "cache_creation_input_tokens": 44460,
+   "cache_read_input_tokens": 215787,
+   "output_tokens": 6543,
+   "output_tokens_details": {
+    "thinking_tokens": 1537
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 44460,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 693,
+     "cache_read_input_tokens": 47922,
+     "cache_creation_input_tokens": 976,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 976
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 32125,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003222,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 12,
+    "outputTokens": 6543,
+    "cacheReadInputTokens": 215787,
+    "cacheCreationInputTokens": 44460,
+    "webSearchRequests": 0,
+    "costUSD": 0.5297454,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1537,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01KvH3KqEeFJh7KXiHVsBjRr",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke30-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core && grep -n -A25 \"def rel_longitudinal_overlap\\|def rel_same_direction\\|def footprint\" Vocab/Atoms.lean | head -120",
+     "description": "Read accessor bodies for the relations"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 8,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the first run (1 of 6): \"3 witnesses, 3 names, reads 3 atom(s)\".\n\n**Body** (`library/TrafficSpec/Concepts/interaction/overtaking.lean`): it holds when all three of these hold at the observation:\n- **Same way:** `rel_same_direction` of a and b, with `cos_tol` as its tolerance.\n- **Side by side:** `rel_longitudinal_overlap` of a and b is at least zero, so footprints that only touch count as side by side, as \"not negative\" says.\n- **Gaining:** a's speed minus b's speed is strictly greater than `speed_tol`, as \"by more than\" says.\n\nThere are no time operators, sides, regions or classes, because the contract leaves all of those to the caller. The contract decided every choice, so I declared no narrowings.\n\n**Witnesses** (`library/TrafficSpecWitness/Concepts/interaction/overtaking.lean`):\n- **Setup:** a bicycle at 6 m/s (track 1, formal a) and a car at 3 m/s (track 2, formal b), both heading east, 2 m apart sideways, over 3 observations 0.5 s apart.\n- **Instance:** `cos_tol` is 9/10 and `speed_tol` is 0.1 m/s.\n- **Relations:** I supplied none, because Core computes them from position, heading and size.\n- **holds:** the bicycle's centre goes from 1.5 m behind the car's to 1.5 m ahead of it, so the two overlap at every observation.\n- **fails:** the bicycle stays more than 10 m behind the car's rear, so the overlap is negative throughout.\n- **blind:** the same layout as holds, but neither road user has a speed and `kin.speed` is masked, so only the speed comparison is unknown.\n\nOne `grep` into Core was refused, because only the gate command may run in the shell. I read `Vocab/Atoms.lean` with the Read tool instead, to confirm Core computes these relations.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 4102,
+  "type": "result",
+  "duration_ms": 60115,
+  "uuid": "1b13e0bd-1a80-4f6f-9830-ded938dc4efc",
+  "ttft_stream_ms": 625,
+  "time_to_request_ms": 97,
+  "time_to_request_phases_ms": {
+   "other": 18,
+   "system_prompt": 26,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 16,
+   "input_hooks": 3,
+   "transcript_persist": 8,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 2,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 5,
+  "time_to_request_cpu_ms": 142,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 9,
+   "cpu_ms": 22,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 625,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 32125,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.003222,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 12,
+    "outputTokens": 6543,
+    "cacheReadInputTokens": 215787,
+    "cacheCreationInputTokens": 44460,
+    "webSearchRequests": 0,
+    "costUSD": 0.5297454,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1537,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

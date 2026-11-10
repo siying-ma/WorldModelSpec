@@ -1,0 +1,110 @@
+{
+  "aggregate_id": "DEF-NRS-484A-025::bicycle",
+  "classifications": [
+    {
+      "class": "ru.bicycle",
+      "verdict": "supported",
+      "reason": "The admitting clauses describe human-powered, rideable wheeled devices matching this contract, and the moped exception does not describe the bicycle contract itself."
+    },
+    {
+      "class": "ru.bus",
+      "verdict": "contradicted",
+      "reason": "Neither the bus contract nor the definition forbids combined motor and human propulsion, and any qualifying non-moped member necessarily satisfies the proposed included ru.bicycle contract."
+    },
+    {
+      "class": "ru.child",
+      "verdict": "supported",
+      "reason": "This class describes a person, whereas the admitting words describe a device upon which a person may ride."
+    },
+    {
+      "class": "ru.commercial_motor_vehicle",
+      "verdict": "contradicted",
+      "reason": "Commercial mass or licensing does not preclude an otherwise qualifying human-powered cycle, and every such admitted member satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.electric_bicycle",
+      "verdict": "supported",
+      "reason": "Every electric bicycle admitted by the human-power, riding and wheel requirements necessarily satisfies the quoted ru.bicycle contract, regardless of its additional motor."
+    },
+    {
+      "class": "ru.electric_scooter",
+      "verdict": "supported",
+      "reason": "Every electric scooter meeting the definition's human-power, riding and wheel requirements necessarily carries ru.bicycle under the quoted contract."
+    },
+    {
+      "class": "ru.emergency_vehicle",
+      "verdict": "contradicted",
+      "reason": "Emergency designation does not rule out an otherwise qualifying human-powered cycle, whose admission necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.fire_apparatus",
+      "verdict": "contradicted",
+      "reason": "The fire-fighting vehicle contract imposes no incompatible propulsion or wheel requirement, and any admitted member necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.moped",
+      "verdict": "supported",
+      "reason": "The express words \"except a moped\" exclude the jurisdictionally classified moped class."
+    },
+    {
+      "class": "ru.motor_vehicle",
+      "verdict": "contradicted",
+      "reason": "Self-propulsion does not expressly prohibit additional human propulsion, and any non-moped member satisfying the complete bicycle definition necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.motorcycle",
+      "verdict": "contradicted",
+      "reason": "The motorcycle contract does not prohibit human propulsion alongside motor propulsion, and any qualifying non-moped member necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.official_vehicle",
+      "verdict": "contradicted",
+      "reason": "Official road-service use and identifying equipment do not exclude otherwise qualifying human-powered cycles, all of which satisfy ru.bicycle."
+    },
+    {
+      "class": "ru.pedestrian",
+      "verdict": "supported",
+      "reason": "The pedestrian contract describes a person rather than the ridden device required by the admitting words."
+    },
+    {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "verdict": "supported",
+      "reason": "This class describes a pedestrian person, not a device upon which a person may ride."
+    },
+    {
+      "class": "ru.rail_vehicle",
+      "verdict": "contradicted",
+      "reason": "On-track operation does not itself prohibit human propulsion or the specified wheel arrangement, and any admitted rail device necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.school_bus",
+      "verdict": "contradicted",
+      "reason": "School designation and markings do not prohibit an otherwise qualifying motor-assisted human-powered cycle, whose admission necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.taxicab",
+      "verdict": "contradicted",
+      "reason": "The marked passenger-for-hire contract does not require incompatible propulsion or wheels, and any admitted member necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.tour_bus_or_limousine",
+      "verdict": "contradicted",
+      "reason": "The stated passenger-service, length and livery attributes do not rule out every qualifying human-powered cycle, and every admitted member necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.trailer_or_combination",
+      "verdict": "contradicted",
+      "reason": "Being drawn by another device does not prohibit human propulsion, rideability or the specified wheels, and any admitted member necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.transit_bus",
+      "verdict": "contradicted",
+      "reason": "Public transit service and identifying displays do not prohibit an otherwise qualifying motor-assisted human-powered cycle, whose admission necessarily satisfies ru.bicycle."
+    },
+    {
+      "class": "ru.truck",
+      "verdict": "contradicted",
+      "reason": "A goods-carrying body and motor propulsion do not expressly prohibit supplementary human propulsion or qualifying wheels, and any admitted non-moped member necessarily satisfies ru.bicycle."
+    }
+  ]
+}

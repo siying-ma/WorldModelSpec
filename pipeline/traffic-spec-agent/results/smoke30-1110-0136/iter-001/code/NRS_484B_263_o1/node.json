@@ -1,0 +1,228 @@
+{
+ "node_id": "NRS_484B_263_o1",
+ "law_refs": [
+  "NRS-484B-263"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "about to enter or exit a controlled-access highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s5",
+   "text": "to all vehicles approaching on the highway",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "whose proximity constitutes an immediate hazard",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "and shall continue to yield the right-of-way to that traffic until the driver may proceed with reasonable safety.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "Vehicle aggregate DEF-NRS-484A-320::vehicle; the driver read through the vehicle's controlled motion."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.controlled_access",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.controlled_access 'a highway with access only at designated points, and its entrance and exit lanes' (DEF-NRS-484A-060 'no legal right of access except at such points only'). 'About to' is an imminent movement, read by the movement it leads to: the entry (x's footprint begins to overlap the controlled-access region, rel.occupies 'a road user's footprint overlaps a lane / region ... controlled-access lane') or the exit (it ceases to overlap it, onto another st.highway region)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.controlled_access"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "Yielding is not making the entry or exit (the change of x's overlap with the controlled-access region, rel.occupies) while moving (drv.motion.moving) into a predicted conflict with a vehicle owed precedence."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.controlled_access",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "All vehicles y (aggregate) approaching on the highway: y moving (drv.motion.moving) with its footprint on the highway being entered - the controlled-access region at an entry, the st.highway region x moves onto at an exit (rel.occupies)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s4",
+   "standard": "the right-of-way (DEF-NRS-484A-210: 'circumstances of direction, speed and proximity as to give rise to the danger of a crash')",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_time_horizon",
+    "p.conflict_centre_clearance"
+   ],
+   "convention": "Traffic-conflict technique: the danger of a crash is a predicted closest approach of the two centres under constant velocities within the time-to-collision horizon at a centre distance below the clearance.",
+   "surrogate": false
+  },
+  {
+   "span": "s6",
+   "standard": "whose proximity constitutes an immediate hazard",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed"
+   ],
+   "params": [
+    "p.immediate_hazard_time_gap"
+   ],
+   "convention": "Gap acceptance for merging: a vehicle on the highway is an immediate hazard where the gap between the bodies (rel.surface_gap 'distance between the nearest points of two bodies') is at most its speed (kin.speed) times the critical gap, so the bound moves with its speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle. Judged at each entry of x into a controlled-access region a (st.controlled_access): an observation at which x's footprint overlaps a and did not at the observation before; and at each exit: an observation at which x's footprint no longer overlaps a and did at the observation before; where there is a vehicle y other than x on the highway being entered - at an entry, y's footprint overlaps a; at an exit, y's footprint overlaps a st.highway region that x's footprint overlaps at that observation, and not a - that is moving (drv.motion.moving with p.motion_speed_tolerance) and whose body gap to x (rel.surface_gap) is at most its speed (kin.speed) times p.immediate_hazard_time_gap.",
+ "obligation": "Where x is moving at the judged observation (drv.motion.moving with p.motion_speed_tolerance), no vehicle y of the applicability (bound again with its whole selection) has its centre and x's approach within p.conflict_time_horizon (prim.closest_approach_within) to a centre distance below p.conflict_centre_clearance (prim.closest_approach_distance).",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.immediate_hazard_time_gap",
+  "p.conflict_time_horizon",
+  "p.conflict_centre_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "The driver is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'About to enter or exit' is an imminent movement, read by the movement it leads to: the observation of entry into, or exit from, the controlled-access region.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s3",
+   "why": "The yield is judged at the observation of entry or exit; 'the highway' is read as the highway being entered: the controlled-access highway at an entry, the highway x moves onto at an exit."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x enters controlled-access region a from an adjoining way at 15 m/s while y on a is 12 m away at 28 m/s (12 m below 28 m/s times the critical gap); predicted closest approach 1.5 m in 0.8 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x enters a while y on a, 60 m behind at 25 m/s (within speed times the critical gap), is predicted to pass in the next lane 6 m from x at its closest."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives on an ordinary roadway and never enters or leaves a controlled-access region."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.surface_gap is not supplied and cannot be computed (kin.extent absent), so whether y's proximity is an immediate hazard is unknown.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "x leaves a onto a crossroad (st.highway) and moves across it while y on the crossroad, 10 m away at 13 m/s, is in predicted conflict (1 m in 0.9 s)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "x enters a with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_time_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a predicted closest approach within this time counts as an imminent conflict.",
+   "source": "Hayward (1972) time-to-collision; Swedish Traffic Conflict Technique (Hyden 1987)"
+  },
+  {
+   "name": "p.conflict_centre_clearance",
+   "unit": "m",
+   "value": 4.0,
+   "convention": "Centre-to-centre distance at the predicted closest approach below which two road users' bodies come into conflict: about a passenger car's half-length plus a crossing road user's half-length with a small margin, since the distance is between reference points.",
+   "source": "AASHTO Green Book passenger-car design vehicle dimensions"
+  },
+  {
+   "name": "p.immediate_hazard_time_gap",
+   "unit": "s",
+   "value": 4.0,
+   "convention": "Critical gap of gap acceptance: an approaching vehicle whose time to reach the conflict (its distance over its speed) is at most this gap is an immediate hazard to a turning, crossing or merging manoeuvre.",
+   "source": "Highway Capacity Manual, base critical headway (4.1 s for a major-street left turn)"
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of the acquisition standard (carla_scene_graph kinematics)"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

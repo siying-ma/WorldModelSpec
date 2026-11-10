@@ -1,0 +1,70 @@
+{
+ "concept_id": "drv.motion.left_turn",
+ "kind": "formula",
+ "contract": "A road user has turned to the left: over the window of length `window` behind the observation, its heading changed to the left (prim.heading_change, left positive) by at least `min_angle` and by less than `max_angle`, the change at which the heading has come round to the opposite direction (a reversal, not a left turn). The act is recognized at the observation at which the window's heading change entered that band. The act began within the window behind that observation. The concept holds while the window's change stays in the band, and ends when the change leaves it. No conduct before the window is read. Not denoted: a right turn; a reversal of direction; a lane change or a bend's drift below `min_angle`; where the turn is made, which the caller states.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "The window over which the heading change is measured: the time within which a turn is completed."
+  },
+  {
+   "name": "min_angle",
+   "unit": "deg",
+   "meaning": "The leftward heading change from which the manoeuvre is a turn."
+  },
+  {
+   "name": "max_angle",
+   "unit": "deg",
+   "meaning": "The leftward heading change from which the heading has come round to the opposite direction (a reversal)."
+  }
+ ],
+ "act": {
+  "boundary": "window",
+  "window": "window",
+  "onset": "The act began within the window behind that observation.",
+  "recognition": "The act is recognized at the observation at which the window's heading change entered that band.",
+  "extent": "The concept holds while the window's change stays in the band, and ends when the change leaves it.",
+  "history": "No conduct before the window is read."
+ },
+ "elements": [
+  {
+   "span": "its heading changed to the left (prim.heading_change, left positive)",
+   "atoms": [
+    "prim.heading_change"
+   ],
+   "concepts": [],
+   "justification": "prim.heading_change: 'the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from kin.yaw_rate; unknown where the window is truncated'."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car turns left at a junction: within the window its heading changes to the left by more than the minimum and well short of a reversal."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car drives straight; its heading change over the window is near zero."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, with kin.yaw_rate declared absent, so prim.heading_change is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o3"
+ ]
+}

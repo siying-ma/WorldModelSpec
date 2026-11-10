@@ -1,0 +1,274 @@
+{
+ "node_id": "NRS_484B_307_9b_o3",
+ "law_refs": [
+  "NRS-484B-307-9b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.motorcycle",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "b2",
+   "text": "A person driving a motorcycle,",
+   "role": "subject"
+  },
+  {
+   "id": "b3",
+   "text": "moped or trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "b4",
+   "text": "or riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "facing the signal",
+   "role": "condition"
+  },
+  {
+   "id": "b6",
+   "text": "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow if:",
+   "role": "trigger"
+  },
+  {
+   "id": "b7",
+   "text": "(1) The person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;",
+   "role": "sibling"
+  },
+  {
+   "id": "b8",
+   "text": "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change",
+   "role": "sibling"
+  },
+  {
+   "id": "b9",
+   "text": "because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;",
+   "role": "sibling"
+  },
+  {
+   "id": "b10",
+   "text": "(3) No other device at the place prohibits the turn,",
+   "role": "obligation"
+  },
+  {
+   "id": "b11",
+   "text": "if applicable;",
+   "role": "condition"
+  },
+  {
+   "id": "b12",
+   "text": "and (4) The person yields the right-of-way to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The signal is a dev.traffic_signal, 'several states may be displayed at once': circular_red with green_arrow(left) or green_arrow(right), governing (dev.governs) the approach carrier (st.travel_region, rel.occupies) that enters the intersection (st.lane_enters), or the intersection (st.intersection); read at the entry."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' is the admitted aggregate DEF-NRS-484A-135::motorcycle; 'A person driving' read through the vehicle's controlled motion."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.motorcycle"
+   ],
+   "derived": [],
+   "justification": "'moped' is the admitted aggregate DEF-NRS-484A-125::moped. 'trimobile' has no applicable definition; nearest class atom ru.motorcycle, 'motor vehicle on two or three wheels ridden astride, including three-wheeled variants'; a three-wheeler driven from a seat is not denoted, so a gap is recorded."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates for bicycle, electric bicycle and electric scooter, each claimed as its aggregate."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Facing the signal: the signal governs the carrier occupied at the observation before entry whose entrance end is the intersection (st.lane_enters, dev.governs, rel.occupies), or the intersection itself."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate",
+    "dev.traffic_signal"
+   ],
+   "derived": [
+    "drv.motion.straight_through_region",
+    "drv.motion.left_turn_through_region",
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "The permitted movements: drv.motion.straight_through_region(x, i), or the turn opposite the arrow, drv.motion.right_turn_through_region(x, i) under green_arrow(left) and drv.motion.left_turn_through_region(x, i) under green_arrow(right), recognized at the exit from the heading change since entry (kin.yaw_rate) over the overlap with the intersection."
+  },
+  {
+   "span": "b10",
+   "atoms": [
+    "dev.regulatory_sign",
+    "prim.conditions_hold",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Another device prohibiting the turn is a dev.regulatory_sign, 'a point regulation by catalogue code ... no_left_turn, no_right_turn ...', with the code for the turn made (no_left_turn for a left turn, no_right_turn for a right turn), at the place: governing (dev.governs) the approach carrier x occupied before entry (rel.occupies, st.travel_region) whose entrance end is the intersection (st.lane_enters), or the intersection (st.intersection); a sign with conditions prohibits where prim.conditions_hold ('the structured conditions of a device ... hold at the observation for a road user'). Not a stand-in for a manoeuvre: the sign is the condition, the turn is read by the movement concept."
+  },
+  {
+   "span": "b11",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.left_turn_through_region",
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "'if applicable' limits the requirement to a movement that is a turn: the crossing is drv.motion.left_turn_through_region(x, i) or drv.motion.right_turn_through_region(x, i); a through movement makes no turn a device could prohibit."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.motorcycle",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-135::motorcycle, DEF-NRS-484A-125::moped, DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, or carries ru.motorcycle; at the judged observation x leaves intersection i; at its entry (read through a past operator) a traffic signal s governing x's approach carrier c (dev.governs(s, c), st.lane_enters(c, i)) or i displayed circular_red with green_arrow(dir), dir left or right; and the crossing is a turn opposite the arrow (if applicable): drv.motion.right_turn_through_region(x, i) where dir is left, drv.motion.left_turn_through_region(x, i) where dir is right.",
+ "obligation": "At the entry (read through a past operator from the exit): no dev.regulatory_sign g of code no_right_turn (for a right turn) or no_left_turn (for a left turn) governs c or i (dev.governs(g, c) or dev.governs(g, i)) with prim.conditions_hold(g, x). Violated where such a sign governs the approach or the intersection with its conditions holding.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.left_turn_min_angle",
+  "p.right_turn_min_angle",
+  "p.reversal_min_angle"
+ ],
+ "narrowings": [
+  {
+   "span": "b2",
+   "why": "'A person driving' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b10",
+   "why": "A device prohibiting the turn is read as a regulatory sign of the turn's code governing the approach or the intersection, its official status presumed from its presence; a prohibition expressed only by a lane marking arrow is not read.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle on an approach governed by a signal showing circular_red with green_arrow(left) and by a no_right_turn sign with empty conditions enters and turns right."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same right turn at an approach with no regulatory sign of a turn code."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The motorcycle goes straight through on red with a green left arrow: no turn is made, so the requirement is not applicable."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A bicycle turns right on red with a green left arrow; the source does not observe regulatory signs.",
+   "masked": [
+    "dev.regulatory_sign"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.left_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "The heading change to the left beyond which a manoeuvre is a turn rather than a lane change or a bend's drift.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.reversal_min_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "The heading change magnitude from which the heading has come round to the opposite direction (a reversal); also the upper bound of a turn.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.right_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "The heading change to the right beyond which a manoeuvre is a turn rather than a lane change or a bend's drift; the right-hand counterpart of the left-turn bound.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide turning-movement counts; the left-turn bound of this reading)."
+  }
+ ],
+ "gaps": [
+  {
+   "span": "b3",
+   "kind": "atom",
+   "proposal": "`ru.trimobile` | a motor vehicle designed to travel on three wheels in contact with the ground, whether ridden astride or driven from a seat, as the jurisdiction classes it; decides which road users the permission at a steady red with a green turn arrow concerns | local",
+   "nearest": "ru.motorcycle: 'motor vehicle on two or three wheels ridden astride, including three-wheeled variants' leaves out a three-wheeler driven from a seat"
+  }
+ ],
+ "planned_on": {}
+}

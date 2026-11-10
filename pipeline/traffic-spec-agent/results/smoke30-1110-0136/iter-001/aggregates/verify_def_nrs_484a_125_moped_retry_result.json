@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-125::moped\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting clause describes the low-power, small-engine vehicles that the jurisdiction classes as mopeds, matching the class contract.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every motorcycle admitted by the definition has the contract’s two or three wheels and a qualifying low-power engine or motor, satisfying the quoted ru.moped contract.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The admitting words do not rule out a qualifying one-wheeled motor vehicle, whereas the covering ru.moped contract requires two or three wheels.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation imposes no wheel-count restriction, so the words do not establish that every admitted member has the two or three wheels required by ru.moped.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The official-service contract does not rule out an admitted one-wheeled vehicle outside the two-or-three-wheel ru.moped contract.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither commercial mass classification nor commercial licensing guarantees that every admitted vehicle has the two or three wheels required by ru.moped.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The passenger-for-hire contract does not require two or three wheels, so the quoted maximum wheel count does not establish complete coverage by ru.moped.\"\n    },\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes human-powered devices, which the posted vehicle definition excludes and which the small-engine admitting words do not admit as such.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric scooters.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The on-track-equipment contract does not require exclusive use on stationary rails, and the quoted wheel restriction does not establish that every member is outside the definition.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Although a drawn trailer alone lacks the required propulsion, the contract also includes combinations whose propulsion and total wheel count are not necessarily incompatible with the admitting words.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Being designed to carry many passengers does not establish a wheel count or vehicle form incompatible with every qualifying motor-driven cycle or similar vehicle.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School designation and markings do not establish that every member fails the admitted vehicle-form or wheel-count requirements.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public-transit service and identifying displays do not establish that every member falls outside the admitted vehicle forms and wheel limit.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The tour, shuttle, or lengthened-for-hire contract supplies no restriction demonstrating that every member is incompatible with the admitting words.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A goods-carrying body does not itself preclude a qualifying motor-driven cycle or similar vehicle with no more than three wheels.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting function imposes no vehicle-form or wheel-count restriction that establishes exclusion of every member.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a person in a pedestrian capacity, not the motor-driven device admitted by the definition.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian who is a child, not a motor-driven scooter, cycle, or similar vehicle.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian with specified assistance, not a motor-driven scooter, cycle, or similar vehicle.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 106577,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5459,
+   "input_tokens_details": {
+    "cache_write_tokens": 5456,
+    "cached_tokens": 0
+   },
+   "output_tokens": 4170,
+   "output_tokens_details": {
+    "reasoning_tokens": 3028
+   },
+   "total_tokens": 9629
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_06174ab49874ed7d016af2df72bd1887d095aff3e5572b177b",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

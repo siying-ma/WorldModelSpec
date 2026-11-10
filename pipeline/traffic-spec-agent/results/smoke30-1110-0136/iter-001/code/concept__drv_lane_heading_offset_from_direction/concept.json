@@ -1,0 +1,59 @@
+{
+ "concept_id": "drv.lane.heading_offset_from_direction",
+ "kind": "quantity",
+ "contract": "The signed departure of a road user's heading from a carrier's designated direction of travel at the observation, left positive: the sine of the angle from the carrier's direction (st.lane_direction) to the road user's heading (kin.heading), computed as the cross product of the two normalised vectors, the direction's first component times the heading's second minus the direction's second component times the heading's first. A ratio between -1 and 1 up to the normalisation factor both atoms carry; positive where the heading points to the left of the direction, negative where it points to the right, zero where it is aligned with or exactly opposed to it. Not denoted: occupancy of the carrier, which the caller states; whether the road user points with or against the direction, since a heading and its mirror across the perpendicular give the same value, which the caller states where it matters; the direction of motion, since the concept reads where the road user points, not where it moves; a carrier with no designated direction, for which the value is unknown.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "c",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "the road user's heading (kin.heading)",
+   "atoms": [
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.heading: 'direction the body points', read normalised; the concept reads where the road user points, as its contract states."
+  },
+  {
+   "span": "the carrier's direction (st.lane_direction)",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in', read normalised; a centre turn lane or uncovered place carries none, and the value is then unknown."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle in a lane whose direction is +x points ten degrees to the left of it; the instance bounds the value between 0.15 and 0.2 and it lies there."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The vehicle points along the lane direction; the value is zero, outside the instance's bounds 0.15 to 0.2."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source does not observe the lane's designated direction.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_413_2"
+ ]
+}

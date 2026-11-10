@@ -1,0 +1,83 @@
+'TrafficSpec.Rules.NRS_484B_450_1c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_450_1c.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.halt_required_by_law"],"binders":["x"],"id":"NRS_484B_450_1c","intentions":[],"laws":["NRS-484B-450-1c"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":["asm.halt_required_by_law"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_450_1c","intentions":[],"laws":["NRS-484B-450-1c"],"narrowings":[],"obligation":{"not":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_stopped","params":[{"param":"p.motion_speed_tolerance"}]},{"and":[{"not":{"body":{"and":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"and":[{"args":[{"var":"z"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"or":[{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_time_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.conflict_time_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]},{"and":[{"args":[{"var":"x"},{"var":"z"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_standstill_gap"}}]}]}]}]},"exists_user":"z"}},{"and":[{"not":{"asm":"asm.halt_required_by_law"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]},"exists_region":{"lit":"travel_region"},"var":"r"}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"}}]}]}]}]}},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":["asm.halt_required_by_law"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_450_1c","intentions":[],"laws":["NRS-484B-450-1c"],"narrowings":[],"obligation":{"not":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"and":[{"not":{"body":{"and":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"and":[{"args":[{"var":"z"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"or":[{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_time_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.conflict_time_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_centre_clearance"}}]},{"and":[{"args":[{"var":"x"},{"var":"z"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"measure":"rel_surface_gap"},"rhs":{"param":"p.queue_standstill_gap"}}]}]}]}]},"exists_user":"z"}},{"and":[{"not":{"asm":"asm.halt_required_by_law"}},{"and":[{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]},"exists_region":{"lit":"travel_region"},"var":"r"}},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"or":[{"body":{"and":[{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(straight)"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"d"},{"lit":"red_arrow(u_turn)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"d"},{"lit":"flashing_red"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"d"},{"or":[{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"stop_sign"},"var":"d"},{"body":{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]},"exists_device":{"lit":"yield_sign"},"var":"d"}]}]}]},"exists_region":{"lit":"travel_region"},"var":"r"}}]}]}]}]}},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,drv_motion_stopped,prim_closest_approach_within,prim_closest_approach_distance,rel_bearing,rel_surface_gap,st_travel_region,dev_human_direction,dev_governs,dev_human_direction_role,dev_human_direction_indication,dev_traffic_signal,dev_traffic_signal_shows,dev_stop_sign,dev_yield_sign
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	x
+OCC	?z
+OCC	z,x
+OCC	z
+OCC	x,z
+OCC	x,z
+OCC	x,z
+OCC	x,z
+OCC	?r
+OCC	x,r
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	?r
+OCC	x,r
+OCC	?d
+OCC	d,r
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	d
+OCC	?d
+OCC	d,r
+OCC	?d
+OCC	d,r
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	34
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	31
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	11
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	9
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	13
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	8
+SCEN	branch_5	compliant	compliant	ok
+TIME	scenario:branch_5	12
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	11
+SCEN	branch_7	compliant	compliant	ok
+TIME	scenario:branch_7	11
+TIME	witnesses	139
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_450_1c.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_450_1c.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_450_1c	22	10
+TIME	adequacy_start	10
+TIME	adequacy	2047
+DONE

@@ -1,0 +1,76 @@
+{
+ "concept_id": "drv.motion.straight_through_region",
+ "kind": "formula",
+ "contract": "A road user has travelled straight through a region, such as an intersection the caller passes: at the observation it leaves the region (its footprint overlaps the region, rel.occupies, at the observation before and not at this one), and the magnitude of its heading change since its entry, the observation at which the overlap last became true, integrated from its yaw rate with sampling step bound `step`, is below `max_angle`, the heading change below which a crossing counts as straight. The act begins at the entry, the observation at which the overlap last became true. The act is recognized at the observation it leaves the region. The concept holds only at the exit observation, ending at the next observation. Conduct before the entry is not read. Not denoted: a turn, a heading change at or beyond `max_angle`; a road user still within the region; which carrier it entered from, which the caller states; a crossing whose entry the recording does not show, for which the heading change since entry is unknown.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "i",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "step",
+   "unit": "ms",
+   "meaning": "The sampling step bound of the heading-change integration: the largest gap between consecutive observations it integrates across."
+  },
+  {
+   "name": "max_angle",
+   "unit": "deg",
+   "meaning": "The heading change since entry below which a crossing counts as straight."
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "The act begins at the entry, the observation at which the overlap last became true.",
+  "recognition": "The act is recognized at the observation it leaves the region.",
+  "extent": "The concept holds only at the exit observation, ending at the next observation.",
+  "history": "Conduct before the entry is not read."
+ },
+ "elements": [
+  {
+   "span": "its footprint overlaps the region, rel.occupies",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; its fall is the exit and its last rise the entry."
+  },
+  {
+   "span": "integrated from its yaw rate",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading, positive when the heading turns to the left'; Term.headingSince integrates it from the entry."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car enters an intersection and leaves it on the far side heading as it entered."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car enters an intersection, turns right and leaves it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, with kin.yaw_rate declared absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_223_4b"
+ ]
+}

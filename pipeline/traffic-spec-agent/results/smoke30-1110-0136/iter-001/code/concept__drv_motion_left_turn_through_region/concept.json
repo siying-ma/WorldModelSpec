@@ -1,0 +1,86 @@
+{
+ "concept_id": "drv.motion.left_turn_through_region",
+ "kind": "formula",
+ "contract": "A road user has turned to the left through a region, such as an intersection the caller passes: at the observation it leaves the region (its footprint overlaps the region, rel.occupies, at the observation before and not at this one), and its heading change since its entry, integrated from its yaw rate (kin.yaw_rate, left positive) with sampling step bound `step`, is at least `min_angle` and below `max_angle`, the band in which the crossing counts as a left turn rather than a through movement or a reversal. The act begins at the entry, the observation at which the overlap last became true. The act is recognized at the observation it leaves the region. The concept holds only at the exit observation, ending at the next observation. Conduct before the entry is not read. Not denoted: a through movement or a heading change to the left below `min_angle`; a turn to the right; a reversal, a change at or beyond `max_angle`; a road user still within the region; which carrier it entered from, which the caller states; a crossing whose entry the recording does not show, for which the heading change since entry is unknown.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "i",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "step",
+   "unit": "ms",
+   "meaning": "sampling step bound of the heading-change integration"
+  },
+  {
+   "name": "min_angle",
+   "unit": "deg",
+   "meaning": "heading change to the left from which a crossing is a turn rather than a through movement"
+  },
+  {
+   "name": "max_angle",
+   "unit": "deg",
+   "meaning": "heading change at which the heading has come round to the opposite direction, a reversal rather than a turn"
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "The act begins at the entry, the observation at which the overlap last became true.",
+  "recognition": "The act is recognized at the observation it leaves the region.",
+  "extent": "The concept holds only at the exit observation, ending at the next observation.",
+  "history": "Conduct before the entry is not read."
+ },
+ "elements": [
+  {
+   "span": "its footprint overlaps the region, rel.occupies",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; the entry and the exit are its rise and its fall."
+  },
+  {
+   "span": "integrated from its yaw rate (kin.yaw_rate, left positive)",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading, positive when the heading turns to the left (counter-clockwise)'; integrated by the formula language's heading change since the entry, not a stand-in for road curvature."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car enters an intersection heading east and leaves it heading north, a heading change of about 90 degrees to the left."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The car enters heading east and leaves heading east."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car leaves the intersection; the source supplies no yaw rate.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_307_9a_o1",
+  "NRS_484B_307_9b_o1",
+  "NRS_484B_307_9b_o2",
+  "NRS_484B_307_9b_o3",
+  "NRS_484B_307_9b_o4"
+ ]
+}

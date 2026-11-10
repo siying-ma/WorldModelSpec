@@ -1,0 +1,454 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 16 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "x"
+     }
+    ],
+    "derived": "drv_motion_moving",
+    "params": [
+     {
+      "param": "p.motion_speed_tolerance"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_600_1a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-600-1a"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "b3",
+     "why": "'the sight distance at x's place' and 'the curvature at x's place' are read on each lane x occupies (st.lane, rel.occupies), the regions the width bound reads; where x occupies no mapped lane, sight distance and curvature set no bound."
+    }
+   ],
+   "obligation": {
+    "and": [
+     {
+      "cmp": "le",
+      "lhs": {
+       "cond": {
+        "args": [],
+        "atom": "env_ice_or_snow",
+        "params": []
+       },
+       "else": {
+        "cond": {
+         "or": [
+          {
+           "args": [],
+           "atom": "env_wet_road",
+           "params": []
+          },
+          {
+           "args": [],
+           "atom": "env_precipitation",
+           "params": []
+          }
+         ]
+        },
+        "else": {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "params": [
+          {
+           "param": "p.perception_reaction_time"
+          },
+          {
+           "param": "p.surface_friction_accel_dry"
+          }
+         ],
+         "quantity": "drv_motion_stopping_distance"
+        },
+        "then": {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "params": [
+          {
+           "param": "p.perception_reaction_time"
+          },
+          {
+           "param": "p.surface_friction_accel_wet"
+          }
+         ],
+         "quantity": "drv_motion_stopping_distance"
+        }
+       },
+       "then": {
+        "args": [
+         {
+          "var": "x"
+         }
+        ],
+        "params": [
+         {
+          "param": "p.perception_reaction_time"
+         },
+         {
+          "param": "p.surface_friction_accel_ice_or_snow"
+         }
+        ],
+        "quantity": "drv_motion_stopping_distance"
+       }
+      },
+      "rhs": {
+       "args": [],
+       "measure": "env_visibility"
+      }
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "implies": [
+          {
+           "and": [
+            {
+             "not": {
+              "same": [
+               {
+                "var": "y"
+               },
+               {
+                "var": "x"
+               }
+              ]
+             }
+            },
+            {
+             "args": [
+              {
+               "var": "y"
+              },
+              {
+               "var": "x"
+              }
+             ],
+             "atom": "rel_ahead_behind_in_lane",
+             "params": []
+            }
+           ]
+          },
+          {
+           "cmp": "le",
+           "lhs": {
+            "mul": [
+             {
+              "args": [
+               {
+                "var": "x"
+               }
+              ],
+              "measure": "kin_speed"
+             },
+             {
+              "param": "p.following_min_time_headway"
+             }
+            ]
+           },
+           "rhs": {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "y"
+             }
+            ],
+            "measure": "rel_surface_gap"
+           }
+          }
+         ]
+        },
+        "forall_user": "y"
+       },
+       {
+        "body": {
+         "implies": [
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "l"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "and": [
+            {
+             "cmp": "le",
+             "lhs": {
+              "cond": {
+               "args": [],
+               "atom": "env_ice_or_snow",
+               "params": []
+              },
+              "else": {
+               "cond": {
+                "or": [
+                 {
+                  "args": [],
+                  "atom": "env_wet_road",
+                  "params": []
+                 },
+                 {
+                  "args": [],
+                  "atom": "env_precipitation",
+                  "params": []
+                 }
+                ]
+               },
+               "else": {
+                "args": [
+                 {
+                  "var": "x"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.perception_reaction_time"
+                 },
+                 {
+                  "param": "p.surface_friction_accel_dry"
+                 }
+                ],
+                "quantity": "drv_motion_stopping_distance"
+               },
+               "then": {
+                "args": [
+                 {
+                  "var": "x"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.perception_reaction_time"
+                 },
+                 {
+                  "param": "p.surface_friction_accel_wet"
+                 }
+                ],
+                "quantity": "drv_motion_stopping_distance"
+               }
+              },
+              "then": {
+               "args": [
+                {
+                 "var": "x"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.perception_reaction_time"
+                },
+                {
+                 "param": "p.surface_friction_accel_ice_or_snow"
+                }
+               ],
+               "quantity": "drv_motion_stopping_distance"
+              }
+             },
+             "rhs": {
+              "args": [
+               {
+                "var": "l"
+               }
+              ],
+              "measure": "st_sight_distance"
+             }
+            },
+            {
+             "and": [
+              {
+               "cmp": "le",
+               "lhs": {
+                "mul": [
+                 {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   }
+                  ]
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "l"
+                   }
+                  ],
+                  "measure": "st_curvature"
+                 }
+                ]
+               },
+               "rhs": {
+                "cond": {
+                 "args": [],
+                 "atom": "env_ice_or_snow",
+                 "params": []
+                },
+                "else": {
+                 "cond": {
+                  "or": [
+                   {
+                    "args": [],
+                    "atom": "env_wet_road",
+                    "params": []
+                   },
+                   {
+                    "args": [],
+                    "atom": "env_precipitation",
+                    "params": []
+                   }
+                  ]
+                 },
+                 "else": {
+                  "param": "p.surface_friction_accel_dry"
+                 },
+                 "then": {
+                  "param": "p.surface_friction_accel_wet"
+                 }
+                },
+                "then": {
+                 "param": "p.surface_friction_accel_ice_or_snow"
+                }
+               }
+              },
+              {
+               "cmp": "le",
+               "lhs": {
+                "add": [
+                 {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "param": "p.lane_keeping_margin_per_speed"
+                   }
+                  ]
+                 },
+                 {
+                  "mul": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     }
+                    ],
+                    "measure": "kin_speed"
+                   },
+                   {
+                    "param": "p.lane_keeping_margin_per_speed"
+                   }
+                  ]
+                 }
+                ]
+               },
+               "rhs": {
+                "sub": [
+                 {
+                  "args": [
+                   {
+                    "var": "l"
+                   }
+                  ],
+                  "measure": "st_lane_width"
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "lit": "width"
+                   }
+                  ],
+                  "measure": "kin_extent"
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "forall_region": {
+         "lit": "lane"
+        },
+        "var": "l"
+       }
+      ]
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": true
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "b3",
+    "why": "'the sight distance at x's place' and 'the curvature at x's place' are read on each lane x occupies (st.lane, rel.occupies), the regions the width bound reads; where x occupies no mapped lane, sight distance and curvature set no bound."
+   }
+  ],
+  "context": "49f81fc7853aa54903ebf2a2",
+  "candidate_digest": "4e9ae69fb7f3c4480b3ea34f4213db246b4104bd443728a35bf05d316c611a36"
+ }
+}

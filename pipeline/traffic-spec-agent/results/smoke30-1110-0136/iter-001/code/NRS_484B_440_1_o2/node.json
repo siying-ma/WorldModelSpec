@@ -1,0 +1,244 @@
+{
+ "node_id": "NRS_484B_440_1_o2",
+ "law_refs": [
+  "NRS-484B-440-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "Upon any highway",
+   "role": "trigger"
+  },
+  {
+   "id": "e2",
+   "text": "outside of a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "e3",
+   "text": "no person shall stop, park or leave standing",
+   "role": "sibling"
+  },
+  {
+   "id": "e4",
+   "text": "any vehicle,",
+   "role": "subject"
+  },
+  {
+   "id": "e5",
+   "text": "whether attended or unattended,",
+   "role": "condition"
+  },
+  {
+   "id": "e6",
+   "text": "upon the paved or main-traveled part of the highway",
+   "role": "condition"
+  },
+  {
+   "id": "e7",
+   "text": "when it is practicable to stop, park or so leave such vehicle off such part of the highway,",
+   "role": "sibling"
+  },
+  {
+   "id": "e8",
+   "text": "but in every event an unobstructed width of the highway opposite a standing vehicle shall be left",
+   "role": "obligation"
+  },
+  {
+   "id": "e9",
+   "text": "for the free passage of other vehicles",
+   "role": "standard"
+  },
+  {
+   "id": "e10",
+   "text": "and a clear view of such stopped vehicles shall be available from a distance of 200 feet in each direction upon such highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "e11",
+   "text": "This section shall not apply to the driver of any vehicle which is disabled",
+   "role": "exception"
+  },
+  {
+   "id": "e12",
+   "text": "while on the paved or main-traveled portion of a highway",
+   "role": "exception"
+  },
+  {
+   "id": "e13",
+   "text": "in such manner and to such extent that it is impossible to avoid stopping and temporarily leaving such disabled vehicle in such position.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "Upon any highway: x's footprint overlaps (rel.occupies) a st.highway, 'the entire public way between its boundary lines', as the mapping index maps 'upon any highway'."
+  },
+  {
+   "span": "e4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'any vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, the subject's class."
+  },
+  {
+   "span": "e6",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "The paved or main-traveled part of the highway is the st.roadway, 'the part of a highway improved for vehicular traffic, excluding shoulder', lying on the highway (st.on_way), which x's footprint overlaps (rel.occupies): the standing vehicle the width is left opposite is one upon that part."
+  },
+  {
+   "span": "e8",
+   "atoms": [
+    "st.lane",
+    "st.on_way",
+    "rel.occupies",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "A standing vehicle (DEF-NRS-484A-250, 'the halting of a vehicle, whether occupied or not') is x halted, drv.motion.stopped. An unobstructed width of the highway opposite it is a st.lane ('a longitudinal strip of roadway for one line of vehicles') of the same highway (st.on_way) that x's footprint does not overlap (rel.occupies) and that no other halted road user occupies alongside x (rel.longitudinal_overlap, 'the length the two footprints' projections on that axis share', not negative)."
+  },
+  {
+   "span": "e12",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "While on the paved or main-traveled portion: x's footprint overlaps (rel.occupies) the st.roadway at the observation."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "e9",
+   "standard": "free passage of other vehicles",
+   "concepts": [
+    "st.lane_width"
+   ],
+   "params": [
+    "p.free_passage_width"
+   ],
+   "convention": "Free passage of other vehicles is read through the width of the lane left opposite the standing vehicle: st.lane_width ('width of a lane at a point') at least the width a design vehicle needs to pass, so the measured width enters the bound.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "e2",
+   "id": "asm.business_or_residence_district",
+   "meaning": "The stretch of highway at the observation lies within territory classed as a business district or as a residence district."
+  },
+  {
+   "span": "e11",
+   "id": "asm.vehicle_disabled",
+   "meaning": "The road user's vehicle is disabled: it cannot proceed under its own power at the observation."
+  },
+  {
+   "span": "e13",
+   "id": "asm.disabled_vehicle_immovable",
+   "meaning": "The road user's vehicle cannot be moved from the place where it stands at the observation, by its own power or otherwise."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "e5",
+   "why": "Attended or unattended, the duty is the same: the words name both cases and exclude neither.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-320::vehicle occupying a highway h and the roadway rw lying on it (st.roadway, st.on_way(rw, h)); asm.business_or_residence_district is false; x is halted (drv.motion.stopped with p.motion_speed_tolerance); and not the exception: not (asm.vehicle_disabled and x occupies a roadway and asm.disabled_vehicle_immovable).",
+ "obligation": "Some st.lane l with st.on_way(l, h) is not occupied by x, has st.lane_width at least p.free_passage_width, and is occupied alongside x (rel.longitudinal_overlap with x not negative) by no other road user that is halted (drv.motion.stopped). Violated where no such lane is left opposite the standing vehicle.",
+ "params": [
+  "p.motion_speed_tolerance",
+  "p.free_passage_width"
+ ],
+ "narrowings": [
+  {
+   "span": "e8",
+   "why": "The unobstructed width is read as a whole lane of the same highway left beside the standing vehicle, free of other halted road users alongside it; width left in part of a lane, and obstruction by objects other than road users, are not read."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a rural highway with two lanes, district assumption false and disabled assumptions false, a car halts in one lane while a truck halts alongside it in the other lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car halts in one lane; the other lane, wider than the free passage width, is free alongside it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car drives along the highway without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The car halts in one lane of a two-lane highway; the source supplies no lane widths.",
+   "masked": [
+    "st.lane_width"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The car halts in one lane of a two-lane highway and no other road user is in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The car halts on a highway whose roadway has a single lane, so no lane is left opposite it."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of tracked road users."
+  },
+  {
+   "name": "p.free_passage_width",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Width a passing design vehicle needs: the 8.5 ft (2.6 m) design vehicle width plus a shy margin of about 0.4 m.",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets (design vehicle dimensions)."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

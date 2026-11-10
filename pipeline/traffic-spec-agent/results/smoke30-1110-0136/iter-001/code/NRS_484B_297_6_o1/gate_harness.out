@@ -1,0 +1,74 @@
+'TrafficSpec.Rules.NRS_484B_297_6_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.sidewalk_section_missing_or_impassable","asm.area_beside_bicycle_lane_impassable"],"binders":["x"],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"operationalizations":[{"concepts":["st.region_geometry"],"params":["p.pedestrian_detour_side_distance"],"standard":"as far to the side of the highway near the sidewalk as possible","surrogate":false}],"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to keep to the side applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty.","Permission (b) concerns the direction of travel on the highway; the duty to keep to the side near the sidewalk is the same in either direction, so the words add no restriction to this duty."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"v"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"v"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"u"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"u"},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},{"not":{"and":[{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"},{"asm":"asm.area_beside_bicycle_lane_impassable"}]}}]},"assumptions":["asm.sidewalk_section_missing_or_impassable","asm.area_beside_bicycle_lane_impassable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"body":{"implies":[{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"v"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"v"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"u"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"u"},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"w"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_detour_side_distance"}}]},"forall_region":{"lit":"sidewalk"},"var":"w"},"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to keep to the side applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty.","Permission (b) concerns the direction of travel on the highway; the duty to keep to the side near the sidewalk is the same in either direction, so the words add no restriction to this duty."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"v"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"v"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"u"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"u"},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},{"not":{"and":[{"body":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"},{"asm":"asm.area_beside_bicycle_lane_impassable"}]}}]},"assumptions":["asm.sidewalk_section_missing_or_impassable","asm.area_beside_bicycle_lane_impassable"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"body":{"implies":[{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"and":[{"body":{"not":{"args":[{"var":"x"},{"var":"v"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"v"},{"since":[{"body":{"not":{"args":[{"var":"x"},{"var":"u"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"u"},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},{"or":[{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"},{"asm":"asm.sidewalk_section_missing_or_impassable"}]}]}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"w"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_detour_side_distance"}}]},"forall_region":{"lit":"sidewalk"},"var":"w"},"residues":["'With due care' qualifies the permission to leave the sidewalk; the duty to keep to the side applies to such a pedestrian whether or not care was taken, so the words add no restriction to this duty.","Permission (b) concerns the direction of travel on the highway; the duty to keep to the side near the sidewalk is the same in either direction, so the words add no restriction to this duty."],"surrogate":false}
+ATOMS	ru_aggregate,st_sidewalk,st_highway,st_on_way,rel_occupies,drv_motion_moving,st_obstruction,st_region_geometry_distance,st_bicycle_lane_or_path
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	?w
+OCC	?h
+OCC	w,h
+OCC	x,h
+OCC	?v
+OCC	x,v
+OCC	?u
+OCC	x,u
+OCC	x,w
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	?b
+OCC	x,b
+OCC	?w
+OCC	?h
+OCC	w,h
+OCC	x,h
+OCC	?v
+OCC	x,v
+OCC	?u
+OCC	x,u
+OCC	x,w
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	x,w
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	114
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	31
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	30
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	12
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	17
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	29
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	30
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	28
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	23
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	24
+TIME	witnesses	224
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_297_6_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_297_6_o1	19	8
+TIME	adequacy_start	8
+TIME	adequacy	3016
+DONE

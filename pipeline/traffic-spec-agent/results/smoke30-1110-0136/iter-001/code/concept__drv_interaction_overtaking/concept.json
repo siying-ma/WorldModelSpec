@@ -1,0 +1,78 @@
+{
+ "concept_id": "drv.interaction.overtaking",
+ "kind": "formula",
+ "contract": "Road user a is overtaking road user b at the observation: the two head the same way (rel.same_direction with cosine tolerance `cos_tol`), their footprints overlap along a's heading (rel.longitudinal_overlap not negative, so the two are side by side), and a's speed (kin.speed) exceeds b's by more than `speed_tol`, a tolerance that names only the source's speed resolution. It holds at each observation of the side-by-side phase in which a gains on b, on whichever side of b a is. Not denoted: the approach from behind before the footprints overlap, or the moment a draws clear ahead; the side on which a passes, which the caller states where it matters; b gaining on a; where either road user is, which the caller states.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "cos_tol",
+   "unit": "ratio",
+   "meaning": "cosine of the largest angle between the two headings still read as the same way"
+  },
+  {
+   "name": "speed_tol",
+   "unit": "m/s",
+   "meaning": "speed resolution of the source, below which a speed difference counts as none"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the two head the same way (rel.same_direction with cosine tolerance `cos_tol`)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: 'headings aligned: the cosine of the angle between the headings is above its tolerance'."
+  },
+  {
+   "span": "their footprints overlap along a's heading (rel.longitudinal_overlap not negative",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: 'the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share, negative for the gap between the projections'."
+  },
+  {
+   "span": "a's speed (kin.speed) exceeds b's by more than `speed_tol`",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity'; a gaining on b is a's speed above b's by more than the resolution."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A bicycle at 6 m/s beside a car at 3 m/s heading the same way, their footprints overlapping along the bicycle's heading."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "The bicycle at 6 m/s is 10 m behind the car at 3 m/s: the projections do not overlap."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Side by side, but the source supplies no speeds.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_270_7b"
+ ]
+}

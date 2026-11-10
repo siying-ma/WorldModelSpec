@@ -1,0 +1,293 @@
+{
+ "node_id": "NRS_484B_307_9b_o1",
+ "law_refs": [
+  "NRS-484B-307-9b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.motorcycle",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "b2",
+   "text": "A person driving a motorcycle,",
+   "role": "subject"
+  },
+  {
+   "id": "b3",
+   "text": "moped or trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "b4",
+   "text": "or riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "b5",
+   "text": "facing the signal",
+   "role": "condition"
+  },
+  {
+   "id": "b6",
+   "text": "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow if:",
+   "role": "trigger"
+  },
+  {
+   "id": "b7",
+   "text": "(1) The person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;",
+   "role": "obligation"
+  },
+  {
+   "id": "b8",
+   "text": "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change",
+   "role": "sibling"
+  },
+  {
+   "id": "b9",
+   "text": "because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;",
+   "role": "sibling"
+  },
+  {
+   "id": "b10",
+   "text": "(3) No other device at the place prohibits the turn,",
+   "role": "sibling"
+  },
+  {
+   "id": "b11",
+   "text": "if applicable;",
+   "role": "sibling"
+  },
+  {
+   "id": "b12",
+   "text": "and (4) The person yields the right-of-way to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The signal is a dev.traffic_signal, 'a signal head; state ∈ {circular_green, circular_yellow, circular_red, green_arrow(dir), ...}; several states may be displayed at once': a steady red with a green turn arrow is circular_red displayed together with green_arrow(left) or green_arrow(right); circular_red is the steady red, flashing_red being a separate state. The signal is the one governing the road user's approach (dev.governs, 'the travel regions whose traffic the device controls'): the carrier of kind st.travel_region the road user occupies (rel.occupies) whose entrance end is the intersection (st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end'), or the intersection (st.intersection) itself. Not a stand-in for a position: governance says which device applies, not where to halt. The display is read at the entry into the intersection, the event the words fix it to ('facing the signal may proceed')."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' is the admitted aggregate DEF-NRS-484A-135::motorcycle ('every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels ...'); claimed as the aggregate. 'A person driving' is read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.motorcycle"
+   ],
+   "derived": [],
+   "justification": "'moped' is the admitted aggregate DEF-NRS-484A-125::moped. 'trimobile' has no applicable definition and no aggregate; the nearest class atom is ru.motorcycle, 'motor vehicle on two or three wheels ridden astride, including three-wheeled variants', which denotes the three-wheeled machines ridden astride; a three-wheeled motor vehicle driven from a seat is not ridden astride and is not denoted, so a gap is recorded for it."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-025::bicycle ('a device propelled by human power upon which a person may ride'), DEF-NRS-484B-017::electric_bicycle ('a device upon which a person may ride, having two or three wheels ...') and DEF-NRS-484B-018::electric_scooter ('a vehicle with handlebars and an electric motor'); each claimed as its aggregate. 'riding' is read through the device's controlled motion."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "dev.governs",
+    "dev.traffic_signal",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Facing the signal: the signal governs the approach the road user enters through, the carrier it occupies (rel.occupies) at the observation before its entry whose entrance end is the intersection (st.lane_enters), dev.governs naming the carrier, or governing the intersection itself. The road user's heading is not read: st.lane_enters states that the approach is the carrier occupied, 'never ... the road user's velocity or heading'."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate",
+    "dev.traffic_signal"
+   ],
+   "derived": [
+    "drv.motion.straight_through_region",
+    "drv.motion.left_turn_through_region",
+    "drv.motion.right_turn_through_region"
+   ],
+   "justification": "Proceeding straight through is drv.motion.straight_through_region(x, i) at x's exit from the intersection; turning in the direction opposite the arrow is drv.motion.right_turn_through_region(x, i) where the green arrow displayed at entry is green_arrow(left), and drv.motion.left_turn_through_region(x, i) where it is green_arrow(right); each concept reads the heading change since entry integrated from kin.yaw_rate over the overlap with the intersection (rel.occupies, st.intersection). The permission's movement is recognized where the crossing ends, the exit."
+  },
+  {
+   "span": "b7",
+   "atoms": [
+    "prim.region_offset_along",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.intersection",
+    "st.lane_enters",
+    "st.region_geometry",
+    "st.stop_line",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "'stops' is a required stop, DEF-NRS-484A-255 ('complete cessation from movement'), the concept drv.motion.stopped ('the definition's \"complete cessation from movement\"'). The place is read on the approach carrier (st.travel_region, rel.occupies) whose entrance end is the intersection (st.lane_enters): the pavement marking that indicates where the stop must be made is a st.stop_line, 'the transverse line marking where vehicles halt for a device', recorded as marking that carrier's entrance (st.entrance_of, 'exactly that carrier's entrance'); failing one, the crosswalk on the nearest side, a st.crosswalk the source records as marking that carrier's entrance; failing both, the entrance end of the carrier at the intersection (st.intersection). Whether the halt lies short of the place is read along the carrier's designated direction by prim.region_offset_along and the body-to-mark distance by st.region_geometry, as the ontology's approach convention states. Not a stand-in for distance to the line: the line's association is the source's record."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.motorcycle",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-135::motorcycle, DEF-NRS-484A-125::moped, DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter, or carries ru.motorcycle (the trimobile); at the judged observation x leaves an intersection i; at x's entry into i (the observation at which x's overlap with i last became true, read through a past operator) a traffic signal s governing the approach carrier c that x occupied at the observation before the entry (dev.governs(s, c) with st.lane_enters(c, i), or dev.governs(s, i)) displayed circular_red together with green_arrow(dir), dir left or right; and the crossing x completes is a through movement (drv.motion.straight_through_region(x, i)) or a turn opposite the arrow (drv.motion.right_turn_through_region(x, i) where dir is left, drv.motion.left_turn_through_region(x, i) where dir is right), with step p.heading_since_step_carla_scene_graph and the angles p.straight_through_max_heading_change, p.left_turn_min_angle, p.right_turn_min_angle, p.reversal_min_angle.",
+ "obligation": "Trigger: the entry of x into i found by the applicability. Place: on the approach carrier c, the stop line recorded as marking c's entrance (st.entrance_of) where one is recorded; else the crosswalk recorded as marking c's entrance, on the near side; else c's entrance end at i. Act: x halted (drv.motion.stopped with p.motion_speed_tolerance) while on c at the place: within p.stop_point_tolerance of the mark by body distance (st.region_geometry), not beyond it along c's designated direction (sign of prim.region_offset_along), and with its footprint not overlapping the crosswalk (for the crosswalk place) or i (for the intersection place). History bound: the search runs back from the entry and ends at the approach start, the last observation before the entry at which x, on a carrier the mark is recorded as marking, is outside the mark's stopping zone upstream (off the mark, short of it and farther than p.stop_point_tolerance from it), or at x's previous entry into i, whichever is later; nothing else ends it. A halt found: met. Either end reached without a halt: violated. Neither end reached without a halt (the approach began before the recording): unknown. A mark whose entrances are observed and exclude c does not govern, and the next place in the words' order is read; a mark whose association with c is unobserved leaves the place unknown where the verdict depends on it.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.straight_through_max_heading_change",
+  "p.left_turn_min_angle",
+  "p.right_turn_min_angle",
+  "p.reversal_min_angle",
+  "p.motion_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "b2",
+   "why": "'A person driving' names who controls the motorcycle, moped or trimobile; read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b7",
+   "why": "The sign or pavement marking that 'indicates where the stop must be made' is read through the stop line the source records as marking the approach's entrance; a sign that indicates a stopping place without a line is not read as a place of its own."
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A motorcycle in an approach lane with a recorded stop line faces circular_red with green_arrow(left) from the approach start onwards, rolls across the stop line without halting, enters the intersection and leaves it with a heading change below the straight-through bound."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same motorcycle halts at the stop line within the stop-point tolerance, later enters and goes straight through."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle enters on circular_red with green_arrow(left) and makes a left turn through the intersection, the movement the arrow indicates."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A moped goes straight through on red with a green left arrow; the source supplies no speed, so whether it halted on the approach is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "The recording begins with an electric scooter already within the stopping zone of the stop line of its approach; it enters on red with a green right arrow and makes a left turn; no halt is recorded and neither the approach start nor a previous entry lies in the recording.",
+   "boundary": "the approach start upstream of the stop line, which lies before the recording begins"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.left_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "The heading change to the left beyond which a manoeuvre is a turn rather than a lane change or a bend's drift.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-estimate noise of tracked road users."
+  },
+  {
+   "name": "p.reversal_min_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "The heading change magnitude from which the heading has come round to the opposite direction (a reversal); also the upper bound of a turn.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Stop-point tolerance of the approach convention: the distance between a road user's body and the governing mark within which a halt counts at the mark.",
+   "source": "Observed stopping positions of vehicles at stop lines."
+  },
+  {
+   "name": "p.straight_through_max_heading_change",
+   "unit": "deg",
+   "value": 30.0,
+   "convention": "Turning-movement classification at a junction: a crossing whose net heading change stays below this bound is a through movement.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.right_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "The heading change to the right beyond which a manoeuvre is a turn rather than a lane change or a bend's drift; the right-hand counterpart of the left-turn bound.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide turning-movement counts; the left-turn bound of this reading)."
+  }
+ ],
+ "gaps": [
+  {
+   "span": "b3",
+   "kind": "atom",
+   "proposal": "`ru.trimobile` | a motor vehicle designed to travel on three wheels in contact with the ground, whether ridden astride or driven from a seat, as the jurisdiction classes it; decides which road users the permission at a steady red with a green turn arrow concerns | local",
+   "nearest": "ru.motorcycle: 'motor vehicle on two or three wheels ridden astride, including three-wheeled variants' leaves out a three-wheeler driven from a seat"
+  }
+ ],
+ "planned_on": {}
+}

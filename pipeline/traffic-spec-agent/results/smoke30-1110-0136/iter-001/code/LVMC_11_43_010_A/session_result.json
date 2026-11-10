@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c95db0091a3444c09be7747b3b237de7",
+ "result": {
+  "duration_api_ms": 66577,
+  "stop_reason": "end_turn",
+  "session_id": "1cb443c4-8641-4ae2-8d78-33bfb9d56e69",
+  "total_cost_usd": 0.650708,
+  "usage": {
+   "input_tokens": 12,
+   "cache_creation_input_tokens": 54249,
+   "cache_read_input_tokens": 254209,
+   "output_tokens": 8104,
+   "output_tokens_details": {
+    "thinking_tokens": 2029
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 54249,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 649,
+     "cache_read_input_tokens": 57475,
+     "cache_creation_input_tokens": 1212,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1212
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37297,
+    "outputTokens": 33,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037462,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 12,
+    "outputTokens": 8104,
+    "cacheReadInputTokens": 254209,
+    "cacheCreationInputTokens": 54249,
+    "webSearchRequests": 0,
+    "costUSD": 0.6469617999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2029,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The rule and its witnesses for LVMC_11_43_010_A passed the gate with **`OK`** on the first run, using 1 of the 6 allowed runs. All six planned witnesses came out with their planned verdicts.\n\n**The rule** (`library/TrafficSpec/Rules/LVMC_11/LVMC_11_43_010_A.lean`):\n- **Who it covers:** `x` must be a member of the vehicle group defined in DEF-NRS-484A-320.\n- **When it applies:** `x` is moving faster than the speed tolerance and is inside some roundabout region.\n- **The duty:** for every roundabout region `x` is inside, `x` does not move clockwise about that region's reference point. The duty restates the full \"roundabout that `x` is inside\" selection, as the node requires, so each roundabout the car is in gets judged.\n- The node's own record already settled how each phrase is read, so I added no readings of my own.\n\n**The witnesses** (`library/TrafficSpecWitness/LVMC_11/LVMC_11_43_010_A.lean`) all use a 60 m square roundabout centred on the origin, with a car as the vehicle:\n\n| Scenario | Scene | Expected result |\n|---|---|---|\n| forbid | car heading south at 8 m/s, 15 m east of the centre (clockwise) | violated |\n| permit | same place, heading north (counterclockwise) | compliant |\n| idle | car on a straight road, no roundabout | not applicable |\n| blind | same as forbid, with the roundabout's outline and centre hidden | unknown |\n| branch_1 | car on the south entry heading straight at the island | compliant |\n| branch_2 | car standing still inside the roundabout | not applicable |\n\nBefore the gate I ran one shell command that wasn't allowed, a harmless `echo`. It changed nothing, and I've noted it in `task_result.md` in the working directory.",
+  "ttft_ms": 10974,
+  "type": "result",
+  "duration_ms": 70656,
+  "uuid": "ca039e01-2272-4845-8104-0d4e4fb98c0b",
+  "ttft_stream_ms": 661,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 100,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 11,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 661,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37297,
+    "outputTokens": 33,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037462,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 12,
+    "outputTokens": 8104,
+    "cacheReadInputTokens": 254209,
+    "cacheCreationInputTokens": 54249,
+    "webSearchRequests": 0,
+    "costUSD": 0.6469617999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2029,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

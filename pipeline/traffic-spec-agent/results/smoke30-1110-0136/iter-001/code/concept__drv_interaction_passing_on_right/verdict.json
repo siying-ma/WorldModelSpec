@@ -1,0 +1,108 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 4 names, reads 4 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "rel.same_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}},{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"},{\"lit\":\"left\"}],\"atom\":\"rel_bearing\",\"params\":[]},{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"add\":[{\"args\":[{\"var\":\"$a1\"}],\"measure\":\"kin_speed\"},{\"param\":\"$p1\"}]}}]}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "a"
+      },
+      {
+       "var": "b"
+      }
+     ],
+     "atom": "rel_same_direction",
+     "params": [
+      {
+       "param": "cos_tol"
+      }
+     ]
+    },
+    {
+     "and": [
+      {
+       "cmp": "ge",
+       "lhs": {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "var": "b"
+         }
+        ],
+        "measure": "rel_longitudinal_overlap"
+       },
+       "rhs": {
+        "lit": {
+         "den": 1,
+         "num": 0
+        },
+        "unit": "metre"
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "a"
+          },
+          {
+           "var": "b"
+          },
+          {
+           "lit": "left"
+          }
+         ],
+         "atom": "rel_bearing",
+         "params": []
+        },
+        {
+         "cmp": "gt",
+         "lhs": {
+          "args": [
+           {
+            "var": "a"
+           }
+          ],
+          "measure": "kin_speed"
+         },
+         "rhs": {
+          "add": [
+           {
+            "args": [
+             {
+              "var": "b"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           {
+            "param": "speed_tol"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "context": "235de3a5174eac21f5a027dd",
+  "candidate_digest": "4e95881d218e8454a82694ea593395c1be7c8f12f7d713b24ad39b04b02e6dce"
+ }
+}

@@ -1,0 +1,82 @@
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"b3","why":"'the sight distance at x's place' and 'the curvature at x's place' are read on each lane x occupies (st.lane, rel.occupies), the regions the width bound reads; where x occupies no mapped lane, sight distance and curvature set no bound."}],"operationalizations":[{"concepts":["drv.motion.stopping_distance","env.ice_or_snow","env.precipitation","env.visibility","env.wet_road","kin.extent","kin.speed","rel.ahead_behind_in_lane","rel.occupies","rel.surface_gap","st.curvature","st.lane","st.lane_width","st.sight_distance"],"params":["p.perception_reaction_time","p.surface_friction_accel_dry","p.surface_friction_accel_wet","p.surface_friction_accel_ice_or_snow","p.following_min_time_headway","p.lane_keeping_margin_per_speed"],"standard":"A rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.motion_speed_tolerance"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"b3","why":"'the sight distance at x's place' and 'the curvature at x's place' are read on each lane x occupies (st.lane, rel.occupies), the regions the width bound reads; where x occupies no mapped lane, sight distance and curvature set no bound."}],"obligation":{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_ice_or_snow"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[],"measure":"env_visibility"}},{"and":[{"body":{"implies":[{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.following_min_time_headway"}]},"rhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"}}]},"forall_user":"y"},{"body":{"implies":[{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.surface_friction_accel_ice_or_snow"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.surface_friction_accel_dry"},"then":{"param":"p.surface_friction_accel_wet"}},"then":{"param":"p.surface_friction_accel_ice_or_snow"}}},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.lane_keeping_margin_per_speed"}]},{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.lane_keeping_margin_per_speed"}]}]},"rhs":{"sub":[{"args":[{"var":"l"}],"measure":"st_lane_width"},{"args":[{"var":"x"},{"lit":"width"}],"measure":"kin_extent"}]}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"}]}]},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.motion_speed_tolerance"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"b3","why":"'the sight distance at x's place' and 'the curvature at x's place' are read on each lane x occupies (st.lane, rel.occupies), the regions the width bound reads; where x occupies no mapped lane, sight distance and curvature set no bound."}],"obligation":{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_ice_or_snow"}]}]}]}},"rhs":{"args":[],"measure":"env_visibility"}},{"and":[{"body":{"implies":[{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.following_min_time_headway"}]},"rhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"}}]},"forall_user":"y"},{"body":{"implies":[{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.surface_friction_accel_ice_or_snow"}]}]}]}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"param":"p.surface_friction_accel_dry"},"then":{"param":"p.surface_friction_accel_wet"}},"then":{"param":"p.surface_friction_accel_ice_or_snow"}}},{"cmp":"le","lhs":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.lane_keeping_margin_per_speed"}]},{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.lane_keeping_margin_per_speed"}]}]},"rhs":{"sub":[{"args":[{"var":"l"}],"measure":"st_lane_width"},{"args":[{"var":"x"},{"lit":"width"}],"measure":"kin_extent"}]}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"}]}]},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,drv_motion_moving,env_ice_or_snow,drv_motion_stopping_distance,env_wet_road,env_precipitation,env_visibility,rel_ahead_behind_in_lane,kin_speed,rel_surface_gap,st_lane,rel_occupies,st_sight_distance,st_curvature,st_lane_width,kin_extent
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	x
+OCC	x
+OCC	
+OCC	x
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	
+OCC	?y
+OCC	y,x
+OCC	y,x
+OCC	x
+OCC	x,y
+OCC	?l
+OCC	x,l
+OCC	
+OCC	x
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	l
+OCC	x
+OCC	x
+OCC	l
+OCC	
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	l
+OCC	x
+TIME	occurrences	0
+TIME	checks	11
+TIME	lint	28
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	17
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	27
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	15
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	16
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	16
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	16
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	16
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	14
+TIME	witnesses	168
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1a	8	9
+TIME	adequacy_start	11
+TIME	adequacy	904
+DONE

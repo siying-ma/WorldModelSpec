@@ -1,0 +1,94 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (holds_wrongly) at t=0 ms: The road user points along [5,12] and has velocity [-0.2,-1] m/s, giving an exact backward component of 1 m/s, equal to tol. Truncating the scaled heading's len — contract: fails, body: holds; contract: \"A road user moves backwards at the observation: the component of its velocity (kin.velocity) along the direction it poin\"",
+   "ruling": "dismissed",
+   "why": "The contract takes the direction from kin.heading, and that atom's contract says a formula reads it as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. Read that way, the component along [5,12] with velocity [-0.2,-1] is just below -1, so 'below minus tol' holds, as the body executed. This reading comes from the disclosed denotation of the atom the contract names, so the contract's words do not fail under every reasonable reading. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "0b222c472e4597c790e3986af5db28aaad76567b38c6fa69bf3160e4a10163db",
+ "rulings_at": 0,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (holds_wrongly) at t=0 ms: The road user points along [5,12] and has velocity [-0.2,-1] m/s, giving an exact backward component of 1 m/s, equal to tol. Truncating the scaled heading's len — contract: fails, body: holds; contract: \"A road user moves backwards at the observation: the component of its velocity (kin.velocity) along the direction it poin\" — The contract takes the direction from kin.heading, and that atom's contract says a formula reads it as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. Read that way, the component along [5,12] with velocity [-0.2,-1] is just below -1, so 'below minus tol' holds, as the body executed. This reading comes from the disclosed denotation of the atom the contract names, so the contract's words do not fail under every reasonable reading. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a\""
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "cc4047b45326fdf39251",
+   "row": {
+    "key": "concept:drv.motion.backing",
+    "subject": "drv.motion.backing",
+    "iteration": 1,
+    "item": "divergence 1 (holds_wrongly) at t=0 ms: The road user points along [5,12] and has velocity [-0.2,-1] m/s, giving an exact backward component of 1 m/s, equal to tol. Truncating the scaled heading's len — contract: fails, body: holds; contract: \"A road user moves backwards at the observation: the component of its velocity (kin.velocity) along the direction it poin\"",
+    "ruling": "dismissed",
+    "reason": "The contract takes the direction from kin.heading, and that atom's contract says a formula reads it as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. Read that way, the component along [5,12] with velocity [-0.2,-1] is just below -1, so 'below minus tol' holds, as the body executed. This reading comes from the disclosed denotation of the atom the contract names, so the contract's words do not fail under every reasonable reading. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the uni",
+    "schema": "concept_case/1",
+    "case_id": "c8b2a87bad2fd99aacb3b3797b71fd65a3f130f2f13512cbd3703c5e7203a7d0",
+    "kind": "holds_wrongly",
+    "situation": "The road user points along [5,12] and has velocity [-0.2,-1] m/s, giving an exact backward component of 1 m/s, equal to tol. Truncating the scaled heading's length from 13/12 to 1.083333 makes the body compute a backward component of 3250000/3249999 m/s, exceeding tol.",
+    "contract_words": "A road user moves backwards at the observation: the component of its velocity (kin.velocity) along the direction it points (kin.heading) is below minus `tol`, a tolerance that names only the source's speed resolution.",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "tol": [
+       1,
+       "m/s"
+      ]
+     }
+    },
+    "grounding": {
+     "x": 1
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "heading": [
+           5,
+           12
+          ],
+          "velocity": [
+           -0.2,
+           -1
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 0,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "c810c468b992f87731e58976c138cc08f6ed76345d4083411c6684004ce3334d",
+    "body_digest": "85fb6e3374d721bd78191be8158237cd9c5b2692da2a55a8b9e0701355468f9b",
+    "obligation": null,
+    "ruling_id": "cc4047b45326fdf39251",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

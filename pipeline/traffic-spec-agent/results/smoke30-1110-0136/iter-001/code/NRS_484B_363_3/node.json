@@ -1,0 +1,363 @@
+{
+ "node_id": "NRS_484B_363_3",
+ "law_refs": [
+  "NRS-484B-363-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "u1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "u2",
+   "text": "shall not make a U-turn",
+   "role": "obligation"
+  },
+  {
+   "id": "u3",
+   "text": "in an area designated as a school zone or school crossing zone",
+   "role": "condition"
+  },
+  {
+   "id": "u4",
+   "text": "except:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "u5",
+   "text": "(a) When there are no children present;",
+   "role": "exception"
+  },
+  {
+   "id": "u6",
+   "text": "(b) On a day on which school is not in session;",
+   "role": "exception"
+  },
+  {
+   "id": "u7",
+   "text": "(c) During the period from a half hour after school is no longer in operation to a half hour before school is next in operation;",
+   "role": "exception"
+  },
+  {
+   "id": "u8",
+   "text": "(d) If the zone is designated by an operational speed limit beacon,",
+   "role": "exception"
+  },
+  {
+   "id": "u9",
+   "text": "during the hours when the pupils of the school are in class",
+   "role": "exception"
+  },
+  {
+   "id": "u10",
+   "text": "and the yellow lights of the speed limit beacon are not flashing in the manner which indicates that the speed limit is in effect;",
+   "role": "exception"
+  },
+  {
+   "id": "u11",
+   "text": "or (e) If the zone is not designated by an operational speed limit beacon,",
+   "role": "exception"
+  },
+  {
+   "id": "u12",
+   "text": "during the times when the sign designating the school zone or school crossing zone indicates that the speed limit is not in effect.",
+   "role": "exception"
+  },
+  {
+   "id": "u13",
+   "text": "As used in this section, “speed limit beacon” means a device which is used in conjunction with a sign and equipped with two or more yellow lights that flash alternately to indicate when the speed limit in a school zone or school crossing zone is in effect.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "u1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway'), as the mapping index maps 'The driver of a vehicle'. 'The driver' (DEF-NRS-484A-080, 'every person who drives or is in actual physical control of a vehicle') is a role, read through the vehicle's controlled motion."
+  },
+  {
+   "span": "u2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.u_turn"
+   ],
+   "justification": "'U-turn' is defined by DEF-NRS-484B-077 ('the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not'), which the concept drv.motion.u_turn carries with that definition: the heading change over the recognition window within the reversal band, integrated across forward and backing moves."
+  },
+  {
+   "span": "u3",
+   "atoms": [
+    "dev.zone_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "An area designated as a school zone or school crossing zone is the stretch a dev.zone_sign of kind school or school_crossing ('a sign that begins or ends a signed zone along the road; kind ∈ {school, school_crossing, ...}') posts: the travel regions it governs (dev.governs) that x occupies (rel.occupies) of kind st.travel_region. The definitions (DEF-NRS-484B-063 'those sections of streets which are adjacent to school property', DEF-NRS-484B-060 'those sections of streets ... that pupils cross') describe legal region classes; the ontology reads the sign where the category is also marked on the road. Not a stand-in for whether the posted condition holds now, which prim.conditions_hold reads in exception (e)."
+  },
+  {
+   "span": "u5",
+   "atoms": [
+    "ru.child",
+    "rel.occupies",
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "Children present are road users of class ru.child ('pedestrian who is visibly a child') whose footprint overlaps (rel.occupies) the highway (st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders') that the zone's governed region lies on (st.on_way). Not a stand-in for the roadway: the whole way, sidewalks included, is where children are present in the zone."
+  },
+  {
+   "span": "u8",
+   "atoms": [
+    "dev.speed_limit_beacon",
+    "dev.governs",
+    "dev.inoperative",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "A zone designated by a speed limit beacon is one where a dev.speed_limit_beacon ('a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect') governs (dev.governs) the travel region (st.travel_region) x occupies (rel.occupies). 'operational' is read as the beacon not being dev.inoperative ('a signal head installed and uncovered but showing no valid indication')."
+  },
+  {
+   "span": "u10",
+   "atoms": [
+    "dev.speed_limit_beacon"
+   ],
+   "derived": [],
+   "justification": "The yellow lights not flashing in the manner indicating the limit is in effect is the beacon's flashing attribute false: dev.speed_limit_beacon, 'flashing alternately when the sign's limit is in effect; flashing attribute'."
+  },
+  {
+   "span": "u11",
+   "atoms": [
+    "dev.speed_limit_beacon",
+    "dev.governs",
+    "dev.inoperative",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The zone is not designated by an operational beacon: no dev.speed_limit_beacon that is not dev.inoperative governs (dev.governs) a travel region x occupies (rel.occupies)."
+  },
+  {
+   "span": "u12",
+   "atoms": [
+    "dev.zone_sign",
+    "prim.conditions_hold",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "The sign designating the zone is the dev.zone_sign of kind school or school_crossing governing (dev.governs) the region x occupies; its 'conditions attribute: a structured reading of the sign's legend — a list of time windows ...' states when its speed limit is in effect, and the limit is not in effect where prim.conditions_hold ('the structured conditions of a device ... hold at the observation for a road user') is false."
+  },
+  {
+   "span": "u13",
+   "atoms": [
+    "dev.speed_limit_beacon"
+   ],
+   "derived": [],
+   "justification": "The section's definition of a speed limit beacon ('a device which is used in conjunction with a sign and equipped with two or more yellow lights that flash alternately') is what dev.speed_limit_beacon denotes: 'a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "u6",
+   "id": "asm.school_not_in_session",
+   "meaning": "The school the zone serves is not in session on the day of the observation."
+  },
+  {
+   "span": "u7",
+   "id": "asm.school_out_of_operation_period",
+   "meaning": "The observation falls in the period that begins a half hour after the school the zone serves last ceased operation and ends a half hour before it next begins operation."
+  },
+  {
+   "span": "u9",
+   "id": "asm.pupils_in_class",
+   "meaning": "The pupils of the school the zone serves are in class at the observation."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-320::vehicle that makes a U-turn: drv.motion.u_turn(x) rises at the judged observation (window p.turn_recognition_window, angles p.reversal_min_angle and p.reversal_max_angle); at some observation while the U-turn is under way (in the window behind the recognition, where drv.motion.turning(x) with p.yaw_rate_tolerance) x occupies a travel region r governed by a dev.zone_sign z of kind school or school_crossing.",
+ "obligation": "The U-turn is violated unless at every observation while it is under way (throughout) one of the exceptions holds, the same one at each: (a) no ru.child occupies the highway h that r lies on (st.on_way(r, h)); (b) asm.school_not_in_session; (c) asm.school_out_of_operation_period; (d) a dev.speed_limit_beacon b, not dev.inoperative, governs a travel region x occupies, and asm.pupils_in_class, and b's flashing attribute is false; (e) no such operational beacon governs a travel region x occupies, and prim.conditions_hold(z, x) is false. Where an exception's atom or assumption is not observed or not declared and no other exception decides, the verdict is unknown.",
+ "params": [
+  "p.turn_recognition_window",
+  "p.reversal_min_angle",
+  "p.reversal_max_angle",
+  "p.yaw_rate_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "u2",
+   "why": "'The driver' is read through the vehicle's controlled motion, whoever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "u3",
+   "why": "The designation of the area as a school zone or school crossing zone is read through the zone sign present on the road and the regions it governs; its official status is presumed from its presence.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car makes a U-turn in a lane governed by a school zone sign whose conditions hold, with children on the sidewalk of the same highway; school is declared in session and outside the half-hour margins, no speed limit beacon governs the lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same U-turn with no child anywhere on the highway throughout the U-turn."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car makes a U-turn on a street governed by no school zone or school crossing zone sign."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The forbid scene with the source unable to classify children: whether children are present is unknown and no other exception holds.",
+   "masked": [
+    "ru.child"
+   ]
+  },
+  {
+   "name": "occasion_u3",
+   "expected": "violated",
+   "narrative": "The U-turn starts outside the zone and its second half lies in a lane the school zone sign governs, all exceptions failing."
+  },
+  {
+   "name": "occasion_u3_outside",
+   "expected": "not_applicable",
+   "narrative": "The car was in the zone only before the U-turn began and makes the whole U-turn after leaving the governed lanes."
+  },
+  {
+   "name": "occasion_u5",
+   "expected": "violated",
+   "narrative": "No child is present when the U-turn begins, a child steps onto the sidewalk halfway through; no other exception holds."
+  },
+  {
+   "name": "occasion_u5_outside",
+   "expected": "compliant",
+   "narrative": "Children leave the highway before the U-turn begins and none is present at any observation of the U-turn."
+  },
+  {
+   "name": "occasion_u8",
+   "expected": "violated",
+   "narrative": "An operational beacon governs only the lane of the first part of the U-turn, its lights dark, pupils in class; the rest of the U-turn lies in a lane no beacon governs, where the zone sign's conditions hold; no child exception holds."
+  },
+  {
+   "name": "occasion_u8_outside",
+   "expected": "compliant",
+   "narrative": "An operational beacon, dark, governs every lane the U-turn occupies, pupils in class, and governed none of the lanes the car occupied before it."
+  },
+  {
+   "name": "occasion_u10",
+   "expected": "violated",
+   "narrative": "Pupils in class, an operational beacon governs the lanes; its lights stop flashing halfway through the U-turn; no other exception holds."
+  },
+  {
+   "name": "occasion_u10_outside",
+   "expected": "compliant",
+   "narrative": "The beacon flashes before the U-turn and is dark at every observation of it, pupils in class."
+  },
+  {
+   "name": "occasion_u11",
+   "expected": "violated",
+   "narrative": "No beacon governs the lane of the first part of the U-turn, where the sign's conditions do not hold; an operational flashing beacon governs the lane of its second part; no other exception holds."
+  },
+  {
+   "name": "occasion_u11_outside",
+   "expected": "compliant",
+   "narrative": "No beacon governs any lane the U-turn occupies while one governed the lane the car occupied before it; the sign's conditions do not hold throughout the U-turn."
+  },
+  {
+   "name": "occasion_u12",
+   "expected": "violated",
+   "narrative": "No beacon; the zone sign's conditions stop holding only halfway through the U-turn; no other exception holds."
+  },
+  {
+   "name": "occasion_u12_outside",
+   "expected": "compliant",
+   "narrative": "No beacon; the zone sign's conditions hold before the U-turn and fail at every observation of it."
+  }
+ ],
+ "occasion": {
+  "act": "drv.motion.u_turn",
+  "boundary": "window",
+  "window": "p.turn_recognition_window",
+  "under_way": {
+   "words": "make a U-turn",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.turning"
+   ],
+   "justification": "An observation inside the U-turn is one in the recognition window behind the observation the U-turn is recognized at where the heading is changing (drv.motion.turning, reading kin.yaw_rate above its resolution); before the U-turn began the heading did not change."
+  },
+  "spans": {
+   "u3": "some_moment",
+   "u5": "throughout",
+   "u8": "throughout",
+   "u10": "throughout",
+   "u11": "throughout",
+   "u12": "throughout"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_recognition_window",
+   "unit": "s",
+   "value": 15.0,
+   "convention": "The time within which a turn or a reversal, a reversal made in several moves included, is completed: the window over which the heading change is recognized.",
+   "source": "Observed durations of U-turns and multi-point turns."
+  },
+  {
+   "name": "p.reversal_min_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "The heading change magnitude from which the heading has come round to the opposite direction (a reversal); also the upper bound of a turn.",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.reversal_max_angle",
+   "unit": "deg",
+   "value": 210.0,
+   "convention": "The heading change magnitude beyond which the heading has come round past the opposite direction (a loop rather than a reversal).",
+   "source": "Turning-movement classification at junctions (FHWA Traffic Monitoring Guide)."
+  },
+  {
+   "name": "p.yaw_rate_tolerance",
+   "unit": "deg/s",
+   "value": 2.0,
+   "convention": "Yaw-rate resolution: the noise floor of a source's yaw-rate estimate, below which a heading is read as not changing.",
+   "source": "Yaw-rate noise of tracked vehicles."
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

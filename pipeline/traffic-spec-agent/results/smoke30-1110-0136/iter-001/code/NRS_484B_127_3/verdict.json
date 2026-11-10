@@ -1,0 +1,214 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "derived": "drv_motion_moving",
+      "params": [
+       {
+        "param": "p.motion_speed_tolerance"
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "h"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "highway"
+        },
+        "var": "h"
+       },
+       {
+        "and": [
+         {
+          "asm": "asm.outside_business_district"
+         },
+         {
+          "asm": "asm.caravan_or_motorcade"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.outside_business_district",
+    "asm.caravan_or_motorcade"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-130::motor_vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_127_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-127-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "y"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "y"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "y"
+              },
+              {
+               "lit": "DEF-NRS-484A-050::combination_of_vehicles"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            }
+           ]
+          },
+          {
+           "args": [
+            {
+             "var": "y"
+            },
+            {
+             "var": "x"
+            }
+           ],
+           "atom": "rel_ahead_behind_in_lane",
+           "params": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "cmp": "ge",
+       "lhs": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "y"
+         }
+        ],
+        "measure": "rel_surface_gap"
+       },
+       "rhs": {
+        "add": [
+         {
+          "add": [
+           {
+            "param": "p.caravan_entry_vehicle_length"
+           },
+           {
+            "mul": [
+             {
+              "param": "p.caravan_entry_time_headway"
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               }
+              ],
+              "measure": "kin_speed"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "param": "p.caravan_entry_time_headway"
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             }
+            ],
+            "measure": "kin_speed"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_user": "y"
+   },
+   "residues": [
+    "The words extend the duty to vehicles towing others and to those not towing alike: whether a caravan vehicle tows adds no condition, and a towed unit ahead is already a member of the vehicle or combination-of-vehicles aggregate the obligation reads."
+   ],
+   "surrogate": false
+  },
+  "context": "ee1a904d3d966ebf7ece08c7",
+  "candidate_digest": "cd8c093df4559793c23fa2490f5a492fe5c76c998e7aa595afd372946b9b4918"
+ }
+}

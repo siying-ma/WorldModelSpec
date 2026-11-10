@@ -1,0 +1,56 @@
+'TrafficSpec.Concepts.motion.clockwise_about_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"cmp":"lt","lhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},"rhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}},{"cmp":"gt","lhs":{"mul":[{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]}]},"rhs":{"mul":[{"mul":[{"param":"tol"},{"param":"tol"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]}]}]}]}}]},"contract":"A road user moves clockwise about a region's reference point at the observation: seen from above in the world frame, in the sense opposite to the one in which the ontology counts a left turn as counter-clockwise, the component of its velocity (kin.velocity) perpendicular to the line from the region's reference point (st.region_geometry) to the road user's reference point (kin.position) points clockwise about the region's reference point, and that component's magnitude exceeds `tol`, a tolerance that names only the source's speed resolution. It is computed from the cross product c of the offset of the road user's reference point from the region's reference point with the velocity (the offset's first component times the velocity's second, minus the offset's second component times the velocity's first), negative for clockwise motion: the concept holds where c is negative and c times c exceeds tol times tol times the squared length of the offset. Not denoted: the direction the road user points, since a vehicle backing clockwise moves clockwise; motion toward or away from the reference point, such as entering or leaving; whether the road user occupies the region, which the caller states; the designated direction of any carrier.","definition":null,"id":"drv.motion.clockwise_about_region","kind":"formula","narrowings":[],"params":[{"name":"tol","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_position,st_region_geometry,kin_velocity
+READS	kin_position,st_region_geometry,kin_velocity
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"lt","lhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},"rhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}},{"cmp":"gt","lhs":{"mul":[{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]}]},"rhs":{"mul":[{"mul":[{"param":"tol"},{"param":"tol"}]},{"add":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]}]}]}]}}]}
+WITNESS	holds	drv.motion.clockwise_about_region@w
+WITNESS	fails	drv.motion.clockwise_about_region@w
+WITNESS	blind	drv.motion.clockwise_about_region@w
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+INST	drv.motion.clockwise_about_region@w	ok
+TIME	checks	4
+TIME	lint	7
+SCEN	holds	drv.motion.clockwise_about_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/holds	9
+SCEN	fails	drv.motion.clockwise_about_region@w	violated	violated	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/fails	8
+SCEN	blind	drv.motion.clockwise_about_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/blind	10
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.clockwise_about_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.clockwise_about_region@w	2	2
+TIME	adequacy_start	6
+TIME	adequacy	47
+DONE

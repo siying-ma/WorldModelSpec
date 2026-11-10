@@ -1,0 +1,62 @@
+{
+ "concept_id": "drv.motion.stopped",
+ "kind": "formula",
+ "contract": "A road user is at a complete halt at the observation: the definition's \"complete cessation from movement\", observed as the magnitude of its velocity (kin.speed) at or below `tol`, a tolerance that names only the source's speed resolution, below which a sampled speed counts as no movement. It denotes the halt whoever or whatever controls the road user. Not denoted: a halt held over a window, since the concept reads the one observation; where the road user halts, which the caller states.",
+ "definition": "DEF-NRS-484A-255",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "tol",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a speed at or below it is read as no movement"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the magnitude of its velocity (kin.speed) at or below `tol`",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the 'magnitude of velocity'; the definition's absolute 'complete cessation from movement' is observed over sampled speeds within the resolution tol."
+  }
+ ],
+ "residues": [
+  {
+   "span": "when required",
+   "why": "The definition's scope ('when required'): which duty requires the halt is the caller's, not the concept's."
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x's kin.speed is 0.05 m/s with tol 0.2 m/s: halted."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x's kin.speed is 2 m/s: moving, not halted."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "kin.speed is not observed for x.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_4_o1",
+  "NRS_484B_250_4_o2",
+  "NRS_484B_257_1_o1",
+  "NRS_484B_257_1_o2"
+ ]
+}

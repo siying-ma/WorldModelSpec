@@ -1,0 +1,222 @@
+{
+ "node_id": "NRS_484D_100_1",
+ "law_refs": [
+  "NRS-484D-100-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "upon a highway of this State,",
+   "role": "condition"
+  },
+  {
+   "id": "f3",
+   "text": "subject to exceptions with respect to parked vehicles as stated in chapters 484A to 484E, inclusive, of NRS,",
+   "role": "exception"
+  },
+  {
+   "id": "f4",
+   "text": "must display lighted lamps and illuminating devices as respectively required in this chapter for different classes of vehicles:",
+   "role": "obligation"
+  },
+  {
+   "id": "f5",
+   "text": "(a) At any time from one-half hour after sunset to one-half hour before sunrise;",
+   "role": "condition"
+  },
+  {
+   "id": "f6",
+   "text": "(b) At any other time when, because of insufficient light or unfavorable atmospheric conditions, persons and vehicles on the highway are not clearly discernible at a distance of 1,000 feet ahead;",
+   "role": "condition"
+  },
+  {
+   "id": "f7",
+   "text": "and (c) When directed by an official traffic control device.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', less devices moved by human power, electric bicycles and electric scooters), one atom, never expanded."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "DEF-NRS-484A-095: 'the entire width between the boundary lines of every way dedicated to a public authority' is st.highway, 'the entire public way between its boundary lines, including sidewalks and shoulders'; its 'not a stand-in for the roadway' clause is respected, since the words name the whole highway. 'upon' anchors it to x by rel.occupies, 'a road user's footprint overlaps a lane / region'. 'of this State' is the reading's jurisdiction: every map this corpus is read against is declared in this State."
+  },
+  {
+   "span": "f3",
+   "atoms": [
+    "kin.engine_running"
+   ],
+   "derived": [
+    "drv.motion.stopped"
+   ],
+   "justification": "'parked vehicles' is read through the conduct parking shows (observable_reading, purpose): a vehicle at a complete halt (drv.motion.stopped, 'a road user is at a complete halt at the observation') whose engine does not run (kin.engine_running, 'the vehicle's engine or motor is running', false). kin.engine_running's 'not a stand-in for motion or a halt' is respected: the halt is read by the concept, the engine by the atom, together. The exceptions themselves are 'stated in chapters 484A to 484E', in no section this line names, so no rule can be composed: the words make parked vehicles subject to their own provisions, and this rule judges the vehicles that are not parked."
+  },
+  {
+   "span": "f4",
+   "atoms": [
+    "sig.headlamp",
+    "sig.position_lamp"
+   ],
+   "derived": [],
+   "justification": "'display lighted lamps and illuminating devices': sig.headlamp, 'headlamp state ∈ {off, low_beam, high_beam}', lit at low_beam or high_beam; sig.position_lamp, 'position, parking, cowl or tail lamps lit (the lamps a vehicle shows without its headlamps)'. 'as respectively required in this chapter for different classes of vehicles' points to the chapter's equipment provisions without naming one; the rule reads the lamps every class of the aggregate shows ahead and behind (reading on f4)."
+  },
+  {
+   "span": "f5",
+   "atoms": [
+    "env.darkness"
+   ],
+   "derived": [],
+   "justification": "env.darkness is 'insufficient natural light; the boundary relative to sunset and sunrise is a reading parameter': the window 'from one-half hour after sunset to one-half hour before sunrise' is that atom with its boundary at the law's literal, which the reading sets the atom's boundary to. The atom has no 'not a stand-in' clause."
+  },
+  {
+   "span": "f6",
+   "atoms": [
+    "env.visibility"
+   ],
+   "derived": [],
+   "justification": "env.visibility is the 'visibility distance (fog, dust, smoke)': 'unfavorable atmospheric conditions' under which 'persons and vehicles on the highway are not clearly discernible at a distance of 1,000 feet ahead' is that distance below the literal. 'persons and vehicles' name what the visibility is of, not road users the rule reads, so no class is claimed. The words' test is the outcome, discernibility at the stated distance, whichever of the two causes they name produces it; the visibility distance is that outcome as the source measures it."
+  },
+  {
+   "span": "f7",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "Nearest atoms, with a gap: dev.regulatory_sign is 'a point regulation by catalogue code' and dev.governs 'the travel regions whose traffic the device controls', anchored to x by rel.occupies on a travel region (st.travel_region); no code of the catalogue (nor any kind of dev.zone_sign) is a direction to display lighted lamps, so the direction the words name is not carried. DEF-NRS-484A-145's 'every sign, signal, marking and device ... placed or erected by a public authority' is read by the device's presence (status)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) whose footprint overlaps a highway h (rel.occupies, st.highway); at the observation one of the listed times holds: (a) env.darkness, its boundary set at the f5 literal one-half hour after sunset and before sunrise; or (b) env.visibility below the f6 literal (1,000 ft); or (c) a device governing (dev.governs) a travel region x occupies directs lamps to be displayed (gap: nearest dev.regulatory_sign); and x is not parked under the exception of f3: not (x is halted, drv.motion.stopped with p.motion_speed_tolerance, and its engine does not run, kin.engine_running false).",
+ "obligation": "x displays lighted lamps: its headlamps are lit (sig.headlamp state low_beam or high_beam) and its position lamps are lit (sig.position_lamp).",
+ "params": [
+  "p.motion_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "f3",
+   "why": "'parked vehicles' is read through the conduct parking shows: a vehicle halted with its engine not running.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "f4",
+   "why": "'as respectively required in this chapter for different classes of vehicles' is read as the headlamps and the position lamps lit; the chapter's per-class lists of further lamps are not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "f7",
+   "why": "'official traffic control device' is read by the device's presence on the road: the feature is the evidence of its official status.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "At night (env.darkness), x, a car, drives alone on a highway with its headlamps off and its position lamps off."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "At night, x drives on a highway with low beams and position lamps lit."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Daytime, clear air with visibility far beyond the stated distance, no device directing lamps; x drives on a highway with its lamps off."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares env.darkness absent; the air is clear, no device directs lamps, and x drives with its lamps off.",
+   "masked": [
+    "env.darkness"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Daytime fog: visibility below the stated distance; x drives with its headlamps off."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "At night, x stands halted beside the roadway with its engine off and its lamps off: it is parked."
+  }
+ ],
+ "literals": [
+  {
+   "span": "f5",
+   "text": "one-half hour",
+   "value": 0.5,
+   "unit": "h"
+  },
+  {
+   "span": "f6",
+   "text": "1,000 feet",
+   "value": 1000,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.motion_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Speed resolution: the noise floor of a source's speed estimate, below which a road user is read as standing still.",
+   "source": "Speed-noise floor of tracked-object kinematics in the acquisition standard"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "f7",
+   "kind": "atom",
+   "proposal": "`dev.lamp_use_sign` | a sign directing road users on the stretch it governs (`dev.governs`) to display lighted lamps (headlamps on), with the same structured **conditions** attribute as `dev.zone_sign` | general — decides when lamps are required by a device's direction although neither darkness nor visibility requires them; no code of `dev.regulatory_sign` and no kind of `dev.zone_sign` is such a direction",
+   "nearest": [
+    "dev.regulatory_sign",
+    "dev.zone_sign",
+    "dev.governs"
+   ]
+  }
+ ],
+ "planned_on": {}
+}
