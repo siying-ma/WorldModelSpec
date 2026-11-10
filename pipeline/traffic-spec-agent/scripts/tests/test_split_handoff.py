@@ -39,7 +39,7 @@ from harness.tools import handoff
 from scripts.tests.test_recovery import PATH_NAMES, Fixture, World, concept, node
 
 A, B, C = "L-20", "L-21", "L-22"
-SPLIT = dict(label_repair=True, max_iterations=1)
+SPLIT = dict(label_repair=True, max_iterations=2)
 TOOLCHAIN = {"python": "3", "lean": "stand-in", "distributions": "d"}
 
 
@@ -85,7 +85,10 @@ def label_stage_stand_ins(laws):
 
 class Remote(unittest.TestCase):
 
-    def test_remote_generation_waits_on_formal_acceptance_and_resumes_after_it(self):
+    def test_remote_generation_builds_on_usable_nodes_whatever_their_laws_acceptance(self):
+        """T1, T2: B composes A's first node while A awaits its labels; the remote stage codes it once
+        that node is published (the next iteration), never waiting on A's acceptance; every law is
+        generated, label-ready at once, no attempt counted; a second start runs nothing."""
         for batch in (8, 1):                                 # the same plan session, and separate ones
             with self.subTest(plan_batch=batch):
                 w = split_world()
@@ -93,40 +96,25 @@ class Remote(unittest.TestCase):
                     self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
                     st = f.state()
                     ledger = {e["law"]: e for e in st["ledger"]}
-                    self.assertEqual({k: ledger[k]["state"] for k in (A, B, C)}, {A: "planned", B: "planned", C: "planned"})
-                    self.assertEqual(sorted(st["accepted_nodes"]), ["L_20_o1", "L_20_o2", "L_22"])   # siblings and C built
-                    self.assertNotIn(("L_21", 1), calls(w, "code"))                                   # B waits on A's acceptance
-                    self.assertEqual(ledger[B]["attempts"], 0)
-                    self.assertEqual([d["node_id"] for d in st["deferred_nodes"]], ["L_21"])
-                    self.assertIn(("drv.motion.slow", 1), calls(w, "review"))                         # the concept review ran
-                    self.assertIn(("-", 1), calls(w, "aggregate_prepare"))                            # the aggregate selection ran
+                    self.assertEqual({k: (ledger[k]["state"], ledger[k]["attempts"]) for k in (A, B, C)},
+                                     {A: ("planned", 0), B: ("planned", 0), C: ("planned", 0)})
+                    self.assertEqual(sorted(st["accepted_nodes"]), ["L_20_o1", "L_20_o2", "L_21", "L_22"])
+                    self.assertEqual([c for c in calls(w, "code") if c[0] == "L_21"], [("L_21", 2)])     # once A's node is published
+                    self.assertEqual(st["deferred_nodes"], [])
+                    self.assertIn(("drv.motion.slow", 1), calls(w, "review"))
                     snap = json.loads((paths.RESULTS / "r" / "state.json").read_text())
-                    self.assertEqual({k: v["state"] for k, v in snap["label_states"].items()}, {A: "awaiting_labels", C: "awaiting_labels"})
+                    self.assertEqual({k: v["state"] for k, v in snap["label_states"].items()},
+                                     {A: "awaiting_labels", B: "awaiting_labels", C: "awaiting_labels"})
                     summary = json.loads((paths.RESULTS / "r" / "summary.json").read_text())
-                    self.assertEqual(summary["pending"]["awaiting_labels"], [A, C])
-                    self.assertEqual(summary["pending"]["generating"], [B])
-                    self.assertEqual(snap["iteration"], 1)                                            # the pause spent no iteration
-
-                    # the remote stage again before any label check: nothing runnable, no iteration, no session
+                    self.assertEqual(summary["pending"]["awaiting_labels"], [A, B, C])
+                    self.assertEqual(st["iterations_allocated"], ["iter-001", "iter-002"])
                     before = dict(w.calls)
                     self.assertEqual(f.drive(1, label_deferred=True, max_iterations=5), ["awaiting_labels"])
+                    self.assertEqual((dict(w.calls), f.state()["iterations_allocated"]), (before, ["iter-001", "iter-002"]))
+                    with label_stage_stand_ins({A, B, C}) as (seen, _repairs):
+                        self.assertEqual(f.drive(1, label_stage=True, label_dataset="ds", max_iterations=3), ["complete"])
+                    self.assertEqual(seen[0], [A, B, C])
                     self.assertEqual(dict(w.calls), before)
-                    self.assertEqual(f.state()["iterations_allocated"], ["iter-001"])
-
-                    # the local stage: A and C checked and accepted; B is not planned or coded there
-                    with label_stage_stand_ins({A, C}) as (seen, _repairs):
-                        self.assertEqual(f.drive(1, label_stage=True, label_dataset="ds", max_iterations=2), ["awaiting_generation"])
-                    self.assertEqual(seen[0], [A, C])
-                    self.assertEqual(dict(w.calls), before)
-
-                    # back on the remote stage: B's held node is coded now, in a later iteration, never re-planned
-                    self.assertEqual(f.drive(1, label_deferred=True, max_iterations=3), ["awaiting_labels"])
-                    self.assertEqual([c for c in calls(w, "code") if c[0] == "L_21"], [("L_21", 3)])
-                    self.assertEqual([c for c in calls(w, "plan")], [c for c in calls(w, "plan") if c[1] == 1])
-                    ledger = {e["law"]: e for e in f.state()["ledger"]}
-                    self.assertEqual((ledger[B]["state"], ledger[B]["attempts"]), ("planned", 0))   # the wait charged nothing
-                    self.assertEqual(json.loads((paths.RESULTS / "r" / "state.json").read_text())["label_states"][B]["state"],
-                                     "awaiting_labels")
 
     def test_training_entry_points_raise_while_deferred(self):
         def calls_training(*a, **k):
@@ -156,45 +144,55 @@ class Remote(unittest.TestCase):
                           ({"label_stage": True, "label_dataset": "d", "budget_peers": ["p"]}, "budget_peers"),
                           ({"label_stage": True, "label_deferred": True}, "give one"),
                           ({"label_deferred": True, "label_repair": False}, "with --label_repair")):
-            with self.subTest(over=over), self.assertRaisesRegex(SystemExit, msg):
-                loop.check_options(Options(**{**base, **over}))
-        loop.check_options(Options(**base, label_deferred=True))           # no dataset needed
+            with self.subTest(over=over):
+                self.assertRegex(loop.check_options(Options(**{**base, **over})) or "", msg)
+        self.assertIsNone(loop.check_options(Options(**base, label_deferred=True)))           # no dataset needed
 
-    def test_an_acceptance_cycle_is_held_for_the_operator(self):
+    def test_compositions_across_two_laws_both_ways_generate_both(self):
+        """T2: A's second node composes B's first and B's second composes A's first (A1 → B2, B1 → A2):
+        no node cycle, so nothing is held for the operator; each law's first node is coded, then the
+        seconds once those are published; both laws are label-ready together, no attempt counted."""
         w = World({"L-30": "a. b.", "L-31": "c. d."})
         w.plans = {"L-30": [node("L_30_o1", "a. b.", "L-30"), node("L_30_o2", "a. b.", "L-30", compositions=["L_31_o1"])],
                    "L-31": [node("L_31_o1", "c. d.", "L-31"), node("L_31_o2", "c. d.", "L-31", compositions=["L_30_o1"])]}
-        with Fixture(w, **SPLIT) as f:
-            status = f.drive(1, label_deferred=True, max_iterations=4)
-            st = f.state()
-            ledger = {e["law"]: e for e in st["ledger"]}
-            self.assertEqual({k: (v["state"], v["gaps"], v["attempts"]) for k, v in ledger.items()},
-                             {"L-30": ("blocked", ["decision:L-30"], 0), "L-31": ("blocked", ["decision:L-31"], 0)})
-            self.assertEqual(st["iterations_allocated"], ["iter-001"])               # nothing retried
-            self.assertEqual(status, ["complete"])                                    # every law is terminal: held for the operator
-            self.assertTrue(any("acceptance cycle" in x for x in json.loads((paths.RESULTS / "r" / "state.json").read_text())["pending_notices"]))
+        for order in ("as written", "reversed"):
+            with self.subTest(order=order):
+                if order == "reversed":
+                    w.plans = {k: list(reversed(v)) for k, v in reversed(list(w.plans.items()))}
+                    w.calls.clear()
+                with Fixture(w, **SPLIT) as f:
+                    self.assertEqual(f.drive(1, label_deferred=True, max_iterations=4), ["awaiting_labels"])
+                    st = f.state()
+                    ledger = {e["law"]: e for e in st["ledger"]}
+                    self.assertEqual({k: (v["state"], v["gaps"], v["attempts"]) for k, v in ledger.items()},
+                                     {"L-30": ("planned", [], 0), "L-31": ("planned", [], 0)})
+                    self.assertEqual(sorted(calls(w, "code")), [("L_30_o1", 1), ("L_30_o2", 2), ("L_31_o1", 1), ("L_31_o2", 2)])
+                    run = Run(f.options(label_deferred=True)); run.restore_state(); run.load_accepted()
+                    from harness.store.ledger import Ledger
+                    self.assertEqual(sorted(loop.label_ready(run, Ledger(run.ledger_file, [], 2))), ["L-30", "L-31"])
 
-    def test_a_text_reference_keeps_the_conservative_wait(self):
-        """B's text names A. B's first plan is returned; while A awaits its labels B is not planned again."""
+    def test_a_text_reference_to_a_planned_law_is_no_wait(self):
+        """T10: B's text names A. B's first plan is returned; A is planned, awaiting its labels: B is
+        planned again at once (its plan composes A's usable nodes), never waiting on A's acceptance."""
         w = World({A: "shall slow.", B: f"as in {A}, shall wait."})
-        w.plans = {A: [node("L_20", "shall slow.", A)], B: [node("L_21", f"as in {A}, shall wait.", B)]}
+        w.plans = {A: [node("L_20", "shall slow.", A)], B: [node("L_21", f"as in {A}, shall wait.", B, compositions=["L_20"])]}
         w.validate[("L_21", 1)] = ("return", ["scripted plan defect"])
         with Fixture(w, **SPLIT) as f, mock.patch("harness.model.corpus.references",
                                                   lambda law, ids: {A} if law.id == B else set()):
             self.assertEqual(f.drive(1, label_deferred=True, max_iterations=4), ["awaiting_labels"])
-            self.assertEqual(calls(w, "plan"), [(f"{A},{B}", 1)])                    # not planned again while A awaits labels
+            self.assertEqual(calls(w, "plan"), [(f"{A},{B}", 1), (B, 2)])           # planned again while A awaits its labels
+            self.assertIn(("L_21", 2), calls(w, "code"))
             ledger = {e["law"]: e for e in f.state()["ledger"]}
-            self.assertEqual((ledger[B]["state"], ledger[B]["attempts"]), ("returned", 1))
-            self.assertEqual(f.state()["iterations_allocated"], ["iter-001"])
+            self.assertEqual((ledger[B]["state"], ledger[B]["attempts"]), ("planned", 1))
 
 
 class Unsplit(unittest.TestCase):
 
-    def test_without_the_split_a_composed_node_is_used_on_its_acceptance(self):
+    def test_without_the_split_a_composed_node_is_used_once_published(self):
         w = split_world()
         with Fixture(w, max_iterations=3) as f:
             self.assertEqual(f.drive(1), ["complete"])
-            self.assertIn(("L_21", 1), calls(w, "code"))
+            self.assertIn(("L_21", 2), calls(w, "code"))                   # another law's node is composed once it is published
             self.assertEqual({e["law"]: e["state"] for e in f.state()["ledger"]}, {A: "accepted", B: "accepted", C: "accepted"})
 
     def test_the_usable_nodes_rule(self):
@@ -203,17 +201,22 @@ class Unsplit(unittest.TestCase):
             f.drive(1, label_deferred=True)
             run = Run(f.options(label_deferred=True))
             run.restore_state(); run.load_accepted()
-            self.assertEqual(sorted(run.usable_nodes(A)), ["L_20_o1", "L_20_o2"])     # its own law's only: C awaits its labels too
-            self.assertEqual(sorted(run.usable_nodes(B)), [])
-            unsplit = Run(f.options(label_repair=False))
-            unsplit.restore_state(); unsplit.load_accepted()
-            self.assertEqual(sorted(unsplit.usable_nodes(B)), ["L_20_o1", "L_20_o2", "L_22"])
+            everything = ["L_20_o1", "L_20_o2", "L_21", "L_22"]          # planned laws' published, admitted nodes: usable for building
+            self.assertEqual((sorted(run.usable_nodes(A)), sorted(run.usable_nodes(B))), (everything, everything))
+            from harness.store.ledger import Ledger
+            led = Ledger(run.ledger_file, [], 2)
+            led.fail(A, ["scripted: closed"])
+            run.law_entries = led.entries
+            self.assertEqual(sorted(run.usable_nodes(B)), ["L_22"])         # A waits for the operator: its nodes, and B's on them, are not
 
 
 class CrossLawRepair(unittest.TestCase):
-    """A local label repair is held to the availability rule a remote generation follows: a change
-    that composes a node of a law not yet formally accepted waits, uncharged and with no coder, until
-    that law is accepted; the candidate's own checks refuse such a change however it was written."""
+    """A local label repair is held to the availability rule a remote generation follows
+    (`Run.provider_code` in the transaction's view): a node another law generated is composed once it
+    is usable for building, whatever that law's formal acceptance; a node whose law waits for the
+    operator makes the repair wait, uncharged and with no coder; a fenced or superseded node the
+    repair newly composes is its output's defect; the candidate's own checks refuse such a change
+    however it was written."""
 
     @contextmanager
     def split_repairing(self, rec, calls=None):
@@ -239,54 +242,63 @@ class CrossLawRepair(unittest.TestCase):
             yield run, ledger, training, by_id
         cand._OPEN.clear()
 
-    def test_remote_waits_then_a_local_repair_composes_a_law_not_yet_accepted(self):
+    def test_a_local_repair_composes_a_usable_node_of_a_law_not_yet_accepted(self):
+        """T7: the repaired N5 newly composes N3, generated remotely, its law planned awaiting its labels:
+        N3 is usable for building, so the repair is coded and goes on, never `waiting`. N3's law failed:
+        the repair waits for the operator, no coder, nothing charged. N3 fenced, or no longer in its
+        law's plan (superseded): the repair's own new composition is its output's defect, rolled back and
+        counted."""
         from scripts.tests.test_candidate import node_rec
         from scripts.tests.test_label_repair import L, N
         from scripts.tests.test_label_repair_session import repair
         rec = {k: v for k, v in node_rec(N[5]).items() if k != "segmentation"}
-        rec["compositions"] = [{"span": "o1", "rule": N[3], "as": "condition"}]          # L-3 is generated, its law still planned
-        coded, calls = [], []
-        with self.split_repairing(rec, calls) as (run, ledger, training, by_id), \
-                mock.patch.object(lr, "code_in_candidate", lambda txn, recs, law=None, earlier=None: coded.append(recs) or {}):
-            self.assertEqual(ledger.entries[L[3]].state, "planned")
-            self.assertNotIn(N[3], run.usable_nodes(L[5]))
-            to_user = []
-            self.assertEqual(repair(run, ledger, training, by_id, to_user), "waiting")
-            st = run.label_states[L[5]]
-            self.assertEqual(coded, [])                                                   # no coder
-            self.assertEqual((st.get("repairs", 0), st.get("sessions", 0)), (0, 0))      # nothing charged
-            self.assertEqual(st["active"]["waits"], [L[3]])
-            self.assertTrue(any("waits" in x and L[3] in x for x in to_user), to_user)
-            self.assertNotIn(L[5], loop.label_work(run, run.opts, ledger))               # no work while it waits
-            self.assertNotIn(L[5], lr.awaiting(run, ledger))
-            asked = [c for c in calls if c[1].startswith("session")]
-            self.assertEqual(lr.wait_states(run, ledger, L[5]), {L[3]: "planned"})          # an ordinary pending law
-            ledger.block(L[3], [f"decision:{L[3]}"], ["held for the operator"])
-            self.assertEqual(lr.wait_states(run, ledger, L[5]), {L[3]: "blocked"})          # told apart, for the operator
-            self.assertEqual(lr.waits_on(run, ledger, L[5]), [L[3]])                        # still a wait
-            ledger.entries[L[3]].state = "planned"
-            ledger.accept(L[3], [N[3]])                                                   # the law it composes is accepted
-            self.assertIn(L[5], loop.label_work(run, run.opts, ledger))
-            self.assertNotEqual(repair(run, ledger, training, by_id), "waiting")
-            self.assertEqual(coded, [[("node", N[5])]])                                   # coded now
-            self.assertEqual([c for c in calls if c[1].startswith("session")], asked)    # on the same session's answer
+        rec["compositions"] = [{"span": "o1", "rule": N[3], "as": "condition"}]
+        for variant in ("planned", "failed", "fenced", "superseded"):
+            with self.subTest(provider=variant):
+                coded = []
+                with self.split_repairing(rec) as (run, ledger, training, by_id), \
+                        mock.patch.object(lr, "code_in_candidate", lambda txn, recs, law=None, earlier=None: coded.append(recs) or {}):
+                    if variant == "failed":
+                        ledger.fail(L[3], ["scripted: closed"])
+                    elif variant == "fenced":
+                        run.fence(N[3], "node", "gate", evidence="scripted rejection")
+                    elif variant == "superseded":
+                        ledger.entries[L[3]].nodes = []
+                    self.assertEqual(N[3] in run.usable_nodes(L[5]), variant == "planned")
+                    to_user = []
+                    out = repair(run, ledger, training, by_id, to_user)
+                    st = run.label_states[L[5]]
+                    if variant == "planned":
+                        self.assertNotEqual(out, "waiting")
+                        self.assertEqual(coded, [[("node", N[5])]])
+                    elif variant == "failed":
+                        self.assertEqual(out, "waiting")
+                        self.assertEqual((coded, st.get("repairs", 0), st.get("sessions", 0)), ([], 0, 0))
+                        self.assertEqual(st["active"]["waits"], [N[3]])
+                        self.assertEqual(lr.wait_states(run, ledger, L[5]), {L[3]: "failed"})
+                        self.assertNotIn(L[5], lr.awaiting(run, ledger))
+                    else:
+                        self.assertEqual((out, coded, st["repairs"]), ("rolled_back", [], 1))
+                        self.assertIn("not usable for building", st["last_repair"]["outcome"])
 
-    def test_the_candidate_refuses_a_cross_law_composition_written_directly(self):
+    def test_the_candidate_refuses_a_composition_not_usable_for_building(self):
         from harness.phases import candidate as cand
         from scripts.tests.test_candidate import Txn, files, node_rec
         from scripts.tests.test_label_repair import L, N
-        for target, refused in ((N[3], True), (N[1], False)):                          # L-3 planned; L-1 accepted
-            with self.subTest(composes=target):
+        for target, fenced, refused in ((N[3], False, False), (N[3], True, True), (N[1], False, False)):
+            with self.subTest(composes=target, fenced=fenced):
                 rec = {**node_rec(N[5]), "compositions": [{"span": "o1", "rule": target, "as": "condition"}]}
                 with self.split_repairing(rec) as (run, ledger, _training, _by_id):
                     self.assertEqual(ledger.entries[L[1]].state, "accepted")
+                    if fenced:
+                        run.fence(target, "node", "gate", evidence="scripted rejection")
                     with Txn(run) as txn:
                         txn.apply([cand.Change("node", N[5], rec, files("node", N[5], "v2"))])     # Lean written directly, no coder
                         results = txn.verify()
                         avail = [r for r in results if r.check == "availability"]
                         if refused:
                             self.assertEqual([(r.subject, r.status) for r in avail], [(N[5], "fail")])
-                            self.assertIn(N[3], avail[0].details[0])
+                            self.assertIn(f"{N[3]} (fenced)", avail[0].details[0])
                             self.assertFalse(any(r.check == "gate" and r.subject == N[5] and r.status == "pass" for r in results))
                         else:
                             self.assertEqual(avail, [])
@@ -365,53 +377,58 @@ class TwoStage(unittest.TestCase):
         self.assertEqual(after, before)
 
     def generated(self, f, w):
-        self.assertEqual(self.stage(f, False, 1)[0], "awaiting_labels")
-        self.assertEqual([d["node_id"] for d in f.state()["deferred_nodes"]], ["L_21"])     # B waits on A, planned
-        self.assertEqual(self.stage(f, False, 4)[0], "awaiting_labels")                    # a provider awaiting labels: hand over
-        self.assertEqual(f.state()["iterations_allocated"], ["iter-001"])
+        """The remote stage generates every law: B's node is coded once A's node it composes is
+        published (iteration 2), whatever A's acceptance; nothing is held."""
+        self.assertEqual(self.stage(f, False, 2)[0], "awaiting_labels")
+        self.assertEqual(f.state()["deferred_nodes"], [])
+        self.assertEqual([c for c in calls(w, "code") if c[0] == "L_21"], [("L_21", 2)])
+        self.assertEqual(self.stage(f, False, 5)[0], "awaiting_labels")                    # nothing runnable: hand over
+        self.assertEqual(f.state()["iterations_allocated"], ["iter-001", "iter-002"])
 
     def test_normal_release(self):
         w = self.world()
         with Fixture(w, **SPLIT) as f:
             self.generated(f, w)
-            with self.label_stage({A: "accepted", C: "accepted"}):
-                self.assertEqual(self.stage(f, True, 2)[0], "awaiting_generation")
-            self.assertEqual(self.stage(f, False, 3)[0], "awaiting_labels")
-            self.assertEqual([c for c in calls(w, "code") if c[0] == "L_21"], [("L_21", 3)])
-            with self.label_stage({B: "accepted"}):
-                self.assertEqual(self.stage(f, True, 4)[0], "complete")
+            with self.label_stage({A: "accepted", B: "accepted", C: "accepted"}):
+                self.assertEqual(self.stage(f, True, 3)[0], "complete")
 
     def test_a_failed_or_blocked_provider_awaits_the_operator(self):
+        """T6 (a), T23: B's node, generated on A's, is no longer usable once A fails or is held: B is
+        not label-ready, it is held for the operator on A's token (`waits_on` A), uncharged, on either
+        stage, whether B's own check had accepted it or not; neither stage has work; a second start
+        runs nothing."""
         for closed in ("failed", "blocked"):
-            with self.subTest(provider=closed):
-                w = self.world()
-                with Fixture(w, **SPLIT) as f:
-                    self.generated(f, w)
-                    with self.label_stage({A: closed, C: "accepted"}) as sessions:
-                        status, reason = self.stage(f, True, 2)
-                        self.assertEqual(status, "awaiting_operator", reason)
-                        self.assertIn(f"`{B}` waits on `{A}` ({closed})", reason)
-                        status, reason = self.stage(f, False, 3)
-                        self.assertEqual(status, "awaiting_operator", reason)
-                        self.assertIn(f"`{B}` waits on `{A}` ({closed})", reason)
-                        self.assert_paused_again(f, w, sessions, "awaiting_operator", 3)
-                    ledger = {e["law"]: e for e in f.state()["ledger"]}
-                    self.assertEqual((ledger[B]["state"], ledger[B]["attempts"]), ("planned", 0))   # the wait is not released
-                    self.assertNotIn("L_21", [c[0] for c in calls(w, "code")])
+            for b_routed in (None, "accepted"):
+                with self.subTest(provider=closed, b=b_routed):
+                    w = self.world()
+                    with Fixture(w, **SPLIT) as f:
+                        self.generated(f, w)
+                        with self.label_stage({A: closed, B: b_routed, C: "accepted"}) as sessions:
+                            status, reason = self.stage(f, True, 3)
+                            self.assertEqual(status, "awaiting_operator", reason)
+                            self.assertIn(f"`{B}` waits on `{A}` ({closed})", reason)
+                            status, reason = self.stage(f, False, 4)
+                            self.assertEqual(status, "awaiting_operator", reason)
+                            self.assertIn(f"`{B}` waits on `{A}` ({closed})", reason)
+                            self.assert_paused_again(f, w, sessions, "awaiting_operator", 4)
+                        ledger = {e["law"]: e for e in f.state()["ledger"]}
+                        self.assertEqual((ledger[B]["state"], ledger[B]["gaps"], ledger[B]["waits_on"], ledger[B]["attempts"]),
+                                         ("blocked", [f"decision:{A}"], [A], 0))
+                        self.assertEqual([c for c in calls(w, "code") if c[0] == "L_21"], [("L_21", 2)])   # never coded again
 
     def test_the_run_wide_repair_count_spent_pauses_on_the_budget(self):
         w = self.world()
         opts = dict(label_repair_budget=1, label_repair_attempts=2)
         with Fixture(w, **SPLIT) as f:
             self.generated(f, w)
-            with self.label_stage({A: ("mismatch", 1), C: "accepted"}) as sessions:
+            with self.label_stage({A: ("mismatch", 1), C: "accepted", B: "accepted"}) as sessions:
                 for label in (True, False):
-                    status, reason = self.stage(f, label, 2, **opts)
+                    status, reason = self.stage(f, label, 3, **opts)
                     self.assertEqual(status, "paused_budget", reason)
                     for words in ("--label_repair_budget", "used 1 of its limit 1", f"['{A}']"):
                         self.assertIn(words, reason)
                 self.assertEqual(sessions, [])                                  # no repair session
-                self.assert_paused_again(f, w, sessions, "paused_budget", 2, **opts)
+                self.assert_paused_again(f, w, sessions, "paused_budget", 3, **opts)
             ledger = {e["law"]: e["state"] for e in f.state()["ledger"]}
             self.assertEqual(ledger[A], "planned")
 
@@ -420,8 +437,8 @@ class TwoStage(unittest.TestCase):
         opts = dict(label_repair_budget=10, label_repair_attempts=2)
         with Fixture(w, **SPLIT) as f:
             self.generated(f, w)
-            with self.label_stage({A: ("mismatch", 2), C: "accepted"}) as sessions:
-                status, reason = self.stage(f, True, 2, **opts)
+            with self.label_stage({A: ("mismatch", 2), C: "accepted", B: "accepted"}) as sessions:
+                status, reason = self.stage(f, True, 3, **opts)
                 self.assertEqual(status, "awaiting_operator", reason)
                 self.assertIn(f"`{B}` waits on `{A}` (blocked)", reason)
                 self.assertEqual(sessions, [])                                  # no session for a law whose attempts are spent
@@ -430,8 +447,8 @@ class TwoStage(unittest.TestCase):
                 self.assertEqual((ledger[A]["state"], ledger[A]["gaps"]), ("blocked", [f"decision:{A}"]))
                 self.assertNotEqual(st["label_states"][A].get("outcome"), "aligned")
                 self.assertEqual(st["label_states"][A]["repairs"], 2)            # no limit raised, nothing charged
-                self.assertEqual(self.stage(f, False, 3, **opts)[0], "awaiting_operator")
-                self.assert_paused_again(f, w, sessions, "awaiting_operator", 3, **opts)
+                self.assertEqual(self.stage(f, False, 4, **opts)[0], "awaiting_operator")
+                self.assert_paused_again(f, w, sessions, "awaiting_operator", 4, **opts)
 
     def test_a_pending_repair_is_taken_up_by_the_next_launch(self):
         w = self.world()
@@ -441,7 +458,7 @@ class TwoStage(unittest.TestCase):
             st = run.label_states[law]
             seen.append(dict(st.get("active") or {}))
             if not st.get("active"):                     # the session answered, the toolchain did not: kept, uncharged
-                st["active"] = {"stage": "coding", "candidate": "iter-002/candidate/c1"}
+                st["active"] = {"stage": "coding", "candidate": "iter-003/candidate/c1"}
                 return "unavailable"
             st.pop("active")                              # taken up from the same answer: committed and aligned
             ledger.accept(law, st["nodes"])
@@ -449,16 +466,14 @@ class TwoStage(unittest.TestCase):
             return "committed"
         with Fixture(w, **SPLIT) as f:
             self.generated(f, w)
-            with self.label_stage({A: ("mismatch", 0), C: "accepted"}, repair) as sessions:
-                status, _reason = self.stage(f, True, 2)
+            with self.label_stage({A: ("mismatch", 0), B: "accepted", C: "accepted"}, repair) as sessions:
+                status, _reason = self.stage(f, True, 3)
                 self.assertEqual(status, "incomplete")           # its iteration bound, work left: the next launch takes it up
                 self.assertEqual(json.loads((paths.RESULTS / "r" / "summary.json").read_text())["stop"], "iteration_limit")
-                self.assertEqual(self.stage(f, True, 3)[0], "awaiting_generation")
-            self.assertEqual(seen, [{}, {"stage": "coding", "candidate": "iter-002/candidate/c1"}])
+                self.assertEqual(self.stage(f, True, 4)[0], "complete")
+            self.assertEqual(seen, [{}, {"stage": "coding", "candidate": "iter-003/candidate/c1"}])
             st = json.loads((paths.RESULTS / "r" / "state.json").read_text())["label_states"][A]
             self.assertEqual((st["state"], st["repairs"]), ("accepted", 1))
-            self.assertEqual(self.stage(f, False, 4)[0], "awaiting_labels")
-            self.assertIn(("L_21", 4), calls(w, "code"))
 
     def test_a_lost_hints_snapshot_stops_either_stage_without_a_session(self):
         w = self.world()
@@ -468,33 +483,24 @@ class TwoStage(unittest.TestCase):
             before = dict(w.calls)
             with self.label_stage({A: "accepted", C: "accepted"}) as sessions:
                 for label in (True, False):
-                    status, reason = self.stage(f, label, 2)
+                    status, reason = self.stage(f, label, 3)
                     self.assertEqual(status, "data_integrity_failure")
                     self.assertIn("user_hints.json", reason)
-            self.assertEqual((dict(w.calls), sessions, f.state()["iterations_allocated"]), (before, [], ["iter-001"]))
+            self.assertEqual((dict(w.calls), sessions, f.state()["iterations_allocated"]), (before, [], ["iter-001", "iter-002"]))
 
     def test_a_failed_dependency_leaves_an_independent_law_running(self):
+        """D composes C's node, independent of A: A failing holds B for the operator, never D, which is
+        accepted on its own check."""
         w = self.world(independent=True)
         with Fixture(w, **SPLIT) as f:
-            self.assertEqual(self.stage(f, False, 1)[0], "awaiting_labels")
-            self.assertEqual(sorted(d["node_id"] for d in f.state()["deferred_nodes"]), ["L_21", "L_23"])
-            with self.label_stage({A: "failed", C: "accepted"}):
-                status, reason = self.stage(f, True, 2)
-                self.assertEqual(status, "awaiting_generation", reason)
-                self.assertIn("L_23", reason)
-                self.assertNotIn("L_21", reason)                                  # B's held node is no work
-            self.assertEqual(self.stage(f, False, 3)[0], "awaiting_labels")
-            coded = [c for c in calls(w, "code") if c[0] in ("L_21", "L_23")]
-            self.assertEqual(coded, [("L_23", 3)])                               # D coded; B never
-            ledger = {e["law"]: e for e in f.state()["ledger"]}
-            # the iteration D ran met B's held node and kept it, uncoded and uncharged, with B planned
-            self.assertEqual((ledger[B]["state"], ledger[B]["gaps"], ledger[B]["attempts"]), ("planned", [], 0))
-            self.assertIn("L_21", [d["node_id"] for d in f.state()["deferred_nodes"]])
-            with self.label_stage({self.D: "accepted"}):
-                status, reason = self.stage(f, True, 4)
+            self.assertEqual(self.stage(f, False, 2)[0], "awaiting_labels")
+            self.assertEqual(sorted(c for c in calls(w, "code") if c[0] in ("L_21", "L_23")), [("L_21", 2), ("L_23", 2)])
+            with self.label_stage({A: "failed", C: "accepted", self.D: "accepted"}):
+                status, reason = self.stage(f, True, 3)
             self.assertEqual(status, "awaiting_operator", reason)
             self.assertIn(f"`{B}` waits on `{A}` (failed)", reason)
-            self.assertNotIn("L_21", [c[0] for c in calls(w, "code")])
+            ledger = {e["law"]: e for e in f.state()["ledger"]}
+            self.assertEqual((ledger[self.D]["state"], ledger[B]["state"], ledger[B]["attempts"]), ("accepted", "blocked", 0))
 
     def test_an_uncommitted_dependency_of_an_active_repair_is_in_the_stop_reason(self):
         """C's repair candidate composed a node of A (never committed: no record of C composes A). A is then
@@ -502,12 +508,12 @@ class TwoStage(unittest.TestCase):
         w = self.world()
 
         def repair(run, ledger, law):                     # what `repair_law` leaves on `Waiting`: no coder, nothing charged
-            run.label_states[law]["active"] = {"stage": "session", "waits": [A]}
+            run.label_states[law]["active"] = {"stage": "session", "waits": ["L_20_o1"]}
             return "waiting"
         with Fixture(w, **SPLIT) as f:
             self.generated(f, w)
             with self.label_stage({A: "failed", C: ("mismatch", 0)}, repair) as sessions:
-                status, reason = self.stage(f, True, 2)
+                status, reason = self.stage(f, True, 3)
                 self.assertEqual(status, "awaiting_operator", reason)
                 self.assertIn(f"`{C}` waits on `{A}` (failed)", reason)
                 self.assertIn(f"`{B}` waits on `{A}` (failed)", reason)
@@ -516,14 +522,17 @@ class TwoStage(unittest.TestCase):
                 self.assertFalse(any("L_20" in str(c.get("rule")) for r in st["accepted_nodes"].values() if r["law_refs"] == [C]
                                      for c in r.get("compositions", [])))
                 self.assertEqual(st["label_states"][C].get("repairs", 0), 0)
-                self.assert_paused_again(f, w, sessions, "awaiting_operator", 2)
+                self.assert_paused_again(f, w, sessions, "awaiting_operator", 3)
 
 
 class DependencyWaitOutcome(unittest.TestCase):
-    """In a split run, a law whose held node composes a node of a blocked or failed law waits the same
-    way whether or not other laws have work: it stays planned with its held node and its attempts, the
-    run stops `awaiting_operator` naming the wait, and reopening the provider plans and codes the same
-    work. Without the split, the dependent is held for the operator on its provider, and the loop ends."""
+    """T6, T23: a law whose node composes a node of a law that becomes blocked or failed is held for
+    the operator on that root's token (`waits_on` the root), uncharged, the same way whether or not
+    other laws have work, on either stage, and whether its node composes the root's directly or through
+    another law's (a chain names the root, never the law between); the run stops `awaiting_operator`
+    naming the wait. Reopening the root decides its token: the dependents reopen with it, are planned
+    again, and their nodes, re-emitted unchanged, are not coded again. Without the split, the
+    dependents are held the same way and the loop ends."""
 
     B2 = "L-24"                                           # composes B's node: a second level
 
@@ -538,9 +547,9 @@ class DependencyWaitOutcome(unittest.TestCase):
         t = TwoStage()
         w = self.world(independent, chain)
         with Fixture(w, **SPLIT) as f, mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
-            self.assertEqual(t.stage(f, False, 1)[0], "awaiting_labels")
+            self.assertEqual(t.stage(f, False, 3 if chain else 2)[0], "awaiting_labels")
             with t.label_stage({A: closed, C: "accepted", TwoStage.D: "accepted"}):
-                k, label = 2, True
+                k, label = (4 if chain else 3), True
                 while True:                                # each stage while the other hands it work
                     status, reason = t.stage(f, label, k)
                     if status not in ("awaiting_labels", "awaiting_generation"):
@@ -573,14 +582,15 @@ class DependencyWaitOutcome(unittest.TestCase):
                     self.assertEqual(alone["status"], "awaiting_operator", alone["reason"])
                     self.assertIn(f"`{B}` waits on `{A}` ({closed})", alone["reason"])
                     if chain:
-                        self.assertIn(f"`{self.B2}` waits on `{B}` (planned)", alone["reason"])
-                    self.assertEqual(alone["dependents"], {l: ("planned", 0, []) for l in alone["dependents"]})
-                    self.assertEqual(alone["held"], ["L_21"] + (["L_24"] if chain else []))
-                    self.assertEqual(alone["dependents_coded"], [])
+                        self.assertIn(f"`{self.B2}` waits on `{A}` ({closed})", alone["reason"])     # the root, not the law between
+                    self.assertEqual(alone["dependents"], {l: ("blocked", 0, [f"decision:{A}"]) for l in alone["dependents"]})
+                    self.assertEqual(alone["held"], [])
+                    coded = [("L_21", 2)] + ([("L_24", 3)] if chain else [])
+                    self.assertEqual(alone["dependents_coded"], coded)                    # generated once, never again
                     for k in ("status", "reason", "dependents", "held", "after_reopen", "dependents_coded"):
                         self.assertEqual(beside[k], alone[k], k)
-                    self.assertEqual(alone["after_reopen"]["plan"], [A])                # the provider alone is planned again
-                    self.assertEqual(alone["after_reopen"]["held"], alone["held"])      # the dependents keep their plans
+                    self.assertEqual(alone["after_reopen"]["dependents"], {l: "planned" for l in alone["dependents"]})
+                    self.assertFalse([i for i in alone["after_reopen"]["code"] if i in ("L_21", "L_24")])   # re-emitted, not coded again
 
     def test_without_the_split_the_dependent_is_held_for_the_operator_and_the_loop_ends(self):
         for closed in ("failed", "blocked"):
@@ -591,10 +601,11 @@ class DependencyWaitOutcome(unittest.TestCase):
                         mock.patch.object(label_check, "training_context", lambda *a, **k: object()):
                     self.assertEqual(f.drive(1, label_dataset="ds"), ["complete"])
                     ledger = {e["law"]: e for e in f.state()["ledger"]}
-                    self.assertEqual((ledger[B]["state"], ledger[B]["attempts"]), ("blocked", 0))
-                    self.assertEqual(ledger[self.B2]["state"], "blocked")
-                    self.assertLessEqual(len(f.state()["iterations_allocated"]), 3)      # no iteration spent waiting
-                    self.assertFalse([c for c in calls(w, "code") if c[0] in ("L_21", "L_24")])
+                    self.assertEqual((ledger[B]["state"], ledger[B]["attempts"], ledger[B]["gaps"]), ("blocked", 0, [f"decision:{A}"]))
+                    self.assertEqual((ledger[self.B2]["state"], ledger[self.B2]["gaps"], ledger[self.B2]["waits_on"]),
+                                     ("blocked", [f"decision:{A}"], [A]))
+                    self.assertLessEqual(len(f.state()["iterations_allocated"]), 4)      # no iteration spent waiting
+                    self.assertFalse([c for c in calls(w, "code") if c[0] in ("L_21", "L_24")])     # A closed before its node was used
 
 
 class RunMetadata(unittest.TestCase):
@@ -717,7 +728,8 @@ class SavedPolicyWhole(unittest.TestCase):
         self.assertEqual((self.tree(), dict(w.calls)), before)
 
     def test_a_saved_policy_field_missing_or_not_legal_is_refused(self):
-        for change in ({"drop": "label_repair"}, {"label_repair": "true"}, {"label_repair": 1}, {"label_repair": None}):
+        for change in ({"drop": "label_repair"}, {"label_repair": "true"}, {"label_repair": 1}, {"label_repair": None},
+                       {"drop": "dependency"}, {"dependency": "law_acceptance"}):
             with self.subTest(change=change):
                 w = split_world()
                 with Fixture(w, **SPLIT) as f:
@@ -1092,10 +1104,12 @@ class BatchOrder(unittest.TestCase):
 
 
 class PolicyAnchor(unittest.TestCase):
-    """Every export records the run's acceptance policy; a manifest without it is still read, and its
-    policy is reported `policy anchor missing: not verified`, never verified."""
+    """Every export records the run's acceptance policy, its dependency policy included (T18). The
+    anchor is never completed: saved options without it are refused by the loop, by `Run.load`, by a
+    first export and by a base chain naming the run; a manifest without it is refused by `verify` and
+    by a later export, which never writes it again from the options."""
 
-    def test_the_anchor_is_written_and_its_absence_reported(self):
+    def test_the_anchor_is_written_and_its_absence_refused(self):
         from harness.__main__ import Cli
         import contextlib, io
         w = split_world()
@@ -1103,22 +1117,199 @@ class PolicyAnchor(unittest.TestCase):
                 mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
             self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
             m = handoff.export("r", source_baseline="c0ffee")
-            self.assertEqual(m["acceptance_policy"], {"label_repair": True})
-            self.assertFalse(any("policy anchor" in x for x in handoff.verify("r")[1]))
+            self.assertEqual(m["acceptance_policy"], {"label_repair": True, "dependency": "build_usable_v1"})
+            self.assertEqual(handoff.verify("r")[0], [])
             mf = paths.RESULTS / "r" / "handoff" / "manifest.json"
-            mf.write_text(json.dumps({k: v for k, v in json.loads(mf.read_text()).items() if k != "acceptance_policy"}))
-            refusals, warnings = handoff.verify("r")
-            self.assertEqual(refusals, [])
-            self.assertTrue(any(x.startswith("policy anchor missing: not verified") for x in warnings), warnings)
+            whole = mf.read_text()
+            mf.write_text(json.dumps({k: v for k, v in json.loads(whole).items() if k != "acceptance_policy"}))
+            refusals, _warnings = handoff.verify("r")
+            self.assertTrue(any("records no acceptance policy" in x for x in refusals), refusals)
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
                 Cli().handoff("verify", "r")
             self.assertNotIn("\nverified\n", "\n" + out.getvalue())
-            self.assertIn("policy anchor missing: not verified", out.getvalue())
-            out = io.StringIO()
-            with contextlib.redirect_stdout(out):                                  # the launch says it too
-                f.drive(1, label_deferred=True, max_iterations=3)
-            self.assertIn("handoff: policy anchor missing: not verified", out.getvalue())
+            with self.assertRaises(SystemExit) as e:                               # the launch refuses it too
+                loop.run_loop(f.options(label_deferred=True, max_iterations=3))
+            self.assertIn("records no acceptance policy", str(e.exception))
+            with self.assertRaises(SystemExit) as e:                               # and a later export never fills it in
+                handoff.export("r")
+            self.assertIn("records no acceptance policy", str(e.exception))
+            self.assertNotIn("acceptance_policy", json.loads(mf.read_text()))
+            mf.write_text(json.dumps({**json.loads(whole), "acceptance_policy": {"label_repair": True}}))
+            self.assertTrue(any("`dependency` is missing" in x for x in handoff.verify("r")[0]))
+
+    def test_saved_options_without_the_dependency_anchor_are_refused_at_every_entry(self):
+        from harness.store.state import base_view
+        w = split_world()
+        with Fixture(w, **SPLIT) as f, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
+                mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
+            self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+            o = paths.RESULTS / "r" / "options.json"
+            o.write_text(json.dumps({k: v for k, v in json.loads(o.read_text()).items() if k != "dependency"}))
+            for entry, call in (("loop", lambda: loop.run_loop(f.options(label_deferred=True, max_iterations=3))),
+                                ("Run.load", lambda: Run.load("r")),
+                                ("export", lambda: handoff.export("r", source_baseline="c0ffee")),
+                                ("base_view", lambda: base_view("r"))):
+                with self.subTest(entry=entry), self.assertRaises(SystemExit) as e:
+                    call()
+                self.assertIn("`dependency` is missing", str(e.exception))
+            self.assertFalse((paths.RESULTS / "r" / "handoff" / "manifest.json").exists())
+
+
+class LaunchRefusedBeforeAnyWrite(unittest.TestCase):
+    """A launch whose options or named inputs are refused is refused before the run's directory, its
+    options, its reading copy or the library's owner is written: a new run id stays new, an existing
+    run is left byte for byte as it was, and no session runs. An acceptance policy given as another
+    type (`1`, `'true'`, `0` as Fire parses them) is never coerced to a bool."""
+
+    tree = RunMetadata.tree
+
+    def cli(self, f, *flags):
+        import fire
+        from harness.__main__ import Cli
+        fire.Fire(Cli, command=["loop", "r", f"--laws={f.root / 'corpus' / 'laws.jsonl'}", f"--ontology_file={f.root / 'ontology.md'}",
+                                f"--reading={f.root / 'reading.json'}", "--model=claude-test", "--reviewer_model=gpt-test",
+                                "--aggregate_verifier_model=gpt-test", "--workers=1", "--max_iterations=1",
+                                f"--definition_precedence={f.root / 'precedence.json'}", *flags])
+
+    def test_an_illegal_policy_value_through_fire_leaves_the_run_id_new(self):
+        for flags in (("--label_repair=1", "--label_deferred"), ("--label_repair=true", "--label_deferred"), ("--label_repair=0",)):
+            with self.subTest(flags=flags):
+                w = split_world()
+                with Fixture(w) as f:
+                    with self.assertRaises(SystemExit) as e:
+                        self.cli(f, *flags)
+                    self.assertIn("not legal", str(e.exception))
+                    self.assertIn("nothing of this run was rewritten", str(e.exception))
+                    self.assertFalse((paths.RESULTS / "r").exists())
+                    self.assertEqual(dict(w.calls), {})
+
+    def test_a_count_timeout_or_budget_through_fire_is_checked_as_given(self):
+        """No option is coerced or clamped before it is checked: a bool, a quoted number or a value below
+        an option's least value is refused, naming the option."""
+        for flags, words in ((("--openai_budget_usd=True",), "--openai_budget_usd"), (("--workers=True",), "--workers"),
+                             (("--workers=0",), "--workers must be a whole number of at least 1"),
+                             (("--workers='4'",), "--workers"), (("--plan_turns=3",), "--plan_turns"),
+                             (("--review_checks=-1",), "--review_checks"), (("--session_timeout=True",), "--session_timeout"),
+                             (("--aggregate_verifier_budget_usd='5'",), "--aggregate_verifier_budget_usd")):
+            with self.subTest(flags=flags):
+                w = split_world()
+                with Fixture(w) as f:
+                    with self.assertRaises(SystemExit) as e:
+                        self.cli(f, *flags)
+                    self.assertIn(words, str(e.exception))
+                    self.assertIn("nothing of this run was rewritten", str(e.exception))
+                    self.assertFalse((paths.RESULTS / "r").exists())
+                    self.assertEqual(dict(w.calls), {})
+
+    def test_legal_values_through_fire_run_and_are_kept_normalised(self):
+        w = split_world()
+        with Fixture(w) as f:
+            self.cli(f, "--code_effort=medium", "--session_timeout=600", "--openai_budget_usd=5", "--review_checks=0",
+                     "--workers=2")
+            saved = json.loads((paths.RESULTS / "r" / "options.json").read_text())
+            self.assertEqual((saved["code_effort"], saved["session_timeout"], saved["openai_budget_usd"], saved["review_checks"],
+                              saved["workers"]), ("medium", 600.0, 5.0, 0, 2))
+            self.assertIsInstance(saved["session_timeout"], float)
+            self.assertTrue(w.calls)
+
+    def test_a_refused_budget_role_or_input_leaves_the_run_id_new(self):
+        for over, words in (({"claude_budget_usd": -1.0}, "finite, non-negative"), ({"reviewer_model": None}, "--reviewer_model"),
+                            ({"claude_budget_usd": 50.0, "judge_budget_usd": None}, "reserved at its own cap"),
+                            ({"acquisition_profile": "no-such-profile"}, "no-such-profile")):
+            with self.subTest(over=over):
+                w = split_world()
+                with Fixture(w) as f:
+                    with self.assertRaises(SystemExit) as e:
+                        loop.run_loop(f.options(**over))
+                    self.assertIn(words, str(e.exception))
+                    self.assertFalse((paths.RESULTS / "r").exists())
+                    self.assertEqual(dict(w.calls), {})
+        w = split_world()
+        with Fixture(w) as f:                                   # a base reading not read whole
+            (f.root / "reading.json").write_text(json.dumps({"params": "x"}))
+            with self.assertRaisesRegex(SystemExit, "cannot be read whole"):
+                loop.run_loop(f.options())
+            self.assertFalse((paths.RESULTS / "r").exists())
+
+    def test_a_resume_with_a_policy_of_another_type_leaves_the_run_as_it_was(self):
+        for value in (1, "true"):
+            with self.subTest(value=value):
+                w = split_world()
+                with Fixture(w, **SPLIT) as f:
+                    self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+                    before = (self.tree(), dict(w.calls))
+                    with self.assertRaises(SystemExit) as e:
+                        loop.run_loop(f.options(label_deferred=True, max_iterations=3, label_repair=value))
+                    self.assertIn(f"`label_repair` is {value!r}, not a legal value", str(e.exception))
+                    self.assertIn("nothing of this run was rewritten", str(e.exception))
+                    self.assertEqual((self.tree(), dict(w.calls)), before)
+
+
+class PolicyBothSidesWhole(unittest.TestCase):
+    """The acceptance policy is compared only once both sides are whole (`policy_defects`), and a value
+    of another type is a change: `True` and `1` are never equal. An export validates the saved
+    options' policy before it writes the manifest, and a handoff verify refuses saved options whose
+    policy is not whole although the anchor is."""
+
+    def test_the_comparison_refuses_another_type_on_either_side(self):
+        from harness.store.state import acceptance_policy_refusal
+        P = lambda v, **k: {"label_repair": v, "dependency": "build_usable_v1", **k}
+        for now in (1, "true", 0, None):
+            with self.subTest(now=now):
+                self.assertIn("not whole", acceptance_policy_refusal(P(True), P(now)))
+                self.assertIn("not whole", acceptance_policy_refusal(P(now), P(True)))
+        self.assertIn("missing", acceptance_policy_refusal(P(True), {}))
+        self.assertIn("missing", acceptance_policy_refusal(P(True), {"label_repair": True}))
+        self.assertIn("not whole", acceptance_policy_refusal(P(False, dependency="law_acceptance"), P(False)))
+        self.assertIn("not whole", acceptance_policy_refusal(P(False),
+                                                             Options(run_id="r", laws=Path("l"), ontology=Path("o"),
+                                                                     reading=Path("x"), label_repair=0)))
+        self.assertIsNone(acceptance_policy_refusal(P(True), P(True)))
+        self.assertIn("fixed for its life", acceptance_policy_refusal(P(True), P(False)))
+
+    def test_an_export_and_a_verify_refuse_saved_options_not_whole(self):
+        for value in (1, "true"):
+            with self.subTest(value=value):
+                w = split_world()
+                with Fixture(w, **SPLIT) as f, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
+                        mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
+                    self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+                    rd = paths.RESULTS / "r"
+                    handoff.export("r", source_baseline="c0ffee")
+                    self.assertEqual(handoff.verify("r")[0], [])
+                    o = rd / "options.json"
+                    o.write_text(json.dumps({**json.loads(o.read_text()), "label_repair": value}))
+                    mf = rd / "handoff" / "manifest.json"
+                    m = mf.read_bytes()
+                    with self.assertRaisesRegex(SystemExit, "acceptance policy cannot be handed over"):
+                        handoff.export("r", source_baseline="c0ffee")
+                    self.assertEqual(mf.read_bytes(), m)
+                    self.assertTrue(any("not whole" in x for x in handoff.verify("r", artifacts=False)[0]))
+                    shutil.rmtree(rd / "handoff")                # a first export writes no anchor it did not validate
+                    with self.assertRaisesRegex(SystemExit, "not a legal value"):
+                        handoff.export("r", source_baseline="c0ffee")
+                    self.assertFalse((rd / "handoff").exists())
+
+
+class HandoffSnapshotWhole(unittest.TestCase):
+    """An export and a handoff verify hold the snapshot to the test a resume applies (`snapshot_defects`):
+    a snapshot missing a field is refused even when the freeze was taken again over it."""
+
+    def test_a_partial_snapshot_refrozen_is_refused(self):
+        w = split_world()
+        with Fixture(w, **SPLIT) as f, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
+                mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
+            self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
+            rd = paths.RESULTS / "r"
+            handoff.export("r", source_baseline="c0ffee")
+            st = rd / "state.json"
+            st.write_text(json.dumps({k: v for k, v in json.loads(st.read_text()).items() if k != "rechecked"}))
+            label_check.freeze(rd)
+            self.assertTrue(loop.metadata_refusal(Run(f.options(label_deferred=True))))
+            with self.assertRaisesRegex(SystemExit, "`rechecked` is missing"):
+                handoff.export("r", source_baseline="c0ffee")
+            self.assertTrue(any("`rechecked` is missing" in x for x in handoff.verify("r", artifacts=False)[0]))
 
 
 class OperatorReading(unittest.TestCase):
@@ -1168,7 +1359,7 @@ class ColdClone(unittest.TestCase):
         w.gate[("L_22", 1)] = "CHECK_FAIL"                    # a node repair pending across the handoff
         seen_tasks = []
         with Fixture(w, **SPLIT) as f, ExitStack() as stack, mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN):
-            self.assertEqual(f.drive(1, label_deferred=True), ["incomplete"])
+            self.assertEqual(f.drive(1, label_deferred=True, max_iterations=1), ["incomplete"])
             rd = paths.RESULTS / "r"
             self.assertEqual(json.loads((rd / "summary.json").read_text())["stop"], "iteration_limit")
             snap = json.loads((rd / "state.json").read_text())
@@ -1194,17 +1385,18 @@ class ColdClone(unittest.TestCase):
             self.assertTrue(seen_tasks and all(p.is_dir() and p.is_relative_to(new) for p in seen_tasks), seen_tasks)
             self.assertTrue((paths.RESULTS / "r" / "handoff" / "imported.json").exists())
             self.assertFalse([c for c in calls(w, "plan") if c[1] > 1])                    # nothing re-planned
-            self.assertFalse([c for c in calls(w, "code") if c[1] > 1 and c[0] != "L_22"])  # nothing generated coded again
+            self.assertFalse([c for c in calls(w, "code") if c[1] > 1 and c[0] not in ("L_22", "L_21")])   # nothing generated coded again
+            self.assertIn(("L_21", 2), calls(w, "code"))                                   # B, once A's node it composes is published
             self.assertIn(("L_22", 2), calls(w, "code"))                                   # its repair, then its coding
 
             # the local stage on a run whose iteration bound is spent: told, never silently idle
-            with label_stage_stand_ins({A, C}) as (seen, _r):
+            with label_stage_stand_ins({A, B, C}) as (seen, _r):
                 res = loop.run_loop(options_at(f, new, label_stage=True, label_dataset="ds", max_iterations=2))
                 self.assertEqual((res["status"], res["stop"]), ("incomplete", "iteration_limit"))
                 self.assertEqual(seen, [])
                 res = loop.run_loop(options_at(f, new, label_stage=True, label_dataset="ds", max_iterations=3))
-            self.assertEqual(res["status"], "awaiting_generation")
-            self.assertEqual(seen, [[A, C]])
+            self.assertEqual(res["status"], "complete")
+            self.assertEqual(seen, [[A, B, C]])
 
     def test_a_checkpoint_continues_at_another_root_with_the_old_one_still_there(self):
         """Saved paths under a recorded root are this checkout's, even while the old checkout is still
@@ -1270,6 +1462,7 @@ class Pinning(unittest.TestCase):
                               "scripts/diagnostics/doctor.py": "# doctor\n", "scripts/diagnostics/library_v2.py": "# doctor checks\n"}.items():
                 (root / rel).parent.mkdir(parents=True, exist_ok=True)
                 (root / rel).write_text(text)
+            shutil.copytree(paths.CORE, lib / "TrafficSpec" / "Core", dirs_exist_ok=True)     # the prompts' text is generated from it
             layout = {**paths.library_layout(lib), "REPO": root, "RESULTS": root / "results"}
             with mock.patch.multiple(paths, **layout), mock.patch.object(handoff, "toolchain", lambda: TOOLCHAIN), \
                     mock.patch("harness.store.owner.acquire_for_command", lambda name: None):
@@ -1281,8 +1474,7 @@ class Pinning(unittest.TestCase):
                                                                  for k, v in opts.__dict__.items() if v is not None},
                                                              "base_reading": str(opts.reading), "semantic": loop.semantic_inputs(opts),
                                                              "base_run": None, "budget_peers": []}))
-                (rd / "state.json").write_text(json.dumps({"iteration": 1, "prog": {"stage": "done"}, "ledger": [], "concept_ledger": [],
-                                                           "node_ledger": [], "accepted_nodes": {}, "accepted_concepts": {}}))
+                (rd / "state.json").write_text(json.dumps({**SnapshotWhole.empty(), "iteration": 1, "prog": {"stage": "done"}}))
                 for name in ("ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl"):
                     (rd / name).write_text("")
                 label_check.freeze(rd)
@@ -1356,6 +1548,8 @@ class LabelRepairAcrossTheClone(unittest.TestCase):
                         fresh.restore_state(); fresh.load_accepted(); fresh.iteration = 2
                         led = Ledger(fresh.ledger_file, list(L.values()), 2); led.attempt = 2
                         fresh.law_entries = led.entries
+                        from scripts.tests.test_candidate import admit
+                        admit(fresh)                                 # the launch's admission recheck, under this root's keys (the fixture's Core lies outside the repository)
                         t2 = label_check.training_context(fresh.dir, list(L.values()), new_ds, training.limits)
                         self.assertEqual((fresh.dir / "comparison_set.json").read_bytes(), fixed)    # the binding holds, unchanged
                         self.assertEqual(loop.label_work(fresh, fresh.opts, led), [L[5]])            # the next repair is scheduled
@@ -1499,8 +1693,8 @@ class PendingRepairAcrossARealFileList(unittest.TestCase):
                             set_verdict(t2, rid, i, verdict if i in (N[5], f"{N[5]}_o1") else "not_applicable")
                     reused, real = [], code_phase._finished_verdict
 
-                    def finished(d, rels, context=None):
-                        v = real(d, rels, context)
+                    def finished(d, rels, context=None, required=()):
+                        v = real(d, rels, context, required)
                         if v is not None:
                             reused.append((Path(d).name, v.verdict))
                         return v
@@ -1576,12 +1770,11 @@ class AcceptancePolicyPinned(unittest.TestCase):
         w = split_world()
         with Fixture(w, **SPLIT) as f:
             self.assertEqual(f.drive(1, label_deferred=True), ["awaiting_labels"])
-            with label_stage_stand_ins({A, C}):
-                self.assertEqual(f.drive(1, label_stage=True, label_dataset="ds", max_iterations=2, claude_budget_usd=50.0,
+            with label_stage_stand_ins({A, B, C}):
+                self.assertEqual(f.drive(1, label_stage=True, label_dataset="ds", max_iterations=3, claude_budget_usd=50.0,
                                          total_budget_usd=60.0, session_budget_usd=5.0, repair_budget_usd=5.0, judge_budget_usd=1.0),
-                                 ["awaiting_generation"])
-            self.assertEqual(f.drive(1, label_deferred=True, max_iterations=3), ["awaiting_labels"])
-            self.assertIn(("L_21", 3), calls(w, "code"))
+                                 ["complete"])
+            self.assertIn(("L_21", 2), calls(w, "code"))
 
     def test_a_fixed_input_the_resume_lacks_is_refused(self):
         w = split_world()

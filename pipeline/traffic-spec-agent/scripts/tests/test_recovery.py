@@ -31,6 +31,8 @@ from harness.phases import plan as plan_phase, review as review_phase, validate 
 from harness.store import jsonl, owner, paths
 from harness.store.state import Options
 
+#: The prompt text the harness generates from the real Core: a fixture's Core is a stand-in.
+GENERATED = loop.generated_prompts()
 PATH_NAMES = ("REPO", "LIBRARY", "CORE", "RULES_DIR", "CONCEPTS_DIR", "WITNESS_DIR", "CONCEPT_WITNESS_DIR", "INDEX_FILE",
               "WITNESS_ROOT_FILE", "RESULTS", "READINGS", "GAPS_DIR", "USER_HINTS")
 PROJECTIONS = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl"}
@@ -177,6 +179,7 @@ class Fixture:
                 w.tick("projection", name)
         s.enter_context(mock.patch.object(jsonl, "write_atomic", locked(write_atomic)))
         s.enter_context(mock.patch.object(jsonl.os, "fsync", lambda fd: None))      # durability is not what is tested here
+        s.enter_context(mock.patch.object(loop, "generated_prompts", lambda: GENERATED))
         real_append = jsonl.append_atomic
 
         def append_atomic(path, row):
@@ -838,6 +841,56 @@ class Persistence(unittest.TestCase):
             self.assertIn("built against other inputs (corpus changed)", str(cm.exception))
             self.assertEqual(tree_bytes(paths.RESULTS), before)
 
+    def test_a_changed_generated_prompt_text_stops_before_any_write_or_session(self):
+        """The text the harness generates into the prompts is a semantic input of its own: the
+        concept language changed with every prompt file as it was refuses the resume, with nothing
+        written and no session called."""
+        language = surface.concept_language()
+        with mock.patch.object(surface, "concept_language", lambda: language + "One sentence more.\n"):
+            changed = loop.generated_prompts()                                  # from the real Core, the fixture's being a stand-in
+        self.assertEqual([k for k in GENERATED if changed[k] != GENERATED[k]], ["concept_language"])
+        w = life_cycle()
+        w.crash_at = 60
+        with Fixture(w) as f:
+            self.assertEqual(f.drive(launches=1), ["crash"])
+            before, calls, prompts = tree_bytes(paths.RESULTS), collections.Counter(w.calls), loop.semantic_inputs(f.options())["prompts"]
+            with mock.patch.object(loop, "generated_prompts", lambda: changed), \
+                    mock.patch.dict(loop._GENERATED_DIGESTS, clear=True):       # changed code is a new process
+                self.assertEqual(loop.semantic_inputs(f.options())["prompts"], prompts)        # the prompt files are as they were
+                with self.assertRaises(SystemExit) as cm:
+                    loop.run_loop(f.options())
+            self.assertIn("built against other inputs (generated_prompts changed)", str(cm.exception))
+            self.assertEqual(tree_bytes(paths.RESULTS), before)
+            self.assertEqual(w.calls, calls)
+
+    def test_the_generated_prompt_digest_follows_every_block_and_nothing_else(self):
+        """Each generated block, changed alone, changes the digest; a harness change that renders no
+        prompt text leaves it as it was."""
+        blocks = loop.generated_prompts()
+        digest = loop.aggregates.digest(blocks)
+        sources = {k: (surface, k) for k in blocks}
+        sources.update(concepts_table_empty=(surface, "concepts_table"), trace_conventions=(review_phase, "TRACE_CONVENTIONS"),
+                       no_label_evidence=(plan_phase, "NO_LABEL_EVIDENCE"))
+        for key, (mod, attr) in sources.items():
+            old = getattr(mod, attr)
+            new = old + "x" if isinstance(old, str) else (lambda *a, _f=old, **k: _f(*a, **k) + "x")
+            with mock.patch.object(mod, attr, new):
+                changed = loop.generated_prompts()
+            self.assertEqual([k for k in blocks if changed[k] != blocks[k]], [key])
+            self.assertNotEqual(loop.aggregates.digest(changed), digest, key)
+        with mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), mock.patch.object(surface, "region_kinds_export", lambda: []):
+            self.assertEqual(loop.aggregates.digest(loop.generated_prompts()), digest)
+
+    def test_the_doctor_holds_the_generated_text_to_the_templates_categories(self):
+        from scripts.diagnostics.doctor import FAIL, OK, Doctor
+        doctor = Doctor(paths.REPO, paths.LIBRARY)
+        self.assertEqual(doctor.prompts_are_law_free().status, OK)
+        blocks = loop.generated_prompts()
+        with mock.patch.object(loop, "generated_prompts", lambda: dict(blocks, builders=blocks["builders"] + "Rules/Body/Node\n")):
+            r = doctor.prompts_are_law_free()
+        self.assertEqual(r.status, FAIL)
+        self.assertIn("generated builders", r.detail)
+
     def test_a_failed_snapshot_write_keeps_the_previous_snapshot(self):
         """Every snapshot write in turn fails after its temporary file is written: the snapshot on
         disk is the previous commit, whole, and the resume ends where an uninterrupted run ends —
@@ -902,7 +955,7 @@ class Persistence(unittest.TestCase):
             Cli().reopen("r", laws="L-4,L-5")
             led = {e["law"]: e for e in f.state()["ledger"]}
             self.assertEqual((led["L-4"]["state"], led["L-4"]["attempts"], led["L-5"]["state"]), ("open", 0, "open"))
-            self.assertEqual(f.drive(max_iterations=4)[-1], "complete")
+            self.assertEqual(f.drive(max_iterations=5)[-1], "complete")      # L-5 composes L-4's node once it is published
             st = f.state()
         led = {e["law"]: (e["state"], e["attempts"]) for e in st["ledger"]}
         self.assertEqual(led, {"L-4": ("accepted", 0), "L-5": ("accepted", 0), "L-6": ("accepted", 0), "L-7": ("accepted", 0)})

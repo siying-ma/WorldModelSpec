@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harness import loop
 from harness.phases import candidate, integrate, review
 from harness.store import owner, paths
-from harness.store.state import (Options, Run, RUN_VERSION, acceptance_by_law, acceptance_policy, chain_version_refusal, policy_defects,
+from harness.store.state import (Options, Run, RUN_VERSION, acceptance_policy, chain_version_refusal, policy_defects,
                                  run_version_refusal, saved_version_refusal)
 from test_library_compatibility import Results, N
 
@@ -61,13 +61,12 @@ class NoFeedbackOption(unittest.TestCase):
         self.assertEqual([o.label_repair for o in seen], [True])
 
     def test_the_policy_is_label_repair_held_whole(self):
-        self.assertEqual(acceptance_policy(opts(label_repair=True)), {"label_repair": True})
-        self.assertEqual(policy_defects({"label_repair": False}), [])
-        for saved in ({}, {"feedback": "labels"}, {"label_repair": 1}, {"label_repair": "true"}, {"label_repair": None}, None):
+        self.assertEqual(acceptance_policy(opts(label_repair=True)), {"label_repair": True, "dependency": "build_usable_v1"})
+        self.assertEqual(policy_defects({"label_repair": False, "dependency": "build_usable_v1"}), [])
+        for saved in ({}, {"feedback": "labels"}, {"label_repair": 1}, {"label_repair": "true"}, {"label_repair": None}, None,
+                      {"label_repair": False}, {"label_repair": False, "dependency": "law_acceptance"}):
             with self.subTest(saved=saved):
                 self.assertTrue(policy_defects(saved))             # never completed by a default
-        self.assertTrue(acceptance_by_law(opts(label_repair=True)))
-        self.assertFalse(acceptance_by_law(opts(label_repair=False)))
 
 
 class RecordContext(unittest.TestCase):

@@ -140,6 +140,26 @@ class Collateral(Base):
             snap = jsonl.read_json(run.state_file, {})
             self.assertEqual({e["law"]: e["state"] for e in snap["ledger"]}[L[1]], "planned")     # committed with the candidate
 
+    def test_a_committed_repair_ends_its_session_and_another_law_keeps_its_own(self):
+        """T34: the commit ends the target's session (no `active` left, `sessions` and `repairs` up by
+        exactly one), so its next repair opens a new session; a law checked again by the same
+        commit keeps its own active session."""
+        with self._scenario(False) as (run, ledger, training, by_id):
+            run.accepted_nodes[N[1]]["compositions"] = [{"span": "o1", "rule": N[5], "map": {"v": "v"}, "as": "condition"}]
+            run.label_states[L[1]]["active"] = {"dir": "its/own", "input": "k", "stage": "session"}
+            before = {k: int(run.label_states[L[5]].get(k, 0)) for k in ("sessions", "repairs")}
+            set_verdict(training, "r5a", N[5], "compliant")
+            set_verdict(training, "r1a", N[1], "violated")
+            self.assertEqual(repair(run, ledger, training, by_id), "committed")
+            st = run.label_states[L[5]]
+            self.assertNotIn("active", st)
+            self.assertEqual({k: int(st.get(k, 0)) for k in ("sessions", "repairs")}, {k: v + 1 for k, v in before.items()})
+            self.assertEqual(run.label_states[L[1]]["active"], {"dir": "its/own", "input": "k", "stage": "session"})
+            self.assertTrue(str(lr.repair_dir(run, L[5])).endswith(f"repair-{before['sessions'] + 2:02d}"))   # a new session next
+            snap = jsonl.read_json(run.state_file, {})
+            self.assertNotIn("active", snap["label_states"][L[5]])
+            self.assertEqual(snap["label_states"][L[1]]["active"]["dir"], "its/own")
+
     def test_an_operators_hold_is_kept(self):
         with self._scenario(True) as (run, ledger, training, by_id):
             run.accepted_nodes[N[1]]["compositions"] = [{"span": "o1", "rule": N[5], "map": {"v": "v"}, "as": "condition"}]

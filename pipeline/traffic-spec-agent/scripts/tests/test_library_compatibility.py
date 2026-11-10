@@ -63,7 +63,7 @@ class Results:
         d.mkdir(parents=True)
         lf = _laws(d / "laws" / "laws.jsonl", list(laws))
         (d / "options.json").write_text(json.dumps({"run_id": name, "base_run": base, "laws": str(lf), "label_repair": False,
-                                                    "semantic": {"run_version": RUN_VERSION}}))
+                                                    "dependency": "build_usable_v1", "semantic": {"run_version": RUN_VERSION}}))
         (d / "accepted_nodes.jsonl").write_text("".join(json.dumps(v) + "\n" for v in (nodes or {}).values()))
         (d / "accepted_concepts.jsonl").write_text("".join(json.dumps(v) + "\n" for v in (concepts or {}).values()))
         if state is not None:

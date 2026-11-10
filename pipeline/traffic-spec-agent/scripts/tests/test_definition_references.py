@@ -131,8 +131,11 @@ class ExecutionPaths(unittest.TestCase):
 
     def test_a_fenced_or_failed_source_does_not_hold_the_borrower_but_holds_a_real_dependency(self):
         caller = comp_node("STA_900A_300", "STA-900A-300", SOURCE_NODE)
-        run = NS(fenced={SOURCE_NODE: {"reason": "gate"}})
-        self.assertEqual(integrate.unavailable_candidates(run, [BORROWER, caller], {}), {caller.id: f"uses the fenced `{SOURCE_NODE}`"})
+        from harness.store.state import Options, Run
+        run = Run(Options("r", Path("l"), Path("o"), Path("r")))
+        run.law_entries, run.accepted_nodes = {}, {SOURCE_NODE: {"node_id": SOURCE_NODE, "law_refs": [SRC_ID]}}
+        run.fenced = {SOURCE_NODE: {"reason": "gate"}}
+        self.assertEqual(loop.integration_holds(run, [BORROWER, caller], [], {}), {caller.id: f"composes or calls `{SOURCE_NODE}` (fenced), not usable for building"})
 
     def test_fence_closure_and_admission_follow_dependencies_only(self):
         caller = comp_node("STA_900A_300", "STA-900A-300", SOURCE_NODE)
@@ -148,7 +151,7 @@ class ExecutionPaths(unittest.TestCase):
     def test_a_replan_does_not_wait_on_a_law_it_only_borrows_from(self):
         with tempfile.TemporaryDirectory() as t:
             led = Ledger(Path(t) / "l.jsonl", [LAW_ID, SRC_ID], 3)
-            led.mark_planned(SRC_ID, [SOURCE_NODE], 1)                  # the source is planned, held: not accepted
+            led.block(SRC_ID, ["g1"], ["held for a gap"])               # the source waits for the operator (a planned one is no wait)
             led.return_law(LAW_ID, ["r"], 1)
             by_id = {LAW_ID: LAW, SRC_ID: SRC}
             _b, waiting, _d = loop.plan_batches(led.plannable(), led, by_id, 8)

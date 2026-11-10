@@ -48,8 +48,8 @@ def panic() -> R.World:
 
 
 def semantic() -> R.World:
-    """L-23's coder writes outside its node (charged at once); L-24's gate fails a check at both of
-    its node's codings (repaired once uncharged, then charged)."""
+    """L-23's coder writes outside its node (coded again as it is, uncharged); L-24's gate fails a check
+    at both of its node's codings (repaired once uncharged, then charged)."""
     w = R.World({"L-23": "shall wait.", "L-24": "shall merge."})
     w.plans = {"L-23": [R.node("L_23", "shall wait.", "L-23")], "L-24": [R.node("L_24", "shall merge.", "L-24")]}
     w.gate[("L_23", 1)] = "SCOPE_VIOLATION"
@@ -146,11 +146,13 @@ class Routing(Interrupted, unittest.TestCase):
         self.assertTrue(any("core_defect" in l and "PANIC at scripted" in l and "gate_harness.lean" in l for l in ref["to_user"]))
         self.interrupt_everywhere(panic)
 
-    def test_semantic_gate_failures_still_charge(self):
+    def test_semantic_gate_failures_charge_and_a_scope_violation_does_not(self):
         ref, log, calls, _ = R.reference(semantic)
         led = {x["law"]: x for x in ref["ledger"]}
-        self.assertEqual({k: (e["state"], e["attempts"]) for k, e in led.items()}, {"L-23": ("accepted", 1), "L-24": ("accepted", 1)})
-        self.assertEqual((calls[("plan", "L-23", 2)], calls[("node_repair", "L_24", 2)], calls[("plan", "L-24", 3)]), (1, 1, 1))
+        self.assertEqual({k: (e["state"], e["attempts"]) for k, e in led.items()}, {"L-23": ("accepted", 0), "L-24": ("accepted", 1)})
+        self.assertEqual(led["L-23"]["scope_violations"], {"L_23": 1})
+        self.assertEqual((calls[("plan", "L-23", 2)], calls[("node_repair", "L_23", 2)], calls[("code", "L_23", 2)]), (0, 0, 1))
+        self.assertEqual((calls[("node_repair", "L_24", 2)], calls[("plan", "L-24", 3)]), (1, 1))
 
     def test_a_concept_timeout_charges_no_concept_attempt(self):
         ref, log, calls, _ = R.reference(concept_cost(1))
@@ -555,8 +557,8 @@ class Counts(unittest.TestCase):
                 self.assertEqual({k: got[k] for k in kept}, kept, name)          # every recorded field it keeps, as written
                 self.assertFalse(retired.get(name, set()) & set(got), name)
                 self.assertEqual({k: v for k, v in got.items() if k not in kept},
-                                 {"ledger.jsonl": {"cost_failures": {}, "core_panics": [], "waits_on": []},
-                                  "concept_ledger.jsonl": {"cost_failures": 0, "core_panics": 0, "held_laws": []},
+                                 {"ledger.jsonl": {"cost_failures": {}, "core_panics": [], "waits_on": [], "scope_violations": {}, "own_gaps": []},
+                                  "concept_ledger.jsonl": {"cost_failures": 0, "core_panics": 0, "held_laws": [], "scope_violations": 0},
                                   "node_ledger.jsonl": {}}[name], name)           # the new counts start at zero
                 led.save()
                 again = asdict(next(iter(cls(p).entries.values())))

@@ -32,7 +32,8 @@ import uuid
 from pathlib import Path
 
 from ..store import jsonl, paths
-from ..store.state import acceptance_policy, acceptance_policy_refusal, run_version_refusal, saved_version_refusal
+from ..store.state import (acceptance_policy, acceptance_policy_refusal, policy_defects, run_version_refusal, saved_version_refusal,
+                           snapshot_defects)
 
 #: The files whose content decides a run's results, relative to the agent directory.
 CODE_PATTERNS = ("harness/**/*.py", "recorded/**/*.py", "prompts/*", "ontology/*", "config/*",
@@ -131,6 +132,8 @@ def checkpoint_problems(run_id: str) -> list[str]:
     if j is not None and j.get("status") != "applied":
         bad.append(f"the run's candidate journal is `{j.get('status')}`, not applied")
     snap = jsonl.read_json(rd / "state.json", None)
+    if snap is not None and snapshot_defects(snap, run_id):     # the test a resume applies to the snapshot it restores
+        return bad + ["its snapshot state.json is not whole (" + "; ".join(snapshot_defects(snap, run_id)[:6]) + ")"]
     if not snap or not snap.get("prog"):
         return bad + ["the run has no committed iteration"]
     stage = snap["prog"].get("stage")
@@ -172,6 +175,14 @@ def export(run_id: str, source_baseline: str = "") -> dict:
     code = code_digest()
     if was is not None and was.get("baseline", {}).get("code", {}).get("digest") != code["digest"]:
         raise SystemExit("[handoff] " + _code_refusal(was, code))
+    anchor = (was or {}).get("acceptance_policy")
+    # the policy the manifest records is whole and is the saved options' own, never one completed by a default; a
+    # manifest that records none has lost its anchor, which no later export writes again from the options
+    policy = ("the run's handoff manifest records no acceptance policy" if was is not None and anchor is None
+              else acceptance_policy_refusal(anchor, opts) if anchor is not None
+              else "; ".join(policy_defects(acceptance_policy(opts))) or None)
+    if policy:
+        raise SystemExit(f"[handoff] `{run_id}`'s acceptance policy cannot be handed over: {policy} — nothing was written")
     snap = jsonl.read_json(rd / "state.json", {}) or {}
     summary = jsonl.read_json(rd / "summary.json", {}) or {}
     files = artifact_files(run_id)
@@ -181,7 +192,7 @@ def export(run_id: str, source_baseline: str = "") -> dict:
                 "repo_root": str(paths.REPO),
                 "baseline": (was or {}).get("baseline") or {"source_commit": source_baseline or None, "code": code},
                 "toolchain": toolchain(), "semantic": opts.get("semantic", {}),
-                "acceptance_policy": (was or {}).get("acceptance_policy") or acceptance_policy(opts),
+                "acceptance_policy": anchor if anchor is not None else acceptance_policy(opts),
                 "artifacts": {f: _sha(paths.REPO / f) for f in files}}
     hd.mkdir(parents=True, exist_ok=True)
     jsonl.write_atomic(hd / "manifest.json", json.dumps(manifest, indent=1, ensure_ascii=False))
@@ -205,9 +216,10 @@ def verify(run_id: str, artifacts: bool = True) -> tuple[list[str], list[str]]:
     manifest; another run version than the one that started the run (the manifest's, or the saved
     options' read raw); other code than the run's
     baseline; other semantic inputs; saved options whose acceptance policy is not the one the run's
-    first export recorded (`acceptance_policy_refusal`; a manifest without that anchor is warned
-    `policy anchor missing: not verified`); with `artifacts`, a handed
-    file missing or not the one exported; a lock or owner record in the run's directory. Warned: other
+    first export recorded (`acceptance_policy_refusal`), or a manifest without that anchor; a snapshot
+    a resume would not restore (`snapshot_defects`);
+    with `artifacts`, a handed file missing or not the one exported; a lock or owner record in the
+    run's directory. Warned: other
     Python or dependency versions than at the export. No base chain is checked: `export` refuses a
     run with a `base_run`, so a handed-over run has none."""
     from ..loop import semantic_inputs
@@ -238,18 +250,26 @@ def verify(run_id: str, artifacts: bool = True) -> tuple[list[str], list[str]]:
                          if k != "run_version" and sem.get(k) != m.get("semantic", {}).get(k))
         if changed:
             refusals.append(f"the semantic inputs differ from the run's ({', '.join(changed)}): start a new run id")
-        if m.get("acceptance_policy") is None:          # a manifest written before the anchor: read, never reported verified
-            warnings.append("policy anchor missing: not verified (the manifest records no acceptance policy; the saved "
-                            "options' policy is unchecked against the run's first export)")
-        policy = acceptance_policy_refusal(m.get("acceptance_policy"), d)
-        if policy:
-            refusals.append(policy)
+        if m.get("acceptance_policy") is None:          # never completed from the saved options: the export's record is the anchor
+            refusals.append("the manifest records no acceptance policy, so the saved options' policy cannot be checked against "
+                            "the run's first export: re-export the run from its checkpoint")
+        else:
+            policy = acceptance_policy_refusal(m.get("acceptance_policy"), d)
+            if policy:
+                refusals.append(policy)
     except (OSError, KeyError, TypeError, ValueError) as e:
         refusals.append(f"the run's semantic inputs could not be read: {e}")
     if artifacts:
         miss = [f for f, h in (m.get("artifacts") or {}).items() if not (paths.REPO / f).is_file() or _sha(paths.REPO / f) != h]
         if miss:
             refusals.append(f"{len(miss)} handed file(s) missing or not as exported: {', '.join(miss[:8])}")
+    try:                                                # read raw, never through `Run.load`, which restores it
+        snap = jsonl.read_json(paths.run_dir(run_id) / "state.json", None)
+        bad = ["it is missing"] if snap is None else snapshot_defects(snap, run_id)
+    except jsonl.DataIntegrityError as e:
+        bad = [f"it cannot be read ({e})"]
+    if bad:
+        refusals.append("the run's snapshot state.json is not one a resume restores (" + "; ".join(bad[:6]) + ")")
     stray = [p.name for p in paths.run_dir(run_id).rglob("*") if p.name in (".run.owner.json", ".run.lock")]
     if stray:
         refusals.append(f"the run's directory holds lock or owner files: {stray[:4]}")

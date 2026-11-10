@@ -38,32 +38,47 @@ def _files_digest(rels: tuple[str, ...]) -> str | None:
     return h.hexdigest()
 
 
-def task_context(run: Run, kind: str, ident: str, raw: dict, reading: Reading) -> str | None:
+def task_context(run: Run, kind: str, ident: str, raw: dict, reading: Reading, catalogue: dict | None = None) -> str | None:
     """The admission key a task's gate ran on: the candidate record's context (what it calls and
     composes, the reading values it reads, Core and the ontology) and the gate's implementation,
     computed from the candidate as given, before it is accepted. In a candidate transaction, Core and
     the ontology are the production digests it opened on (`base`), so the key does not depend on
-    where the candidate lies."""
+    where the candidate lies. `catalogue` (`{"nodes", "concepts"}`) is the view the task is coded in,
+    by default the published records: in the loop, its own law's siblings gated in the same iteration
+    and not yet published are in it, so their records and files are part of the key."""
     from . import integrate as integrate_phase
     from ..loop import semantic_inputs
     try:
         base = getattr(run, "base", None) or {k: v for k, v in semantic_inputs(run.opts).items() if k in ("core", "ontology")}
         return integrate_phase.admission_key(run, kind, ident, reading, base,
-                                             record=raw, catalogue={"nodes": run.all_nodes(), "concepts": run.all_concepts()})
+                                             record=raw, catalogue=catalogue or {"nodes": run.all_nodes(), "concepts": run.all_concepts()})
     except (ValueError, KeyError, OSError):
         return None
 
 
-def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None) -> gate.Verdict | None:
+#: The composed nodes a task's key was computed with, beside its verdict (`run_code`).
+COMPOSED = "composed.json"
+
+
+def _finished_verdict(d: Path, rels: tuple[str, ...], context: str | None = None, required=()) -> gate.Verdict | None:
     """The verdict a task directory already holds, when the loop was interrupted after the gate:
     the task is finished and a resume applies its outcome instead of coding it again. A failing
     verdict rolled its files back already. A verdict is reused only on the context its gate ran on
     (`context`, the task's admission key); `OK` only while both candidate files are in the library
     as the gate passed them. `SESSION_FAILED` (the session never ran) and `INFRA` (the toolchain or the
-    run's own stop kept the gate from judging the candidate) decide nothing, and are not reused."""
+    run's own stop kept the gate from judging the candidate) decide nothing, and are not reused. A
+    verdict whose key was computed without one of the nodes the record composes (`required`, against
+    the `composed.json` beside it) has no whole dependency key and is not reused either."""
     f = d / "verdict.json"
     if not f.exists():
         return None
+    if required:
+        try:
+            had = set(json.loads((d / COMPOSED).read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError):
+            had = set()
+        if not set(required) <= had:
+            return None
     try:
         v = json.loads(f.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
@@ -90,6 +105,51 @@ def last_task(run: Run, ident: str) -> Path | None:
     name = concept_dirname(ident) if nodeid.is_concept_id(ident) else ident
     done = [p.parent for p in run.dir.glob(f"iter-*/code/{name}/verdict.json") if int(p.parent.parent.parent.name[5:]) < run.iteration]
     return max(done, key=lambda p: p.parent.parent.name) if done else None
+
+
+#: Written into a task directory whose session changed files outside its own once those files are
+#: found back at the digests its `baseline.json` holds: that violation no longer pauses the run.
+SCOPE_RESTORED = "scope_restored.json"
+#: The `stray` entry of a production tree that moved and whose changed files could not be named:
+#: restored only when the whole tree's digest is again the recorded one.
+WHOLE_TREE = "<the production tree, unnamed>"
+
+
+def scope_unrestored(run: Run) -> dict[str, list[str]]:
+    """The run's coding tasks whose session changed files outside its own (a `SCOPE_VIOLATION` verdict
+    naming them under `stray`) and whose library is not yet restored, each with the files still not
+    at the digest the task's `baseline.json` recorded before the session (absent where it was absent).
+    The task's own rollback restores only its two files; the others are the operator's to restore,
+    file by file, never by a restore of the whole tree, which would undo other tasks' work. Only that
+    restoration lifts the pause: a task found restored here is marked (`SCOPE_RESTORED`, written by
+    this check alone) and never checked again, so a later legitimate change to one of those files
+    pauses nothing. Reopening a law clears its scope count (`SCOPE_BOUND`), never this check: it is no
+    acceptance of the files as they are. Empty: no coding session starts from a library a session
+    left dirty."""
+    pending = []
+    for f in sorted(run.dir.glob("iter-*/code/*/verdict.json")):
+        if (f.parent / SCOPE_RESTORED).exists():
+            continue
+        try:
+            v = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        stray = v.get("extras", {}).get("stray") if v.get("verdict") == "SCOPE_VIOLATION" else None
+        if stray:
+            pending.append((f.parent, stray))
+    if not pending:
+        return {}
+    from .candidate import _sha
+    now, out = gate.repo_digest(paths.LIBRARY.parent), {}          # the tree that holds the library, as the candidate's baseline digests it
+    digest_of = lambda p: _sha(now) if p == WHOLE_TREE else now.get(p)
+    for d, stray in pending:
+        before = json.loads((d / "baseline.json").read_text(encoding="utf-8"))
+        left = [p for p in stray if digest_of(p) != before.get(p)]
+        if left:
+            out[str(d)] = left
+        else:
+            (d / SCOPE_RESTORED).write_text(json.dumps({"files": stray}), encoding="utf-8")
+    return out
 
 
 def _saved_candidate(saved: Path | None, rels: tuple[str, ...], context: str | None, verdict: str = gate.GATE_TIMEOUT) -> Path | None:
@@ -302,7 +362,8 @@ def write_skeletons(node: Node) -> tuple[str, str]:
     return r, w
 
 
-def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, saved: Path | None = None) -> gate.Verdict:
+def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = None, saved: Path | None = None,
+             catalogue: dict | None = None) -> gate.Verdict:
     """One coding session for a node, then the harness's own gate call. `registry` names the ids
     the gate registers (the accepted ones and this node); `saved` an earlier task whose candidate is
     gated again instead of a session when `_saved_candidate` admits it, and so is a candidate the task's
@@ -311,11 +372,14 @@ def run_code(run: Run, node: Node, reading: Reading, registry: dict | None = Non
     d = node_dir(run, node.id)
     d.mkdir(parents=True, exist_ok=True)
     rels = (nodeid.rule_path(node.id), nodeid.witness_path(node.id))
-    context = task_context(run, "node", node.id, node.raw, reading)
-    done = _finished_verdict(d, rels, context)
+    context = task_context(run, "node", node.id, node.raw, reading, catalogue)
+    required = sorted({str(c.get("rule")) for c in node.dependencies() if c.get("rule")})
+    done = _finished_verdict(d, rels, context, required)
     if done is not None:                                     # a resume: the session ran and the gate decided
         print(f"[code] {node.id}: reusing the {done.verdict} verdict of the finished session")
         return done
+    nodes_now = (catalogue or {}).get("nodes") if catalogue else run.all_nodes()
+    (d / COMPOSED).write_text(json.dumps(sorted(r for r in required if r in nodes_now)), encoding="utf-8")
     (d / "node.json").write_text(json.dumps(node.raw, ensure_ascii=False, indent=1), encoding="utf-8")
     _task_files(d, registry)
     only_nodes = None if registry is None else sorted(set(registry.get("nodes", [])) | {node.id})

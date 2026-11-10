@@ -9,8 +9,8 @@ roles:
 - an execution composition on a span naming laws targets a node of a named law;
 - a `definition` reference that borrows a law's words states why that law's rule need not hold;
 - a composition of a fenced (reversioned) node is refused;
-- a candidate's changed node may not compose, directly or through other nodes, a node of another
-  law not yet formally accepted.
+- a candidate's changed node may not compose, directly or through other nodes, a node not usable
+  for building (`Run.provider_code`).
 
 Every case runs through the full validator (`validate_a.validate`) with the training ontology, a
 real reading and mapping index; the candidate case through `candidate.validate_records` and
@@ -399,24 +399,28 @@ class CandidatePath(unittest.TestCase):
                 return cand.validate_records(txn, [Node(copy.deepcopy(rec))], [])
 
     def unavailable(self, recs: list[dict], usable: set[str], changed: list[str]):
+        """The candidate's availability check on a view of these records, laws outside any ledger,
+        only `usable` (and the changed records, gated in the transaction) having admission evidence."""
         from harness.phases import candidate as cand
+        from harness.store import state
         nodes = {**{k: v.raw for k, v in accepted().items()}, **{r["node_id"]: r for r in recs}}
-        view = NS(all_nodes=lambda: nodes, all_concepts=lambda: {},
-                  usable_nodes=lambda law: {k: v for k, v in nodes.items() if k in usable or Node(v).law == law})
-        return cand.unavailable_compositions(view, changed)
+        view = NS(all_nodes=lambda: nodes, all_concepts=lambda: {}, law_entries={}, fenced={})
+        with mock.patch.object(state.Availability, "evidence", lambda self, kind, ident: ident in usable or ident in self.gated):
+            return cand.unavailable_compositions(view, changed, gated=set(changed))
 
     def test_the_validator_passes_a_correct_record_and_leaves_availability_to_its_check(self):
         self.assertEqual([r.status for r in self.run_records(record())], ["pass"])        # no second message for one defect
 
-    def test_a_dependency_on_a_pending_law_is_refused_whether_new_or_kept(self):
-        self.assertEqual(self.unavailable([record()], set(), ["STA_900A_100_1"]), {"STA_900A_100_1": ["STA_900A_200_2"]})
+    def test_a_dependency_without_admission_evidence_is_refused_whether_new_or_kept(self):
+        self.assertEqual(self.unavailable([record()], set(), ["STA_900A_100_1"]), {"STA_900A_100_1": {"STA_900A_200_2": "unjudged"}})
         self.assertEqual(self.unavailable([record()], {"STA_900A_200_2"}, ["STA_900A_100_1"]), {})
 
     def test_a_dependency_reached_through_a_usable_node_is_refused_too(self):
         mid = {"node_id": "STA_900A_300_1", "law_refs": [C], "binders": [{"name": "veh"}],
                "compositions": [{"span": "r", "as": "condition", "rule": "STA_900A_200_2", "map": {}}]}
         top = record(compositions=[{"span": "r1", "as": "compliance", "rule": "STA_900A_300_1", "map": {"veh": "veh"}}])
-        self.assertEqual(self.unavailable([mid, top], {"STA_900A_300_1"}, ["STA_900A_100_1"]), {"STA_900A_100_1": ["STA_900A_200_2"]})
+        self.assertEqual(self.unavailable([mid, top], {"STA_900A_300_1"}, ["STA_900A_100_1"]),
+                         {"STA_900A_100_1": {"STA_900A_300_1": "via:STA_900A_200_2:unjudged"}})
 
     def test_a_reference_carried_by_atoms_is_refused_in_a_candidate_too(self):
         r = record(ref_role="condition", compositions=[])
@@ -428,7 +432,7 @@ class CandidatePath(unittest.TestCase):
     def test_a_same_law_sibling_stays_usable(self):
         sib = {"node_id": "STA_900A_100_1_o2", "law_refs": [L], "compositions": [{"span": "r", "as": "condition", "rule": "STA_900A_100_1_o1", "map": {}}]}
         o1 = {"node_id": "STA_900A_100_1_o1", "law_refs": [L]}
-        self.assertEqual(self.unavailable([o1, sib], set(), ["STA_900A_100_1_o2"]), {})
+        self.assertEqual(self.unavailable([o1, sib], set(), ["STA_900A_100_1_o1", "STA_900A_100_1_o2"]), {})   # changed together
 
 
 class PauseReasons(unittest.TestCase):
@@ -444,11 +448,12 @@ class PauseReasons(unittest.TestCase):
 
         def route(run, ledger, training, to_user):
             for law, nodes in loop.label_ready(run, ledger).items():
-                st = route_states[law]
+                st = route_states.get(law, "accepted")
                 if st == "accepted":
                     ledger.accept(law, nodes)
                 run.label_states[law] = {"state": st, "outcome": "aligned" if st == "accepted" else "misaligned", "nodes": nodes,
-                                         "repairs": over.get("repairs", 0)}
+                                         "repairs": over.get("repairs", 0),
+                                         **({"waiting_on": [[nodes[0], "L_99", "missing"]]} if st == "waiting" else {})}
             return {}
         w = split_world()
         with Fixture(w, **SPLIT) as f:
@@ -509,10 +514,10 @@ class PauseReasons(unittest.TestCase):
             self.assertEqual(status, "awaiting_operator", reason)
             self.assertIn("`L-1` waits on `L-2` (failed), `L-3` (blocked)", reason)
 
-    def test_generation_work_is_handed_back(self):
+    def test_a_generated_run_routed_whole_is_complete(self):
         from scripts.tests.test_split_handoff import A, C
         out, _s = self.label_stage({A: "accepted", C: "accepted"})
-        self.assertEqual(out[0], "awaiting_generation")                          # B's held node can now be coded
+        self.assertEqual(out, ["complete", "complete"])                          # B was generated on A's usable node already
 
 
 if __name__ == "__main__":

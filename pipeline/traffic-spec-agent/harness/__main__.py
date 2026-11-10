@@ -207,15 +207,7 @@ class Cli:
             raise SystemExit("mode must be `train` or `test`")
         if opts.mode == "test" and not opts.base_run:
             raise SystemExit("a test run names the training run it starts from: --base_run <run id>")
-        for k, lo in (("plan_batch", 1), ("workers", 1), ("plan_turns", 4), ("concept_attempts", 1), ("node_attempts", 1),
-                      ("reviewer_max_output_tokens", 1), ("review_checks", 0), ("review_submissions", 1)):
-            setattr(opts, k, max(lo, int(getattr(opts, k))))
-        if opts.openai_budget_usd is not None:
-            opts.openai_budget_usd = float(opts.openai_budget_usd)
-        if opts.aggregate_verifier_budget_usd is not None:
-            opts.aggregate_verifier_budget_usd = float(opts.aggregate_verifier_budget_usd)
-        opts.session_timeout = float(opts.session_timeout)
-        result = run_loop(opts)
+        result = run_loop(opts)                                # the loop checks the listed options as given, then normalises them
         print(json.dumps(result, indent=1))
         return 0 if result.get("status") == "complete" else 1
 
@@ -475,23 +467,66 @@ class Cli:
                 print(f"  `{ident}` ({ev.get('kind')}, {ev.get('reason')}): {str(ev.get('evidence', ''))[:400]}")
         return 0 if good and not run.fenced else 1
 
-    def reopen(self, run_id: str, laws: str = "") -> int:
+    def reopen(self, run_id: str, laws: str = "", admission: bool = False) -> int:
         """Operator action: put a run's failed laws (or any law not accepted or blocked on a gap) back to `open`
         with a fresh attempt budget (all, or a comma list); a failed concept only those laws used is cleared, and
         a concept's gate-cost counts and hold start again once none of the laws its hold paused is still paused;
-        a concept still held is named with the laws it still waits on."""
+        a concept still held is named with the laws it still waits on. The request is checked whole before
+        anything changes: a law blocked on a gap not yet decided (`gap decide` decides it), or one whose root
+        laws are not named with it, refuses the whole request with every reason and a non-zero exit; so does a
+        planned law whose only wait is an admission recheck paused at its timeout bound, which `--admission`
+        resumes instead.
+
+        With `--admission` (`--laws` required) it is another path: the run's integrity is checked as a
+        launch checks it (its version and policy anchor, its handoff manifest when it has one), then
+        only the paused admission rechecks of the records each law reaches are let run again
+        (`loop.admission_reopen`); nothing else of the run changes."""
         from .store import owner
-        from .store.ledger import Ledger, ConceptLedger, NodeLedger
+        from .store.ledger import Ledger, ConceptLedger, NodeLedger, ReopenRefused
         from .store.state import Run, commit_state
         from .model import nodeid
         _refuse_stored_run(run_id, "reopened")
         owner.acquire_for_command("reopen")
         run = Run.load(run_id)                    # the projections are completed from the run's snapshot first
         ledger = Ledger(run.ledger_file, [], run.opts.plan_attempts)
+        run.law_entries = ledger.entries
+        names = laws if isinstance(laws, (list, tuple)) else str(laws).split(",")
+        asked = [str(l).strip() for l in names if str(l).strip()]
+        from . import loop as loop_mod
+        if admission:
+            if not asked:
+                print("reopen --admission names the laws whose paused admission rechecks it resumes (--laws)"); return 1
+            why = loop_mod.metadata_refusal(run)
+            if why:
+                print(f"reopen --admission refused, nothing changed: {why}"); return 1
+            from .tools import handoff
+            try:
+                handoff.check_on_launch(run)      # a handed-over run is verified as a launch verifies it; a local one has no manifest
+            except SystemExit as e:
+                print(f"reopen --admission refused, nothing changed: {e}"); return 1
+            refusals, lines = loop_mod.admission_reopen(run, ledger, asked)
+            if refusals:
+                print("reopen --admission refused, nothing changed:\n" + "\n".join(f"- {r}" for r in refusals)); return 1
+            print("\n".join(lines)); return 0
+        paused_only = []
+        for law in (asked or [e.law for e in ledger.entries.values() if e.state == "planned"]):
+            e = ledger.entries.get(law)
+            if e is not None and e.state == "planned":
+                records, roots = loop_mod.admission_closure(run, law, ledger)
+                if not roots and loop_mod.admission_paused_records(run, records):
+                    paused_only.append(law)
+        if paused_only:
+            print("reopen refused, nothing changed:\n" + "\n".join(
+                f"- `{l}` waits only on admission rechecks paused at their timeout bound: a plain reopen would plan it again and "
+                f"drop its work; resume them with `python -m harness reopen {run_id} --laws {l} --admission`" for l in paused_only))
+            return 1
         node_ledger = NodeLedger(run.node_ledger_file, run.opts.node_attempts)
         concept_ledger = ConceptLedger(run.concept_ledger_file, run.opts.concept_attempts)
-        names = laws if isinstance(laws, (list, tuple)) else str(laws).split(",")   # the command line may give a list
-        out = ledger.reopen([str(l).strip() for l in names if str(l).strip()] or None)
+        try:
+            out = ledger.reopen(asked or None)
+        except ReopenRefused as e:                # the whole request is refused, nothing of it applied
+            print("reopen refused, nothing changed:\n" + "\n".join(f"- {r}" for r in e.reasons))
+            return 1
         # a reopened law is planned afresh: its held nodes and its node entries (repairs, judge counts) are dropped
         run.deferred_nodes = [d for d in run.deferred_nodes if not (set(d.get("law_refs", [])) & set(out))]
         for law in out:

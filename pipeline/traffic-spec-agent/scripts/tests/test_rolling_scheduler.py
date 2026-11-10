@@ -90,9 +90,9 @@ class RollingScheduler(unittest.TestCase):
         self.assertEqual(sorted(st["accepted_nodes"]), ["L_1", "L_2", "L_3"])
         self.assertEqual(w.calls[("code", "L_1", 1)], 1)
 
-    def test_a_dependent_starts_only_once_its_provider_is_accepted(self):
-        """L_6 composes L_7: with four workers free, L_6's session starts only after L_7, slowed down,
-        is accepted."""
+    def test_a_dependent_of_another_law_starts_only_once_its_provider_is_published(self):
+        """L_6 composes L_7, of another law: with four workers free, L_6's session starts only in the
+        iteration after L_7, slowed down, was published by its integration."""
         w = World({"L-6": "shall merge.", "L-7": "shall slow."})
         w.plans = {"L-6": [node("L_6", "shall merge.", "L-6", compositions=["L_7"])], "L-7": [node("L_7", "shall slow.", "L-7")]}
         seen = {}
@@ -101,23 +101,23 @@ class RollingScheduler(unittest.TestCase):
             if ident == "L_7":
                 time.sleep(0.3)
             if ident == "L_6":
-                seen["provider"] = committed().get("nodes", {}).get("L_7")
+                f_ = paths.RESULTS / "r" / "state.json"
+                seen["provider"] = "L_7" in json.loads(f_.read_text()).get("accepted_nodes", {})
         with Fixture(w, workers=4) as f:
             with mock.patch.object(session, "run", Sessions(before)):
                 self.assertEqual(f.drive(), ["complete"])
-        self.assertEqual(seen["provider"], "OK")
-        calls = [e[1:3] for e in w.log if e[0] == "call" and e[1] == "code"]
-        self.assertLess(calls.index(("code", "L_7")), calls.index(("code", "L_6")))
+        self.assertTrue(seen["provider"])
+        self.assertEqual((w.calls[("code", "L_7", 1)], w.calls[("code", "L_6", 1)], w.calls[("code", "L_6", 2)]), (1, 0, 1))
 
     def test_a_dependent_of_a_returned_provider_is_held_not_coded(self):
         """L_7's gate returns it in iteration 1: L_6, which composes it, is never coded in that
-        iteration and is held uncharged; both are accepted once L_7 is repaired."""
+        iteration and is held uncharged; L_7 is repaired and published in iteration 2, L_6 coded on it
+        in iteration 3; both are accepted, no attempt counted."""
         w = compositions()
         with Fixture(w, workers=4) as f:
             f.drive()
             st = f.state()
-        self.assertEqual(w.calls[("code", "L_6", 1)], 0)
-        self.assertEqual(w.calls[("code", "L_6", 2)], 1)
+        self.assertEqual((w.calls[("code", "L_6", 1)], w.calls[("code", "L_6", 2)], w.calls[("code", "L_6", 3)]), (0, 0, 1))
         led = {e["law"]: (e["state"], e["attempts"]) for e in st["ledger"]}
         self.assertEqual((led["L-6"], led["L-7"]), (("accepted", 0), ("accepted", 0)))
 
@@ -258,21 +258,21 @@ class UnlockOnlyAfterApply(unittest.TestCase):
         self.assertEqual({e["law"]: e["attempts"] for e in st["ledger"]}["L-3"], 0)
 
     def test_a_sibling_failure_stops_the_unstarted_siblings_and_drains_the_running(self):
-        """L-5's first node is returned by its gate (a scope violation: the law goes back to its
+        """L-5's first node is returned by its gate with its codings spent (the law goes back to its
         planner, charged once); the second, already running, ends with its gate; the third, not
         started, is never coded."""
         w = World({"L-5": "shall stop. shall yield. shall slow."})
         w.plans = {"L-5": [node(f"L_5_o{i}", "shall stop. shall yield. shall slow.", "L-5") for i in (1, 2, 3)]}
-        w.gate[("L_5_o1", 1)] = "SCOPE_VIOLATION"
+        w.gate[("L_5_o1", 1)] = "CHECK_FAIL"
 
         def before(ident, it):
             if (ident, it) == ("L_5_o2", 1):
-                wait_for(decided("nodes", "L_5_o1", "SCOPE_VIOLATION"))
-        with Fixture(w, workers=2, max_iterations=1) as f:
+                wait_for(decided("nodes", "L_5_o1", "CHECK_FAIL"))
+        with Fixture(w, workers=2, max_iterations=1, node_attempts=1) as f:
             with mock.patch.object(session, "run", Sessions(before)):
                 f.drive()
             prog, st = committed(), f.state()
-        self.assertEqual((prog["nodes"]["L_5_o1"], prog["nodes"]["L_5_o2"], prog["nodes"]["L_5_o3"]), ("SCOPE_VIOLATION", "OK", "LAW_CLOSED"))
+        self.assertEqual((prog["nodes"]["L_5_o1"], prog["nodes"]["L_5_o2"], prog["nodes"]["L_5_o3"]), ("CHECK_FAIL", "OK", "LAW_CLOSED"))
         self.assertEqual(w.calls[("code", "L_5_o3", 1)], 0)
         self.assertEqual(w.calls[("code", "L_5_o2", 1)], 1)
         led = {e["law"]: e for e in st["ledger"]}["L-5"]

@@ -107,7 +107,7 @@ class UnavailableProvider(unittest.TestCase):
         else:
             verdicts = [validate_phase.NodeVerdict(Node(raw), "return", validate_a.check_compositions(Node(json.loads(json.dumps(raw))), {}, SOURCES) + (extra or []))]
         run, opts, prog, led, cl, nl, _law, _n, _bad = _iteration_world(t, st)
-        led.entries = {LAW.id: Entry(LAW.id), SRC_ID: Entry(SRC_ID)}
+        led.entries = run.law_entries = {LAW.id: Entry(LAW.id), SRC_ID: Entry(SRC_ID)}
         led.mark_planned(LAW.id, ["STA_900A_100_1"], 1)
         if provider_state == "blocked":
             led.block(SRC_ID, ["g1"], ["gap g1"])
@@ -193,7 +193,7 @@ class UnavailableProvider(unittest.TestCase):
         from harness.store.ledger import Ledger as L
         with tempfile.TemporaryDirectory() as t:
             led = L(Path(t) / "l", ["STA-900A-100-1", "STA-900A-200-2"], 3); led.fail("STA-900A-200-2", ["closed"])
-            run = NS(all_nodes=lambda: {})
+            run = NS(all_nodes=lambda: {}, usable_nodes=lambda law: {})
             rec = Node(_clean_record(dict(self.COMPLIANCE)))
             msg = validate_a.unknown_target(rec.id, "STA_900A_200_2")
             self.assertEqual(loop._repair_waits(run, led, [], NS(records=[rec], validation=[msg])), {"STA_900A_200_2": {"STA-900A-200-2"}})
@@ -226,22 +226,22 @@ class PlanWaits(unittest.TestCase):
         for order in itertools.permutations(laws):
             b, waiting, failed = self.batches({k: laws[k] for k in order}, {"P-1": "planned", "F-1": "failed"})
             self.assertEqual(failed, {"S-2": ["F-1"]}, order)
-            self.assertEqual(waiting, {"S-1": ["P-1"]}, order)
-            self.assertEqual(b, [["S-2"]])
+            self.assertEqual(waiting, {}, order)                      # a planned law named is no wait: its usable nodes are composed
+            self.assertEqual(b, [["S-2", "S-1"]])
 
     def test_a_failed_law_reached_through_a_waiting_law(self):
         laws = {"A-1": "[A-2]", "A-2": "[A-3] and [P-1]", "A-3": "[F-1]", "P-1": "", "F-1": ""}
         b, waiting, failed = self.batches(laws, {"P-1": "planned", "F-1": "failed"})
         self.assertEqual(failed, {"A-3": ["F-1"]})
-        self.assertEqual(waiting, {"A-2": ["P-1"], "A-1": ["A-2"]})
-        self.assertEqual(b, [["A-3"]])
+        self.assertEqual(waiting, {})
+        self.assertEqual(b, [["A-3", "A-2", "A-1"]])
 
     def test_controls(self):
         laws = {"C-1": "[C-2]", "C-2": "[P-1]", "P-1": "", "D-1": "[E-1]", "E-1": ""}
         b, waiting, failed = self.batches(laws, {"P-1": "planned", "E-1": "accepted"})
-        self.assertEqual(set(waiting), {"C-1", "C-2"})
+        self.assertEqual(waiting, {})
         self.assertEqual(failed, {})
-        self.assertEqual(b, [["D-1"]])
+        self.assertEqual(b, [["C-2", "C-1", "D-1"]])
 
 
 class FirstPlanWaits(unittest.TestCase):
@@ -281,34 +281,35 @@ class FirstPlanWaits(unittest.TestCase):
             self.assertEqual(self.batches(laws, {"P-1": state}, {"C-1"})[0], [["C-1"]], state)
             self.assertEqual(self.batches(laws, {"P-1": state}, set(), borrowed={"C-1": {"P-1"}})[0], [["C-1"]], state)
 
-    def test_a_planned_provider_still_makes_a_first_plan_wait(self):
+    def test_a_planned_provider_makes_no_plan_wait(self):
         laws = {"C-1": "Duty under [P-1].", "P-1": "Duty."}
-        self.assertEqual(self.batches(laws, {"P-1": "planned"}, {"C-1"}), ([], {"C-1": ["P-1"]}, {}))
+        for unrecorded in ({"C-1"}, set()):
+            self.assertEqual(self.batches(laws, {"P-1": "planned"}, unrecorded), ([["C-1"]], {}, {}))
 
     def test_a_provider_held_only_on_a_blocked_law_is_passed_by_a_first_plan(self):
         laws = {"C-1": "Duty under [P-1].", "P-1": "Duty.", "Q-1": "Duty."}
-        for q in ("blocked", "failed"):
-            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, {"C-1"}, {"P-1": {"Q-1"}}), ([["C-1"]], {}, {"C-1": ["P-1"]}), q)
-            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, set(), {"P-1": {"Q-1"}}), ([], {"C-1": ["P-1"]}, {}), q)
-        laws["R-1"] = "Duty."                            # held on a blocked law and on one that progresses: it may still move
-        self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": "blocked", "R-1": "planned"}, {"C-1"}, {"P-1": {"Q-1", "R-1"}})[1], {"C-1": ["P-1"]})
+        for q in ("blocked", "failed"):                  # a planned provider is no wait: which of its nodes waits is decided per node
+            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, {"C-1"}, {"P-1": {"Q-1"}}), ([["C-1"]], {}, {}), q)
+            self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": q}, set(), {"P-1": {"Q-1"}}), ([["C-1"]], {}, {}), q)
+        laws["R-1"] = "Duty."
+        self.assertEqual(self.batches(laws, {"P-1": "planned", "Q-1": "blocked", "R-1": "planned"}, {"C-1"}, {"P-1": {"Q-1", "R-1"}})[1], {})
 
     def test_a_returned_provider_waiting_only_on_a_blocked_law_is_passed_by_a_first_plan(self):
         laws = {"C-1": "Duty under [P-1].", "P-1": "Duty under [Q-1].", "Q-1": "Duty."}
         self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "blocked"}, {"C-1"}), ([["C-1"]], {"P-1": ["Q-1"]}, {"C-1": ["P-1"]}))
         self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "blocked"}, set()), ([], {"P-1": ["Q-1"], "C-1": ["P-1"]}, {}))
-        self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "planned"}, {"C-1"}), ([], {"P-1": ["Q-1"], "C-1": ["P-1"]}, {}))
+        self.assertEqual(self.batches(laws, {"P-1": "returned", "Q-1": "planned"}, {"C-1"}), ([["P-1", "C-1"]], {}, {}))
 
     def test_an_ordinary_provider_awaiting_repair_advances_by_itself(self):
         """A planned provider whose held node waits on no other law (a repair, a concept) is no
-        unavailable law: a caller waits on it, and is planned once it is accepted."""
+        unavailable law, and no wait either: a caller is planned at once, before and after its acceptance."""
         carried = [Node({"node_id": "P_1", "law_refs": ["P-1"], "compositions": []})]
         with tempfile.TemporaryDirectory() as t:
             led = Ledger(Path(t) / "l", ["C-1", "P-1"], 3); led.mark_planned("P-1", ["P_1"], 1)
             held = loop.held_waits(carried, led, set())
             self.assertEqual((held, loop.unavailable_roots(led, held)), ({}, {}))
             by_id = {"C-1": Law("C-1", "", "Duty under [P-1].", ""), "P-1": Law("P-1", "", "Duty.", "")}
-            self.assertEqual(loop.plan_batches(led.plannable(), led, by_id, 8, {}, {"C-1"}, held)[1], {"C-1": ["P-1"]})
+            self.assertEqual(loop.plan_batches(led.plannable(), led, by_id, 8, {}, {"C-1"}, held)[1], {})
             led.accept("P-1", ["P_1"])
             self.assertEqual([[l.id for l in b] for b in loop.plan_batches(led.plannable(), led, by_id, 8, {}, {"C-1"}, held)[0]], [["C-1"]])
 
@@ -326,11 +327,11 @@ class FirstPlanWaits(unittest.TestCase):
         self.assertEqual(self.batches(laws, {"S-3": "blocked"}, {"S-2"}), ([["S-2", "S-1"]], {}, {"S-2": ["S-3"]}))
         self.assertEqual(self.batches(laws, {"S-3": "blocked"}, {"S-1"}), ([["S-1"]], {"S-2": ["S-3"]}, {"S-1": ["S-2"]}))
         self.assertEqual(self.batches(laws, {"S-3": "blocked"}, set()), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}))
-        self.assertEqual(self.batches(laws, {"S-3": "planned"}, {"S-1", "S-2"}), ([], {"S-2": ["S-3"], "S-1": ["S-2"]}, {}))
+        self.assertEqual(self.batches(laws, {"S-3": "planned"}, {"S-1", "S-2"}), ([["S-2", "S-1"]], {}, {}))
 
-    def test_a_first_plan_naming_a_blocked_and_a_planned_law_waits(self):
+    def test_a_first_plan_naming_a_blocked_and_a_planned_law_is_planned(self):
         laws = {"C-1": "[B-1] and [P-1]", "B-1": "", "P-1": ""}
-        self.assertEqual(self.batches(laws, {"B-1": "blocked", "P-1": "planned"}, {"C-1"}), ([], {"C-1": ["P-1"]}, {}))
+        self.assertEqual(self.batches(laws, {"B-1": "blocked", "P-1": "planned"}, {"C-1"}), ([["C-1"]], {}, {"C-1": ["B-1"]}))
 
     def test_a_cycle_of_waits_reaching_no_root_is_no_unavailable_law(self):
         with tempfile.TemporaryDirectory() as t:

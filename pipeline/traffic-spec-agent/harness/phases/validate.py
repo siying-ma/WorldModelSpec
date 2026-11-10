@@ -33,6 +33,33 @@ class NodeVerdict:
 # ---------------------------------------------------------------------------------------------
 # Validator A, in the run's context
 # ---------------------------------------------------------------------------------------------
+def _law_entries(run: Run) -> dict:
+    from ..store.ledger import Entry, _load
+    return run.law_entries if run.law_entries is not None else _load(run.ledger_file, Entry, "law")
+
+
+def _superseded(entries: dict, nid: str, rec: dict) -> bool:
+    e = entries.get(Node(rec).law)
+    return e is not None and e.state in ("planned", "accepted") and nid not in e.nodes
+
+
+def _other_plans(run: Run, entries: dict, nodes: list[Node], given: list[Node] | None) -> list[Node]:
+    """The active plan records of the other planned laws (held, or under a node repair), not yet
+    published: a plan may compose them, and its record is coded once they are published."""
+    from ..loop import active_plan_records
+    from ..store.ledger import NodeLedger
+    skip = {n.id for n in nodes} | {n.id for n in given or []} | set(run.all_nodes())
+    plan_laws = {n.law for n in nodes}
+    recs = active_plan_records(run, NodeLedger(run.node_ledger_file, run.opts.node_attempts))
+    out = []
+    for i, r in recs.items():
+        n = Node(r)
+        e = entries.get(n.law)
+        if i not in skip and n.law not in plan_laws and e is not None and e.state == "planned" and i in e.nodes:
+            out.append(n)
+    return out
+
+
 def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.Law], reading: Reading, defs: list[dict],
                        onto: ontology.Ontology | None = None, blueprint_file: Path | None = None,
                        extra_concepts: list[ConceptRecord] | None = None, extra_nodes: list[Node] | None = None,
@@ -41,7 +68,9 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
     """Validator A over the concepts and nodes of a blueprint, against everything the run knows:
     its accepted nodes and concepts, its mapping index (for the roles of a law's own words) and its
     mode. The loop and the `validate` command both call this, so a draft is checked by the
-    check that will accept it. With no run, nothing is accepted and the mapping index is empty."""
+    check that will accept it. With no run, nothing is accepted and the mapping index is empty. The
+    other planned laws' active plan records are known targets (`_other_plans`); a published node
+    its law's current plan no longer lists is marked superseded, which `check_compositions` refuses."""
     bp = blueprint_file or (plan_dir / "blueprint.jsonl")
     nodes = blueprint.load(bp) + list(extra_validate_nodes or [])          # repaired node records are validated with the plan's
     repaired_ids = {c.id for c in extra_concepts or []}                    # repaired records join the plan's, and a plan
@@ -50,7 +79,10 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
     if run is not None:
         onto = onto or ontology.load(run.opts.ontology)
         index = MappingIndex(run.mapping_file)
-        accepted = {k: Node(v) for k, v in run.all_nodes().items()}
+        entries = _law_entries(run)
+        # a published node its law's current plan no longer lists is superseded: never a target to compose
+        accepted = {k: Node({**v, "superseded": True} if _superseded(entries, k, v) else v) for k, v in run.all_nodes().items()}
+        known_nodes = list(known_nodes or []) + _other_plans(run, entries, nodes, known_nodes)
         accepted_concepts = run.all_concepts()
         mode = run.opts.mode
     else:

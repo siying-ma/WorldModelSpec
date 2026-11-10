@@ -156,8 +156,10 @@ end {nodeid.concept_namespace(CID)}
 CONCEPT_BODY = '.cmp (.measure "kin_speed" [aU]) .le (.param "tol")'
 # The same concept reading an aggregate in a `cond` guard whose branches agree: its verdicts are
 # those of the neutral body, whatever the membership. The id reaches the body through the literal
-# formal `w`, which the caller fills (the only form a shared concept may read an aggregate in);
-# `HARD_BODY` writes the id into the body itself, which the concept gate refuses.
+# formal `w`, which the caller fills: a form the gate run alone accepts, and holds against the
+# reading and the claims, but no route for a planner, since planning refuses a literal formal whose
+# values are aggregate ids (`literal_value_errors`). `HARD_BODY` writes the id into the body itself,
+# which the concept gate refuses.
 AID = "DEF-TST-1::wagon"
 AGG_ARGS = f'[("u", .track), ("w", .literal ["{AID}"])]'
 AGG_BODY = ('.cmp (.cond (.atom "ru_aggregate" [aU, .var "w"] []) (.measure "kin_speed" [aU]) '
@@ -166,8 +168,9 @@ HARD_BODY = (f'.cmp (.cond (.atom "ru_aggregate" [aU, .lit "{AID}"] []) (.measur
              '(.measure "kin_speed" [aU])) .le (.param "tol")')
 AGG_DECLARED = [{"id": AID, "included": ["ru.motor_vehicle"]}]
 HARD_CODED = (f"{CID}: the body names the definition-scoped aggregate `{AID}` itself (here or in a concept it calls with that id); "
-              "a shared concept reads an aggregate only through a literal formal its caller fills, so that each calling law's "
-              "own gate checks the id against its definitions, its reading and its claims")
+              "a shared concept names no aggregate, since membership depends on the definitions that govern each calling law: "
+              "where the contract leaves a member's class to the calling law, expose that road user as a track formal, and the "
+              "calling law states its class with its own admitted aggregate")
 
 
 def concept_source(body: str = CONCEPT_BODY, unit: str = ".metrePerSecond", args: str | None = None) -> str:
@@ -682,6 +685,436 @@ class TimeoutDetails(unittest.TestCase):
         self.assertEqual(v.details[-1], "the adequacy check began 1.1 s after the adequacy phase's program started and did not finish: "
                                         "`c@w` has 40 leaves, each replaced by true and by false and judged on its 2 decided witness(es); "
                                         "`c@v` has 12 leaves, each replaced by true and by false and judged on its 2 decided witness(es)")
+
+
+# ── The concept interface: what a caller can state about what a concept denotes ─────────────────
+#
+# A file of road users: the concept below counts every road user of the scene that keeps in file
+# with `u`, of whatever class; the same relation for one pair, whose caller counts and states the
+# class; a concept whose contract itself fixes the full range of its quantifier; and a caller
+# that moves that quantifier across a window.
+
+FILE_LANE = '''def m (n : Int) : Q := Units.metres n
+def cm (n : Int) : Q := Units.centimetres n
+
+/-- One east-bound lane, x in [-50 m, 500 m], y in [-2 m, 2 m]. -/
+def theLane : Structure :=
+  Build.lane 1 [(m (-50), m (-2)), (m 500, m (-2)), (m 500, m 2), (m (-50), m 2)] Build.east
+    (ordinal := some 1) (count := some 1)
+
+/-- A car on the lane centre line, `x0` at the first observation, advancing 20 m per observation. -/
+def car (track : TrackId) (x0 : Int) (k : Nat) : RoadUser :=
+  Build.user track [.motorVehicle] (m (x0 + 20 * Int.ofNat k), m 0) Build.east
+    (Units.metresPerSecond 20) (cm 250, m 1, cm 75) (some (m (20 * Int.ofNat k)))
+
+/-- A bicycle on the lane centre line, advancing as the cars do. -/
+def bike (track : TrackId) (x0 : Int) (k : Nat) : RoadUser :=
+  Build.user track [.bicycle] (m (x0 + 20 * Int.ofNat k), m 0) Build.east
+    (Units.metresPerSecond 20) (cm 100, cm 30, cm 75) (some (m (20 * Int.ofNat k)))
+
+def scene3 (users : Nat → List RoadUser) (regions : List Structure := [theLane]) : Trace :=
+  Build.trace 3 0 (Units.seconds 1) fun k t => Build.scene t (some 1) (users k) regions [ ]
+
+/-- Five cars in file, 20 m between neighbouring bodies. -/
+def fiveCars : Trace := scene3 fun k => [ car 1 0 k, car 2 25 k, car 3 50 k, car 4 75 k, car 5 100 k ]
+/-- A car with the nearest other road user 395 m ahead. -/
+def lonely : Trace := scene3 fun k => [ car 1 0 k, car 2 400 k ]
+/-- A car with two bicycles in file ahead of it, 18 m and 19 m between the bodies. -/
+def carAndBikes : Trace := scene3 fun k => [ car 1 0 k, bike 2 22 k, bike 3 43 k ]
+
+/-- The five cars, their extents unobserved and the gap between the bodies measured by the source. -/
+def gaugedCar (track : TrackId) (x0 : Int) (k : Nat) : RoadUser :=
+  Build.withKin (car track x0 k) fun kin => { kin with extent := none }
+def gauged : List (TrackId × Int) := [(2, 20), (3, 45), (4, 70), (5, 95)]
+def gaugedRelations : List MeasuredRelation :=
+  gauged.flatMap fun (v, g) =>
+    [ Build.relation 1 v fun r => { r with surfaceGap := some (m g, m 0), aAheadOfB := some false }
+    , Build.relation v 1 fun r => { r with aAheadOfB := some true } ]
+def gaugedCars : Trace :=
+  Build.trace 3 0 (Units.seconds 1) fun k t =>
+    let s := Build.scene t (some 1)
+      [ gaugedCar 1 0 k, gaugedCar 2 25 k, gaugedCar 3 50 k, gaugedCar 4 75 k, gaugedCar 5 100 k ] [ theLane ] [ ]
+    { s with occupancyObserved := [], occupies := [], relations := gaugedRelations }
+'''
+
+
+def file_witness(cid: str, params: str, grounding: str, scenarios: list[str], extra: str = "") -> str:
+    """A concept's witness file over the file-of-road-users scenes."""
+    return f'''/- Witnesses over one lane. -/
+import {nodeid.concept_module(cid)}
+import TrafficSpec.Core.Evidence.Builders
+
+namespace {nodeid.concept_witness_namespace(cid)}
+
+open TrafficSpec
+
+{FILE_LANE}
+{extra}
+def inst : Concept.Instance :=
+  {{ name := "{cid}@w", concept := "{cid}", literals := [], nats := [], params := [{params}], bounds := none }}
+
+def instances : List Concept.Instance := [inst]
+
+def witness (name : String) (τ : Trace) (expected : Verdict) (absent : List String := []) : Scenario :=
+  {{ name := name, rule := inst.name, trace := τ, reading := {{}}, manifest := Build.manifest absent,
+    grounding := {grounding}, expected := expected }}
+
+def scenarios : List Scenario :=
+  [ {"""
+  , """.join(scenarios)} ]
+
+end {nodeid.concept_witness_namespace(cid)}
+'''
+
+
+def file_concept(cid: str, contract: str, args: str, params: str, defs: str) -> str:
+    return f'''/- A concept over a file of road users. -/
+import TrafficSpec.Core.Language.Concept
+
+namespace {nodeid.concept_namespace(cid)}
+
+def aU : Arg := .var "u"
+def aV : Arg := .var "v"
+{defs}
+def concept : Concept :=
+  {{ id := "{cid}"
+    contract := "{contract}"
+    definition := none
+    args := {args}
+    params := {params}
+    body := .formula body
+    residues := []
+    narrowings := []
+    supersedes := none }}
+
+end {nodeid.concept_namespace(cid)}
+'''
+
+
+IN_FILE_DEFS = '''def pFileReach : Term := .param "file_reach"
+def pSameDirectionTolerance : Term := .param "same_direction_tolerance"
+def aheadOrBehind : Formula :=
+  .or (.atom "rel_ahead_behind_in_lane" [aV, aU] []) (.atom "rel_ahead_behind_in_lane" [aU, aV] [])
+def withinReach : Formula := .cmp (.measure "rel_surface_gap" [aU, aV]) .le pFileReach
+def inFile : Formula :=
+  .and (.atom "rel_same_direction" [aV, aU] [pSameDirectionTolerance]) (.and aheadOrBehind withinReach)
+'''
+FILE_PARAMS = '("file_reach", .lit (m 50) .metre), ("same_direction_tolerance", .lit (Units.ratio 95 100) .ratio)'
+FILE_ELEMENTS = [
+    {"span": "heading aligned with u's within the same-direction tolerance", "atoms": ["rel.same_direction"], "concepts": [],
+     "justification": "the headings' cosine above the tolerance"},
+    {"span": "ahead of or behind u in the same lane", "atoms": ["rel.ahead_behind_in_lane"], "concepts": [],
+     "justification": "one road user ahead of the other along the lane they share"},
+    {"span": "within the file reach of u, a distance the caller sets measured between the nearest points of the bodies",
+     "atoms": ["rel.surface_gap"], "concepts": [], "justification": "the distance between the nearest points of two bodies"}]
+REACH_PARAMS = [{"name": "file_reach", "unit": "m", "meaning": "the largest distance between the nearest points of two bodies in one file"},
+                {"name": "same_direction_tolerance", "unit": "ratio", "meaning": "the cosine of the largest angle between headings read as one direction"}]
+FILE_BLIND = 'witness "blind" gaugedCars (.unknown []) ["rel.surface_gap"]'
+FILE_BLIND_SCENARIO = {"name": "blind", "expected": "unknown", "narrative": "the gap between the bodies unobserved", "masked": ["rel.surface_gap"]}
+
+# A file counted inside the concept, over every road user, with no formal for the members' class,
+# while its contract leaves that class to the caller.
+VEHICLE_FILE = "drv.interaction.vehicle_file"
+VEHICLE_FILE_CONTRACT = (
+    "Road user u is one of a file of road users travelling one behind another at the observation: counting u itself, at least the minimum "
+    "member count of road users have their heading aligned with u's within the same-direction tolerance, lie ahead of or behind u in the "
+    "same lane, and are within the file reach of u, a distance the caller sets measured between the nearest points of the bodies. It is a "
+    "relation of place, direction and spacing at the observation. It says nothing of why the road users travel together, of a common "
+    "destination or origin, of an organizer, or of their speed: a caller that means a moving file states the motion itself. Not a stand-in "
+    "for: a chain each of whose consecutive spaces is bounded — the reach is measured from u to each member, so a long file is read through "
+    "the membership of each road user in turn — the class of the members, which the caller states, or a towed combination, which is one road "
+    "user drawn by another.")
+VEHICLE_FILE_SOURCE = file_concept(
+    VEHICLE_FILE, VEHICLE_FILE_CONTRACT, '[("u", .track)]',
+    '[⟨"min_member_count", .count⟩, ⟨"file_reach", .metre⟩, ⟨"same_direction_tolerance", .ratio⟩]',
+    IN_FILE_DEFS + '''def pMinMemberCount : Term := .param "min_member_count"
+def body : Formula :=
+  .cmp (.aggregate .count "v" (.or (.same aV aU) inFile) (.lit Q.zero .count)) .ge pMinMemberCount
+''')
+VEHICLE_FILE_RECORD = {
+    "concept_id": VEHICLE_FILE, "kind": "formula", "contract": VEHICLE_FILE_CONTRACT, "args": [{"name": "u", "sort": "track"}],
+    "params": [{"name": "min_member_count", "unit": "count", "meaning": "the number of road users, u included, read as a file"}] + REACH_PARAMS,
+    "elements": FILE_ELEMENTS, "residues": [], "literals": [], "used_by": [],
+    "scenarios": [{"name": "holds", "expected": "compliant", "narrative": "five cars in file, 20 m between neighbours"},
+                  {"name": "fails", "expected": "violated", "narrative": "one car alone, the nearest other road user 395 m ahead"},
+                  FILE_BLIND_SCENARIO]}
+
+
+def vehicle_file_witness(fails: str) -> str:
+    return file_witness(VEHICLE_FILE, '("min_member_count", .lit (Q.ofInt 3) .count), ' + FILE_PARAMS,
+                        '[("u", 1)]', ['witness "holds" fiveCars .compliant', f'witness "fails" {fails} .violated', FILE_BLIND])
+
+
+# The pair relation: the concept states whether `v` keeps in file with `u` at the observation; a
+# caller counts the road users `w` of which it holds, of the class its own admitted aggregate states.
+FILE_PAIR = "drv.interaction.file_pair"
+FILE_PAIR_CONTRACT = (
+    "Road user v travels in one file with road user u at the observation: v's heading is aligned with u's within the same-direction "
+    "tolerance, v lies ahead of or behind u in the same lane, and v is within the file reach of u, a distance the caller sets measured "
+    "between the nearest points of the bodies. It is a relation of place, direction and spacing between the two road users at the "
+    "observation; how many road users make a file, and of which class, is stated by a caller that counts the road users v of which it holds.")
+FILE_PAIR_SOURCE = file_concept(FILE_PAIR, FILE_PAIR_CONTRACT, '[("u", .track), ("v", .track)]',
+                                '[⟨"file_reach", .metre⟩, ⟨"same_direction_tolerance", .ratio⟩]',
+                                IN_FILE_DEFS + "def body : Formula := inFile\n")
+FILE_PAIR_RECORD = {
+    "concept_id": FILE_PAIR, "kind": "formula", "contract": FILE_PAIR_CONTRACT,
+    "args": [{"name": "u", "sort": "track"}, {"name": "v", "sort": "track"}], "params": REACH_PARAMS,
+    "elements": [dict(e, span=w) for e, w in zip(FILE_ELEMENTS, ("v's heading is aligned with u's within the same-direction tolerance",
+                                                                  "v lies ahead of or behind u in the same lane", FILE_ELEMENTS[2]["span"]))], "residues": [], "literals": [],
+    "scenarios": [{"name": "holds", "expected": "compliant", "narrative": "car v 20 m behind car u in the lane"},
+                  {"name": "fails", "expected": "violated", "narrative": "car v 10 m ahead of car u, in the lane beside it"},
+                  FILE_BLIND_SCENARIO]}
+FILE_PAIR_EXTRA = '''/-- A second east-bound lane beside the first, y in [2 m, 6 m], and a car on its centre line. -/
+def otherLane : Structure :=
+  Build.lane 2 [(m (-50), m 2), (m 500, m 2), (m 500, m 6), (m (-50), m 6)] Build.east (ordinal := some 2) (count := some 2)
+def carBeside (track : TrackId) (x0 : Int) (k : Nat) : RoadUser :=
+  Build.user track [.motorVehicle] (m (x0 + 20 * Int.ofNat k), m 4) Build.east
+    (Units.metresPerSecond 20) (cm 250, m 1, cm 75) (some (m (20 * Int.ofNat k)))
+def behind : Trace := scene3 (fun k => [ car 1 25 k, car 2 0 k ]) [ theLane, otherLane ]
+def beside : Trace := scene3 (fun k => [ car 1 0 k, carBeside 2 10 k ]) [ theLane, otherLane ]
+'''
+FILE_PAIR_WITNESS = file_witness(FILE_PAIR, FILE_PARAMS, '[("u", 1), ("v", 2)]',
+                                 ['witness "holds" behind .compliant', 'witness "fails" beside .violated', FILE_BLIND], FILE_PAIR_EXTRA)
+FILE_PAIR_ENTRY = {"reads": ["rel.ahead_behind_in_lane", "rel.same_direction", "rel.surface_gap"], "params": REACH_PARAMS}
+
+# A concept whose contract itself fixes the range of its quantifier: every other road user, of any class.
+CLOSE_COMPANY = "drv.interaction.close_company"
+CLOSE_COMPANY_CONTRACT = (
+    "There is another road user, of any class, whose body is within the company distance of road user u's at the observation, a distance "
+    "the caller sets measured between the nearest points of the bodies. Every road user of the scene other than u counts, whatever its "
+    "class: the concept selects no class, and a caller that means road users of a class does not call it.")
+CLOSE_COMPANY_SOURCE = file_concept(
+    CLOSE_COMPANY, CLOSE_COMPANY_CONTRACT, '[("u", .track)]', '[⟨"company_distance", .metre⟩]',
+    'def body : Formula :=\n  .existsUser "v" (.and (.not (.same aV aU)) (.cmp (.measure "rel_surface_gap" [aU, aV]) .le (.param "company_distance")))\n')
+CLOSE_COMPANY_WITNESS = file_witness(CLOSE_COMPANY, '("company_distance", .lit (m 50) .metre)', '[("u", 1)]',
+                                     ['witness "holds" carAndBikes .compliant', 'witness "fails" lonely .violated', FILE_BLIND])
+CLOSE_COMPANY_RECORD = {
+    "concept_id": CLOSE_COMPANY, "kind": "formula", "contract": CLOSE_COMPANY_CONTRACT, "args": [{"name": "u", "sort": "track"}],
+    "params": [{"name": "company_distance", "unit": "m",
+                "meaning": "the largest distance between the nearest points of two bodies at which another road user keeps u company"}],
+    "elements": [{"span": "whose body is within the company distance of road user u's at the observation", "atoms": ["rel.surface_gap"],
+                  "concepts": [], "justification": "the distance between the nearest points of two bodies"}],
+    "residues": [], "literals": [],
+    "scenarios": [{"name": "holds", "expected": "compliant", "narrative": "a bicycle 18 m ahead of car u"},
+                  {"name": "fails", "expected": "violated", "narrative": "the nearest road user 395 m away"}, FILE_BLIND_SCENARIO]}
+
+
+def interface_concept_gate(cid: str, source: str, witness: str, record: dict) -> tuple[gate.Verdict, dict[str, list[str]]]:
+    """A concept through the real concept gate, with no admitted aggregate; returns the verdict and
+    the ids its `AGGREGATES` and `HARDAGG` rows name."""
+    with tempfile.TemporaryDirectory() as t:
+        lib, work, dirs = _library(t)
+        files = [nodeid.concept_path(cid), nodeid.concept_witness_path(cid)]
+        for rel, src in zip(files, [source, witness]):
+            (lib / rel).parent.mkdir(parents=True, exist_ok=True)
+            (lib / rel).write_text(src, encoding="utf-8")
+        (Path(t) / "reading.json").write_text(json.dumps({"params": [], "aggregates": []}))
+        ran = Ran(files, {f"import {nodeid.concept_module(cid)}", f"import {nodeid.concept_witness_module(cid)}"})
+        with mock.patch.multiple(paths, **dirs), mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), \
+                mock.patch.object(gate, "_toolchain", ran):
+            v = gate.run_concept_gate(ConceptRecord(copy.deepcopy(record)), Reading(Path(t) / "reading.json"), {}, work, 0, 5, accepted={})
+        out = (work / "gate_harness.out").read_text()
+    rows = {tag: [x for l in out.splitlines() if l.startswith(tag + "\t") for x in l.split("\t")[1:] if x] for tag in ("AGGREGATES", "HARDAGG")}
+    return v, rows
+
+
+# A caller of the pair relation: the fixture node, its subject a motor vehicle, its obligation read
+# where the subject keeps in file with members of `AID`.
+CALLER_PARAMS = [{"name": "p.file_min", "value": 3, "unit": "count", "convention": "fixture"},
+                 {"name": "p.file_reach", "value": 50, "unit": "m", "convention": "fixture"},
+                 {"name": "p.file_cos", "value": 0.95, "unit": "ratio", "convention": "fixture"},
+                 {"name": "p.crawl", "value": 3, "unit": "m/s", "convention": "fixture"},
+                 {"name": "p.win", "value": 3, "unit": "s", "convention": "fixture"}]
+PAIR_CALL = f'.derived "drv_interaction_file_pair" [vV, .var "w"] [.param "p.file_reach", .param "p.file_cos"]'
+IS_MEMBER = f'.atom "ru_aggregate" [.var "w", .lit "{AID}"] []'
+COUNTED_FILE = (f'.cmp (.aggregate .count "w" (.and ({IS_MEMBER}) (.or (.same (.var "w") vV) ({PAIR_CALL}))) (.lit Q.zero .count)) '
+                '.ge (.param "p.file_min")')
+CRAWL = '.cmp (.measure "kin_speed" [vV]) .le (.param "p.crawl")'
+MOVING = '.cmp (.measure "kin_speed" [vV]) .gt (.lit Q.zero .metrePerSecond)'
+# At every observation of the window some member keeps in file with the subject; and the misplaced
+# reading, one member keeping in file with it at every observation of the window.
+EVERY_MOMENT_SOME = (f'.holdsFor .time (.param "p.win") "v" (.existsUser "w" (.and (.not (.same (.var "w") vV)) '
+                     f'(.and ({IS_MEMBER}) ({PAIR_CALL}))))')
+ONE_THROUGHOUT = (f'.existsUser "w" (.and (.not (.same (.var "w") vV)) (.and ({IS_MEMBER}) '
+                  f'(.holdsFor .time (.param "p.win") "v" ({PAIR_CALL}))))')
+
+
+def pair_caller(applicability: str, obligation: str) -> str:
+    return f'''/- A caller of the pair relation. -/
+import TrafficSpec.Core.Language.Rule
+
+namespace {nodeid.rule_namespace(P.NODE_ID)}
+
+def vV : Arg := .var "v"
+
+def rule : Rule :=
+  {{ id := "{P.NODE_ID}"
+    laws := ["TEST-PRECOND-9"]
+    binders := [ {{ name := "v", cls := .atom "ru_motor_vehicle" [vV] [] }} ]
+    applicability := {applicability}
+    obligation := {obligation} }}
+
+end {nodeid.rule_namespace(P.NODE_ID)}
+'''
+
+
+def caller_witness(defs: str, scenarios: list[str], window: str = "") -> str:
+    return f'''/- The caller's witnesses on one lane. -/
+import {nodeid.rule_module(P.NODE_ID)}
+import TrafficSpec.Core.Evidence.Builders
+
+namespace {nodeid.witness_namespace(P.NODE_ID)}
+
+open TrafficSpec
+
+def m (n : Int) : Q := Units.metres n
+def cm (n : Int) : Q := Units.centimetres n
+def theLane : Structure :=
+  Build.lane 1 [(m (-300), m (-2)), (m 500, m (-2)), (m 500, m 2), (m (-300), m 2)] Build.east (ordinal := some 1) (count := some 1)
+/-- A car at `x0 + sp·k` at observation k, heading east at `sp`; a bicycle likewise. -/
+def car (track : TrackId) (x0 : Int) (sp : Int) (k : Nat) : RoadUser :=
+  Build.user track [.motorVehicle] (m (x0 + sp * Int.ofNat k), m 0) Build.east
+    (Units.metresPerSecond sp) (cm 250, m 1, cm 75) (some (m (sp * Int.ofNat k)))
+def bike (track : TrackId) (x0 : Int) (sp : Int) (k : Nat) : RoadUser :=
+  Build.user track [.bicycle] (m (x0 + sp * Int.ofNat k), m 0) Build.east
+    (Units.metresPerSecond sp) (cm 100, cm 30, cm 75) (some (m (sp * Int.ofNat k)))
+def scene (n : Nat) (users : Nat → List RoadUser) : Trace :=
+  Build.trace n 0 (Units.seconds 1) fun k t => Build.scene t (some 1) (users k) [ theLane ] [ ]
+{defs}
+def witness (name : String) (τ : Trace) (expected : Verdict) (absent : List String := []) : Scenario :=
+  {{ name := name, rule := "{P.NODE_ID}", trace := τ, reading := {{}}, manifest := Build.manifest absent,
+    grounding := [("v", 1)], expected := expected{window} }}
+
+def scenarios : List Scenario :=
+  [ {"""
+  , """.join(scenarios)} ]
+
+end {nodeid.witness_namespace(P.NODE_ID)}
+'''
+
+
+def caller_record(segments: tuple[str, str], elements: list[dict], params: list[str], scenarios: list[tuple]) -> dict:
+    return {"node_id": P.NODE_ID, "law_refs": ["TEST-PRECOND-9"], "subject": {"binder": "v", "class_elements": ["ru.motor_vehicle"]},
+            "binders": [{"name": "v", "class_elements": ["ru.motor_vehicle"]}],
+            "segmentation": [{"id": "s1", "role": "subject", "text": "a vehicle"}, {"id": "t1", "role": "trigger", "text": segments[0]},
+                             {"id": "o1", "role": "obligation", "text": segments[1]}],
+            "elements": [{"span": "s1", "atoms": ["ru.motor_vehicle"]}] + elements,
+            "params": params, "applicability": "a", "obligation": "o",
+            "scenarios": [dict(zip(("name", "expected", "masked"), s)) for s in scenarios]}
+
+
+def pair_caller_gate(rule: str, witness: str, record: dict) -> gate.Verdict:
+    """The caller and the pair relation, registered beside it, through the real node gate, with the
+    reading admitting `AID`."""
+    with tempfile.TemporaryDirectory() as t:
+        lib, work, dirs = _library(t)
+        files = [nodeid.concept_path(FILE_PAIR), nodeid.rule_path(P.NODE_ID), nodeid.witness_path(P.NODE_ID)]
+        for rel, src in zip(files, [FILE_PAIR_SOURCE, rule, witness]):
+            (lib / rel).parent.mkdir(parents=True, exist_ok=True)
+            (lib / rel).write_text(src, encoding="utf-8")
+        (work / "registry.json").write_text(json.dumps({"nodes": [], "concepts": [FILE_PAIR]}))
+        (Path(t) / "reading.json").write_text(json.dumps({"params": CALLER_PARAMS, "aggregates": AGG_DECLARED}))
+        own = {f"import {nodeid.concept_module(FILE_PAIR)}", f"import {nodeid.rule_module(P.NODE_ID)}", f"import {nodeid.witness_module(P.NODE_ID)}"}
+        with mock.patch.multiple(paths, **dirs), mock.patch.object(gate, "repo_digest", lambda *a, **k: {}), \
+                mock.patch.object(gate, "_toolchain", Ran(files, own)):
+            return gate.run_gate(Node(copy.deepcopy(record)), Reading(Path(t) / "reading.json"), {}, work, 0, 5,
+                                 accepted_concepts={FILE_PAIR: FILE_PAIR_ENTRY})
+
+
+COUNT_SCENES = '''def three (sp : Int) : Trace := scene 3 fun k => [ car 1 0 sp k, car 2 25 sp k, car 3 50 sp k ]
+/-- The subject with two bicycles in file ahead of it: no file of members of the aggregate. -/
+def withBikes : Trace := scene 3 fun k => [ car 1 0 20 k, bike 2 22 20 k, bike 3 43 20 k ]
+'''
+COUNT_RECORD = caller_record(("in a file of vehicles", "proceed slowly"),
+                             [{"span": "t1", "atoms": [f"ru.aggregate={AID}"], "derived": [FILE_PAIR]}, {"span": "o1", "atoms": ["kin.speed"]}],
+                             ["p.file_min", "p.file_reach", "p.file_cos", "p.crawl"],
+                             [("forbid", "violated"), ("permit", "compliant"), ("idle", "not_applicable"), ("blind", "unknown", ["kin.speed"])])
+COUNT_WITNESS = caller_witness(COUNT_SCENES, ['witness "forbid" (three 20) .violated', 'witness "permit" (three 1) .compliant',
+                                              'witness "idle" withBikes .notApplicable', 'witness "blind" (three 20) (.unknown []) ["kin.speed"]'])
+# Ego (1) at 10 m/s; car 2 starts 30 m ahead at 30 m/s (gaps 25, 45, 65, 85 m: in file at k = 0, 1);
+# car 3 starts 100 m behind at 35 m/s (gaps 95, 70, 45, 20 m: in file at k = 2, 3). With a 50 m
+# reach some car is in file with ego at every observation, and no one car at all four.
+RELAY_SCENES = '''def relay (egoSp : Int) : Trace := scene 4 fun k => [ car 1 0 egoSp k, car 2 30 30 k, car 3 (-100) 35 k ]
+def alone : Trace := scene 4 fun k => [ car 1 0 10 k, car 2 300 10 k ]
+def escorted : Trace := scene 4 fun k => [ car 1 0 10 k, car 2 25 10 k ]
+'''
+
+
+def relay_case(obligation: str) -> tuple[str, str, dict]:
+    """A caller whose obligation keeps a member in file with the moving subject over the window,
+    with a relay witness expected compliant."""
+    record = caller_record(("while moving", "accompanied at every moment by a vehicle in file"),
+                           [{"span": "t1", "atoms": ["kin.speed"]}, {"span": "o1", "atoms": [f"ru.aggregate={AID}"], "derived": [FILE_PAIR]}],
+                           ["p.win", "p.file_reach", "p.file_cos"],
+                           [("forbid", "violated"), ("permit", "compliant"), ("relay", "compliant"), ("idle", "not_applicable"),
+                            ("blind", "unknown", ["kin.speed"])])
+    witness = caller_witness(RELAY_SCENES, ['witness "forbid" alone .violated', 'witness "permit" escorted .compliant',
+                                            'witness "relay" (relay 10) .compliant', 'witness "idle" (relay 0) .notApplicable',
+                                            'witness "blind" escorted (.unknown []) ["kin.speed"]'], ", window := some (3000, 3000)")
+    return pair_caller(MOVING, obligation), witness, record
+
+
+@unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
+class ConceptInterfaceValidator(unittest.TestCase):
+    """A literal formal admits only the spellings of Core's enumerations: planning refuses a formal
+    that admits an aggregate id, so the gate's acceptance of one is no route for a planner."""
+
+    def test_a_literal_formal_admitting_an_aggregate_id_is_refused(self):
+        from harness.checks import validate_a
+        from harness.model import ontology
+        record = copy.deepcopy(CONCEPT_RECORD)
+        record["args"] = record["args"] + [{"name": "w", "sort": "literal", "values": [AID]}]
+        record["scenarios"] = [{"name": "holds", "expected": "compliant", "narrative": "the road user at rest"},
+                               {"name": "fails", "expected": "violated", "narrative": "the road user creeping"}]
+        outs = validate_a.validate_concepts([ConceptRecord(record)], [], ontology.load(paths.REPO / "ontology" / "ATOMS_train.md"), {}, [])
+        reasons = [r for o in outs for r in o.reasons]
+        self.assertIn(f"{CID}: literal formal `w` admits `{AID}`, which spells no enumeration value of Core (the enumerations table lists them)",
+                      reasons)
+
+    def test_a_contract_fixing_the_full_range_of_its_quantifier_is_valid(self):
+        from harness.checks import validate_a
+        from harness.model import ontology
+        outs = validate_a.validate_concepts([ConceptRecord(copy.deepcopy(CLOSE_COMPANY_RECORD))], [],
+                                            ontology.load(paths.REPO / "ontology" / "ATOMS_train.md"), {}, [])
+        self.assertEqual([(o.kind, o.reasons) for o in outs if o.reasons], [])
+
+
+@unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
+class ConceptInterface(unittest.TestCase):
+    """What a caller states about what a concept denotes goes through what the concept exposes.
+    These cases show the instances they run, never that the principle is enforced."""
+
+    def test_a_known_gap_a_contract_leaving_the_members_class_to_the_caller_passes_the_gate(self):
+        """A known gap, recorded rather than wanted: no check of the validator or the gates reads whether a
+        contract leaves to the caller a condition on an object the body binds itself. The concept below
+        promises that the caller states its members' class, has no formal for it, and passes the gate;
+        a scene of mixed classes shows the error once a witness puts it there. This test is updated when
+        a check of the interface is added; it is not behaviour to preserve."""
+        v, _rows = interface_concept_gate(VEHICLE_FILE, VEHICLE_FILE_SOURCE, vehicle_file_witness("lonely"), VEHICLE_FILE_RECORD)
+        self.assertEqual(v.verdict, "OK", v.details)
+        v, _rows = interface_concept_gate(VEHICLE_FILE, VEHICLE_FILE_SOURCE, vehicle_file_witness("carAndBikes"), VEHICLE_FILE_RECORD)
+        self.assertEqual(v.verdict, "WITNESS_FAIL", v.details)
+        self.assertIn("fails: expected violated, got compliant", v.details)
+
+    def test_the_pair_relation_passes_and_its_caller_states_the_members_class(self):
+        v, rows = interface_concept_gate(FILE_PAIR, FILE_PAIR_SOURCE, FILE_PAIR_WITNESS, FILE_PAIR_RECORD)
+        self.assertEqual((v.verdict, rows), ("OK", {"AGGREGATES": [], "HARDAGG": []}), v.details)
+        # the caller counts members of its own aggregate: a car followed by two bicycles is no file of them
+        v = pair_caller_gate(pair_caller(COUNTED_FILE, CRAWL), COUNT_WITNESS, COUNT_RECORD)
+        self.assertEqual(v.verdict, "OK", v.details)
+
+    def test_a_contract_fixing_the_full_range_of_its_quantifier_keeps_it(self):
+        v, rows = interface_concept_gate(CLOSE_COMPANY, CLOSE_COMPANY_SOURCE, CLOSE_COMPANY_WITNESS, CLOSE_COMPANY_RECORD)
+        self.assertEqual((v.verdict, rows), ("OK", {"AGGREGATES": [], "HARDAGG": []}), v.details)
+
+    def test_a_quantifier_moved_to_the_caller_keeps_its_place_relative_to_the_window(self):
+        v = pair_caller_gate(*relay_case(EVERY_MOMENT_SOME))
+        self.assertEqual(v.verdict, "OK", v.details)
+        # the same words with the quantifier moved outside the window: the gate checks only that the
+        # formula and its witnesses agree, so the relay witness written for the words fails it
+        v = pair_caller_gate(*relay_case(ONE_THROUGHOUT))
+        self.assertEqual(v.verdict, "WITNESS_FAIL", v.details)
+        self.assertIn("relay: expected compliant, got violated", v.details)
 
 
 if __name__ == "__main__":

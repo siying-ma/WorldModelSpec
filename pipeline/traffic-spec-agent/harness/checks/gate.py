@@ -543,7 +543,8 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     # running beside it own or the loop writes for them); the registries carry the accepted nodes and this one
     stray = scope_stray(baseline, {lib_rel(rule_rel), lib_rel(wit_rel)}, work)
     if stray:
-        return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
+        return Verdict("SCOPE_VIOLATION", [f"changed outside the node's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []),
+                       extras={"stray": stray})
     if not rule_file.exists() or not wit_file.exists():
         return Verdict("SCOPE_VIOLATION", [f"missing {rule_rel if not rule_file.exists() else wit_rel}"])
     rtext, wtext = rule_file.read_text(encoding="utf-8"), wit_file.read_text(encoding="utf-8")
@@ -1370,15 +1371,17 @@ def main (args : List String) : IO Unit := do
 
 
 def hard_coded_aggregates(cid: str, ids: list[str]) -> list[str]:
-    """A shared concept reads an aggregate only through a literal formal its caller fills. `ids` are
-    the aggregate ids its body names as written, its calls expanded with its own formals left
-    unfilled (`HARDAGG`): such an id is written into the body or given to a callee as a literal, and
-    whether a road user is a member of it depends on the definition that governs each calling law,
-    which no check of the concept alone can verify. An id the caller passes reaches the body as the
-    formal, and the caller's own gate holds it against that caller's reading and claims."""
+    """A shared concept names no definition-scoped aggregate in its body. `ids` are the aggregate ids its
+    body names as written, its calls expanded with its own formals left unfilled (`HARDAGG`): whether
+    a road user is a member depends on the definition that governs each calling law, which no check of
+    the concept alone can verify. A concept whose contract fixes the full range of a quantifier keeps
+    it; where the contract leaves a member's class to the calling law, the road user is an exposed
+    track formal, and that law states its class with its own admitted aggregate, which the calling
+    law's gate holds against its reading and claims."""
     return [f"{cid}: the body names the definition-scoped aggregate `{a}` itself (here or in a concept it calls with that id); "
-            "a shared concept reads an aggregate only through a literal formal its caller fills, so that each calling law's "
-            "own gate checks the id against its definitions, its reading and its claims" for a in ids]
+            "a shared concept names no aggregate, since membership depends on the definitions that govern each calling law: "
+            "where the contract leaves a member's class to the calling law, expose that road user as a track formal, and the "
+            "calling law states its class with its own admitted aggregate" for a in ids]
 
 
 def _lean_concept_id(lean_name: str) -> str:
@@ -1409,7 +1412,8 @@ def run_concept_gate(rec, reading: Reading, baseline: dict[str, str], work: Path
     # 1. scope
     stray = scope_stray(baseline, {lib_rel(c_rel), lib_rel(w_rel)}, work)
     if stray:
-        return Verdict("SCOPE_VIOLATION", [f"changed outside the concept's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []))
+        return Verdict("SCOPE_VIOLATION", [f"changed outside the concept's files: {stray[:8]}"] + ([f"… and {len(stray) - 8} more"] if len(stray) > 8 else []),
+                       extras={"stray": stray})
     if not c_file.exists() or not w_file.exists():
         return Verdict("SCOPE_VIOLATION", [f"missing {c_rel if not c_file.exists() else w_rel}"])
     ctext, wtext = c_file.read_text(encoding="utf-8"), w_file.read_text(encoding="utf-8")

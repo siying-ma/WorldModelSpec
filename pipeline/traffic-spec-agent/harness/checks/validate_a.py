@@ -957,6 +957,8 @@ def check_compositions(node: Node, known: dict[str, Node], sources: dict[str, st
                         "a reference that names a law composes a node of that law")
         if target.get("fenced"):
             errs.append(f"{node.id}: composes `{target.id}`, {fence_words(target.get('fenced'))}: its law is planned again, compose its new node")
+        elif target.get("superseded"):
+            errs.append(f"{node.id}: composes `{target.id}`, which its law's current plan no longer lists (superseded): compose a node of that plan")
         names = {b["name"] for b in target.get("binders", [])}
         mapped = set((c.get("map") or {}).keys())
         if mapped != names:
@@ -1027,26 +1029,51 @@ def check_source_spans(node: Node) -> list[str]:
     return errs
 
 
-def acyclic(nodes: dict[str, Node]) -> list[str]:
-    graph = {n.id: [c.get("rule") for c in n.dependencies()] for n in nodes.values()}
-    state: dict[str, int] = {}
-    cycles = []
+#: The words that open a composition cycle's reason (`acyclic`).
+CYCLE = "composition cycle:"
 
-    def visit(u: str, stack: list[str]) -> None:
-        state[u] = 1
-        for v in graph.get(u, []):
-            if v not in graph:
-                continue
-            if state.get(v) == 1:
-                cycles.append(" → ".join(stack + [u, v]))
-            elif state.get(v) is None:
-                visit(v, stack + [u])
-        state[u] = 2
 
-    for u in graph:
-        if state.get(u) is None:
-            visit(u, [])
-    return [f"composition cycle: {c}" for c in cycles]
+def cycle_components(nodes: dict[str, Node]) -> list[list[str]]:
+    """The composition cycles among `nodes`, along their raw composition edges: each strongly
+    connected component of more than one node, and each node that composes itself, its members
+    sorted. A node that only reaches a cycle is no member."""
+    graph = {n.id: [str(c.get("rule")) for c in n.dependencies() if c.get("rule") in nodes] for n in nodes.values()}
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    on: set[str] = set()
+    stack: list[str] = []
+    out: list[list[str]] = []
+
+    def strong(v: str) -> None:
+        index[v] = low[v] = len(index)
+        stack.append(v); on.add(v)
+        for w in sorted(graph[v]):
+            if w not in index:
+                strong(w); low[v] = min(low[v], low[w])
+            elif w in on:
+                low[v] = min(low[v], index[w])
+        if low[v] == index[v]:
+            comp = []
+            while True:
+                w = stack.pop(); on.discard(w); comp.append(w)
+                if w == v:
+                    break
+            if len(comp) > 1 or v in graph[v]:
+                out.append(sorted(comp))
+    for v in sorted(graph):
+        if v not in index:
+            strong(v)
+    return sorted(out)
+
+
+def acyclic(nodes: dict[str, Node]) -> list[tuple[str, list[str]]]:
+    """Each composition cycle (`cycle_components`) as (its reason, its members): the reason names the
+    members and the edges between them, and belongs to the members alone."""
+    out = []
+    for comp in cycle_components(nodes):
+        edges = sorted(f"{a} → {c.get('rule')}" for a in comp for c in nodes[a].dependencies() if c.get("rule") in comp)
+        out.append((f"{CYCLE} members {comp}; edges {edges}", comp))
+    return out
 
 
 class ValidatorFault(RuntimeError):
@@ -1166,7 +1193,7 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_declarations(n, catalogue)
         errs += check_reemission(n, accepted, law.text)
         errs += check_region_places(n.id, n.claimed_atoms(), onto)
-        errs += [c for c in cycle_errs if n.id in c]
+        errs += [reason for reason, members in cycle_errs if n.id in members]
         obligation_residue = any(n.spans().get(r.get("span"), {}).get("role") == "obligation" for r in n.get("residues", []))
         # the obligation itself in a residue closes the law: the vocabulary cannot carry the duty, and
         # no re-plan changes that. A gap the plan proposes does not block here: the node is coded with the

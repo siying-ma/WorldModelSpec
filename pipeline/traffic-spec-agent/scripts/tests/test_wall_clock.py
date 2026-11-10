@@ -64,8 +64,8 @@ class TimeoutStopsNothing(unittest.TestCase):
         self.assertNotEqual(statuses[-1], "infrastructure_failure")
         self.assertIn("L_1", snap["accepted_nodes"])
         self.assertNotIn("L_1", snap["fenced"])
-        self.assertNotEqual(cache["L_1"]["details"][:1], ["scripted GATE_TIMEOUT"])
-        self.assertIn("not rechecked at this launch", notes + json.dumps(snap.get("pending_notices", [])))
+        self.assertEqual((cache["L_1"]["timeouts"], "verdict" in cache["L_1"]), (1, False))   # counted, never a verdict
+        self.assertIn("not judged at this launch", notes + json.dumps(snap.get("pending_notices", [])))
 
     def test_a_toolchain_that_does_not_run_still_stops(self):
         w = world()

@@ -276,7 +276,8 @@ class LateFence(R.Interruptions, unittest.TestCase):
         a = Node(R.node("L_1", "x", "L-1", derived=[CID]))
         b = Node(R.node("L_2", "y", "L-2", compositions=["L_1"]))
         c = Node(R.node("L_3", "z", "L-3"))
-        out = integrate.unavailable_candidates(run, [a, b, c], {"drv.motion.other": {CID}})
+        run.law_entries = {}
+        out = loop.integration_holds(run, [a, b, c], [], {"drv.motion.other": {CID}})
         self.assertEqual(sorted(out), ["L_1", "L_2", "drv.motion.other"])
 
 
@@ -299,9 +300,19 @@ class AdmissionSelection(unittest.TestCase):
                              "drv.motion.zz_broken": C("drv.motion.zz_broken")})
         run = self.r.load("B", "A", ["L-3"])
         self.assertEqual(integrate.admission_selection(run, "node", "L_2"),
-                         {"nodes": ["L_1", "L_2"], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["L_2"]})
+                         {"nodes": ["L_1", "L_2"], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["L_2"], "missing": []})
         self.assertEqual(integrate.admission_selection(run, "concept", "drv.motion.alpha"),
-                         {"nodes": [], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["drv.motion.alpha"]})
+                         {"nodes": [], "concepts": ["drv.motion.alpha", "drv.motion.beta"], "keep": ["drv.motion.alpha"], "missing": []})
+
+    def test_a_missing_provider_is_named_never_dropped(self):
+        """T15 (missing): a target the view holds no record of, directly or through a node it
+        composes, is named in `missing`; the availability rule gives the dependency's code."""
+        self.r.run("A", laws=["L-1", "L-2", "L-3"], nodes={"L_1": N("L_1", "L-1", composes=["L_9"]), "L_2": N("L_2", "L-2", composes=["L_1"])})
+        run = self.r.load("B", "A", ["L-4"])
+        run.law_entries = {}
+        self.assertEqual(integrate.admission_selection(run, "node", "L_2")["missing"], ["L_9"])
+        self.assertEqual(integrate.admission_selection(run, "node", "L_1")["missing"], ["L_9"])
+        self.assertEqual(run.provider_code("L_2", None), "via:L_1:via:L_9:missing")
 
     def scripted(self, broken):
         """Gates whose build fails when the registry they are given carries the broken record (as a
@@ -451,7 +462,7 @@ class AggregateOrder(R.Interruptions, unittest.TestCase):
             return [], []
         real = integrate.admission_recheck
 
-        def admission_recheck(run, reading, base, unjudged=None):
+        def admission_recheck(run, reading, base, unjudged=None, notes=None):
             has = any(a.get("id") == AGG for a in (jsonl.read_json(run.reading_file, {}) or {}).get("aggregates", []))
             w.admission["L_1"] = "OK" if has or not run.opts.base_run else "CHECK_FAIL"
             return real(run, reading, base)

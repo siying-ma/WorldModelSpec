@@ -196,7 +196,7 @@ class Snapshot(unittest.TestCase):
                 run = Run(opts); run.dir.mkdir(parents=True)
                 (run.dir / "options.json").write_text(json.dumps({"run_id": "r", "laws": str(opts.laws), "ontology": str(ONTO),
                                                                   "reading": str(opts.reading), "label_repair": False,
-                                                                  "semantic": {"run_version": RUN_VERSION}}))
+                                                                  "dependency": "build_usable_v1", "semantic": {"run_version": RUN_VERSION}}))
                 run.iteration = 3
                 led = Ledger(run.ledger_file, ["L"], 2); led.attempt = 3; led.mark_planned("L", ["n"], 3)
                 cl, nl = ConceptLedger(run.concept_ledger_file, 3), NodeLedger(run.node_ledger_file, 2)

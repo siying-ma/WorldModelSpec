@@ -83,15 +83,14 @@ class NoNodeReviewPath(unittest.TestCase):
 class StartupChecks(unittest.TestCase):
     def test_a_budget_must_be_finite_and_non_negative(self):
         for bad in (float("nan"), float("inf"), -1.0, True):
-            with self.subTest(bad=bad), self.assertRaises(SystemExit):
-                loop.check_options(opts(aggregate_verifier_budget_usd=bad))
-        loop.check_options(opts(aggregate_verifier_budget_usd=5.0, claude_budget_usd=200))
+            with self.subTest(bad=bad):
+                self.assertIn("finite, non-negative", loop.check_options(opts(aggregate_verifier_budget_usd=bad)))
+        self.assertIsNone(loop.check_options(opts(aggregate_verifier_budget_usd=5.0, claude_budget_usd=200)))
 
     def test_the_aggregate_verifier_is_a_second_vendor_with_its_key(self):
-        with self.assertRaises(SystemExit):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="claude-y"))
+        self.assertIn("share a vendor", loop.check_options(opts(model="claude-x", aggregate_verifier_model="claude-y")))
         from harness.agents import openai_runner
-        with patch.object(openai_runner, "available", lambda: False), self.assertRaises(SystemExit):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5"))
+        with patch.object(openai_runner, "available", lambda: False):
+            self.assertIn("OPENAI_API_KEY", loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5")))
         with patch.object(openai_runner, "available", lambda: True):
-            loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5"))
+            self.assertIsNone(loop.check_options(opts(model="claude-x", aggregate_verifier_model="gpt-5")))

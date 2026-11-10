@@ -172,7 +172,11 @@ python -m harness index                                    # regenerate the regi
 python -m harness status --run_id <run>
 python -m harness reopen --run_id <run> --laws <id>[,<id>]   # a law not accepted and not blocked on a gap back to open with a fresh
                                                              # budget; its held nodes, node-ledger entries and failed concepts are dropped;
-                                                             # a law blocked only on its `decision:<id>` reopens with it
+                                                             # a law blocked only on its `decision:<id>` reopens with it; a request naming a law
+                                                             # blocked on a gap not decided, or not naming a root law that holds one, is refused whole
+python -m harness reopen --run_id <run> --laws <id> --admission   # only lets the paused admission rechecks of what the law reaches run again;
+                                                             # refused on any operator root, except a dependency fence whose every cause is
+                                                             # only such an unjudged gate (a dependent law may recover it; nothing is lifted)
 
 # the monitor: decide accepted rules on a capture (a Core trace and its manifest); run it with the full split active
 python -m harness split --use full
@@ -490,7 +494,7 @@ an atom its manifest masks or, on a history-boundary witness, a window truncated
 a `blind` mask leaves the rule unknown is the gate's, on the built witness.
 
 **Do not edit the pipeline tree while a loop runs.** The gate digests the whole tree; an edit to the
-harness or the prompts during a coding session is a scope violation charged to that law.
+harness or the prompts during a coding session is a scope violation of that session, and pauses the run.
 
 **Sessions are isolated, jailed and allow-listed.** Every agent session runs with no settings
 file, no CLAUDE.md, no plugin, no MCP server and no skill: its context is its prompt. It acts under
@@ -502,7 +506,21 @@ tool. Shell rules are exact commands, never prefixes. Deny rules on the frozen t
 whole-tree digest sit underneath, so a change anywhere outside the node's two files is
 `SCOPE_VIOLATION`, the node is rolled back and the stray files are named in `results/<run>/TO_USER.md`,
 with the task's `baseline.json`, which holds each library file's digest before the session: only
-those files are restored, never the whole tree.
+those files are restored, never the whole tree. A scope violation is the coder's, never the plan's or
+the contract's: no report of that session is judged, no repair or plan session sees it, no attempt is
+counted, and the record is coded again as it is. Two conditions are independent. While a file a
+session changed outside its own is not back at its `baseline.json` digest, no coding session starts
+and the run stops `awaiting_operator`; only restoring those files lifts that pause (a reopen does not,
+and nothing accepts the files as they are). A record whose sessions reach the scope bound (two
+violations) is held for the operator with `scope_budget`; `reopen` clears that count. Inside a label
+repair's candidate, every session (repair, re-ask, plan, concept repair, coder, judge) is followed by
+the commit's own production-tree check; a scope violation or a moved tree stops the candidate, judges
+no report and rolls it back unpublished, filing none of its change requests or gaps. It counts no label
+repair, only one scope count of the law that opened the candidate (once per candidate, bound two). A
+trusted answer from before the violation is kept (a coder's violation codes the same repair answer
+again); the answer of a session that went out of scope is never read again (a repair session's is
+kept on disk and a new session is asked). A production file such a session changed pauses the run as
+above; the rollback never lifts that pause.
 
 **One library per run.** `library/` holds the rules and concepts of exactly one run (and its base
 chain), because `index_sync` registers every file on disk that `.inactive.json` does not exclude. At start (`loop.check_library_isolation`)
@@ -585,9 +603,17 @@ run is pinned to (below). To use newer code, start a new run from the baseline's
 
 **What waits.** On the remote machine a law whose nodes all pass the gate is kept, with its
 generated nodes, and recorded as not accepted (`awaiting_labels`); it is accepted only by its label
-check. Inside a law, its nodes are built in dependency order whatever the law's state; a node of
-another law that composes a node of a law not yet accepted waits, uncharged, and so does a law whose
-text names a law not yet accepted. Sharing an accepted concept makes no law wait. When nothing
+check. Whether a node may be built on another is decided per node, never by its law's formal
+acceptance (`Run.provider_code`): a node is usable for building once it is published (integrated),
+its law planned or accepted with the node in its current plan, not fenced, with admission evidence
+under its current key, and so is everything it composes and calls. Inside a law, its nodes are built
+in dependency order within one iteration; another law's node is composed once it is published, the
+next iteration; a law naming a planned law in its text is planned at once. A dependency whose law
+is blocked or failed, or a node that is fenced, holds the dependent law for the operator on the
+root's token (`decision:<root law>`, `waits_on` the root); a law closed after its dependents were
+accepted revokes their acceptance the same way. A record whose admission gate exceeded its deadline
+has no evidence (`unjudged`): neither it nor anything on it is usable or work; after two timeouts
+under one key its recheck pauses until `harness reopen <run> --laws <law> --admission`. When nothing
 runnable is left without a label check, the remote stage pauses (status `awaiting_labels`) instead
 of spending iterations, and the run goes to the local machine. After the local stage has checked and
 repaired the waiting laws (status `awaiting_generation`), the run goes back to the remote machine,
@@ -823,7 +849,10 @@ first launch (`results/<run>/handoff/imported.json` records that, locally).
 file is elaborated: `#eval`, `run_cmd`, `initialize`, `elab` — scanned in code only, never in the header comment or the
 operationalization strings that carry the law's words), `CHECK_FAIL` (`Rule.check`, which also
 rejects a number in an entity position, `Rule.checkReading`, which holds every aggregate id
-a rule names to the run's admitted aggregates, Core's dimension check of every comparison and call,
+a rule names to the run's admitted aggregates, the refusal of a definition-scoped aggregate id a concept's body
+names itself or gives a callee (membership depends on the definition that governs each calling law, so where a
+contract leaves a member's class to the calling law the concept exposes that road user as a track formal and the
+calling law states its class with its own admitted aggregate), Core's dimension check of every comparison and call,
 no cosine tolerance outside [-1, 1], and no division by a term that reads a measurement, which can be
 zero — a comparison is written with products), the claim checks (a formula's atoms are what the evaluator reads: its
 leaves, the clock or path length of every window, and the kind of every quantifier with a literal
@@ -978,12 +1007,12 @@ same clause (`except as (otherwise) provided in`, `as (otherwise) provided in`, 
 carried by execution compositions or, where the named law is outside the corpus, a residue; never by
 a `definition` reference. Other words that mention a law are not forced into a composition. An
 execution composition on a span naming laws composes a node of one of them. In a candidate (label or
-node repair) a node may not gain a dependency on a node of another law not yet formally accepted
-(`Run.usable_nodes`). These checks are what make a dependency the text states mechanically a
+node repair) a node may not gain a dependency on a node not usable for building
+(`Run.provider_code`, in the transaction's own view of the plans). These checks are what make a dependency the text states mechanically a
 declared composition: the cycle and fence checks see declared compositions only. The source,
 fetched whole from the corpus with the definitions that apply to it, is shown to the planner, the
 repair, the coder, the reviewer and both judges, and joins the node's dependency context.
-Every other composition is an execution dependency. A node is coded only after every node it composes is accepted; under `--label_repair`, where a law is accepted only by its label check, a node of another law counts as accepted only once its law is (`Run.usable_nodes`), while the nodes of one law compose one another in dependency order whatever the law's state, and a cycle of laws each waiting on the next is blocked for the operator; a node whose
+Every other composition is an execution dependency. A node is coded only after every node it composes is usable for building it (`Run.provider_code`): its own law's siblings once their gate passed in the iteration, another law's nodes once published, whatever that law's formal acceptance; a law is checked on its labels, and accepted, only once its own nodes and those of every law they reach are usable (`label_ready`); a node whose
 composed node is not accepted yet is held in the run's state and coded in a
 later iteration without re-planning and without an attempt counted, its law staying `planned`
 until every node it was planned with is accepted. A law waits for the operator when it is blocked, closed as

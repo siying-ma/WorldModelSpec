@@ -13,7 +13,10 @@ What a transaction holds, under `iter-NNN/candidate/<id>/` of the run:
 - `mapping.json` and `admission.json`, the run's mapping index and admission cache as the
   candidate will leave them;
 - `rulings.jsonl`, the rulings a check made on the candidate, published only with it;
-- a view of the run's records (`view`), the run's accepted nodes and concepts with the changes.
+- a view of the run's records (`view`), the run's accepted nodes and concepts with the changes;
+- its own copies of the law ledger (`ledger`, bound to the view) and of the label states, so every
+  check inside it reads the plans its changes make, and production's ledger is untouched until the
+  commit merges the route derived from the verified results onto it.
 
 Its life:
 1. `Candidate.open` requires that the loop has paused scheduling and that no task or child process
@@ -259,13 +262,19 @@ def _file_sha(p: Path) -> str | None:
     return hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
 
 
-def production_baseline(run: Run) -> dict:
+#: The per-file digest of the production tree a candidate opened on (`production_baseline`'s `tree`
+#: is its hash), kept in the candidate's directory: what names each production file a candidate's
+#: session changed.
+PRODUCTION_DIGEST = "production_digest.json"
+
+
+def production_baseline(run: Run, tree: dict | None = None) -> dict:
     """What a commit requires unchanged since the transaction opened: every file of the pipeline tree
-    a session could write (the gate's repository digest of the tree that holds the library) and the
-    run's own files the commit replaces or appends to."""
+    a session could write (the gate's repository digest of the tree that holds the library, `tree`
+    when already computed) and the run's own files the commit replaces or appends to."""
     files = {name: _file_sha(run.dir / name) for name in ("state.json", "reading.json", "mapping.json", "admission.json", "rulings.jsonl")}
     files["base_reading"] = _file_sha(Path(run.opts.reading))
-    return {"tree": _sha(gate.repo_digest(paths.LIBRARY.parent)), **files}
+    return {"tree": _sha(gate.repo_digest(paths.LIBRARY.parent) if tree is None else tree), **files}
 
 
 class _View(Run):
@@ -290,6 +299,28 @@ class _View(Run):
         """The candidate's rulings: the run's as they stood when it opened, then every ruling a review,
         a replay or an adjudication made on the candidate; published whole only with it."""
         return self._candidate_rulings
+
+    @property
+    def admission_file(self) -> Path:
+        """The candidate's admission evidence: the run's as it stood when the candidate opened, with
+        the entries the candidate's own gates write at its commit."""
+        return self._candidate_rulings.with_name("admission.json")
+
+
+#: The fields of a law's ledger entry a commit publishes from its route: what the law's state means.
+#: Every other field (attempts, charges, repeats, counts) is the live entry's at the commit.
+LEDGER_SEMANTIC = ("state", "nodes", "gaps", "own_gaps", "waits_on", "reasons")
+
+
+def transaction_ledger(run: Run):
+    """A copy of the run's live law ledger (its entries as the loop holds them, else as its file
+    holds them), for a transaction to check and route on without touching production's."""
+    from ..store.ledger import Ledger, Entry, _load
+    entries = run.law_entries if run.law_entries is not None else _load(run.ledger_file, Entry, "law")
+    led = Ledger.__new__(Ledger)
+    led.path, led.plan_attempts, led.attempt = None, run.opts.plan_attempts, run.iteration
+    led.entries = copy.deepcopy(entries)
+    return led
 
 
 def _view(run: Run, area: Path, base_reading: Path, base: dict | None = None) -> _View:
@@ -409,18 +440,21 @@ def validate_records(txn: "Candidate", nodes: list[Node], concepts: list[Concept
     return out
 
 
-def unavailable_compositions(view: Run, idents) -> dict[str, list[str]]:
-    """Each node of `idents` that composes, directly or through the nodes it composes, a node its own
-    law may not use (`Run.usable_nodes`): its id → those nodes. A node of its own law (a sibling) is
-    usable; a node this run generated for another law is usable only once that law is formally
-    accepted."""
-    from .integrate import admission_selection
+def unavailable_compositions(view: Run, idents, gated=()) -> dict[str, dict[str, str]]:
+    """Each node of `idents` that composes, directly or through the nodes it composes, a node that is
+    not usable for building it in the transaction's view (`Run.provider_code`: fenced, superseded,
+    missing, not yet published, its law planned again or held for the operator, without admission
+    evidence): its id → {that dependency: its code}. `gated`: the records whose admission is this
+    transaction's own gate (its changed records and the closure it checks again)."""
+    from ..store.state import Availability, USABLE
     nodes, out = view.all_nodes(), {}
+    av = Availability(view, gated=gated)
     for ident in idents:
         if ident not in nodes:
             continue
-        ok = view.usable_nodes(Node(nodes[ident]).law)
-        bad = sorted(n for n in admission_selection(view, "node", ident)["nodes"] if n != ident and n not in ok)
+        n = Node(nodes[ident])
+        bad = {str(c.get("rule")): av.code(str(c.get("rule")), n.law) for c in n.dependencies() if c.get("rule")}
+        bad = {d: c for d, c in bad.items() if c != USABLE}
         if bad:
             out[ident] = bad
     return out
@@ -450,6 +484,9 @@ class Candidate:
         self.extras: dict[str, dict] = {}          # what a passing gate returned, for each changed record
         self.bound: dict = {k: None for k in LABEL_VERSIONS}
         self.label_checks: dict = {}               # law → the label check a hook made on the candidate, for the caller to publish
+        self.ledger = None                         # the transaction's own copy of the law ledger, bound to its view
+        self.label_states: dict = {}               # its own copy of the label states
+        self.plans: dict | None = None             # the plans given to the label hook, part of what results rest on
         self.baseline: dict = {}
         self.scope_baseline: dict = {}
         self.view: _View
@@ -486,8 +523,10 @@ class Candidate:
 
     def _copy(self) -> None:
         run = self.run
-        self.baseline = production_baseline(run)              # taken before anything is copied
+        prod_tree = gate.repo_digest(paths.LIBRARY.parent)
+        self.baseline = production_baseline(run, prod_tree)  # taken before anything is copied
         self.tree.mkdir(parents=True)
+        jsonl.write_atomic(self.area / PRODUCTION_DIGEST, json.dumps(prod_tree))
         cp = subprocess.run(["cp", "-a", "--reflink=auto", str(paths.LIBRARY), str(self.library)], capture_output=True, text=True)
         if cp.returncode != 0:
             raise RuntimeError(f"the library could not be copied into {self.tree}: {cp.stderr.strip()}")
@@ -506,6 +545,9 @@ class Candidate:
             if src.exists():
                 shutil.copy2(src, self.area / name)
         self.view = _view(run, self.area, self.base_reading, self.base)
+        self.ledger = transaction_ledger(run)
+        self.view.law_entries = self.ledger.entries          # every check inside it reads its own plans, never production's
+        self.label_states = copy.deepcopy(run.label_states)
         self.scope_baseline = gate.repo_digest(self.tree)
         # the copy is the production the baseline names: production unchanged since, and the copy equal to it
         moved = sorted(k for k, v in production_baseline(run).items() if self.baseline.get(k) != v)
@@ -632,10 +674,12 @@ class Candidate:
         return f
 
     def apply(self, changes: list[Change], params: list[dict] | None = None, declarations: list[dict] | None = None,
-              origin: str | None = None) -> None:
+              origin: str | None = None, plans: dict[str, list[str]] | None = None) -> None:
         """Apply a change set to the candidate, whole or (`ChangeRefused`) not at all, and the reading
         proposals with it: each changed node's own parameter proposals and declared ids, and `params`
-        and `declarations` as `origin` proposes them; all enter the candidate's readings only.
+        and `declarations` as `origin` proposes them; all enter the candidate's readings only. Each
+        law with a node change has its plan updated in the transaction's ledger: `plans[law]` when
+        given (a re-plan), else its plan less the nodes withdrawn, with its new nodes added.
         Earlier results no longer describe the candidate and are dropped."""
         from ..loop import enter_proposed
         self._require_open()
@@ -667,6 +711,7 @@ class Candidate:
                         enter_proposed(view, view.opts, Node(rec))
                 if ch.kind == "node":
                     self._callers(ch.ident, old, ch.record)
+                    self._plan(ch, old, plans)
                 self.write_set |= {gate.lib_rel(r) for r in files}
                 self.changed[ch.ident] = ch.kind
             if params or declarations:
@@ -680,6 +725,19 @@ class Candidate:
             for ch in changes:
                 f.write(json.dumps(asdict(ch), ensure_ascii=False) + "\n")
         self._status()
+
+    def _plan(self, ch: Change, old: dict, plans: dict | None) -> None:
+        """The plan of the changed node's law in the transaction's ledger."""
+        law = Node(ch.record or old or {"node_id": ch.ident, "law_refs": [nodeid.law_of(ch.ident)[0]]}).law
+        e = self.ledger.entries.get(law)
+        if e is None:
+            return
+        if plans and law in plans:
+            e.nodes = list(plans[law])
+        elif ch.record is None:
+            e.nodes = [i for i in e.nodes if i != ch.ident]
+        elif ch.ident not in e.nodes:
+            e.nodes = list(e.nodes) + [ch.ident]
 
     def _callers(self, nid: str, old: dict, new: dict | None) -> None:
         """Each of the run's own accepted concepts lists the accepted nodes that call it: a changed
@@ -716,15 +774,23 @@ class Candidate:
     def versions(self) -> dict:
         """What every result is bound to: the candidate's content (its library's files, its records,
         its readings and mapping index), Core and the toolchain as the copy holds them, the reading,
-        the gate's implementation, and the versions a later check binds (`bind`)."""
+        the gate's implementation, the versions a later check binds (`bind`), and `dependency`: each
+        law's state, plan, tokens and waits in the transaction's ledger, the admission evidence's keys
+        and verdicts, and the plans given to the label hook (bookkeeping counts are not part of it)."""
         from .integrate import gate_digest
         tree = gate.repo_digest(self.tree)
         text = lambda p: p.read_text(encoding="utf-8") if p.is_file() else None
         from ..store.state import record_digest              # what a record means: a recorded context or caller list is no content
         records = {"nodes": {k: record_digest(r) for k, r in self.view.accepted_nodes.items()},
                    "concepts": {k: record_digest(r) for k, r in self.view.accepted_concepts.items()}, "fenced": sorted(self.view.fenced)}
+        adm = jsonl.read_json(self.view.admission_file, {}) or {}
+        dependency = _sha({"ledger": sorted((law, e.state, list(e.nodes), list(e.gaps), list(e.own_gaps), list(e.waits_on))
+                                            for law, e in self.ledger.entries.items()),
+                           "admission": sorted((k, v.get("key"), v.get("verdict")) for k, v in adm.items() if isinstance(v, dict)),
+                           "plans": self.plans})
         return {"candidate": _sha({"tree": tree, "records": records, "reading": text(self.view.reading_file),
                                    "base_reading": text(self.base_reading), "mapping": text(self.view.mapping_file)}),
+                "dependency": dependency,
                 "core": _sha({k: v for k, v in tree.items() if k.startswith("library/TrafficSpec/Core/")}),
                 "toolchain": _sha({k: tree.get(f"library/{k}") for k in ("lean-toolchain", "lake-manifest.json", "lakefile.lean")}),
                 "reading": _sha(text(self.view.reading_file) or ""),
@@ -789,8 +855,9 @@ class Candidate:
             concepts = concept_order([ConceptRecord(view.all_concepts()[i]) for i, k in aff.closure.items() if k == "concept"])
             nodes = topological([Node(view.all_nodes()[i]) for i, k in aff.closure.items() if k == "node"])
             results += self.validator(self, nodes, concepts)
-            for ident, bad in unavailable_compositions(view, [i for i, k in aff.changed.items() if k == "node"]).items():
-                results.append(CheckResult("availability", ident, "fail", [f"composes {', '.join(bad)}, of a law not yet formally accepted"]))
+            for ident, bad in unavailable_compositions(view, [i for i, k in aff.changed.items() if k == "node"], gated=set(aff.closure)).items():
+                results.append(CheckResult("availability", ident, "fail", ["composes " + ", ".join(f"{d} ({c})" for d, c in sorted(bad.items()))
+                                                                          + ": not usable for building"]))
             failed = {r.subject for r in results if r.status != "pass"}
             if "validator" in failed:
                 failed |= set(aff.closure)
@@ -841,15 +908,59 @@ class Candidate:
                 f.write(json.dumps(asdict(r), ensure_ascii=False, default=str) + "\n")
         return results
 
+    # -- the route a commit carries -------------------------------------------------------------
+    def route(self, target: str | None, nodes: list[str]):
+        """The ledger the commit publishes, derived only from the transaction's ledger as verified and
+        its verified label checks (`label_checks`): the target law routed by its check (`route_entry`,
+        its plan `nodes`), every other law checked again routed by its own (an operator's hold kept),
+        then the acceptances that no longer hold revoked and routed (`revalidate_acceptance`), on a copy.
+        The copy names what it was derived for (`routed_for`) and carries the label states revoking
+        changed (`label_changes`) and the operator's lines (`said`)."""
+        from ..loop import LABEL_ROUTES, label_state, route_entry, revalidate_acceptance
+        routed = copy.deepcopy(self.ledger)
+        said: list[str] = []
+        for other, chk in sorted(self.label_checks.items()):
+            if other == target or other not in routed.entries:
+                continue
+            e = routed.entries[other]
+            if e.state in ("blocked", "failed"):
+                continue
+            new = {"accepted": "accepted", "waiting": "planned", "awaiting_label_repair": "planned", "failed": "blocked"}[LABEL_ROUTES[chk.outcome]]
+            if new != e.state:
+                e.state = new
+                if new == "blocked":
+                    e.gaps = sorted(set(e.gaps) | {f"decision:{other}"})
+                    e.own_gaps = sorted(set(e.own_gaps) | {f"decision:{other}"})
+        if target is not None and target in self.label_checks:
+            chk = self.label_checks[target]
+            routed.entries[target].nodes = list(nodes)
+            route_entry(self.view, routed, target, chk, list(nodes), label_state(self.view, target, chk, list(nodes), self.area / "label", self.id), said)
+        saved = (self.view.law_entries, self.view.label_states)
+        self.view.law_entries, self.view.label_states = routed.entries, copy.deepcopy(self.label_states)
+        self.view.gated_ids = set(self.gated)             # what its own gates passed is admitted with its commit
+        try:
+            with self.inside():
+                revoked = revalidate_acceptance(self.view, routed, said)
+            changes = {law: self.view.label_states[law] for law in revoked if law in self.view.label_states}
+        finally:
+            self.view.law_entries, self.view.label_states = saved
+            self.view.gated_ids = None
+        routed.routed_for, routed.label_changes, routed.said = (target, list(nodes)), changes, said
+        return routed
+
     # -- commit and rollback ---------------------------------------------------------------------
-    def commit(self, extra_state: dict | None = None) -> dict:
+    def commit(self, extra_state: dict | None = None, routed=None, label_updates: dict | None = None) -> dict:
         """Publish the candidate: its changed files, the registries regenerated from them, its
         readings, mapping index and admission cache, its staged rulings, and the run's snapshot with
         its records and fences (and `extra_state`, keys the caller commits with it). The snapshot is
         the run's committed one: the caller commits its own state first. Refused
         (`CommitRefused`, the candidate staying open) unless every result passed on the current
         versions, scheduling is drained, and the production baseline is the one the candidate
-        opened on."""
+        opened on. The ledger it publishes is `routed` (else the route derived with no target),
+        refused unless it is exactly `route` recomputed for what it names: its semantic fields
+        (`LEDGER_SEMANTIC`) are merged onto the live ledger, every count of it kept as it stands now.
+        `label_updates` (law ↦ fields, `None` removing one) and the label states the route revoked
+        are merged onto the live label states the same way."""
         from .integrate import admission_key
         self._require_open()
         run, view = self.run, self.view
@@ -871,6 +982,28 @@ class Candidate:
         snap = run.load_state()
         if snap is None:
             raise CommitRefused(f"run `{run.opts.run_id}` has no committed snapshot to commit onto")
+        derived = self.route(*(routed.routed_for if routed is not None and hasattr(routed, "routed_for") else (None, [])))
+        if routed is not None and [asdict(e) for e in routed.entries.values()] != [asdict(e) for e in derived.entries.values()]:
+            raise CommitRefused("the route carried is not the one the verified results derive: verify again")
+        from ..store.ledger import Entry
+        live = run.law_entries if run.law_entries is not None else {d["law"]: Entry(**{k: v for k, v in d.items() if k in Entry.__dataclass_fields__})
+                                                                    for d in snap.get("ledger", [])}
+        # what the commit publishes is built on copies: the live ledger and label states are touched only past
+        # the commit point, so a commit that stops before it leaves them as they were
+        published = copy.deepcopy(live)
+        for law, e in derived.entries.items():
+            if law in published:
+                published[law].__dict__.update({k: copy.deepcopy(getattr(e, k)) for k in LEDGER_SEMANTIC})
+        states = copy.deepcopy(run.label_states)
+        for law, upd in {**derived.label_changes, **(label_updates or {})}.items():
+            st = dict(states.get(law, {}))
+            for k, v in upd.items():
+                if v is None:
+                    st.pop(k, None)
+                else:
+                    st[k] = v
+            states[law] = st
+        self.published = {"ledger": live, "said": derived.said}      # `live` holds the published fields once committed
         # what the gates found, onto the changed records; their admission keys as published
         for ident, ex in self.extras.items():
             records = view.accepted_concepts if self.changed.get(ident) == "concept" else view.accepted_nodes
@@ -895,7 +1028,10 @@ class Candidate:
                     cache[ident] = {"key": admission_key(view, kind, ident, self.reading, self.base), "verdict": "OK",
                                     "details": [f"accepted by the gate in candidate {self.id}"]}
         jsonl.write_atomic(self.area / "admission.json", json.dumps(cache, indent=1, ensure_ascii=False))
-        snap.update({**{k: getattr(view, k) for k in OWNED}, **(extra_state or {})})
+        from ..store.ledger import _saved
+        snap.update({**{k: getattr(view, k) for k in OWNED}, "ledger": [_saved(e) for e in published.values()], **(extra_state or {})})
+        if states:
+            snap["label_states"] = states
         stage = self.area / "commit"
         if stage.exists():
             shutil.rmtree(stage)
@@ -930,9 +1066,16 @@ class Candidate:
         self._status()
         jsonl.write_atomic(pending_file(), json.dumps({"journal": str(run.dir / JOURNAL)}))      # what any later owner completes first
         jsonl.write_atomic(run.dir / JOURNAL, json.dumps(journal, ensure_ascii=False, indent=1))     # the commit point
-        _apply(journal, run.dir / JOURNAL, run)
-        for k in OWNED:                                   # the run in memory as committed
+        # past the commit point the new version is the run's: the run in memory as committed, its ledger's entries
+        # updated in place (every holder of them sees it), before the replacements a recovery would complete
+        for law, e in published.items():
+            if law in live:
+                live[law].__dict__.update({k: copy.deepcopy(getattr(e, k)) for k in LEDGER_SEMANTIC})
+        for k in OWNED:
             setattr(run, k, copy.copy(snap[k]))
+        if states:
+            run.label_states = states
+        _apply(journal, run.dir / JOURNAL, run)
         self.status = "committed"
         self._close()
         return {"candidate": self.id, "changed": dict(self.changed), "files": len(ops), "affected": [r.subject for r in self.results if r.check == "gate"]}

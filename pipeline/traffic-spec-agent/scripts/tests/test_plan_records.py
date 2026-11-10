@@ -5,6 +5,7 @@ shown (every node of the latest plan, later versions, true states, compositions 
 import contextlib
 import copy
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,6 +18,9 @@ from harness.model.blueprint import Node
 from harness.phases import plan
 from harness.store import paths
 from scripts.tests.test_review_routing import ONTO
+
+#: the concept validator runs a Lean program over the built library (as test_precondition_continuity checks; it imports this module)
+CORE_BUILT = shutil.which("lake") is not None and (paths.LIBRARY / ".lake" / "build" / "lib" / "lean" / "TrafficSpec" / "Core" / "Evidence" / "Adequacy.olean").exists()
 
 NODE = {"node_id": "L_1", "law_refs": ["L-1"], "subject": {"binder": "v", "class_elements": ["ru.motor_vehicle"]},
         "binders": [{"name": "v", "class_elements": ["ru.motor_vehicle"]}],
@@ -395,11 +399,13 @@ class ConceptAct(unittest.TestCase):
                              "scenarios": [], "act": act})
         return [e for e in validate_a.check_concept(rec, {}, self.ONTO_NS, {}, set(), {}, {}, "train") if "`act." in e or "boundary" in e]
 
+    @unittest.skipUnless(CORE_BUILT, "the Lean toolchain or the built Core is absent: not verified")
     def test_the_act_words_are_the_contract_s(self):
         self.assertEqual(self.errs({"boundary": "event", **self.WORDS}), [])
         errs = self.errs({"boundary": "event", **self.WORDS, "onset": "starts a manoeuvre", "extent": ""})
         self.assertTrue(any("`act.onset`" in e for e in errs) and any("`act.extent`" in e for e in errs), errs)
 
+    @unittest.skipUnless(CORE_BUILT, "the Lean toolchain or the built Core is absent: not verified")
     def test_the_boundary_is_carried_by_the_formals(self):
         window = [{"name": "turn_window", "unit": "s", "meaning": "m"}]
         self.assertEqual(self.errs({"boundary": "window", "window": "turn_window", **self.WORDS}, window), [])

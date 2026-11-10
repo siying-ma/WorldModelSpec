@@ -111,18 +111,27 @@ def concept_catalogue(run: Run) -> str:
 
 
 def library_summary(run: Run, pending: list[dict] | None = None) -> str:
+    """The published nodes with two states apart: whether a node may be composed now (`build`, the
+    run's availability rule `Run.provider_code`, never its law's formal acceptance) and its law's
+    ledger state (`law`)."""
+    from ..store.state import Availability, USABLE
+    from ..store.ledger import Entry, _load
+    entries = run.law_entries if run.law_entries is not None else _load(run.ledger_file, Entry, "law")
+    av = Availability(run, entries=entries)
     rows = []
-    formal = run.usable_nodes(None)                  # the availability rule: a node whose law awaits its formal acceptance
     for n in run.all_nodes().values():
         atoms = sorted(Node(n).claimed_atoms())
-        state = "accepted" if n["node_id"] in formal else "generated; its law is not yet accepted: only its own law's nodes may compose it"
-        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} | {state} |")
+        code = av.code(n["node_id"], None)
+        build = "composable (build)" if code == USABLE else f"not composable: {code}"
+        law = (entries.get(Node(n).law).state if entries.get(Node(n).law) else "inherited")
+        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n['binders'])} | {', '.join(atoms)} | {build} | {law} |")
     for n in pending or []:
         atoms = sorted(Node(n).claimed_atoms())
-        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n.get('binders', []))} | {', '.join(atoms)} | planned this iteration, not yet accepted |")
+        rows.append(f"| `{n['node_id']}` | {', '.join(n['law_refs'])} | {', '.join(b['name'] for b in n.get('binders', []))} | {', '.join(atoms)} | "
+                    "not composable: planned this iteration, not yet published | planned |")
     if not rows:
         return "(the library carries no accepted node yet)\n"
-    return "\n".join(["| node | law | binders | atoms claimed | state |", "|---|---|---|---|---|"] + rows) + "\n"
+    return "\n".join(["| node | law | binders | atoms claimed | build | law state |", "|---|---|---|---|---|---|"] + rows) + "\n"
 
 
 def pending_concepts_table(pending: list[dict] | None) -> str:

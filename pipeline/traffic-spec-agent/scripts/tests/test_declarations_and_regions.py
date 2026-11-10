@@ -20,6 +20,7 @@ from harness.phases import review, validate as validate_phase
 from harness.store.jsonl import DataIntegrityError
 from harness.store.state import Run
 from scripts.tests.test_review_routing import FakeRun, ONTO
+from scripts.tests import test_precondition_continuity as P
 
 MEANING = "the road user's current plan is to turn left at the region"
 PREMISE = "the way the road user travels on lies in a district the source names"
@@ -272,6 +273,7 @@ class RegionFormalPlaces(unittest.TestCase):
     def test_a_region_formal_needs_no_kind(self):
         self.assertEqual(self.reasons(self.rec), [])
 
+    @unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
     def test_a_region_found_by_the_body_still_needs_its_kind(self):
         found = {**self.rec, "args": [a for a in self.rec["args"] if a["sort"] != "region"]}
         self.assertTrue(any("a region quantifier names its kind" in r and "`st.lane_direction` (region argument 1)" in r

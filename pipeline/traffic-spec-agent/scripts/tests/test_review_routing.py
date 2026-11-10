@@ -599,7 +599,7 @@ class SubsetRun(unittest.TestCase):
         self.saved = paths.RESULTS
         paths.RESULTS = Path(self.tmp.name)
         base = paths.run_dir("base"); base.mkdir()
-        (base / "options.json").write_text(json.dumps({"run_id": "base"}))
+        (base / "options.json").write_text(json.dumps({"run_id": "base", "label_repair": False, "dependency": "build_usable_v1"}))
         rows =[{"node_id": "L_1", "law_refs": ["L-1"]}, {"node_id": "L_2", "law_refs": ["L-2"]}]
         (base / "accepted_nodes.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
         self.corpus = Path(self.tmp.name) / "corpus" / "laws.jsonl"; self.corpus.parent.mkdir()

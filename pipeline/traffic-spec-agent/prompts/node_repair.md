@@ -179,9 +179,12 @@ You are a one-shot session. Nothing waits for a reply.
    act) is judged where the act is recognized, which is after it began. The act is the
    observation at which its concept rises, and the later observations at which it still holds are
    not the act again. The contract states how long the act concept holds after recognition and
-   what ends it; do not infer an event act's extent from a window. A span the words place in time
-   relative to an act ("prior to", "after", "while"), whatever its role, is measured from that
-   rise, never from a later observation at which the concept still holds. Each trigger,
+   what ends it; do not infer an event act's extent from a window. A span placed in time relative to
+   an act is read relative to the boundary required by the words or an explicitly approved reading,
+   not automatically from the concept's rise. Distinguish the conduct's onset from its recognition.
+   A rise of a windowed or accumulated condition does not by itself establish the conduct's onset.
+   State which boundary the span uses and what observation supports it. Where the required boundary
+   cannot be expressed, report an operator gap. Each trigger,
    condition and exception span the node maps is then read at an occasion of the act you declare
    in `occasion`: `at_recognition` (where the act is recognized), `some_moment` (at some moment
    while the act is under way) or `throughout` (at every moment while it is under way). The

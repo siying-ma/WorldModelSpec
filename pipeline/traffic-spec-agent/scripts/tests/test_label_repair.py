@@ -67,7 +67,7 @@ class Routing(Base):
             run.fenced[N[3]] = {"kind": "node", "reason": "gate", "run": "r"}
             to_user = []
             routed = loop.label_route(run, ledger, training, to_user)
-            self.assertEqual(routed, {L[1]: "accepted", L[2]: "accepted", L[3]: "waiting", L[4]: "failed", L[5]: "awaiting_label_repair"})
+            self.assertEqual(routed, {L[1]: "accepted", L[2]: "accepted", L[4]: "failed", L[5]: "awaiting_label_repair"})   # L-3's node is fenced: not label-ready
             st = {k: ledger.entries[L[k]].state for k in L}
             self.assertEqual(st, {1: "accepted", 2: "accepted", 3: "planned", 4: "blocked", 5: "planned"})
             self.assertEqual([run.label_states[L[k]]["outcome"] for k in (1, 2)], ["aligned", "unverified"])
@@ -85,7 +85,7 @@ class Routing(Base):
             self.assertTrue(any("awaiting its label repair" in x for x in to_user))
             self.assertEqual(label_check.committed_checks(run.dir, run.label_states)[L[5]]["outcome"], "mismatch")
             again = loop.label_route(run, ledger, training, [])
-            self.assertEqual(again, {L[3]: "waiting"})                                             # the law awaiting repair is not checked again
+            self.assertEqual(again, {})                                                           # the law awaiting repair is not checked again; L-3 is not label-ready
 
     def test_the_routed_states_are_committed_with_the_snapshot(self):
         with setting() as (run, ledger, training, _t):
@@ -254,12 +254,11 @@ class Off(Base):
 
     def test_label_repair_needs_a_dataset(self):
         base = dict(run_id="t", laws=Path("l"), ontology=Path("o"), reading=Path("r"))
-        with self.assertRaisesRegex(SystemExit, "label_repair"):
-            loop.check_options(Options(**base, label_repair=True))
-        loop.check_options(Options(**base, label_repair=True, label_dataset="d"))
+        self.assertRegex(loop.check_options(Options(**base, label_repair=True)) or "", "label_repair")
+        self.assertIsNone(loop.check_options(Options(**base, label_repair=True, label_dataset="d")))
         for stage in ("label_deferred", "label_stage"):           # a split stage needs label repair
-            with self.subTest(stage=stage), self.assertRaisesRegex(SystemExit, "label_repair"):
-                loop.check_options(Options(**base, **{stage: True}))
+            with self.subTest(stage=stage):
+                self.assertRegex(loop.check_options(Options(**base, **{stage: True})) or "", "label_repair")
 
 
 if __name__ == "__main__":

@@ -405,7 +405,28 @@ def concept_language() -> str:
             "terms (`.param \"p.…\"` of the reading,\n"
             "or a declared literal). Inside a concept's body every `.var` is a formal or bound in the body and every\n"
             "`.param` is a formal parameter: a body never names a reading parameter. The call is expanded before\n"
-            "evaluation, so its atoms count as the caller's.\n")
+            "evaluation, so its atoms count as the caller's.\n\n"
+            + CONCEPT_INTERFACE)
+
+
+#: What a caller can state about what a concept denotes, rendered after the concept language.
+CONCEPT_INTERFACE = (
+    "A caller states a condition on what a concept denotes only through what the concept exposes: the\n"
+    "road users and regions it passes as formals, and the parameters it fills. It cannot restrict a road\n"
+    "user, a region or a device that the body binds itself. Where the contract leaves a condition on such\n"
+    "a bound object to the caller (the class of the road users counted, the kind of a region the body\n"
+    "finds, the motion of the others), the concept exposes the object as a formal, or the quantifier or\n"
+    "count moves to the caller and the concept states the relation for one bound object. A concept whose\n"
+    "contract itself states the full range of its quantifier (every road user of the scene, whatever its\n"
+    "class; every region of a kind the body names) keeps its quantifier and any class condition the\n"
+    "contract states. A quantifier moved to the caller keeps its scope and its order relative to the\n"
+    "other quantifiers, the logical operators and the time operators the contract states: the concept\n"
+    "states the relation at one observation; what the contract puts around the quantifier (\"at every\n"
+    "observation of the window, some road user\") stays around the caller's quantifier, and what it puts\n"
+    "inside (\"one road user, at every observation of the window\") stays inside; the caller's bound\n"
+    "variable takes a name no other binder of the formula uses. A literal formal admits only the\n"
+    "spellings of Core's enumerations, never an aggregate id. When a member's class is left to the\n"
+    "calling law, that law states the class of an exposed track with its own admitted aggregate.\n")
 
 
 def concepts_table(accepted: dict[str, dict]) -> str:

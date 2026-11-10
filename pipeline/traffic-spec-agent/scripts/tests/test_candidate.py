@@ -21,12 +21,13 @@ from harness.model import nodeid
 from harness.phases import candidate as cand
 from harness.phases import integrate
 from harness.store import jsonl, paths
+from harness.model.reading import Reading
 from harness.store.state import Options, Run, record_digest
 from scripts.tests.test_review_routing import ONTO
 
 CA, CB, CD, CE = "drv.motion.cand_a", "drv.motion.cand_b", "drv.motion.cand_d", "drv.motion.cand_e"
 NN, NM, NQ = "TEST_CAND_1", "TEST_CAND_2", "TEST_CAND_3"
-BASE = {"core": "core-v", "ontology": "onto-v"}
+BASE = None                                         # the run's own semantic inputs: the base its admission evidence is keyed on
 
 
 def concept_rec(cid: str, refs=(), contract: str | None = None, values=None) -> dict:
@@ -127,7 +128,19 @@ def world(concepts: dict[str, dict], nodes: dict[str, dict], library: Path | Non
             run.restore_state()
             run.load_accepted()
             index_sync.write_index()
+            admit(run)
             yield run, lib
+
+
+def admit(run, ids=None) -> None:
+    """Admission evidence for the run's accepted records (`ids`, else all), as their integration
+    writes it: a verdict `OK` under each record's current admission key."""
+    from harness.loop import semantic_inputs
+    from harness.phases import integrate
+    sem = semantic_inputs(run.opts)
+    recs = [("concept", c) for c in run.all_concepts()] + [("node", n) for n in run.all_nodes()]
+    integrate.record_admitted(run, [r for r in recs if ids is None or r[1] in ids], Reading(run.reading_file),
+                              {"core": sem["core"], "ontology": sem["ontology"]}, run.iteration)
 
 
 def standard() -> tuple[dict, dict]:
@@ -152,7 +165,7 @@ class Txn:
                       mock.patch.object(integrate, "verify_library", lambda *a, **k: ("verified", [], set()))]
         for c in self.stack:
             c.__enter__()
-        self.txn = cand.Candidate.open(self.run, base=BASE, validator=self.validator, hooks=self.hooks, scheduling=self.sched)
+        self.txn = cand.Candidate.open(self.run, base=None, validator=self.validator, hooks=self.hooks, scheduling=self.sched)
         return self.txn
 
     def __exit__(self, *exc):
@@ -460,7 +473,7 @@ class Baseline(Base):
         with world(concepts, nodes) as (run, lib):
             sched = cand.Scheduling()
             with self.assertRaisesRegex(cand.NotDrained, "not paused"):
-                cand.Candidate.open(run, base=BASE, validator=passing, hooks=(), scheduling=sched)
+                cand.Candidate.open(run, base=None, validator=passing, hooks=(), scheduling=sched)
             with sched.task():
                 with self.assertRaisesRegex(cand.NotDrained, "still running"):
                     with sched.pause(timeout=0.05):
@@ -469,7 +482,7 @@ class Baseline(Base):
             with mock.patch.object(gate, "_toolchain", Gates()), \
                     mock.patch.object(integrate, "verify_library", lambda *a, **k: ("verified", [], set())):
                 with sched.pause():
-                    txn = cand.Candidate.open(run, base=BASE, validator=passing, hooks=(), scheduling=sched)
+                    txn = cand.Candidate.open(run, base=None, validator=passing, hooks=(), scheduling=sched)
                     with self.assertRaises(cand.NotDrained):
                         with sched.task():
                             pass
@@ -487,7 +500,7 @@ class Baseline(Base):
             with Txn(run) as txn:
                 txn.apply([cand.Change("concept", CA, concepts[CA], files("concept", CA, "v2"))])
                 results = txn.verify()
-                self.assertEqual(set(results[0].versions), {"candidate", "core", "toolchain", "reading", "gate", "data", "label_contract",
+                self.assertEqual(set(results[0].versions), {"candidate", "dependency", "core", "toolchain", "reading", "gate", "data", "label_contract",
                                                             "scoring", "limits"})
                 txn.bind(data="data-v1")
                 with self.assertRaisesRegex(cand.CommitRefused, "data"):
@@ -586,7 +599,7 @@ class RealLean(Base):
             n_files = dict(zip(cand.own_files("node", P.NODE_ID), (P.RULE, P.WITNESS.replace("BRANCH", ".notApplicable"))))
             sched = cand.Scheduling()
             with sched.pause():
-                with cand.Candidate.open(run, base=BASE, validator=passing, hooks=(), scheduling=sched) as txn:
+                with cand.Candidate.open(run, base=None, validator=passing, hooks=(), scheduling=sched) as txn:
                     txn.apply([cand.Change("concept", G.CID, copy.deepcopy(G.CONCEPT_RECORD), c_files),
                                cand.Change("node", P.NODE_ID, copy.deepcopy(P.RECORD), n_files)])
                     results = txn.verify()

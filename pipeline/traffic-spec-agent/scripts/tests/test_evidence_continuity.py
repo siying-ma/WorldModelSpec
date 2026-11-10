@@ -18,6 +18,7 @@ from harness.phases import review
 from harness.store import paths
 from harness.store.state import Options, Run
 from scripts.tests.test_review_routing import FakeRun, scripted_reviewer, submit
+from scripts.tests import test_precondition_continuity as P
 
 NO_GEOMETRY = {"scenes": [{"t": 0, "users": [{"track": 1}, {"track": 2}], "relations": [{"a": 1, "b": 2, "same_direction": True}]}]}
 
@@ -153,7 +154,8 @@ class ContinuationSatisfaction(Stubs, unittest.TestCase):
             def make(name, base, lawf):
                 r = Run(Options(name, lawf, root / "ontology", reading, base_run=base))
                 r.dir.mkdir(parents=True, exist_ok=True)
-                (r.dir / "options.json").write_text(json.dumps({"run_id": name, "base_run": base, "laws": str(lawf)}))
+                (r.dir / "options.json").write_text(json.dumps({"run_id": name, "base_run": base, "laws": str(lawf),
+                                                                   "label_repair": False, "dependency": "build_usable_v1"}))
                 r.reading_file.write_text('{"params": [], "aggregates": []}')
                 return r
             a = make("A", None, laws)
@@ -193,11 +195,13 @@ class MeasuredRelations(Stubs, unittest.TestCase):
         self.result = ([], ["divergence 1 (holds_wrongly): the body agrees"], [], [])
         return self.review(self.run, concept("drv.motion.x_v2", "drv.motion.x", ("u", "w")), [ext], Path(self.run.dir) / "r")
 
+    @unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
     def test_a_measured_relation_may_not_change(self):
         changed = copy.deepcopy(NO_GEOMETRY); changed["scenes"][0]["relations"][0]["same_direction"] = False
         self.assertEqual(self.extend(NO_GEOMETRY, changed).status, "deferred")
         self.assertEqual(self.extend(NO_GEOMETRY, copy.deepcopy(NO_GEOMETRY)).status, "accepted")
 
+    @unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
     def test_a_computable_relation_is_left_to_core(self):
         stripped = copy.deepcopy(GEOMETRY); del stripped["scenes"][0]["relations"]
         self.assertEqual(self.extend(GEOMETRY, stripped).status, "accepted")
@@ -323,6 +327,7 @@ class UnreadKeys(unittest.TestCase):
     """What the decoder does not read is never an executed fact."""
     TRACE = {"scenes": [{"t": 0, "users": [{"track": 1, "kin": {"speed": 0, "certified_stopped": False}}]}]}
 
+    @unittest.skipUnless(P.TOOLCHAIN, P.SKIP)
     def test_the_same_decoded_scene_gives_the_same_facts(self):
         plain = copy.deepcopy(self.TRACE); del plain["scenes"][0]["users"][0]["kin"]["certified_stopped"]
         with tempfile.TemporaryDirectory() as t:

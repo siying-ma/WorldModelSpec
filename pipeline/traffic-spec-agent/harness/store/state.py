@@ -130,18 +130,18 @@ class Options:
     label_deferred: bool = False                   # with `label_repair`: no training recording is read on this machine; a law whose plan is gated is kept, not accepted, and recorded `awaiting_labels` for a later launch with the recordings
     label_stage: bool = False                      # with `label_repair`: this launch only checks laws on the training recordings and repairs them; it plans and codes nothing new
     label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
+    dependency: str = "build_usable_v1"            # the cross-law dependency policy (`DEPENDENCY_POLICY`), declared by the code: fixed for the run's life
 
 
-def acceptance_by_law(opts) -> bool:
-    """Whether a law's formal acceptance waits on more than its nodes' gates: with `label_repair` a law
-    is accepted only once its label check routes it there, so a node accepted on its gate is generated,
-    not formally accepted; otherwise a node's acceptance is formal."""
-    return bool(getattr(opts, "label_repair", False))
+#: The cross-law dependency policy this harness implements: a node of one law may compose another
+#: law's node once that node is usable for building (`Run.provider_code`), whatever the formal
+#: acceptance of its law; a law's acceptance is checked on the usability of everything it reaches.
+DEPENDENCY_POLICY = "build_usable_v1"
 
-
-#: The fields of a run's acceptance policy (what `acceptance_by_law` reads), each with the test of a
-#: legal saved value: a saved contract holds every one, explicitly, with a legal value.
-POLICY_FIELDS = {"label_repair": lambda v: isinstance(v, bool)}
+#: The fields of a run's acceptance policy (whether a law is accepted by its label check, and the
+#: dependency policy its generation follows), each with the test of a legal saved value: a saved contract holds every
+#: one, explicitly, with a legal value; a missing field is never filled by a default.
+POLICY_FIELDS = {"label_repair": lambda v: isinstance(v, bool), "dependency": lambda v: v == DEPENDENCY_POLICY}
 
 
 def policy_defects(saved) -> list[str]:
@@ -154,25 +154,31 @@ def policy_defects(saved) -> list[str]:
 
 
 def acceptance_policy(opts) -> dict:
-    """What decides how a run's laws are accepted (`acceptance_by_law` reads it), from a launch's
-    options or a saved contract that `policy_defects` found whole: fixed for the run's life."""
-    get = opts.get if isinstance(opts, dict) else lambda k, d=None: getattr(opts, k, d)
-    return {k: get(k) for k in POLICY_FIELDS}
+    """What decides how a run's laws are accepted, from a launch's
+    options or a saved contract: the policy fields `opts` holds, as it holds them. A field it lacks is
+    left out, never filled, so `policy_defects` reports it missing; fixed for the run's life."""
+    if isinstance(opts, dict):
+        return {k: opts[k] for k in POLICY_FIELDS if k in opts}
+    return {k: getattr(opts, k) for k in POLICY_FIELDS if hasattr(opts, k)}
 
 
 def acceptance_policy_refusal(fixed, opts) -> str | None:
     """The one check of a run's acceptance policy: why a launch with options `opts` may not continue a
-    run whose policy is `fixed` (its saved options, or the policy a handoff recorded), or None. A saved
-    policy that is not whole (`policy_defects`) is refused, never completed by a default; any change
-    is refused: a run accepts its laws on one policy, and another policy is a new run. Which stage a
-    launch runs (`label_deferred`, `label_stage`), its dataset and its budgets are not part of it."""
+    run whose policy is `fixed` (its saved options, or the policy a handoff recorded), or None. Both
+    sides must be whole (`policy_defects`) before they are compared: a side that is not is refused,
+    never completed by a default or coerced. Any change is refused, a value of another type included
+    (`1` is not `True`): a run accepts its laws on one policy, and another policy is a new run. Which
+    stage a launch runs (`label_deferred`, `label_stage`), its dataset and its budgets are not part of it."""
     if fixed is None:
         return None
     bad = policy_defects(fixed)
     if bad:
         return "the run's saved acceptance policy is not whole (" + "; ".join(bad) + "); restore its checkpoint, or start a new run id"
     was, now = acceptance_policy(fixed), acceptance_policy(opts)
-    changed = sorted(k for k in set(was) | set(now) if was.get(k) != now.get(k))
+    bad = policy_defects(now)
+    if bad:
+        return "the options' acceptance policy is not whole (" + "; ".join(bad) + "); give each field a legal value"
+    changed = sorted(k for k in POLICY_FIELDS if type(was[k]) is not type(now[k]) or was[k] != now[k])
     if not changed:
         return None
     return ("the run's acceptance policy is fixed for its life (" + ", ".join(f"{k}: {was.get(k)!r} → {now.get(k)!r}" for k in changed)
@@ -212,6 +218,9 @@ class Run:
         why = saved_version_refusal(f.parent)              # its raw version, before anything is recovered, restored or written
         d = json.loads(f.read_text(encoding="utf-8")) if why is None else {}
         why = why or (chain_version_refusal(d["base_run"], run_id) if d.get("base_run") else None)
+        bad = policy_defects(d) if why is None else []
+        if bad:                                            # the policy the run was started on, read raw: never completed
+            why = "its options.json holds no whole acceptance policy (" + "; ".join(bad) + ")"
         if why:
             raise SystemExit(f"run `{run_id}` cannot be read by this harness: {why} — nothing of it was read or rewritten")
         if candidate.pending() is not None:               # a library in the middle of a commit is never read as a whole
@@ -408,29 +417,25 @@ class Run:
                 moved.append(ident)
         return moved
 
-    def usable_nodes(self, for_law: str | None) -> dict[str, dict]:
+    def usable_nodes(self, for_law: str | None, **view) -> dict[str, dict]:
         """The one rule of when a node may be composed (by a plan, a scheduled coding task, a registry
-        entry a caller relies on): the accepted nodes (`all_nodes`) a node of law `for_law` may use.
-        When a law's formal acceptance is the law's (`acceptance_by_law`), a node this run accepted on
-        its gate is usable only by a node of its own law (a sibling, built in dependency order inside
-        the pending law) until its law is `accepted`; an inherited node and a node of a law outside
-        this run's ledger stay usable. Otherwise every accepted node is usable. Concepts are not
-        governed here: an accepted concept is usable by every law. Generated nodes stay in
-        `all_nodes` for the label check, integration and the library."""
-        nodes = self.all_nodes()
-        if not acceptance_by_law(self.opts):
-            return nodes
-        entries = self.law_entries
-        if entries is None:
-            from .ledger import Entry, _load
-            entries = _load(self.ledger_file, Entry, "law")
-        out = {}
-        for nid, rec in nodes.items():
-            law = Node(rec).law
-            e = entries.get(law)
-            if nid not in self.accepted_nodes or law == for_law or e is None or e.state == "accepted":
-                out[nid] = rec
-        return out
+        entry a caller relies on): the published nodes (`all_nodes`) whose `provider_code` for a node
+        of `for_law` is `USABLE` (`for_law` None: a caller of no law). A fenced or superseded node, one
+        whose law waits for the operator or is planned again, and one without admission evidence are
+        left out; a law's formal acceptance plays no part. `view` as `Availability` takes it."""
+        av = Availability(self, **view)
+        return {nid: rec for nid, rec in self.all_nodes().items() if av.code(nid, for_law) == USABLE}
+
+    def provider_code(self, nid: str, for_law: str | None, **view) -> str:
+        """Whether node `nid` may be used to build a node of `for_law` (`USABLE`), or why not: the code
+        of `Availability.code`, computed from the run's state as it is now (`view` as
+        `Availability` takes it)."""
+        return Availability(self, **view).code(nid, for_law)
+
+    @property
+    def admission_file(self) -> Path:
+        """The admission evidence of the run's records (`integrate.admission_recheck`)."""
+        return self.dir / "admission.json"
 
     def all_nodes(self) -> dict[str, dict]:
         """Accepted nodes the plan may compose: the base chain's, then this run's; a fenced version
@@ -514,6 +519,185 @@ class Run:
         return d["text"] if d.get("present") else "(none)\n"
 
 
+# ---------------------------------------------------------------------------------------------
+# Build usability: whether one record may be used to build another, apart from formal acceptance
+# ---------------------------------------------------------------------------------------------
+USABLE, OPERATOR, REPLANNING, FENCED, SUPERSEDED, UNPUBLISHED, MISSING, UNJUDGED = (
+    "usable", "operator", "replanning", "fenced", "superseded", "unpublished", "missing", "unjudged")
+#: A record composing another law's node whose pin (`planned_on`) is not that node's current record.
+PIN_MISMATCH = "pin_mismatch"
+#: Codes that end only by the operator (`OPERATOR`, a fenced node), by the planner (`SUPERSEDED`,
+#: `MISSING`), or by waiting for generation, a publication or a later admission check.
+WAITING_CODES = (UNPUBLISHED, REPLANNING, UNJUDGED)
+PLANNER_CODES = (SUPERSEDED, MISSING, PIN_MISMATCH)
+
+
+def base_code(code: str) -> str:
+    """The code of a dependency's own unavailability, without its `via:<id>:` prefixes."""
+    return code.rsplit(":", 1)[-1]
+
+
+class Availability:
+    """Whether a node may be used to build a node of a given law: one pure computation over a run's
+    state as it is now (its view of nodes and concepts, its fences, its live law ledger, its base
+    records and the admission evidence on disk), with what it computed kept only for its own life.
+    It reads no model, recording or label, so another clone of the run gives the same codes.
+
+    `code(nid, for_law)` decides, in this order, with no caller exempt:
+    1. the owner law (from the record, else from the id) is in the ledger and blocked or failed:
+       `OPERATOR`; open or returned: `REPLANNING`;
+    2. owner planned or accepted: `FENCED` when the node is fenced; `SUPERSEDED` when it is published
+       but not in the owner's current plan (`nodes`); not published: `UNPUBLISHED` when the plan
+       lists it, else `MISSING`;
+    3. owner outside the ledger (an inherited node, a law the run does not list): `MISSING` when not
+       published, `FENCED` when fenced;
+    4. its closure: every node it composes and every concept it calls, directly or through others,
+       through the same rules (a concept fenced or not published is `FENCED`); the first that is not
+       `USABLE` gives its code with the prefix `via:<id>:`; a node fenced only for composing a fenced
+       node names that node the same way;
+    5. `UNJUDGED` without admission evidence: a verdict `OK` in the admission file under the record's
+       current admission key, or, in the view a caller gives, a gate passed within it (`gated`).
+    The one exemption: `siblings`, the records of the current iteration whose gate passed and which
+    are not yet published, count as published for a node of their own law (after steps 1–2), never
+    for another law's (`UNPUBLISHED`)."""
+
+    def __init__(self, run, *, siblings: dict[str, dict] | None = None, gated=(), entries: dict | None = None):
+        self.run = run
+        self.siblings = dict(siblings or {})
+        self.gated = set(gated) | set(getattr(run, "gated_ids", None) or ())   # a transaction's records its own gates passed
+        if entries is None:
+            entries = run.law_entries
+        if entries is None:
+            from .ledger import Entry, _load
+            entries = _load(run.ledger_file, Entry, "law")
+        self.entries = entries
+        self.nodes, self.concepts = run.all_nodes(), run.all_concepts()
+        self.fenced = dict(run.fenced)
+        self._memo: dict = {}
+        self._keys: dict = {}
+        self._cache = None
+        self._key_inputs = None
+
+    # -- admission evidence ------------------------------------------------------------------------
+    def admission(self) -> dict:
+        if self._cache is None:
+            from ..phases.integrate import read_admission
+            self._cache = read_admission(self.run)
+        return self._cache
+
+    def evidence(self, kind: str, ident: str) -> bool:
+        """Whether the record has admission evidence: a gate passed within this view (`gated`), or a
+        verdict `OK` in the admission file under its admission key as the run holds it now."""
+        if ident in self.gated:
+            return True
+        hit = self.admission().get(ident)
+        if not isinstance(hit, dict) or hit.get("verdict") != "OK":
+            return False
+        if ident not in self._keys:
+            from ..phases import integrate
+            if self._key_inputs is None:
+                from ..model.reading import Reading
+                base = getattr(self.run, "base", None)
+                if not base:
+                    from ..loop import semantic_inputs
+                    sem = semantic_inputs(self.run.opts)
+                    base = {"core": sem["core"], "ontology": sem["ontology"]}
+                self._key_inputs = (Reading(self.run.reading_file), base, integrate.gate_digest())
+            reading, base, gd = self._key_inputs
+            try:
+                self._keys[ident] = integrate.admission_key(self.run, kind, ident, reading, base, gate_value=gd)
+            except (ValueError, KeyError, OSError):
+                self._keys[ident] = None
+        return self._keys[ident] is not None and hit.get("key") == self._keys[ident]
+
+    # -- codes -------------------------------------------------------------------------------------
+    def concept_code(self, cid: str, seen: frozenset = frozenset()) -> str:
+        if cid in self._memo:
+            return self._memo[cid]
+        if cid in seen:
+            return USABLE                                  # visited: each record is still judged once
+        rec = self.concepts.get(cid)
+        if rec is None or cid in self.fenced:
+            code = FENCED
+        else:
+            from ..model.blueprint import ConceptRecord
+            from ..model.nodeid import is_concept_id
+            code = USABLE
+            for r in sorted(ConceptRecord(rec).refs()):
+                if is_concept_id(r):                       # a primitive of the ontology is no record
+                    c = self.concept_code(r, seen | {cid})
+                    if c != USABLE:
+                        code = f"via:{r}:{c}"
+                        break
+            if code == USABLE and not self.evidence("concept", cid):
+                code = UNJUDGED
+        self._memo[cid] = code
+        return code
+
+    def _fenced(self, nid: str, for_law: str | None, seen: frozenset) -> str:
+        """A fenced node's code: a node fenced only for composing a fenced node (reason `dependency`)
+        names that provider (`via:<provider>:`), so the code ends at the record the fence comes from."""
+        p = self.fenced[nid].get("provider")
+        if self.fenced[nid].get("reason") == "dependency" and isinstance(p, str) and p in self.nodes and (p, None) not in seen:
+            pc = self.code(p, for_law, seen | {(nid, None)})
+            if pc != USABLE:
+                return f"via:{p}:{pc}"
+        return FENCED
+
+    def code(self, nid: str, for_law: str | None, seen: frozenset = frozenset()) -> str:
+        from ..model import nodeid
+        rec = self.nodes.get(nid)
+        sibling = self.siblings.get(nid) if rec is None else None
+        owner = Node(rec or sibling).law if (rec or sibling) else nodeid.law_of(nid)[0]
+        same = owner == for_law
+        key = (nid, same)
+        if key in self._memo:
+            return self._memo[key]
+        if (nid, None) in seen:
+            return USABLE
+        e = self.entries.get(owner)
+        code, evidence_given = None, False
+        if e is not None:
+            if e.state in ("blocked", "failed"):
+                code = OPERATOR
+            elif e.state in ("open", "returned"):
+                code = REPLANNING
+            elif nid in self.fenced:
+                code = self._fenced(nid, for_law, seen)
+            elif rec is not None and nid not in e.nodes:
+                code = SUPERSEDED
+            elif rec is None:
+                if sibling is not None and same and nid in e.nodes:
+                    rec, evidence_given = sibling, True
+                else:
+                    code = UNPUBLISHED if nid in e.nodes else MISSING
+        elif rec is None:
+            code = MISSING
+        elif nid in self.fenced:
+            code = self._fenced(nid, for_law, seen)
+        if code is None:
+            code = USABLE
+            n = Node(rec)
+            for c in n.dependencies():
+                r = c.get("rule")
+                if not isinstance(r, str) or not r:
+                    continue
+                dc = self.code(r, for_law, seen | {(nid, None)})
+                if dc != USABLE:
+                    code = f"via:{r}:{dc}"
+                    break
+            if code == USABLE:
+                for cid in sorted(n.claimed_concepts()):
+                    cc = self.concept_code(cid)
+                    if cc != USABLE:
+                        code = f"via:{cid}:{cc}"
+                        break
+            if code == USABLE and not evidence_given and not self.evidence("node", nid):
+                code = UNJUDGED
+        self._memo[key] = code
+        return code
+
+
 def fences_of(snap: dict, run_id: str) -> dict[str, dict]:
     """A snapshot's fences, each naming the run that wrote it (the snapshot's run when it does not
     say). A snapshot written before fences had their own map holds the concept versions an
@@ -526,8 +710,9 @@ def fences_of(snap: dict, run_id: str) -> dict[str, dict]:
 
 
 #: Record fields that are not what the record means: its recorded context, the accepted callers and
-#: planned users other records add to it, its fence and its inheritance.
-NOT_SEMANTIC = ("context", "callers", "used_by", "fenced", "provenance")
+#: planned users other records add to it, its fence, its inheritance, and the versions of other laws'
+#: records it was planned on (`planned_on`).
+NOT_SEMANTIC = ("context", "callers", "used_by", "fenced", "provenance", "planned_on")
 
 
 def record_digest(rec: dict) -> str:
@@ -585,6 +770,10 @@ def base_view(run_id: str, seen: frozenset = frozenset()) -> dict:
     if not (d / "options.json").exists():
         raise SystemExit(f"the base_run chain names `{run_id}`, but {d} holds no options.json: its records cannot be read")
     opts = jsonl.read_json(d / "options.json", None) or {}
+    bad = policy_defects(opts)
+    if bad:                                              # every run of the chain was built on the same, whole policy
+        raise SystemExit(f"the base_run chain names `{run_id}`, whose options.json holds no whole acceptance policy ("
+                         + "; ".join(bad) + "): its records were not built on this harness's dependency policy")
     if opts.get("base_run"):
         view = base_view(opts["base_run"], seen | {run_id})
     else:

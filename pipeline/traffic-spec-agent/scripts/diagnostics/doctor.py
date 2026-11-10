@@ -267,22 +267,28 @@ class Doctor:
         return Result("session isolation", OK, f"{len(need)} isolation flags; allow-list permissions; plan and code sessions jailed to their task directory with one exact shell command; readers and judges have no tool; reviewers have only the harness's checks and submission", src)
 
     def prompts_are_law_free(self) -> Result:
-        """The templates carry no law, no rule named by its subject, no figure."""
+        """The templates, and the text the harness generates into every prompt whatever the run's
+        state (`loop.generated_prompts`), carry no law, no rule named by its subject, no figure."""
+        import importlib
         import itertools
         patterns = dict(LAW_FREE_PATTERNS, **CAPTURE_FIGURE_PATTERNS)
-        src = ("prompts/*.md", "frozen before any corpus is seen")
+        src = ("prompts/*.md, the generated prompt text", "frozen before any corpus is seen")
         if not self.prompts:
             return Result("prompts law-free", FAIL, "no prompt templates found", src)
+        sys.path.insert(0, str(self.repo))
+        generated = importlib.import_module("harness.loop").generated_prompts()
+        texts = [(path.name, path.read_text(encoding="utf-8", errors="replace")) for path in self.prompts]
+        texts += [(f"generated {name}", text) for name, text in sorted(generated.items())]
         bad = []
-        for path in self.prompts:
-            text = path.read_text(encoding="utf-8", errors="replace")
+        for name, text in texts:
             for label, pat in patterns.items():
                 for m in itertools.islice(re.finditer(pat, text), 3):
                     line = text[:m.start()].count("\n") + 1
-                    bad.append(f"{path.name}:{line} {label} {m.group(0)!r}")
+                    bad.append(f"{name}:{line} {label} {m.group(0)!r}")
         if bad:
             return Result("prompts law-free", FAIL, "; ".join(bad[:5]), src)
-        return Result("prompts law-free", OK, f"{len(self.prompts)} templates clear on all {len(patterns)} categories", src)
+        return Result("prompts law-free", OK, f"{len(self.prompts)} templates and {len(generated)} generated blocks clear on all "
+                                              f"{len(patterns)} categories", src)
 
     def prompts_are_vocabulary_free(self) -> Result:
         """Everything project-specific reaches an agent through injected context, never through

@@ -42,6 +42,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -458,12 +459,15 @@ def code_in_candidate(txn, records: list[tuple[str, str]], law: str | None = Non
     directories, a gate run from the session gating there); concepts first. A node's registry holds
     only the nodes its own law may compose (`Run.usable_nodes`). A coder's report that a
     concept it calls computes what its contract excludes is judged in the candidate (`judge_report`).
+    A `SCOPE_VIOLATION` stops the coding there: that session's report is not judged and no later record
+    is coded in a candidate it may have changed outside its files (`_code` then refuses the candidate).
     `earlier`: the candidate where the same repair coded before (`take_up`).
     Returns id → {verdict, report, line}."""
     from . import code as code_phase
     from ..loop import concept_deps, reached_concepts, report_of
     view, out = txn.view, {}
     order = sorted(records, key=lambda x: x[0] != "concept")
+    production = paths.LIBRARY.parent                     # the tree that holds the production library, before the copy is in force
     with txn.inside(), gate.candidate_scope(txn.scope):
         txn.write_scope()
         reading = txn.reading
@@ -473,12 +477,17 @@ def code_in_candidate(txn, records: list[tuple[str, str]], law: str | None = Non
                 rec = ConceptRecord(view.all_concepts()[ident])
                 task, deps = code_phase.concept_dir(view, ident), set(rec.refs())
                 take_up(txn, earlier, kind, rec, task, reading)
-                v = code_phase.run_code_concept(view, rec, reading, {"nodes": sorted(view.usable_nodes(None)), "concepts": concepts})
+                v = code_phase.run_code_concept(view, rec, reading, {"nodes": sorted(view.usable_nodes(None, gated=set(txn.changed))), "concepts": concepts})
             else:
                 rec = Node(view.all_nodes()[ident])
                 task, deps = code_phase.node_dir(view, ident), concept_deps(rec)
                 take_up(txn, earlier, kind, rec, task, reading)
-                v = code_phase.run_code(view, rec, reading, {"nodes": sorted(view.usable_nodes(rec.law)), "concepts": concepts})
+                v = code_phase.run_code(view, rec, reading, {"nodes": sorted(view.usable_nodes(rec.law, gated=set(txn.changed))), "concepts": concepts})
+            # the candidate's gate checks the copy: a session that changed the production tree is found by the
+            # tree hash the commit requires unchanged, before any report is judged or anything else is coded
+            if v.verdict == "SCOPE_VIOLATION" or candidate_phase._sha(gate.repo_digest(production)) != txn.baseline.get("tree"):
+                out[ident] = {"verdict": "SCOPE_VIOLATION", "report": "none", "line": "", "concept": None}
+                break
             if v.verdict == "OK":
                 keep_sources(txn, kind, ident, task)
             rep = report_of(view, task, reached_concepts(view, deps))
@@ -522,7 +531,7 @@ def take_up(txn, earlier: Path | None, kind: str, rec, task: Path, reading) -> N
         return
     old = earlier / candidate_phase.CANDIDATE_ITER / task.relative_to(txn.view.iter)
     v = jsonl.read_json(old / "verdict.json", {}) or {}
-    if v.get("verdict") in (None, code_phase.SESSION_FAILED, gate.INFRA) or \
+    if v.get("verdict") in (None, code_phase.SESSION_FAILED, gate.INFRA, "SCOPE_VIOLATION") or \
             v.get("extras", {}).get("context") != code_phase.task_context(txn.view, kind, rec.id, rec.raw, reading):
         return
     files = {}
@@ -732,56 +741,157 @@ class Unavailable(RuntimeError):
 
 
 class Waiting(RuntimeError):
-    """A change that composes a node of a law not yet formally accepted
-    (`candidate.unavailable_compositions`): no coder runs, nothing is charged, and the repair stays
-    active, taken up again from its session's answer once every law it waits on is accepted."""
+    """A change that composes a node not usable for building it yet (`candidate.unavailable_compositions`:
+    not yet published, its law planned again or held for the operator): no coder runs, nothing is
+    charged, and the repair stays active, taken up again from its session's answer once every node it
+    waits on is usable."""
 
-    def __init__(self, waits: dict[str, list[str]], laws: list[str]):
-        super().__init__("; ".join(f"`{i}` composes {', '.join(d)}" for i, d in waits.items()) + f", of {', '.join(laws)}, not yet accepted")
-        self.laws = laws
+    def __init__(self, waits: dict[str, dict[str, str]]):
+        super().__init__("; ".join(f"`{i}` composes " + ", ".join(f"`{d}` ({c})" for d, c in sorted(ds.items())) for i, ds in waits.items())
+                         + ", not usable for building yet")
+        self.nodes = sorted({d for ds in waits.values() for d in ds})
+
+
+class Stale(RuntimeError):
+    """A saved answer whose composition was valid when it was written, made unusable since by another
+    commit (its provider superseded, missing or fenced): the answer is set aside and a new session is
+    asked, nothing charged."""
 
 
 def wait_states(run, ledger, law: str) -> dict[str, str]:
-    """Each law a law's active repair waits on (`Waiting`) that is still not accepted, with its ledger
-    state: `planned` (a pending law that may still be accepted) or a state that will not become
-    accepted without the operator (`blocked`, `failed`)."""
+    """Each law whose node a law's active repair waits on (`Waiting`, by node) and which is still not
+    usable for building it (`Run.provider_code`), with that law's ledger state: `planned` (a pending
+    law, its node not yet published or judged) or a state only the operator ends (`blocked`, `failed`)."""
+    from ..model import nodeid
+    from ..store.state import Availability, USABLE
     w = (run.label_states.get(law, {}).get("active") or {}).get("waits") or []
-    return {l: ledger.entries[l].state for l in w if l in ledger.entries and ledger.entries[l].state != "accepted"}
+    if not w:
+        return {}
+    av, out = Availability(run, entries=ledger.entries), {}
+    for d in w:
+        if av.code(d, law) == USABLE:
+            continue
+        rec = run.all_nodes().get(d)
+        owner = Node(rec).law if rec else nodeid.law_of(d)[0]
+        if owner in ledger.entries:
+            out[owner] = ledger.entries[owner].state
+    return out
 
 
 def waits_on(run, ledger, law: str) -> list[str]:
-    """The laws a law's active repair waits on (`Waiting`) that are still not accepted."""
+    """The laws whose nodes a law's active repair waits on (`Waiting`) and which are still not usable."""
     return list(wait_states(run, ledger, law))
+
+
+class OutOfScope(RuntimeError):
+    """A session in the candidate went out of scope: a coder's `SCOPE_VIOLATION` (`idents`, the records
+    it coded), or a production tree moved after a session (`production_watch`; `where`, that session's
+    directory). Never the repair's defect: the candidate is rolled back unpublished and no label repair
+    is counted (`scope_failure`)."""
+
+    def __init__(self, idents: list[str], where: Path | None = None):
+        super().__init__(f"a session of the candidate went out of scope ({idents}{f', in {where}' if where else ''})")
+        self.idents, self.where = list(idents), where
+
+
+def scope_failure(run, ledger, law: str, txn, idents: list[str], to_user: list[str]) -> str:
+    """A candidate rolled back out of scope (`OutOfScope`), recorded in the production run: one count
+    in the ledger entry of the law whose repair opened it, under that law (`Ledger.scope_violation`),
+    whichever session went out of scope (a coder, a planner, a concept repair, a judge: `idents` name
+    it in the notes and the evidence only), once per candidate (the active repair keeps the candidate it
+    counted, saved with the ledger in the same snapshot, so a restart neither loses nor repeats it); and
+    a production tree the candidate's sessions changed recorded for the run's dirty pause
+    (`production_stray`; scheduling was drained, so only they could move it), which the rollback,
+    discarding only the copy, never lifts. Returns `scope_budget` when the law reached `SCOPE_BOUND`
+    (held for the operator), else `scope` (the repair waits for its next pass)."""
+    from ..store.ledger import SCOPE_BOUND
+    act = run.label_states[law].setdefault("active", {})
+    if act.get("scope_candidate") != txn.id:
+        act["scope_candidate"] = txn.id
+        ledger.scope_violation(law, law)
+    production_stray(run, law, txn, to_user)
+    n = ledger.entries[law].scope_violations.get(law, 0)
+    if n >= SCOPE_BOUND:
+        why = (f"scope_budget: sessions of its label repair went out of scope {n} times (last: {idents}); "
+               "this says nothing of the repair")
+        ledger.block(law, [f"decision:{law}"], [why])
+        to_user.append(f"`{law}` held for you, no label repair counted: {why} (python -m harness reopen {run.opts.run_id} --laws {law} "
+                       "clears the count; it does not lift a pause on files left changed)")
+        return "scope_budget"
+    to_user.append(f"`{law}`: a session of its label repair went out of scope ({idents}); the candidate was rolled back "
+                   "unpublished, no label repair counted; the repair is taken up again on a later pass")
+    return "scope"
+
+
+@contextmanager
+def production_watch(txn, law: str):
+    """Every session the candidate runs (a label repair session and its re-ask, a plan, a concept
+    repair, a coder, a judge) is followed, before its output is read and before anything else starts,
+    by the commit's own check of the production tree: its hash (`production_baseline`'s `tree`, over the
+    tree that holds the production library) against the one the candidate opened on. A moved tree
+    raises `OutOfScope`: later sessions would read what the session changed, and the candidate never
+    publishing does not undo that. The session's spend and records stay as it left them.
+    It assumes what a candidate already requires: scheduling paused and every task that may write the
+    production tree drained (refused otherwise, `NotDrained`), and no other candidate open, so no
+    other thread calls `session.run` meanwhile. The original is restored however the block ends, and a
+    session that raises is checked all the same."""
+    why = txn.scheduling.drained()
+    if why:
+        raise candidate_phase.NotDrained("a candidate's sessions are watched only while scheduling is paused and drained: " + "; ".join(why))
+    production, real = paths.LIBRARY.parent, session.run
+    moved = lambda: candidate_phase._sha(gate.repo_digest(production)) != txn.baseline.get("tree")
+
+    def watched(*a, **k):
+        where = Path(k.get("out_dir") or k.get("cwd") or ".")
+        try:
+            out = real(*a, **k)
+        except BaseException as e:
+            if moved():
+                raise OutOfScope([law], where) from e
+            raise
+        if moved():
+            raise OutOfScope([law], where)
+        return out
+    session.run = watched
+    try:
+        yield
+    finally:
+        session.run = real
+
+
+def production_stray(run, law: str, txn, to_user: list[str]) -> bool:
+    """Whether a session of candidate `txn` changed the production tree, by the commit's own check
+    (`production_baseline`'s tree hash against the one the candidate opened on); when it did, every
+    production file changed is named against the per-file digest the candidate kept
+    (`PRODUCTION_DIGEST`) and written as a scope violation of the run (`baseline.json` that digest,
+    `stray` the files), so the run's dirty-library pause holds until each is restored. A moved tree
+    that cannot be named (no digest kept, or none of its files differs) is written as the whole tree
+    (`code.WHOLE_TREE`, the recorded hash), which pauses until the operator restores the whole
+    production tree to that hash. Written once per candidate."""
+    if candidate_phase.production_baseline(run).get("tree") == txn.baseline.get("tree"):
+        return False
+    from .code import WHOLE_TREE
+    d = run.iter / "code" / f"candidate__{txn.id}"
+    if (d / "verdict.json").exists():
+        return True
+    before = jsonl.read_json(txn.area / candidate_phase.PRODUCTION_DIGEST, None)
+    now = gate.repo_digest(paths.LIBRARY.parent)
+    stray = sorted(k for k in set(before) | set(now) if before.get(k) != now.get(k)) if isinstance(before, dict) else []
+    if not stray:                                     # moved, and no file to name: the whole tree, at its recorded hash
+        before, stray = {WHOLE_TREE: txn.baseline.get("tree")}, [WHOLE_TREE]
+    d.mkdir(parents=True, exist_ok=True)
+    jsonl.write_atomic(d / "baseline.json", json.dumps(before))
+    jsonl.write_atomic(d / "verdict.json", json.dumps({"verdict": "SCOPE_VIOLATION", "details": [
+        f"a session of candidate {txn.id} changed the production tree: {stray[:8]}"], "extras": {"stray": stray}}))
+    to_user.append(f"`{law}`: a session of candidate {txn.id} changed the production tree ({stray[:8]}); "
+                   f"restore those files to the digests in {d / 'baseline.json'} (for {WHOLE_TREE!r}: the whole tree to "
+                   "that hash): no coding session starts until they are")
+    return True
 
 
 class Pending(RuntimeError):
     """A coder's report on a concept that the adjudication has not decided (`review.NOT_JUDGED`): the
     candidate is not published, nothing is charged, and the repair is taken up again from its coding."""
-
-
-#: Ledger states the operator's decision holds: a shared repair's new check never moves a law out of them.
-LOCKED = ("blocked", "failed")
-
-
-def collateral(run, ledger, txn, law: str, new_states: dict) -> dict[str, str]:
-    """The automatic routing of every other law a repair checked again: its new committed check sets
-    its state as `route_law` would (an accepted law now in disagreement awaits its repair, a law
-    awaiting one now aligned is accepted), its repair counts and reports kept; a law the operator
-    holds (blocked, failed) keeps its ledger state. Returns law → the ledger state it takes."""
-    from ..loop import label_state
-    out = {}
-    for other, c in txn.label_checks.items():
-        if other == law or other not in run.label_states or other not in ledger.entries:
-            continue
-        old = run.label_states[other]
-        new_states[other] = {**label_state(run, other, c, old["nodes"], txn.area / "label", txn.id),
-                             **{k: old[k] for k in ("sessions", "reports", "report_history", "active", "last_repair") if k in old}, "repairs": old.get("repairs", 0)}
-        e = ledger.entries[other]
-        if e.state in LOCKED:
-            out[other] = e.state
-        else:
-            out[other] = {"accepted": "accepted", "waiting": "planned", "awaiting_label_repair": "planned", "failed": "blocked"}[new_states[other]["state"]]
-    return out
 
 
 def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str]) -> str:
@@ -795,6 +905,7 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
     from .candidate import SCHEDULING, Candidate, ChangeRefused, CommitRefused, concept_review
     st = run.label_states[law.id]
     (st.get("active") or {}).pop("waits", None)
+    run.law_entries = ledger.entries                    # the transaction copies the caller's live ledger
     repairs = int(st.get("repairs", 0))
     prior = label_check.committed_checks(run.dir, run.label_states)
     plans = {e.law: list(e.nodes) for e in ledger.entries.values()}      # every law's authoritative final plan
@@ -807,11 +918,19 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
                 training.bind(txn)
             except ValueError as e:                       # the harness's own versions, not the repair: nothing to charge
                 raise Unavailable(f"its candidate could not be bound to the run's label versions: {e}") from e
-            result = _repair(run, ledger, txn, law, defs, onto, repairs, plans, out, gaps, notes, to_user)
+            with production_watch(txn, law.id):
+                result = _repair(run, ledger, txn, law, defs, onto, repairs, plans, out, gaps, notes, to_user)
         except Waiting as e:
             result = "waiting"
-            run.label_states[law.id]["active"]["waits"] = e.laws
-            to_user.append(f"`{law.id}`: its label repair waits: {e}; no coder ran, nothing charged, taken up again once accepted")
+            run.label_states[law.id]["active"]["waits"] = e.nodes
+            to_user.append(f"`{law.id}`: its label repair waits: {e}; no coder ran, nothing charged, taken up again once they are usable")
+        except Stale as e:
+            result = "stale"
+            run.label_states[law.id].pop("active", None)
+            to_user.append(f"`{law.id}`: its label repair's saved answer no longer holds ({str(e)[:240]}); set aside, a new session is "
+                           "asked, nothing charged")
+        except OutOfScope as e:
+            result, scoped, where = "scope", e.idents, e.where
         except Pending as e:
             result = "pending"
             to_user.append(f"`{law.id}`: {e}; its candidate is not published, the repair is taken up again, nothing charged")
@@ -826,7 +945,20 @@ def repair_law(run, ledger, training, law: corpus.Law, defs: list[dict], onto, g
             if txn.status == "open":                      # no way out leaves a candidate open
                 (txn.rollback if txn.changed else txn.close)(f"the repair ended: {result or 'stopped'}")
     st = run.label_states[law.id]
-    if result not in ("unavailable", "pending", "waiting", "committed"):   # decided: its session is spent, the next one is new (a commit counted it)
+    if result not in ("scope", "committed") and production_stray(run, law.id, txn, to_user):
+        # a production tree moved under a candidate that did not commit (the commit's own refusal among them): a scope
+        # outcome, never the repair's
+        result, scoped, where = "scope", [law.id], None
+        st.pop("last_outcome", None); st.pop("last_failed", None)
+    if result == "scope":                                # after the rollback, in the production run
+        gaps.clear(); out.requests = []                  # nothing a candidate that went out of scope asked for is filed
+        result = scope_failure(run, ledger, law.id, txn, scoped, to_user)
+        act = st.get("active") or {}
+        if result == "scope" and where is not None and act.get("dir") and Path(where).resolve() == (run.dir / act["dir"]).resolve():
+            # the repair session itself went out of scope: its answer is kept on disk, never read again; a new one is asked
+            st["sessions"] = int(st.get("sessions", 0)) + 1
+            st.pop("active", None)
+    if result not in ("unavailable", "pending", "waiting", "committed", "scope", "stale"):   # decided: its session is spent, the next one is new (a commit counted it)
         st["sessions"] = int(st.get("sessions", 0)) + 1
         st.pop("active", None)
     if result in ("rolled_back", "refused", "requested", "gap", "dependency_report"):
@@ -887,9 +1019,19 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
     if not changes:
         return "requested"
     txn.apply(changes)
-    waits = candidate_phase.unavailable_compositions(txn.view, [c.ident for c in changes if c.kind == "node"])
-    if waits:
-        raise Waiting(waits, sorted({Node(txn.view.all_nodes()[d]).law for ds in waits.values() for d in ds}))
+    unusable = candidate_phase.unavailable_compositions(txn.view, [c.ident for c in changes if c.kind == "node"], gated=set(txn.changed))
+    if unusable:
+        from ..store.state import base_code, FENCED, MISSING, SUPERSEDED
+        before = run.all_nodes()
+        terminal = {i: {d: c for d, c in ds.items() if base_code(c) in (FENCED, MISSING, SUPERSEDED)} for i, ds in unusable.items()}
+        new = {i: {d: c for d, c in ds.items() if d not in {str(x.get("rule")) for x in Node(before.get(i) or {}).dependencies()}}
+               for i, ds in terminal.items()}
+        if any(new.values()):                         # the repair itself composed a record that cannot be used: its output's defect
+            raise ValueError("the repair composes records not usable for building: " + "; ".join(
+                f"`{i}` → " + ", ".join(f"`{d}` ({c})" for d, c in ds.items()) for i, ds in new.items() if ds))
+        if any(terminal.values()):                    # a composition it kept, made unusable by another commit since its answer
+            raise Stale("; ".join(f"`{i}` → " + ", ".join(f"`{d}` ({c})" for d, c in ds.items()) for i, ds in terminal.items() if ds))
+        raise Waiting(unusable)
     _code(txn, coder, law.id)
     results = txn.verify()
     failed = [r.subject for r in results if r.check == "gate" and r.status == "fail" and r.subject in txn.changed
@@ -910,29 +1052,26 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
         return "rolled_back"
     chk = txn.label_checks[law.id]
     nodes = sorted(plans[law.id])
-    new_states = dict(run.label_states)
-    new_states[law.id] = {**label_state(run, law.id, chk, nodes, txn.area / "label", txn.id), "repairs": repairs + 1,
-                          "sessions": int(st.get("sessions", 0)) + 1, "reports": st.get("reports", []),
-                          "report_history": st.get("report_history", [])}
-    others = collateral(run, ledger, txn, law.id, new_states)
-    import copy
-    from dataclasses import asdict
-    routed, said = copy.deepcopy(ledger), []          # every route the commit carries, settled before it
-    for other, state in others.items():
-        e = routed.entries[other]
-        if state != e.state:
-            e.state = state
-            if state == "blocked":
-                e.gaps = sorted(set(e.gaps or []) | {f"decision:{other}"})
-    routed.entries[law.id].nodes = nodes
-    route_entry(run, routed, law.id, chk, nodes, new_states[law.id], said)
-    txn.commit(extra_state={"label_states": new_states, "ledger": [asdict(e) for e in routed.entries.values()]})
-    for l in [law.id, *others]:                       # the ledger in memory as committed
-        ledger.entries[l].__dict__.update(routed.entries[l].__dict__)
-    run.label_states = new_states
-    to_user.extend(said)
-    for other, state in others.items():
-        to_user.append(f"`{other}`: checked again by the repair of `{law.id}`: {new_states[other]['outcome']}; its law is {state}")
+    routed = txn.route(law.id, nodes)                # every route the commit carries, derived from the verified results alone
+    # the label states, merged at the commit onto their values then: the check's own fields; the target's counts
+    # take this commit's one increment, and its session ends; another law keeps its counts and its session
+    now = run.label_states.get(law.id, {})
+    updates = {law.id: {**label_state(run, law.id, chk, nodes, txn.area / "label", txn.id), "repairs": int(now.get("repairs", 0)) + 1,
+                        "sessions": int(now.get("sessions", 0)) + 1, "active": None}}
+    for other, c in txn.label_checks.items():
+        if other != law.id and other in run.label_states and other in ledger.entries:
+            old = run.label_states[other]
+            updates[other] = {k: v for k, v in label_state(run, other, c, old["nodes"], txn.area / "label", txn.id).items() if k != "repairs"}
+    txn.commit(routed=routed, label_updates=updates)
+    for l, e in routed.entries.items():               # the ledger in memory as committed
+        if l in ledger.entries:
+            ledger.entries[l].__dict__.update({k: getattr(txn.published["ledger"][l], k) for k in candidate_phase.LEDGER_SEMANTIC}
+                                              if l in txn.published["ledger"] else {})
+    to_user.extend(routed.said)
+    for other in updates:
+        if other != law.id:
+            to_user.append(f"`{other}`: checked again by the repair of `{law.id}`: {run.label_states[other]['outcome']}; "
+                           f"its law is {ledger.entries[other].state}")
     to_user.append(f"`{law.id}`: label repair kept (goal met); the law is {chk.outcome}" + "".join(f"; {n}" for n in notes))
     return "committed"
 
@@ -940,7 +1079,8 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
 def _code(txn, records: list[tuple[str, str]], law: str) -> None:
     """The coder for these records in the candidate, taking up what the same repair coded in an
     earlier candidate (`take_up`); a coder that did not run, or whose report on a concept no one
-    decided, is no failed repair."""
+    decided, is no failed repair. A coding session that ended `SCOPE_VIOLATION` stops the candidate
+    (`OutOfScope`): it is rolled back, never committed, and nothing of it is published."""
     from . import code as code_phase
     from ..checks import gate as gate_mod
     if not records:
@@ -949,6 +1089,9 @@ def _code(txn, records: list[tuple[str, str]], law: str) -> None:
     earlier = txn.run.dir / act["candidate"] if act.get("candidate") and txn.run.dir / act["candidate"] != txn.area else None
     act.update(stage="coding", candidate=str(txn.area.relative_to(txn.run.dir)))
     reports = code_in_candidate(txn, records, law, earlier)
+    scope = [i for i, x in reports.items() if x.get("verdict") == "SCOPE_VIOLATION"]
+    if scope:
+        raise OutOfScope(scope)
     down = [i for i, x in reports.items() if x.get("verdict") in (code_phase.SESSION_FAILED, gate_mod.INFRA)]
     if down:
         raise Unavailable(f"the coding session or the toolchain did not run for {down}")
@@ -981,8 +1124,12 @@ def file_requests(run, law: str, requests: list[dict], to_user: list[str]) -> No
 def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_ledger, gaps_filed: list, to_user: list[str]) -> dict[str, list[str]]:
     """Every law awaiting its label repair, repaired while it awaits one and its budget and the run's
     allow: a law that spent its sessions is held for the operator; the run's budget spent, the laws
-    left wait. Returns law → the result of each repair."""
+    left wait; a production tree a session left changed (`code.scope_unrestored`) starts none. Returns
+    law → the result of each repair."""
+    from . import code as code_phase
     out: dict[str, list[str]] = {}
+    if code_phase.scope_unrestored(run):
+        return out
     for law in awaiting(run, ledger):
         while run.label_states.get(law, {}).get("state") == "awaiting_label_repair" and ledger.entries[law].state == "planned":
             if int(run.label_states[law].get("repairs", 0)) >= run.opts.label_repair_attempts:
@@ -995,6 +1142,10 @@ def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_
                 return out
             r = repair_law(run, ledger, training, by_id[law], defs, onto, gap_ledger, gaps_filed, to_user)
             out.setdefault(law, []).append(r)
-            if r == "unavailable" or run.label_states.get(law, {}).get("active"):    # not ended: taken up again later
+            if code_phase.scope_unrestored(run):            # a production tree left dirty stops every law
+                return out
+            if r in ("scope", "scope_budget"):              # this pass ends here
+                break
+            if r in ("unavailable", "stale") or run.label_states.get(law, {}).get("active"):    # not ended: taken up again later
                 break
     return out
