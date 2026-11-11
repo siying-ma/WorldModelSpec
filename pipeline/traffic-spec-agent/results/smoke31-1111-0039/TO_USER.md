@@ -232,4 +232,16 @@ _Observed during iteration 6: these items record what the run reported then, not
 
 ## Iteration 7
 
+_Observed during iteration 7: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o1` (as: exception) — both rules can flag the same episode
+
+## Iteration 8
+
+- planner's note for the operator (iteration 8, `iter-008/plan`, note 1, section aebc753f3a846edb; a report, it decides nothing): **Reading of the paragraph (b) aggregates.** `ru.bus` is unresolved under DEF-NRS-484A-135::motorcycle, DEF-NRS-484A-125::moped, DEF-NRS-484B-017::electric_bicycle and DEF-NRS-484B-018::electric_scooter. The definitions classify by wheels, motors and weight, which a class label does not show. The consequence: any car-class road user is "possibly a motorcycle" for every rule that reads these ids. Excluding the ordinary motor-vehicle classes where the class contract settles it (a bus or truck is not "designed to travel on not more than three wheels", and a bus does not weigh under 100 pounds) would decide many verdicts that are now unknown.
+- planner's note for the operator (iteration 8, `iter-008/plan`, note 2, section aebc753f3a846edb; a report, it decides nothing): **The accepted sibling `NRS_484B_307_9a_o2` still uses the bare exception** "not engaged where `NRS_484B_307_9b_o1` applies". It therefore excuses a paragraph (b) road user from the yield duty even when it did not meet (b)'s conditions, and it is unknown for unresolved classes going straight. This plan cannot re-plan it because it is accepted. A future repair should align it with the E1 ∧ E2 ∧ E3 exception above.
+- `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o1` (as: exception) — both rules can flag the same episode
+- `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o2` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o3` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o4` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-307-9a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
