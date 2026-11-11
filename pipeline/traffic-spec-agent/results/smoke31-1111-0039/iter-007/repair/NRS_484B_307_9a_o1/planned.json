@@ -1,0 +1,192 @@
+{
+ "node_id": "NRS_484B_307_9a_o1",
+ "law_refs": [
+  "NRS-484B-307-9a"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "b2",
+   "text": "Except as otherwise provided in paragraph (b) [NRS-484B-307-9b],",
+   "role": "reference"
+  },
+  {
+   "id": "b3",
+   "text": "vehicular traffic",
+   "role": "subject"
+  },
+  {
+   "id": "b4",
+   "text": "facing the signal",
+   "role": "trigger"
+  },
+  {
+   "id": "b5",
+   "text": "may enter the intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "b6",
+   "text": "only to make the movement indicated by the green turn arrow,",
+   "role": "obligation"
+  },
+  {
+   "id": "b7",
+   "text": "but must yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "b9",
+   "text": "to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "sibling"
+  },
+  {
+   "id": "b11",
+   "text": "Drivers turning in the direction of the arrow are thereby advised that so long as the turn arrow is illuminated, oncoming or opposing traffic simultaneously faces a steady red signal.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal: \"a signal head; state ∈ {circular_green, circular_yellow, circular_red, green_arrow(dir), ...}\" and \"several states may be displayed at once\": a steady red with a green turn arrow is a head displaying circular_red together with green_arrow(dir), dir left or right. 'The signal' is the head tied to the subject's approach in span b4. No 'not a stand-in' clause applies."
+  },
+  {
+   "span": "b3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic (\"pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel\"). The law's own qualifier 'vehicular' leaves out the members that are not conveyances: pedestrians (\"a person afoot, a person in a manual or motorized wheelchair\", the admitted aggregate DEF-NRS-484A-165::pedestrian, which the rule requires the subject not to carry) and ridden or herded animals, for which the ontology has no class and nothing is read. Cycles and scooters stay in, as 'other conveyances'; paragraph (b) is written as an exception for them, which confirms they are vehicular traffic here."
+  },
+  {
+   "span": "b4",
+   "atoms": [
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "Facing the signal is the signal governing the approach the subject entered through. dev.governs: \"the travel regions whose traffic the device controls ... or an intersection, read as control of the junction itself\"; st.lane_enters: \"the intersection region a directed approach carrier runs into at its entrance end\". The approach carrier c (st.travel_region) is the one x occupied (rel.occupies) at the observation of its latest entry into i (drv.motion.entering_region: \"its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\"), read through a past operator, with st.lane_enters(c, i); the signal governs c or i. dev.governs is 'not a stand-in' for a position and is not used as one."
+  },
+  {
+   "span": "b5",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "drv.motion.entering_region: \"Road user x enters structure region r at the observation: its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\"; r is the st.intersection, \"the region where two roadways meet\"."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.heading_change_since_entry",
+    "drv.motion.leaving_region"
+   ],
+   "justification": "The movement made through the intersection is read at x's leaving of it (drv.motion.leaving_region: \"its footprint overlapped r (rel.occupies) at the observation before and does not overlap it at the observation\") by drv.motion.heading_change_since_entry: \"The signed heading change of road user x since its footprint last began to overlap region r, in degrees, left positive\", integrated from kin.yaw_rate. A left arrow indicates a change of at least the turn recognition angle to the left, a right arrow one to the right. The concept is 'not' a turn by itself; the rule compares it with its own bound."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "b2",
+   "rule": "NRS_484B_307_9b_o1",
+   "map": {
+    "x": "x"
+   },
+   "as": "exception"
+  }
+ ],
+ "residues": [
+  {
+   "span": "b11",
+   "why": "An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-285::traffic and does not carry ru.aggregate=DEF-NRS-484A-165::pedestrian; at the observation x leaves an intersection i (drv.motion.leaving_region(x, i)); read through a past operator from that leaving, x occupied i at every observation from its latest entry into i (drv.motion.entering_region(x, i)) to the one before the leaving, and at that entry observation x occupied a carrier c (st.travel_region, rel.occupies(x, c)) with st.lane_enters(c, i) while a traffic signal s that governs c or i (dev.governs) displayed circular_red together with green_arrow(d), d left or right. Where the entry lies before the recording the applicability is unknown. Not engaged where NRS_484B_307_9b_o1 applies to x (composition, exception).",
+ "obligation": "At that leaving observation the heading change of x since that entry (drv.motion.heading_change_since_entry(x, i) with step p.heading_since_step_carla_scene_graph) shows the movement a green arrow displayed at the entry indicates: at least p.turn_recognition_angle where d is left, at most minus p.turn_recognition_angle where d is right. Where arrows of both directions were displayed, the movement either indicates complies.",
+ "params": [
+  "p.turn_recognition_angle",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "b6",
+   "why": "The movement indicated by the arrow is read as the side and the size of the heading change through the intersection, judged when the subject leaves it: a passage turning at least the turn recognition angle toward the arrow's side complies, whatever lane it exits into.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle), recorded from upstream, enters intersection i from lane c that a signal s governs; s displays circular_red with green_arrow(left) at the entry; x crosses i and leaves it with a heading change since entry well inside p.turn_recognition_angle (straight through)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same entry under circular_red with green_arrow(left); x leaves i with a heading change since entry above p.turn_recognition_angle to the left."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "s displays circular_green at x's entry into i; x crosses straight through."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x, recorded from upstream, enters i from lane c and crosses straight through, but the source does not observe s's state at the entry.",
+   "masked": [
+    "dev.traffic_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x is a ru.bicycle; it enters i under circular_red with green_arrow(left) and leaves straight through: paragraph (b) applies (NRS_484B_307_9b_o1 engaged), so this duty does not."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {
+  "NRS_484B_307_9b_o1": "041f467f70f286a302a95f94688221c257f5f8373721862b704478ae64413c99"
+ }
+}

@@ -1,0 +1,99 @@
+'TrafficSpec.Rules.NRS_484B_307_9a_o1.rule' depends on axioms: [propext]
+'TrafficSpecWitness.NRS_484B_307_9a_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"operationalizations":[],"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]}]}]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}}]},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"x"}],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]},{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]}]}]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},{"or":[{"and":[{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]}]}]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"i"}],"params":[{"param":"p.heading_since_step_carla_scene_graph"}],"quantity":"drv_motion_heading_change_since_entry"},"rhs":{"param":"p.turn_recognition_angle"}}]},{"and":[{"since":[{"and":[{"not":{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_leaving_region","params":[]}]}]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"i"}],"params":[{"param":"p.heading_since_step_carla_scene_graph"}],"quantity":"drv_motion_heading_change_since_entry"},"rhs":{"neg":{"param":"p.turn_recognition_angle"}}}]}]}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]},{"since":[{"and":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]}]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}}]},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"x"}],"id":"NRS_484B_307_9a_o1","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]},{"since":[{"and":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]}]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},{"or":[{"and":[{"since":[{"and":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]}]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"cmp":"ge","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.turn_recognition_angle"}}]},{"and":[{"since":[{"and":[{"not":{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"or":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]}]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]},{"cmp":"le","lhs":{"heading_since":"x","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"neg":{"param":"p.turn_recognition_angle"}}}]}]}]},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,drv_motion_leaving_region,drv_motion_entering_region,rel_occupies,st_travel_region,st_lane_enters,dev_traffic_signal,dev_governs,dev_traffic_signal_shows,drv_motion_heading_change_since_entry
+COMPOSES	NRS_484B_307_9b_o1
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.traffic_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	s
+OCC	$,x
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	x,i
+TIME	occurrences	0
+TIME	checks	122
+TIME	lint	1608
+SCEN	forbid	violated	?	forbid: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:forbid	379
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	294
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	285
+SCEN	blind	unknown	?	blind: unknown for [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter], not for an atom the manifest masks
+TIME	scenario:blind	383
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	371
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	378
+SCEN	branch_3	violated	?	branch_3: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_3	382
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	360
+SCEN	branch_5	violated	?	branch_5: expected violated, got unknown [aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+TIME	scenario:branch_5	384
+TIME	witnesses	3216
+DONE_WITNESSES

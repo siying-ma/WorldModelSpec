@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "95b4d3f464474ed9b2917f10c869a8b0",
+ "result": {
+  "duration_api_ms": 41814,
+  "stop_reason": "end_turn",
+  "session_id": "f3b12e67-8372-4989-8708-808e6cef4563",
+  "total_cost_usd": 0.726549,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 75384,
+   "cache_read_input_tokens": 77139,
+   "output_tokens": 5048,
+   "output_tokens_details": {
+    "thinking_tokens": 1099
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 75384,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 635,
+     "cache_read_input_tokens": 73989,
+     "cache_creation_input_tokens": 4545,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4545
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 70557,
+    "outputTokens": 35,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0070732,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 5048,
+    "cacheReadInputTokens": 77139,
+    "cacheCreationInputTokens": 75384,
+    "webSearchRequests": 0,
+    "costUSD": 0.7194758,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1099,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I wrote the revised record for `NRS_484B_307_9a_o2` to `record.jsonl`; nothing has run against the gate yet.\n\n**Why the gate failed:** span `b3` (\"vehicular traffic\") was written as \"is traffic and is not a pedestrian\". The run's reading leaves every vehicle class unresolved for the pedestrian definition (`DEF-NRS-484A-165::pedestrian`). So \"not a pedestrian\" was unknown for every vehicle, and the subject class could never be true.\n\n**The fix:** `b3` and the binder now use \"is traffic\" (`DEF-NRS-484A-285::traffic`) together with \"is a vehicle\" (`DEF-NRS-484A-320::vehicle`).\n- \"Vehicular\" is now read through the posted definition of \"vehicle\". That definition already leaves out pedestrians, animals, human-powered devices, electric bicycles and electric scooters.\n- This is the same mapping the sibling node `NRS_484B_307_9a_o1` gives this span, so the two nodes no longer disagree.\n- The coder found nothing wrong with the use of \"pedestrian\" in `b9` (the parties x must yield to), so it is unchanged.\n\nOne reading change to note: the old record kept cycles and scooters in as \"other conveyances\". Under the vehicle definition, human-powered devices, electric bicycles and electric scooters are now outside this rule. Motorcycles and mopeds stay in.\n\nOther changes:\n- The applicability prose now states the new class.\n- The obligation prose now repeats the full choice of intersection, as the coder's rule already does.\n- The `b11` residue now has `scope: \"none\"`.\n- The four scenarios name x as a motor vehicle.\n- I dropped the old `pedestrian` atom from `b3`.",
+  "ttft_ms": 11916,
+  "type": "result",
+  "duration_ms": 40621,
+  "uuid": "3071af16-488f-4953-a1c0-8850d55f369c",
+  "ttft_stream_ms": 838,
+  "time_to_request_ms": 75,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 22,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 3,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 113,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 838,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 70557,
+    "outputTokens": 35,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0070732,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 5048,
+    "cacheReadInputTokens": 77139,
+    "cacheCreationInputTokens": 75384,
+    "webSearchRequests": 0,
+    "costUSD": 0.7194758,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1099,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

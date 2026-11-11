@@ -404,7 +404,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o2",
+  "node": "NRS_484B_307_9a_o2",
   "role": "trigger"
  },
  "if a highway has been designed to provide": {
@@ -476,6 +476,15 @@
   ],
   "node": "NRS_484B_560_7a",
   "role": "subject"
+ },
+ "may enter the intersection": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_307_9a_o2",
+  "role": "trigger"
  },
  "may make such left turn": {
   "atoms": [
@@ -924,7 +933,7 @@
    "st.intersection",
    "st.lane_enters"
   ],
-  "node": "NRS_484B_307_9b_o4",
+  "node": "NRS_484B_307_9a_o2",
   "role": "obligation"
  },
  "to that traffic": {
@@ -986,6 +995,14 @@
   "node": "LVMC_11_43_010_A",
   "role": "subject"
  },
+ "vehicular traffic": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_307_9a_o2",
+  "role": "subject"
+ },
  "walking or otherwise traveling on a sidewalk": {
   "atoms": [
    "drv.motion.moving",
@@ -1044,7 +1061,7 @@
   "atoms": [
    "dev.traffic_signal"
   ],
-  "node": "NRS_484B_307_9b_o2",
+  "node": "NRS_484B_307_9a_o2",
   "role": "trigger"
  },
  "which have previously completed a stop": {

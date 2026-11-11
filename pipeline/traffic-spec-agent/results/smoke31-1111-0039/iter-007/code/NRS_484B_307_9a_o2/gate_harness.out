@@ -1,0 +1,83 @@
+'TrafficSpec.Rules.NRS_484B_307_9a_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9a_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_307_9a_o2","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[{"kind":"reading","span":"b9","why":"x itself is not among the pedestrians yielded to (p ≠ x): a road user does not yield to itself, as the words exclude it from \"other traffic\"."}],"operationalizations":[{"concepts":["drv.motion.moving","kin.speed","prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.speed_resolution","p.immediate_hazard_gap","p.conflict_clearance"],"standard":"yield the right-of-way: not proceeding where the parties' \"direction, speed and proximity\" \"give rise to the danger of a crash unless one grants precedence to the other\" (DEF-NRS-484A-210)","surrogate":false}],"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"since":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}}]},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"x"}],"id":"NRS_484B_307_9a_o2","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[{"kind":"reading","span":"b9","why":"x itself is not among the pedestrians yielded to (p ≠ x): a road user does not yield to itself, as the words exclude it from \"other traffic\"."}],"obligation":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"since":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},{"and":[{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"x"}]}},{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"p"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"w"},{"var":"c2"}],"atom":"st_entrance_of","params":[]},{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]},"exists_region":{"lit":"crosswalk"},"var":"w"}]}]},{"not":{"and":[{"args":[{"var":"x"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"p"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"p"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"x"}]}},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"u"},{"var":"i"}],"atom":"rel_occupies","params":[]}]}]},{"not":{"and":[{"args":[{"var":"x"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"u"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"u"}]}]},"forall_region":{"lit":"intersection"},"var":"i"}]},"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"and":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"since":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},"exists_region":{"lit":"intersection"},"var":"i"},{"not":{"map":{"x":"x"},"rule_applies":"NRS_484B_307_9b_o1"}}]},"assumptions":[],"binders":[{"cls":{"and":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]}]},"name":"x"}],"id":"NRS_484B_307_9a_o2","intentions":[],"laws":["NRS-484B-307-9a"],"narrowings":[{"kind":"reading","span":"b9","why":"x itself is not among the pedestrians yielded to (p ≠ x): a road user does not yield to itself, as the words exclude it from \"other traffic\"."}],"obligation":{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"since":[{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"body":{"and":[{"or":[{"args":[{"var":"s"},{"var":"c"}],"atom":"dev_governs","params":[]},{"args":[{"var":"s"},{"var":"i"}],"atom":"dev_governs","params":[]}]},{"and":[{"args":[{"var":"s"},{"lit":"circular_red"}],"atom":"dev_traffic_signal_shows","params":[]},{"or":[{"args":[{"var":"s"},{"lit":"green_arrow(left)"}],"atom":"dev_traffic_signal_shows","params":[]},{"args":[{"var":"s"},{"lit":"green_arrow(right)"}],"atom":"dev_traffic_signal_shows","params":[]}]}]}]},"exists_device":{"lit":"traffic_signal"},"var":"s"}]}]},"exists_region":{"lit":"travel_region"},"var":"c"}]}]}]},{"and":[{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"x"}]}},{"and":[{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"args":[{"var":"p"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"body":{"and":[{"args":[{"var":"w"},{"var":"c2"}],"atom":"st_entrance_of","params":[]},{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]},"exists_region":{"lit":"crosswalk"},"var":"w"}]}]},{"not":{"and":[{"args":[{"var":"x"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"p"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"p"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"x"}]}},{"and":[{"args":[{"var":"u"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"u"},{"var":"i"}],"atom":"rel_occupies","params":[]}]}]},{"not":{"and":[{"args":[{"var":"x"},{"var":"u"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"u"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"u"}]}]},"forall_region":{"lit":"intersection"},"var":"i"}]},"residues":["An advisory to drivers turning with the arrow about what opposing traffic faces at the same time; it permits, requires and forbids nothing, and no rule reads it."],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,rel_occupies,drv_motion_entering_region,st_travel_region,st_lane_enters,dev_traffic_signal,dev_governs,dev_traffic_signal_shows,drv_motion_moving,st_crosswalk,st_entrance_of,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	NRS_484B_307_9b_o1
+AGGREGATES	DEF-NRS-484A-285::traffic	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	dev.traffic_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	x
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	s
+OCC	$,x
+OCC	x
+OCC	?i
+OCC	x,i
+OCC	x,i
+OCC	x,i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	?s
+OCC	s,c
+OCC	s,i
+OCC	s
+OCC	s
+OCC	s
+OCC	?p
+OCC	p,x
+OCC	p
+OCC	?w
+OCC	p,w
+OCC	?c2
+OCC	w,c2
+OCC	c2,i
+OCC	x,p
+OCC	x,p
+OCC	?u
+OCC	u,x
+OCC	u
+OCC	u,i
+OCC	x,u
+OCC	x,u
+TIME	occurrences	1
+TIME	checks	112
+TIME	lint	82
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	111
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	120
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	113
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	126
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	122
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	122
+TIME	witnesses	714
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_307_9a_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_307_9a_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_307_9a_o2	32	5
+TIME	adequacy_start	19
+TIME	adequacy	20069
+DONE

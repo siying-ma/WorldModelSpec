@@ -225,5 +225,11 @@ _Observed during iteration 5: these items record what the run reported then, not
 
 ## Iteration 6
 
+_Observed during iteration 6: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - planner's note for the operator (iteration 6, `iter-006/plan`, note 1, section 7b78997af0b0948f; a report, it decides nothing): The returned reason was a stale pin, not a defect of meaning. The nodes are re-emitted against the current `NRS_484B_307_9b_o1`, with no change in content.
 - planner's note for the operator (iteration 6, `iter-006/plan`, note 2, section 7b78997af0b0948f; a report, it decides nothing): `drv.position.entered_via` stays failed. These nodes do not depend on it.
+
+## Iteration 7
+
+- `NRS-484B-307-9a` span b2 composes accepted `NRS_484B_307_9b_o1` (as: exception) — both rules can flag the same episode
