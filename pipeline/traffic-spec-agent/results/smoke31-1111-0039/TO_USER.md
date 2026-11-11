@@ -209,6 +209,8 @@ _Observed during iteration 4: these items record what the run reported then, not
 
 ## Iteration 5
 
+_Observed during iteration 5: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - planner's note for the operator (iteration 5, `iter-005/plan`, note 1, section d55f54cc61518349; a report, it decides nothing): s10 "when and as required" probably refers to NRS 484B.413 (turn signals). The library has `NRS_484B_413_2`, but the text gives no bracketed id, so it is left as a residue. If you add the reference, s10 becomes a composition.
 - planner's note for the operator (iteration 5, `iter-005/plan`, note 2, section d55f54cc61518349; a report, it decides nothing): The failed concept `drv.position.entered_via` lists o1 and o2 among its users, but neither plan record claims it. Both records read the approach carrier directly through `drv.motion.entering_region` and `st.lane_enters`. If the coded o1 calls it, that call came from the coding session, not from this plan.
 - `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "A person driving a motorcycle, moped or" (agency) through conduct: 'A person driving' is read through the machine's controlled motion.
@@ -220,3 +222,8 @@ _Observed during iteration 4: these items record what the run reported then, not
 - `NRS-484B-253` span s8 composes accepted `NRS_484B_253_o1` (as: compliance) — both rules can flag the same episode
 - `NRS-484B-253`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-307-9b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 6
+
+- planner's note for the operator (iteration 6, `iter-006/plan`, note 1, section 7b78997af0b0948f; a report, it decides nothing): The returned reason was a stale pin, not a defect of meaning. The nodes are re-emitted against the current `NRS_484B_307_9b_o1`, with no change in content.
+- planner's note for the operator (iteration 6, `iter-006/plan`, note 2, section 7b78997af0b0948f; a report, it decides nothing): `drv.position.entered_via` stays failed. These nodes do not depend on it.

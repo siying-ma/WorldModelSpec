@@ -1,23 +1,14 @@
-# Feedback from iteration 5
+# Feedback from iteration 6
 
-`NRS_484B_307_9b_o2`: revised by a repair session; coded again this iteration
-`NRS_484B_253_o2`: the repair session withdrew it; the law is returned to the planner
-`NRS_484B_253_o1`: re-emitted unchanged; already accepted, not coded again
-`NRS_484B_307_9a_o1`: not coded — `NRS_484B_307_9a_o1` composes or calls `NRS_484B_307_9b_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_307_9a_o2`: not coded — `NRS_484B_307_9a_o2` composes or calls `NRS_484B_307_9b_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
-`NRS_484B_307_9b_o2`: gate OK — 10 witnesses, 12 names, composes nothing
-`NRS_484B_253_o2`: gate OK — 9 witnesses, 10 names, composes NRS_484B_253_o1
-`NRS-484B-253` span s8 composes accepted `NRS_484B_253_o1` (as: compliance)
+`NRS_484B_307_9a_o2`: gate WITNESS_FAIL — forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian]; permit: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian]; blind: unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian], not for an atom the manifest masks; the manifest masks dev.traffic_signal; branch_1: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian]
+`NRS_484B_307_9a_o2`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
+`NRS_484B_307_9a_o1`: gate WITNESS_FAIL — forbid: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian, aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]; permit: expected compliant, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian]; blind: unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian, aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter], not for an atom the manifest masks; the manifest masks dev.traffic_signal; branch_2: expected violated, got unknown for [aggregate_unresolved:DEF-NRS-484A-165::pedestrian, aggregate_unresolved:DEF-NRS-484A-135::motorcycle, aggregate_unresolved:DEF-NRS-484A-125::moped, aggregate_unresolved:DEF-NRS-484B-017::electric_bicycle, aggregate_unresolved:DEF-NRS-484B-018::electric_scooter]
+`NRS_484B_307_9a_o1`: gate WITNESS_FAIL — sent to a node repair session; no attempt counted
 
 ## Laws by state
 
 - blocked: 7
-- planned: 21
-- returned: 1
-
-## Returned laws and why
-
-- `NRS-484B-307-9a` (attempt 0): `NRS_484B_307_9a_o2` composes or calls `NRS_484B_307_9b_o1` (pin_mismatch), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted
+- planned: 22
 
 ## Concepts by state
 
