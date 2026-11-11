@@ -16,7 +16,7 @@ import re
 import shutil
 import time
 from pathlib import Path
-from ..lean import index_sync, lean
+from ..lean import index_sync, lean, surface
 from ..store import paths
 from ..checks import gate, validate_a
 from ..model import nodeid
@@ -459,13 +459,13 @@ def recheck_contexts(run: Run, reading: Reading, base: dict, laws: dict, only: s
                     except review_phase.HarnessFailure as e:
                         confirmed, errors, incomplete = [], [], []
                         undecided.append(f"the concept program did not run: {e}")
-                    problems += [f"its body contradicts its contract again on an upheld challenge: {x['line'][:200]}" for x in confirmed]
-                    problems += [f"an upheld challenge cannot be run on it: {x[:200]}" for x in errors + incomplete]
+                    problems += [f"its body contradicts its contract again on an upheld challenge: {review_phase._shown(x)}" for x in confirmed]
+                    problems += [f"an upheld challenge cannot be run on it: {surface.shorten(x, 200)}" for x in errors + incomplete]
             if problems:
                 line = (f"`{ident}` ({kind}): its context changed since it was last checked, or was never recorded, and it no "
                         "longer meets its obligations — " + "; ".join(problems[:3]))
                 failing.append(line)
-                run.fence(ident, kind, "context", evidence="; ".join(problems[:3])[:600])
+                run.fence(ident, kind, "context", evidence=surface.shorten("; ".join(problems[:3]), 600))
             elif undecided:
                 unresolved.append(f"`{ident}` ({kind}): its obligations could not be checked — " + "; ".join(undecided[:2]))
             else:

@@ -96,7 +96,12 @@ You are a one-shot session. Nothing waits for a reply.
    during a law-level label repair the planner writes the new cut and the law's records in the same repair
    transaction).
 3. **An exception, a condition or a trigger is carried or assumed, never dropped or narrowed:** a
-   span of those roles the vocabulary cannot carry is an assumption the trace declares, or a gap.
+   span of those roles the vocabulary cannot carry is never left out, and each way of carrying it
+   has its own rule: an assumption carries only a legal region class or a calendar or clock condition
+   that the ontology lists; a declared intention or an observable reading carries it only where the
+   plan's rule for it allows; a span that adds no restriction, the duty being the same whether or not
+   its words hold, is a residue of scope `none` whose `why` says so; any other such span is mapped to
+   its nearest atoms with a gap.
    A feature such a span names without a size is carried by its presence, never by a size bound
    the words do not state. A condition that refers to an act, state, party or place stated
    elsewhere keeps that referent with every qualification the referring words retain (its subject,

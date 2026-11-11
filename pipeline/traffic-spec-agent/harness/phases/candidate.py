@@ -57,7 +57,7 @@ from pathlib import Path
 from typing import Callable
 
 from ..checks import gate
-from ..lean import index_sync, lean
+from ..lean import index_sync, lean, surface
 from ..model import nodeid
 from ..model.blueprint import ConceptRecord, Node
 from ..model.reading import Reading, same_meaning
@@ -375,9 +375,9 @@ def concept_review(txn: "Candidate", aff: Affected) -> list[CheckResult]:
         status = {"accepted": "pass", "returned": "fail"}.get(o.status, "unavailable")
         out.append(CheckResult("concept_review", cid, status, (o.reasons or o.advisories)[:6]))
         if status == "pass":
-            notes = [x for x in o.advisories if x != "reviewer off"]
+            notes = surface.review_notes(o.advisories, f"{view.opts.run_id}/iter-{view.iteration:03d}/candidate-{txn.id}")
             if notes:
-                txn.extras.setdefault(cid, {})["approximations"] = notes
+                txn.extras.setdefault(cid, {})["review_notes"] = notes
     unchanged = {i for i in aff.closure if i not in aff.changed}
     if unchanged:
         laws = {**chain_laws(view), **({l.id: l for l in corpus.load_laws(view.opts.laws)} if Path(view.opts.laws).exists() else {})}
@@ -591,9 +591,13 @@ class Candidate:
     # -- changes ---------------------------------------------------------------------------------
     def refusals(self, changes: list[Change], declarations: list[dict] | None = None) -> list[str]:
         """Why a change set, with the declared ids proposed beside it, may not be applied (empty when
-        it may)."""
+        it may). A node's parameter proposal of a name either candidate reading holds under another
+        convention (whitespace aside) is refused whatever its value, as validation refuses it: a name
+        means one thing, and entering the proposal would give it a second meaning."""
         run, out, seen = self.run, [], set()
         decls = Reading(self.view.reading_file).declarations()
+        ws = lambda text: " ".join(str(text or "").split())
+        catalogues = [Reading(self.view.reading_file).params, Reading(self.view.opts.reading).params]
         for d in declarations or []:
             have = decls.get(d.get("id")) if isinstance(d, dict) else None
             if have is not None and not same_meaning(have.get("meaning"), d.get("meaning")):
@@ -626,6 +630,15 @@ class Candidate:
                     have = decls.get(d.get("id")) if isinstance(d, dict) else None
                     if have is not None and not same_meaning(have.get("meaning"), d.get("meaning")):
                         out.append(f"`{ch.ident}`: declares `{d.get('id')}` as {d.get('meaning')!r}, the reading means {have.get('meaning')!r}")
+                for pr in ch.record.get("param_proposals", []):
+                    for have in [c.get(pr.get("name")) for c in catalogues] if isinstance(pr, dict) else []:
+                        if have is not None and ws(have.get("convention")) != ws(pr.get("convention")):
+                            why = (f"{ch.ident}: proposed parameter `{pr.get('name')}` is already in the catalogue as {have.get('value')} {have.get('unit')} "
+                                   f"with the convention {ws(have.get('convention'))!r}, and the node proposes it with the convention "
+                                   f"{ws(pr.get('convention'))!r}; one parameter has one meaning — name the catalogued parameter as it is, "
+                                   "without proposing it, or use another name for a different meaning")
+                            if why not in out:
+                                out.append(why)
         return out
 
     def _same_id(self, ch: Change, changes: list[Change]) -> list[str]:
@@ -702,8 +715,8 @@ class Candidate:
                     for rel, text in ch.files.items():
                         (self.library / rel).parent.mkdir(parents=True, exist_ok=True)
                         (self.library / rel).write_text(text, encoding="utf-8")
-                    rec = {k: v for k, v in ch.record.items() if k not in ("context", "fenced")}
-                    for k in ("callers", "used_by", "provenance"):        # what other records wrote onto it
+                    rec = {k: v for k, v in ch.record.items() if k not in ("context", "fenced", "used_by")}
+                    for k in ("callers", "provenance"):        # what other records wrote onto it
                         if k in old and k not in rec:
                             rec[k] = old[k]
                     records[ch.ident] = rec
@@ -1013,8 +1026,9 @@ class Candidate:
             if self.changed[ident] == "concept":
                 rec.update({"reads": ex.get("reads", []), "refs": ex.get("refs", sorted(ConceptRecord(rec).refs())),
                             "canonical_body": ex.get("canonical_body"), "body_json": ex.get("body_json")})
-                if ex.get("approximations"):                  # what its review found it computes as built
-                    rec["approximations"] = ex["approximations"]
+                if ex.get("review_notes"):                    # what its review said, with its provenance; it replaces
+                    rec["review_notes"] = ex["review_notes"]  # the notes of an earlier review, in either form
+                    rec.pop("approximations", None)
                 rec["accepted_in"] = f"{run.opts.run_id}/iter-{run.iteration:03d}/candidate-{self.id}"
             added = [n for n in ex.get("narrowings_added", []) if n not in rec.get("narrowings", [])]
             if added:

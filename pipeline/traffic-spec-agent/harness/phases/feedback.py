@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import re
+from pathlib import Path
 from ..model import nodeid
 from ..model.blueprint import Node, concepts_of
 from ..store import paths
@@ -194,14 +195,63 @@ def pending_lists(run: Run, ledger: Ledger) -> dict[str, list[str]]:
     return {k: sorted(v) for k, v in out.items()}
 
 
+#: The line under an earlier iteration's heading in `TO_USER.md`: what it lists was observed then.
+PAST = ("_Observed during iteration {k}: these items record what the run reported then, not its current state "
+        "(the aggregate downgrades that hold now are in `{view}`)._")
+
+
 def write_to_user(run: Run, lines: list[str]) -> None:
     """The operator's file keeps every iteration's items under the iteration's own heading, so an
     item raised once (a gap candidate, a composition) is still there when the run ends. Writing an
-    iteration again replaces that iteration's section, so a second write never duplicates it."""
+    iteration again replaces that iteration's section, so a second write never duplicates it. An
+    earlier iteration's section is kept as written, under a line saying it was observed then, not
+    the current state."""
+    from .aggregate import VIEW_NAME
     path = run.dir / "TO_USER.md"
     head = f"## Iteration {run.iteration}"
     old = path.read_text(encoding="utf-8") if path.exists() else ""
     sections = [x for x in re.split(r"(?m)^(?=## Iteration \d+$)", old) if x.strip() and x.split("\n", 1)[0] != head]
+    for i, x in enumerate(sections):
+        m = re.match(r"## Iteration (\d+)\n", x)
+        mark = PAST.format(k=int(m.group(1)), view=VIEW_NAME) if m and int(m.group(1)) < run.iteration else None
+        if mark and mark not in x:
+            sections[i] = x[:m.end()] + "\n" + mark + "\n" + x[m.end():]
     if lines:
         sections.append(head + "\n\n" + "\n".join(l if l.startswith("  - ") else f"- {l}" for l in lines) + "\n")   # a sub-item stays one
     path.write_text("\n".join(x.rstrip("\n") + "\n" for x in sections), encoding="utf-8")
+
+
+#: How a planner's note for the operator is written in the operator's file: its identity (the
+#: iteration, the source directory, its ordinal) and the digest of its source section lead the line.
+NOTE = re.compile(r"^planner's note for the operator \(iteration (\d+), `([^`]+)`, note (\d+), section ([0-9a-f]+)")
+
+
+def deliver_operator_notes(run: Run, to_user: list[str], notes: list[dict]) -> int:
+    """Add each note a plan session wrote for the operator (`plan.operator_notes`) to the operator's
+    lines, exactly once per identity: (this iteration, its source directory relative to the run, its
+    ordinal in the source's section). Two sources with the same words are two notes; a note already
+    in `to_user` with the same section digest is not added again, so a resume or a merged plan
+    delivers nothing twice; a source whose section was rewritten since is delivered again with its
+    new words, marked so. A note is a report: it blocks nothing, and grants no change or exemption.
+    Returns how many were added."""
+    last: dict[tuple[int, str, int], str] = {}
+    for line in to_user:
+        m = NOTE.match(line)
+        if m:
+            last[(int(m.group(1)), m.group(2), int(m.group(3)))] = m.group(4)
+    added = 0
+    for n in notes:
+        src = Path(n["source"])
+        try:
+            src = src.resolve().relative_to(run.dir.resolve())
+        except ValueError:
+            pass
+        ident = (run.iteration, src.as_posix(), int(n["ordinal"]))
+        if last.get(ident) == n["section_digest"]:
+            continue
+        rewritten = "; source rewritten" if ident in last else ""
+        to_user.append(f"planner's note for the operator (iteration {ident[0]}, `{ident[1]}`, note {ident[2]}, "
+                       f"section {n['section_digest']}{rewritten}; a report, it decides nothing): {n['text']}")
+        last[ident] = n["section_digest"]
+        added += 1
+    return added

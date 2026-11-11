@@ -1210,12 +1210,23 @@ def _loop_written() -> list[str]:
 
 def enter_proposed(run: Run, opts: Options, n: Node) -> None:
     """A node's vetted parameter proposals and its declarations, entered into both readings as the
-    proposed tier, marked with the run, the iteration and the node (idempotent)."""
+    proposed tier, marked with the run, the iteration and the node (idempotent). Both readings are
+    first entered on scratch copies: an item either one refuses (a name or an id under another
+    meaning) raises with neither reading written, so the two never disagree by half an entry."""
+    import tempfile
     vetted = [pr for pr in n.get("param_proposals", []) if isinstance(pr, dict)]
     origin = f"{opts.run_id}/iter-{run.iteration:03d} {n.id}"
     decls = [d for d in n.get("assumptions", []) + n.get("intentions", []) if isinstance(d, dict) and d.get("id")]
     decls = list({d["id"]: {"id": d["id"], "meaning": d.get("meaning")} for d in decls}.values())
-    for target in (run.reading_file, opts.reading):
+    targets = (Path(run.reading_file), Path(opts.reading))
+    with tempfile.TemporaryDirectory() as t:
+        for k, target in enumerate(targets):
+            trial = Path(t) / f"{k}.json"
+            if target.exists():
+                shutil.copyfile(target, trial)
+            Reading.add_proposals(trial, vetted, origin)
+            Reading.add_declarations(trial, decls, origin)
+    for target in targets:
         Reading.add_proposals(target, vetted, origin)
         Reading.add_declarations(target, decls, origin)
 
@@ -1840,7 +1851,10 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         prog["plan_dir"] = str(plan_dir); prog["batch_laws"] = [l.id for b in batches for l in b]
         prog["plannable"] = [e.law for e in plannable]; prog["waiting"] = sorted(waiting)
         prog["cut_off_laws"] = cut_off_laws
+        # what the planners wrote for the operator reaches the operator's report, once per note; it decides nothing
+        feedback_phase.deliver_operator_notes(run, to_user, plan_phase.operator_notes(plan_dir))
         prog["stage"] = "planned"; persist()
+        aggregate_phase.write_current_view(run, closure=True)
     plan_dir = Path(prog["plan_dir"])
     unavailable = {law: set(r) for law, r in prog.get("unavailable", {}).items()}   # laws waiting for the operator, with their roots
     # law-local aggregates the plans wrote are admitted by the same gate; a claim of an aggregate the
@@ -1862,7 +1876,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                                                               run.iter / "aggregates", laws=by_id)
             notes += a_notes; to_user += a_user
             claims = aggregate_phase.claimed_ids(blueprint.load(plan_dir / "blueprint.jsonl") + carried)
-            c_notes, c_close = aggregate_phase.correct_claims(run, claims, defs, onto, ledger, run.iter / "aggregates")
+            c_notes, c_close = aggregate_phase.correct_claims(run, claims, defs, onto, ledger, run.iter / "aggregates", to_user)
             notes += c_notes
             for law, why in c_close.items():
                 if law in ledger.entries and ledger.entries[law].state not in TERMINAL:
@@ -1940,14 +1954,16 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         if cv.concept.id in failed_ids:
             notes.append(f"concept `{cv.concept.id}` failed earlier in this run and is not coded again")
         elif cv.kind == "accept":
-            # the users are the nodes of this plan and the held nodes that claim the concept, derived here;
-            # a concept none of them uses (a repair's replacement the planner did not take up) is not coded
+            # the users are the nodes of this plan and the held nodes that claim the concept, derived here, and
+            # replace on the ledger only the users of the laws this iteration's plan sessions were given, whether
+            # or not their plan registered a node (a law not given to them still uses it); a concept none of them
+            # uses (a repair's replacement the planner did not take up) is not coded
             users = {n.id for n in ok_nodes if cv.concept.id in concept_deps(n)}
             if cv.concept.id not in needed:
                 notes.append(f"concept `{cv.concept.id}`: no node of this plan uses it; not coded")
                 continue
             if not decided:
-                concept_ledger.planned(cv.concept.id, sorted(users), run.iteration)
+                concept_ledger.planned(cv.concept.id, sorted(users), run.iteration, set(prog.get("batch_laws", [])) | {c.law for c in carried})
             to_code_concepts.append(cv.concept)
         elif not decided:
             concept_ledger.noted(cv.concept.id, cv.reasons)
@@ -2204,6 +2220,16 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                              "the same record is coded again once the library is restored")
             to_user.extend(scope_notice(f"concept `{c.id}`", cdir, scope_dirty))
             persist(); return
+        body = v.extras.get("canonical_body") if v.verdict == "OK" else None
+        twin = next((oid for oid, orec in sorted(run.all_concepts().items()) if body is not None and oid not in (c.id, c.get("supersedes"))
+                     and not orec.get("fenced") and orec.get("canonical_body") == body), None)
+        if twin:
+            # concepts are coded side by side, each gate comparing its body with the concepts accepted when it
+            # ran: the commit, on this one thread, compares it again with every accepted concept, those this
+            # iteration committed included, and a same body goes back as the gate's own duplicate verdict
+            code_phase.rollback_concept(c.id, concept_baselines[c.id], cdir)
+            v = gate.Verdict("DUPLICATE_CONCEPT", [f"the body is alpha-equivalent to accepted `{twin}`: call it instead"])
+            notes.append(f"concept `{c.id}`: at its commit, its body is alpha-equivalent to accepted `{twin}`")
         if v.verdict != "OK":
             concept_ledger.returned(c.id, [f"gate {v.verdict}"] + v.details[:6], last_task=str(cdir))
             prog["concepts"][c.id] = v.verdict; persist(); return
@@ -2248,15 +2274,19 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             concept_ledger.returned(c.id, ["review: " + "; ".join(out.reasons)], last_task=str(cdir))
             notes.append(f"concept `{c.id}`: review failed — " + "; ".join(out.reasons[:3]))
             prog["concepts"][c.id] = "REVIEW"; persist(); return
-        record = {**c.raw, "reads": v.extras.get("reads", []), "refs": v.extras.get("refs", sorted(c.refs())),
+        # the planner's `used_by` lists only the nodes of its own batch: the record keeps no list of users,
+        # and every catalogue counts the callers from the records when it is shown
+        record = {**{k: x for k, x in c.raw.items() if k != "used_by"}, "reads": v.extras.get("reads", []), "refs": v.extras.get("refs", sorted(c.refs())),
                   "canonical_body": v.extras.get("canonical_body"), "body_json": v.extras.get("body_json"),
                   "accepted_in": f"{opts.run_id}/iter-{run.iteration:03d}"}
         added = list(v.extras.get("narrowings_added", []))
         record["narrowings"] = list(c.raw.get("narrowings", [])) + added
-        approx = [x for x in review_notes if x != "reviewer off"]   # what it computes as built, for every later plan
-        if approx:
-            record["approximations"] = approx
-            notes.append(f"concept `{c.id}`: accepted; the review's notes are recorded on it — " + "; ".join(a[:200] for a in approx[:3]))
+        from .lean import surface
+        kept = surface.review_notes(review_notes, record["accepted_in"])   # word for word, with source and standing, for every later plan
+        if kept:
+            record["review_notes"] = kept
+            notes.append(f"concept `{c.id}`: accepted; the review's notes are recorded on it — "
+                         + "; ".join(surface.shorten(n["text"], 200) for n in kept[:3]))
         if added:
             coder_narrowings[c.id] = added
         run.accepted_concepts[c.id] = record
@@ -2694,6 +2724,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                                                 if c in result.get("kept_concepts", concepts_now) and c in run.accepted_concepts],
         Reading(run.reading_file), {"core": sem["core"], "ontology": sem["ontology"]}, run.iteration)
     prog["stage"] = "integrated"; persist()
+    aggregate_phase.write_current_view(run, closure=True)   # the nodes accepted now reach the aggregates they claim
     accept_ready(run, opts, ledger, training, to_user)
     if scope_dirty:                                       # restored meanwhile (a writer's temporary file gone): nothing pauses
         scope_dirty = code_phase.scope_unrestored(run)
@@ -2703,6 +2734,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user)
         revalidate_acceptance(run, ledger, to_user)       # a repair that closed or held a law: what composes it is not accepted on it
         scope_dirty = code_phase.scope_unrestored(run)     # a candidate's session may have changed the production tree
+        aggregate_phase.write_current_view(run, closure=True)   # what a revalidation revoked after the repairs leaves the closure
     # --- feedback
     feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, run.deferred_nodes, coder_narrowings,
                                   held_why=prog.get("held_why"))
@@ -2739,6 +2771,7 @@ def label_iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger
         from .phases import label_repair as label_repair_phase
         label_repair_phase.run_repairs(run, ledger, training, by_id, defs, onto, gap_ledger, gaps_filed, to_user)
         revalidate_acceptance(run, ledger, to_user)
+    aggregate_phase.write_current_view(run, closure=True)   # what the label checks and repairs changed, no candidate open
     feedback_phase.write_feedback(run, ledger, notes, to_user, gaps_filed, concept_ledger, run.deferred_nodes, prog["coder_narrowings"],
                                   held_why=prog.get("held_why"))
     prog["stage"] = "done"; persist()

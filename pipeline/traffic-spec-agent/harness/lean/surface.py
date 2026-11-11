@@ -429,21 +429,93 @@ CONCEPT_INTERFACE = (
     "calling law, that law states the class of an exposed track with its own admitted aggregate.\n")
 
 
-def concepts_table(accepted: dict[str, dict]) -> str:
-    """The catalogue of accepted concepts: what a plan may reuse and a rule may call."""
+#: The forms in which a concept review states where an accepted concept's note comes from, each
+#: with its source and standing; a note of no such form is the reviewer's own advisory. A note's
+#: standing is `upheld` (a difference between the body and its contract the review confirmed),
+#: `dismissed` (an item the adjudicator ruled no difference) or `advisory` (anything else the
+#: review said); only an upheld note is shown as a deviation from the contract's words.
+_NOTE_FORMS = (("dismissed: ", "adjudication", "dismissed"),
+               ("refuted by execution: ", "execution", "advisory"),
+               ("an upheld challenge is met by this body", "replay", "advisory"))
+
+
+def review_notes(advisories: list[str], review: str) -> list[dict]:
+    """The advisories of the review `review` (where it ran: run, iteration, candidate) of an accepted
+    concept, each kept word for word with its source and standing. 'reviewer off' says no review
+    ran and is no note."""
+    out = []
+    for text in advisories:
+        if text == "reviewer off":
+            continue
+        source, standing = next(((s, st) for form, s, st in _NOTE_FORMS if text.startswith(form)), ("reviewer", "advisory"))
+        out.append({"text": text, "source": source, "standing": standing, "review": review})
+    return out
+
+
+def shorten(text: str, limit: int) -> str:
+    """`text` as a summary shows it, its whitespace collapsed: whole when it fits in `limit`
+    characters, else cut at the last space within `limit` with an ellipsis; a text with no space
+    there is cut at `limit`. Never longer than `limit` and the ellipsis."""
+    text = " ".join(str(text).split())
+    if len(text) <= limit:
+        return text
+    head = text[:limit + 1]
+    cut = head.rsplit(" ", 1)[0].rstrip(" ,;:") if " " in head else ""
+    return (cut or text[:limit]) + " …"
+
+
+def _catalogue_notes(rec: dict) -> tuple[list[str], list[str]]:
+    """A concept record's review notes as the catalogue shows them: the confirmed differences, and
+    the rest. A record whose notes carry no provenance (`approximations`, as earlier runs wrote
+    them) is shown among the rest, since nothing says the review confirmed them."""
+    confirmed, other = [], []
+    for n in rec.get("review_notes", []):
+        (confirmed if n.get("standing") == "upheld" else other).append(" ".join(str(n.get("text", "")).split()))
+    other += [" ".join(str(a).split()) for a in rec.get("approximations", [])]
+    return confirmed, other
+
+
+#: The heading of the catalogue's caller column, and what it counts.
+CALLERS_COLUMN = "callers in a current plan"
+CALLERS_NOTE = ("`" + CALLERS_COLUMN + "` counts the accepted nodes, this run's and its base run's, that call the concept directly "
+                "and are current: not fenced, and listed in their law's current plan (a node of a law this run does not plan is "
+                "its base run's current record). A fenced node, an accepted node its law's current plan no longer lists, and "
+                "a node of a law being planned again or waiting for the operator are not counted.")
+
+
+def current_callers(run) -> dict[str, int]:
+    """Concept id ↦ the number of accepted nodes of the run's view (`all_nodes`: its own and its
+    base run's) in their law's current plan (`state.current_plan_nodes`) that call it directly.
+    Computed from the records each time it is asked, never stored."""
+    from ..model.blueprint import Node
+    from ..store.state import current_plan_nodes
+    out: dict[str, int] = {}
+    for rec in current_plan_nodes(run).values():
+        for cid in Node(rec).claimed_concepts():
+            out[cid] = out.get(cid, 0) + 1
+    return out
+
+
+def concepts_table(accepted: dict[str, dict], callers: dict[str, int] | None = None) -> str:
+    """The catalogue of accepted concepts: what a plan may reuse and a rule may call. With `callers`
+    (`current_callers` of the run) it has a column of the current callers of each concept; without
+    it, no caller column."""
     if not accepted:
         return "### Concept catalogue\n(no concept accepted yet: a manoeuvre, a state of motion or a relation over time a span needs is proposed as a concept record)\n"
-    out = ["### Concept catalogue (accepted concepts; call by Lean name = id with `.` → `_`)",
-           "| id | kind | contract | definition | args | params | reads | calls | planned users | accepted callers |",
-           "|---|---|---|---|---|---|---|---|---|---|"]
+    col = [] if callers is None else [CALLERS_COLUMN]
+    out = ["### Concept catalogue (accepted concepts; call by Lean name = id with `.` → `_`)"] + ([CALLERS_NOTE, ""] if callers is not None else []) + [
+           "| " + " | ".join(["id", "kind", "contract", "definition", "args", "params", "reads", "calls"] + col) + " |",
+           "|" + "---|" * (8 + len(col))]
     for cid, rec in sorted(accepted.items()):
         args = ", ".join(f"{a.get('name')}:{a.get('sort')}" + (f"{a.get('values')}" if a.get("sort") == "literal" else "") for a in rec.get("args", []))
         params = ", ".join(f"{p.get('name')} ({p.get('unit')})" for p in rec.get("params", []))
-        built = "; ".join(" ".join(str(a).split()) for a in rec.get("approximations", []))
-        contract = " ".join(str(rec.get("contract", "")).split()) + (f" **As built, more narrowly or broadly than these words:** {built}" if built else "")
+        confirmed, other = _catalogue_notes(rec)
+        contract = " ".join(str(rec.get("contract", "")).split()) \
+            + (f" **As built, more narrowly or broadly than these words:** {'; '.join(confirmed)}" if confirmed else "") \
+            + (f" **Review notes (not confirmed differences):** {'; '.join(other)}" if other else "")
         calls = ", ".join(f"`{r}`" for r in rec.get("refs", [])) or "no concept"
         out.append(f"| `{cid}` | {rec.get('kind')} | {contract} | {rec.get('definition') or ''} | {args} | {params} | "
-                   f"{', '.join(rec.get('reads', []))} | {calls} | {len(rec.get('used_by', []))} | {len(rec.get('callers', []))} |")
+                   f"{', '.join(rec.get('reads', []))} | {calls} |" + ("" if callers is None else f" {callers.get(cid, 0)} |"))
     return "\n".join(out) + "\n"
 
 

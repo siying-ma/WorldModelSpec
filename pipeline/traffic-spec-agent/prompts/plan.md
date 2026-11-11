@@ -223,10 +223,17 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
    carries with its nearest atoms (step 6). Two exceptions to "exactly once": a `reference` span naming several
    rules carries one composition per rule; a `sibling` span carries nothing in this node.
    A residue is for words of the **obligation side** the rule does not capture. A `trigger`,
-   `subject`, `condition` or `exception` span the vocabulary cannot carry is never a residue:
-   dropping it makes the rule apply where the law does not. Such a span is an **assumption**
-   (`asm.<name>`, with the meaning a trace must declare; an undeclared assumption leaves the
-   verdict unknown), or mapped to its nearest atoms with a gap.
+   `subject`, `condition` or `exception` span the vocabulary cannot carry is never left out:
+   dropping it makes the rule apply where the law does not. Each way of carrying such a span has
+   its own rule. An **assumption** (`asm.<name>`, with the meaning a trace must declare; an
+   undeclared assumption leaves the verdict unknown) carries only a legal region class or a
+   calendar or clock condition that the ontology's section on what is not an atom lists. A
+   declared intention or an `observable_reading` carries such a span only where its own rule below
+   allows it. A span that adds no restriction, the duty being the same whether or not its words
+   hold, is a residue of scope `none` as stated below, whose `why` says why the duty is the same
+   either way. Any other such span is mapped to its nearest atoms with a gap. The condition of a
+   road user (disabled, or unable to be moved), a role or duty a person holds, an emergency, or what
+   the law requires of the road user is never an assumption.
    Where the words state that a road user intends, or is preparing, to turn, the span is carried
    by a **declared intention** `{span, id, meaning}` in `intentions` (`int.<name>`), which the trace
    declares for that road user at a region (the formula `intent`, with the road user and the region

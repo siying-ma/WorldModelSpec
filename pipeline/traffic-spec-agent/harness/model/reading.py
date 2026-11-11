@@ -149,8 +149,11 @@ class Reading:
         each becomes a `params` entry carrying `proposed: <origin>` (the run, iteration and node
         that proposed it), its convention and source, until the operator reviews it by removing
         the marker or changing the value. A name the reading already has is left as it is, except
-        an unreviewed value a node of the same law proposed, which the new proposal replaces.
-        Returns the entries added or replaced."""
+        an unreviewed value a node of the same law proposed under the same convention, which the
+        new proposal replaces. A proposal of a name the reading has under another convention
+        (whitespace aside), whatever its value and unit, is a broken invariant (validation refuses
+        it, since a name means one thing) and raises before anything is written, so no meaning is
+        dropped or replaced. Returns the entries added or replaced."""
         from .nodeid import law_of
         data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"params": [], "aggregates": []}
         have = {p.get("name"): p for p in data.get("params", [])}
@@ -161,6 +164,9 @@ class Reading:
                      "source": pr.get("source", ""), "proposed": origin}
             old = have.get(pr.get("name"))
             if old is not None:
+                if " ".join(str(old.get("convention", "")).split()) != " ".join(str(entry["convention"]).split()):
+                    raise ValueError(f"parameter `{pr['name']}`: the reading's convention is {old.get('convention')!r}, "
+                                     f"a proposal by {origin!r} {entry['convention']!r}")
                 if not Reading.own_proposal(old, law) or (old.get("value"), old.get("unit")) == (pr["value"], pr["unit"]):
                     continue
                 old.clear(); old.update(entry); added.append(entry)

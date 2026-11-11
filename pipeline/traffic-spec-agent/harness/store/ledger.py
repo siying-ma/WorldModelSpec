@@ -420,13 +420,16 @@ class ConceptLedger:
     def save(self) -> None:
         jsonl.write_atomic(self.path, _rows(self.entries.values()))
 
-    def planned(self, cid: str, used_by: list[str], iteration: int) -> None:
+    def planned(self, cid: str, used_by: list[str], iteration: int, planned_laws: set[str] | None = None) -> None:
         """A failed concept stays failed (only the operator's `reopen` of its laws clears it), and an
-        accepted one stays accepted."""
+        accepted one stays accepted. The users given replace those of the laws this iteration planned
+        (`planned_laws`; None: every law); a user of a law it did not plan stays, since that law's
+        plan still uses the concept."""
         e = self.entries.setdefault(cid, ConceptEntry(cid))
         if e.state in (FAILED, ACCEPTED):
             return
-        e.state, e.used_by, e.iteration, e.waiting = PLANNED, used_by, iteration, []
+        kept = [] if planned_laws is None else [u for u in e.used_by if nodeid.law_of(str(u))[0] not in planned_laws and u not in used_by]
+        e.state, e.used_by, e.iteration, e.waiting = PLANNED, kept + list(used_by), iteration, []
 
     def wait(self, cid: str, on: list[str], reasons: list[str]) -> None:
         """The concept calls concepts still pending: it stays `planned`, uncharged, with the scheduling

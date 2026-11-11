@@ -335,7 +335,7 @@ def prompt_parts(run, txn, law: corpus.Law, defs: list[dict], onto, repairs: int
         "coder_narrowings": "## What the coder narrowed\n\n(each record carries its narrowings)\n",
         "task_result": "(no coding session ran for this repair)",
         "final_files": "\n".join(files) or "(no file)", "ontology": onto.text, "formula_language": surface.formula_language(),
-        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(view.all_concepts()),
+        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(view.all_concepts(), surface.current_callers(view)),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
                       + declaration_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE}
@@ -697,17 +697,19 @@ def concept_fix(run, txn, rep, d: Path, defs: list[dict], law: str) -> tuple[lis
         return [], []
     new = r.records[0].raw
     return [candidate_phase.Change("concept", rep.concept, {**{k: v for k, v in txn.view.all_concepts()[rep.concept].items()
-                                                                 if k in ("callers", "used_by")}, **new})], [("concept", rep.concept)]
+                                                                 if k == "callers"}, **new})], [("concept", rep.concept)]
 
 
-def replan(run, txn, law: corpus.Law, defs: list[dict]) -> tuple[list, list[tuple[str, str]]]:
+def replan(run, txn, law: corpus.Law, defs: list[dict], to_user: list[str]) -> tuple[list, list[tuple[str, str]]]:
     """A law planned again inside the candidate: a plan session over the law alone, its new cut and
     every node (and new concept), the law's old nodes the plan does not keep withdrawn; every record
-    of the plan is the coder's."""
-    from .plan import run_plan
+    of the plan is the coder's. What the plan writes for the operator joins `to_user`, once per note."""
+    from .feedback import deliver_operator_notes
+    from .plan import operator_notes, run_plan
     with txn.inside():                                 # its validator, run from the session, reads the candidate
         txn.write_scope()
         plan_dir = run_plan(txn.view, [law], defs, tag=f"label-{law.id}", label_repair=True)
+    deliver_operator_notes(run, to_user, operator_notes(plan_dir))
     nodes = [n for n in blueprint.load(plan_dir / "blueprint.jsonl") if n.raw.get("law_refs", [None])[0] == law.id]
     if not nodes:
         raise ValueError(f"the plan of `{law.id}` written in the candidate has no node: a law's duties are never withdrawn by a re-plan")
@@ -1009,7 +1011,7 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
         gaps += [w for w in out.withdrawals if w["withdraw"].get("kind") in ("atom", "operator")]
         return "gap"
     if "plan" in kinds:
-        more, coder = replan(run, txn, law, defs)
+        more, coder = replan(run, txn, law, defs, to_user)
         changes = changes + more
         plans[law.id] = sorted(c.ident for c in more if c.kind == "node" and c.record is not None)
         notes.append("the law was planned again in the candidate")
@@ -1142,6 +1144,9 @@ def run_repairs(run, ledger, training, by_id: dict, defs: list[dict], onto, gap_
                 return out
             r = repair_law(run, ledger, training, by_id[law], defs, onto, gap_ledger, gaps_filed, to_user)
             out.setdefault(law, []).append(r)
+            if r == "committed":                            # its candidate is closed: the records it changed are the run's now
+                from .aggregate import write_current_view
+                write_current_view(run, closure=True)
             if code_phase.scope_unrestored(run):            # a production tree left dirty stops every law
                 return out
             if r in ("scope", "scope_budget"):              # this pass ends here

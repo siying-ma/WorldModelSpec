@@ -223,11 +223,27 @@ def _sort_lean(a: dict) -> str:
     return ".literal " + _lean_list([_s(v) for v in a.get("values", [])])
 
 
-def concept_skeleton(c: ConceptRecord) -> str:
+def _comment_text(text: object) -> str:
+    """Text on one line inside a Lean block comment, with no comment delimiter of its own."""
+    return " ".join(str(text).split()).replace("/-", "/ -").replace("-/", "- /")
+
+
+def concept_skeleton(c: ConceptRecord, definition_text: str | None = None) -> str:
+    """The concept file as the harness writes it. A concept bound to a posted definition is based on
+    that definition: its contract is the record's reading of it, not its text; the posted text is
+    shown apart from the contract; a text not given is marked abnormal in the header."""
     ns = nodeid.concept_namespace(c.id)
     head = ["/-", f"  {c.id} — {' '.join(str(c.get('contract', '')).split())}", ""]
     if c.get("definition"):
-        head.append(f"  The contract is the definition `{c.get('definition')}`, verbatim.")
+        head.append(f"  Based on the posted definition `{c.get('definition')}`: the contract above is this record's reading")
+        head.append("  of it, not its text.")
+        head.append("")
+        if definition_text:
+            head.append("  The posted text (the definition's words; the concept denotes its contract):")
+            head.append(f"    {_comment_text(definition_text)}")
+        else:
+            head.append("  ABNORMAL: the posted text of this definition was not available when this file was written;")
+            head.append("  a valid record names a definition of the run's corpus.")
         head.append("")
     head.append("  THE READING (the blueprint's; the session records here, per element, how the contract's words are")
     head.append("  written, and every choice the contract did not dictate).")

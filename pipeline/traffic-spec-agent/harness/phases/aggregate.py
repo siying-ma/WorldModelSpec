@@ -246,7 +246,139 @@ def check_admissions(run: Run, laws: dict, defs: list[dict], onto: Ontology, cla
             stop.append(f"aggregate `{aid}` is stale ({', '.join(changed)} changed) and nodes {sorted(claimants[aid])} claim it")
         else:
             notes.append(f"aggregate `{aid}`: stale ({', '.join(changed)} changed); invalidated, derived again")
+    write_current_view(run)                                      # an invalidated certificate leaves it; a resume rebuilds it
     return notes, stop
+
+
+# ---------------------------------------------------------------------------------------------
+# The operator's current view of the aggregate downgrades
+# ---------------------------------------------------------------------------------------------
+#: The operator's file, beside `TO_USER.md`, that lists the downgrades holding now.
+VIEW_NAME = "AGGREGATE_DOWNGRADES.md"
+
+
+def view_file(run: Run) -> Path:
+    return run.dir / VIEW_NAME
+
+
+def current_admissions(run: Run) -> list[tuple[dict, dict]]:
+    """(reading entry, certificate) of each aggregate in the run's reading whose effective
+    certificate is the one that entry was admitted from: the certificates that hold now. An entry
+    with no such certificate (an operator's base reading, an invalidated or re-verified admission)
+    has none."""
+    certs = _effective_certificates(jsonl.read_strict(certificates_file(run)))
+    out = []
+    for entry in Reading(run.reading_file).data.get("aggregates", []):
+        cert = certs.get(entry.get("id"))
+        if cert and entry.get("certificate") and cert.get("admitted", {}).get("certificate") == entry.get("certificate"):
+            out.append((entry, cert))
+    return out
+
+
+def current_plan_nodes(run: Run) -> dict[str, dict]:
+    """The accepted nodes in their law's current plan (`state.current_plan_nodes`)."""
+    from ..store.state import current_plan_nodes as current
+    return current(run)
+
+
+def reaching_nodes(run: Run, aid: str) -> tuple[list[str], dict[str, str]]:
+    """The accepted nodes in their law's current plan (`current_plan_nodes`) that reach aggregate
+    `aid` now: (those that claim it directly or through an accepted concept that claims it, those that
+    compose one of them, each with the node it composes on the way). A fenced record reaches nothing."""
+    from ..model import nodeid
+    from ..model.blueprint import ConceptRecord, Node
+    atom = f"ru.aggregate={aid}"
+    concepts = {i: ConceptRecord(r) for i, r in run.all_concepts().items() if not r.get("fenced")}
+    via = {i for i, c in concepts.items() if atom in c.claimed_atoms()}
+    grew = True
+    while grew:                                                  # a concept that uses one that claims it claims it too
+        more = {i for i, c in concepts.items() if i not in via and c.refs() & via}
+        grew, via = bool(more), via | more
+    nodes = {i: Node(r) for i, r in current_plan_nodes(run).items()}
+    direct = sorted(i for i, n in nodes.items() if atom in n.claimed_atoms() or {c for c in n.claimed_atoms() if nodeid.is_concept_id(c)} & via)
+    through: dict[str, str] = {}
+    reached = set(direct)
+    grew = True
+    while grew:
+        grew = False
+        for i, n in sorted(nodes.items()):
+            if i in reached:
+                continue
+            hit = next((str(c.get("rule")) for c in n.dependencies() if str(c.get("rule")) in reached), None)
+            if hit:
+                through[i], grew = hit, True
+                reached.add(i)
+    return direct, through
+
+
+def _cycles(table: dict, definition: str) -> list[list[str]]:
+    return [list(d["cycle"]) for d in checks.resolution_of(table, definition).get("dependencies", []) if d.get("cycle")] if definition else []
+
+
+def _admitted_record(cert: dict) -> dict:
+    """The mapping record a certificate admitted: the planner's re-proposal when it wrote one, else
+    its proposal."""
+    retry = cert.get("retry") or {}
+    return retry.get("record") or cert.get("proposal") or {}
+
+
+def current_view(run: Run, closure: bool = False) -> str:
+    """The operator's view of the aggregate classes unresolved now, rebuilt in full from the
+    certificates that hold now (`current_admissions`) and the run's accepted records, never from an
+    earlier view: one line per (aggregate, class, certificate digest) the admitted entry holds
+    unresolved, saying why: a certificate's downgrade, with the verifier's reason, or the admitted
+    mapping's own classification, with the planner's reason; each with the laws that used the pair
+    when it was admitted and the accepted nodes that reach it as of this iteration
+    (`reaching_nodes`), which later acceptances may extend. The node closure is computed only with `closure` (after the plan and
+    after integration); a view written at an admission, before them, says it is not yet computed,
+    so a run that stops there shows neither an empty nor an earlier closure as current. An
+    aggregate that includes no class, and a nested-definition cycle in its resolution, are listed
+    as flags. A downgrade of a certificate since invalidated or replaced is not listed. The view
+    reports: it files no gap, holds no law and grants nothing."""
+    out = [f"# Aggregate classes unresolved now (as of iteration {run.iteration})", "",
+           "Rebuilt in full from each admitted aggregate's current certificate and the run's accepted records each time it "
+           "is written. A report: nothing here files a gap, holds a law or grants a change.", ""]
+    try:
+        admissions = current_admissions(run)
+        table = definitions_mod.load_table(run)
+    except (jsonl.DataIntegrityError, OSError, ValueError) as e:
+        return "\n".join(out + [f"The view cannot be rebuilt: {type(e).__name__}: {str(e)[:300]}", ""])
+    lines, flags = [], []
+    for entry, cert in sorted(admissions, key=lambda x: x[0]["id"]):
+        aid, digest = entry["id"], entry["certificate"]
+        direct, through = reaching_nodes(run, aid) if closure else ([], {})
+        laws = cert.get("laws_at_admission")
+        laws_s = ", ".join(f"`{l}`" for l in laws) if laws else ("none" if laws is not None else "not recorded with the certificate")
+        nodes_s = ", ".join([f"`{i}` (directly)" for i in direct] + [f"`{i}` (composes `{through[i]}`)" for i in sorted(through)]) or "none"
+        fields = [f"  - laws referencing the pair at admission: {laws_s}",
+                  f"  - accepted nodes in their law's current plan referencing it directly or through composition, as of iteration "
+                  f"{run.iteration}: {nodes_s}" if closure
+                  else f"  - accepted nodes in their law's current plan referencing it directly or through composition: not yet computed (iteration {run.iteration} "
+                       "has not reached its plan or its integration since this view was written)"]
+        downgrades = {d.get("class"): d for d in cert.get("downgrades", [])}
+        planned = {c.get("class"): c for c in _admitted_record(cert).get("classifications", []) if isinstance(c, dict)}
+        for c in sorted(set(entry.get("unresolved", [])) | set(downgrades)):
+            d = downgrades.get(c)
+            why = (f"downgraded to unresolved ({d.get('why')}); the verifier: {_ws(d.get('reason')) or '(no reason given)'}" if d
+                   else f"unresolved in the admitted mapping; the planner: {_ws(planned.get(c, {}).get('reason')) or '(no reason given)'}")
+            lines += [f"- `{aid}` · class `{c}` · certificate `{digest}`: {why}"] + fields
+        if not entry.get("included"):
+            flags += [f"- `{aid}` · certificate `{digest}`: includes no class (every class is excluded, covered or unresolved)"] + fields
+        for c in _cycles(table, str(cert.get("admitted", {}).get("definition") or cert.get("proposal", {}).get("definition") or "")):
+            flags += [f"- `{aid}` · certificate `{digest}`: its nested definitions form a cycle ({' → '.join(c)}); flagged, it decides nothing"]
+    out += ["## Classes unresolved", ""] + (lines or ["(none)"]) + ["", "## Flags", ""] + (flags or ["(none)"])
+    return "\n".join(out) + "\n"
+
+
+def write_current_view(run: Run, closure: bool = False) -> None:
+    """Write the operator's current view (`current_view`) over the previous one; `closure` after the
+    plan and after integration. A view that cannot be computed says why and stops nothing: it is a
+    report."""
+    try:
+        text = current_view(run, closure)
+    except Exception as e:                                       # a report never stops the run
+        text = f"# Aggregate classes unresolved now\n\nThe view cannot be rebuilt: {type(e).__name__}: {str(e)[:300]}\n"
+    jsonl.write_atomic(view_file(run), text)
 
 
 def _classes_block(onto: Ontology) -> str:
@@ -467,11 +599,19 @@ def admit(run: Run, recs: list[dict], table: dict, defs: list[dict], onto: Ontol
                                                       feedback=feedback, label=f"plan_aggregates_retry_{checks.slug(aid)}")
             return next((r for r in new_recs if r.get("aggregate_id") == aid), None)
         entry, cert = gate(run, rec, sources, onto, out_dir, retry, digests)
+        cert["laws_at_admission"] = sorted(set(checks.pairs_of(table).get((row["definition"], row["term"]), []))) if row \
+            else [aid.split(":", 1)[0]]
         _record_admission(run, cert, inputs_of(run, rec, table, defs_by_id, onto, laws))
         entries.append(entry)
         down = cert["downgrades"]
+        if down or not entry["included"]:
+            to_user.append(f"aggregate `{aid}` admitted with " + (f"{len(down)} class(es) downgraded to unresolved "
+                           f"({', '.join(d['class'] + ' (' + d['why'] + ')' for d in down)})" if down else "no class included")
+                           + f"; what holds now, with the records it reaches, is in `{VIEW_NAME}`")
         notes.append(f"aggregate `{aid}` admitted: included {len(entry['included'])}, covered {len(entry.get('covered', []))}, unresolved {len(entry['unresolved'])}"
                      + (f"; downgraded to unresolved: {', '.join(d['class'] + ' (' + d['why'] + ')' for d in down)}" if down else ""))
+    if entries:
+        write_current_view(run)
     return entries, notes, to_user
 
 
@@ -525,11 +665,12 @@ def claimed_ids(nodes) -> dict[str, set[str]]:
     return out
 
 
-def correct_claims(run: Run, claims: dict[str, set[str]], defs: list[dict], onto: Ontology, ledger, out_dir: Path) -> tuple[list[str], dict[str, str]]:
+def correct_claims(run: Run, claims: dict[str, set[str]], defs: list[dict], onto: Ontology, ledger, out_dir: Path,
+                   to_user: list[str] | None = None) -> tuple[list[str], dict[str, str]]:
     """A plan that claims a definition-scoped id the selection did not make an aggregate: the
     selection role is asked once, per law, to keep its representation or to make it an aggregate
     with quoted support (then derived and gated). Returns (notes, laws to close with why: a second
-    such claim)."""
+    such claim); what the admission reports for the operator joins `to_user`."""
     reading = Reading(run.reading_file)
     table = definitions_mod.load_table(run)
     selection = load_selection(run)
@@ -561,7 +702,9 @@ def correct_claims(run: Run, claims: dict[str, set[str]], defs: list[dict], onto
     sel, recs, _errs = select_and_derive(run, table, defs, onto, want, out_dir, feedback=feedback, label="plan_aggregates_correction")
     selection.update(sel)
     save_selection(run, selection)
-    _entries, n2, _to_user = admit(run, recs, table, defs, onto, out_dir)
+    _entries, n2, user = admit(run, recs, table, defs, onto, out_dir)
+    if to_user is not None:
+        to_user += user
     for law in first_claims:
         ledger.selection_correction(law)
     return notes + n2, close

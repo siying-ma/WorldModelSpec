@@ -704,7 +704,7 @@ class RepairContext(unittest.TestCase):
             w.accepted = {"M_1": m1}
             d = w.root / "iter"
             run = SimpleNamespace(iter=d, dir=d, iteration=2, mapping_file=d / "mapping.json", all_nodes=lambda: w.accepted,
-                                  all_concepts=lambda: {}, opts=SimpleNamespace(dry_run=True, plan_turns=1, plan_effort="low", run_id="r",
+                                  all_concepts=lambda: {}, law_entries={}, fenced={}, opts=SimpleNamespace(dry_run=True, plan_turns=1, plan_effort="low", run_id="r",
                                                                                  laws=w.root / "laws.jsonl"))
             last = d / "last"
             last.mkdir(parents=True)

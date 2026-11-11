@@ -48,6 +48,10 @@ def _ws(s) -> str:
     return " ".join(str(s or "").split())
 
 
+def _whole(text: str, _limit: int) -> str:
+    return text
+
+
 def _norm(s) -> str:
     """Whitespace-normalized, case-folded, without backticks, double quotation marks or the
     backslashes that escape them: the marks a quotation adds or drops do not make it less verbatim."""
@@ -602,17 +606,25 @@ def _superseding(row: dict, effective: list[dict], supersedes: str | None) -> di
     return row
 
 
+def _ruling_content(row: dict) -> dict:
+    return {k: v for k, v in row.items() if k not in ("ruling_id", "supersedes")}
+
+
 def append_ruling(run: Run, row: dict, supersedes: str | None = None, ruling_id: str | None = None) -> dict:
     """Append a row with a fresh `ruling_id`; an earlier ruling of the same identity is superseded by it.
     A row of a new identity may name the ruling it supersedes (`supersedes`: a concept case whose
     recorded content changed, under a new id, supersedes the ruling of the case it came from). A row
     given its `ruling_id` (a review's ruling, `ReviewRulings`) is appended once: when the run's file
-    holds that id, the row recorded under it is returned and nothing is written."""
+    holds that id with the same content, the row recorded under it is returned and nothing is
+    written; the same id with other content is a `RulingsError`, never a row dropped. Content is
+    every field but the id and the ruling it supersedes, which is decided when the row is recorded."""
     with _RULINGS_LOCK:
         row = dict(row)
         if ruling_id:
             kept = next((r for r in jsonl.read_strict(_rulings_file(run)) if r.get("ruling_id") == ruling_id), None)
             if kept is not None:
+                if _ruling_content(kept) != _ruling_content(row):
+                    raise RulingsError(f"ruling {ruling_id} is recorded with other content than the ruling given under that id")
                 return kept
             row["ruling_id"] = ruling_id
         else:
@@ -660,13 +672,18 @@ def precedent_rows(run: Run, key: str, rows: list[dict] | None = None) -> list[d
     return [r for r in effective_rows(_all_rows(run) if rows is None else rows) if r.get("key") == key and r.get("ruling") != "advisory"]
 
 
+#: How much of an earlier ruling's item and reason the precedents show.
+PRECEDENT_ITEM, PRECEDENT_REASON = 400, 600
+
+
 def precedents_block(rows: list[dict]) -> str:
     """Earlier rulings, most recent first, so a situation decided once is decided alike."""
     if not rows:
         return "### Earlier rulings\n\n(none)\n"
     out = ["### Earlier rulings (most recent first)", ""]
     for r in reversed(rows[-30:]):
-        out.append(f"- iteration {r.get('iteration')}, `{r.get('subject')}`: {r.get('item')} — **{r.get('ruling')}**: {r.get('reason')}")
+        out.append(f"- iteration {r.get('iteration')}, `{r.get('subject')}`: {surface.shorten(str(r.get('item')), PRECEDENT_ITEM)} — "
+                   f"**{r.get('ruling')}**: {surface.shorten(str(r.get('reason')), PRECEDENT_REASON)}")
     return "\n".join(out) + "\n"
 
 
@@ -711,7 +728,7 @@ def _kept(old, new, path: str) -> list[str]:
         for k, v in o.items():
             out += [f"{path}[{k}] is left out"] if k not in nw else _kept(v, nw[k], f"{path}[{k}]")
         return out
-    return [] if old == new else [f"{path} changed from {json.dumps(old)[:60]} to {json.dumps(new)[:60]}"]
+    return [] if old == new else [f"{path} changed from {surface.shorten(json.dumps(old), 60)} to {surface.shorten(json.dumps(new), 60)}"]
 
 
 _COMPUTED_CACHE: dict[str, list] = {}
@@ -1300,7 +1317,7 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
     listed = answer.get("divergences") if isinstance(answer.get("divergences"), list) else []
     defects = {k: concept_divergence_defects(k, d, rec, contract, result_dim, saved) for k, d in enumerate(listed, 1)}
     divs = {k: d for k, d in enumerate(listed, 1) if not defects[k]}
-    unrunnable = [f"divergence {k}: cannot be run as recorded — " + "; ".join(bad[:3])[:400] for k, bad in defects.items() if bad]
+    unrunnable = [f"divergence {k}: cannot be run as recorded — " + surface.shorten("; ".join(bad[:3]), 400) for k, bad in defects.items() if bad]
     quantity = rec.get("kind") == "quantity"
     if not divs:
         return [], [], [], unrunnable
@@ -1339,7 +1356,7 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
                 try:
                     lint[int(parts[1])] = json.loads(parts[2])
                 except json.JSONDecodeError:
-                    raise HarnessFailure(f"an unparseable LINT line: {line[:200]}")
+                    raise HarnessFailure(f"an unparseable LINT line: {surface.shorten(line, 200)}")
             elif parts[0] == "RELCHECK" and len(parts) >= 5 and parts[1].isdigit():
                 rel.setdefault(int(parts[1]), []).append([parts[2], parts[3], parts[4].split(":", 1)[0]])
             elif parts[0] == "OCCD" and len(parts) >= 3 and parts[1].isdigit() and parts[2].lstrip("-").isdigit():
@@ -1361,38 +1378,56 @@ def execute_concept_divergences(rec, answer: dict, out_dir: Path, result_dim: tu
         tag, why = got.get(k, ("missing", ""))
         claimed = "compliant" if quantity else CONTRACT_VERDICTS[d["contract_verdict"]]   # a quantity's claim: its value lies in the interval
         observed = _core_value(value.get(k), result_dim)
-        if quantity:
-            lo, hi = d["contract_value"]["lo"], d["contract_value"]["hi"]
-            body = {"compliant": "in the interval", "violated": "outside the interval"}.get(tag, tag)
-            head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {_ws(d.get('situation'))[:160]} — contract: from {lo[0]} {lo[1]} "
-                    f"to {hi[0]} {hi[1]}; the body's value there: {observed} ({body})")
-        else:
-            body = {"compliant": "holds", "violated": "fails"}.get(tag, tag)
-            head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {_ws(d.get('situation'))[:160]} — contract: {d.get('contract_verdict')}, body: {body}")
+        body = ({"compliant": "in the interval", "violated": "outside the interval"} if quantity else
+                {"compliant": "holds", "violated": "fails"}).get(tag, tag)
+        lines = {f: divergence_lines(k, d, quantity, body, observed, f" [{why}]" if tag == "unknown" and why else "", cut) for f, cut in LINE_FORMS.items()}
         reason = None
         if tag in ("decode", "missing", "unfilled", "at_missing"):
             reason = "formals" if tag == "unfilled" else "admission"
-            errors.append(f"divergence {k}: " + {"decode": f"the trace does not decode: {why[:200]}", "missing": "the harness printed no verdict",
+            errors.append(f"divergence {k}: " + {"decode": f"the trace does not decode: {surface.shorten(why, 200)}", "missing": "the harness printed no verdict",
                                                   "unfilled": "the instance leaves a formal unfilled",
                                                   "at_missing": "`at` names no observation of the trace"}[tag])
         elif lint.get(k):
             reason = "admission"
             incomplete.append(f"divergence {k}: trace check: " + "; ".join(lint[k][:8]))
         elif tag == claimed:
-            unconfirmed.append(head + CONCEPT_AGREES)
+            unconfirmed.append(lines["shown"][0] + CONCEPT_AGREES)
         elif tag == "unknown" and why and all(_trace_defect(r, "rule_undecided" if d.get("kind") == "undecided" else None) for r in why.split(",")):
             reason = "history"
-            incomplete.append(f"divergence {k}: {_ws(d.get('situation'))[:120]} — the body's verdict on the trace is unknown only because the "
+            incomplete.append(f"divergence {k}: {surface.shorten(_ws(d.get('situation')), 120)} — the body's verdict on the trace is unknown only because the "
                               "trace is incomplete: " + "; ".join(sorted({_trace_remedy(r) for r in why.split(",")})))
         else:
-            line = head + (f" [{why}]" if tag == "unknown" and why else "") + f'; contract: "{_ws(d.get("contract_words"))[:120]}"'
-            confirmed.append({"line": line, "div": d, "rule": body + (f" ({why})" if tag == "unknown" and why else ""),
+            confirmed.append({**{f: x[1] for f, x in lines.items()}, "div": d, "rule": body + (f" ({why})" if tag == "unknown" and why else ""),
                               "key": f"{d.get('kind')}", "verdict": tag, "value": observed if quantity else None,
                               "facts": executed_facts(d, read_paths, occd.get(k)),
                               **({"relations_stripped": stripped[k]} if k in stripped else {})})
         if runs is not None:
             runs[k] = {"tag": tag, "why": why, "value": value.get(k), "facts": executed_facts(d, read_paths, occd.get(k)), "reason": reason}
     return confirmed, unconfirmed, errors, incomplete + unrunnable
+
+
+#: The forms of an item's line: `line`, whole, as its ruling keeps it; `shown`, as notes and
+#: messages show it, its texts cut at a word boundary.
+LINE_FORMS = {"line": _whole, "shown": surface.shorten}
+
+
+def _shown(item: dict) -> str:
+    """An item's line as notes and messages show it (`LINE_FORMS`)."""
+    return item.get("shown") or item["line"]
+
+
+def divergence_lines(k: int, d: dict, quantity: bool, body: str, observed, mark: str, cut) -> tuple[str, str]:
+    """A divergence as run: (its head, its line), the situation and the contract's words each passed
+    through `cut` (`LINE_FORMS`). `body` is the body's verdict or, for a quantity, where its value
+    lies, `observed` a quantity's value, `mark` the unknown reasons the line carries."""
+    sit = cut(_ws(d.get("situation")), 160)
+    if quantity:
+        lo, hi = d["contract_value"]["lo"], d["contract_value"]["hi"]
+        head = (f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {sit} — contract: from {lo[0]} {lo[1]} "
+                f"to {hi[0]} {hi[1]}; the body's value there: {observed} ({body})")
+    else:
+        head = f"divergence {k} ({d.get('kind')}) at t={d.get('at')} ms: {sit} — contract: {d.get('contract_verdict')}, body: {body}"
+    return head, head + mark + f'; contract: "{cut(_ws(d.get("contract_words")), 120)}"'
 
 
 def _item_facts(i: dict) -> str:
@@ -1465,9 +1500,9 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
     if answer is None and not errs:
         raise Deferred("concept_adjudication", "dry run: the concept's items were not adjudicated")
     if errs:
-        raise Deferred("concept_adjudication", f"the concept adjudication stayed invalid: {'; '.join(errs)[:300]}")
+        raise Deferred("concept_adjudication", f"the concept adjudication stayed invalid: {surface.shorten('; '.join(errs), 300)}")
     rows = {r.get("item"): r for r in answer.get("rulings", []) if isinstance(r, dict)}
-    out = [(i, rows[k]["ruling"], f"{_ws(rows[k].get('reason'))} — \"{_ws(rows[k].get('quote'))[:160]}\"") for k, i in enumerate(items, 1)]
+    out = [(i, rows[k]["ruling"], f"{_ws(rows[k].get('reason'))} — \"{_ws(rows[k].get('quote'))}\"") for k, i in enumerate(items, 1)]
     for i, ruling, why in out:
         d = i["div"]
         if d.get("kind") == "not_general":                # a structural finding: an obligation by its identity, re-adjudicated later
@@ -1489,8 +1524,8 @@ def adjudicate_concept(run: Run, rec, blocks: dict[str, str], items: list[dict],
                 replay["lineage"] = i["lineage_of"].get("case_id")
             if i.get("recheck"):
                 replay["recheck"] = i["recheck"]
-        _ruled(run, rulings, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line"))[:400],
-                              "ruling": ruling, "reason": _ws(why)[:600], **replay}, (i.get("lineage_of") or {}).get("ruling_id"))
+        _ruled(run, rulings, {"key": key, "subject": rec.id, "iteration": run.iteration, "item": _ws(i.get("line")),
+                              "ruling": ruling, "reason": _ws(why), **replay}, (i.get("lineage_of") or {}).get("ruling_id"))
     return out
 
 
@@ -1543,7 +1578,7 @@ class ConceptTools(ReviewTools):
             return {"status": "schema defects", "messages": schema}
         confirmed, unconfirmed, errors, incomplete = self.run_answer({"divergences": [d]}, where)
         status = "unusable" if errors or incomplete else "agrees" if unconfirmed else "confirmed"
-        return {"status": status, "messages": errors + incomplete + unconfirmed + [c["line"] for c in confirmed]}
+        return {"status": status, "messages": errors + incomplete + unconfirmed + [_shown(c) for c in confirmed]}
 
     def _submit(self, a: dict, number: int) -> list[str]:
         errs = concept_review_defects(a, self.rec, self.contract, self.rendering, self.result_dim)
@@ -1750,7 +1785,7 @@ def recheck_concept(run: Run, rec, instance: dict, facts: str, out_dir: Path, re
     if answer is None and not errs:
         raise Deferred("concept_adjudication", "dry run: the concept's challenge was not rechecked")
     if errs:
-        raise Deferred("concept_adjudication", f"the concept recheck stayed invalid: {'; '.join(errs)[:300]}")
+        raise Deferred("concept_adjudication", f"the concept recheck stayed invalid: {surface.shorten('; '.join(errs), 300)}")
     jsonl.append_atomic(recheck_cache_file(run), {"key": key, "concept": rec.id, "iteration": run.iteration, "answer": answer})
     return answer
 
@@ -1852,13 +1887,13 @@ def recheck_case(run: Run, rec, r: dict, d: dict, obs: dict, out: ConceptReplay,
     said = _claim_text(claim)
     recheck = {"answer": {k: answer[k] for k in ("verdict", "interval", "undecided_by") if k in answer}, "quote": answer["quote"],
                "contract_digest": current}
-    reason = _ws(f"rechecked under the current contract: {said} — {_ws(answer.get('reason'))} — \"{_ws(answer.get('quote'))[:160]}\"; "
-                 f"the body: {body}")[:600]
+    reason = _ws(f"rechecked under the current contract: {said} — {_ws(answer.get('reason'))} — \"{_ws(answer.get('quote'))}\"; "
+                 f"the body: {body}")
     if claim is not None and not body_within(rec, claim, obs):
         content = renewed_content(rec, r, d, claim, answer["quote"])
         head = (f"divergence (renewed from {cid[:12]}) at t={d.get('at')} ms — contract: {said}; "
                 + (f"the body's value there: {body}" if quantity else f"body: {body}"))
-        out.items.append({"line": head + f'; contract: "{_ws(answer["quote"])[:120]}"', "div": content, "rule": body,
+        out.items.append({**{f: head + f'; contract: "{cut(_ws(answer["quote"]), 120)}"' for f, cut in LINE_FORMS.items()}, "div": content, "rule": body,
                           "key": content["kind"], "verdict": obs.get("tag"), "value": body if quantity else None,
                           "facts": obs.get("facts") or executed_facts(d), "lineage_of": r, "recheck": recheck})
         return
@@ -1874,14 +1909,14 @@ def recheck_case(run: Run, rec, r: dict, d: dict, obs: dict, out: ConceptReplay,
         row.update({"case_id": concept_case_id(rec.id, row), "lineage": cid,
                     "item": _ws(f"recheck of {cid[:12]} (t={d.get('at')} ms): the current contract decides {said}, the case recorded "
                                 f"{_claim_text({k: r.get(k) for k in ('contract_verdict', 'contract_value') if r.get(k) is not None})}; "
-                                f"the body: {body}")[:400]})
+                                f"the body: {body}")})
         written = _ruled(run, rulings, row, r.get("ruling_id"))
     else:
         written = _ruled(run, rulings, row)
     if claim is None:
         by = answer.get("undecided_by", "unstated")
         out.carry.append({"case_id": written["case_id"], "row": written, "reason": "undecided", "undecided_by": by,
-                          "why": f"{UNDECIDED}{_undecided_why(by)}: {_ws(answer.get('reason'))[:300]}"})
+                          "why": f"{UNDECIDED}{_undecided_why(by)}: {surface.shorten(_ws(answer.get('reason')), 300)}"})
     else:
         out.notes.append("an upheld challenge is met by this body under the current contract; it stays an obligation: "
                          f"challenge {written['case_id'][:12]} (t={d.get('at')} ms), rechecked: the current contract: {said}; the body: {body}")
@@ -1942,12 +1977,12 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
         bad = concept_divergence_defects(1, d, rec, contract, result_dim, saved=True)
         if bad:
             out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": r0_reason(bad[0]),
-                              "why": "its record fails today's schema: " + "; ".join(bad)[:300]})
+                              "why": "its record fails today's schema: " + surface.shorten("; ".join(bad), 300)})
             continue
         if undecided_under(r, current):                   # the contract decides nothing here: carried, never compared
             by = ((r.get("recheck") or {}).get("answer") or {}).get("undecided_by", "unstated")
             out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": "undecided", "undecided_by": by,
-                              "why": f"{UNDECIDED}{_undecided_why(by)}: {_ws((r.get('recheck') or {}).get('quote'))[:200]}"})
+                              "why": f"{UNDECIDED}{_undecided_why(by)}: {surface.shorten(_ws((r.get('recheck') or {}).get('quote')), 200)}"})
             continue
         k = len(divs) + 1
         divs[k], by_k[k] = d, r
@@ -1961,7 +1996,7 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
         r = by_k.pop(k, None)
         if r is not None:
             out.carry.append({"case_id": r.get("case_id"), "row": r, "reason": (runs.get(k) or {}).get("reason") or "admission",
-                              "why": f"it cannot be run on this body: {line[:300]}"})
+                              "why": f"it cannot be run on this body: {surface.shorten(line, 300)}"})
     confirms = {k_of(c["line"]): c for c in confirmed}
     meets = {k_of(line): line for line in unconfirmed}
     for k, r in by_k.items():
@@ -1972,7 +2007,7 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
         elif k in meets:
             if r.get("obligation") != "satisfied" or r.get("subject") != rec.id:
                 _ruled(run, rulings, satisfied_on(run, rec, r, {x: r.get(x) for x in CONCEPT_CASE_FIELDS if r.get(x) is not None}, body_digest))
-            out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {meets[k][:240]}")
+            out.notes.append(f"an upheld challenge is met by this body; it stays an obligation: {surface.shorten(meets[k], 240)}")
     # structural findings: typed rows, and older rows written before they had a schema
     migrated = {r.get("legacy_of") for r in every() if r.get("legacy_of")}     # any row that ever took an older row over
     typed = [r for r in rows if r.get("schema") == CONCEPT_STRUCTURAL_SCHEMA and r.get("obligation") in ("open", None)
@@ -1990,7 +2025,8 @@ def replay_concept(run: Run, rec, out_dir: Path, result_dim: tuple | None, body_
             continue
         m = _LEGACY_ITEM.match(_ws(r.get("item")))
         words, why = (m.group(1), m.group(2)) if m else ("", "")
-        out.items.append({"line": _ws(r.get("item")) if m else f"an earlier upheld finding, as recorded: {_ws(r.get('item'))[:300]}",
+        out.items.append({**{f: _ws(r.get("item")) if m else f"an earlier upheld finding, as recorded: {cut(_ws(r.get('item')), 300)}"
+                             for f, cut in LINE_FORMS.items()},
                           "rule": "not executed", "key": "not_general", "legacy_of": r.get("ruling_id"),
                           "div": {"kind": "not_general", "words": words or _ws(r.get("item")), "why": why or _ws(r.get("reason"))}})
     return out
@@ -2012,9 +2048,9 @@ def carry_over_block(carry: list[dict]) -> str:
            "divergence keeps the review open.", ""]
     for c in carry:
         r = c.get("row") or {}
-        out += [f"#### Challenge `{c.get('case_id')}`", "", _ws(r.get("item"))[:400], "",
+        out += [f"#### Challenge `{c.get('case_id')}`", "", surface.shorten(_ws(r.get("item")), 400), "",
                 f"Why it cannot be judged as recorded ({c.get('reason', 'formals')}): {c.get('why')}", "",
-                "Its record: ```json " + json.dumps({k: r.get(k) for k in CONCEPT_CASE_FIELDS if r.get(k) is not None}, ensure_ascii=False)[:6000] + "```", ""]
+                "Its record: ```json " + surface.shorten(json.dumps({k: r.get(k) for k in CONCEPT_CASE_FIELDS if r.get(k) is not None}, ensure_ascii=False), 6000) + "```", ""]
     return "\n".join(out) + "\n"
 
 
@@ -2137,7 +2173,7 @@ def dependency_report(run: Run, task_dir: Path, reached: set[str]) -> Dependency
             return DependencyReport(**{"execution": "confirmed", **decided})
         ruled = adjudicate_concept(run, rec, blocks, confirmed, out, _digest(acc.get("body_json")), "adjudicate_report", rulings)
         item, ruling, why = ruled[0]
-        return finish_review(run, out, rulings, {}, DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], item["line"],
+        return finish_review(run, out, rulings, {}, DependencyReport("upheld" if ruling == "upheld" else "dismissed", cid, [why], _shown(item),
                                                                      execution="confirmed"), True)
     except (Deferred, HarnessFailure, session.SessionUnavailable) as e:
         e.reached = reached_stage
@@ -2208,7 +2244,7 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
         return done({"deferred": str(e)}, ReviewOutcome("deferred", reasons=[f"replay: {e}"], defer_stage="certificate"))
     except Deferred as e:
         return done({"deferred": e.why}, ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage, advisories=replay_notes))
-    still = [f"{i['line']} — upheld again: {w}" for i, r, w in replayed if r == "upheld"]
+    still = [f"{_shown(i)} — upheld again: {w}" for i, r, w in replayed if r == "upheld"]
     if still:
         return done({"replayed": still}, ReviewOutcome("returned", reasons=still, advisories=replay_notes))
     carry = {c["case_id"]: c["row"] for c in rep.carry if c.get("case_id")}
@@ -2268,8 +2304,8 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
         ruled = adjudicate_concept(run, rec, blocks, items, out_dir, body_digest, "adjudicate", rulings) if items else []
     except Deferred as e:
         return done({"deferred": e.why}, ReviewOutcome("deferred", reasons=[e.why], defer_stage=e.stage))
-    upheld = [f"{i['line']} — upheld: {w}" for i, r, w in ruled if r == "upheld"]
-    notes = replay_notes + [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {i['line']} — {w}" for i, r, w in ruled if r == "dismissed"]
+    upheld = [f"{_shown(i)} — upheld: {w}" for i, r, w in ruled if r == "upheld"]
+    notes = replay_notes + [str(x) for x in answer.get("advisories", [])] + [f"dismissed: {_shown(i)} — {w}" for i, r, w in ruled if r == "dismissed"]
     # a challenge the harness could not evaluate (a schema defect of the final answer, a trace that
     # does not decode or run, an incomplete trace) leaves the review undecided: without an upheld
     # item it defers the concept; a trace on which the body gives the contract's verdict is advisory
@@ -2281,10 +2317,10 @@ def review_concept(run: Run, rec, extras: dict, out_dir: Path) -> ReviewOutcome:
         return done(data, ReviewOutcome("returned", reasons=upheld, advisories=notes))
     if unusable:
         return done(data, ReviewOutcome("deferred", reasons=[f"concept review: {len(unusable)} challenge(s) could not be evaluated: "
-                                                             + " | ".join(unusable)[:900]], advisories=notes, defer_stage="reviewer"))
+                                                             + surface.shorten(" | ".join(unusable), 900)], advisories=notes, defer_stage="reviewer"))
     if unextended:
         why = {c["case_id"]: c["why"] for c in rep.carry}
         return done(data, ReviewOutcome("deferred", reasons=["challenges carried over but not extended: "
-                                                             + " | ".join(f"{cid[:12]}: {why.get(cid, '')}" for cid in unextended)[:900]],
+                                                             + surface.shorten(" | ".join(f"{cid[:12]}: {why.get(cid, '')}" for cid in unextended), 900)],
                                         advisories=notes, defer_stage="evidence"))
     return done(data, ReviewOutcome("accepted", advisories=notes + [f"refuted by execution: {x}" for x in unconfirmed]))
