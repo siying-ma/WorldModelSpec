@@ -1,0 +1,2380 @@
+{
+ "verdict": "OK",
+ "details": [
+  "10 witnesses, 12 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "derived": "drv_motion_leaving_region",
+       "params": []
+      },
+      {
+       "or": [
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "cmp": "lt",
+             "lhs": {
+              "abs": {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.heading_since_step_carla_scene_graph"
+                }
+               ],
+               "quantity": "drv_motion_heading_change_since_entry"
+              }
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            },
+            {
+             "cmp": "le",
+             "lhs": {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.heading_since_step_carla_scene_graph"
+               }
+              ],
+              "quantity": "drv_motion_heading_change_since_entry"
+             },
+             "rhs": {
+              "neg": {
+               "param": "p.turn_recognition_angle"
+              }
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "x"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ],
+                       "atom": "st_lane_enters",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "lit": "circular_red"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "lit": "green_arrow(left)"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "exists_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "cmp": "lt",
+             "lhs": {
+              "abs": {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.heading_since_step_carla_scene_graph"
+                }
+               ],
+               "quantity": "drv_motion_heading_change_since_entry"
+              }
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            },
+            {
+             "cmp": "ge",
+             "lhs": {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.heading_since_step_carla_scene_graph"
+               }
+              ],
+              "quantity": "drv_motion_heading_change_since_entry"
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "x"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "c"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ],
+                       "atom": "st_lane_enters",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "lit": "circular_red"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "s"
+                            },
+                            {
+                             "lit": "green_arrow(right)"
+                            }
+                           ],
+                           "atom": "dev_traffic_signal_shows",
+                           "params": []
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "exists_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "DEF-NRS-484A-135::motorcycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "DEF-NRS-484A-125::moped"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "DEF-NRS-484A-025::bicycle"
+             }
+            ],
+            "atom": "ru_aggregate",
+            "params": []
+           },
+           {
+            "or": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "DEF-NRS-484B-017::electric_bicycle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "lit": "DEF-NRS-484B-018::electric_scooter"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_307_9b_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-307-9b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "derived": "drv_motion_leaving_region",
+             "params": []
+            },
+            {
+             "cmp": "lt",
+             "lhs": {
+              "abs": {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.heading_since_step_carla_scene_graph"
+                }
+               ],
+               "quantity": "drv_motion_heading_change_since_entry"
+              }
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "implies": [
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "same": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "c"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "c"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "c"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "i"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "circular_red"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "green_arrow(left)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "count": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_red"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "green_arrow(left)"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       }
+                      ]
+                     },
+                     "n": 2,
+                     "op": "gt",
+                     "since": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         }
+                        ],
+                        "derived": "drv_motion_halted",
+                        "params": [
+                         {
+                          "param": "p.speed_resolution"
+                         }
+                        ]
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "since": [
+                      {
+                       "not": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           }
+                          ],
+                          "derived": "drv_motion_halted",
+                          "params": [
+                           {
+                            "param": "p.speed_resolution"
+                           }
+                          ]
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "and": [
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            }
+                           ],
+                           "derived": "drv_motion_halted",
+                           "params": [
+                            {
+                             "param": "p.speed_resolution"
+                            }
+                           ]
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "since": [
+                          {
+                           "and": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                }
+                               ],
+                               "derived": "drv_motion_halted",
+                               "params": [
+                                {
+                                 "param": "p.speed_resolution"
+                                }
+                               ]
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                },
+                                {
+                                 "var": "c"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              }
+                             ]
+                            },
+                            {
+                             "not": {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "circular_green"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "green_arrow(straight)"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               }
+                              ]
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "not": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               }
+                              ],
+                              "derived": "drv_motion_halted",
+                              "params": [
+                               {
+                                "param": "p.speed_resolution"
+                               }
+                              ]
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "forall_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "forall_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "derived": "drv_motion_leaving_region",
+             "params": []
+            },
+            {
+             "cmp": "le",
+             "lhs": {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.heading_since_step_carla_scene_graph"
+               }
+              ],
+              "quantity": "drv_motion_heading_change_since_entry"
+             },
+             "rhs": {
+              "neg": {
+               "param": "p.turn_recognition_angle"
+              }
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "implies": [
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "same": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "c"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "c"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "c"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "i"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "circular_red"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "green_arrow(left)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "count": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_red"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "green_arrow(left)"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       }
+                      ]
+                     },
+                     "n": 2,
+                     "op": "gt",
+                     "since": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         }
+                        ],
+                        "derived": "drv_motion_halted",
+                        "params": [
+                         {
+                          "param": "p.speed_resolution"
+                         }
+                        ]
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "since": [
+                      {
+                       "not": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           }
+                          ],
+                          "derived": "drv_motion_halted",
+                          "params": [
+                           {
+                            "param": "p.speed_resolution"
+                           }
+                          ]
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "and": [
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            }
+                           ],
+                           "derived": "drv_motion_halted",
+                           "params": [
+                            {
+                             "param": "p.speed_resolution"
+                            }
+                           ]
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "since": [
+                          {
+                           "and": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                }
+                               ],
+                               "derived": "drv_motion_halted",
+                               "params": [
+                                {
+                                 "param": "p.speed_resolution"
+                                }
+                               ]
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                },
+                                {
+                                 "var": "c"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              }
+                             ]
+                            },
+                            {
+                             "not": {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "circular_green"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "green_arrow(right)"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               }
+                              ]
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "not": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               }
+                              ],
+                              "derived": "drv_motion_halted",
+                              "params": [
+                               {
+                                "param": "p.speed_resolution"
+                               }
+                              ]
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "forall_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "forall_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "derived": "drv_motion_leaving_region",
+             "params": []
+            },
+            {
+             "cmp": "lt",
+             "lhs": {
+              "abs": {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.heading_since_step_carla_scene_graph"
+                }
+               ],
+               "quantity": "drv_motion_heading_change_since_entry"
+              }
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "implies": [
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "same": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "c"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "c"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "c"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "i"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "circular_red"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "green_arrow(right)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "count": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_red"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "green_arrow(right)"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       }
+                      ]
+                     },
+                     "n": 2,
+                     "op": "gt",
+                     "since": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         }
+                        ],
+                        "derived": "drv_motion_halted",
+                        "params": [
+                         {
+                          "param": "p.speed_resolution"
+                         }
+                        ]
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "since": [
+                      {
+                       "not": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           }
+                          ],
+                          "derived": "drv_motion_halted",
+                          "params": [
+                           {
+                            "param": "p.speed_resolution"
+                           }
+                          ]
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "and": [
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            }
+                           ],
+                           "derived": "drv_motion_halted",
+                           "params": [
+                            {
+                             "param": "p.speed_resolution"
+                            }
+                           ]
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "since": [
+                          {
+                           "and": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                }
+                               ],
+                               "derived": "drv_motion_halted",
+                               "params": [
+                                {
+                                 "param": "p.speed_resolution"
+                                }
+                               ]
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                },
+                                {
+                                 "var": "c"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              }
+                             ]
+                            },
+                            {
+                             "not": {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "circular_green"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "green_arrow(straight)"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               }
+                              ]
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "not": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               }
+                              ],
+                              "derived": "drv_motion_halted",
+                              "params": [
+                               {
+                                "param": "p.speed_resolution"
+                               }
+                              ]
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "forall_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "forall_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "i"
+              }
+             ],
+             "derived": "drv_motion_leaving_region",
+             "params": []
+            },
+            {
+             "cmp": "ge",
+             "lhs": {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "params": [
+               {
+                "param": "p.heading_since_step_carla_scene_graph"
+               }
+              ],
+              "quantity": "drv_motion_heading_change_since_entry"
+             },
+             "rhs": {
+              "param": "p.turn_recognition_angle"
+             }
+            }
+           ]
+          },
+          {
+           "since": [
+            {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_leaving_region",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "derived": "drv_motion_entering_region",
+               "params": []
+              },
+              {
+               "body": {
+                "body": {
+                 "implies": [
+                  {
+                   "and": [
+                    {
+                     "not": {
+                      "same": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "x"
+                        },
+                        {
+                         "var": "c"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "c"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "st_lane_enters",
+                         "params": []
+                        },
+                        {
+                         "and": [
+                          {
+                           "or": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "c"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "var": "i"
+                              }
+                             ],
+                             "atom": "dev_governs",
+                             "params": []
+                            }
+                           ]
+                          },
+                          {
+                           "and": [
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "circular_red"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "s"
+                              },
+                              {
+                               "lit": "green_arrow(right)"
+                              }
+                             ],
+                             "atom": "dev_traffic_signal_shows",
+                             "params": []
+                            }
+                           ]
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "and": [
+                    {
+                     "count": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "circular_red"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "s"
+                         },
+                         {
+                          "lit": "green_arrow(right)"
+                         }
+                        ],
+                        "atom": "dev_traffic_signal_shows",
+                        "params": []
+                       }
+                      ]
+                     },
+                     "n": 2,
+                     "op": "gt",
+                     "since": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         }
+                        ],
+                        "derived": "drv_motion_halted",
+                        "params": [
+                         {
+                          "param": "p.speed_resolution"
+                         }
+                        ]
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "x"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "rel_occupies",
+                        "params": []
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "since": [
+                      {
+                       "not": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           }
+                          ],
+                          "derived": "drv_motion_halted",
+                          "params": [
+                           {
+                            "param": "p.speed_resolution"
+                           }
+                          ]
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "c"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "and": [
+                        {
+                         "and": [
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            }
+                           ],
+                           "derived": "drv_motion_halted",
+                           "params": [
+                            {
+                             "param": "p.speed_resolution"
+                            }
+                           ]
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            },
+                            {
+                             "var": "c"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         ]
+                        },
+                        {
+                         "since": [
+                          {
+                           "and": [
+                            {
+                             "and": [
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                }
+                               ],
+                               "derived": "drv_motion_halted",
+                               "params": [
+                                {
+                                 "param": "p.speed_resolution"
+                                }
+                               ]
+                              },
+                              {
+                               "args": [
+                                {
+                                 "var": "x"
+                                },
+                                {
+                                 "var": "c"
+                                }
+                               ],
+                               "atom": "rel_occupies",
+                               "params": []
+                              }
+                             ]
+                            },
+                            {
+                             "not": {
+                              "or": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "circular_green"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               },
+                               {
+                                "args": [
+                                 {
+                                  "var": "s"
+                                 },
+                                 {
+                                  "lit": "green_arrow(left)"
+                                 }
+                                ],
+                                "atom": "dev_traffic_signal_shows",
+                                "params": []
+                               }
+                              ]
+                             }
+                            }
+                           ]
+                          },
+                          {
+                           "not": {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               }
+                              ],
+                              "derived": "drv_motion_halted",
+                              "params": [
+                               {
+                                "param": "p.speed_resolution"
+                               }
+                              ]
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "x"
+                               },
+                               {
+                                "var": "c"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "forall_device": {
+                 "lit": "traffic_signal"
+                },
+                "var": "s"
+               },
+               "forall_region": {
+                "lit": "travel_region"
+               },
+               "var": "c"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [
+    "Every trimobile, a motor vehicle with a seat designed to travel on three wheels, is already a member of the motorcycle aggregate claimed on span c2 (\"every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground\"): the duty is the same whether or not the word is read."
+   ],
+   "surrogate": false
+  },
+  "context": "097bca5457106a6922989c38",
+  "candidate_digest": "0b1718039e93df8e73fc4e63105f13ecfa32a932304c94fdf2bf194b76b2e416"
+ }
+}

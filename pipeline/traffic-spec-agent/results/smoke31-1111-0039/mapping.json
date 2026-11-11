@@ -16,6 +16,19 @@
   "node": "NRS_484B_307_9b_o1",
   "role": "obligation"
  },
+ "(2) the person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;": {
+  "atoms": [
+   "dev.governs",
+   "dev.traffic_signal",
+   "drv.motion.halted",
+   "kin.speed",
+   "rel.occupies",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9b_o2",
+  "role": "obligation"
+ },
  "(3) no other device at the place prohibits the turn, if applicable;": {
   "atoms": [
    "dev.governs",
@@ -106,7 +119,7 @@
    "ru.aggregate=DEF-NRS-484A-125::moped",
    "ru.aggregate=DEF-NRS-484A-135::motorcycle"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "subject"
  },
  "a signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled": {
@@ -184,6 +197,19 @@
   "node": "NRS_484B_440_1_o2",
   "role": "obligation"
  },
+ "and having given a signal": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "sig.hand_signal",
+   "sig.turn_indicator",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
  "and not less than the last 300 feet traveled": {
   "atoms": [
    "kin.path_length"
@@ -199,6 +225,13 @@
   ],
   "node": "NRS_484B_263_o2",
   "role": "obligation"
+ },
+ "and the drivers of all other vehicles": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "subject"
  },
  "and the yellow lights of the speed limit beacon are not flashing in the manner which indicates that the speed limit is in effect;": {
   "atoms": [
@@ -223,6 +256,18 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_250_1",
+  "role": "trigger"
+ },
+ "approaching the intersection from the opposite direction": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "drv.road.opposed_directions",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o2",
   "role": "trigger"
  },
  "as used in this section, “completely cross” means to travel across a railroad track or tracks in such a manner that the trailing end of the vehicle is 15 feet or more past the nearest rail of the railroad track or tracks.": {
@@ -359,7 +404,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "trigger"
  },
  "if a highway has been designed to provide": {
@@ -432,6 +477,17 @@
   "node": "NRS_484B_560_7a",
   "role": "subject"
  },
+ "may make such left turn": {
+  "atoms": [
+   "drv.motion.turning_left",
+   "kin.speed",
+   "kin.yaw_rate",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
  "may proceed": {
   "atoms": [
    "rel.occupies",
@@ -451,7 +507,7 @@
    "rel.occupies",
    "st.intersection"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "trigger"
  },
  "must be driven only upon the right-hand roadway": {
@@ -584,7 +640,7 @@
    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "subject"
  },
  "or to vehicles approaching each other from opposite directions,": {
@@ -712,7 +768,7 @@
    "rel.occupies",
    "st.intersection"
   ],
-  "node": "NRS_484B_250_1",
+  "node": "NRS_484B_253_o2",
   "role": "obligation"
  },
  "such a pedestrian:": {
@@ -726,7 +782,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_250_1",
+  "node": "NRS_484B_253_o2",
   "role": "subject"
  },
  "the driver of the vehicle": {
@@ -878,6 +934,16 @@
   "node": "NRS_484B_263_o2",
   "role": "condition"
  },
+ "to the vehicle making the left turn.": {
+  "atoms": [
+   "drv.motion.turning_left",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o2",
+  "role": "condition"
+ },
  "upon a divided highway": {
   "atoms": [
    "rel.occupies",
@@ -978,7 +1044,7 @@
   "atoms": [
    "dev.traffic_signal"
   ],
-  "node": "NRS_484B_307_9b_o1",
+  "node": "NRS_484B_307_9b_o2",
   "role": "trigger"
  },
  "which have previously completed a stop": {
@@ -1033,7 +1099,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_253_o1",
+  "node": "NRS_484B_253_o2",
   "role": "trigger"
  },
  "yielding to vehicles": {

@@ -180,6 +180,8 @@ _Observed during iteration 2: these items record what the run reported then, not
 
 ## Iteration 4
 
+_Observed during iteration 4: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - planner's note for the operator (iteration 4, `iter-004/plan`, note 1, section 5056a6c45fa8c465; a report, it decides nothing): `drv.position.entered_via` failed its gate because its `blind` witness was unknown from window
   truncation, not from the masked atom. The concept witness builder may need to give `since` and
   `rises` bodies a recorded history before the masked observation. The nodes no longer depend on
@@ -204,3 +206,17 @@ _Observed during iteration 2: these items record what the run reported then, not
 - `NRS-484B-307-9b` (NRS_484B_307_9b_o1) reads "or riding a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'riding' is read through the machine's controlled motion: the duty binds the conduct of the bicycle, electric bicycle or electric scooter whoever rides it.
 - `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-257-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 5
+
+- planner's note for the operator (iteration 5, `iter-005/plan`, note 1, section d55f54cc61518349; a report, it decides nothing): s10 "when and as required" probably refers to NRS 484B.413 (turn signals). The library has `NRS_484B_413_2`, but the text gives no bracketed id, so it is left as a residue. If you add the reference, s10 becomes a composition.
+- planner's note for the operator (iteration 5, `iter-005/plan`, note 2, section d55f54cc61518349; a report, it decides nothing): The failed concept `drv.position.entered_via` lists o1 and o2 among its users, but neither plan record claims it. Both records read the approach carrier directly through `drv.motion.entering_region` and `st.lane_enters`. If the coded o1 calls it, that call came from the coding session, not from this plan.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "A person driving a motorcycle, moped or" (agency) through conduct: 'A person driving' is read through the machine's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "or riding a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'riding' is read through the machine's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;" (status) through conduct: 'the applicable official traffic-control device' is the signal head governing the person's approach; its presence on the road is read as the evidence of its official status.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o2) reads "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;" (perception) through conduct: 'does not change because of a malfunction or because the signal failed to detect the presence' turns on the device's detection, which is not observable; it is read through the outcome the condition secures: throughout the wait the head neve
+- `NRS-484B-253` (NRS_484B_253_o2) reads "The driver of a vehicle" (agency) through conduct: 'the driver' of the turning vehicle is read through its controlled motion.
+- `NRS-484B-253` (NRS_484B_253_o2) reads "and the drivers of all other vehicles" (agency) through conduct: 'the drivers' are read through the vehicles' controlled motion.
+- `NRS-484B-253` span s8 composes accepted `NRS_484B_253_o1` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-253`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-307-9b`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

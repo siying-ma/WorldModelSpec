@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "38ce3c2c8b3a4a97bca696c479ee71cd",
+ "result": {
+  "duration_api_ms": 94834,
+  "stop_reason": "end_turn",
+  "session_id": "1f7ca524-ada9-4786-864d-c8020e919831",
+  "total_cost_usd": 0.8686891,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 79739,
+   "cache_read_input_tokens": 76151,
+   "output_tokens": 10428,
+   "output_tokens_details": {
+    "thinking_tokens": 5628
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 79739,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 669,
+     "cache_read_input_tokens": 73001,
+     "cache_creation_input_tokens": 9888,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 9888
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 69564,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0069709,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 10428,
+    "cacheReadInputTokens": 76151,
+    "cacheCreationInputTokens": 79739,
+    "webSearchRequests": 0,
+    "costUSD": 0.8617182,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5628,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised record for `NRS_484B_253_o2` to `record.jsonl`. It hasn't been validated or run through the gate yet; the harness does that next.\n\n**Why it failed:** the record required that y had complied with `NRS_484B_253_o1` \"at every observation since y's latest entry into i\". That range reached the judged observation, which is x's entry. `o1` is broken whenever y is turning while an opposing vehicle is in or near the intersection. At x's entry that is exactly the case, so the rule could never come out violated while y was turning. `forbid` and `blind` were therefore impossible to build, as the coder's note says.\n\n**What I changed:**\n- **\"Having so yielded\" (s8):** `o1` is now checked from y's latest entry into i up to and including the observation where its turn began, and not after. Vehicles that arrive after y has lawfully started turning are the ones this duty makes yield.\n- **Where the turn begins:** this is no longer left to the coder. It is the latest observation since y's entry into i where y is in i and turning left (`drv.motion.turning_left`), and either was not turning at the observation before or is entering i there. y must stay in i from then on, with no later start.\n- **The signal (s9):** it must now be given between y arriving on c2 and the start of its turn. The words \"having given a signal … may make such left turn\" put the signal before the turn. Earlier the record accepted a signal given at any time up to now.\n- **Scenarios:**\n  - `forbid` now has x appear only after y has started turning.\n  - `branch_2` (y starts turning while x is 15 m away at 15 m/s) stays compliant. It differs from `forbid` only in whether y yielded when it started the turn.\n  - `branch_3` is new and violated: y turns past the turn-recognition angle, then stands still before x arrives.\n  - `branch_4` is new and compliant: y signals only after starting the turn.\n\nThe applicability, the parameters, the s10 residue and the declared narrowings are unchanged.",
+  "ttft_ms": 58016,
+  "type": "result",
+  "duration_ms": 93782,
+  "uuid": "bd1d1438-4e0e-47b1-bf55-8bd4c4f6e30e",
+  "ttft_stream_ms": 804,
+  "time_to_request_ms": 72,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 21,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 8,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 22,
+  "time_to_request_cpu_ms": 112,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 804,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 69564,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0069709,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 10428,
+    "cacheReadInputTokens": 76151,
+    "cacheCreationInputTokens": 79739,
+    "webSearchRequests": 0,
+    "costUSD": 0.8617182,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5628,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

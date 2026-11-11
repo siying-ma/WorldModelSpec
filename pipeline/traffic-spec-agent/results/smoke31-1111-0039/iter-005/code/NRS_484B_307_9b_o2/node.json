@@ -1,0 +1,256 @@
+{
+ "node_id": "NRS_484B_307_9b_o2",
+ "law_refs": [
+  "NRS-484B-307-9b"
+ ],
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "A person driving a motorcycle, moped or",
+   "role": "subject"
+  },
+  {
+   "id": "c3",
+   "text": "trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "c4",
+   "text": "or riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "c5",
+   "text": "facing the signal",
+   "role": "trigger"
+  },
+  {
+   "id": "c6",
+   "text": "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow",
+   "role": "trigger"
+  },
+  {
+   "id": "c7",
+   "text": "if:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c8",
+   "text": "(1) The person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;",
+   "role": "sibling"
+  },
+  {
+   "id": "c9",
+   "text": "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;",
+   "role": "obligation"
+  },
+  {
+   "id": "c11",
+   "text": "(3) No other device at the place prohibits the turn, if applicable;",
+   "role": "sibling"
+  },
+  {
+   "id": "c12",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c13",
+   "text": "(4) The person yields the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "c15",
+   "text": "to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal: \"a signal head; state ∈ {... circular_red, ... green_arrow(dir) ...}\" and \"several states may be displayed at once\": a steady red with a green turn arrow is circular_red displayed together with green_arrow(dir), dir left or right."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-135::motorcycle (\"every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground\") and DEF-NRS-484A-125::moped (\"a motor-driven scooter, motor-driven cycle or similar vehicle\"), claimed by id. 'A person driving' is read through the machine's controlled motion."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-025::bicycle (\"a device propelled by human power upon which a person may ride\"), DEF-NRS-484B-017::electric_bicycle (\"a device upon which a person may ride, having two or three wheels\") and DEF-NRS-484B-018::electric_scooter (\"a vehicle with handlebars and an electric motor\")."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "Facing the signal: dev.governs (\"the travel regions whose traffic the device controls ... or an intersection\") on the carrier c (st.travel_region) with st.lane_enters(c, i) that x occupied (rel.occupies) at the observation of its latest entry into i (drv.motion.entering_region: \"its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\"), read through a past operator, or on i itself."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region",
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "The passage from x's entry into i (drv.motion.entering_region) to its leaving (drv.motion.leaving_region); straight through or opposite the arrow is read at the leaving by drv.motion.heading_change_since_entry (\"in degrees, left positive\", from kin.yaw_rate) against the turn recognition angle."
+  },
+  {
+   "span": "c9",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs",
+    "kin.speed",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "Waiting is remaining halted (drv.motion.halted: \"complete cessation from movement\", kin.speed at or below the resolution) on the approach carrier c (rel.occupies, st.lane_enters). The applicable official traffic-control device is the signal s facing x (dev.governs on c or i; its presence is the evidence of its official status). A complete cycle of its lights is the span between two successive rises of the same display; the rises of s's circular_red with green_arrow(d) display (dev.traffic_signal) are counted from the start of the wait by the formula language's count operator, the first rise opening the first complete cycle, so two complete cycles need more rises than two: the law's figure 'two' is the count operator's own bound (Formula.count ... gt 2), a count of rising edges for which the language has no Term. That the signal does not change because it malfunctions or fails to detect x is read through its outcome on the head: during the wait s never displays an indication permitting x's movement, neither circular_green nor a green_arrow in the direction of x's movement (dev.traffic_signal state). Why the head stayed as it was (a fault, a detector) is not observable."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "c3",
+   "why": "Every trimobile, a motor vehicle with a seat designed to travel on three wheels, is already a member of the motorcycle aggregate claimed on span c2 (\"every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground\"): the duty is the same whether or not the word is read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "As NRS_484B_307_9b_o1: x carries one of the five aggregates of spans c2 and c4; at the observation x leaves intersection i (drv.motion.leaving_region(x, i)); read through a past operator from that leaving, x occupied i at every observation from its latest entry into i (drv.motion.entering_region(x, i)) to the one before the leaving, and at that entry observation x occupied a carrier c (st.travel_region, rel.occupies(x, c)) with st.lane_enters(c, i) while a traffic signal s that governs c or i (dev.governs) displayed circular_red together with green_arrow(d), d left or right; and at the leaving the heading change since that entry (drv.motion.heading_change_since_entry(x, i) with step p.heading_since_step_carla_scene_graph) shows a straight-through passage (absolute value below p.turn_recognition_angle) or a turn opposite d (at most minus p.turn_recognition_angle where d is left, at least p.turn_recognition_angle where d is right).",
+ "obligation": "Read at the observation of x's latest entry into i, through a past operator from the leaving observation, for every carrier c and every signal head s that meet the applicability's selection at that entry (c occupied by x at the entry with st.lane_enters(c, i); s governing c or i and displaying circular_red with green_arrow(d)). Let the wait be the latest run of consecutive observations before the entry at which x is halted (drv.motion.halted with p.speed_resolution) while occupying c. Counted from the start of that run (Formula.count with edge: s displays circular_red together with green_arrow(d) and did not at the observation before; since: x halted while occupying c), the rises of that display number more than two, the figure of span c9, written as the count operator's own bound (comparison gt, bound 2): the first rise counted opens the first complete cycle and each later one closes a cycle. And at no observation of the wait does s display circular_green, or green_arrow in the direction of x's movement (straight for a straight-through passage, the side of the turn for a turn). Where the wait began before the recording (x halted on c at its first observation), the count is unknown, not a violation.",
+ "params": [
+  "p.speed_resolution",
+  "p.turn_recognition_angle",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "c2",
+   "why": "'A person driving' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c4",
+   "why": "'riding' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c9",
+   "why": "'the applicable official traffic-control device' is the signal head governing the person's approach; its presence on the road is read as the evidence of its official status.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "c9",
+   "why": "'does not change because of a malfunction or because the signal failed to detect the presence' turns on the device's detection, which is not observable; it is read through the outcome the condition secures: throughout the wait the head never displays an indication that permits the person's movement. A wait the signal ends by serving the person is not a failure to detect, and the permission then does not cover a later entry against the red.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "c9",
+   "why": "The duty is required of every approach carrier c and every signal head s that meet the selection at x's entry (c occupied at the entry and entering i; s governing c or i and showing circular_red with green_arrow(d)), not of one chosen among them: the rule never picks the approach or the head that favours the person.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motorcycle), recorded from upstream, halts on c; s governing c rises to circular_red with green_arrow(left) once during the wait; x then enters i under that display and leaves straight through: the rises counted do not exceed two."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x (ru.bicycle), recorded from upstream, halts on c and stays halted while s's circular_red with green_arrow(left) display rises three times, never showing circular_green or green_arrow(straight); x then enters under the display and leaves straight through."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x is a ru.pedestrian, a class decided outside all five aggregates; it waits on c and then goes straight through i under circular_red with green_arrow(left)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x, recorded from upstream, halts on c, waits and then goes straight through, but the source does not observe s's state during the wait or at the entry.",
+   "masked": [
+    "dev.traffic_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "x halts on c through three rises of circular_red with green_arrow(left), but during the wait s also displays circular_green for c, which x lets pass; x later enters straight through under the red with the arrow: the signal did change, so the condition fails."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "x's recording begins with x already halted on c; a single rise of circular_red with green_arrow(left) is recorded before x enters i straight through, and the start of the wait is not recorded.",
+   "boundary": "the start of x's halt on c, which lies before the recording"
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}
