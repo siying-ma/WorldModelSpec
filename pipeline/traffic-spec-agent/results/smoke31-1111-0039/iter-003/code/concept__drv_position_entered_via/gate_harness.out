@@ -1,0 +1,26 @@
+'TrafficSpec.Concepts.position.entered_via.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.entered_via.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.entered_via.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}},{"name":"c","sort":{"sort":"region"}}],"body":{"since":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}]}]},"contract":"Road user x is inside region r on its current entry and came in through region c: x's footprint overlaps r (rel.occupies) at the observation and at every observation since the observation at which this overlap began (the footprint overlapping r there and not at the observation before), and at that beginning x's footprint also overlapped c. The state is recognized at each observation of the current overlap and ends at the first observation at which x's footprint does not overlap r. The history boundary is x's first observation: the search for the beginning of the current overlap runs back from the observation through x's observations and no further than its first one. Unknown where the beginning of the current overlap is not observed: an overlap already under way at x's first observation, or an overlap of r unobserved at every observation back to x's first one, so that the search for the beginning reaches x's first observation without finding it; or an unobserved overlap of r or c at an observation that decides it. Not denoted: that c is an approach to r (the caller states the entry topology), the direction x moved, or where x was before the beginning.","definition":null,"id":"drv.position.entered_via","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies
+READS	rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"since":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}},{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]}]}]}
+WITNESS	holds	drv.position.entered_via@w
+WITNESS	fails	drv.position.entered_via@w
+WITNESS	blind	drv.position.entered_via@w
+OCC	x,r
+OCC	x,r
+OCC	x,c
+INST	drv.position.entered_via@w	ok
+TIME	checks	119
+TIME	lint	18
+SCEN	holds	drv.position.entered_via@w	compliant	compliant	ok
+TIME	scenario:drv.position.entered_via@w/holds	65
+SCEN	fails	drv.position.entered_via@w	violated	violated	ok
+TIME	scenario:drv.position.entered_via@w/fails	63
+SCEN	blind	drv.position.entered_via@w	unknown	?	blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks
+TIME	scenario:drv.position.entered_via@w/blind	67
+TIME	witnesses	195
+DONE_WITNESSES

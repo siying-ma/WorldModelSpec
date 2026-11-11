@@ -164,6 +164,8 @@ _Observed during iteration 1: these items record what the run reported then, not
 
 ## Iteration 2
 
+_Observed during iteration 2: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - gap G22 filed for `NRS-484B-450-1c` by a node repair session; decide with `python -m harness gap decide G22 ...`
 - `NRS-484B-769` (NRS_484B_769) reads "An operator of a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: “An operator” is read through the device's controlled motion: the rider of the bicycle, electric bicycle or electric scooter on the roadway is the one whose signals are judged, whoever is at the controls.
 - `NRS-484B-769` span s4 borrows from `DEF-NRS-484B-420` the words “(1) Left turn: Hand and arm extended horizontally. (2) Right turn: Hand and arm extended upward. (3) Stop or decrease speed: Hand and arm extended downward. (4) Reentering lane of traffic from parked position: Hand and arm extended horizontally.” — its elements carry them; the source's duties are not this rule's
