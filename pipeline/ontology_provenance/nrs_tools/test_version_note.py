@@ -15,8 +15,9 @@ SOURCES = TOOLS / "sources"
 def load_make_laws():
     """make_laws reads the chapter files from the working directory at import."""
     with tempfile.TemporaryDirectory() as tmp, contextlib.chdir(tmp):
-        for ch in ("484A", "484B", "484D", "486"):
-            os.symlink(SOURCES / f"{ch}.json", f"{ch}.json")
+        for f in sorted(SOURCES.glob("*.json")):
+            if f.name != "lvmc.json":
+                os.symlink(f, f.name)
         os.mkdir("lvmc")
         os.symlink(SOURCES / "lvmc.json", "lvmc/lvmc.json")
         sys.path.insert(0, str(TOOLS))
