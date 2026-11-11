@@ -1,0 +1,243 @@
+{
+ "node_id": "NRS_484B_250_1",
+ "law_refs": [
+  "NRS-484B-250-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "approaching an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall yield the right-of-way",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "to a vehicle which has entered the intersection from a different highway.",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "Except as otherwise provided in subsection 4 [NRS-484B-250-4],",
+   "role": "reference"
+  },
+  {
+   "id": "s6",
+   "text": "this section does not apply at intersections controlled by official traffic-control devices",
+   "role": "exception"
+  },
+  {
+   "id": "s7",
+   "text": "or to vehicles approaching each other from opposite directions,",
+   "role": "exception"
+  },
+  {
+   "id": "s8",
+   "text": "when the driver of one of the vehicles is intending to",
+   "role": "exception"
+  },
+  {
+   "id": "s9",
+   "text": "or is making a left turn.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is admitted as DEF-NRS-484A-320::vehicle; 'the driver' is read through the vehicle's controlled motion (DEF-NRS-484A-080)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'approaching an intersection': x occupies (rel.occupies) a carrier of kind st.travel_region whose entrance end is the intersection (st.lane_enters 'the carrier is an approach to that intersection'); the yield is decided at the observation at which x enters it (drv.motion.entering_region 'its footprint overlaps r (rel.occupies) at the observation and did not at the observation before'), where x still occupies that approach carrier. st.lane_enters is not a stand-in for the subject's presence in the intersection, which rel.occupies reads."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'yield the right-of-way' (DEF-NRS-484A-210 'the right ... to proceed in a lawful manner in preference to another vehicle'): x does not enter the intersection (drv.motion.entering_region over rel.occupies) while a vehicle owed precedence is in it."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'a vehicle' is the admitted aggregate. 'which has entered the intersection' is y's footprint overlapping the intersection (rel.occupies 'a road user's footprint overlaps a lane / region') at every observation since its latest entry into it (drv.motion.entering_region 'its footprint overlaps r (rel.occupies) at the observation and did not at the observation before'), read through a past operator from x's entry. 'from a different highway' is the carrier c2 (st.travel_region) y occupied at that entry, whose entrance end is the intersection (st.lane_enters 'the intersection region a directed approach carrier runs into at its entrance end'), lying on a st.highway ('the entire public way between its boundary lines') through st.on_way ('the public way ... a structure region lies on') on which x's approach carrier does not lie. The intersection lies on every way that meets there, so the way is read from the carriers, never the intersection; st.lane_enters is not a stand-in for presence in the intersection, which rel.occupies reads."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'official traffic-control devices' (DEF-NRS-484A-145 'every sign, signal, marking and device ... for the purpose of regulating, warning or guiding traffic') that control the intersection: a dev.traffic_signal, dev.stop_sign ('regulatory sign requiring a full halt') or dev.yield_sign ('regulatory sign requiring yielding') governing the intersection or x's approach carrier (dev.governs 'the travel regions whose traffic the device controls ... or an intersection'). dev.governs is not a stand-in for a position."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.road.opposed_directions",
+    "drv.motion.entering_region"
+   ],
+   "justification": "'approaching each other from opposite directions': read, as rel.oncoming's contract directs, through the carriers they approach through: x's approach carrier and the carrier y occupied at its latest entry into the intersection (drv.motion.entering_region, rel.occupies, st.lane_enters) have opposed designated directions (drv.road.opposed_directions 'the dot product of their designated directions ... is below minus opposed_cosine'). rel.oncoming is not used: a turn makes current headings cease to be opposed while the approach direction is unchanged."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "'is making a left turn': the vehicle's heading change since it entered the intersection (drv.motion.heading_change_since_entry 'the signed heading change of road user x since its footprint last began to overlap region r, in degrees, left positive', integrated from kin.yaw_rate) is at least the turn recognition angle; the concept is not a turn by itself, and the rule compares it with its own bound."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s8",
+   "id": "int.left_turn",
+   "meaning": "The source's current plan for the road user includes a left turn at the target region."
+  }
+ ],
+ "compositions": [
+  {
+   "span": "s5",
+   "rule": "NRS_484B_250_4_o1",
+   "map": {
+    "x": "x"
+   },
+   "as": "unless",
+   "scopes": "s6"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and enters intersection i (st.intersection) at this observation (drv.motion.entering_region x i) from an approach carrier c it occupies at this observation (rel.occupies x c, st.travel_region, st.lane_enters c i). Device exception (s6): the duty does not apply where some dev.traffic_signal, dev.stop_sign or dev.yield_sign governs i or c (dev.governs) at this observation; this exception is suspended where NRS_484B_250_4_o1 applies to x here (ruleApplies NRS_484B_250_4_o1 {x -> x}: an entry under an inoperative signal). Where x occupies several carriers entering i and the verdict differs between them, which governs is unknown.",
+ "obligation": "At this entry no vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle) occupies i having entered it from a different highway: y occupies i (rel.occupies y i) and, read through a past operator from this observation, has occupied i at every observation since its latest entry into i (drv.motion.entering_region y i), at which entry observation y occupied a carrier c2 (st.travel_region, rel.occupies y c2) with st.lane_enters c2 i that lies on a highway h2 (st.highway, st.on_way c2 h2) on which c does not lie (st.on_way c h2 false). Where y's entry into i is not observed (it lies before the recording), whether y entered from a different highway is unknown. Pair exception (s7 to s9): a y is excluded where c and c2 have opposed designated directions (drv.road.opposed_directions c c2 with p.opposed_carriers_cosine) and x or y intends a left turn at i (intent int.left_turn x i, or intent int.left_turn y i) or is making one (drv.motion.heading_change_since_entry of x or of y and i, with step p.heading_since_step_carla_scene_graph, at least p.turn_recognition_angle).",
+ "params": [
+  "p.opposed_carriers_cosine",
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_recognition_angle"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The yield is judged at x's entry into the intersection: an entry while a vehicle from a different highway is in it is the failure to yield.",
+   "kind": "reading"
+  },
+  {
+   "span": "s6",
+   "why": "'official' is read through the device's presence; the devices that control an intersection are read as traffic signals, stop signs and yield signs governing the intersection or the subject's approach (a marking or a warning sign alone controls no right-of-way there).",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "No device governs i or its approaches. The recording begins with both vehicles on their approach carriers. Vehicle y enters i from carrier c2 on highway h2 (its entry is recorded); x, on carrier c on highway h (c not on h2, directions not opposed), enters i while y still occupies i."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but x waits on c until y has left i and enters i as the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A dev.stop_sign governs c; signals are absent; x enters i while y occupies i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with both entries inside the recording, but rel.occupies is not observed, so neither x's entry nor y's presence in i is decided.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A dev.traffic_signal governing i is dev.inoperative (NRS_484B_250_4_o1 applies); y entered i (recorded) from a different highway; x enters i while y occupies it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "At a skewed junction, y entered i (recorded) through c2 on another highway whose designated direction is opposed to c's, and int.left_turn y i is declared; x enters while y is in i: the pair is excepted."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {
+  "NRS_484B_250_4_o1": "6a897ff01b922eba56594f0a710da971dac35ed8a3b44c09ddf53debe48b93cb"
+ }
+}

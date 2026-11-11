@@ -1,0 +1,945 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 10 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "i"
+        }
+       ],
+       "atom": "rel_occupies",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "int": "int.left_turn"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "c"
+              },
+              {
+               "var": "i"
+              }
+             ]
+            }
+           },
+           {
+            "since": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "i"
+                 }
+                ],
+                "derived": "drv_motion_entering_region",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "c"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "args": [
+                   {
+                    "var": "c"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "st_lane_enters",
+                  "params": []
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "travel_region"
+         },
+         "var": "c"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_253_o1",
+   "intentions": [
+    "int.left_turn"
+   ],
+   "laws": [
+    "NRS-484B-253"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "i"
+          }
+         ],
+         "int": "int.left_turn"
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "c"
+                },
+                {
+                 "var": "i"
+                }
+               ]
+              }
+             },
+             {
+              "since": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "i"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "derived": "drv_motion_entering_region",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "c"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "atom": "st_lane_enters",
+                    "params": []
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "implies": [
+             {
+              "body": {
+               "and": [
+                {
+                 "not": {
+                  "same": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "var": "x"
+                   }
+                  ]
+                 }
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "y"
+                    },
+                    {
+                     "lit": "DEF-NRS-484A-320::vehicle"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  },
+                  {
+                   "or": [
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "y"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ],
+                       "atom": "rel_occupies",
+                       "params": []
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "and": [
+                           {
+                            "not": {
+                             "same": [
+                              {
+                               "var": "c2"
+                              },
+                              {
+                               "var": "i"
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "since": [
+                             {
+                              "args": [
+                               {
+                                "var": "y"
+                               },
+                               {
+                                "var": "i"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             },
+                             {
+                              "and": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "y"
+                                 },
+                                 {
+                                  "var": "i"
+                                 }
+                                ],
+                                "derived": "drv_motion_entering_region",
+                                "params": []
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "y"
+                                   },
+                                   {
+                                    "var": "c2"
+                                   }
+                                  ],
+                                  "atom": "rel_occupies",
+                                  "params": []
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "c2"
+                                   },
+                                   {
+                                    "var": "i"
+                                   }
+                                  ],
+                                  "atom": "st_lane_enters",
+                                  "params": []
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "c"
+                           },
+                           {
+                            "var": "c2"
+                           }
+                          ],
+                          "derived": "drv_road_opposed_directions",
+                          "params": [
+                           {
+                            "param": "p.opposed_carriers_cosine"
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "c2"
+                      }
+                     ]
+                    },
+                    {
+                     "and": [
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "y"
+                           },
+                           {
+                            "var": "c2"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "atom": "st_lane_enters",
+                            "params": []
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "c2"
+                             }
+                            ],
+                            "derived": "drv_road_opposed_directions",
+                            "params": [
+                             {
+                              "param": "p.opposed_carriers_cosine"
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "c2"
+                      },
+                      {
+                       "and": [
+                        {
+                         "not": {
+                          "args": [
+                           {
+                            "var": "y"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         }
+                        },
+                        {
+                         "cmp": "le",
+                         "lhs": {
+                          "args": [
+                           {
+                            "var": "y"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ],
+                          "measure": "st_region_geometry_distance"
+                         },
+                         "rhs": {
+                          "mul": [
+                           {
+                            "args": [
+                             {
+                              "var": "y"
+                             }
+                            ],
+                            "measure": "kin_speed"
+                           },
+                           {
+                            "param": "p.immediate_hazard_gap"
+                           }
+                          ]
+                         }
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_user": "y"
+             },
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "x"
+                }
+               ],
+               "derived": "drv_motion_turning_left",
+               "params": [
+                {
+                 "param": "p.speed_resolution"
+                },
+                {
+                 "param": "p.yaw_rate_resolution"
+                }
+               ]
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "forall_region": {
+          "lit": "travel_region"
+         },
+         "var": "c"
+        },
+        {
+         "body": "ff",
+         "defined_when": {
+          "not": {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "not": {
+                 "same": [
+                  {
+                   "var": "c"
+                  },
+                  {
+                   "var": "i"
+                  }
+                 ]
+                }
+               },
+               {
+                "since": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "i"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "i"
+                     }
+                    ],
+                    "derived": "drv_motion_entering_region",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "c"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     },
+                     {
+                      "args": [
+                       {
+                        "var": "c"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             },
+             {
+              "implies": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "not": {
+                    "same": [
+                     {
+                      "var": "y"
+                     },
+                     {
+                      "var": "x"
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "y"
+                      },
+                      {
+                       "lit": "DEF-NRS-484A-320::vehicle"
+                      }
+                     ],
+                     "atom": "ru_aggregate",
+                     "params": []
+                    },
+                    {
+                     "or": [
+                      {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "y"
+                          },
+                          {
+                           "var": "i"
+                          }
+                         ],
+                         "atom": "rel_occupies",
+                         "params": []
+                        },
+                        {
+                         "body": {
+                          "and": [
+                           {
+                            "and": [
+                             {
+                              "not": {
+                               "same": [
+                                {
+                                 "var": "c2"
+                                },
+                                {
+                                 "var": "i"
+                                }
+                               ]
+                              }
+                             },
+                             {
+                              "since": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "y"
+                                 },
+                                 {
+                                  "var": "i"
+                                 }
+                                ],
+                                "atom": "rel_occupies",
+                                "params": []
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "y"
+                                   },
+                                   {
+                                    "var": "i"
+                                   }
+                                  ],
+                                  "derived": "drv_motion_entering_region",
+                                  "params": []
+                                 },
+                                 {
+                                  "and": [
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "y"
+                                     },
+                                     {
+                                      "var": "c2"
+                                     }
+                                    ],
+                                    "atom": "rel_occupies",
+                                    "params": []
+                                   },
+                                   {
+                                    "args": [
+                                     {
+                                      "var": "c2"
+                                     },
+                                     {
+                                      "var": "i"
+                                     }
+                                    ],
+                                    "atom": "st_lane_enters",
+                                    "params": []
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "c"
+                             },
+                             {
+                              "var": "c2"
+                             }
+                            ],
+                            "derived": "drv_road_opposed_directions",
+                            "params": [
+                             {
+                              "param": "p.opposed_carriers_cosine"
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "exists_region": {
+                          "lit": "travel_region"
+                         },
+                         "var": "c2"
+                        }
+                       ]
+                      },
+                      {
+                       "and": [
+                        {
+                         "body": {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "y"
+                             },
+                             {
+                              "var": "c2"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           },
+                           {
+                            "and": [
+                             {
+                              "args": [
+                               {
+                                "var": "c2"
+                               },
+                               {
+                                "var": "i"
+                               }
+                              ],
+                              "atom": "st_lane_enters",
+                              "params": []
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "c"
+                               },
+                               {
+                                "var": "c2"
+                               }
+                              ],
+                              "derived": "drv_road_opposed_directions",
+                              "params": [
+                               {
+                                "param": "p.opposed_carriers_cosine"
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         "exists_region": {
+                          "lit": "travel_region"
+                         },
+                         "var": "c2"
+                        },
+                        {
+                         "and": [
+                          {
+                           "not": {
+                            "args": [
+                             {
+                              "var": "y"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "atom": "rel_occupies",
+                            "params": []
+                           }
+                          },
+                          {
+                           "cmp": "le",
+                           "lhs": {
+                            "args": [
+                             {
+                              "var": "y"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "measure": "st_region_geometry_distance"
+                           },
+                           "rhs": {
+                            "mul": [
+                             {
+                              "args": [
+                               {
+                                "var": "y"
+                               }
+                              ],
+                              "measure": "kin_speed"
+                             },
+                             {
+                              "param": "p.immediate_hazard_gap"
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       ]
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_user": "y"
+               },
+               {
+                "not": {
+                 "args": [
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "derived": "drv_motion_turning_left",
+                 "params": [
+                  {
+                   "param": "p.speed_resolution"
+                  },
+                  {
+                   "param": "p.yaw_rate_resolution"
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "travel_region"
+           },
+           "var": "c"
+          }
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "3552573de270e878923e4319",
+  "candidate_digest": "026fcd33fd8fb329d18c04b2d32921f3ee360c61cf3c6729a64666d0275738fc"
+ }
+}

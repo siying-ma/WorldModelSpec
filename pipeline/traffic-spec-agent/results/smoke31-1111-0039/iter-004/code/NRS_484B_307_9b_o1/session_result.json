@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "d1c42c6e237f40469d80238fd4115024",
+ "result": {
+  "duration_api_ms": 742630,
+  "stop_reason": "end_turn",
+  "session_id": "74f3666f-5c3e-4ab5-a260-b8eb05fe1706",
+  "total_cost_usd": 3.6589677999999997,
+  "usage": {
+   "input_tokens": 42,
+   "cache_creation_input_tokens": 193364,
+   "cache_read_input_tokens": 2777967,
+   "output_tokens": 77577,
+   "output_tokens_details": {
+    "thinking_tokens": 62175
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 193364,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1051,
+     "cache_read_input_tokens": 196034,
+     "cache_creation_input_tokens": 1768,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1768
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 47404,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004754400000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 42,
+    "outputTokens": 77577,
+    "cacheReadInputTokens": 2777967,
+    "cacheCreationInputTokens": 193364,
+    "webSearchRequests": 0,
+    "costUSD": 3.6542134,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 62175,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_012kZ2v3v4YHAMN5Lxw5xE9R",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core; wc -l Language/*.lean Foundations/Temporal.lean Vocab/Atoms.lean",
+     "description": "Count lines in Core language files"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 25,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_307_9b_o1`. It used 2 of the 6 runs and accepted 11 witnesses and 1 narrowing I declared.\n\n**Gate runs**\n1. **WITNESS_FAIL:** every decided witness came back `not_applicable`. `Build.scene` records occupancy from x's centre point only. So at the moment of entry x was never on both the approach lane and the intersection, and the rule could never find the lane x entered through. I changed the witness scenes to record occupancy from x's whole body outline, which is how the trace admission check derives it.\n2. **OK.**\n\n**What the rule says**\n- **Who:** any of the five vehicle groups the node claims (motorcycle, moped, bicycle, electric bicycle, electric scooter).\n- **When it applies:** it is judged when x leaves an intersection. Looking back to its latest entry, x entered from a lane that leads into the intersection, while a signal controlling that lane or the intersection showed steady red with a green turn arrow. The passage must also be either straight through or a turn away from the arrow, measured by the heading change since entry. The rule is written once for a left arrow and once for a right arrow.\n- **The duty:** the rule picks the same entry and lane again, then the place to stop, in the node's order: a stop line on that lane, else a crosswalk on that lane, else the edge of the intersection. Searching back from the entry, x must have stopped on the lane within the stop tolerance of that place, not past it and not in the intersection (nor on the crosswalk, if that is the place). The search ends where x was still farther upstream than the tolerance, or at x's previous visit to the intersection.\n- **Several lanes at once:** if x straddled more than one qualifying lane and the results differ between them, the verdict is unknown, as the node states.\n\n**Choices I made**\n- **Declared narrowing on c8:** where no stop line or crosswalk is recorded, \"before entering the intersection\" is measured to the intersection region's own outline.\n- **Not declared (explained in the rule's header comment):**\n  - The search ends at x's previous *leaving* of the intersection instead of its previous *entry*. x is inside the intersection between those two moments, so no valid stop can fall there and the verdict is the same.\n  - The intersection itself is excluded as a candidate lane. No lane-entry fact is ever recorded for an intersection, so without this exclusion every case where the signal controls the intersection would come out unknown.\n- **Six extra witnesses**, so that every part of the formula affects some result:\n  - Crosswalk only: compliant (`branch_1`) and violated (`branch_2`).\n  - No markings: compliant (`branch_3`) and violated (`branch_4`).\n  - Right turn under a left arrow, with the signal controlling the intersection: violated (`branch_5`).\n  - Left turn under a right arrow: violated (`branch_6`).\n- **Witness time windows:** each witness is judged from 1 s, and the history-boundary one from 50 ms. At a trace's first observation the rule can't yet tell whether x entered or left.\n\nThe full run log and choices are in `task_result.md` in the working directory.",
+  "ttft_ms": 2623,
+  "type": "result",
+  "duration_ms": 836896,
+  "uuid": "f1461c84-7e09-40d5-ba92-21ffcde033f4",
+  "ttft_stream_ms": 1120,
+  "time_to_request_ms": 71,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 20,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 21,
+  "time_to_request_cpu_ms": 106,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 14,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1120,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 47404,
+    "outputTokens": 28,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004754400000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 42,
+    "outputTokens": 77577,
+    "cacheReadInputTokens": 2777967,
+    "cacheCreationInputTokens": 193364,
+    "webSearchRequests": 0,
+    "costUSD": 3.6542134,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 62175,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

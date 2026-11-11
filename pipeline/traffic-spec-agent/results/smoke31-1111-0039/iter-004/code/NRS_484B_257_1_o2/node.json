@@ -1,0 +1,256 @@
+{
+ "node_id": "NRS_484B_257_1_o2",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except when traffic is being controlled by a police officer or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "When proper signs have been erected,",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall stop or yield",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "at a clearly marked stop line",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "or, if there is none, before entering the crosswalk on the near side of the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "or, if there is none, then at the point nearest the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped,",
+   "role": "condition"
+  },
+  {
+   "id": "s10",
+   "text": "the driver shall yield the right-of-way",
+   "role": "obligation"
+  },
+  {
+   "id": "s11",
+   "text": "to other vehicles which have entered the intersection from such through highway",
+   "role": "condition"
+  },
+  {
+   "id": "s12",
+   "text": "or which are approaching so closely on such through highway as to constitute an immediate hazard during the time such driver is moving across or within the intersection.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "dev.governs",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_257_1_o1: x as a member of the admitted traffic aggregate; a dev.human_direction ('a person directing traffic') with role police_officer, or a dev.traffic_signal not dev.inoperative ('showing no valid indication'), governing x's approach carrier or the intersection (dev.governs 'the travel regions whose traffic the device controls ... or an intersection')."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "As in NRS_484B_257_1_o1: a dev.stop_sign or dev.yield_sign governing x's approach carrier or the intersection, at x's entry (drv.motion.entering_region)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'shall yield the right-of-way' (DEF-NRS-484A-210 'to proceed ... in preference to another vehicle'): x does not enter the intersection (drv.motion.entering_region over rel.occupies) while a through-highway vehicle is owed precedence."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'other vehicles' are the admitted aggregate. 'which have entered the intersection from such through highway': y occupies the intersection (rel.occupies) and has occupied it at every observation since its latest entry into it (drv.motion.entering_region 'its footprint overlaps r (rel.occupies) at the observation and did not at the observation before', read through a past operator), at which entry y occupied a carrier (st.travel_region) whose entrance end is the intersection (st.lane_enters) and that lies on the through highway (st.on_way 'the public way ... a structure region lies on', of kind st.highway) on which x's approach carrier does not lie."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s12",
+   "standard": "approaching so closely on the through highway as to constitute an immediate hazard during the time the driver is moving across or within the intersection",
+   "concepts": [
+    "st.region_geometry",
+    "kin.speed",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.on_way",
+    "st.highway"
+   ],
+   "params": [
+    "p.immediate_hazard_gap"
+   ],
+   "convention": "Gap acceptance (HCM critical headway for a minor-street crossing or turn): a vehicle on an approach carrier of the intersection lying on the through highway (rel.occupies, st.lane_enters, st.on_way), outside the intersection, is an immediate hazard where its ground distance to the intersection (st.region_geometry) is at most its speed (kin.speed) times p.immediate_hazard_gap; the critical gap stands for the time the subject needs to move across or within the intersection, and the bound moves with the other vehicle's proximity and speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s9",
+   "rule": "NRS_484B_257_1_o1",
+   "map": {
+    "x": "x"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "As NRS_484B_257_1_o1: x is a vehicle entering intersection i at this observation (drv.motion.entering_region x i) through an approach carrier c it occupies (rel.occupies x c, st.travel_region, st.lane_enters c i); a dev.stop_sign or dev.yield_sign governs c or i; x, a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic), is not controlled by a dev.human_direction with role police_officer or a dev.traffic_signal that is not dev.inoperative governing c or i. And NRS_484B_257_1_o1 is complied with for x at this observation (rule NRS_484B_257_1_o1 {x -> x}): that rule being engaged at exactly this entry, its compliance is the fact the words refer to, that x stopped, or under a yield sign slowed or stopped, on this approach.",
+ "obligation": "At this entry, for every highway h2 (st.highway) on which i lies and c does not (st.on_way i h2; st.on_way c h2 false), no vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle) either (1) occupies i (rel.occupies y i) and, read through a past operator, has occupied i at every observation since its latest entry into i (drv.motion.entering_region y i), at which entry observation y occupied a carrier c2 (rel.occupies y c2, st.travel_region, st.lane_enters c2 i) that lies on h2 (st.on_way c2 h2); or (2) occupies an approach carrier c2 of i lying on h2 (rel.occupies y c2, st.lane_enters c2 i, st.on_way c2 h2), does not occupy i, and st_region_geometry_distance y i is at most kin_speed y times p.immediate_hazard_gap. Where y's entry into i is not observed, whether (1) holds for y is unknown.",
+ "params": [
+  "p.immediate_hazard_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "Control of traffic is read as control of x's own approach or intersection; officer and signal presence are read as their status.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "'proper signs' are read through the presence of a stop or yield sign.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s10",
+   "why": "The yield is judged at x's entry into the intersection.",
+   "kind": "reading"
+  },
+  {
+   "span": "s12",
+   "why": "'during the time such driver is moving across or within the intersection' is read through the critical gap, not through a prediction of x's own crossing time; 'such through highway' is a highway the intersection lies on and x's signed approach does not.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "dev.stop_sign governs c; x halts at the stop line marking c, then enters i while vehicle y on approach carrier c2 of the crossing highway h2 is 25 m from i at 15 m/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but x enters i as the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No sign governs c or i; x enters i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but kin.speed is not observed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "x halts at its stop line and enters i while vehicle y, whose entry into i through c2 on h2 is recorded, occupies i."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but x never halted or slowed on the approach (NRS_484B_257_1_o1 not complied with): this duty does not arise."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

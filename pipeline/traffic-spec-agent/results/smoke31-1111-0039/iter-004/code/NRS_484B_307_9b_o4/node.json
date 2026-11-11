@@ -1,0 +1,252 @@
+{
+ "node_id": "NRS_484B_307_9b_o4",
+ "law_refs": [
+  "NRS-484B-307-9b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "A person driving a motorcycle, moped or",
+   "role": "subject"
+  },
+  {
+   "id": "c3",
+   "text": "trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "c4",
+   "text": "or riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "c5",
+   "text": "facing the signal",
+   "role": "trigger"
+  },
+  {
+   "id": "c6",
+   "text": "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow",
+   "role": "trigger"
+  },
+  {
+   "id": "c7",
+   "text": "if:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c8",
+   "text": "(1) The person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;",
+   "role": "sibling"
+  },
+  {
+   "id": "c9",
+   "text": "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;",
+   "role": "sibling"
+  },
+  {
+   "id": "c11",
+   "text": "(3) No other device at the place prohibits the turn, if applicable;",
+   "role": "sibling"
+  },
+  {
+   "id": "c12",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c13",
+   "text": "(4) The person yields the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "c15",
+   "text": "to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal: \"several states may be displayed at once\": circular_red displayed together with green_arrow(dir), dir left or right."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-135::motorcycle (\"every motor vehicle equipped with a seat or saddle for the use of the driver\") and DEF-NRS-484A-125::moped (\"a motor-driven scooter, motor-driven cycle or similar vehicle\"), claimed by id."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-025::bicycle (\"a device propelled by human power upon which a person may ride\"), DEF-NRS-484B-017::electric_bicycle (\"a device upon which a person may ride, having two or three wheels\") and DEF-NRS-484B-018::electric_scooter (\"a vehicle with handlebars and an electric motor\")."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "Facing the signal: dev.governs (\"the travel regions whose traffic the device controls ... or an intersection\") on the carrier c (st.travel_region) with st.lane_enters(c, i) that x occupied (rel.occupies) at the observation of its latest entry into i (drv.motion.entering_region: \"its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\"), read through a past operator, or on i itself."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region",
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "The passage from x's entry into i to its leaving; straight through or opposite the arrow read at the leaving by drv.motion.heading_change_since_entry (\"in degrees, left positive\", from kin.yaw_rate) against the turn recognition angle."
+  },
+  {
+   "span": "c15",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.occupies",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The parties yielded to. 'pedestrians' is the admitted aggregate DEF-NRS-484A-165::pedestrian (\"a person afoot, a person in a manual or motorized wheelchair\"); 'within an adjacent crosswalk' is the pedestrian's footprint overlapping (rel.occupies) a st.crosswalk recorded as marking the entrance of a carrier entering i (st.entrance_of: \"the carrier whose entrance into an intersection a stop line or a crosswalk marks\"; st.lane_enters). Distance is not used for adjacency. 'other traffic' is the admitted aggregate DEF-NRS-484A-285::traffic (\"pedestrians, ridden or herded animals, vehicles and other conveyances\"), every member other than x; 'using the intersection' is its footprint overlapping i (rel.occupies)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "c13",
+   "standard": "yields the right-of-way: not proceeding where the parties' \"direction, speed and proximity\" \"give rise to the danger of a crash unless one grants precedence to the other\" (DEF-NRS-484A-210)",
+   "concepts": [
+    "drv.motion.moving",
+    "kin.speed",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.speed_resolution",
+    "p.immediate_hazard_gap",
+    "p.conflict_clearance"
+   ],
+   "convention": "Gap-acceptance and surrogate-safety convention: the person grants precedence where they do not proceed (not moving, drv.motion.moving) while a party is in danger of a crash with them; that danger is the predicted closest approach under constant velocities, within the critical gap, coming nearer than the conflict radius, so direction, speed and proximity all enter the prediction by their degree.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "c3",
+   "why": "Every trimobile, a motor vehicle with a seat designed to travel on three wheels, is already a member of the motorcycle aggregate claimed on span c2 (\"every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground\"): the duty is the same whether or not the word is read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "As NRS_484B_307_9b_o1: x carries one of the five aggregates of spans c2 and c4; at the observation x leaves intersection i (drv.motion.leaving_region(x, i)); read through a past operator from that leaving, x occupied i at every observation from its latest entry into i (drv.motion.entering_region(x, i)) to the one before the leaving, and at that entry observation x occupied a carrier c (st.travel_region, rel.occupies(x, c)) with st.lane_enters(c, i) while a traffic signal s that governs c or i (dev.governs) displayed circular_red together with green_arrow(d), d left or right; and at the leaving the heading change since that entry (drv.motion.heading_change_since_entry(x, i) with step p.heading_since_step_carla_scene_graph) shows a straight-through passage (absolute value below p.turn_recognition_angle) or a turn opposite d.",
+ "obligation": "At every observation from that entry up to the leaving (read through a past operator from the leaving observation) at which x occupies i and is moving (drv.motion.moving with p.speed_resolution): for every road user p carrying ru.aggregate=DEF-NRS-484A-165::pedestrian that occupies a crosswalk w recorded as marking the entrance of some carrier c2 entering i (st.entrance_of(w, c2), st.lane_enters(c2, i)), and for every road user u other than x carrying ru.aggregate=DEF-NRS-484A-285::traffic that occupies i, it is not the case that x and that road user approach within p.immediate_hazard_gap (prim.closest_approach_within) with a closest-approach centre distance (prim.closest_approach_distance) below p.conflict_clearance.",
+ "params": [
+  "p.speed_resolution",
+  "p.immediate_hazard_gap",
+  "p.conflict_clearance",
+  "p.turn_recognition_angle",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "c2",
+   "why": "'A person driving' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c4",
+   "why": "'riding' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c15",
+   "why": "'lawfully' is not read: every pedestrian in such a crosswalk and every other member of traffic inside the intersection is yielded to. 'an adjacent crosswalk' is read as a crosswalk recorded as marking the entrance of a carrier entering the intersection; a crosswalk across the exit of a one-way leg is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motorcycle), recorded from upstream, goes straight through i under circular_red with green_arrow(left); while it moves inside i a ru.pedestrian occupies the crosswalk at the far side, marking the entrance of the opposing carrier, and prim.closest_approach_within holds over p.immediate_hazard_gap with a prim.closest_approach_distance below p.conflict_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x (ru.bicycle), recorded from upstream, goes straight through i under circular_red with green_arrow(left) with no other road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x (ru.motorcycle) enters i under circular_red with green_arrow(left) and turns left, the movement the arrow indicates."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x, recorded from upstream, goes straight through i under circular_red with green_arrow(left) near a crossing pedestrian, but the source does not observe footprint overlap (rel.occupies), so neither x's passage through i nor the pedestrian's presence in the crosswalk is decided.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

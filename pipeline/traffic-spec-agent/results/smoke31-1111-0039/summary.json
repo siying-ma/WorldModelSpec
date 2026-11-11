@@ -1,14 +1,13 @@
 {
  "run": "smoke31-1111-0039",
- "iteration": 3,
+ "iteration": 4,
  "status": "incomplete",
- "stop_reason": "the iteration bound (3) was reached",
+ "stop_reason": "the iteration bound (4) was reached",
  "laws": {
-  "planned": 17,
-  "blocked": 7,
-  "returned": 5
+  "planned": 22,
+  "blocked": 7
  },
- "accepted_nodes": 26,
+ "accepted_nodes": 32,
  "accepted_concepts": 19,
  "concepts": {
   "accepted": 19,
@@ -33,7 +32,9 @@
    "NRS-484B-223-4a",
    "NRS-484B-223-4b",
    "NRS-484B-227-1",
+   "NRS-484B-250-1",
    "NRS-484B-250-4",
+   "NRS-484B-257-1",
    "NRS-484B-263",
    "NRS-484B-270-7b",
    "NRS-484B-363-3",
@@ -45,14 +46,12 @@
    "NRS-484B-769"
   ],
   "awaiting_label_repair": [],
-  "generating": [],
-  "to_plan": [
-   "NRS-484B-250-1",
+  "generating": [
    "NRS-484B-253",
-   "NRS-484B-257-1",
    "NRS-484B-307-9a",
    "NRS-484B-307-9b"
   ],
+  "to_plan": [],
   "blocked": [
    "NRS-484B-127-3",
    "NRS-484B-270-3",
@@ -74,7 +73,9 @@
     "NRS-484B-223-4a",
     "NRS-484B-223-4b",
     "NRS-484B-227-1",
+    "NRS-484B-250-1",
     "NRS-484B-250-4",
+    "NRS-484B-257-1",
     "NRS-484B-263",
     "NRS-484B-270-7b",
     "NRS-484B-363-3",
@@ -87,15 +88,13 @@
     "LVMC-11-38-030",
     "LVMC-11-43-010-A"
    ],
-   "generating": [],
+   "generating": [
+    "NRS-484B-253",
+    "NRS-484B-307-9a",
+    "NRS-484B-307-9b"
+   ],
    "waiting_provider": {},
-   "to_plan": {
-    "NRS-484B-250-1": "uses concept `drv.position.entered_via`, failed: gate WITNESS_FAIL; blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks",
-    "NRS-484B-253": "uses concept `drv.position.entered_via`, failed: gate WITNESS_FAIL; blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks",
-    "NRS-484B-257-1": "uses concept `drv.position.entered_via`, failed: gate WITNESS_FAIL; blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks",
-    "NRS-484B-307-9a": "uses concept `drv.position.entered_via`, failed: gate WITNESS_FAIL; blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks",
-    "NRS-484B-307-9b": "uses concept `drv.position.entered_via`, failed: gate WITNESS_FAIL; blind: unknown for [window_truncated:rises, window_truncated:since], not for an atom the manifest masks"
-   },
+   "to_plan": {},
    "blocked": {
     "NRS-484B-127-3": [
      "G17"

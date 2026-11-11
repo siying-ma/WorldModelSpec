@@ -1,0 +1,834 @@
+{
+ "verdict": "OK",
+ "details": [
+  "15 witnesses, 17 names, composes NRS_484B_257_1_o1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "derived": "drv_motion_entering_region",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "atom": "st_lane_enters",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "or": [
+                 {
+                  "body": {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "ds"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "ds"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "body": {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "yield_sign"
+                  },
+                  "var": "dy"
+                 }
+                ]
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "dh"
+                       },
+                       {
+                        "lit": "police_officer"
+                       }
+                      ],
+                      "atom": "dev_human_direction_role",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "dh"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "dh"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "human_direction"
+                   },
+                   "var": "dh"
+                  }
+                 },
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "not": {
+                       "args": [
+                        {
+                         "var": "dt"
+                        }
+                       ],
+                       "atom": "dev_inoperative",
+                       "params": []
+                      }
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "dt"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "dt"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "traffic_signal"
+                   },
+                   "var": "dt"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "travel_region"
+       },
+       "var": "c"
+      },
+      "exists_region": {
+       "lit": "intersection"
+      },
+      "var": "i"
+     },
+     {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "DEF-NRS-484A-285::traffic"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "map": {
+         "x": "x"
+        },
+        "rule": "NRS_484B_257_1_o1"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_257_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-257-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "implies": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "i"
+           }
+          ],
+          "derived": "drv_motion_entering_region",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "atom": "st_lane_enters",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "or": [
+                 {
+                  "body": {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "ds"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "ds"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "stop_sign"
+                  },
+                  "var": "ds"
+                 },
+                 {
+                  "body": {
+                   "or": [
+                    {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "c"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "dy"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "dev_governs",
+                     "params": []
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "yield_sign"
+                  },
+                  "var": "dy"
+                 }
+                ]
+               },
+               {
+                "and": [
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "dh"
+                       },
+                       {
+                        "lit": "police_officer"
+                       }
+                      ],
+                      "atom": "dev_human_direction_role",
+                      "params": []
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "dh"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "dh"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "human_direction"
+                   },
+                   "var": "dh"
+                  }
+                 },
+                 {
+                  "not": {
+                   "body": {
+                    "and": [
+                     {
+                      "not": {
+                       "args": [
+                        {
+                         "var": "dt"
+                        }
+                       ],
+                       "atom": "dev_inoperative",
+                       "params": []
+                      }
+                     },
+                     {
+                      "or": [
+                       {
+                        "args": [
+                         {
+                          "var": "dt"
+                         },
+                         {
+                          "var": "c"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "args": [
+                         {
+                          "var": "dt"
+                         },
+                         {
+                          "var": "i"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_device": {
+                    "lit": "traffic_signal"
+                   },
+                   "var": "dt"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "body": {
+         "implies": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "i"
+              },
+              {
+               "var": "h2"
+              }
+             ],
+             "atom": "st_on_way",
+             "params": []
+            },
+            {
+             "not": {
+              "args": [
+               {
+                "var": "c"
+               },
+               {
+                "var": "h2"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             }
+            }
+           ]
+          },
+          {
+           "body": {
+            "implies": [
+             {
+              "and": [
+               {
+                "not": {
+                 "same": [
+                  {
+                   "var": "y"
+                  },
+                  {
+                   "var": "x"
+                  }
+                 ]
+                }
+               },
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-320::vehicle"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               }
+              ]
+             },
+             {
+              "not": {
+               "or": [
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "y"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "since": [
+                    {
+                     "args": [
+                      {
+                       "var": "y"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "y"
+                        },
+                        {
+                         "var": "i"
+                        }
+                       ],
+                       "derived": "drv_motion_entering_region",
+                       "params": []
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "y"
+                           },
+                           {
+                            "var": "c2"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "args": [
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "i"
+                             }
+                            ],
+                            "atom": "st_lane_enters",
+                            "params": []
+                           },
+                           {
+                            "args": [
+                             {
+                              "var": "c2"
+                             },
+                             {
+                              "var": "h2"
+                             }
+                            ],
+                            "atom": "st_on_way",
+                            "params": []
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "c2"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "y"
+                     },
+                     {
+                      "var": "c2"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   },
+                   {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "c2"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     },
+                     {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "c2"
+                         },
+                         {
+                          "var": "h2"
+                         }
+                        ],
+                        "atom": "st_on_way",
+                        "params": []
+                       },
+                       {
+                        "and": [
+                         {
+                          "not": {
+                           "args": [
+                            {
+                             "var": "y"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          }
+                         },
+                         {
+                          "cmp": "le",
+                          "lhs": {
+                           "args": [
+                            {
+                             "var": "y"
+                            },
+                            {
+                             "var": "i"
+                            }
+                           ],
+                           "measure": "st_region_geometry_distance"
+                          },
+                          "rhs": {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "y"
+                              }
+                             ],
+                             "measure": "kin_speed"
+                            },
+                            {
+                             "param": "p.immediate_hazard_gap"
+                            }
+                           ]
+                          }
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "travel_region"
+                 },
+                 "var": "c2"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           "forall_user": "y"
+          }
+         ]
+        },
+        "forall_region": {
+         "lit": "highway"
+        },
+        "var": "h2"
+       }
+      ]
+     },
+     "forall_region": {
+      "lit": "travel_region"
+     },
+     "var": "c"
+    },
+    "forall_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "9f5179f2faeb58087fa290ac",
+  "candidate_digest": "0628cfec19dcfdaba052f94414c4a114aa3b5aaf09bd520c89470d39ecdac012"
+ }
+}

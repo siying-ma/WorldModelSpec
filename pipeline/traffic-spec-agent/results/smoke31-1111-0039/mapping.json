@@ -1,4 +1,34 @@
 {
+ "(1) the person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;": {
+  "atoms": [
+   "drv.motion.halted",
+   "kin.speed",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.intersection",
+   "st.lane_enters",
+   "st.region_geometry",
+   "st.stop_line",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9b_o1",
+  "role": "obligation"
+ },
+ "(3) no other device at the place prohibits the turn, if applicable;": {
+  "atoms": [
+   "dev.governs",
+   "dev.regulatory_sign",
+   "dev.traffic_signal",
+   "prim.conditions_hold",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9b_o3",
+  "role": "obligation"
+ },
  "(a) must walk or otherwise travel as far to the side of the highway near the sidewalk": {
   "atoms": [
    "rel.occupies",
@@ -69,6 +99,14 @@
    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
   ],
   "node": "NRS_484B_297_6_o2",
+  "role": "subject"
+ },
+ "a person driving a motorcycle, moped or": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle"
+  ],
+  "node": "NRS_484B_307_9b_o1",
   "role": "subject"
  },
  "a signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled": {
@@ -175,6 +213,17 @@
   ],
   "node": "NRS_484B_440_1_o2",
   "role": "subject"
+ },
+ "approaching an intersection": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "trigger"
  },
  "as used in this section, “completely cross” means to travel across a railroad track or tracks in such a manner that the trailing end of the vehicle is 15 feet or more past the nearest rail of the railroad track or tracks.": {
   "atoms": [
@@ -298,8 +347,20 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_257_1_o1",
+  "node": "NRS_484B_257_1_o2",
   "role": "exception"
+ },
+ "facing the signal": {
+  "atoms": [
+   "dev.governs",
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_307_9b_o1",
+  "role": "trigger"
  },
  "if a highway has been designed to provide": {
   "atoms": [
@@ -380,6 +441,18 @@
   ],
   "node": "NRS_484B_297_6_o2",
   "role": "condition"
+ },
+ "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "drv.motion.heading_change_since_entry",
+   "drv.motion.leaving_region",
+   "kin.yaw_rate",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_307_9b_o1",
+  "role": "trigger"
  },
  "must be driven only upon the right-hand roadway": {
   "atoms": [
@@ -485,6 +558,15 @@
   "node": "NRS_484B_227_1_o2",
   "role": "exception"
  },
+ "or is making a left turn.": {
+  "atoms": [
+   "drv.motion.heading_change_since_entry",
+   "kin.yaw_rate",
+   "rel.occupies"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
+ },
  "or must be made from the extreme right lane.": {
   "atoms": [
    "kin.path_length",
@@ -495,6 +577,26 @@
   ],
   "node": "NRS_484B_400_1_o2",
   "role": "obligation"
+ },
+ "or riding a bicycle, an electric bicycle or an electric scooter": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ],
+  "node": "NRS_484B_307_9b_o1",
+  "role": "subject"
+ },
+ "or to vehicles approaching each other from opposite directions,": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "drv.road.opposed_directions",
+   "rel.occupies",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
  },
  "prior to changing the course": {
   "atoms": [
@@ -607,10 +709,10 @@
  "shall yield the right-of-way": {
   "atoms": [
    "drv.motion.entering_region",
-   "drv.motion.leaving_region",
-   "rel.occupies"
+   "rel.occupies",
+   "st.intersection"
   ],
-  "node": "NRS_484B_263_o1",
+  "node": "NRS_484B_250_1",
   "role": "obligation"
  },
  "such a pedestrian:": {
@@ -624,7 +726,7 @@
   "atoms": [
    "ru.aggregate=DEF-NRS-484A-320::vehicle"
   ],
-  "node": "NRS_484B_363_3",
+  "node": "NRS_484B_250_1",
   "role": "subject"
  },
  "the driver of the vehicle": {
@@ -642,6 +744,15 @@
   ],
   "node": "NRS_484B_250_4_o2",
   "role": "trigger"
+ },
+ "the driver shall yield the right-of-way": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "obligation"
  },
  "the operator of a bicycle, an electric bicycle or an electric scooter": {
   "atoms": [
@@ -661,6 +772,19 @@
   "node": "NRS_484B_400_1_o2",
   "role": "trigger"
  },
+ "this section does not apply at intersections controlled by official traffic-control devices": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.traffic_signal",
+   "dev.yield_sign",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "exception"
+ },
  "this section shall not apply to the driver of any vehicle which is disabled while on the paved or main-traveled portion of a highway in such manner and to such extent that it is impossible to avoid stopping and temporarily leaving such disabled vehicle in such position.": {
   "atoms": [
    "kin.engine_running",
@@ -670,6 +794,20 @@
   ],
   "node": "NRS_484B_440_1_o2",
   "role": "exception"
+ },
+ "to a vehicle which has entered the intersection from a different highway.": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_1",
+  "role": "condition"
  },
  "to all vehicles approaching on the highway": {
   "atoms": [
@@ -682,6 +820,18 @@
   "node": "NRS_484B_263_o2",
   "role": "condition"
  },
+ "to any vehicle approaching from the opposite direction": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "drv.road.opposed_directions",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "condition"
+ },
  "to fail to completely cross the track or tracks without stopping due to insufficient: (1) space for the vehicle on the opposite side of the railroad crossing; or (2) undercarriage clearance of the vehicle.": {
   "atoms": [
    "dev.governs",
@@ -692,6 +842,33 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_560_7a",
+  "role": "obligation"
+ },
+ "to other vehicles which have entered the intersection from such through highway": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-285::traffic",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.intersection",
+   "st.lane_enters"
+  ],
+  "node": "NRS_484B_307_9b_o4",
   "role": "obligation"
  },
  "to that traffic": {
@@ -785,7 +962,7 @@
    "st.lane_enters",
    "st.travel_region"
   ],
-  "node": "NRS_484B_257_1_o1",
+  "node": "NRS_484B_257_1_o2",
   "role": "condition"
  },
  "when such movement requires driving off the paved portion of the highway": {
@@ -797,6 +974,13 @@
   "node": "NRS_484B_210_3",
   "role": "condition"
  },
+ "where the signal is a steady red with a green turn arrow:": {
+  "atoms": [
+   "dev.traffic_signal"
+  ],
+  "node": "NRS_484B_307_9b_o1",
+  "role": "trigger"
+ },
  "which have previously completed a stop": {
   "atoms": [
    "drv.motion.halted",
@@ -807,6 +991,14 @@
    "st.travel_region"
   ],
   "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "which is within the intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o1",
   "role": "condition"
  },
  "while being driven in the right turn lane": {
@@ -832,6 +1024,17 @@
   ],
   "node": "LVMC_11_43_010_A",
   "role": "condition"
+ },
+ "within an intersection": {
+  "atoms": [
+   "drv.motion.entering_region",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "trigger"
  },
  "yielding to vehicles": {
   "atoms": [

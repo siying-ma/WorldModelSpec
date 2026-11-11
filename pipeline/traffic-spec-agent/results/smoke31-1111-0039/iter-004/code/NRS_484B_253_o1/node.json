@@ -1,0 +1,239 @@
+{
+ "node_id": "NRS_484B_253_o1",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "within an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "intending to turn to the left",
+   "role": "trigger"
+  },
+  {
+   "id": "s4",
+   "text": "shall yield the right-of-way",
+   "role": "obligation"
+  },
+  {
+   "id": "s5",
+   "text": "to any vehicle approaching from the opposite direction",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "which is within the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s7",
+   "text": "or so close thereto as to constitute an immediate hazard,",
+   "role": "standard"
+  },
+  {
+   "id": "s8",
+   "text": "but such driver, having so yielded",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "and having given a signal",
+   "role": "sibling"
+  },
+  {
+   "id": "s10",
+   "text": "when and as required,",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "may make such left turn",
+   "role": "sibling"
+  },
+  {
+   "id": "s12",
+   "text": "and the drivers of all other vehicles",
+   "role": "sibling"
+  },
+  {
+   "id": "s13",
+   "text": "approaching the intersection from the opposite direction",
+   "role": "sibling"
+  },
+  {
+   "id": "s14",
+   "text": "shall yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s15",
+   "text": "to the vehicle making the left turn.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'within an intersection': rel.occupies 'a road user's footprint overlaps a lane / region' of a st.intersection. The carrier x occupied at its latest entry into the intersection (drv.motion.entering_region 'its footprint overlaps r (rel.occupies) at the observation and did not at the observation before', read through a past operator while x has stayed in the intersection since), whose entrance end is that intersection (st.lane_enters, st.travel_region), fixes its approach direction for s5. st.lane_enters is not a stand-in for presence in the intersection, which rel.occupies reads."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "kin.yaw_rate",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.turning_left"
+   ],
+   "justification": "'shall yield the right-of-way' (DEF-NRS-484A-210 'the right ... to proceed ... in preference'): a driver already within the intersection proceeds in preference by making its left turn; yielding is not turning left (drv.motion.turning_left 'it is moving ... and its yaw rate (kin.yaw_rate, deg/s, left positive) exceeds yaw_floor') while a vehicle owed precedence is present. The concept does not tell a turn from a bend; the place is the intersection the node binds."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.road.opposed_directions",
+    "drv.motion.entering_region"
+   ],
+   "justification": "'any vehicle' is the admitted aggregate. 'approaching from the opposite direction' is read, as rel.oncoming's 'not a stand-in' clause directs, through the carriers: y's approach carrier of the intersection (one it occupies outside the intersection, or the one it occupied at its latest entry into it, drv.motion.entering_region) has a designated direction opposed to that of x's approach carrier (drv.road.opposed_directions 'the dot product of their designated directions ... is below minus opposed_cosine')."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'which is within the intersection': rel.occupies of y and the intersection x is in."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s7",
+   "standard": "so close to the intersection as to constitute an immediate hazard",
+   "concepts": [
+    "st.region_geometry",
+    "kin.speed"
+   ],
+   "params": [
+    "p.immediate_hazard_gap"
+   ],
+   "convention": "Gap acceptance (HCM critical headway): an approaching vehicle outside the intersection is an immediate hazard where its ground distance to the intersection (st.region_geometry 'the ground distance from a road user's body outline to it') is at most its speed (kin.speed) times p.immediate_hazard_gap, so the bound moves with both proximity and speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "s3",
+   "id": "int.left_turn",
+   "meaning": "The source's current plan for the road user includes a left turn at the target region."
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) within intersection i (st.intersection, rel.occupies x i) and, read through a past operator, has occupied i at every observation since its latest entry into i (drv.motion.entering_region x i), at which entry observation x occupied an approach carrier c (st.travel_region, rel.occupies x c, st.lane_enters c i); and the source declares at this observation that x intends a left turn at i (intent int.left_turn x i). Where x's entry into i lies before the recording, the duty is unknown; where x occupied several carriers entering i at that entry and the verdict differs between them, which governs is unknown.",
+ "obligation": "x is not turning left (drv.motion.turning_left x with p.speed_resolution and p.yaw_rate_resolution) at this observation if some vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle) approaches from the opposite direction and is within i or so close to i as to be an immediate hazard: either (a) y occupies i and, read through a past operator, has occupied i at every observation since its latest entry into i (drv.motion.entering_region y i), at which entry observation y occupied a carrier c2 (rel.occupies y c2, st.travel_region, st.lane_enters c2 i) with drv.road.opposed_directions c c2 (p.opposed_carriers_cosine); or (b) y occupies an approach carrier c2 of i (rel.occupies y c2, st.lane_enters c2 i) with drv.road.opposed_directions c c2, y does not occupy i, and st_region_geometry_distance y i is at most kin_speed y times p.immediate_hazard_gap. Where y's entry into i is not observed, whether (a) holds for y is unknown.",
+ "params": [
+  "p.speed_resolution",
+  "p.yaw_rate_resolution",
+  "p.opposed_carriers_cosine",
+  "p.immediate_hazard_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "Yielding by a driver already within the intersection is read as not turning left while the opposing vehicle is present; creeping straight ahead is not read as a failure to yield.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The recording begins with x on c upstream of i; x enters i through c (recorded) and int.left_turn x i is declared; vehicle y on c2 (opposed to c, st.lane_enters c2 i) is 20 m from i at 15 m/s; x moves at 4 m/s with kin.yaw_rate 15 deg/s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid up to x's entry, but x waits halted in i until y has passed, then turns left (kin.yaw_rate 15 deg/s, 4 m/s) as the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x enters i through c (recorded) and occupies i; the source declares int.left_turn x i false (x goes straight)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, with x's entry recorded, but kin.yaw_rate of x is not observed.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Vehicle y occupies i, having entered (recorded) through c2 opposed to c; x, in i after a recorded entry through c with int.left_turn x i declared, turns left (moving, kin.yaw_rate 12 deg/s)."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Vehicle y on c2 opposed to c is 200 m from i at 15 m/s; x, in i after a recorded entry through c with int.left_turn x i declared, turns left."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

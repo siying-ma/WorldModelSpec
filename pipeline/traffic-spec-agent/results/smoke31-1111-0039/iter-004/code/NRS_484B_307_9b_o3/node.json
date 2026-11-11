@@ -1,0 +1,236 @@
+{
+ "node_id": "NRS_484B_307_9b_o3",
+ "law_refs": [
+  "NRS-484B-307-9b"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.aggregate=DEF-NRS-484A-125::moped",
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Where the signal is a steady red with a green turn arrow:",
+   "role": "trigger"
+  },
+  {
+   "id": "c2",
+   "text": "A person driving a motorcycle, moped or",
+   "role": "subject"
+  },
+  {
+   "id": "c3",
+   "text": "trimobile",
+   "role": "subject"
+  },
+  {
+   "id": "c4",
+   "text": "or riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "c5",
+   "text": "facing the signal",
+   "role": "trigger"
+  },
+  {
+   "id": "c6",
+   "text": "may proceed straight through or turn in the direction opposite that indicated by the green turn arrow",
+   "role": "trigger"
+  },
+  {
+   "id": "c7",
+   "text": "if:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c8",
+   "text": "(1) The person stops before entering the crosswalk on the nearest side of the intersection where the sign or pavement marking indicates where the stop must be made or, in the absence of any such crosswalk, sign or marking, before entering the intersection;",
+   "role": "sibling"
+  },
+  {
+   "id": "c9",
+   "text": "(2) The person waits for two complete cycles of the lights or lighted arrows of the applicable official traffic-control device and the signal does not change because of a malfunction or because the signal failed to detect the presence of the motorcycle, moped, trimobile, bicycle, electric bicycle or electric scooter;",
+   "role": "sibling"
+  },
+  {
+   "id": "c11",
+   "text": "(3) No other device at the place prohibits the turn, if applicable;",
+   "role": "obligation"
+  },
+  {
+   "id": "c12",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "c13",
+   "text": "(4) The person yields the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "c15",
+   "text": "to pedestrians lawfully within an adjacent crosswalk and to other traffic lawfully using the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "dev.traffic_signal"
+   ],
+   "derived": [],
+   "justification": "dev.traffic_signal: \"several states may be displayed at once\": circular_red displayed together with green_arrow(dir), dir left or right."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-135::motorcycle (\"every motor vehicle equipped with a seat or saddle for the use of the driver\") and DEF-NRS-484A-125::moped (\"a motor-driven scooter, motor-driven cycle or similar vehicle\"), claimed by id."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The admitted aggregates DEF-NRS-484A-025::bicycle (\"a device propelled by human power upon which a person may ride\"), DEF-NRS-484B-017::electric_bicycle (\"a device upon which a person may ride, having two or three wheels\") and DEF-NRS-484B-018::electric_scooter (\"a vehicle with handlebars and an electric motor\")."
+  },
+  {
+   "span": "c5",
+   "atoms": [
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "Facing the signal: dev.governs (\"the travel regions whose traffic the device controls ... or an intersection\") on the carrier c (st.travel_region) with st.lane_enters(c, i) that x occupied (rel.occupies) at the observation of its latest entry into i (drv.motion.entering_region: \"its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\"), read through a past operator, or on i itself."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region",
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "The passage from x's entry into i to its leaving; straight through or opposite the arrow read at the leaving by drv.motion.heading_change_since_entry (\"in degrees, left positive\", from kin.yaw_rate) against the turn recognition angle."
+  },
+  {
+   "span": "c11",
+   "atoms": [
+    "dev.regulatory_sign",
+    "dev.traffic_signal",
+    "dev.governs",
+    "prim.conditions_hold",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "A device at the place that prohibits the turn: a dev.regulatory_sign (\"a point regulation by catalogue code\") of code no_left_turn for a left turn or no_right_turn for a right turn, whose structured conditions hold for x at the entry (prim.conditions_hold: \"the structured conditions of a device ... hold at the observation for a road user\"), or a traffic signal head displaying red_arrow(dir) in the turn's direction (dev.traffic_signal); either governing (dev.governs) the carrier c x entered through (st.lane_enters(c, i)) or the intersection i. 'if applicable': a straight-through passage makes no turn, and the condition is met. A prohibition sign is 'not a stand-in' for a manoeuvre: it is read as the condition it is."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "c3",
+   "why": "Every trimobile, a motor vehicle with a seat designed to travel on three wheels, is already a member of the motorcycle aggregate claimed on span c2 (\"every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground\"): the duty is the same whether or not the word is read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.aggregate=DEF-NRS-484A-125::moped",
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "As NRS_484B_307_9b_o1: x carries one of the five aggregates of spans c2 and c4; at the observation x leaves intersection i (drv.motion.leaving_region(x, i)); read through a past operator from that leaving, x occupied i at every observation from its latest entry into i (drv.motion.entering_region(x, i)) to the one before the leaving, and at that entry observation x occupied a carrier c (st.travel_region, rel.occupies(x, c)) with st.lane_enters(c, i) while a traffic signal s that governs c or i (dev.governs) displayed circular_red together with green_arrow(d), d left or right; and at the leaving the heading change since that entry (drv.motion.heading_change_since_entry(x, i) with step p.heading_since_step_carla_scene_graph) shows a straight-through passage (absolute value below p.turn_recognition_angle) or a turn opposite d.",
+ "obligation": "Where the passage is a turn (the heading change since the entry at least p.turn_recognition_angle in absolute value; its sign gives the side): at the observation of x's entry into i (read through a past operator) no device governing c or i (dev.governs) prohibits a turn to that side: no dev.regulatory_sign of code no_left_turn (for a left turn) or no_right_turn (for a right turn) whose conditions hold for x there (prim.conditions_hold), and no traffic signal head displaying red_arrow toward that side. A straight-through passage meets this condition.",
+ "params": [
+  "p.turn_recognition_angle",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "c2",
+   "why": "'A person driving' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c4",
+   "why": "'riding' is read through the machine's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c11",
+   "why": "'No other device at the place prohibits the turn' is read as the turn prohibitions the closed set carries: a no-left-turn or no-right-turn sign whose posted conditions hold, or a red arrow toward the turn's side, governing the approach or the intersection, at the entry.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motorcycle), recorded from upstream, enters i through c under circular_red with green_arrow(left) and turns right; a dev.regulatory_sign of code no_right_turn with empty conditions governs c."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x (ru.bicycle), recorded from upstream, enters i through c under circular_red with green_arrow(left) and turns right; no sign or red arrow prohibiting a right turn governs c or i."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x (ru.motorcycle) enters under circular_red with green_arrow(left) and turns left, the movement the arrow indicates."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x, recorded from upstream, turns right under circular_red with green_arrow(left); a no_right_turn sign stands at the approach but the source does not observe which regions any device governs.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "x (ru.moped) enters under circular_red with green_arrow(left) and goes straight through while a no_right_turn sign governs c: no turn is made, so the condition is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

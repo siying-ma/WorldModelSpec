@@ -1,0 +1,77 @@
+'TrafficSpec.Rules.NRS_484B_253_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_253_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_253_o2","intentions":["int.left_turn"],"laws":["NRS-484B-253"],"narrowings":[],"operationalizations":[],"residues":["'when and as required' refers to the signalling requirements of a law outside this corpus (no bracketed id resolves it); the signal itself is read on s9."],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"same":[{"var":"c"},{"var":"i"}]}},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_253_o2","intentions":["int.left_turn"],"laws":["NRS-484B-253"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"same":[{"var":"c"},{"var":"i"}]}},{"args":[{"var":"x"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]}]}]}]},{"not":{"body":{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"not":{"same":[{"var":"c2"},{"var":"i"}]}},{"and":[{"args":[{"var":"c"},{"var":"c2"}],"derived":"drv_road_opposed_directions","params":[{"param":"p.opposed_carriers_cosine"}]},{"and":[{"since":[{"and":[{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"map":{"x":"y"},"rule":"NRS_484B_253_o1"}]},{"and":[{"args":[{"var":"y"},{"var":"i"}],"derived":"drv_motion_entering_region","params":[]},{"and":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"map":{"x":"y"},"rule":"NRS_484B_253_o1"}]}]}]}]},{"and":[{"args":[{"var":"y"},{"var":"i"}],"int":"int.left_turn"},{"and":[{"or":[{"args":[{"var":"y"}],"derived":"drv_motion_turning_left","params":[{"param":"p.speed_resolution"},{"param":"p.yaw_rate_resolution"}]},{"cmp":"ge","lhs":{"args":[{"var":"y"},{"var":"i"}],"params":[{"param":"p.heading_since_step_carla_scene_graph"}],"quantity":"drv_motion_heading_change_since_entry"},"rhs":{"param":"p.turn_recognition_angle"}}]},{"since":[{"or":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}]},{"and":[{"or":[{"args":[{"var":"y"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"y"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},{"since":[{"or":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}]},{"args":[{"var":"y"},{"var":"c2"}],"derived":"drv_motion_entering_region","params":[]}]}]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]}]},"exists_user":"y"}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["'when and as required' refers to the signalling requirements of a law outside this corpus (no bracketed id resolves it); the signal itself is read on s9."],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"same":[{"var":"c"},{"var":"i"}]}},{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c"},"exists_region":{"lit":"intersection"},"var":"i"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_253_o2","intentions":["int.left_turn"],"laws":["NRS-484B-253"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"c"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"and":[{"not":{"same":[{"var":"c"},{"var":"i"}]}},{"rises":{"args":[{"var":"x"},{"var":"i"}],"atom":"rel_occupies","params":[]}}]}]}]},{"not":{"body":{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"body":{"and":[{"not":{"same":[{"var":"c2"},{"var":"i"}]}},{"and":[{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"p.opposed_carriers_cosine"}}},{"and":[{"since":[{"and":[{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]},{"map":{"x":"y"},"rule":"NRS_484B_253_o1"}]},{"and":[{"rises":{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"c2"},{"var":"i"}],"atom":"st_lane_enters","params":[]},{"map":{"x":"y"},"rule":"NRS_484B_253_o1"}]}]}]}]},{"and":[{"args":[{"var":"y"},{"var":"i"}],"int":"int.left_turn"},{"and":[{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"y"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"cmp":"gt","lhs":{"args":[{"var":"y"}],"measure":"kin_yaw_rate"},"rhs":{"param":"p.yaw_rate_resolution"}}]},{"cmp":"ge","lhs":{"heading_since":"y","max_step":{"param":"p.heading_since_step_carla_scene_graph"},"onset":{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}},"rhs":{"param":"p.turn_recognition_angle"}}]},{"since":[{"or":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}]},{"and":[{"or":[{"args":[{"var":"y"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"y"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]}]},{"since":[{"or":[{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"y"},{"var":"i"}],"atom":"rel_occupies","params":[]}]},{"rises":{"args":[{"var":"y"},{"var":"c2"}],"atom":"rel_occupies","params":[]}}]}]}]}]}]}]}]}]},"exists_region":{"lit":"travel_region"},"var":"c2"}]}]},"exists_user":"y"}}]},"forall_region":{"lit":"travel_region"},"var":"c"},"forall_region":{"lit":"intersection"},"var":"i"},"residues":["'when and as required' refers to the signalling requirements of a law outside this corpus (no bracketed id resolves it); the signal itself is read on s9."],"surrogate":false}
+ATOMS	ru_aggregate,st_intersection,st_travel_region,rel_occupies,st_lane_enters,drv_motion_entering_region,drv_road_opposed_directions,drv_motion_turning_left,drv_motion_heading_change_since_entry,sig_turn_indicator,sig_hand_signal
+COMPOSES	NRS_484B_253_o1
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.turn_indicator,sig.hand_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+OCC	x
+OCC	?i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	c,i
+OCC	x,i
+OCC	?i
+OCC	?c
+OCC	x,c
+OCC	c,i
+OCC	c,i
+OCC	x,i
+OCC	?y
+OCC	x,y
+OCC	y
+OCC	?c2
+OCC	c2,i
+OCC	c,c2
+OCC	y,i
+OCC	$,y
+OCC	y,i
+OCC	y,c2
+OCC	c2,i
+OCC	$,y
+OCC	y
+OCC	y,i
+OCC	y,c2
+OCC	y,i
+OCC	y
+OCC	y
+OCC	y,c2
+OCC	y,i
+OCC	y,c2
+TIME	occurrences	1
+TIME	checks	75
+TIME	lint	7567
+SCEN	forbid	violated	?	forbid: expected violated, got compliant []
+TIME	scenario:forbid	1559
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	492
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	95
+SCEN	blind	unknown	?	blind: expected unknown, got compliant []
+TIME	scenario:blind	1583
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	1562
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	763
+SCEN	branch_3	violated	?	branch_3: expected violated, got compliant []
+TIME	scenario:branch_3	1571
+SCEN	branch_4	violated	?	branch_4: expected violated, got compliant []
+TIME	scenario:branch_4	1567
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	1542
+SCEN	branch_6	violated	?	branch_6: expected violated, got compliant []
+TIME	scenario:branch_6	1561
+TIME	witnesses	12295
+DONE_WITNESSES

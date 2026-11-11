@@ -177,3 +177,30 @@ _Observed during iteration 2: these items record what the run reported then, not
 - `NRS-484B-263`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-363-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-769`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 4
+
+- planner's note for the operator (iteration 4, `iter-004/plan`, note 1, section 5056a6c45fa8c465; a report, it decides nothing): `drv.position.entered_via` failed its gate because its `blind` witness was unknown from window
+  truncation, not from the masked atom. The concept witness builder may need to give `since` and
+  `rises` bodies a recorded history before the masked observation. The nodes no longer depend on
+  the concept.
+- planner's note for the operator (iteration 4, `iter-004/plan`, note 2, section 5056a6c45fa8c465; a report, it decides nothing): The inline reading leaves a road user's "entered through c" unknown when its entry into i comes
+  before the recording. This is intended (the `entering_region` contract makes the first
+  observation unknown). Node witnesses therefore have to record the entries they rely on, and the
+  scenario narratives say so.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o3) reads "A person driving a motorcycle, moped or" (agency) through conduct: 'A person driving' is read through the machine's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o3) reads "or riding a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'riding' is read through the machine's controlled motion.
+- `NRS-484B-253` (NRS_484B_253_o1) reads "The driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion.
+- `NRS-484B-257-1` (NRS_484B_257_1_o2) reads "Except when traffic is being controlled by a police officer or a traffic-control signal:" (status) through conduct: Control of traffic is read as control of x's own approach or intersection; officer and signal presence are read as their status.
+- `NRS-484B-257-1` (NRS_484B_257_1_o2) reads "When proper signs have been erected," (status) through conduct: 'proper signs' are read through the presence of a stop or yield sign.
+- `NRS-484B-257-1` (NRS_484B_257_1_o2) reads "the driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion.
+- `NRS-484B-257-1` span s9 composes accepted `NRS_484B_257_1_o1` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "The driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion.
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "this section does not apply at intersections controlled by official traffic-control devices" (status) through conduct: 'official' is read through the device's presence; the devices that control an intersection are read as traffic signals, stop signs and yield signs governing the intersection or the subject's approach (a marking or a warning sign alone contr
+- `NRS-484B-250-1` span s5 composes accepted `NRS_484B_250_4_o1` (as: unless) — both rules can flag the same episode
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o4) reads "A person driving a motorcycle, moped or" (agency) through conduct: 'A person driving' is read through the machine's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o4) reads "or riding a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'riding' is read through the machine's controlled motion.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o1) reads "A person driving a motorcycle, moped or" (agency) through conduct: 'A person driving' is read through the machine's controlled motion: the duty binds the motorcycle's or moped's conduct whoever controls it.
+- `NRS-484B-307-9b` (NRS_484B_307_9b_o1) reads "or riding a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: 'riding' is read through the machine's controlled motion: the duty binds the conduct of the bicycle, electric bicycle or electric scooter whoever rides it.
+- `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-257-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
