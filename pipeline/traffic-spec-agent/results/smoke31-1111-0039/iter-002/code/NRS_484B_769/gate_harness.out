@@ -1,0 +1,60 @@
+'TrafficSpec.Rules.NRS_484B_769.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_769.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_769","intentions":[],"laws":["NRS-484B-769"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"or":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"not":{"args":[{"var":"x"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}}]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"x"}],"id":"NRS_484B_769","intentions":[],"laws":["NRS-484B-769"],"narrowings":[],"obligation":{"and":[{"not":{"args":[{"var":"x"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"and":[{"implies":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]},{"args":[{"var":"x"},{"lit":"re_enter"}],"atom":"sig_hand_signal","params":[]}]}]},{"implies":[{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]}]}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"or":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"not":{"args":[{"var":"x"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}}]}]}]},"assumptions":[],"binders":[{"cls":{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-025::bicycle"}],"atom":"ru_aggregate","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-017::electric_bicycle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"x"},{"lit":"DEF-NRS-484B-018::electric_scooter"}],"atom":"ru_aggregate","params":[]}]}]},"name":"x"}],"id":"NRS_484B_769","intentions":[],"laws":["NRS-484B-769"],"narrowings":[],"obligation":{"and":[{"not":{"args":[{"var":"x"},{"lit":"no_signal"}],"atom":"sig_hand_signal","params":[]}},{"and":[{"implies":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_turn_indicator","params":[]},{"or":[{"args":[{"var":"x"},{"lit":"left"}],"atom":"sig_hand_signal","params":[]},{"args":[{"var":"x"},{"lit":"re_enter"}],"atom":"sig_hand_signal","params":[]}]}]},{"implies":[{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_turn_indicator","params":[]},{"args":[{"var":"x"},{"lit":"right"}],"atom":"sig_hand_signal","params":[]}]}]}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_roadway,rel_occupies,sig_turn_indicator,sig_hand_signal
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-025::bicycle	DEF-NRS-484B-017::electric_bicycle	DEF-NRS-484B-018::electric_scooter
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.hand_signal
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	x
+OCC	x
+OCC	?r
+OCC	x,r
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+TIME	occurrences	0
+TIME	checks	39
+TIME	lint	33
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	42
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	42
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	41
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	48
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	43
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	43
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	39
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	41
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	42
+TIME	witnesses	381
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_769.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_769.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_769	10	8
+TIME	adequacy_start	10
+TIME	adequacy	1026
+DONE

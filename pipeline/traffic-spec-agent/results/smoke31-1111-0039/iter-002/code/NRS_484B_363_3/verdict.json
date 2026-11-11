@@ -1,0 +1,653 @@
+{
+ "verdict": "OK",
+ "details": [
+  "18 witnesses, 15 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "rises": {
+       "args": [
+        {
+         "var": "x"
+        }
+       ],
+       "derived": "drv_motion_u_turn",
+       "params": [
+        {
+         "param": "p.u_turn_window"
+        },
+        {
+         "param": "p.u_turn_reversal_tolerance"
+        }
+       ]
+      }
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "z"
+              },
+              {
+               "lit": "school"
+              }
+             ],
+             "atom": "dev_zone_sign_kind",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "z"
+              },
+              {
+               "lit": "school_crossing"
+              }
+             ],
+             "atom": "dev_zone_sign_kind",
+             "params": []
+            }
+           ]
+          },
+          {
+           "not": {
+            "args": [
+             {
+              "var": "z"
+             }
+            ],
+            "atom": "dev_zone_sign_end",
+            "params": []
+           }
+          }
+         ]
+        },
+        {
+         "not": {
+          "body": {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               }
+              ],
+              "derived": "drv_motion_yawing",
+              "params": [
+               {
+                "param": "p.yaw_rate_resolution"
+               }
+              ]
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "z"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "travel_region"
+              },
+              "var": "r"
+             }
+            ]
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.u_turn_window"
+          },
+          "subject": "x"
+         }
+        }
+       ]
+      },
+      "exists_device": {
+       "lit": "zone_sign"
+      },
+      "var": "z"
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.school_not_in_session_day",
+    "asm.outside_school_operation_margin",
+    "asm.pupils_in_class"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_363_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-363-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "and": [
+          {
+           "or": [
+            {
+             "args": [
+              {
+               "var": "z"
+              },
+              {
+               "lit": "school"
+              }
+             ],
+             "atom": "dev_zone_sign_kind",
+             "params": []
+            },
+            {
+             "args": [
+              {
+               "var": "z"
+              },
+              {
+               "lit": "school_crossing"
+              }
+             ],
+             "atom": "dev_zone_sign_kind",
+             "params": []
+            }
+           ]
+          },
+          {
+           "not": {
+            "args": [
+             {
+              "var": "z"
+             }
+            ],
+            "atom": "dev_zone_sign_end",
+            "params": []
+           }
+          }
+         ]
+        },
+        {
+         "not": {
+          "body": {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               }
+              ],
+              "derived": "drv_motion_yawing",
+              "params": [
+               {
+                "param": "p.yaw_rate_resolution"
+               }
+              ]
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "z"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "dev_governs",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "r"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "travel_region"
+              },
+              "var": "r"
+             }
+            ]
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.u_turn_window"
+          },
+          "subject": "x"
+         }
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "implies": [
+           {
+            "args": [
+             {
+              "var": "x"
+             }
+            ],
+            "derived": "drv_motion_yawing",
+            "params": [
+             {
+              "param": "p.yaw_rate_resolution"
+             }
+            ]
+           },
+           {
+            "not": {
+             "body": {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "c"
+                 }
+                ],
+                "atom": "ru_child",
+                "params": []
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "z"
+                    },
+                    {
+                     "var": "rc"
+                    }
+                   ],
+                   "atom": "dev_governs",
+                   "params": []
+                  },
+                  {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "c"
+                     },
+                     {
+                      "var": "rc"
+                     }
+                    ],
+                    "measure": "st_region_geometry_distance"
+                   },
+                   "rhs": {
+                    "param": "p.child_presence_reach"
+                   }
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "travel_region"
+                },
+                "var": "rc"
+               }
+              ]
+             },
+             "exists_user": "c"
+            }
+           }
+          ]
+         },
+         "holds_for": "time",
+         "length": {
+          "param": "p.u_turn_window"
+         },
+         "subject": "x"
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "implies": [
+             {
+              "args": [
+               {
+                "var": "x"
+               }
+              ],
+              "derived": "drv_motion_yawing",
+              "params": [
+               {
+                "param": "p.yaw_rate_resolution"
+               }
+              ]
+             },
+             {
+              "asm": "asm.school_not_in_session_day"
+             }
+            ]
+           },
+           "holds_for": "time",
+           "length": {
+            "param": "p.u_turn_window"
+           },
+           "subject": "x"
+          },
+          {
+           "or": [
+            {
+             "body": {
+              "implies": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 }
+                ],
+                "derived": "drv_motion_yawing",
+                "params": [
+                 {
+                  "param": "p.yaw_rate_resolution"
+                 }
+                ]
+               },
+               {
+                "asm": "asm.outside_school_operation_margin"
+               }
+              ]
+             },
+             "holds_for": "time",
+             "length": {
+              "param": "p.u_turn_window"
+             },
+             "subject": "x"
+            },
+            {
+             "or": [
+              {
+               "body": {
+                "implies": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   }
+                  ],
+                  "derived": "drv_motion_yawing",
+                  "params": [
+                   {
+                    "param": "p.yaw_rate_resolution"
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "body": {
+                      "and": [
+                       {
+                        "args": [
+                         {
+                          "var": "b"
+                         },
+                         {
+                          "var": "rb"
+                         }
+                        ],
+                        "atom": "dev_governs",
+                        "params": []
+                       },
+                       {
+                        "or": [
+                         {
+                          "args": [
+                           {
+                            "var": "x"
+                           },
+                           {
+                            "var": "rb"
+                           }
+                          ],
+                          "atom": "rel_occupies",
+                          "params": []
+                         },
+                         {
+                          "args": [
+                           {
+                            "var": "z"
+                           },
+                           {
+                            "var": "rb"
+                           }
+                          ],
+                          "atom": "dev_governs",
+                          "params": []
+                         }
+                        ]
+                       }
+                      ]
+                     },
+                     "exists_region": {
+                      "lit": "travel_region"
+                     },
+                     "var": "rb"
+                    },
+                    {
+                     "and": [
+                      {
+                       "asm": "asm.pupils_in_class"
+                      },
+                      {
+                       "not": {
+                        "args": [
+                         {
+                          "var": "b"
+                         }
+                        ],
+                        "atom": "dev_speed_limit_beacon_flashing",
+                        "params": []
+                       }
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_device": {
+                   "lit": "speed_limit_beacon"
+                  },
+                  "var": "b"
+                 }
+                ]
+               },
+               "holds_for": "time",
+               "length": {
+                "param": "p.u_turn_window"
+               },
+               "subject": "x"
+              },
+              {
+               "body": {
+                "implies": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   }
+                  ],
+                  "derived": "drv_motion_yawing",
+                  "params": [
+                   {
+                    "param": "p.yaw_rate_resolution"
+                   }
+                  ]
+                 },
+                 {
+                  "and": [
+                   {
+                    "not": {
+                     "body": {
+                      "body": {
+                       "and": [
+                        {
+                         "args": [
+                          {
+                           "var": "b"
+                          },
+                          {
+                           "var": "rb"
+                          }
+                         ],
+                         "atom": "dev_governs",
+                         "params": []
+                        },
+                        {
+                         "or": [
+                          {
+                           "args": [
+                            {
+                             "var": "x"
+                            },
+                            {
+                             "var": "rb"
+                            }
+                           ],
+                           "atom": "rel_occupies",
+                           "params": []
+                          },
+                          {
+                           "args": [
+                            {
+                             "var": "z"
+                            },
+                            {
+                             "var": "rb"
+                            }
+                           ],
+                           "atom": "dev_governs",
+                           "params": []
+                          }
+                         ]
+                        }
+                       ]
+                      },
+                      "exists_region": {
+                       "lit": "travel_region"
+                      },
+                      "var": "rb"
+                     },
+                     "exists_device": {
+                      "lit": "speed_limit_beacon"
+                     },
+                     "var": "b"
+                    }
+                   },
+                   {
+                    "not": {
+                     "args": [
+                      {
+                       "var": "z"
+                      },
+                      {
+                       "var": "x"
+                      }
+                     ],
+                     "derived": "prim_conditions_hold",
+                     "params": []
+                    }
+                   }
+                  ]
+                 }
+                ]
+               },
+               "holds_for": "time",
+               "length": {
+                "param": "p.u_turn_window"
+               },
+               "subject": "x"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_device": {
+     "lit": "zone_sign"
+    },
+    "var": "z"
+   },
+   "residues": [
+    "The section's own definition of a speed limit beacon; dev.speed_limit_beacon's contract (\"a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect\") already states it, and the elements of spans d8, d10 and d12 read that atom; it imposes no duty of its own."
+   ],
+   "surrogate": false
+  },
+  "context": "0e1243f40b019489e440afd6",
+  "candidate_digest": "cdd94177334bcee00be28a59589d4e5d0b834e81b38186c38b892dd8fadc78f1"
+ }
+}

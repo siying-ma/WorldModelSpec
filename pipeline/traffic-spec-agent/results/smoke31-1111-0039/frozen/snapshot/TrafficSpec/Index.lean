@@ -15,9 +15,11 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_250_4_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_250_4_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_257_1_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_263_o1
+import TrafficSpec.Rules.NRS_484B.NRS_484B_263_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_270_7b
 import TrafficSpec.Rules.NRS_484B.NRS_484B_297_6_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_297_6_o3
+import TrafficSpec.Rules.NRS_484B.NRS_484B_363_3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_400_1_o1
 import TrafficSpec.Rules.NRS_484B.NRS_484B_400_1_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_413_2
@@ -26,6 +28,7 @@ import TrafficSpec.Rules.NRS_484B.NRS_484B_440_1_o2
 import TrafficSpec.Rules.NRS_484B.NRS_484B_440_1_o3
 import TrafficSpec.Rules.NRS_484B.NRS_484B_560_7a
 import TrafficSpec.Rules.NRS_484B.NRS_484B_600_1a
+import TrafficSpec.Rules.NRS_484B.NRS_484B_769
 import TrafficSpec.Concepts.interaction.overtaking_alongside
 import TrafficSpec.Concepts.interaction.passing_on_right
 import TrafficSpec.Concepts.motion.against_carrier_direction
@@ -60,9 +63,11 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_250_4_o2.rule,
   TrafficSpec.Rules.NRS_484B_257_1_o1.rule,
   TrafficSpec.Rules.NRS_484B_263_o1.rule,
+  TrafficSpec.Rules.NRS_484B_263_o2.rule,
   TrafficSpec.Rules.NRS_484B_270_7b.rule,
   TrafficSpec.Rules.NRS_484B_297_6_o2.rule,
   TrafficSpec.Rules.NRS_484B_297_6_o3.rule,
+  TrafficSpec.Rules.NRS_484B_363_3.rule,
   TrafficSpec.Rules.NRS_484B_400_1_o1.rule,
   TrafficSpec.Rules.NRS_484B_400_1_o2.rule,
   TrafficSpec.Rules.NRS_484B_413_2.rule,
@@ -70,7 +75,8 @@ def allRules : List Rule := [
   TrafficSpec.Rules.NRS_484B_440_1_o2.rule,
   TrafficSpec.Rules.NRS_484B_440_1_o3.rule,
   TrafficSpec.Rules.NRS_484B_560_7a.rule,
-  TrafficSpec.Rules.NRS_484B_600_1a.rule
+  TrafficSpec.Rules.NRS_484B_600_1a.rule,
+  TrafficSpec.Rules.NRS_484B_769.rule
 ]
 /-- Every registered concept, in file order. -/
 def allConcepts : List Concept := [

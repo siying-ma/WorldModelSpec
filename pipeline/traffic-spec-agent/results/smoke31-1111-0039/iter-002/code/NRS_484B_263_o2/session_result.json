@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "d10f6a223601417e9a3724c9a1926200",
+ "result": {
+  "duration_api_ms": 131277,
+  "stop_reason": "end_turn",
+  "session_id": "a33ea543-b12d-4210-ac6e-c8ad071cd030",
+  "total_cost_usd": 1.2995506000000001,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 110071,
+   "cache_read_input_tokens": 690441,
+   "output_tokens": 13847,
+   "output_tokens_details": {
+    "thinking_tokens": 6629
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 110071,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 713,
+     "cache_read_input_tokens": 113505,
+     "cache_creation_input_tokens": 1004,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1004
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38674,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038824,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 13847,
+    "cacheReadInputTokens": 690441,
+    "cacheCreationInputTokens": 110071,
+    "webSearchRequests": 0,
+    "costUSD": 1.2956682,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6629,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 13,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate passed on the first run, using 1 of the 6 allowed runs: **OK**, with 6 witnesses and 9 names, and the node composes no other rule. `task_result.md` is written in the working directory.\n\n**The rule** (`NRS_484B_263_o2.lean`)\n- **Who it covers:** x is a vehicle (`ru_aggregate x DEF-NRS-484A-320::vehicle`).\n- **When it applies:** x enters or leaves a controlled-access region `a` at this observation.\n- **What x must do:** the obligation names the same entered-or-left regions again. For each one, it looks at every other road user y that:\n  - is a vehicle and a member of traffic;\n  - occupies `a`;\n  - is moving above `p.speed_resolution`;\n  - will come closest to x within `p.immediate_hazard_gap`.\n- **The standard:** each such y must be at a body-to-body distance from x (`rel_surface_gap`) of at least y's speed × `p.merge_time_headway`.\n- **Narrowings:** none, because the record states the obligation in full.\n\n**The witnesses** (`NRS_484B_263_o2.lean` in the witness tree)\n- **Layout:** the highway runs east. x joins from a ramp to its south, and y travels east along the highway at 30 m/s.\n- **Scenes:**\n  - `forbid`: the gap is 20 m against the 60 m needed.\n  - `blind`: the same as `forbid`, with speed masked.\n  - `branch_1`: the gap is 90 m.\n  - `permit`: x is the only road user.\n  - `idle`: x is on an arterial road with no controlled-access region.\n- **Added `branch_2` (violated):** x leaves the highway with y about 10.8 m away. None of the planned scenes ever has x leaving, so without it that half of the trigger would be untested.\n- **Time window:** every witness is judged from 1000 to 2000 ms. Entering or leaving can't be decided at the first scene, because there is no earlier one to compare with. Without the window, `permit` would come out unknown instead of compliant.",
+  "ttft_ms": 7411,
+  "type": "result",
+  "duration_ms": 138887,
+  "uuid": "533367ed-e1e2-4c04-a985-4ebf6066bc28",
+  "ttft_stream_ms": 1147,
+  "time_to_request_ms": 75,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 22,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 8,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 111,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1148,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 38674,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0038824,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 13847,
+    "cacheReadInputTokens": 690441,
+    "cacheCreationInputTokens": 110071,
+    "webSearchRequests": 0,
+    "costUSD": 1.2956682,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6629,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

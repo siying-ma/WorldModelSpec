@@ -16,9 +16,11 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_250_4_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_250_4_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_257_1_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_263_o1
+import TrafficSpecWitness.NRS_484B.NRS_484B_263_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_270_7b
 import TrafficSpecWitness.NRS_484B.NRS_484B_297_6_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_297_6_o3
+import TrafficSpecWitness.NRS_484B.NRS_484B_363_3
 import TrafficSpecWitness.NRS_484B.NRS_484B_400_1_o1
 import TrafficSpecWitness.NRS_484B.NRS_484B_400_1_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_413_2
@@ -27,6 +29,7 @@ import TrafficSpecWitness.NRS_484B.NRS_484B_440_1_o2
 import TrafficSpecWitness.NRS_484B.NRS_484B_440_1_o3
 import TrafficSpecWitness.NRS_484B.NRS_484B_560_7a
 import TrafficSpecWitness.NRS_484B.NRS_484B_600_1a
+import TrafficSpecWitness.NRS_484B.NRS_484B_769
 import TrafficSpecWitness.Concepts.interaction.overtaking_alongside
 import TrafficSpecWitness.Concepts.interaction.passing_on_right
 import TrafficSpecWitness.Concepts.motion.against_carrier_direction
@@ -61,9 +64,11 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_38_030.scenarios 
   TrafficSpecWitness.NRS_484B_250_4_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_257_1_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_263_o1.scenarios ++
+  TrafficSpecWitness.NRS_484B_263_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_270_7b.scenarios ++
   TrafficSpecWitness.NRS_484B_297_6_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_297_6_o3.scenarios ++
+  TrafficSpecWitness.NRS_484B_363_3.scenarios ++
   TrafficSpecWitness.NRS_484B_400_1_o1.scenarios ++
   TrafficSpecWitness.NRS_484B_400_1_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_413_2.scenarios ++
@@ -71,7 +76,8 @@ def allScenarios : List Scenario := TrafficSpecWitness.LVMC_11_38_030.scenarios 
   TrafficSpecWitness.NRS_484B_440_1_o2.scenarios ++
   TrafficSpecWitness.NRS_484B_440_1_o3.scenarios ++
   TrafficSpecWitness.NRS_484B_560_7a.scenarios ++
-  TrafficSpecWitness.NRS_484B_600_1a.scenarios
+  TrafficSpecWitness.NRS_484B_600_1a.scenarios ++
+  TrafficSpecWitness.NRS_484B_769.scenarios
 /-- Every registered concept instance and its scenarios, in file order. -/
 def allInstances : List Concept.Instance := TrafficSpecWitness.Concepts.interaction.overtaking_alongside.instances ++
   TrafficSpecWitness.Concepts.interaction.passing_on_right.instances ++
@@ -127,9 +133,11 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_250_4_o2", TrafficSpecWitness.NRS_484B_250_4_o2.scenarios),
   ("NRS_484B_257_1_o1", TrafficSpecWitness.NRS_484B_257_1_o1.scenarios),
   ("NRS_484B_263_o1", TrafficSpecWitness.NRS_484B_263_o1.scenarios),
+  ("NRS_484B_263_o2", TrafficSpecWitness.NRS_484B_263_o2.scenarios),
   ("NRS_484B_270_7b", TrafficSpecWitness.NRS_484B_270_7b.scenarios),
   ("NRS_484B_297_6_o2", TrafficSpecWitness.NRS_484B_297_6_o2.scenarios),
   ("NRS_484B_297_6_o3", TrafficSpecWitness.NRS_484B_297_6_o3.scenarios),
+  ("NRS_484B_363_3", TrafficSpecWitness.NRS_484B_363_3.scenarios),
   ("NRS_484B_400_1_o1", TrafficSpecWitness.NRS_484B_400_1_o1.scenarios),
   ("NRS_484B_400_1_o2", TrafficSpecWitness.NRS_484B_400_1_o2.scenarios),
   ("NRS_484B_413_2", TrafficSpecWitness.NRS_484B_413_2.scenarios),
@@ -138,6 +146,7 @@ def taggedScenarios : List (String × List Scenario) := [
   ("NRS_484B_440_1_o3", TrafficSpecWitness.NRS_484B_440_1_o3.scenarios),
   ("NRS_484B_560_7a", TrafficSpecWitness.NRS_484B_560_7a.scenarios),
   ("NRS_484B_600_1a", TrafficSpecWitness.NRS_484B_600_1a.scenarios),
+  ("NRS_484B_769", TrafficSpecWitness.NRS_484B_769.scenarios),
   ("drv.interaction.overtaking_alongside", TrafficSpecWitness.Concepts.interaction.overtaking_alongside.scenarios),
   ("drv.interaction.passing_on_right", TrafficSpecWitness.Concepts.interaction.passing_on_right.scenarios),
   ("drv.motion.against_carrier_direction", TrafficSpecWitness.Concepts.motion.against_carrier_direction.scenarios),

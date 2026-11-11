@@ -1,0 +1,228 @@
+{
+ "node_id": "NRS_484B_450_1c",
+ "law_refs": [
+  "NRS-484B-450-1c"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "h1",
+   "text": "A person shall not stop, stand or park",
+   "role": "obligation"
+  },
+  {
+   "id": "h2",
+   "text": "a vehicle,",
+   "role": "subject"
+  },
+  {
+   "id": "h3",
+   "text": "except when necessary to avoid conflict with",
+   "role": "standard"
+  },
+  {
+   "id": "h4",
+   "text": "other traffic",
+   "role": "exception"
+  },
+  {
+   "id": "h5",
+   "text": "or in compliance with law",
+   "role": "exception"
+  },
+  {
+   "id": "h6",
+   "text": "or the directions of a police officer or official traffic-control device,",
+   "role": "exception"
+  },
+  {
+   "id": "h7",
+   "text": "in any of the following places:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "h8",
+   "text": "Within an intersection.",
+   "role": "trigger"
+  }
+ ],
+ "elements": [
+  {
+   "span": "h1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "'stop', prohibited here, takes DEF-NRS-484A-260 (\"any halting, even momentarily, of a vehicle, whether occupied or not\"), whose exclusions the law's own spans h3 to h6 restate; 'stand' (DEF-NRS-484A-250, \"the halting of a vehicle\") and 'park' (DEF-NRS-484A-155, \"the standing of a vehicle\") are halts too. The halt is drv.motion.halted (kin.speed at or below the resolution, \"with no minimum duration\"), observing any halting, even momentary. 'A person' is read through the vehicle's controlled motion (observable_reading agency); the purposes setting parking and standing apart are read through the halt (observable_reading purpose)."
+  },
+  {
+   "span": "h2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed by id."
+  },
+  {
+   "span": "h4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "'other traffic' is the admitted aggregate DEF-NRS-484A-285::traffic (\"pedestrians, ridden or herded animals, vehicles and other conveyances\"), every member other than x."
+  },
+  {
+   "span": "h5",
+   "atoms": [
+    "ru.emergency_vehicle",
+    "sig.warning_lamp",
+    "sig.siren"
+   ],
+   "derived": [],
+   "justification": "A halt in compliance with law is a halt some rule requires. The nearest observables are those of the commonest such halt inside an intersection, yielding to an emergency vehicle showing its warning lamps or sounding its siren (ru.emergency_vehicle with sig.warning_lamp flashing or rotating, or sig.siren); ru.emergency_vehicle is 'not a stand-in' for a responding vehicle, which is why its lamp or siren is read. The gap records that no operator reads whether any rule requires the halt."
+  },
+  {
+   "span": "h6",
+   "atoms": [
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region",
+    "st.lane_enters",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "The directions of a police officer: dev.human_direction (\"a person directing traffic and the direction given; role ∈ {police_officer, ...}; indication ∈ {stop, ...}\") with role police_officer and indication stop; of an official traffic-control device: a dev.traffic_signal displaying circular_red, a red_arrow or flashing_red, or a dev.stop_sign; either governing (dev.governs) the intersection x occupies or the carrier it entered through (st.lane_enters, rel.occupies). The device's presence is the evidence of its official status (observable_reading status)."
+  },
+  {
+   "span": "h8",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "Within an intersection: x's footprint overlaps (rel.occupies) a st.intersection (\"the region where two roadways meet\"; DEF-NRS-484A-105). st.intersection is 'not a stand-in' for a crosswalk or a stop line, which are not read."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "h3",
+   "standard": "necessary to avoid conflict",
+   "concepts": [
+    "rel.bearing",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.stopping_conflict_gap"
+   ],
+   "convention": "Conflict-standoff convention: a halt is necessary to avoid a conflict where another member of traffic lies ahead of the halted vehicle (the longitudinal component of rel.bearing positive, in the vehicle's frame) at a surface gap no greater than a queue spacing at standstill; the measured gap is compared with the bound.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle and at the observation its footprint overlaps an intersection i (rel.occupies, st.intersection).",
+ "obligation": "It is not the case that x is halted (drv.motion.halted with p.speed_resolution) at the observation, unless: some road user other than x carrying ru.aggregate=DEF-NRS-484A-285::traffic lies ahead of x (rel.bearing longitudinal component positive) at a surface gap (rel.surface_gap) at most p.stopping_conflict_gap; or a ru.emergency_vehicle showing sig.warning_lamp flashing or rotating or sounding sig.siren is in the scene; or a dev.human_direction of role police_officer with indication stop, a dev.traffic_signal displaying circular_red, a red_arrow or flashing_red, or a dev.stop_sign governs (dev.governs) i or the carrier x entered i through.",
+ "params": [
+  "p.speed_resolution",
+  "p.stopping_conflict_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "h1",
+   "why": "'A person' is read through the vehicle's controlled motion; the purposes that set standing and parking apart from stopping are not observable and every halt is read as a stop.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "h6",
+   "why": "'official' is read through the device's presence on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle) halts inside intersection i with nothing ahead of it, no emergency vehicle in the scene and no device or officer directing a stop."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x crosses i without halting; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x halts in a lane away from any intersection."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x halts at the edge of i, but the source does not observe whether its footprint overlaps i.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "x halts inside i behind a halted car ahead of it at a surface gap below p.stopping_conflict_gap."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "x halts inside i while a dev.human_direction of role police_officer with indication stop governs i."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed resolution of the carla_scene_graph acquisition standard"
+  },
+  {
+   "name": "p.stopping_conflict_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "Conflict standoff: the largest surface gap from a halted road user's body to another road user ahead of it at which the halt counts as necessary to avoid a conflict; a queue spacing at standstill.",
+   "source": "queue spacing at standstill (traffic-flow jam-density conventions)"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "h5",
+   "kind": "operator",
+   "proposal": "`Formula.haltRequired (subject)` — true at an observation where some rule of the set, engaged for the subject there, is complied with only if the subject is halted; decides whether a halt was made in compliance with law, the action the law requires, which the exception 'in compliance with law' turns on and which no single composed rule names",
+   "nearest": [
+    "ru.emergency_vehicle",
+    "sig.warning_lamp",
+    "sig.siren"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

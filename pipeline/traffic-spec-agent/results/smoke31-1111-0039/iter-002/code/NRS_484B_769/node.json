@@ -1,0 +1,164 @@
+{
+ "node_id": "NRS_484B_769",
+ "law_refs": [
+  "NRS-484B-769"
+ ],
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "An operator of a bicycle, an electric bicycle or an electric scooter",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "upon a roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "shall give all signals by hand and arm",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "in the manner required by NRS 484B.420 [DEF-NRS-484B-420],",
+   "role": "reference"
+  },
+  {
+   "id": "s5",
+   "text": "except that the operator may give a signal for a right turn by extending his or her right hand and arm horizontally and to the right side of the bicycle, electric bicycle or electric scooter.",
+   "role": "exception"
+  }
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-025::bicycle",
+   "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+   "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+  ]
+ },
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ],
+   "derived": [],
+   "justification": "The three terms are the admitted aggregates DEF-NRS-484A-025::bicycle (“a device propelled by human power upon which a person may ride”), DEF-NRS-484B-017::electric_bicycle (“a device upon which a person may ride, having two or three wheels ... an electric motor which produces not more than 750 watts”) and DEF-NRS-484B-018::electric_scooter (“a vehicle with handlebars and an electric motor”), each claimed as one ru.aggregate atom (“membership of a legal aggregate”), the same mapping the index records for “The operator of a bicycle, an electric bicycle or an electric scooter”. The defined word keeps its definition's qualifications: DEF-NRS-484B-018 admits only a vehicle that “(1) Must not weigh more than 100 pounds without a rider; and (2) Must have a maximum speed of not more than 20 miles per hour when powered solely by its electric motor”, which no atom observes, so the run's reading leaves ru.electric_scooter unresolved under that id and ru.aggregate is, by its contract, “unknown when no included class holds and the user carries an unresolved class”: a rider of an electric scooter only is judged unknown, never compliant or violated. ru.electric_scooter (“a standing or seated electric scooter with handlebars”) is not claimed in its place, since it would drop the definition's weight and speed limits and the aggregate's contract excludes expanding an admitted aggregate into a class. The exclusion “a relational role such as who drives or controls a vehicle” does not apply: “An operator” is read through the device's controlled motion (agency reading)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "“roadway” is DEF-NRS-484A-220, “that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder”: st.roadway is “the part of a highway improved for vehicular traffic, excluding shoulder”, the definition's whole extent; “upon” is rel.occupies, “a road user's footprint overlaps a lane / region”. The roadway is not a stand-in for the sidewalk, which the rule does not read as roadway."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "sig.hand_signal",
+    "sig.turn_indicator"
+   ],
+   "derived": [],
+   "source_spans": [
+    "s4"
+   ],
+   "justification": "“give all signals by hand and arm”: sig.hand_signal is “a driver's or rider's arm signal; meaning ∈ {no_signal, left, right, stop_or_slow, re_enter}”, whose meanings are exactly those NRS 484B.420 sets forth in the words s4 borrows: “(1) Left turn: Hand and arm extended horizontally. (2) Right turn: Hand and arm extended upward. (3) Stop or decrease speed: Hand and arm extended downward. (4) Reentering lane of traffic from parked position: Hand and arm extended horizontally.” A signal the rider gives otherwise is a lit turn indicator, sig.turn_indicator, “state ∈ {off, left, right}”; its exclusion (“the turn or lane change itself”) does not apply, since the rule reads the signal, not the turn. “all signals” is every signal the rider shows: where an indicator is lit, an arm signal of the same meaning must be given with it; where only an arm signal is given, it is given by hand and arm. Left horizontal serves both a left turn and reentering, so an indicator to the left is matched by either meaning."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "sig.hand_signal"
+   ],
+   "derived": [],
+   "justification": "The permitted right-turn form, “extending his or her right hand and arm horizontally and to the right side”, is an arm signal whose meaning is a right turn: sig.hand_signal records “the meaning of the one given”, so it reads right, as the form of NRS 484B.420 does; the exception admits it as a signal given in the required manner, and the rule accepts an arm signal of meaning right however it is formed."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s4",
+   "as": "definition",
+   "source": "DEF-NRS-484B-420",
+   "quote": "(1) Left turn: Hand and arm extended horizontally. (2) Right turn: Hand and arm extended upward. (3) Stop or decrease speed: Hand and arm extended downward. (4) Reentering lane of traffic from parked position: Hand and arm extended horizontally."
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-025::bicycle",
+    "ru.aggregate=DEF-NRS-484B-017::electric_bicycle",
+    "ru.aggregate=DEF-NRS-484B-018::electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a member of DEF-NRS-484A-025::bicycle, DEF-NRS-484B-017::electric_bicycle or DEF-NRS-484B-018::electric_scooter (ru.aggregate; membership of the electric-scooter aggregate is unknown where its definition's weight and speed limits decide it, as the run's reading classifies it); x's footprint overlaps a roadway (rel.occupies, st.roadway); and x gives a signal: its turn indicator (sig.turn_indicator) is left or right, or its arm signal (sig.hand_signal) is other than no_signal. Read at every observation.",
+ "obligation": "x gives the signal by hand and arm: sig.hand_signal(x) is other than no_signal; where sig.turn_indicator(x) is left, sig.hand_signal(x) is left or re_enter; where sig.turn_indicator(x) is right, sig.hand_signal(x) is right (the posture of NRS 484B.420 or the right-arm form of the exception, both read as meaning right).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“An operator” is read through the device's controlled motion: the rider of the bicycle, electric bicycle or electric scooter on the roadway is the one whose signals are judged, whoever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The manner of NRS 484B.420 is read through the meaning the source decodes from the arm signal: which arm is extended and on which side are not observed (sig.hand_signal records the meaning only), so an arm signal is taken as given in the required manner when its meaning is one of the four the section sets forth. “All signals” is read as every signal the rider shows, an arm signal or a lit turn indicator; hazard lamps are not read as a signal.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "An electric bicycle rider on a roadway shows a lit right turn indicator and gives no arm signal (sig.hand_signal no_signal)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A bicycle rider on a roadway gives an arm signal of meaning left, with no indicator lit."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle rider on a roadway gives no signal: no indicator lit and no arm signal."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not observe arm signals.",
+   "masked": [
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "An electric bicycle rider on a roadway shows a lit right indicator and extends the right arm horizontally to the right side; the source decodes the arm signal as meaning right."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "An electric bicycle rider on a roadway shows a lit right indicator while giving an arm signal of meaning left."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "An electric bicycle rider on a sidewalk, not on the roadway, shows a lit right indicator with no arm signal."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "planned_on": {}
+}

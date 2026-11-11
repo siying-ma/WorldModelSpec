@@ -1,5 +1,7 @@
 ## Iteration 1
 
+_Observed during iteration 1: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - aggregate `DEF-NRS-484A-320::vehicle` admitted with 3 class(es) downgraded to unresolved (ru.electric_bicycle (underdetermined), ru.electric_scooter (underdetermined), ru.rail_vehicle (underdetermined)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
 - aggregate `DEF-NRS-484A-130::motor_vehicle` admitted with 5 class(es) downgraded to unresolved (ru.electric_scooter (underdetermined), ru.emergency_vehicle (underdetermined), ru.fire_apparatus (underdetermined), ru.taxicab (underdetermined), ru.tour_bus_or_limousine (underdetermined)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
 - aggregate `DEF-NRS-484A-125::moped` admitted with 14 class(es) downgraded to unresolved (ru.bus (underdetermined), ru.commercial_motor_vehicle (underdetermined), ru.electric_bicycle (underdetermined), ru.electric_scooter (underdetermined), ru.emergency_vehicle (underdetermined), ru.fire_apparatus (underdetermined), ru.motor_vehicle (underdetermined), ru.official_vehicle (underdetermined), ru.rail_vehicle (underdetermined), ru.school_bus (underdetermined), ru.taxicab (underdetermined), ru.tour_bus_or_limousine (underdetermined), ru.transit_bus (underdetermined), ru.truck (underdetermined)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
@@ -159,3 +161,17 @@
 - `NRS-484B-600-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-38-030`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `LVMC-11-43-010-A`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 2
+
+- gap G22 filed for `NRS-484B-450-1c` by a node repair session; decide with `python -m harness gap decide G22 ...`
+- `NRS-484B-769` (NRS_484B_769) reads "An operator of a bicycle, an electric bicycle or an electric scooter" (agency) through conduct: “An operator” is read through the device's controlled motion: the rider of the bicycle, electric bicycle or electric scooter on the roadway is the one whose signals are judged, whoever is at the controls.
+- `NRS-484B-769` span s4 borrows from `DEF-NRS-484B-420` the words “(1) Left turn: Hand and arm extended horizontally. (2) Right turn: Hand and arm extended upward. (3) Stop or decrease speed: Hand and arm extended downward. (4) Reentering lane of traffic from parked position: Hand and arm extended horizontally.” — its elements carry them; the source's duties are not this rule's
+- `NRS-484B-263` (NRS_484B_263_o2) reads "The driver of a vehicle" (agency) through conduct: 'the driver' is read through the vehicle's controlled motion.
+- `NRS-484B-263` (NRS_484B_263_o2) reads "about to enter or exit a controlled-access highway" (intention) through conduct: 'about to enter or exit' is read by the entry into or exit from the controlled-access region.
+- `NRS-484B-363-3` (NRS_484B_363_3) reads "The driver of a vehicle" (agency) through conduct: 'The driver of a vehicle' is read through the vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.
+- `NRS-484B-363-3` (NRS_484B_363_3) reads "in an area designated as a school zone or school crossing zone" (status) through conduct: 'an area designated as a school zone or school crossing zone' is read through the zone sign on the road and the travel regions it governs; the designation is presumed from the sign's presence.
+- `NRS-484B-363-3` (NRS_484B_363_3) reads "(d) If the zone is designated by an operational speed limit beacon," (status) through conduct: 'operational' is read through the beacon's presence governing the zone's regions; a beacon that is installed but out of order is not told apart.
+- `NRS-484B-263`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-363-3`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-769`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

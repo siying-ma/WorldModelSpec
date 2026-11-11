@@ -1,0 +1,219 @@
+{
+ "node_id": "NRS_484B_263_o2",
+ "law_refs": [
+  "NRS-484B-263"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "about to enter or exit a controlled-access highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "to all vehicles approaching on the highway",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "whose proximity constitutes an immediate hazard",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "and shall continue to yield the right-of-way",
+   "role": "obligation"
+  },
+  {
+   "id": "s7",
+   "text": "to that traffic",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "until the driver may proceed with reasonable safety.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.controlled_access",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region"
+   ],
+   "justification": "As in NRS_484B_263_o1: st.controlled_access 'a highway with access only at designated points'; entry and exit read by drv.motion.entering_region and drv.motion.leaving_region over rel.occupies."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.controlled_access",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "As in NRS_484B_263_o1: vehicles of the admitted aggregate occupying the controlled-access region and moving (drv.motion.moving)."
+  },
+  {
+   "span": "s6",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region"
+   ],
+   "justification": "'shall continue to yield the right-of-way ... until the driver may proceed': x holds back its entry or exit until it can be made with the safety margin; the entry or exit is the observation at which x proceeds."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic"
+   ],
+   "derived": [],
+   "justification": "'that traffic' is the admitted aggregate DEF-NRS-484A-285::traffic, referring back to the vehicles approaching on the highway; each such vehicle is read as a member ('vehicles ... using any highway for purposes of travel')."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "proceed with reasonable safety",
+   "concepts": [
+    "rel.surface_gap",
+    "kin.speed",
+    "prim.closest_approach_within"
+   ],
+   "params": [
+    "p.merge_time_headway",
+    "p.immediate_hazard_gap"
+   ],
+   "convention": "Safe merge headway (two-second rule, HCM freeway merge gap acceptance): at the entry or exit, every approaching vehicle of that traffic (prim.closest_approach_within over the critical-gap horizon) is at a surface gap from x (rel.surface_gap 'distance between the nearest points of two bodies') of at least its own speed (kin.speed) times p.merge_time_headway, so the margin grows with the approaching vehicle's speed.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and at this observation enters (drv.motion.entering_region x a) or leaves (drv.motion.leaving_region x a) a region a of kind st.controlled_access.",
+ "obligation": "At this entry or exit, every vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle, and a member of that traffic: ru.aggregate=DEF-NRS-484A-285::traffic) that occupies a (rel.occupies y a), is moving (drv.motion.moving y with p.speed_resolution) and approaches x (prim.closest_approach_within x y with horizon p.immediate_hazard_gap) is at a surface gap from x (rel_surface_gap x y) of at least kin_speed y times p.merge_time_headway.",
+ "params": [
+  "p.speed_resolution",
+  "p.immediate_hazard_gap",
+  "p.merge_time_headway"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'about to enter or exit' is read by the entry into or exit from the controlled-access region.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s6",
+   "why": "Continuing to yield until the driver may proceed is read at the entry or exit observation: the manoeuvre is made only when the safety margin holds.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x enters controlled-access region a at 15 m/s while vehicle y in a, moving at 30 m/s and approaching x, is at rel.surface_gap 20 m."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x enters a as the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives on an arterial; no st.controlled_access region is entered or left."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.surface_gap is not observed.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "x enters a while y, approaching at 30 m/s, is at rel.surface_gap 90 m."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical gap: the time within which another road user's arrival at the conflict area, or its predicted closest approach, counts as an immediate hazard to a road user about to cross or join its path.",
+   "source": "HCM 7th ed. Exhibit 20-11 base critical headway (major-street left turn)"
+  },
+  {
+   "name": "p.merge_time_headway",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "Safe merge headway: the time an approaching vehicle on the highway would take, at its own speed, to close the gap to a vehicle entering or leaving the highway; a smaller gap is not reasonable safety.",
+   "source": "Two-second following rule; HCM freeway merge gap acceptance"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

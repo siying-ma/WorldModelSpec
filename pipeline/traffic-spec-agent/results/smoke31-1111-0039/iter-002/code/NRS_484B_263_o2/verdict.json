@@ -1,0 +1,243 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "or": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "a"
+        }
+       ],
+       "derived": "drv_motion_entering_region",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "a"
+        }
+       ],
+       "derived": "drv_motion_leaving_region",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "controlled_access"
+    },
+    "var": "a"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_263_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-263"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "or": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "a"
+          }
+         ],
+         "derived": "drv_motion_entering_region",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "a"
+          }
+         ],
+         "derived": "drv_motion_leaving_region",
+         "params": []
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "not": {
+             "same": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "y"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "y"
+               },
+               {
+                "lit": "DEF-NRS-484A-320::vehicle"
+               }
+              ],
+              "atom": "ru_aggregate",
+              "params": []
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "y"
+                 },
+                 {
+                  "lit": "DEF-NRS-484A-285::traffic"
+                 }
+                ],
+                "atom": "ru_aggregate",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "y"
+                   },
+                   {
+                    "var": "a"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "y"
+                     }
+                    ],
+                    "derived": "drv_motion_moving",
+                    "params": [
+                     {
+                      "param": "p.speed_resolution"
+                     }
+                    ]
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "y"
+                     }
+                    ],
+                    "derived": "prim_closest_approach_within",
+                    "params": [
+                     {
+                      "param": "p.immediate_hazard_gap"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "cmp": "ge",
+          "lhs": {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "y"
+            }
+           ],
+           "measure": "rel_surface_gap"
+          },
+          "rhs": {
+           "mul": [
+            {
+             "args": [
+              {
+               "var": "y"
+              }
+             ],
+             "measure": "kin_speed"
+            },
+            {
+             "param": "p.merge_time_headway"
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "forall_user": "y"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "controlled_access"
+    },
+    "var": "a"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "3beaf6532de039a6f1c9925d",
+  "candidate_digest": "ec359121101c61e73101926c48f12059e9d409621e4c13bfadea0e69fc197c5f"
+ }
+}
