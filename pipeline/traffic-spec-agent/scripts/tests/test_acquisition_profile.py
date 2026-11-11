@@ -251,7 +251,7 @@ class LabelRepairCandidate(unittest.TestCase):
         self.assertTrue(any(f"`{STEP}` is the `heading_since` step parameter" in d for d in r.details), r.details)
 
     def test_a_repair_changing_its_value_is_refused(self):
-        r = self.attempt({"name": STEP, "value": 0.5, "unit": "s", "convention": "c", "source": "s"}, {"params": [REVIEWED], "aggregates": []})
+        r = self.attempt({"name": STEP, "value": 0.5, "unit": "s", "convention": REVIEWED["convention"], "source": "s"}, {"params": [REVIEWED], "aggregates": []})
         self.assertEqual(r.status, "fail")
         self.assertTrue(any(f"`{STEP}` is the `heading_since` step parameter" in d for d in r.details), r.details)
 

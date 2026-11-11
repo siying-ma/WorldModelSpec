@@ -19,14 +19,21 @@ LVMC = lvmc_tree.load()
 
 def split_title(title, root_text):
     title = re.sub(r'\s+', ' ', title).strip()
-    root_text = re.sub(r'^\[Effective[^\]]*\]\s*', '', root_text).strip()
-    root_text = re.sub(r'^\d{4}\.\]\s*', '', root_text)
+    root_text = root_text.strip()
+    # A version note "[Effective ...]" closes the catchline and is no part of the text. The page
+    # wraps catchline, note and text across the title and the text, so the note is found in
+    # their join: before it is the catchline, after it the text.
+    whole = (title + ' ' + root_text).strip()
+    note = re.search(r'\s*\[Effective[^\]]*\]\s*', whole)
+    if note:
+        catchline = whole[:note.start()]
+        assert catchline.endswith('.') and '[' not in catchline, ('version note inside a text', title)
+        return catchline[:-1], whole[note.end():]
     if title.endswith('.'):
         return title[:-1], root_text
     if '. ' in title:
         i = title.rfind('. ')
-        tail = re.sub(r'\[Effective[^\]]*$', '', title[i+2:]).strip()
-        return title[:i], (tail + ' ' + root_text).strip()
+        return title[:i], (title[i+2:] + ' ' + root_text).strip()
     j = root_text.find('.')
     if 0 <= j < 220:
         return (title + ' ' + root_text[:j]).strip(), root_text[j+1:].strip()

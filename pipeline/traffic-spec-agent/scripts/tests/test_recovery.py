@@ -255,7 +255,7 @@ class Fixture:
             write_files((nodeid.rule_path(n.id), nodeid.witness_path(n.id)), "skeleton\n")
             return "skeleton", "skeleton"
 
-        def write_concept_skeletons(c):
+        def write_concept_skeletons(c, *_a):
             write_files((nodeid.concept_path(c.id), nodeid.concept_witness_path(c.id)), "skeleton\n")
             return "skeleton", "skeleton"
         s.enter_context(mock.patch.object(code_phase, "write_skeletons", write_skeletons))

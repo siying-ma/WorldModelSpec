@@ -430,7 +430,7 @@ class Supersession(unittest.TestCase):
     def test_the_catalogue_lists_fenced_versions(self):
         run = Run(Options("r", Path("l"), Path("o"), Path("r")), accepted_concepts={"drv.motion.creep": C("drv.motion.creep")})
         run.fenced = {"drv.motion.creep": {"reason": "gate", "evidence": "WITNESS_FAIL: x"}}
-        with mock.patch.object(plan_phase.surface, "concepts_table", lambda c: f"table {sorted(c)}\n"):
+        with mock.patch.object(plan_phase.surface, "concepts_table", lambda c, *_a: f"table {sorted(c)}\n"):
             text = plan_phase.concept_catalogue(run)
         self.assertIn("table []", text)
         self.assertIn("without a counterexample", text)

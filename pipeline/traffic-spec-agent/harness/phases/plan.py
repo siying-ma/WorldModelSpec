@@ -97,7 +97,7 @@ def definitions_block(run: Run, laws: list[corpus.Law]) -> str:
 def concept_catalogue(run: Run) -> str:
     from ..model import nodeid
     concepts = run.all_concepts()
-    text = surface.concepts_table({k: v for k, v in concepts.items() if not v.get("fenced")})
+    text = surface.concepts_table({k: v for k, v in concepts.items() if not v.get("fenced")}, surface.current_callers(run))
     bad = {k: v for k, v in concepts.items() if v.get("fenced")}
     if bad:
         from ..checks.validate_a import fence_words
@@ -173,9 +173,11 @@ def pending_mappings_table(pending: list[dict] | None) -> str:
 
 
 def pending_proposals_table(pending: list[dict] | None) -> str:
-    """The parameters the nodes of earlier batches of this iteration proposed: a later batch names
-    them instead of proposing again, and a second proposal under one name must carry the same
-    value and unit."""
+    """The parameters the nodes of earlier batches of this iteration proposed, each with its full
+    convention (escaped for its table cell). A proposal enters the reading only when its node is
+    coded, so every node that uses a parameter of this table the reading's catalogue lacks proposes
+    it again in its own `param_proposals`, under the same name with the same value, unit and
+    convention; a node that names it without proposing it, or proposes it otherwise, is returned."""
     rows: dict[str, tuple] = {}
     for n in pending or []:
         if "node_id" not in n:
@@ -185,10 +187,13 @@ def pending_proposals_table(pending: list[dict] | None) -> str:
                 rows.setdefault(pr["name"], (pr.get("value"), pr.get("unit"), " ".join(str(pr.get("convention", "")).split()), n["node_id"]))
     if not rows:
         return ""
-    out = ["", "### Parameters proposed this iteration by an earlier batch (name them; a second proposal under one name carries the same value and unit)",
+    out = ["", "### Parameters proposed this iteration by an earlier batch (not entered in the reading until their nodes are coded: every "
+               "node that uses one the catalogue above lacks proposes it again in its own `param_proposals`, with the same name, value, "
+               "unit and convention)",
            "| parameter | value | unit | convention | node |", "|---|---|---|---|---|"]
     for name, (v, u, c, nid) in sorted(rows.items()):
-        out.append(f"| `{name}` | {v} | {u} | {c[:120]} | {nid} |")
+        cell = c.replace("\\", "\\\\").replace("|", "\\|")      # for display only; whitespace is already one space
+        out.append(f"| `{name}` | {v} | {u} | {cell} | {nid} |")
     return "\n".join(out) + "\n"
 
 
@@ -593,7 +598,7 @@ def run_repair(run: Run, rec: ConceptRecord, reasons: list[str], last_task: Path
         "verdict": "\n".join(f"- {r}" for r in reasons) or "- (no reason recorded)",
         "task_result": note, "final_files": "\n".join(finals) or "(no file was left)",
         "ontology": onto.text, "formula_language": surface.formula_language(), "concept_language": surface.concept_language(),
-        "concepts": surface.concepts_table(run.all_concepts()), "definition": definition,
+        "concepts": surface.concepts_table(run.all_concepts(), surface.current_callers(run)), "definition": definition,
         "users": (", ".join(f"`{u.get('node_id')}`" for u in users) or "(none recorded)") + concept_state_line(run, rec.id)})
     prompt += (f"\n\n## Where to write\n\nWorking directory: `{d.resolve()}`. Write `record.jsonl` there with the Write tool: one JSON "
                "object per line — the revised concept record with the same `concept_id`; or a split, `{\"concept_id\": \"<id>\", "
@@ -701,7 +706,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
                 + GapLedger.for_run(paths.GAPS_DIR, run).cited_block(node.raw) + repair_context(run, node, law, siblings),
         "verdict": verdict, "evidence": NO_LABEL_EVIDENCE, "coder_narrowings": coder_block, "task_result": note,
         "final_files": "\n".join(finals) or "(no file was left)", "ontology": onto.text, "formula_language": surface.formula_language(),
-        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts()),
+        "concept_language": surface.concept_language(), "concepts": surface.concepts_table(run.all_concepts(), surface.current_callers(run)),
         "parameters": "## Parameters\n\n" + parameter_catalogue(reading) + acquisition.standard_note(getattr(run.opts, "acquisition_profile", None))
                       + declaration_catalogue(reading),
         "anchors": ontology.anchors_text(onto), "aggregate_atom": ontology.AGGREGATE})
@@ -945,3 +950,54 @@ def merge_batches(run: Run, batch_dirs: list[Path]) -> Path:
             text = "".join(l + "\n" for _d, t in parts for l in t.splitlines() if l.strip())
         (plan_dir / name).write_text(text, encoding="utf-8")
     return plan_dir
+
+
+def operator_notes(plan_dir: Path) -> list[dict]:
+    """The notes a plan session wrote for the operator: each item of the `## For the operator`
+    sections of a `PLAN.md` (a top-level list item, or a paragraph outside a list), in order, with
+    its source directory, its ordinal within those sections (from 1) and a digest of the sections'
+    whole content. A directory holding batch directories (`batch-*`) is a merged plan: its own
+    `PLAN.md` concatenates theirs, so the notes are read from each batch, never from the merge. A
+    source with no such section, or no `PLAN.md`, has no note."""
+    import hashlib
+    import re
+    batches = sorted(d for d in plan_dir.glob("batch-*") if d.is_dir() and (d / "PLAN.md").is_file())
+    if batches:
+        return [n for d in batches for n in operator_notes(d)]
+    f = plan_dir / "PLAN.md"
+    if not f.is_file():
+        return []
+    heading, end = re.compile(r"^##\s+For the operator\b", re.I), re.compile(r"^#{1,2}\s")
+    item = re.compile(r"^(?:[-*+]|\d+[.)])\s+")
+    sections: list[list[str]] = []
+    for line in f.read_text(encoding="utf-8").splitlines():
+        if heading.match(line):
+            sections.append([])
+        elif end.match(line) and sections and sections[-1] is not None:
+            sections.append(None)                           # a later heading closes the section
+        elif sections and sections[-1] is not None:
+            sections[-1].append(line.rstrip())
+    sections = [s for s in sections if s is not None]
+    if not sections:
+        return []
+    digest = hashlib.sha256("\n\n".join("\n".join(s).strip() for s in sections).encode("utf-8")).hexdigest()[:16]
+    notes: list[list[str]] = []
+    for body in sections:
+        fresh = True                                        # the next unindented line starts a note
+        for line in body:
+            if not line.strip() or line.startswith("#"):        # a subheading inside the section is no note
+                fresh = True
+                continue
+            starts = not line[0].isspace() and (item.match(line) or fresh)
+            if starts or not notes:
+                notes.append([item.sub("", line, count=1) if item.match(line) else line.strip()])
+            else:
+                notes[-1].append(line)
+            fresh = False
+    out = []
+    for k, lines in enumerate(notes, 1):
+        rest = [l for l in lines[1:]]
+        pad = min((len(l) - len(l.lstrip()) for l in rest), default=0)
+        text = "\n".join([lines[0].strip()] + ["  " + l[pad:] for l in rest])
+        out.append({"source": plan_dir, "ordinal": k, "text": text, "section_digest": digest})
+    return out

@@ -515,9 +515,12 @@ CITED_HEADING = ("### Texts these words name (posted text the harness took from 
 
 
 def cited_sources(run, laws: list[corpus.Law], records: list | None = None) -> list[dict]:
-    """What a planning session may borrow from: every law of the active corpus that the laws' texts
-    name in brackets, outside `laws` themselves, and every source the `records` already borrow from."""
+    """What a planning session may borrow from: every law and posted definition of the active corpus
+    that the laws' texts name in brackets, outside `laws` themselves, and every source the `records`
+    already borrow from; a definition that applies to the laws' words (`applicable`) is left out,
+    since the session is shown it with the definitions that apply."""
     own = {l.id for l in laws}
-    ids = [i for l in laws for i in corpus.cited_law_ids(l.text) if i not in own]
+    shown = {d.get("id") for l in laws for d in applicable(run, l.id)}
+    ids = [i for l in laws for i in corpus.bracketed_ids(l.text) if i not in own]
     ids += [i for r in records or [] for i in r.definition_sources()]
-    return source_records(run, ids)
+    return source_records(run, [i for i in ids if i not in shown])

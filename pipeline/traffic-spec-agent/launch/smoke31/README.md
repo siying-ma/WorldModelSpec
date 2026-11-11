@@ -1,6 +1,6 @@
-# smoke30: rehearsal of the full run
+# smoke31: rehearsal of the full run
 
-smoke30 runs 29 training laws through the generation stage exactly as the full run will: the same launcher, settings and checkpoints. It checks that the full run can be launched. It looks for crashes, laws stuck on other laws, cost per law, and whole themes failing. Its acceptance count is a diagnostic, not a result.
+smoke31 runs the 29 training laws of smoke30 through the generation stage, on the pipeline fixed after smoke30, exactly as the full run will: the same launcher, settings and checkpoints. It checks that the full run can be launched. It looks for crashes, laws stuck on other laws, cost per law, and whole themes failing. Its acceptance count is a diagnostic, not a result.
 
 Set up the machine first, as the repository's root `README.md` describes. Every command below runs from `pipeline/traffic-spec-agent` of a clean checkout.
 
@@ -19,7 +19,7 @@ Both scripts clear `ANTHROPIC_API_KEY`, so no launch can bill an API key. Each s
 From a clean checkout of `remote/full-train-generation` (a new run starts from the baseline's tip on a new branch):
 
 ```bash
-bash launch/smoke30/launch.sh                  # RUN_ID may be set first; it defaults to smoke30-<date>
+bash launch/smoke31/launch.sh                  # RUN_ID may be set first; it defaults to smoke31-<date>
 ```
 
 | Setting | Value |
@@ -44,9 +44,9 @@ Each script starts the launcher in the background and returns at once. Its own s
 | `launch-<run id>.exit` | **the launcher's exit status, written when it ends.** If the process is gone and this file is missing, the launcher was killed: report it |
 
 Every launch also starts a read-only watcher. Every 10 minutes it appends one line to `.runtime/<run id>/watch.log`:
-- the iteration, the status and the stop;
-- the laws by state;
-- Claude and OpenAI spend against the run's limits, with `ALERT` once Claude or the total passes 80%.
+- the live iteration and its stage, and the laws by state (from `results/<run id>/state.json`);
+- the status and stop of the last iteration that ended (from `summary.json`);
+- Claude and OpenAI spend against the run's limits, settled apart from reserved (requests in flight, or of unknown cost), with `ALERT` once Claude's or the total's settled plus reserved spend passes 80%: the budget the harness enforces counts both.
 
 When the launcher ends, the watcher logs its exit status, or `ALERT` if the launcher is gone without one. Other ways to watch it:
 
@@ -76,13 +76,13 @@ Read the exit status in the `.exit` file, then `status` and `stop` in `results/<
 To resume, from the same checkout:
 
 ```bash
-RUN_ID=<run id> bash launch/smoke30/resume.sh
+RUN_ID=<run id> bash launch/smoke31/resume.sh
 ```
 
 A resume keeps every saved setting; only `LAUNCHES` (default 20) is set. To raise a budget, use exactly the limits the requester gives:
 
 ```bash
-RUN_ID=<run id> CLAUDE_BUDGET=<new limit> TOTAL_BUDGET=<new limit + OpenAI limit> bash launch/smoke30/resume.sh
+RUN_ID=<run id> CLAUDE_BUDGET=<new limit> TOTAL_BUDGET=<new limit + OpenAI limit> bash launch/smoke31/resume.sh
 ```
 
 ## 4. When it ends: verify the handoff

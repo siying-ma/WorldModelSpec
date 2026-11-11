@@ -275,8 +275,10 @@ _PARAM = re.compile(r"^p\.[a-z][a-z0-9_]*$")
 
 
 def proposal_conflicts_of(nodes: list[Node]) -> dict[str, list[str]]:
-    """One parameter, one value: a later node of the plan that proposes a name an earlier node
-    proposed with another value or unit is returned, naming both."""
+    """One parameter, one value, one meaning: a later node of the plan that proposes a name an
+    earlier node proposed with another value or unit, or with the same value and unit under another
+    convention (compared with whitespace normalised), is returned, naming both. The `source` is where
+    the figure comes from, not what the parameter means: it is not compared."""
     seen: dict[str, tuple] = {}
     out: dict[str, list[str]] = {}
     for n in nodes:
@@ -284,11 +286,17 @@ def proposal_conflicts_of(nodes: list[Node]) -> dict[str, list[str]]:
             if not isinstance(pr, dict) or not pr.get("name"):
                 continue
             key = (pr.get("value"), pr.get("unit"))
-            if pr["name"] in seen and seen[pr["name"]][0] != key:
-                (v, u), nid = seen[pr["name"]]
-                out.setdefault(n.id, []).append(f"{n.id}: proposes `{pr['name']}` = {pr.get('value')} {pr.get('unit')}, and node {nid} proposed it as {v} {u}; one parameter has one value — name it and drop the proposal, or propose the same value")
-            else:
-                seen.setdefault(pr["name"], (key, n.id))
+            convention = " ".join(str(pr.get("convention", "")).split())
+            if pr["name"] not in seen:
+                seen[pr["name"]] = (key, convention, n.id)
+                continue
+            (v, u), c, nid = seen[pr["name"]]
+            if (v, u) != key:
+                out.setdefault(n.id, []).append(f"{n.id}: proposes `{pr['name']}` = {pr.get('value')} {pr.get('unit')}, and node {nid} proposed it as {v} {u}; "
+                                                "one parameter has one value — propose it with the same value, unit and convention, or use another name for another bound")
+            elif c != convention:
+                out.setdefault(n.id, []).append(f"{n.id}: proposes `{pr['name']}` with the convention {convention!r}, and node {nid} proposed it with the convention {c!r}; "
+                                                "one parameter has one meaning — propose the same convention, or use another name for a different meaning")
     return out
 
 
@@ -298,7 +306,10 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
     reading as a proposal the operator reviews; a parameter neither the reading has nor the node
     proposes returns the node. A proposed value may not be a figure the law states. A value the
     catalogue holds is named as it is, unless a node of this law proposed it, the operator has not
-    reviewed it, and no node of another law (`foreign_params`) names the parameter. A parameter an
+    reviewed it, and no node of another law (`foreign_params`) names the parameter, and the proposal
+    keeps its convention: a proposal of a catalogued name under another convention (whitespace
+    aside) is refused whatever its value and unit, reviewed or not, since a name means one thing. A
+    parameter an
     acquisition profile names (the step bound of `heading_since`) is the operator's: no node proposes
     it or a value for it."""
     errs, proposals = [], []
@@ -359,7 +370,11 @@ def check_standards(node: Node, reading: Reading, foreign_params: set[str] | fro
         if name in reading.params:
             have = reading.params[name]
             revisable = Reading.own_proposal(have, node.law) and name not in foreign_params
-            if (have.get("value"), have.get("unit")) != (pr.get("value"), pr.get("unit")) and not revisable:
+            if _ws(have.get("convention")) != _ws(pr.get("convention")):
+                errs.append(f"{node.id}: proposed parameter `{name}` is already in the catalogue as {have.get('value')} {have.get('unit')} with the convention "
+                            f"{_ws(have.get('convention'))!r}, and the node proposes it with the convention {_ws(pr.get('convention'))!r}; one parameter "
+                            "has one meaning — name the catalogued parameter as it is, without proposing it, or use another name for a different meaning")
+            elif (have.get("value"), have.get("unit")) != (pr.get("value"), pr.get("unit")) and not revisable:
                 errs.append(f"{node.id}: proposed parameter `{name}` is already in the catalogue as {have.get('value')} {have.get('unit')}; name it, do not propose another value")
         if name not in node.params():
             errs.append(f"{node.id}: proposed parameter `{name}` is bound by no operationalization or `params` entry of the node")
@@ -693,16 +708,21 @@ SCOPE_ROLES = {"trigger", "subject", "condition", "exception"}
 
 def check_residue_scope(node: Node) -> list[str]:
     """A residue on a span that decides when the rule applies would make the rule apply where the
-    law does not; such a span is an assumption the trace declares or a gap, unless the residue
-    says the span imposes no observable condition (`scope: none`)."""
+    law does not. Such a span the vocabulary cannot carry is carried by an assumption only for a
+    legal region class or a calendar or clock condition, by a declared intention or an observable
+    reading only where their rules allow, or mapped to its nearest atoms with a gap. The one residue
+    accepted there is one whose span adds no restriction (the duty is the same whether or not its
+    words hold), marked `scope: none`."""
     errs = []
     spans = node.spans()
     for r in node.get("residues", []):
         role = spans.get(r.get("span"), {}).get("role")
         if role in SCOPE_ROLES and r.get("scope") != "none":
-            errs.append(f"{node.id}: residue on span {r.get('span')} ({role}) — a {role} the vocabulary cannot carry is an assumption "
-                        f"the trace declares (`asm.<name>`, in `assumptions`) or a gap; a residue here makes the rule apply where the "
-                        f"law does not. A span that imposes no observable condition carries `\"scope\": \"none\"` with its `why`")
+            errs.append(f"{node.id}: residue on span {r.get('span')} ({role}) — a {role} the vocabulary cannot carry is carried by an "
+                        f"assumption only for a legal region class or a calendar or clock condition, by a declared intention or an "
+                        f"observable reading only where their rules allow, or mapped to its nearest atoms with a gap; a residue here "
+                        f"makes the rule apply where the law does not. A span that adds no restriction (the duty is the same whether "
+                        f"or not its words hold) carries `\"scope\": \"none\"` with a `why` saying why")
     return errs
 
 

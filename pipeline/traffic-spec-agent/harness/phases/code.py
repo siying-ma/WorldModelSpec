@@ -530,9 +530,9 @@ def concept_example(run: Run, target: str | None = None) -> str:
     return "(no concept accepted yet in this library; the skeletons below are the pattern, the Core surface the vocabulary)\n"
 
 
-def write_concept_skeletons(rec: ConceptRecord) -> tuple[str, str]:
+def write_concept_skeletons(rec: ConceptRecord, definition_text: str | None = None) -> tuple[str, str]:
     c_rel, w_rel = nodeid.concept_path(rec.id), nodeid.concept_witness_path(rec.id)
-    c, w = skeleton.concept_skeleton(rec), skeleton.concept_witness_skeleton(rec)
+    c, w = skeleton.concept_skeleton(rec, definition_text), skeleton.concept_witness_skeleton(rec)
     for rel, text in ((c_rel, c), (w_rel, w)):
         p = paths.LIBRARY / rel
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -562,7 +562,8 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
                                                                                    accepted=run.all_concepts()),
                            lambda: rollback_concept(rec.id, baseline, d))
     c_rel, w_rel = rels
-    c_text, w_text = write_concept_skeletons(rec)
+    posted = (definitions_mod.source_record(run, rec.get("definition")) or {}).get("text") if rec.get("definition") else None
+    c_text, w_text = write_concept_skeletons(rec, posted)
     if not run.opts.dry_run:
         with lean.library_lock(paths.LIBRARY):
             index_sync.write_index(only_nodes=only_nodes, only_concepts=only_concepts)
@@ -595,7 +596,7 @@ def run_code_concept(run: Run, rec: ConceptRecord, reading: Reading, registry: d
                         allow=session.code_allow([c_abs, w_abs], d, gate_cli(run, rec.id)),
                         deny=session.deny_rules("code", run.opts.run_id), tools=session.CODE_TOOLS,
                         env=session.harness_env(run.opts.session_timeout),
-                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_concept_skeletons(rec)),
+                        relaunch=lambda: (_restore(d, baseline, rels, keep_final=False), write_concept_skeletons(rec, posted)),
                         relaunch_cut_off=lambda: _cut_off_relaunch(d, rels, run.opts.gate_budget))
         except session.SessionUnavailable as e:
             _restore(d, baseline, rels, keep_final=False)

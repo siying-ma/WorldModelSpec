@@ -81,7 +81,7 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "recheck_answers.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
-                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md",
+                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md", "AGGREGATE_DOWNGRADES.md",
                          "gaps_measured.jsonl", "candidate_journal.json"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
@@ -651,14 +651,19 @@ def run_gate(node: Node, reading: Reading, baseline: dict[str, str], work: Path,
     narrowings = [n for n in narrowings if narrowing_key(n) not in on_record]
     # an observable reading the plan declared on a span is the plan's own reading of it, not a narrowing of its scope
     planned_obs = {n.get("span") for n in node.get("narrowings", []) if isinstance(n, dict) and n.get("kind") == "observable_reading"}
+    # words the coder reports it cannot state and stopped on: not a reading of the span, so never a narrowing of its scope
+    unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]
+    unexpressed_lines = [f"{n['span']} ({n['kind']}): {str(n.get('why', ''))[:200]}" for n in unexpressed]
     narrowed_scope = [f"narrowing on {n['span']} ({spans[n['span']].get('role')}): {str(n.get('why', ''))[:160]}" for n in narrowings
                       if n.get("span") in spans and spans[n["span"]].get("role") in SCOPE_ROLES
+                      and n.get("kind") not in ("no_atom", "no_operator")
                       and not (n.get("kind") == "observable_reading" and n.get("span") in planned_obs)]
+    # a narrowed scope decides the verdict however much else the coder reports unstatable; that is listed beside it
     if narrowed_scope:
-        return Verdict("SCOPE_NARROWED", narrowed_scope + ["a span that decides when the rule applies is carried as the node maps it, or the node is wrong: report it in the result note"])
-    unexpressed = [n for n in narrowings if n.get("kind") in ("no_atom", "no_operator")]
+        return Verdict("SCOPE_NARROWED", narrowed_scope + ["also reported as not statable: " + l for l in unexpressed_lines]
+                       + ["a span that decides when the rule applies is carried as the node maps it, or the node is wrong: report it in the result note"])
     if unexpressed:
-        return Verdict("UNEXPRESSED", [f"{n['span']} ({n['kind']}): {str(n.get('why', ''))[:200]}" for n in unexpressed]
+        return Verdict("UNEXPRESSED", unexpressed_lines
                        + ["the vocabulary or the language cannot state these words: the repair session withdraws the span as a gap or re-maps it"],
                        extras={"unexpressed": unexpressed})
 

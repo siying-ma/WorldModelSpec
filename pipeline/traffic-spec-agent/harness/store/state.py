@@ -870,3 +870,17 @@ def commit_state(run: Run, ledger, concept_ledger, node_ledger, prog: dict | Non
             snap["prog"] = prog_paths(prog, paths.stored)
         jsonl.write_atomic(run.state_file, json.dumps(snap, ensure_ascii=False))
         ledger.save(); concept_ledger.save(); node_ledger.save(); run.save_accepted()
+
+
+def current_plan_nodes(run) -> dict[str, dict]:
+    """The accepted nodes in their law's current plan, by the run's availability rule
+    (`Availability.code`, for the node's own law): a node whose law is planned or accepted and lists
+    it, or whose law the run does not list, and which is not fenced. A version the current plan
+    replaced (`SUPERSEDED`), a fenced one, and one whose law is being planned again or waits for the
+    operator are not in it. Admission evidence is not what this set states, so it is not asked."""
+    nodes = run.all_nodes()
+    if not nodes:
+        return {}
+    av = Availability(run, gated=set(nodes) | set(run.all_concepts()))
+    keep = lambda i, r: i not in av.fenced and (lambda c: c in (USABLE, UNJUDGED) or c.startswith("via:"))(av.code(i, Node(r).law))
+    return {i: r for i, r in nodes.items() if keep(i, r)}
