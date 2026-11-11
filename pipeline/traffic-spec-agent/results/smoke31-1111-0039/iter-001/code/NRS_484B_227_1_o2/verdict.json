@@ -1,0 +1,430 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "body": {
+        "args": [
+         {
+          "var": "d"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "d"
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "m"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "m"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "m"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_227_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "body": {
+          "args": [
+           {
+            "var": "d"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "d"
+        },
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "r"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "r"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "roadway"
+           },
+           "var": "r"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "m"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "m"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "median_or_divider"
+           },
+           "var": "m"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "or": [
+          {
+           "body": {
+            "and": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "o"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "args": [
+                 {
+                  "var": "o"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "st_on_way",
+                "params": []
+               }
+              ]
+             },
+             {
+              "args": [
+               {
+                "var": "o"
+               }
+              ],
+              "atom": "st_median_or_divider_opening",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "median_or_divider"
+           },
+           "var": "o"
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "i"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "args": [
+               {
+                "var": "i"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "st_on_way",
+              "params": []
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "intersection"
+           },
+           "var": "i"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "s"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "s"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "median_or_divider"
+            },
+            "var": "s"
+           }
+          },
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "w"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "w"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                }
+               ]
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "w"
+                }
+               ],
+               "derived": "drv_motion_against_carrier_direction",
+               "params": [
+                {
+                 "param": "p.speed_resolution"
+                },
+                {
+                 "param": "p.opposed_direction_cosine"
+                }
+               ]
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "roadway"
+            },
+            "var": "w"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "fec43b4bf4f6427cd9d1fd58",
+  "candidate_digest": "39f5a9d7565afdc0d9dfe2ea1ce81bd23b403210bb8fbb2db69f5119f3c38a50"
+ }
+}

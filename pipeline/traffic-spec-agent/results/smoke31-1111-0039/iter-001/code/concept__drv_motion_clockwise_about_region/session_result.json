@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 64385,
+  "stop_reason": "end_turn",
+  "session_id": "da9db60f-3ce9-4e02-9771-6df5e1120743",
+  "total_cost_usd": 0.6593903000000001,
+  "usage": {
+   "input_tokens": 16,
+   "cache_creation_input_tokens": 53782,
+   "cache_read_input_tokens": 339509,
+   "output_tokens": 7889,
+   "output_tokens_details": {
+    "thinking_tokens": 1209
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 53782,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 578,
+     "cache_read_input_tokens": 57274,
+     "cache_creation_input_tokens": 946,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 946
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33735,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033885,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 7889,
+    "cacheReadInputTokens": 339509,
+    "cacheCreationInputTokens": 53782,
+    "webSearchRequests": 0,
+    "costUSD": 0.6560018000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1209,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The concept `drv.motion.clockwise_about_region` passes the gate with **OK** (3 witnesses, 4 atoms read), using 2 of the 6 runs.\n\n**The body** (in `clockwise_about_region.lean`): the road user must be moving, which is a call to `drv_motion_moving x speed_floor`. With d as the vector from the region's reference point to the road user's position, and v as its velocity:\n- the cross product of d and v is negative, written as `dx·vy < dy·vx`;\n- the square of that cross product is greater than `sine_tolerance² · (dx² + dy²) · speed²`.\n\nBoth comparisons are strict, because the contract says \"negative\" and \"larger\". The body doesn't read whether the road user is inside the region, since the contract leaves that to the caller. I added no narrowings because the contract fixes the reading.\n\n**Gate runs:**\n1. **CHECK_FAIL**, a units error. I had written \"cross product < 0\" against a zero literal, and no unit tag fits m²/s. Rewriting it as `dx·vy < dy·vx` means the same thing and needs no literal.\n2. **OK.**\n\n**Witnesses:** the roundabout is an octagon of radius 30 m centred on (0, 0). A car drives at 8 m/s on a 20 m radius, and the instance sets `speed_floor` to 0.1 m/s and `sine_tolerance` to 1/10.\n- **holds:** the car drives clockwise, tangential to the radius.\n- **fails:** the car drives counter-clockwise.\n- **blind:** the same scene as holds, with `kin.velocity` declared absent, so the result is unknown.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 1661,
+  "type": "result",
+  "duration_ms": 70916,
+  "uuid": "e2036d54-1dbc-458b-987f-65cabdeb6f5b",
+  "ttft_stream_ms": 629,
+  "time_to_request_ms": 63,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 0,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 13,
+  "time_to_request_cpu_ms": 96,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 16,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 629,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33735,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033885,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 7889,
+    "cacheReadInputTokens": 339509,
+    "cacheCreationInputTokens": 53782,
+    "webSearchRequests": 0,
+    "costUSD": 0.6560018000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1209,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,138 @@
+'TrafficSpec.Rules.NRS_484B_363_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_363_3.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"assumptions":["asm.school_not_in_session_day","asm.outside_school_operation_margin","asm.pupils_in_class"],"binders":["x"],"id":"NRS_484B_363_3","intentions":[],"laws":["NRS-484B-363-3"],"narrowings":[],"operationalizations":[],"residues":["The section's own definition of a speed limit beacon; dev.speed_limit_beacon's contract (\"a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect\") already states it, and the elements of spans d8, d10 and d12 read that atom; it imposes no duty of its own."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"rises":{"args":[{"var":"x"}],"derived":"drv_motion_u_turn","params":[{"param":"p.u_turn_window"},{"param":"p.u_turn_reversal_tolerance"}]}},{"body":{"and":[{"and":[{"or":[{"args":[{"var":"z"},{"lit":"school"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"z"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]}]},{"not":{"args":[{"var":"z"}],"atom":"dev_zone_sign_end","params":[]}}]},{"not":{"body":{"not":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"body":{"and":[{"args":[{"var":"z"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}}]},"exists_device":{"lit":"zone_sign"},"var":"z"}]},"assumptions":["asm.school_not_in_session_day","asm.outside_school_operation_margin","asm.pupils_in_class"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_363_3","intentions":[],"laws":["NRS-484B-363-3"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"and":[{"or":[{"args":[{"var":"z"},{"lit":"school"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"z"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]}]},{"not":{"args":[{"var":"z"}],"atom":"dev_zone_sign_end","params":[]}}]},{"not":{"body":{"not":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"body":{"and":[{"args":[{"var":"z"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}}]},{"or":[{"body":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"not":{"body":{"and":[{"args":[{"var":"c"}],"atom":"ru_child","params":[]},{"body":{"and":[{"args":[{"var":"z"},{"var":"q"}],"atom":"dev_governs","params":[]},{"cmp":"le","lhs":{"args":[{"var":"c"},{"var":"q"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.child_presence_reach"}}]},"exists_region":{"lit":"travel_region"},"var":"q"}]},"exists_user":"c"}}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"asm":"asm.school_not_in_session_day"}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"asm":"asm.outside_school_operation_margin"}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"g"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"x"},{"var":"g"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"var":"g"}],"atom":"dev_governs","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"g"},{"not":{"args":[{"var":"b"}],"atom":"dev_speed_limit_beacon_flashing","params":[]}}]},"exists_device":{"lit":"speed_limit_beacon"},"var":"b"},{"asm":"asm.pupils_in_class"}]}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"body":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_yawing","params":[{"param":"p.yaw_rate_resolution"}]},{"and":[{"not":{"body":{"body":{"and":[{"args":[{"var":"b"},{"var":"g"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"x"},{"var":"g"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"var":"g"}],"atom":"dev_governs","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"g"},"exists_device":{"lit":"speed_limit_beacon"},"var":"b"}},{"not":{"args":[{"var":"z"},{"var":"x"}],"derived":"prim_conditions_hold","params":[]}}]}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}]}]}]}]}]},"forall_device":{"lit":"zone_sign"},"var":"z"},"residues":["The section's own definition of a speed limit beacon; dev.speed_limit_beacon's contract (\"a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect\") already states it, and the elements of spans d8, d10 and d12 read that atom; it imposes no duty of its own."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"rises":{"cmp":"le","lhs":{"abs":{"sub":[{"abs":{"args":[{"var":"x"}],"params":[{"param":"p.u_turn_window"}],"quantity":"prim_heading_change"}},{"lit":{"den":1,"num":180},"unit":"degree"}]}},"rhs":{"param":"p.u_turn_reversal_tolerance"}}},{"body":{"and":[{"and":[{"or":[{"args":[{"var":"z"},{"lit":"school"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"z"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]}]},{"not":{"args":[{"var":"z"}],"atom":"dev_zone_sign_end","params":[]}}]},{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"body":{"and":[{"args":[{"var":"z"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}}]},"exists_device":{"lit":"zone_sign"},"var":"z"}]},"assumptions":["asm.school_not_in_session_day","asm.outside_school_operation_margin","asm.pupils_in_class"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_363_3","intentions":[],"laws":["NRS-484B-363-3"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"and":[{"or":[{"args":[{"var":"z"},{"lit":"school"}],"atom":"dev_zone_sign_kind","params":[]},{"args":[{"var":"z"},{"lit":"school_crossing"}],"atom":"dev_zone_sign_kind","params":[]}]},{"not":{"args":[{"var":"z"}],"atom":"dev_zone_sign_end","params":[]}}]},{"not":{"body":{"not":{"and":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"body":{"and":[{"args":[{"var":"z"},{"var":"r"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]}},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}}]},{"or":[{"body":{"implies":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"not":{"body":{"and":[{"args":[{"var":"c"}],"atom":"ru_child","params":[]},{"body":{"and":[{"args":[{"var":"z"},{"var":"q"}],"atom":"dev_governs","params":[]},{"cmp":"le","lhs":{"args":[{"var":"c"},{"var":"q"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.child_presence_reach"}}]},"exists_region":{"lit":"travel_region"},"var":"q"}]},"exists_user":"c"}}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"asm":"asm.school_not_in_session_day"}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"asm":"asm.outside_school_operation_margin"}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"or":[{"body":{"implies":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"and":[{"body":{"and":[{"body":{"and":[{"args":[{"var":"b"},{"var":"g"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"x"},{"var":"g"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"var":"g"}],"atom":"dev_governs","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"g"},{"not":{"args":[{"var":"b"}],"atom":"dev_speed_limit_beacon_flashing","params":[]}}]},"exists_device":{"lit":"speed_limit_beacon"},"var":"b"},{"asm":"asm.pupils_in_class"}]}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"},{"body":{"implies":[{"cmp":"gt","lhs":{"abs":{"args":[{"var":"x"}],"measure":"kin_yaw_rate"}},"rhs":{"param":"p.yaw_rate_resolution"}},{"and":[{"not":{"body":{"body":{"and":[{"args":[{"var":"b"},{"var":"g"}],"atom":"dev_governs","params":[]},{"or":[{"args":[{"var":"x"},{"var":"g"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"z"},{"var":"g"}],"atom":"dev_governs","params":[]}]}]},"exists_region":{"lit":"travel_region"},"var":"g"},"exists_device":{"lit":"speed_limit_beacon"},"var":"b"}},{"not":{"args":[{"var":"z"},{"var":"x"}],"derived":"prim_conditions_hold","params":[]}}]}]},"holds_for":"time","length":{"param":"p.u_turn_window"},"subject":"x"}]}]}]}]}]},"forall_device":{"lit":"zone_sign"},"var":"z"},"residues":["The section's own definition of a speed limit beacon; dev.speed_limit_beacon's contract (\"a pair or more of yellow lamps mounted with a speed sign, flashing alternately when the sign's limit is in effect\") already states it, and the elements of spans d8, d10 and d12 read that atom; it imposes no duty of its own."],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_u_turn,dev_zone_sign,dev_zone_sign_kind,dev_zone_sign_end,kin_time,drv_motion_yawing,st_travel_region,dev_governs,rel_occupies,ru_child,st_region_geometry_distance,dev_speed_limit_beacon,dev_speed_limit_beacon_flashing,prim_conditions_hold
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.yaw_rate
+MANIFEST	occasion_d3	
+MANIFEST	occasion_d3_outside	
+MANIFEST	occasion_d5	
+MANIFEST	occasion_d5_outside	
+MANIFEST	occasion_d8	
+MANIFEST	occasion_d8_outside	
+MANIFEST	occasion_d10	
+MANIFEST	occasion_d10_outside	
+MANIFEST	occasion_d12	
+MANIFEST	occasion_d12_outside	
+MANIFEST	occasion_d13	
+MANIFEST	occasion_d13_outside	
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+MANIFEST	branch_9	
+MANIFEST	branch_10	
+OCC	x
+OCC	x
+OCC	?z
+OCC	z
+OCC	z
+OCC	z
+OCC	x
+OCC	x
+OCC	?r
+OCC	z,r
+OCC	x,r
+OCC	?z
+OCC	z
+OCC	z
+OCC	z
+OCC	x
+OCC	x
+OCC	?r
+OCC	z,r
+OCC	x,r
+OCC	x
+OCC	x
+OCC	?c
+OCC	c
+OCC	?q
+OCC	z,q
+OCC	c,q
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	?b
+OCC	?g
+OCC	b,g
+OCC	x,g
+OCC	z,g
+OCC	b
+OCC	x
+OCC	x
+OCC	?b
+OCC	?g
+OCC	b,g
+OCC	x,g
+OCC	z,g
+OCC	z,x
+TIME	occurrences	0
+TIME	checks	14
+TIME	lint	6568
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	189
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	191
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	188
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	192
+SCEN	occasion_d3	violated	violated	ok
+TIME	scenario:occasion_d3	186
+SCEN	occasion_d3_outside	not_applicable	not_applicable	ok
+TIME	scenario:occasion_d3_outside	188
+SCEN	occasion_d5	violated	violated	ok
+TIME	scenario:occasion_d5	189
+SCEN	occasion_d5_outside	compliant	compliant	ok
+TIME	scenario:occasion_d5_outside	193
+SCEN	occasion_d8	violated	violated	ok
+TIME	scenario:occasion_d8	191
+SCEN	occasion_d8_outside	compliant	compliant	ok
+TIME	scenario:occasion_d8_outside	160
+SCEN	occasion_d10	violated	violated	ok
+TIME	scenario:occasion_d10	195
+SCEN	occasion_d10_outside	compliant	compliant	ok
+TIME	scenario:occasion_d10_outside	185
+SCEN	occasion_d12	violated	violated	ok
+TIME	scenario:occasion_d12	198
+SCEN	occasion_d12_outside	compliant	compliant	ok
+TIME	scenario:occasion_d12_outside	189
+SCEN	occasion_d13	violated	violated	ok
+TIME	scenario:occasion_d13	188
+SCEN	occasion_d13_outside	compliant	compliant	ok
+TIME	scenario:occasion_d13_outside	183
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	191
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	192
+SCEN	branch_3	not_applicable	not_applicable	ok
+TIME	scenario:branch_3	80
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	83
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	190
+SCEN	branch_6	compliant	compliant	ok
+TIME	scenario:branch_6	102
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	189
+SCEN	branch_8	compliant	compliant	ok
+TIME	scenario:branch_8	186
+SCEN	branch_9	compliant	compliant	ok
+TIME	scenario:branch_9	189
+SCEN	branch_10	compliant	compliant	ok
+TIME	scenario:branch_10	286
+TIME	witnesses	4694
+DONE_WITNESSES

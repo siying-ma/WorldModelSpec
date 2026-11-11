@@ -1,0 +1,234 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 8 names, composes nothing",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "derived": "drv_motion_halted",
+      "params": [
+       {
+        "param": "p.speed_resolution"
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "h"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        "exists_region": {
+         "lit": "highway"
+        },
+        "var": "h"
+       },
+       {
+        "and": [
+         {
+          "body": {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          "exists_region": {
+           "lit": "roadway"
+          },
+          "var": "r"
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "asm": "asm.within_business_or_residence_district"
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "not": {
+                "args": [
+                 {
+                  "var": "x"
+                 }
+                ],
+                "atom": "kin_engine_running",
+                "params": []
+               }
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "x"
+                  }
+                 ],
+                 "atom": "sig_hazard",
+                 "params": []
+                },
+                {
+                 "body": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "rd"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 },
+                 "exists_region": {
+                  "lit": "roadway"
+                 },
+                 "var": "rd"
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.within_business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_440_1_o3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-440-1"
+   ],
+   "narrowings": [
+    {
+     "kind": "reading",
+     "span": "g12",
+     "why": "The sight distance at x's place is read off the roadway regions x occupies, and is required at each of them where x straddles several."
+    }
+   ],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "r"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "body": {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "h"
+        }
+       ]
+      },
+      {
+       "cmp": "ge",
+       "lhs": {
+        "args": [
+         {
+          "var": "r"
+         }
+        ],
+        "measure": "st_sight_distance"
+       },
+       "rhs": {
+        "lit": {
+         "den": 25,
+         "num": 1524
+        },
+        "unit": "metre"
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "roadway"
+    },
+    "var": "r"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "g12",
+    "why": "The sight distance at x's place is read off the roadway regions x occupies, and is required at each of them where x straddles several."
+   }
+  ],
+  "context": "5957594db5a0b1983a64a675",
+  "candidate_digest": "e3ee19c029cd028889538f8554037ea6731fc2ae194218a962c2a4194d47161a"
+ }
+}

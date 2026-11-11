@@ -1,0 +1,35 @@
+'TrafficSpec.Concepts.interaction.overtaking_alongside.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtaking_alongside.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtaking_alongside.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"y","sort":{"sort":"track"}}],"body":{"and":[{"args":[{"var":"x"},{"var":"y"}],"atom":"rel_same_direction","params":[{"param":"aligned_cosine"}]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"sub":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"y"}],"measure":"kin_speed"}]},"rhs":{"param":"speed_margin"}}]}]},"contract":"Road user x is overtaking road user y alongside at the observation: the side-by-side phase of an overtaking, on either side of y. It holds where their headings are aligned (rel.same_direction, with aligned_cosine as the relation's tolerance), their bodies overlap along x's heading (rel.longitudinal_overlap positive), and x's speed exceeds y's (kin.speed, m/s) by more than speed_margin, the speed resolution below which the two count as keeping pace. Either side of y counts. Not denoted: the approach from behind or the return ahead of y, the side on which x passes, where either body is on the road, a lane change, contact, or the clearance between the bodies.","definition":null,"id":"drv.interaction.overtaking_alongside","kind":"formula","narrowings":[],"params":[{"name":"aligned_cosine","unit":"ratio"},{"name":"speed_margin","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	rel_same_direction,rel_longitudinal_overlap,kin_speed
+READS	rel_same_direction,rel_longitudinal_overlap,kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"x"},{"var":"y"}],"atom":"rel_same_direction","params":[{"param":"aligned_cosine"}]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}},{"cmp":"gt","lhs":{"sub":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"y"}],"measure":"kin_speed"}]},"rhs":{"param":"speed_margin"}}]}]}
+WITNESS	holds	drv.interaction.overtaking_alongside@w
+WITNESS	fails	drv.interaction.overtaking_alongside@w
+WITNESS	blind	drv.interaction.overtaking_alongside@w
+OCC	x,y
+OCC	x
+OCC	y
+OCC	x
+OCC	y
+INST	drv.interaction.overtaking_alongside@w	ok
+TIME	checks	2
+TIME	lint	3
+SCEN	holds	drv.interaction.overtaking_alongside@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.overtaking_alongside@w/holds	9
+SCEN	fails	drv.interaction.overtaking_alongside@w	violated	violated	ok
+TIME	scenario:drv.interaction.overtaking_alongside@w/fails	8
+SCEN	blind	drv.interaction.overtaking_alongside@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.overtaking_alongside@w/blind	10
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.overtaking_alongside.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtaking_alongside.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtaking_alongside.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.interaction.overtaking_alongside@w	3	2
+TIME	adequacy_start	4
+TIME	adequacy	71
+DONE

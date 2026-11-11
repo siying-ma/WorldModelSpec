@@ -1,0 +1,260 @@
+{
+ "node_id": "NRS_484B_440_1_o1",
+ "law_refs": [
+  "NRS-484B-440-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "Upon any highway",
+   "role": "trigger"
+  },
+  {
+   "id": "g2",
+   "text": "outside of a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "g3",
+   "text": "no person shall stop, park or leave standing",
+   "role": "obligation"
+  },
+  {
+   "id": "g4",
+   "text": "any vehicle, whether attended or unattended,",
+   "role": "subject"
+  },
+  {
+   "id": "g5",
+   "text": "upon the paved or main-traveled part of the highway",
+   "role": "condition"
+  },
+  {
+   "id": "g6",
+   "text": "when it is practicable to stop, park or so leave such vehicle off such part of the highway,",
+   "role": "standard"
+  },
+  {
+   "id": "g7",
+   "text": "but in every event",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g8",
+   "text": "an unobstructed width of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "g9",
+   "text": "opposite a standing vehicle",
+   "role": "sibling"
+  },
+  {
+   "id": "g10",
+   "text": "shall be left for the free passage of other vehicles",
+   "role": "sibling"
+  },
+  {
+   "id": "g11",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g12",
+   "text": "a clear view of such stopped vehicles shall be available from a distance of 200 feet in each direction upon such highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "g13",
+   "text": "This section shall not apply to the driver of any vehicle which is disabled while on the paved or main-traveled portion of a highway in such manner and to such extent that it is impossible to avoid stopping and temporarily leaving such disabled vehicle in such position.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway: \"the entire public way between its boundary lines, including sidewalks and shoulders\" (DEF-NRS-484A-095, \"the entire width between the boundary lines of every way\"); x is upon it where its footprint overlaps it (rel.occupies)."
+  },
+  {
+   "span": "g3",
+   "atoms": [
+    "kin.speed",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap",
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "'stop', prohibited here, takes DEF-NRS-484A-260 (\"any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device\"); 'park' (DEF-NRS-484A-155, \"the standing of a vehicle\") and 'leave standing' (DEF-NRS-484A-250, \"the halting of a vehicle\") are halts too. The halt is drv.motion.halted (\"speed ... at or below speed_floor ... with no minimum duration\", kin.speed), which observes any halting, even momentary. The definition's exclusions are carried beside it: a halt behind another road user ahead in the same lane (rel.ahead_behind_in_lane) within the conflict standoff gap (rel.surface_gap) avoids a conflict; a halt while a police officer's stop direction (dev.human_direction, indication stop) or a signal showing a red indication or a stop sign (dev.traffic_signal, dev.stop_sign) governs (dev.governs) the travel region x occupies is in compliance with directions. Purposes of parking and standing (loading, passengers) are not observable and are read through the halt (observable_reading purpose)."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed by id; 'whether attended or unattended' excludes no member."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "The paved or main-traveled part of the highway is the st.roadway (\"the part of a highway improved for vehicular traffic, excluding shoulder\"; DEF-NRS-484A-220, \"that portion of a highway which is improved and ordinarily used for vehicular traffic, exclusive of the shoulder\"); x halts upon it where its footprint overlaps it (rel.occupies). A paved shoulder is off it: the words set the main-traveled part against the part off it where the vehicle may be left. st.roadway is 'not a stand-in' for the sidewalk."
+  },
+  {
+   "span": "g13",
+   "atoms": [
+    "kin.engine_running",
+    "sig.hazard",
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "A vehicle disabled on the roadway so that stopping cannot be avoided is read through its nearest observables, the same as the earlier mapping of 'a disabled vehicle' in this iteration: its engine or motor not running, so that propulsion is unavailable (kin.engine_running: \"the vehicle's engine or motor is running, so that propulsion is available\", false), with its hazard lamps flashing (sig.hazard: \"both indicators flashing together\"), while it occupies the roadway (rel.occupies, st.roadway). kin.engine_running is 'not a stand-in' for motion or a halt, and is not used as either; the gap records that the disability itself has no atom."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "g6",
+   "standard": "practicable to stop, park or so leave such vehicle off such part of the highway",
+   "concepts": [
+    "st.shoulder",
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.offroad_stop_reach"
+   ],
+   "convention": "Off-road stopping convention: moving off the main-traveled part is practicable where a shoulder lies within the reach of a short lateral move from the halted vehicle's body; the ground distance from the body to the nearest shoulder is the measured magnitude compared with the reach.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "g2",
+   "id": "asm.within_business_or_residence_district",
+   "meaning": "The place of the observation lies inside a business district or a residence district declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle; at the observation x's footprint overlaps a st.highway (rel.occupies) and asm.within_business_or_residence_district does not hold; and x is not disabled there: not (kin.engine_running false and sig.hazard on while x occupies a st.roadway).",
+ "obligation": "It is not the case that, at the observation, x is halted (drv.motion.halted with p.speed_resolution) with its footprint overlapping a st.roadway, while some st.shoulder lies within p.offroad_stop_reach of x's body (st.region_geometry distance), unless the halt falls under the exclusions of the defined 'stop': some other road user is ahead of x in the same lane (rel.ahead_behind_in_lane) with a surface gap (rel.surface_gap) at most p.stopping_conflict_gap, or a dev.human_direction with indication stop, a dev.traffic_signal displaying circular_red, a red_arrow or flashing_red, or a dev.stop_sign governs (dev.governs) a travel region x occupies.",
+ "params": [
+  "p.speed_resolution",
+  "p.offroad_stop_reach",
+  "p.stopping_conflict_gap"
+ ],
+ "narrowings": [
+  {
+   "span": "g3",
+   "why": "'stop, park or leave standing' are read through the halt itself; the purposes that set parking and standing apart (loading, receiving passengers) are not observable, and every halt is a stop under the definition that applies, so none is lost.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "g6",
+   "why": "'practicable' is read through the distance to a shoulder only; the shoulder's width, surface and load-bearing are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle) on a rural highway (asm.within_business_or_residence_district declared false) halts with its footprint on the st.roadway, engine running, no hazard lamps, nothing ahead and no device governing; a st.shoulder lies within p.offroad_stop_reach of its body."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x halts on the roadway of a rural bridge with no shoulder within p.offroad_stop_reach; no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x halts on the roadway in a declared residence district (asm.within_business_or_residence_district true)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x halts on the rural roadway beside a mapped shoulder, but the source maps regions without their outline, so the distance to the shoulder is unknown.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x halts on the rural roadway with its engine not running and its hazard lamps flashing: the disabled-vehicle exception applies."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "x halts on the rural roadway behind a halted truck ahead in its lane at a surface gap below p.stopping_conflict_gap, a shoulder within reach: the halt avoids a conflict and is no prohibited stop."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed resolution of the carla_scene_graph acquisition standard"
+  },
+  {
+   "name": "p.offroad_stop_reach",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "Off-road stopping reach: the ground distance from a halted vehicle's body to a shoulder within which moving off the main-traveled part counts as practicable; about one lane width of lateral movement.",
+   "source": "AASHTO Green Book lane and shoulder widths"
+  },
+  {
+   "name": "p.stopping_conflict_gap",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "Conflict standoff: the largest surface gap from a halted road user's body to another road user ahead of it at which the halt counts as necessary to avoid a conflict; a queue spacing at standstill.",
+   "source": "queue spacing at standstill (traffic-flow jam-density conventions)"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "g13",
+   "kind": "atom",
+   "proposal": "`ru.disabled` | a vehicle that cannot proceed under its own power, by a mechanical failure, crash damage or a flat tyre, as the source records it **Not a stand-in for:** a vehicle parked with its engine off, or one showing hazard lamps | general — decides whether moving the vehicle off the roadway can be carried out, which the disabled-vehicle exception turns on",
+   "nearest": [
+    "kin.engine_running",
+    "sig.hazard"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

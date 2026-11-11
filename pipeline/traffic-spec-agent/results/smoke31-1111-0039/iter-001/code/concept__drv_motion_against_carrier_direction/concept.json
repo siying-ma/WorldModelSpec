@@ -1,0 +1,80 @@
+{
+ "concept_id": "drv.motion.against_carrier_direction",
+ "kind": "formula",
+ "contract": "A road user moves against the designated direction of a travel carrier at the observation. It holds where the road user is moving (drv.motion.moving with speed_floor) and the component of its velocity along the carrier's designated direction is below minus opposed_cosine times its speed: the angle between its velocity and that direction is wider than the angle whose cosine is minus opposed_cosine. Velocity (kin.velocity) and speed (kin.speed) are in m/s in the world frame; the designated direction (st.lane_direction) is read normalised and is unknown where the carrier carries none. Crossing the carrier, or any motion at a smaller angle to the designated direction than that, is not against it. Not denoted: the road user's heading opposing the carrier (a body backing along a lane faces against it but moves with it), two road users being oncoming, or the road user being on the carrier: the caller states occupancy.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a road user at or below it has no direction of travel"
+  },
+  {
+   "name": "opposed_cosine",
+   "unit": "ratio",
+   "meaning": "minus the cosine of the narrowest angle between the velocity and the designated direction that counts as against it"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the road user is moving (drv.motion.moving with speed_floor)",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.moving"
+   ],
+   "justification": "drv.motion.moving, co-proposed: speed above the source's resolution."
+  },
+  {
+   "span": "Velocity (kin.velocity) and speed (kin.speed) are in m/s in the world frame",
+   "atoms": [
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the 'velocity vector' (m/s, world frame) and kin.speed its magnitude; the velocity, not kin.heading, is read, so a backing body is judged by its motion."
+  },
+  {
+   "span": "the designated direction (st.lane_direction) is read normalised and is unknown where the carrier carries none",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction is the 'direction of travel designated for a structure a vehicle travels in — a lane, ... or a roadway, one-way roadway or shoulder', read normalised; 'a place no carrier covers has none (unknown)'."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car drives along a one-way roadway opposite to its designated direction."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car drives along the same roadway in its designated direction."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car drives along a roadway; the source declares st.lane_direction absent.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o1",
+  "NRS_484B_227_1_o2"
+ ]
+}

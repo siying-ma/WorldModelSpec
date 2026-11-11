@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 73363,
+  "stop_reason": "end_turn",
+  "session_id": "c13fe3e8-ebeb-4617-b10f-6e66346ce79c",
+  "total_cost_usd": 0.6299477,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 48443,
+   "cache_read_input_tokens": 360514,
+   "output_tokens": 8344,
+   "output_tokens_details": {
+    "thinking_tokens": 2575
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 48443,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 694,
+     "cache_read_input_tokens": 52088,
+     "cache_creation_input_tokens": 793,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 793
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33354,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033489000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 8344,
+    "cacheReadInputTokens": 360514,
+    "cacheCreationInputTokens": 48443,
+    "webSearchRequests": 0,
+    "costUSD": 0.6265988,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2575,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on its first run (3 witnesses, 1 name, 1 atom read), so `drv.motion.u_turn` passes. I used 1 of the 6 gate runs.\n\n**Body** (`library/TrafficSpec/Concepts/motion/u_turn.lean`): the concept holds when the size of x's heading change over `window` is within `reversal_tolerance` of a half turn:\n\n`|(|prim_heading_change(x, window)|) − 180 deg| ≤ reversal_tolerance`\n\n- The 180 is the record's declared literal, written `Units.degrees 180`.\n- A turn short of the half turn fails, and so does one that goes past it by more than the tolerance (a loop back).\n- I added no time operator around the condition. Checked at each observation, it already rises when the turn completes and stays true while the turn is inside the window, which is what the contract describes.\n- The contract left no choice open, so there are no narrowings.\n\n**Witnesses** (`library/TrafficSpecWitness/Concepts/motion/u_turn.lean`):\n- **Setup:** one motor vehicle, 20 observations 1 s apart. The instance sets `window` to 10 s and `reversal_tolerance` to 10 deg.\n- **Judged range:** each scenario is judged only from t = 10 s to 14 s. Earlier than that, the 10 s window would reach past the start of the trace, and the concept would be unknown instead of true.\n- **holds:** a left turn at 45 deg/s for 4 s, so the heading changes by +180 deg.\n- **fails:** a right turn at −45 deg/s for 2 s, a −90 deg change.\n- **blind:** the same motion as holds, with the yaw rate left unset everywhere and `kin.yaw_rate` masked.\n\nThe headings at the in-between moments of each turn are rough rational values. The concept reads only the yaw rate, so they don't affect the result.\n\n`task_result.md` is written in the working directory. I found nothing wrong with the record and wrote no dependency-defect report.",
+  "ttft_ms": 2929,
+  "type": "result",
+  "duration_ms": 77729,
+  "uuid": "78a6b810-5cce-47de-838c-d9edbd2068ac",
+  "ttft_stream_ms": 618,
+  "time_to_request_ms": 62,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 17,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 93,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 16,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 618,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33354,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033489000000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 8344,
+    "cacheReadInputTokens": 360514,
+    "cacheCreationInputTokens": 48443,
+    "webSearchRequests": 0,
+    "costUSD": 0.6265988,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2575,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.heading_change_since_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.heading_change_since_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.heading_change_since_entry.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"contract":"The signed heading change of road user x since its footprint last began to overlap region r, in degrees, left positive: zero at the observation at which the overlap began, integrated from x's yaw rate (kin.yaw_rate) with step as the sampling step bound, not ended by x leaving r and restarted only by its next entry into r. Unknown where that entry is not observed with the overlap known at every observation since, where two consecutive observations since lie further apart than step, or where a yaw rate since the entry is missing. Not denoted: a turn manoeuvre by itself (a caller compares the change with its own bound, and a bend of the way inside the region changes it too), or the heading change over a fixed window.","definition":null,"id":"drv.motion.heading_change_since_entry","kind":"quantity","narrowings":[],"params":[{"name":"step","unit":"second"}],"residues":[],"supersedes":null}
+ATOMS	kin_yaw_rate,kin_time,rel_occupies
+READS	kin_yaw_rate,kin_time,rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"heading_since":"x","max_step":{"param":"step"},"onset":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}
+WITNESS	holds	drv.motion.heading_change_since_entry@w
+WITNESS	fails	drv.motion.heading_change_since_entry@w
+WITNESS	blind	drv.motion.heading_change_since_entry@w
+OCC	x
+OCC	x,r
+OCC	x
+OCC	x,r
+INST	drv.motion.heading_change_since_entry@w	ok
+TIME	checks	2
+TIME	lint	13
+SCEN	holds	drv.motion.heading_change_since_entry@w	compliant	compliant	ok
+TIME	scenario:drv.motion.heading_change_since_entry@w/holds	17
+SCEN	fails	drv.motion.heading_change_since_entry@w	violated	violated	ok
+TIME	scenario:drv.motion.heading_change_since_entry@w/fails	10
+SCEN	blind	drv.motion.heading_change_since_entry@w	unknown	unknown	ok
+TIME	scenario:drv.motion.heading_change_since_entry@w/blind	18
+TIME	witnesses	45
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.heading_change_since_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.heading_change_since_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.heading_change_since_entry.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.heading_change_since_entry@w	2	2
+TIME	adequacy_start	6
+TIME	adequacy	96
+DONE

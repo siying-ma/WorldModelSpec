@@ -1,0 +1,66 @@
+'TrafficSpec.Rules.NRS_484B_297_6_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"operationalizations":[{"concepts":["st.region_geometry"],"params":["p.pedestrian_detour_offset"],"standard":"as far to the side as possible","surrogate":false}],"residues":["A permission to travel against the direction of traffic; the duty to keep to the side near the sidewalk is the same whichever way the pedestrian walks."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"q"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"q"}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"w"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_detour_offset"}}]},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"sidewalk"},"var":"w"},"residues":["A permission to travel against the direction of traffic; the duty to keep to the side near the sidewalk is the same whichever way the pedestrian walks."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},{"not":{"body":{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"q"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"q"}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"}}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o2","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[],"obligation":{"body":{"body":{"implies":[{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"w"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.pedestrian_detour_offset"}}]},"forall_region":{"lit":"highway"},"var":"h"},"forall_region":{"lit":"sidewalk"},"var":"w"},"residues":["A permission to travel against the direction of traffic; the duty to keep to the side near the sidewalk is the same whichever way the pedestrian walks."],"surrogate":false}
+ATOMS	ru_aggregate,st_sidewalk,st_highway,st_on_way,rel_occupies,drv_motion_moving,st_obstruction,st_region_geometry_distance,st_bicycle_lane_or_path
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.region_geometry
+MANIFEST	branch_1	
+OCC	x
+OCC	?w
+OCC	?h
+OCC	w,h
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,w
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	?b
+OCC	x,b
+OCC	?q
+OCC	x,q
+OCC	?w
+OCC	?h
+OCC	w,h
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,w
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	x,w
+TIME	occurrences	1
+TIME	checks	4
+TIME	lint	42
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	28
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	23
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	15
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	44
+TIME	witnesses	120
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_297_6_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o2.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_297_6_o2	19	4
+TIME	adequacy_start	6
+TIME	adequacy	1713
+DONE

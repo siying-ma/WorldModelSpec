@@ -1,0 +1,36 @@
+'TrafficSpec.Concepts.motion.against_carrier_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.against_carrier_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.against_carrier_direction.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"speed_floor"}]},{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"mul":[{"param":"opposed_cosine"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}}}]},"contract":"A road user moves against the designated direction of a travel carrier at the observation. It holds where the road user is moving (drv.motion.moving with speed_floor) and the component of its velocity along the carrier's designated direction is below minus opposed_cosine times its speed: the angle between its velocity and that direction is wider than the angle whose cosine is minus opposed_cosine. Velocity (kin.velocity) and speed (kin.speed) are in m/s in the world frame; the designated direction (st.lane_direction) is read normalised and is unknown where the carrier carries none. Crossing the carrier, or any motion at a smaller angle to the designated direction than that, is not against it. Not denoted: the road user's heading opposing the carrier (a body backing along a lane faces against it but moves with it), two road users being oncoming, or the road user being on the carrier: the caller states occupancy.","definition":null,"id":"drv.motion.against_carrier_direction","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"},{"name":"opposed_cosine","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	drv_motion_moving,kin_velocity,st_lane_direction,kin_speed
+READS	kin_speed,kin_velocity,st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"speed_floor"}},{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"mul":[{"param":"opposed_cosine"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}}}]}
+WITNESS	holds	drv.motion.against_carrier_direction@w
+WITNESS	fails	drv.motion.against_carrier_direction@w
+WITNESS	blind	drv.motion.against_carrier_direction@w
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+INST	drv.motion.against_carrier_direction@w	ok
+TIME	checks	5
+TIME	lint	8
+SCEN	holds	drv.motion.against_carrier_direction@w	compliant	compliant	ok
+TIME	scenario:drv.motion.against_carrier_direction@w/holds	8
+SCEN	fails	drv.motion.against_carrier_direction@w	violated	violated	ok
+TIME	scenario:drv.motion.against_carrier_direction@w/fails	7
+SCEN	blind	drv.motion.against_carrier_direction@w	unknown	unknown	ok
+TIME	scenario:drv.motion.against_carrier_direction@w/blind	10
+TIME	witnesses	25
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.against_carrier_direction.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.against_carrier_direction.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.against_carrier_direction.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.against_carrier_direction@w	2	2
+TIME	adequacy_start	4
+TIME	adequacy	50
+DONE

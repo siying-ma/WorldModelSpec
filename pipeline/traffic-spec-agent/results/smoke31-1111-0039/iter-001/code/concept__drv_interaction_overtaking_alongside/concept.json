@@ -1,0 +1,77 @@
+{
+ "concept_id": "drv.interaction.overtaking_alongside",
+ "kind": "formula",
+ "contract": "Road user x is overtaking road user y alongside at the observation: the side-by-side phase of an overtaking, on either side of y. It holds where their headings are aligned (rel.same_direction, with aligned_cosine as the relation's tolerance), their bodies overlap along x's heading (rel.longitudinal_overlap positive), and x's speed exceeds y's (kin.speed, m/s) by more than speed_margin, the speed resolution below which the two count as keeping pace. Either side of y counts. Not denoted: the approach from behind or the return ahead of y, the side on which x passes, where either body is on the road, a lane change, contact, or the clearance between the bodies.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "y",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "aligned_cosine",
+   "unit": "ratio",
+   "meaning": "the tolerance of rel.same_direction: the cosine of the largest angle between the two headings that still counts as travelling the same way"
+  },
+  {
+   "name": "speed_margin",
+   "unit": "m/s",
+   "meaning": "the speed resolution of a speed difference: the smallest excess of x's speed over y's that counts as gaining on y rather than keeping pace"
+  }
+ ],
+ "elements": [
+  {
+   "span": "their headings are aligned (rel.same_direction, with aligned_cosine as the relation's tolerance)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: \"headings aligned: the cosine of the angle between the headings is above its tolerance\"; the tolerance is the formal aligned_cosine."
+  },
+  {
+   "span": "their bodies overlap along x's heading (rel.longitudinal_overlap positive)",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: \"the bodies overlap along the subject's heading (side by side): the length the two footprints' projections on that axis share, negative for the gap between the projections\"; a positive value is the side-by-side phase. Not a stand-in for contact or a distance: the concept states neither."
+  },
+  {
+   "span": "x's speed exceeds y's (kin.speed, m/s) by more than speed_margin",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: \"magnitude of velocity\", m/s, read for both road users; gaining on y is x's speed above y's by more than the resolution."
+  }
+ ],
+ "residues": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x and y head the same way within aligned_cosine, their footprints share a positive length along x's heading, and x's kin.speed exceeds y's by more than speed_margin: x is overtaking y alongside."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x follows y in the same lane with a negative rel.longitudinal_overlap (a gap between the projections) at a higher speed: x has not drawn alongside, so the concept does not hold."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x and y head the same way and x is faster, but the source does not observe rel.longitudinal_overlap: whether they are side by side is unknown.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_270_7b"
+ ]
+}

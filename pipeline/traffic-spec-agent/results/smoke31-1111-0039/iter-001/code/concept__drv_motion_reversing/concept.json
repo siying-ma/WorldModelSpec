@@ -1,0 +1,54 @@
+{
+ "concept_id": "drv.motion.reversing",
+ "kind": "formula",
+ "contract": "A road user moves backwards relative to its own body at the observation: the component of its velocity along its heading is below minus speed_floor. Velocity (kin.velocity) is in m/s in the world frame and heading (kin.heading) is read normalised; speed_floor is the source's speed resolution, so a standing or barely creeping body is not reversing. It is read from kinematics only, never from the gear selected: a vehicle in reverse gear that rolls forward is not reversing, and one in a forward gear that rolls backwards is. Not denoted: a turn, the path followed, or the place the road user is in.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a rearward velocity component at or below it counts as no backward motion"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of its velocity along its heading is below minus speed_floor",
+   "atoms": [
+    "kin.velocity",
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity is the 'velocity vector' (m/s, world frame) and kin.heading the 'direction the body points', read normalised; their dot product is the velocity component along the body axis. kin.gear is 'Not a stand-in for: the direction of motion' and is not read."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car moves backwards out of a parking bay, its velocity opposite to its heading."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car drives forward along a lane."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car moves near a parking bay; the source declares kin.heading absent.",
+   "masked": [
+    "kin.heading"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2"
+ ]
+}

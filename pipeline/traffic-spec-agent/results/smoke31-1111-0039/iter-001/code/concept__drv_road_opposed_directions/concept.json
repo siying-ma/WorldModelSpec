@@ -1,0 +1,59 @@
+{
+ "concept_id": "drv.road.opposed_directions",
+ "kind": "formula",
+ "contract": "The designated directions of two travel carriers point opposite ways: the dot product of their designated directions (st.lane_direction, read normalised, world frame) is below minus opposed_cosine, so the angle between them is wider than the angle whose cosine is minus opposed_cosine. Unknown where either carrier carries no designated direction. Not denoted: the motion or heading of any road user on them, the carriers lying on the same way, or their entering the same intersection: the caller states those.",
+ "args": [
+  {
+   "name": "c1",
+   "sort": "region"
+  },
+  {
+   "name": "c2",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "opposed_cosine",
+   "unit": "ratio",
+   "meaning": "minus the cosine of the narrowest angle between the two designated directions that counts as opposite"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the dot product of their designated directions (st.lane_direction, read normalised, world frame) is below minus opposed_cosine",
+   "atoms": [
+    "st.lane_direction"
+   ],
+   "concepts": [],
+   "justification": "st.lane_direction: 'direction of travel designated for a structure a vehicle travels in'; read normalised, the product of the x components plus the product of the y components is the cosine of the angle between them."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "c1 has st.lane_direction (1, 0) and c2 (-1, 0)."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "c1 has st.lane_direction (1, 0) and c2 (0, 1): the carriers cross at a right angle."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "c2 carries no st.lane_direction in the source.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_1",
+  "NRS_484B_253_o1",
+  "NRS_484B_253_o2"
+ ]
+}

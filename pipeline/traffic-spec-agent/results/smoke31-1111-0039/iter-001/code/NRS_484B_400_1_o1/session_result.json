@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 487783,
+  "stop_reason": "end_turn",
+  "session_id": "dc7d1f35-fecf-46dc-984a-76a8cb716ddd",
+  "total_cost_usd": 2.8692678000000003,
+  "usage": {
+   "input_tokens": 40,
+   "cache_creation_input_tokens": 173417,
+   "cache_read_input_tokens": 2393278,
+   "output_tokens": 49928,
+   "output_tokens_details": {
+    "thinking_tokens": 29957
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 173417,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 966,
+     "cache_read_input_tokens": 175869,
+     "cache_creation_input_tokens": 1986,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1986
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45412,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004556200000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 49928,
+    "cacheReadInputTokens": 2393278,
+    "cacheCreationInputTokens": 173417,
+    "webSearchRequests": 0,
+    "costUSD": 2.8647116000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 29957,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 28,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for NRS_484B_400_1_o1: 7 witnesses, 13 names, composes nothing. It took 3 of the 6 runs.\n\n**The rule.** It applies when the vehicle's right turn in an intersection is first recognised, meaning its heading change since entering reaches minus the recognition angle. The rule then reads back to the observation where the vehicle entered that intersection. At that entry it checks three things:\n- the turn intention was declared for that intersection;\n- the vehicle occupied a carrier entering the intersection, lying on some highway;\n- that highway has a right turn lane entering the same intersection, not opposed in direction to the carrier.\n\nThe obligation repeats that selection in full. It then requires the vehicle to be in that turn lane at the entry. Over the 15 m of path before the entry, wherever it was on a carrier entering the intersection, it must have been in that turn lane.\n\n**Gate runs:**\n1. **WITNESS_FAIL**: the traces weren't physically possible. Heading didn't follow the yaw rate, and the lane changes jumped sideways further than the path length allowed. I rebuilt them so the heading turns 4.5° per 50 ms step and lane changes move 0.2 m sideways per step.\n2. **WITNESS_FAIL**: the `blind` scenario was unknown for an extra reason besides the masked atom. The carrier quantifier also ranges over the intersection itself, which has no recorded lane direction. I added \"the carrier is not the intersection\" (`not (same c i)`) to the rule.\n3. **OK**.\n\n**Decisions to look at:**\n- **\"Carrier is not the intersection\".** I didn't declare a narrowing for it, because the node's own words (\"entered i from a carrier c\") already imply it. I added `branch_3`, a right turn from the cross street with no turn lane, where this condition makes the verdict not-applicable instead of unknown.\n- **Obligation wording vs. the record's narrowing on e6.** I followed the obligation text: wherever the vehicle is on a carrier entering the intersection, it is in the turn lane. That lets a vehicle straddling the through lane and the turn lane comply. The record's narrowing on e6 says every such carrier must be the turn lane, which reads stricter. The planning step may want to make the two consistent.\n\nBesides the four planned scenarios I added `branch_1`, a late lane change inside the 15 m window, expected violated. I also added `branch_2`, an early lane change before the window, expected compliant. Each scenario only judges instants from the entry onwards, because before it the look-back is unknown.\n\nFiles are in `library/` and in the working directory:\n- `TrafficSpec/Rules/NRS_484B/NRS_484B_400_1_o1.lean`\n- `TrafficSpecWitness/NRS_484B/NRS_484B_400_1_o1.lean`\n- `task_result.md`",
+  "ttft_ms": 62912,
+  "type": "result",
+  "duration_ms": 546768,
+  "uuid": "a865aac4-b10b-455d-8fb8-cd66275f5896",
+  "ttft_stream_ms": 1138,
+  "time_to_request_ms": 69,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 21,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 1,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 107,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1139,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45412,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004556200000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 49928,
+    "cacheReadInputTokens": 2393278,
+    "cacheCreationInputTokens": 173417,
+    "webSearchRequests": 0,
+    "costUSD": 2.8647116000000006,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 29957,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

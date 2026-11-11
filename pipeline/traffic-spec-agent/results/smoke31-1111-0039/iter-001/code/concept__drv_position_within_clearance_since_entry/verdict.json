@@ -1,0 +1,61 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)",
+  "narrowings declared by the coder: 1"
+ ],
+ "extras": {
+  "reads": [
+   "rel.occupies",
+   "st.region_geometry"
+  ],
+  "refs": [
+   "drv.motion.entering_region"
+  ],
+  "canonical_body": "{\"since\":[{\"cmp\":\"lt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"st_region_geometry_distance\"},\"rhs\":{\"param\":\"$p0\"}},{\"rises\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_occupies\",\"params\":[]}}]}",
+  "body_json": {
+   "since": [
+    {
+     "cmp": "lt",
+     "lhs": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "var": "r"
+       }
+      ],
+      "measure": "st_region_geometry_distance"
+     },
+     "rhs": {
+      "param": "clearance"
+     }
+    },
+    {
+     "rises": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "var": "r"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     }
+    }
+   ]
+  },
+  "narrowings_added": [
+   {
+    "kind": "reading",
+    "span": "at every observation from that entry up to the observation the ground distance from x's body outline to r (st.region_geometry, m, world frame; zero while the footprint overlaps r) has stayed below clearance",
+    "why": "the distance is read at every observation after the entry up to the judged one, not at the entry itself: there the footprint overlaps r, so by the contract's own words the distance is zero and below clearance, and it does not decide"
+   }
+  ],
+  "context": "e7b7b55088968d4b11efe719",
+  "candidate_digest": "3346d6fde1e69ad08697e4a82cb632662e8c94d9c4639146caf8be34e0dfce16"
+ }
+}

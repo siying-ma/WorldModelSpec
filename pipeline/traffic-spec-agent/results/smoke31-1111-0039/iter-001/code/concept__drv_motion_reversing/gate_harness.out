@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.motion.reversing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.reversing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.reversing.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"speed_floor"}}},"contract":"A road user moves backwards relative to its own body at the observation: the component of its velocity along its heading is below minus speed_floor. Velocity (kin.velocity) is in m/s in the world frame and heading (kin.heading) is read normalised; speed_floor is the source's speed resolution, so a standing or barely creeping body is not reversing. It is read from kinematics only, never from the gear selected: a vehicle in reverse gear that rolls forward is not reversing, and one in a forward gear that rolls backwards is. Not denoted: a turn, the path followed, or the place the road user is in.","definition":null,"id":"drv.motion.reversing","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,kin_heading
+READS	kin_velocity,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"speed_floor"}}}
+WITNESS	holds	drv.motion.reversing@w
+WITNESS	fails	drv.motion.reversing@w
+WITNESS	blind	drv.motion.reversing@w
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+INST	drv.motion.reversing@w	ok
+TIME	checks	2
+TIME	lint	8
+SCEN	holds	drv.motion.reversing@w	compliant	compliant	ok
+TIME	scenario:drv.motion.reversing@w/holds	9
+SCEN	fails	drv.motion.reversing@w	violated	violated	ok
+TIME	scenario:drv.motion.reversing@w/fails	7
+SCEN	blind	drv.motion.reversing@w	unknown	unknown	ok
+TIME	scenario:drv.motion.reversing@w/blind	11
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.reversing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.reversing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.reversing.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.reversing@w	1	2
+TIME	adequacy_start	6
+TIME	adequacy	32
+DONE

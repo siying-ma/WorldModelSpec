@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.position.within_clearance_since_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.within_clearance_since_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.within_clearance_since_entry.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"since":[{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"clearance"}},{"args":[{"var":"x"},{"var":"r"}],"derived":"drv_motion_entering_region","params":[]}]},"contract":"Road user x has entered structure region r and has not since stood clear of it by clearance: x entered r (drv.motion.entering_region: its footprint overlaps r at that observation and did not at the observation before) at the observation or at an earlier one, and at every observation from that entry up to the observation the ground distance from x's body outline to r (st.region_geometry, m, world frame; zero while the footprint overlaps r) has stayed below clearance. It becomes true at an entry, holds while x stays on r or within clearance of it, becomes false at the first observation at which x's body stands at clearance or more from r, and stays false until x's next entry. Unknown where it is undecided whether x entered r at an observation since which the distance stayed below clearance (at x's first observation, whether it entered there is unknown), or where the distance is unobserved at an observation that decides it. Not denoted: the side of r on which the body stands (a body that backs out of r and stays within clearance of it still holds), x's direction or speed, or a halt: the caller reads those.","definition":null,"id":"drv.position.within_clearance_since_entry","kind":"formula","narrowings":[{"kind":"reading","span":"at every observation from that entry up to the observation the ground distance from x's body outline to r (st.region_geometry, m, world frame; zero while the footprint overlaps r) has stayed below clearance","why":"the distance is read at every observation after the entry up to the judged one, not at the entry itself: there the footprint overlaps r, so by the contract's own words the distance is zero and below clearance, and it does not decide"}],"params":[{"name":"clearance","unit":"metre"}],"residues":[],"supersedes":null}
+ATOMS	st_region_geometry_distance,drv_motion_entering_region
+READS	st_region_geometry_distance,rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"since":[{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"clearance"}},{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}]}
+WITNESS	holds	drv.position.within_clearance_since_entry@w
+WITNESS	fails	drv.position.within_clearance_since_entry@w
+WITNESS	blind	drv.position.within_clearance_since_entry@w
+OCC	x,r
+OCC	x,r
+INST	drv.position.within_clearance_since_entry@w	ok
+TIME	checks	3
+TIME	lint	16
+SCEN	holds	drv.position.within_clearance_since_entry@w	compliant	compliant	ok
+TIME	scenario:drv.position.within_clearance_since_entry@w/holds	21
+SCEN	fails	drv.position.within_clearance_since_entry@w	violated	violated	ok
+TIME	scenario:drv.position.within_clearance_since_entry@w/fails	30
+SCEN	blind	drv.position.within_clearance_since_entry@w	unknown	unknown	ok
+TIME	scenario:drv.position.within_clearance_since_entry@w/blind	18
+TIME	witnesses	69
+DONE_WITNESSES
+'TrafficSpec.Concepts.position.within_clearance_since_entry.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.within_clearance_since_entry.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.within_clearance_since_entry.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.position.within_clearance_since_entry@w	2	2
+TIME	adequacy_start	5
+TIME	adequacy	135
+DONE

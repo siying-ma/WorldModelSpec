@@ -1,0 +1,59 @@
+'TrafficSpec.Concepts.motion.clockwise_about_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"speed_floor"}]},{"and":[{"cmp":"lt","lhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},"rhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}},{"cmp":"gt","lhs":{"mul":[{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]}]},"rhs":{"mul":[{"mul":[{"param":"sine_tolerance"},{"param":"sine_tolerance"}]},{"mul":[{"add":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]}]}]},{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}]}]}}]}]},"contract":"A road user moves clockwise about a structure region's reference point at the observation, viewed from above in the world frame, whose positive sense of rotation is counter-clockwise (the sense in which a yaw rate is positive). It holds where the road user is moving (drv.motion.moving with speed_floor) and the cross product of the vector from the region's reference point to the road user's reference point with the road user's velocity is negative and larger in magnitude than sine_tolerance times the product of that vector's length and the road user's speed, compared as squares: the sine of the angle from that radius vector to the velocity is below minus sine_tolerance. The region's reference point is read from st.region_geometry, the road user's from kin.position, its velocity from kin.velocity and its speed from kin.speed, in m and m/s. Motion toward or away from the reference point, within the tolerance, is neither sense. Not denoted: travel against a carrier's designated direction, a change of the road user's heading, or the road user being inside the region: the caller states occupancy.","definition":null,"id":"drv.motion.clockwise_about_region","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"},{"name":"sine_tolerance","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	drv_motion_moving,kin_position,st_region_geometry,kin_velocity,kin_speed
+READS	kin_speed,kin_position,st_region_geometry,kin_velocity
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"speed_floor"}},{"and":[{"cmp":"lt","lhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},"rhs":{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}},{"cmp":"gt","lhs":{"mul":[{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},{"sub":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]}]},"rhs":{"mul":[{"mul":[{"param":"sine_tolerance"},{"param":"sine_tolerance"}]},{"mul":[{"add":[{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"x"}],"measure":"st_region_geometry"}]}]},{"mul":[{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]},{"sub":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_position"},{"args":[{"var":"r"},{"lit":"y"}],"measure":"st_region_geometry"}]}]}]},{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}]}]}}]}]}
+WITNESS	holds	drv.motion.clockwise_about_region@w
+WITNESS	fails	drv.motion.clockwise_about_region@w
+WITNESS	blind	drv.motion.clockwise_about_region@w
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+OCC	r
+OCC	x
+OCC	x
+INST	drv.motion.clockwise_about_region@w	ok
+TIME	checks	5
+TIME	lint	15
+SCEN	holds	drv.motion.clockwise_about_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/holds	9
+SCEN	fails	drv.motion.clockwise_about_region@w	violated	violated	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/fails	7
+SCEN	blind	drv.motion.clockwise_about_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.clockwise_about_region@w/blind	10
+TIME	witnesses	26
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.clockwise_about_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.clockwise_about_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.clockwise_about_region@w	3	2
+TIME	adequacy_start	6
+TIME	adequacy	75
+DONE

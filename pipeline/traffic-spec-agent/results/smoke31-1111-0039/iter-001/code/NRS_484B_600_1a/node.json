@@ -1,0 +1,246 @@
+{
+ "node_id": "NRS_484B_600_1a",
+ "law_refs": [
+  "NRS-484B-600-1a"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for any person to drive or operate a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "at: A rate of speed",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "“a vehicle of any kind or character”: “vehicle” is DEF-NRS-484A-320, admitted as DEF-NRS-484A-320::vehicle and claimed as the one atom ru.aggregate=DEF-NRS-484A-320::vehicle (“membership of a legal aggregate”); “of any kind or character” adds no class beyond the definition's. Its exclusion “a relational role such as who drives or controls a vehicle” does not apply: “any person to drive or operate” is read through the vehicle's controlled motion, drv.motion.moving (“A road user is in motion at the observation: its speed exceeds speed_floor”, over kin.speed), since “a vehicle moving on the road is taken to be driven”."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "“A rate of speed” is kin.speed, the “magnitude of velocity” in m/s; the bound it is held to is the operationalization of s3."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions",
+   "concepts": [
+    "drv.motion.stopping_distance",
+    "kin.speed",
+    "env.ice_or_snow",
+    "env.wet_road",
+    "env.precipitation",
+    "st.sight_distance",
+    "env.visibility",
+    "st.curvature",
+    "st.lane",
+    "st.lane_width",
+    "kin.extent",
+    "rel.occupies",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.perception_reaction_time",
+    "p.braking_decel_dry",
+    "p.braking_decel_wet",
+    "p.braking_decel_ice",
+    "p.curve_lateral_accel",
+    "p.lateral_margin_time",
+    "p.traffic_time_headway"
+   ],
+   "convention": "Assured clear distance and design-speed conventions: the stopping sight distance model (a perception-reaction time and a braking deceleration selected by the surface: dry, wet, icy) bounds speed by the sight distance along the road and by the visibility distance; the side-friction convention bounds the speed on a curve by a lateral acceleration; a speed-proportional lateral margin bounds the speed by the room the lane leaves beside the vehicle; a minimum time headway bounds the speed by the gap to traffic ahead in the lane. Each factor's magnitude enters its bound with the speed, so the bound moves with the factor's degree.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and is moving: drv.motion.moving(x) with speed_floor p.speed_resolution. Read at every observation.",
+ "obligation": "Surrogate. x's speed v (kin.speed) is not greater than reasonable: every bound below holds at the observation. Let S be x's stopping distance drv.motion.stopping_distance(x; p.perception_reaction_time, a), the deceleration a selected by the surface with Term.cond: p.braking_decel_ice where env.ice_or_snow holds; else p.braking_decel_wet where env.wet_road or env.precipitation holds; else p.braking_decel_dry. (1) S is at most the sight distance at x's place (st.sight_distance). (2) S is at most the visibility distance (env.visibility). (3) v times v times the curvature at x's place (st.curvature) is at most p.curve_lateral_accel. (4) For every lane l (st.lane) x's footprint overlaps (rel.occupies): p.lateral_margin_time times v is at most the lane's width (st.lane_width) less x's width (kin.extent, width). (5) For every road user y of the scene that is not x (same) and is ahead of x in the same lane (rel.ahead_behind_in_lane): p.traffic_time_headway times v is at most the surface gap from x to y (rel.surface_gap).",
+ "params": [
+  "p.speed_resolution",
+  "p.perception_reaction_time",
+  "p.braking_decel_dry",
+  "p.braking_decel_wet",
+  "p.braking_decel_ice",
+  "p.curve_lateral_accel",
+  "p.lateral_margin_time",
+  "p.traffic_time_headway"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“any person to drive or operate” is read through the vehicle's controlled motion: a moving vehicle is taken to be driven or operated, and the duty binds its speed whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "The traffic (DEF-NRS-484A-285, “pedestrians, ridden or herded animals, vehicles and other conveyances either singly or together using any highway for purposes of travel”) is read through every road user ahead of the subject in its own lane, whatever its class, by the time gap to it at the subject's speed: a road user in a lane of the highway ahead of the subject is one the speed must regard, so no class condition is read. Traffic crossing, oncoming or beside the road is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "The surface is read by a condition that selects the braking deceleration: icy or snow-covered, wet (or precipitation falling), otherwise dry; the degree of grip within each class is not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "The width of the highway is read through the width of the lane the subject occupies against the subject's own width; the highway's whole width between its boundary lines (st.highway) is not read, and where the subject occupies no lane this factor sets no bound.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "The weather is read through precipitation (selecting the wet deceleration) and the visibility distance (the stopping distance kept within it); wind and temperature are not read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "The catch-all “other highway conditions” is read only through the sight distance along the road and the curvature of the road at the subject's place; grade, darkness, crests and obstructions are not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A passenger car moves on a dry straight lane in fog at a speed whose stopping distance exceeds the observed visibility distance; the sight distance is long and nothing is ahead in the lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car moves slowly on a dry straight lane of ample width with a long sight distance and visibility, alone in the scene: every bound holds."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car stands halted at the curb throughout the trace."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As permit, but the source does not observe the visibility distance.",
+   "masked": [
+    "env.visibility"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The car moves on an icy road (env.ice_or_snow) at a speed whose stopping distance under the ice deceleration exceeds the sight distance, though under the dry deceleration it would not."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "The car takes a tight bend at a speed at which the square of the speed times the curvature exceeds the lateral-acceleration bound; sight and visibility are long."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "The car follows another car ahead in the same lane at a surface gap shorter than the time headway at its speed."
+  },
+  {
+   "name": "branch_4",
+   "expected": "violated",
+   "narrative": "A wide truck moves in a narrow lane at a speed whose lateral margin exceeds the room the lane leaves beside it."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed noise of the carla_scene_graph acquisition standard"
+  },
+  {
+   "name": "p.perception_reaction_time",
+   "unit": "s",
+   "value": 2.5,
+   "convention": "Perception-reaction time: the time a driver keeps its speed before braking begins, in the stopping sight distance model.",
+   "source": "AASHTO Green Book, stopping sight distance (brake reaction time)"
+  },
+  {
+   "name": "p.braking_decel_dry",
+   "unit": "m/s^2",
+   "value": 4.5,
+   "convention": "Braking deceleration on a dry surface: a firm, controlled stop most drivers make on dry pavement.",
+   "source": "stopping-distance studies of driver braking on dry pavement (about 0.45 g)"
+  },
+  {
+   "name": "p.braking_decel_wet",
+   "unit": "m/s^2",
+   "value": 3.4,
+   "convention": "Design braking deceleration: the deceleration most drivers keep within their lane and control on a wet surface, used by the stopping sight distance model.",
+   "source": "AASHTO Green Book, stopping sight distance (deceleration rate)"
+  },
+  {
+   "name": "p.braking_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.5,
+   "convention": "Braking deceleration on an icy or snow-covered surface: the deceleration packed snow or ice allows under controlled braking.",
+   "source": "winter-road friction measurements (friction coefficient about 0.15)"
+  },
+  {
+   "name": "p.curve_lateral_accel",
+   "unit": "m/s^2",
+   "value": 3.0,
+   "convention": "Curve lateral acceleration: the lateral acceleration (speed squared times curvature) above which a curve is taken faster than ordinary drivers' comfort and control margin.",
+   "source": "side-friction and driver-comfort studies of curve negotiation"
+  },
+  {
+   "name": "p.lateral_margin_time",
+   "unit": "s",
+   "value": 0.02,
+   "convention": "Speed-proportional lateral margin: the lateral room beside a vehicle, both sides together, that grows with speed to absorb lateral wander; the speed times this time must fit in the lane width beyond the vehicle's width.",
+   "source": "lane-width and lateral-clearance studies of speed choice"
+  },
+  {
+   "name": "p.traffic_time_headway",
+   "unit": "s",
+   "value": 1.0,
+   "convention": "Minimum time headway in traffic: the time gap to the road user ahead in the lane below which the speed is too high for the traffic.",
+   "source": "car-following headway conventions"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

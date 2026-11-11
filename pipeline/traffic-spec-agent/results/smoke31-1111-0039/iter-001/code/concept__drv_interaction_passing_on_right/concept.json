@@ -1,0 +1,86 @@
+{
+ "concept_id": "drv.interaction.passing_on_right",
+ "kind": "formula",
+ "contract": "Road user x is passing road user y on y's right at the observation: the side-by-side phase of an overtaking. It holds where their headings are aligned (rel.same_direction, with aligned_cosine as the relation's tolerance), their bodies overlap along x's heading (rel.longitudinal_overlap positive), y lies on x's left (the lateral component of rel.bearing of y from x, in x's frame), and x's speed exceeds y's (kin.speed, m/s) by more than speed_margin, the speed resolution below which the two count as keeping pace. Not denoted: the approach from behind or the return ahead of y, where either body is on the road, a lane change, contact, or the clearance between the bodies.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "y",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "aligned_cosine",
+   "unit": "ratio",
+   "meaning": "the cosine of the largest angle between the two headings that counts as aligned"
+  },
+  {
+   "name": "speed_margin",
+   "unit": "m/s",
+   "meaning": "the speed resolution of a speed difference: an excess at or below it counts as keeping pace"
+  }
+ ],
+ "elements": [
+  {
+   "span": "their headings are aligned (rel.same_direction, with aligned_cosine as the relation's tolerance)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: 'headings aligned: the cosine of the angle between the headings is above its tolerance'."
+  },
+  {
+   "span": "their bodies overlap along x's heading (rel.longitudinal_overlap positive)",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: 'the bodies overlap along the subject's heading (side by side)'; it is 'neither a contact nor a distance between the bodies', and neither is read from it."
+  },
+  {
+   "span": "y lies on x's left (the lateral component of rel.bearing of y from x, in x's frame)",
+   "atoms": [
+    "rel.bearing"
+   ],
+   "concepts": [],
+   "justification": "rel.bearing: 'direction of b from a in a's frame (for \"on the right of\", ...)'."
+  },
+  {
+   "span": "x's speed exceeds y's (kin.speed, m/s) by more than speed_margin",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity', m/s, read for both road users."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x drives on the shoulder alongside a slower y in the rightmost lane, y on x's left, the bodies side by side, x gaining."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x follows y in the same lane, its body wholly behind y's."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x and y are side by side and x is faster; the source declares rel.bearing absent.",
+   "masked": [
+    "rel.bearing"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_210_3"
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "concept_id": "drv.motion.slowing",
+ "kind": "formula",
+ "contract": "Road user x is slowing while moving forward at the observation: the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, read normalised) exceeds speed_floor, and its longitudinal acceleration (kin.accel_longitudinal, m/s², signed along the heading) is below minus decel_floor, the source's acceleration resolution. Not denoted: slowing while backing, a brake lamp or a brake input, a halt, or how much the speed has fallen.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution, below which a reading counts as no motion"
+  },
+  {
+   "name": "decel_floor",
+   "unit": "m/s^2",
+   "meaning": "the source's acceleration resolution, below which a deceleration counts as none"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, read normalised) exceeds speed_floor",
+   "atoms": [
+    "kin.velocity",
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity: 'velocity vector'; kin.heading: 'direction the body points'; their product is forward motion, which excludes backing, where a negative acceleration along the heading speeds the body up."
+  },
+  {
+   "span": "its longitudinal acceleration (kin.accel_longitudinal, m/s², signed along the heading) is below minus decel_floor",
+   "atoms": [
+    "kin.accel_longitudinal"
+   ],
+   "concepts": [],
+   "justification": "kin.accel_longitudinal: 'acceleration along heading, signed'; not a stand-in for speed, which is read separately."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x moves forward at 8 m/s along its heading with kin.accel_longitudinal -2.0 m/s²."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x moves forward at 8 m/s with kin.accel_longitudinal 0.0 m/s²."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x moves forward at 8 m/s and kin.accel_longitudinal is not observed.",
+   "masked": [
+    "kin.accel_longitudinal"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_257_1_o1"
+ ]
+}

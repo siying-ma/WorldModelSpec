@@ -1,0 +1,290 @@
+{
+ "node_id": "NRS_484B_297_6_o1",
+ "law_refs": [
+  "NRS-484B-297-6"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "walking or otherwise traveling on a sidewalk",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "who encounters an obstruction to his or her mobility on the sidewalk,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "including, without limitation, a short section of the sidewalk that is missing or impassable,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "may proceed",
+   "role": "obligation"
+  },
+  {
+   "id": "s6",
+   "text": "with due care",
+   "role": "standard"
+  },
+  {
+   "id": "s7",
+   "text": "on the immediately adjacent highway to move around such an obstruction.",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "Such a pedestrian:",
+   "role": "subject"
+  },
+  {
+   "id": "s9",
+   "text": "(a) Must walk or otherwise travel as far to the side of the highway near the sidewalk",
+   "role": "sibling"
+  },
+  {
+   "id": "s10",
+   "text": "as possible;",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "(b) May walk or otherwise travel on the highway in the direction he or she was walking or traveling on the sidewalk, regardless of the direction of traffic;",
+   "role": "condition"
+  },
+  {
+   "id": "s12",
+   "text": "(c) May walk or otherwise travel in a lane provided for bicycles, electric bicycles or electric scooters",
+   "role": "sibling"
+  },
+  {
+   "id": "s13",
+   "text": "if the area between the lane and the sidewalk is impassable;",
+   "role": "sibling"
+  },
+  {
+   "id": "s14",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s15",
+   "text": "(d) Must return to the sidewalk",
+   "role": "sibling"
+  },
+  {
+   "id": "s16",
+   "text": "as soon as practicable.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device')."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'walking or otherwise traveling on a sidewalk': rel.occupies 'a road user's footprint overlaps a lane / region' of a st.sidewalk ('area for pedestrians between roadway and property line'; DEF-NRS-484A-240), while moving (drv.motion.moving). st.sidewalk is not a stand-in for a crosswalk."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'encounters an obstruction to his or her mobility on the sidewalk': a st.obstruction ('a physical object on or beside the roadway that is not a road user', kinds including sidewalk_fixture, barrier, excavation) within the encounter reach of the pedestrian (st.region_geometry 'the ground distance from a road user's body outline to it') while the pedestrian is on the sidewalk."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.obstruction",
+    "st.sidewalk",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'a short section of the sidewalk that is missing or impassable' is no object: st.obstruction ('a physical object ... that is not a road user') covers a blocked section only; a missing or impassable stretch of sidewalk has no atom. Mapped to the nearest atoms with a gap."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.sidewalk",
+    "st.on_way"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'may proceed': the pedestrian moves (drv.motion.moving) while on the highway (st.highway 'the entire public way between its boundary lines', which the sidewalk lies on, st.on_way) and off every sidewalk (rel.occupies); the duty of care binds that proceeding."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.sidewalk",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "'on the immediately adjacent highway': the pedestrian occupies the highway the sidewalk it left lies on (st.on_way) and no sidewalk (rel.occupies); st.highway is not a stand-in for the roadway, and any part of the way off the sidewalk counts. 'to move around such an obstruction' is a purpose, read through the pedestrian having left the sidewalk where it encountered the obstruction and having stayed off it since."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Such a pedestrian' refers back to the pedestrian of the admitted aggregate in the situation s2 to s7 describe."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s6",
+   "standard": "due care",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.immediate_hazard_gap",
+    "p.conflict_clearance"
+   ],
+   "convention": "Surrogate safety conflict (FHWA SSAM): while proceeding on the highway, the pedestrian creates no predicted conflict: no other road user's centre is predicted, under constant velocities, to come within p.conflict_clearance of the pedestrian's within p.immediate_hazard_gap. Due care is a standard of care, so the reading is a surrogate.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s11",
+   "why": "A permission to travel against the direction of traffic; no duty of this node concerns the pedestrian's direction, so the duty is the same whichever way the pedestrian walks.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "x is a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian) on the highway beside a sidewalk it left at an obstruction: for a sidewalk w (st.sidewalk) and a highway h (st.highway) with st.on_way w h, x occupies h and no sidewalk at this observation, and has done so at every observation since an observation at which x occupied w, was moving (drv.motion.moving x with p.speed_resolution) and was within p.obstruction_encounter_reach of an obstruction o (st.obstruction; st_region_geometry_distance x o).",
+ "obligation": "Where x is moving (drv.motion.moving x with p.speed_resolution), no road user z other than x is in predicted conflict with x: not both prim.closest_approach_within x z with horizon p.immediate_hazard_gap and prim.closest_approach_distance x z with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.speed_resolution",
+  "p.obstruction_encounter_reach",
+  "p.immediate_hazard_gap",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s5",
+   "why": "The permission is read as the duty of care that binds the proceeding it permits; where the pedestrian is not moving no proceeding is judged.",
+   "kind": "reading"
+  },
+  {
+   "span": "s7",
+   "why": "'to move around such an obstruction' is read through the conduct: leaving the sidewalk where the obstruction was encountered and staying off it since.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x walks on sidewalk w, comes within 1 m of a st.obstruction of kind barrier, steps onto the roadway of h and walks on at 1.3 m/s while vehicle z, 10 m away at 10 m/s, is predicted to pass within 1 m of x in 1 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but x is the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x walks on sidewalk w with no obstruction and never leaves it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.occupies of x and the sidewalk is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.obstruction_encounter_reach",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Encounter reach: the ground distance from a pedestrian's body to an obstruction within which the pedestrian has come up against it.",
+   "source": "HCM pedestrian body ellipse and shy distance to fixed objects"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical gap: the time within which another road user's arrival at the conflict area, or its predicted closest approach, counts as an immediate hazard to a road user about to cross or join its path.",
+   "source": "HCM 7th ed. Exhibit 20-11 base critical headway (major-street left turn)"
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Conflict radius: the centre distance at predicted closest approach below which two road users' paths count as in conflict; about the half-length plus half-width of two passenger cars.",
+   "source": "FHWA Surrogate Safety Assessment Model (Gettman et al. 2008) conflict definition"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "s4",
+   "kind": "atom",
+   "proposal": "st.impassable_section | a stretch of a sidewalk, or of the ground between a sidewalk and the roadway, that a pedestrian cannot traverse because its surface is missing or blocked, carried as a region with a boundary and the way it lies on; decides where a pedestrian may leave the sidewalk and where it may travel | general",
+   "nearest": [
+    "st.obstruction",
+    "st.sidewalk"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

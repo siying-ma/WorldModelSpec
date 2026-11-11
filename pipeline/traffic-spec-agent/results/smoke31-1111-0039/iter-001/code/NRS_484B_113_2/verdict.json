@@ -1,0 +1,182 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": "tt",
+   "assumptions": [
+    "asm.within_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_113_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-113-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "or": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "derived": "drv_motion_reversing",
+         "params": [
+          {
+           "param": "p.speed_resolution"
+          }
+         ]
+        },
+        {
+         "body": {
+          "rises": {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "r"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          }
+         },
+         "exists_region": {
+          "lit": "intersection"
+         },
+         "var": "r"
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "x"
+            }
+           ],
+           "derived": "drv_motion_reversing",
+           "params": [
+            {
+             "param": "p.speed_resolution"
+            }
+           ]
+          },
+          {
+           "body": {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "var": "c"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "crosswalk"
+           },
+           "var": "c"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "asm": "asm.within_city_limits"
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "x"
+              }
+             ],
+             "derived": "drv_motion_reversing",
+             "params": [
+              {
+               "param": "p.speed_resolution"
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                }
+               ],
+               "derived": "drv_motion_yawing",
+               "params": [
+                {
+                 "param": "p.yaw_rate_resolution"
+                }
+               ]
+              },
+              {
+               "body": {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "k"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               "exists_region": {
+                "lit": "intersection"
+               },
+               "var": "k"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "1327ee01642f5531eae931bb",
+  "candidate_digest": "9e4082c1464371922deaf1a33fb9714aa3501e41405fff88a11c754d9252daea"
+ }
+}

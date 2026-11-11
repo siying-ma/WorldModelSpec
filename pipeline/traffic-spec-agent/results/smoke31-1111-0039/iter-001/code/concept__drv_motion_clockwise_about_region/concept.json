@@ -1,0 +1,73 @@
+{
+ "concept_id": "drv.motion.clockwise_about_region",
+ "kind": "formula",
+ "contract": "A road user moves clockwise about a structure region's reference point at the observation, viewed from above in the world frame, whose positive sense of rotation is counter-clockwise (the sense in which a yaw rate is positive). It holds where the road user is moving (drv.motion.moving with speed_floor) and the cross product of the vector from the region's reference point to the road user's reference point with the road user's velocity is negative and larger in magnitude than sine_tolerance times the product of that vector's length and the road user's speed, compared as squares: the sine of the angle from that radius vector to the velocity is below minus sine_tolerance. The region's reference point is read from st.region_geometry, the road user's from kin.position, its velocity from kin.velocity and its speed from kin.speed, in m and m/s. Motion toward or away from the reference point, within the tolerance, is neither sense. Not denoted: travel against a carrier's designated direction, a change of the road user's heading, or the road user being inside the region: the caller states occupancy.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a road user at or below it has no sense of motion"
+  },
+  {
+   "name": "sine_tolerance",
+   "unit": "ratio",
+   "meaning": "the sine of the largest angle off the radial line within which motion counts as neither sense of rotation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the road user is moving (drv.motion.moving with speed_floor)",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.moving"
+   ],
+   "justification": "drv.motion.moving, co-proposed: speed above the source's resolution."
+  },
+  {
+   "span": "The region's reference point is read from st.region_geometry, the road user's from kin.position, its velocity from kin.velocity and its speed from kin.speed",
+   "atoms": [
+    "st.region_geometry",
+    "kin.position",
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "st.region_geometry gives 'the reference point and the boundary polygon of a structure region in the world frame'; kin.position is the 'position of the body's reference point' (m, world frame); kin.velocity the 'velocity vector' (m/s, world frame); kin.speed the 'magnitude of velocity'. The region's distance (st.region_geometry's ground distance) is not read: the radius runs from reference point to reference point."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car on the circulatory roadway drives around the central island clockwise, its velocity tangential to the radius from the roundabout's reference point."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car on the circulatory roadway drives around the central island counter-clockwise."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car moves on the circulatory roadway; the source declares kin.velocity absent.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_43_010_A"
+ ]
+}

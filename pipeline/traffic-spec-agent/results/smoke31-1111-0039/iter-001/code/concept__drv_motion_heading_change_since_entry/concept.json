@@ -1,0 +1,66 @@
+{
+ "concept_id": "drv.motion.heading_change_since_entry",
+ "kind": "quantity",
+ "contract": "The signed heading change of road user x since its footprint last began to overlap region r, in degrees, left positive: zero at the observation at which the overlap began, integrated from x's yaw rate (kin.yaw_rate) with step as the sampling step bound, not ended by x leaving r and restarted only by its next entry into r. Unknown where that entry is not observed with the overlap known at every observation since, where two consecutive observations since lie further apart than step, or where a yaw rate since the entry is missing. Not denoted: a turn manoeuvre by itself (a caller compares the change with its own bound, and a bend of the way inside the region changes it too), or the heading change over a fixed window.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "step",
+   "unit": "ms",
+   "meaning": "the sampling step bound of the integration: the largest interval between consecutive observations it integrates across"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its footprint last began to overlap region r",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; its latest rise is the entry the change is counted from."
+  },
+  {
+   "span": "integrated from x's yaw rate (kin.yaw_rate) with step as the sampling step bound",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading, positive when the heading turns to the left'; integrated by the formula language's heading-since construct, whose step bound is this parameter."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x enters an intersection and turns a quarter turn to the right before leaving; the value at the exit lies in the band about minus a right angle that the instance's bounds state."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x drives straight through the intersection; the value at the exit stays near zero, outside that band."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x enters and leaves the intersection; the source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_223_4a",
+  "NRS_484B_223_4b"
+ ]
+}

@@ -1,0 +1,108 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 4 names, reads 4 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "rel.same_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}},{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"},{\"lit\":\"left\"}],\"atom\":\"rel_bearing\",\"params\":[]},{\"cmp\":\"gt\",\"lhs\":{\"sub\":[{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},{\"args\":[{\"var\":\"$a1\"}],\"measure\":\"kin_speed\"}]},\"rhs\":{\"param\":\"$p1\"}}]}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "args": [
+      {
+       "var": "x"
+      },
+      {
+       "var": "y"
+      }
+     ],
+     "atom": "rel_same_direction",
+     "params": [
+      {
+       "param": "aligned_cosine"
+      }
+     ]
+    },
+    {
+     "and": [
+      {
+       "cmp": "gt",
+       "lhs": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "y"
+         }
+        ],
+        "measure": "rel_longitudinal_overlap"
+       },
+       "rhs": {
+        "lit": {
+         "den": 1,
+         "num": 0
+        },
+        "unit": "metre"
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "y"
+          },
+          {
+           "lit": "left"
+          }
+         ],
+         "atom": "rel_bearing",
+         "params": []
+        },
+        {
+         "cmp": "gt",
+         "lhs": {
+          "sub": [
+           {
+            "args": [
+             {
+              "var": "x"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           {
+            "args": [
+             {
+              "var": "y"
+             }
+            ],
+            "measure": "kin_speed"
+           }
+          ]
+         },
+         "rhs": {
+          "param": "speed_margin"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "context": "9c313225c3ed7f06922c852e",
+  "candidate_digest": "96e7f4c53c52c3d07994a744d5ff0ba43852431f708b42a135d7ac4d6fb1bbc4"
+ }
+}

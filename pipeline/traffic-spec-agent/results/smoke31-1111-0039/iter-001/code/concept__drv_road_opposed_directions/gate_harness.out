@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.road.opposed_directions.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.road.opposed_directions.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.road.opposed_directions.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"c1","sort":{"sort":"region"}},{"name":"c2","sort":{"sort":"region"}}],"body":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"c1"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"c1"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"opposed_cosine"}}},"contract":"The designated directions of two travel carriers point opposite ways: the dot product of their designated directions (st.lane_direction, read normalised, world frame) is below minus opposed_cosine, so the angle between them is wider than the angle whose cosine is minus opposed_cosine. Unknown where either carrier carries no designated direction. Not denoted: the motion or heading of any road user on them, the carriers lying on the same way, or their entering the same intersection: the caller states those.","definition":null,"id":"drv.road.opposed_directions","kind":"formula","narrowings":[],"params":[{"name":"opposed_cosine","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	st_lane_direction
+READS	st_lane_direction
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"c1"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"x"}],"measure":"st_lane_direction"}]},{"mul":[{"args":[{"var":"c1"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"c2"},{"lit":"y"}],"measure":"st_lane_direction"}]}]},"rhs":{"neg":{"param":"opposed_cosine"}}}
+WITNESS	holds	drv.road.opposed_directions@w
+WITNESS	fails	drv.road.opposed_directions@w
+WITNESS	blind	drv.road.opposed_directions@w
+OCC	c1
+OCC	c2
+OCC	c1
+OCC	c2
+INST	drv.road.opposed_directions@w	ok
+TIME	checks	3
+TIME	lint	15
+SCEN	holds	drv.road.opposed_directions@w	compliant	compliant	ok
+TIME	scenario:drv.road.opposed_directions@w/holds	7
+SCEN	fails	drv.road.opposed_directions@w	violated	violated	ok
+TIME	scenario:drv.road.opposed_directions@w/fails	7
+SCEN	blind	drv.road.opposed_directions@w	unknown	unknown	ok
+TIME	scenario:drv.road.opposed_directions@w/blind	9
+TIME	witnesses	23
+DONE_WITNESSES
+'TrafficSpec.Concepts.road.opposed_directions.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.road.opposed_directions.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.road.opposed_directions.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.road.opposed_directions@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	32
+DONE

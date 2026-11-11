@@ -1,0 +1,225 @@
+{
+ "node_id": "NRS_484B_127_3",
+ "law_refs": [
+  "NRS-484B-127-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "c1",
+   "text": "Motor vehicles being driven",
+   "role": "subject"
+  },
+  {
+   "id": "c2",
+   "text": "upon any highway",
+   "role": "trigger"
+  },
+  {
+   "id": "c3",
+   "text": "outside of a business district",
+   "role": "condition"
+  },
+  {
+   "id": "c4",
+   "text": "in a caravan or motorcade",
+   "role": "condition"
+  },
+  {
+   "id": "c5",
+   "text": "whether or not towing other vehicles",
+   "role": "condition"
+  },
+  {
+   "id": "c6",
+   "text": "shall be operated to allow sufficient space between each such vehicle or combination of vehicles",
+   "role": "obligation"
+  },
+  {
+   "id": "c7",
+   "text": "so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "c1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'Motor vehicles' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle ('every vehicle which is self-propelled but not operated upon rails'), claimed as one atom. 'being driven' is read through the vehicle's controlled motion (agency reading below)."
+  },
+  {
+   "span": "c2",
+   "atoms": [
+    "st.highway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.highway is 'the entire public way between its boundary lines', which denotes DEF-NRS-484A-095 ('the entire width between the boundary lines of every way dedicated to a public authority when any part of the way is open to the use of the public for purposes of vehicular traffic'); its exclusion 'Not a stand-in for: the roadway' is respected: the whole way is read. rel.occupies anchors 'upon' to the highway the vehicle is on."
+  },
+  {
+   "span": "c4",
+   "atoms": [
+    "rel.ahead_behind_in_lane",
+    "rel.same_direction",
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "Nearest atoms only (gap below): membership of a caravan or motorcade, an organized group of vehicles proceeding together, has no atom. rel.ahead_behind_in_lane ('a is ahead of / behind b in the same lane') and rel.same_direction ('headings aligned') relate the subject to the motor vehicle ahead of it, but they hold for any two vehicles following each other in a lane, members of a group or not, so they do not tell a caravan from ordinary traffic."
+  },
+  {
+   "span": "c6",
+   "atoms": [
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane",
+    "rel.same_direction",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "ru.aggregate=DEF-NRS-484A-050::combination_of_vehicles"
+   ],
+   "derived": [],
+   "justification": "'shall be operated to allow ... space between each such vehicle or combination of vehicles' is the vehicle's conduct of keeping a gap to the caravan vehicle ahead of it in its lane: rel.surface_gap ('distance between the nearest points of two bodies'; its longitudinal component along the subject's heading) to the road user that rel.ahead_behind_in_lane ('a is ahead of / behind b in the same lane') places ahead and rel.same_direction ('headings aligned') shows travelling the same way. 'each such vehicle' is a vehicle of the admitted aggregate DEF-NRS-484A-320::vehicle and 'combination of vehicles' the admitted aggregate DEF-NRS-484A-050::combination_of_vehicles ('two or more vehicles coupled together'), each claimed as one atom: the gap is measured from the body of the vehicle or combination ahead. 'sufficient' is bounded by the standard span's operationalization. 'operated' is read through the vehicle's controlled motion (agency reading below)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "c7",
+   "standard": "sufficient space ... so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger",
+   "concepts": [
+    "rel.surface_gap",
+    "rel.ahead_behind_in_lane",
+    "rel.same_direction",
+    "kin.speed"
+   ],
+   "params": [
+    "p.entering_combination_length",
+    "p.entry_time_headway",
+    "p.same_direction_cosine"
+   ],
+   "convention": "Gap acceptance for a vehicle merging into a column: the space between consecutive caravan vehicles must hold the longest combination of vehicles that may enter (a design-vehicle length) plus a time headway at the subject's current speed to the caravan vehicle ahead of the entering one and the same headway from the subject behind it; the bound rises with the subject's speed (kin.speed). 'each such vehicle or combination of vehicles' is the caravan vehicle ahead of the subject, a vehicle (DEF-NRS-484A-320::vehicle) or a combination (DEF-NRS-484A-050::combination_of_vehicles, 'two or more vehicles coupled together'), in the subject's lane (rel.ahead_behind_in_lane) and direction (rel.same_direction).",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "c3",
+   "id": "asm.outside_business_district",
+   "meaning": "The place of the observation lies outside every business district declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "c5",
+   "why": "The duty is the same for a caravan vehicle that tows another vehicle and for one that does not: the words say so ('whether or not'); a towing vehicle and what it tows form a combination of vehicles, whose gap to the vehicle ahead is read from the combination's body through the aggregate the standard names.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle) occupying (rel.occupies) a st.highway region, asm.outside_business_district holds, and x travels in a caravan or motorcade (gap ru.procession_member; nearest reading: some other motor vehicle of the same group travels in x's lane ahead of x (rel.ahead_behind_in_lane) and in x's direction (rel.same_direction, tolerance p.same_direction_cosine)).",
+ "obligation": "For every road user y other than x that is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) or a combination of vehicles (ru.aggregate DEF-NRS-484A-050::combination_of_vehicles), belongs to x's caravan, is ahead of x in its lane (rel.ahead_behind_in_lane) and travels in x's direction (rel.same_direction, p.same_direction_cosine): the longitudinal component of rel.surface_gap between x and y is at least p.entering_combination_length plus p.entry_time_headway times x's speed (kin.speed) for the gap ahead of the entering vehicle plus p.entry_time_headway times x's speed for the gap behind it.",
+ "params": [
+  "p.entering_combination_length",
+  "p.entry_time_headway",
+  "p.same_direction_cosine"
+ ],
+ "narrowings": [
+  {
+   "span": "c1",
+   "why": "'being driven' is read through the vehicle's controlled motion: a motor vehicle moving on the highway is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c6",
+   "why": "'operated' is read through the vehicle's controlled motion: the gap the vehicle keeps is its conduct, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "c7",
+   "why": "'without danger' is read only through the length of the longest combination that may enter and a time headway at the subject's speed on each side of it; other factors of danger (weather, grade, sight distance, the entering vehicle's speed) are not read, and 'any other vehicle or combination of vehicles' is read through that one design length.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a rural highway declared outside every business district, three cars travel as a funeral motorcade in one lane at highway speed; the second car keeps a longitudinal gap to the first shorter than the length of an entering tractor-trailer combination."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The same motorcade, each follower keeping a gap to the car ahead longer than an entering combination plus a time headway at its speed on each side."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The same tightly spaced motorcade travels through a place declared a business district."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The rural motorcade as in forbid; the source declares rel.surface_gap absent, so the gap the follower keeps is not observed.",
+   "masked": [
+    "rel.surface_gap"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "The lead car of a rural motorcade has no vehicle of any kind ahead of it in the scene: there is no space for it to keep, and it binds alone."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.entering_combination_length",
+   "unit": "m",
+   "value": 22.4,
+   "convention": "Design-vehicle length: the overall length of the longest combination of vehicles a highway is designed to carry, standing for 'any other vehicle or combination of vehicles' that may enter the space.",
+   "source": "AASHTO Green Book design vehicles (WB-67 interstate semitrailer, 73.5 ft)"
+  },
+  {
+   "name": "p.entry_time_headway",
+   "unit": "s",
+   "value": 2.0,
+   "convention": "Safe time headway: the time gap kept to the vehicle ahead, applied once ahead of and once behind the entering vehicle at the subject's speed.",
+   "source": "Two-second following rule of driver manuals and headway-based car-following conventions"
+  },
+  {
+   "name": "p.same_direction_cosine",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "Heading alignment tolerance: the cosine of the largest angle between two headings that still counts as travelling the same way.",
+   "source": "Measurement tolerance of heading in ground-truth simulation and lane-keeping heading variation"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "c4",
+   "kind": "atom",
+   "proposal": "`ru.procession_member` | a road user travelling as a member of an organized group of vehicles proceeding together in a column (a caravan, motorcade, convoy or procession), as the source labels the group; **group** attribute identifying the group, so that two road users are members of the same one **Not a stand-in for:** vehicles that merely follow one another in the same lane | general",
+   "nearest": [
+    "rel.ahead_behind_in_lane",
+    "rel.same_direction"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

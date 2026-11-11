@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 66056,
+  "stop_reason": "end_turn",
+  "session_id": "84855ff4-2d01-4e19-b489-db86a58516b5",
+  "total_cost_usd": 0.5454487000000001,
+  "usage": {
+   "input_tokens": 16,
+   "cache_creation_input_tokens": 41273,
+   "cache_read_input_tokens": 284767,
+   "output_tokens": 7761,
+   "output_tokens_details": {
+    "thinking_tokens": 1335
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 41273,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 735,
+     "cache_read_input_tokens": 44656,
+     "cache_creation_input_tokens": 1055,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1055
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30178,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030273,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 7761,
+    "cacheReadInputTokens": 284767,
+    "cacheCreationInputTokens": 41273,
+    "webSearchRequests": 0,
+    "costUSD": 0.5424214,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1335,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_012GUASeGQenvTkrFGnDayk1",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core; grep -rn \"def masked\\|def manifest\" Evidence/Builders.lean; grep -rln \"manifest.absent\\|absentAtom\" . | head",
+     "description": "Find how manifests mask atoms"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The concept `drv.interaction.overtaking_alongside` passed the gate with **OK** on the third of six runs.\n\n**Concept body** (`library/TrafficSpec/Concepts/interaction/overtaking_alongside.lean`): it holds when all three of these hold at the observation:\n- `rel_same_direction x y`, with `aligned_cosine` as the tolerance.\n- `rel_longitudinal_overlap x y > 0`. x is the first argument, so the overlap is measured along x's heading.\n- `kin_speed x − kin_speed y > speed_margin`, strictly greater as the contract says \"by more than\".\n\nThere is no side condition, since either side of y counts. I added no narrowings because the contract left nothing open.\n\n**Witnesses**: the instance sets `aligned_cosine` to 9/10 and `speed_margin` to 1 m/s. Both road users are vehicles heading east, observed at three instants 1 s apart.\n- **holds:** x is 4 m to y's left at 20 m/s and y is at 15 m/s. Their projections along the heading share 8, 11 and 6 m.\n- **fails:** x is in the same lane 30 m behind y at the same speeds, so there is a gap between the projections the whole time.\n- **blind:** the holds scene with `rel.longitudinal_overlap` masked.\n\n**Gate runs:**\n1. **`WITNESS_FAIL`:** blind came back compliant. Masking the atom alone doesn't make it unknown, because Core still works the overlap out from position, heading and body size. I removed the body sizes from the blind scene; heading and speed, which decide the other two conditions, are still observed.\n2. **`WITNESS_FAIL`:** the gate rejected that trace because the vehicles were still marked as having observed lane occupancy without a defined footprint. I cleared the occupancy data in the blind scene.\n3. **OK.**\n\nEarly on, a `grep` I tried in order to read how Core masks atoms was refused, because this session only allows the gate command. It didn't block anything: the gate's own feedback was enough to find the fix.\n\nThe run log is in `task_result.md` in the working directory.",
+  "ttft_ms": 1376,
+  "type": "result",
+  "duration_ms": 74926,
+  "uuid": "11530f48-cf98-429a-8055-fcc14d8ad679",
+  "ttft_stream_ms": 598,
+  "time_to_request_ms": 69,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 109,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 19,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 598,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30178,
+    "outputTokens": 19,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030273,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 16,
+    "outputTokens": 7761,
+    "cacheReadInputTokens": 284767,
+    "cacheCreationInputTokens": 41273,
+    "webSearchRequests": 0,
+    "costUSD": 0.5424214,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1335,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

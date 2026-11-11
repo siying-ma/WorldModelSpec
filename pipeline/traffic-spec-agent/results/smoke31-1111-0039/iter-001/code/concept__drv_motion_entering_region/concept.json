@@ -1,0 +1,60 @@
+{
+ "concept_id": "drv.motion.entering_region",
+ "kind": "formula",
+ "contract": "Road user x enters structure region r at the observation: its footprint overlaps r (rel.occupies) at the observation and did not at the observation before. The entry is that one observation; the later observations at which the overlap continues are not the entry again. Unknown where the overlap is unobserved at the observation or at the one before, or where there is no observation of x before it. Not denoted: x's direction or speed, the region x came from, or its whole body being inside r: an overlap by any part of the footprint counts.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "its footprint overlaps r (rel.occupies) at the observation and did not at the observation before",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; read at the observation and at the one before it, so the event is the observation at which the overlap became true."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x's footprint does not overlap r at t0 and overlaps r at t1; judged at t1."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x's footprint overlaps r at t0 and at t1; judged at t1, the overlap continues and is no entry."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "rel.occupies of x and r is not observed at t0; judged at t1.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_4_o1",
+  "NRS_484B_250_4_o2",
+  "NRS_484B_250_1",
+  "NRS_484B_253_o2",
+  "NRS_484B_257_1_o1",
+  "NRS_484B_257_1_o2",
+  "NRS_484B_263_o1",
+  "NRS_484B_263_o2",
+  "NRS_484B_270_3_o2",
+  "NRS_484B_270_4"
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 81749,
+  "stop_reason": "end_turn",
+  "session_id": "40bf698a-4984-4701-93df-fbb7bb9df3a1",
+  "total_cost_usd": 0.6148121,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 47564,
+   "cache_read_input_tokens": 195624,
+   "output_tokens": 9569,
+   "output_tokens_details": {
+    "thinking_tokens": 2802
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 47564,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 711,
+     "cache_read_input_tokens": 50939,
+     "cache_creation_input_tokens": 1063,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1063
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37403,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037553,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 10,
+    "outputTokens": 9569,
+    "cacheReadInputTokens": 195624,
+    "cacheCreationInputTokens": 47564,
+    "webSearchRequests": 0,
+    "costUSD": 0.6110567999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2802,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 7,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_440_1_o3` on the second of six runs. It reported 5 witnesses, 8 names, no compositions and one narrowing that I declared.\n\n**Rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_440_1_o3.lean`):\n- **Class:** `x` is in `DEF-NRS-484A-320::vehicle`.\n- **When it applies:** all of these hold:\n  - `x` is halted (speed at or below `p.speed_resolution`).\n  - `x` is on a highway and on its roadway.\n  - The place is not inside a business or residence district.\n  - `x` is not disabled. Following the node, disabled is read as engine off, hazard lamps on and `x` on the roadway.\n- **Duty:** on every roadway `x` occupies on that highway, the sight distance is at least 200 ft.\n\n**The choice I made:** the node says \"the sight distance at x's place\" but doesn't say which region that is. I read it from the roadway `x` is on, and if `x` straddles more than one roadway, each must meet 200 ft. This is recorded as a narrowing on span g12, so later sessions will see it.\n\n**Witnesses:** the test scene is a rural highway 400 m long. Its roadway's sight distance is 30 m (below 200 ft, which is 60.96 m) or 300 m. The first gate run failed to build because I gave region ids as text when they must be numbers; that was the only fix needed.\n\n| Scenario | Expected | Scene |\n|---|---|---|\n| forbid | violated | Vehicle halted, sight distance 30 m |\n| permit | compliant | Vehicle halted, sight distance 300 m |\n| idle | not applicable | Vehicle moving at 15 m/s |\n| blind | unknown | As forbid, with the sight distance hidden from the source |\n| branch_1 | not applicable | As forbid, but engine off and hazard lamps on |\n\nI didn't find anything wrong with the node, so there is no defect to report. The run log and choices are in `task_result.md` in the working directory.",
+  "ttft_ms": 27008,
+  "type": "result",
+  "duration_ms": 86580,
+  "uuid": "f5315cd8-aea5-4c34-ab4b-0c349efa3acb",
+  "ttft_stream_ms": 1058,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 98,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 12,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1058,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37403,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037553,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 10,
+    "outputTokens": 9569,
+    "cacheReadInputTokens": 195624,
+    "cacheCreationInputTokens": 47564,
+    "webSearchRequests": 0,
+    "costUSD": 0.6110567999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2802,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,210 @@
+{
+ "node_id": "NRS_484B_263_o1",
+ "law_refs": [
+  "NRS-484B-263"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "about to enter or exit a controlled-access highway",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "shall yield the right-of-way",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "to all vehicles approaching on the highway",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "whose proximity constitutes an immediate hazard",
+   "role": "standard"
+  },
+  {
+   "id": "s6",
+   "text": "and shall continue to yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "to that traffic",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "until the driver may proceed with reasonable safety.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.controlled_access",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region"
+   ],
+   "justification": "'a controlled-access highway' is st.controlled_access 'a highway with access only at designated points' (DEF-NRS-484A-060 'no legal right of access except at such points only'). 'about to enter or exit' is read by the movement it leads to: the footprint beginning to overlap the region (drv.motion.entering_region) or ceasing to (drv.motion.leaving_region), through rel.occupies."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.leaving_region"
+   ],
+   "justification": "'shall yield the right-of-way' (DEF-NRS-484A-210 'to proceed ... in preference'): x does not make the entry or the exit while a vehicle owed precedence is a hazard."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.controlled_access",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'all vehicles' are the admitted aggregate; 'approaching on the highway': y occupies the controlled-access region (rel.occupies) and is moving (drv.motion.moving over kin.speed); its approach toward x is read by the standard's closest approach."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s5",
+   "standard": "proximity that constitutes an immediate hazard",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.immediate_hazard_gap",
+    "p.conflict_clearance"
+   ],
+   "convention": "Surrogate safety conflict (FHWA SSAM; critical gap as the horizon): y's centre is predicted, under constant velocities, to come within p.conflict_clearance of x's within p.immediate_hazard_gap. The primitives alone are not a stand-in for contact or the danger of a crash; the bound is the standard's.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and at this observation enters (drv.motion.entering_region x a) or leaves (drv.motion.leaving_region x a) a region a of kind st.controlled_access.",
+ "obligation": "At this entry or exit no vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle) occupies a (rel.occupies y a), is moving (drv.motion.moving y with p.speed_resolution) and is in predicted conflict with x: prim.closest_approach_within x y with horizon p.immediate_hazard_gap and prim.closest_approach_distance x y with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.speed_resolution",
+  "p.immediate_hazard_gap",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "'about to enter or exit' is an imminent movement, read by the entry into or the exit from the controlled-access region it leads to.",
+   "kind": "observable_reading",
+   "category": "intention"
+  },
+  {
+   "span": "s3",
+   "why": "The yield is judged at the entry or exit observation: making it while a hazard exists is the failure to yield.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x moves from an on-ramp into controlled-access region a (entering) at 15 m/s while vehicle y in a, 15 m behind and moving at 25 m/s on a converging path, is predicted to come within 1 m of x in 1.5 s."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x enters a as the only road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives on an arterial roadway; no st.controlled_access region is entered or left."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but kin.speed of y is not observed.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "x enters a while y in a is 300 m behind at 25 m/s: no predicted conflict within the horizon."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical gap: the time within which another road user's arrival at the conflict area, or its predicted closest approach, counts as an immediate hazard to a road user about to cross or join its path.",
+   "source": "HCM 7th ed. Exhibit 20-11 base critical headway (major-street left turn)"
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Conflict radius: the centre distance at predicted closest approach below which two road users' paths count as in conflict; about the half-length plus half-width of two passenger cars.",
+   "source": "FHWA Surrogate Safety Assessment Model (Gettman et al. 2008) conflict definition"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

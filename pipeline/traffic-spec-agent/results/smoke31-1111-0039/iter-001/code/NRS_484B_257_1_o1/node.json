@@ -1,0 +1,275 @@
+{
+ "node_id": "NRS_484B_257_1_o1",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Except when traffic is being controlled by a police officer or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "s2",
+   "text": "When proper signs have been erected,",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall stop or yield at a clearly marked stop line or, if there is none, before entering the crosswalk on the near side of the intersection or, if there is none, then at the point nearest the intersection",
+   "role": "obligation"
+  },
+  {
+   "id": "s8",
+   "text": "where the driver has a view of approaching traffic on the through highway.",
+   "role": "standard"
+  },
+  {
+   "id": "s9",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped,",
+   "role": "sibling"
+  },
+  {
+   "id": "s10",
+   "text": "the driver shall yield the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s11",
+   "text": "to other vehicles which have entered the intersection from such through highway",
+   "role": "sibling"
+  },
+  {
+   "id": "s12",
+   "text": "or which are approaching so closely on such through highway as to constitute an immediate hazard during the time such driver is moving across or within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "dev.governs",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'traffic' is the admitted aggregate DEF-NRS-484A-285::traffic; the traffic whose control matters is the subject's own flow, so x is read as a member. 'being controlled by a police officer' is dev.human_direction 'a person directing traffic' with role police_officer (DEF-NRS-484A-180 'every officer authorized to direct or regulate traffic') governing the intersection or x's approach carrier (dev.governs); 'or a traffic-control signal' is a dev.traffic_signal governing them that is not dev.inoperative ('showing no valid indication'): a dark signal controls nothing, and NRS 484B.250(4) then governs."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'proper signs' are dev.stop_sign ('regulatory sign requiring a full halt') or dev.yield_sign ('regulatory sign requiring yielding without a mandatory halt') governing (dev.governs) x's approach carrier c (rel.occupies, st.lane_enters c i) or the intersection; the duty is owed on the approach to x's entry into the intersection (drv.motion.entering_region)."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "kin.speed",
+    "kin.velocity",
+    "kin.heading",
+    "kin.accel_longitudinal",
+    "st.stop_line",
+    "st.entrance_of",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.region_geometry",
+    "prim.region_offset_along",
+    "st.crosswalk",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.halted",
+    "drv.motion.slowing"
+   ],
+   "justification": "'stop' (required: DEF-NRS-484A-255 'complete cessation from movement') is drv.motion.halted; 'or yield' at a yield sign is, by the words of the next sentence ('in the event of a yield sign, slowed or stopped'), a halt or slowing (drv.motion.slowing: forward motion with kin.accel_longitudinal below minus the resolution); kin.accel_longitudinal is not a stand-in for speed, and both are read. The places are read as in NRS_484B_250_4_o1: st.stop_line recorded by st.entrance_of as marking x's approach carrier (st.lane_enters, st.travel_region), nearness by st.region_geometry, side by prim.region_offset_along along the carrier's direction; else the st.crosswalk st.entrance_of records as marking that carrier, with the halt's footprint not overlapping it (rel.occupies); else a halt with the footprint outside the st.intersection."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s8",
+   "standard": "a view of approaching traffic on the through highway: how much of the through highway must be in view",
+   "concepts": [
+    "st.sight_along_way",
+    "st.highway",
+    "st.on_way"
+   ],
+   "params": [
+    "p.intersection_sight_distance"
+   ],
+   "convention": "Intersection sight distance for a stop- or yield-controlled approach (AASHTO Green Book cases B and C): from the place of the act, the through highway (a st.highway on which the intersection lies, st.on_way, and the subject's approach carrier does not) is in view for at least p.intersection_sight_distance (st.sight_along_way, the smaller of its two directions); not a stand-in for whether an actual road user is seen.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and enters intersection i (st.intersection) at this observation (drv.motion.entering_region x i) through an approach carrier c it occupies (st.travel_region, st.lane_enters c i); a dev.stop_sign or dev.yield_sign governs c or i (dev.governs) at this observation; and traffic is not being controlled by a police officer or a traffic-control signal: x being a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic), no dev.human_direction with role police_officer and no dev.traffic_signal that is not dev.inoperative governs c or i at this observation. Where x occupies several carriers entering i and the verdict differs between them, which governs is unknown.",
+ "obligation": "Act: where a dev.stop_sign governs c or i, x halted (drv.motion.halted x with p.speed_resolution) at the place; where only a dev.yield_sign governs, x halted at the place or was slowing (drv.motion.slowing x with p.speed_resolution and p.deceleration_resolution) at some observation of the approach before passing the place (before the place is behind x along c by prim.region_offset_along; for place (3), before x enters i). Place, in the words' order: (1) where a stop line s (st.stop_line) is recorded as marking c (st.entrance_of s c): at s, x's body within p.stop_point_tolerance of s (st_region_geometry_distance) and s not behind x along c (prim.region_offset_along x s c at least zero); (2) where the source observes that no stop line marks c and a crosswalk w is recorded as marking c (st.entrance_of w c): before entering w, x's footprint not overlapping w, within p.stop_point_tolerance of w and w ahead along c; (3) where the source observes that neither marks c: x's footprint outside i, within p.stop_point_tolerance of i, or farther upstream where a highway h on which i lies and c does not (st.on_way i h; st.on_way c h false) is in view from x for at least p.intersection_sight_distance (st_sight_along_way x h). History bound (the approach convention): the search runs back from this entry to the approach start, the last observation before the entry at which x, on c, is outside the governing place's stopping zone upstream (not on it, short of it along c, farther than p.stop_point_tolerance), or to x's previous entry into i, whichever is later; the act found there meets the duty, reaching either end without it violates it, reaching neither leaves it unknown. An act before the previous entry into i never counts; an observed exit from the stopping zone upstream begins a new approach; crossing the mark, a change of carrier, a lateral move, a reverse within the zone and speed noise begin none. Missing evidence: whether this is an entry through c is unknown where the observation before it does not show x on a mapped carrier; a mark whose association with c is unobserved governs unknown; where the lists are observed and exclude c, the next place governs; a recorded act at a place known to govern decides compliance whatever else is missing.",
+ "params": [
+  "p.speed_resolution",
+  "p.deceleration_resolution",
+  "p.stop_point_tolerance",
+  "p.intersection_sight_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'traffic is being controlled' is read as control of x's own approach or of the intersection it enters, x being a member of the traffic aggregate; the officer's role and the signal's presence are read as their official status.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s2",
+   "why": "'proper signs' are read through the presence of a stop or yield sign governing the approach or the intersection.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s4",
+   "why": "At a yield sign the act owed at the place is read as the 'slowed or stopped' the next sentence names; yielding to traffic is the other node's duty.",
+   "kind": "reading"
+  },
+  {
+   "span": "s4",
+   "why": "'clearly marked' is read through the represented stop line.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s4",
+   "why": "A halt within p.stop_point_tolerance of the intersection counts, and one farther upstream counts where the view bound holds; that no nearer point with the view existed is not checked.",
+   "kind": "reading"
+  },
+  {
+   "span": "s8",
+   "why": "'the through highway' is read as a highway the intersection lies on that the subject's signed approach carrier does not lie on; its designation is presumed from the sign on the subject's approach.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "dev.stop_sign governs lane c (st.lane_enters c i); stop line s marks c; no officer and no signal. x is first observed 80 m upstream at 12 m/s, never falls to the speed resolution and enters i."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but x halts with its body 0.5 m short of s, then enters i."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No sign governs c or i; x enters i without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but dev.governs is not observed for the stop sign.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "dev.yield_sign governs c; x, moving forward at 10 m/s, decelerates at 2 m/s² 30 m upstream of s and enters i at 4 m/s without halting."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but a dev.human_direction with role police_officer governs i while x rolls through."
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "As forbid, but the recording begins with x 1.5 m short of s at 1 m/s; no halt is recorded before x enters i.",
+   "boundary": "x's approach start on c, the last observation outside the stopping zone upstream of s, lies before the recording."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.deceleration_resolution",
+   "unit": "m/s^2",
+   "value": 0.3,
+   "convention": "Sensor resolution: the smallest longitudinal deceleration the acquisition standard separates from steady speed; a deceleration at or below it counts as no slowing.",
+   "source": "carla_scene_graph acquisition standard: acceleration resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Stop-point tolerance: the largest ground distance between a halted body and the line, crossing or intersection edge at which the halt counts as made at that place; a body farther upstream is outside the stopping zone.",
+   "source": "MUTCD 2009 section 3B.16 stop-line placement (at least 4 ft ahead of the crosswalk) and vehicle positioning variability at a stop"
+  },
+  {
+   "name": "p.intersection_sight_distance",
+   "unit": "m",
+   "value": 100,
+   "convention": "Intersection sight distance: the length of the crossing way, in the smaller of its two directions, that a driver halted on a stop-controlled approach must be able to see to judge a gap in approaching traffic.",
+   "source": "AASHTO A Policy on Geometric Design of Highways and Streets (2018) section 9.5.3, case B departure sight triangles at a low urban design speed"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

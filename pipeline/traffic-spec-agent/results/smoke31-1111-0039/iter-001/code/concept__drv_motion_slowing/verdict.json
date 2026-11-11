@@ -1,0 +1,99 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.accel_longitudinal",
+   "kin.heading",
+   "kin.velocity"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]}]},\"rhs\":{\"param\":\"$p0\"}},{\"cmp\":\"lt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_accel_longitudinal\"},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "gt",
+     "lhs": {
+      "add": [
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "kin_velocity"
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "kin_heading"
+         }
+        ]
+       },
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "kin_velocity"
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "kin_heading"
+         }
+        ]
+       }
+      ]
+     },
+     "rhs": {
+      "param": "speed_floor"
+     }
+    },
+    {
+     "cmp": "lt",
+     "lhs": {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "measure": "kin_accel_longitudinal"
+     },
+     "rhs": {
+      "neg": {
+       "param": "decel_floor"
+      }
+     }
+    }
+   ]
+  },
+  "context": "bff48e85f806c699360054a8",
+  "candidate_digest": "e60321ab0498259033e03aa8f20c2228d97ecc8c8b2eaf5a69731275cbfade39"
+ }
+}

@@ -1,0 +1,219 @@
+{
+ "node_id": "NRS_484B_440_1_o3",
+ "law_refs": [
+  "NRS-484B-440-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "Upon any highway",
+   "role": "trigger"
+  },
+  {
+   "id": "g2",
+   "text": "outside of a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "g3",
+   "text": "no person shall stop, park or leave standing",
+   "role": "sibling"
+  },
+  {
+   "id": "g4",
+   "text": "any vehicle, whether attended or unattended,",
+   "role": "subject"
+  },
+  {
+   "id": "g5",
+   "text": "upon the paved or main-traveled part of the highway",
+   "role": "trigger"
+  },
+  {
+   "id": "g6",
+   "text": "when it is practicable to stop, park or so leave such vehicle off such part of the highway,",
+   "role": "sibling"
+  },
+  {
+   "id": "g7",
+   "text": "but in every event",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g8",
+   "text": "an unobstructed width of the highway",
+   "role": "sibling"
+  },
+  {
+   "id": "g9",
+   "text": "opposite a standing vehicle",
+   "role": "sibling"
+  },
+  {
+   "id": "g10",
+   "text": "shall be left for the free passage of other vehicles",
+   "role": "sibling"
+  },
+  {
+   "id": "g11",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g12",
+   "text": "a clear view of such stopped vehicles shall be available from a distance of 200 feet in each direction upon such highway.",
+   "role": "obligation"
+  },
+  {
+   "id": "g13",
+   "text": "This section shall not apply to the driver of any vehicle which is disabled while on the paved or main-traveled portion of a highway in such manner and to such extent that it is impossible to avoid stopping and temporarily leaving such disabled vehicle in such position.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway: \"the entire public way between its boundary lines, including sidewalks and shoulders\"; x is upon it where its footprint overlaps it (rel.occupies)."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed by id; 'whether attended or unattended' excludes no member."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "'such stopped vehicles' are those of the first clause, upon the paved or main-traveled part: the st.roadway (\"the part of a highway improved for vehicular traffic, excluding shoulder\"), overlapped by x's footprint (rel.occupies)."
+  },
+  {
+   "span": "g12",
+   "atoms": [
+    "st.sight_distance",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "A stopped vehicle is x halted (drv.motion.halted, kin.speed at or below the resolution); the stop is not a prohibited one here, so the definition of stopping when prohibited adds no exclusion. A clear view of it from a distance along the highway is st.sight_distance at its place: \"the distance along the road within which a vehicle at a point and another vehicle on the road could see each other ... both the view of approaching traffic from that point and its being seen by drivers approaching it\"; it is at least the law's literal. It is 'not a stand-in' for whether an actual road user saw x (rel.visible), and is not used as one."
+  },
+  {
+   "span": "g13",
+   "atoms": [
+    "kin.engine_running",
+    "sig.hazard",
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "A vehicle disabled on the roadway is read through its nearest observables, as in the first obligation of this line: engine or motor not running (kin.engine_running: \"so that propulsion is available\", false) with hazard lamps flashing (sig.hazard: \"both indicators flashing together\"), while it occupies the roadway (rel.occupies, st.roadway). kin.engine_running is 'not a stand-in' for motion or a halt; the gap records that the disability itself has no atom."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "g2",
+   "id": "asm.within_business_or_residence_district",
+   "meaning": "The place of the observation lies inside a business district or a residence district declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle; at the observation x is halted (drv.motion.halted with p.speed_resolution) with its footprint overlapping a st.roadway of a st.highway (rel.occupies); asm.within_business_or_residence_district does not hold; and x is not disabled there: not (kin.engine_running false and sig.hazard on).",
+ "obligation": "The sight distance at x's place (st.sight_distance) is at least the literal of span g12.",
+ "params": [
+  "p.speed_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "g12",
+   "why": "'in each direction' is read through the sight distance the source reports for the place, which states both the view from it and its being seen along the road without separating the two directions of the way.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle) halts on the roadway of a rural highway just beyond a crest, where st.sight_distance is below the literal of span g12."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x halts on a straight, level rural roadway where st.sight_distance is well above the literal."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives along the rural roadway without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x halts on the rural roadway near a crest, but the source does not supply sight distances.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x halts just beyond a crest with its engine not running and its hazard lamps flashing: the disabled-vehicle exception applies."
+  }
+ ],
+ "literals": [
+  {
+   "span": "g12",
+   "text": "200 feet",
+   "value": 200,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed resolution of the carla_scene_graph acquisition standard"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "g13",
+   "kind": "atom",
+   "proposal": "`ru.disabled` | a vehicle that cannot proceed under its own power, by a mechanical failure, crash damage or a flat tyre, as the source records it **Not a stand-in for:** a vehicle parked with its engine off, or one showing hazard lamps | general — decides whether moving the vehicle off the roadway can be carried out, which the disabled-vehicle exception turns on",
+   "nearest": [
+    "kin.engine_running",
+    "sig.hazard"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

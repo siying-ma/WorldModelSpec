@@ -1,0 +1,47 @@
+'TrafficSpec.Rules.NRS_484B_263_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_263_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_263_o2","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"operationalizations":[{"concepts":["kin.speed","prim.closest_approach_within","rel.surface_gap"],"params":["p.merge_time_headway","p.immediate_hazard_gap"],"standard":"proceed with reasonable safety","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"or":[{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_entering_region","params":[]},{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_leaving_region","params":[]}]},"exists_region":{"lit":"controlled_access"},"var":"a"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_263_o2","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"obligation":{"body":{"implies":[{"or":[{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_entering_region","params":[]},{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_leaving_region","params":[]}]},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"var":"a"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"y"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"args":[{"var":"x"},{"var":"y"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]}]}]}]}]}]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"y"}],"measure":"kin_speed"},{"param":"p.merge_time_headway"}]}}]},"forall_user":"y"}]},"forall_region":{"lit":"controlled_access"},"var":"a"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"or":[{"rises":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]},"exists_region":{"lit":"controlled_access"},"var":"a"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_263_o2","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"obligation":{"body":{"implies":[{"or":[{"rises":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"var":"a"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"y"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"args":[{"var":"x"},{"var":"y"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]}]}]}]}]}]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"y"}],"measure":"kin_speed"},{"param":"p.merge_time_headway"}]}}]},"forall_user":"y"}]},"forall_region":{"lit":"controlled_access"},"var":"a"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_controlled_access,drv_motion_entering_region,drv_motion_leaving_region,rel_occupies,drv_motion_moving,prim_closest_approach_within,rel_surface_gap,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.surface_gap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	x
+OCC	?a
+OCC	x,a
+OCC	x,a
+OCC	?a
+OCC	x,a
+OCC	x,a
+OCC	?y
+OCC	y,x
+OCC	y
+OCC	y
+OCC	y,a
+OCC	y
+OCC	x,y
+OCC	x,y
+OCC	y
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	21
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	15
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	?	blind: expected unknown, got violated []
+TIME	scenario:blind	14
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	14
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	14
+TIME	witnesses	75
+DONE_WITNESSES

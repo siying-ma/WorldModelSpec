@@ -1,0 +1,53 @@
+{
+ "concept_id": "drv.motion.moving",
+ "kind": "formula",
+ "contract": "A road user is in motion at the observation: its speed exceeds speed_floor. The floor names only the source's speed resolution, below which a reading counts as no motion; speed (kin.speed) is in m/s. The concept says nothing of the direction of motion relative to the body or to the road, of a manoeuvre, or of who or what controls the motion. Not denoted: a halt held for a duration, travel along a particular carrier, or a road user being driven by a person.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a speed at or below it counts as no motion"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed exceeds speed_floor",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the 'magnitude of velocity' in m/s; it carries no direction, which the contract does not state."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car travels along a lane at ordinary urban speed, far above the floor."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car stands at a stop line with zero speed."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.speed absent.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_38_030"
+ ]
+}

@@ -1,0 +1,40 @@
+'TrafficSpec.Concepts.motion.veering_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.veering_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.veering_right.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"c","sort":{"sort":"region"}}],"body":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"speed_floor"}]},{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre_per_second"}},{"cmp":"lt","lhs":{"sub":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},"rhs":{"neg":{"mul":[{"param":"sine_tolerance"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}}}]}]},"contract":"Road user x departs to the right of a travel carrier's designated direction at the observation: it moves forward along the carrier while its velocity points to the right of the carrier's direction by more than a tolerance. It holds where x is moving (drv.motion.moving with speed_floor), the component of its velocity (kin.velocity, m/s, world frame) along the carrier's designated direction (st.lane_direction, read normalised) is positive, and the cross product of that direction with the velocity, left positive, is below minus sine_tolerance times x's speed (kin.speed): the sine of the angle from the designated direction to the velocity is below minus sine_tolerance. Unknown where the carrier carries no designated direction. Not denoted: x's heading (a body may point across a carrier while moving along it), motion against the carrier's direction, x being on the carrier (the caller states occupancy), a signal, or how far x has moved sideways.","definition":null,"id":"drv.motion.veering_right","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"},{"name":"sine_tolerance","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	drv_motion_moving,st_lane_direction,kin_velocity,kin_speed
+READS	kin_speed,st_lane_direction,kin_velocity
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"speed_floor"}},{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]}]},"rhs":{"lit":{"den":1,"num":0},"unit":"metre_per_second"}},{"cmp":"lt","lhs":{"sub":[{"mul":[{"args":[{"var":"c"},{"lit":"x"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"}]},{"mul":[{"args":[{"var":"c"},{"lit":"y"}],"measure":"st_lane_direction"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"}]}]},"rhs":{"neg":{"mul":[{"param":"sine_tolerance"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}}}]}]}
+WITNESS	holds	drv.motion.veering_right@w
+WITNESS	fails	drv.motion.veering_right@w
+WITNESS	blind	drv.motion.veering_right@w
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+OCC	c
+OCC	x
+OCC	x
+INST	drv.motion.veering_right@w	ok
+TIME	checks	6
+TIME	lint	8
+SCEN	holds	drv.motion.veering_right@w	compliant	compliant	ok
+TIME	scenario:drv.motion.veering_right@w/holds	8
+SCEN	fails	drv.motion.veering_right@w	violated	violated	ok
+TIME	scenario:drv.motion.veering_right@w/fails	7
+SCEN	blind	drv.motion.veering_right@w	unknown	unknown	ok
+TIME	scenario:drv.motion.veering_right@w/blind	10
+TIME	witnesses	25
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.veering_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.veering_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.veering_right.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.veering_right@w	3	2
+TIME	adequacy_start	6
+TIME	adequacy	66
+DONE

@@ -1,0 +1,476 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 11 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "L"
+        },
+        {
+         "lit": "right"
+        }
+       ],
+       "atom": "st_turn_lane_side",
+       "params": []
+      },
+      {
+       "and": [
+        {
+         "body": {
+          "args": [
+           {
+            "var": "L"
+           },
+           {
+            "var": "H"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "highway"
+         },
+         "var": "H"
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "N"
+                },
+                {
+                 "lit": "right"
+                }
+               ],
+               "atom": "st_turn_lane_side",
+               "params": []
+              },
+              {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "L"
+                  },
+                  {
+                   "lit": "left"
+                  },
+                  {
+                   "var": "N"
+                  }
+                 ],
+                 "atom": "st_lane_adjacency",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "L"
+                  },
+                  {
+                   "lit": "right"
+                  },
+                  {
+                   "var": "N"
+                  }
+                 ],
+                 "atom": "st_lane_adjacency",
+                 "params": []
+                }
+               ]
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "turn_lane"
+            },
+            "var": "N"
+           }
+          },
+          {
+           "since": [
+            "tt",
+            {
+             "args": [
+              {
+               "var": "x"
+              },
+              {
+               "var": "L"
+              }
+             ],
+             "atom": "rel_occupies",
+             "params": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "turn_lane"
+    },
+    "var": "L"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_223_4a",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-223-4a"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "L"
+          },
+          {
+           "lit": "right"
+          }
+         ],
+         "atom": "st_turn_lane_side",
+         "params": []
+        },
+        {
+         "and": [
+          {
+           "body": {
+            "args": [
+             {
+              "var": "L"
+             },
+             {
+              "var": "H"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           "exists_region": {
+            "lit": "highway"
+           },
+           "var": "H"
+          },
+          {
+           "and": [
+            {
+             "not": {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "N"
+                  },
+                  {
+                   "lit": "right"
+                  }
+                 ],
+                 "atom": "st_turn_lane_side",
+                 "params": []
+                },
+                {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "L"
+                    },
+                    {
+                     "lit": "left"
+                    },
+                    {
+                     "var": "N"
+                    }
+                   ],
+                   "atom": "st_lane_adjacency",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "L"
+                    },
+                    {
+                     "lit": "right"
+                    },
+                    {
+                     "var": "N"
+                    }
+                   ],
+                   "atom": "st_lane_adjacency",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "turn_lane"
+              },
+              "var": "N"
+             }
+            },
+            {
+             "since": [
+              "tt",
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "L"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "args": [
+           {
+            "var": "L"
+           },
+           {
+            "var": "I"
+           }
+          ],
+          "atom": "st_lane_enters",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "not": {
+             "and": [
+              {
+               "rises": {
+                "not": {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "L"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               }
+              },
+              {
+               "and": [
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "L"
+                     },
+                     {
+                      "lit": "left"
+                     },
+                     {
+                      "var": "M"
+                     }
+                    ],
+                    "atom": "st_lane_adjacency",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "M"
+                     }
+                    ],
+                    "atom": "rel_occupies",
+                    "params": []
+                   }
+                  ]
+                 },
+                 "exists_region": {
+                  "lit": "lane"
+                 },
+                 "var": "M"
+                },
+                {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "I"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "rises": {
+                "not": {
+                 "args": [
+                  {
+                   "var": "x"
+                  },
+                  {
+                   "var": "I"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               }
+              },
+              {
+               "and": [
+                {
+                 "since": [
+                  "tt",
+                  {
+                   "and": [
+                    {
+                     "rises": {
+                      "args": [
+                       {
+                        "var": "x"
+                       },
+                       {
+                        "var": "I"
+                       }
+                      ],
+                      "atom": "rel_occupies",
+                      "params": []
+                     }
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "x"
+                      },
+                      {
+                       "var": "L"
+                      }
+                     ],
+                     "atom": "rel_occupies",
+                     "params": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "cmp": "gt",
+                 "lhs": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "I"
+                   }
+                  ],
+                  "params": [
+                   {
+                    "param": "p.heading_since_step_carla_scene_graph"
+                   }
+                  ],
+                  "quantity": "drv_motion_heading_change_since_entry"
+                 },
+                 "rhs": {
+                  "neg": {
+                   "param": "p.turn_recognition_angle"
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "intersection"
+       },
+       "var": "I"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "turn_lane"
+    },
+    "var": "L"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "69339b95a3f9f473f3f1c8be",
+  "candidate_digest": "159cbe5eb49cfcc15cd1f783e7186836cc8167e5840f6c00692c379fa6b3789b"
+ }
+}

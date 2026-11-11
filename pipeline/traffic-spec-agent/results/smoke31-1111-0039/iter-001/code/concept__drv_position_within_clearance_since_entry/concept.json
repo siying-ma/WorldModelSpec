@@ -1,0 +1,67 @@
+{
+ "concept_id": "drv.position.within_clearance_since_entry",
+ "kind": "formula",
+ "contract": "Road user x has entered structure region r and has not since stood clear of it by clearance: x entered r (drv.motion.entering_region: its footprint overlaps r at that observation and did not at the observation before) at the observation or at an earlier one, and at every observation from that entry up to the observation the ground distance from x's body outline to r (st.region_geometry, m, world frame; zero while the footprint overlaps r) has stayed below clearance. It becomes true at an entry, holds while x stays on r or within clearance of it, becomes false at the first observation at which x's body stands at clearance or more from r, and stays false until x's next entry. Unknown where it is undecided whether x entered r at an observation since which the distance stayed below clearance (at x's first observation, whether it entered there is unknown), or where the distance is unobserved at an observation that decides it. Not denoted: the side of r on which the body stands (a body that backs out of r and stays within clearance of it still holds), x's direction or speed, or a halt: the caller reads those.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "clearance",
+   "unit": "m",
+   "meaning": "the ground distance from x's body outline to r at or beyond which x counts as clear of r; the caller passes the distance its words state"
+  }
+ ],
+ "elements": [
+  {
+   "span": "x entered r (drv.motion.entering_region: its footprint overlaps r at that observation and did not at the observation before)",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "The entry is the co-proposed concept drv.motion.entering_region, whose contract is “Road user x enters structure region r at the observation: its footprint overlaps r (rel.occupies) at the observation and did not at the observation before”; it is the event from which the state is counted, and the formula's past operator (since) reads it at the observation it occurred. rel.occupies is the atom the entry reads: “a road user's footprint overlaps a lane / region”."
+  },
+  {
+   "span": "the ground distance from x's body outline to r (st.region_geometry, m, world frame; zero while the footprint overlaps r)",
+   "atoms": [
+    "st.region_geometry"
+   ],
+   "concepts": [],
+   "justification": "st.region_geometry carries “the ground distance from a road user's body outline to it (zero when they overlap)”. Not a stand-in for occupancy: the state does not read the distance as occupancy; the entry is read through rel.occupies, and the distance only decides when the body stands clear."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x does not overlap r at its first observations and stands farther than clearance from it; its footprint overlaps r from the third observation; at the sixth it has left r and its body outline stands at a distance below clearance from r. At the sixth observation the concept holds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x enters r at the third observation, leaves it at the fifth, and at the eighth its body outline stands at clearance or more from r. At the eighth observation the concept fails, and it stays false at the later observations at which x does not enter r again."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, but the source maps r without its outline, so the distance from x's body to r is unobserved at the sixth observation, where x no longer overlaps r.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_560_7a"
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 63388,
+  "stop_reason": "end_turn",
+  "session_id": "6c29710a-9764-48d4-b817-fb0b698a28a8",
+  "total_cost_usd": 0.576435,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 47249,
+   "cache_read_input_tokens": 271617,
+   "output_tokens": 7035,
+   "output_tokens_details": {
+    "thinking_tokens": 1539
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 47249,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 668,
+     "cache_read_input_tokens": 50894,
+     "cache_creation_input_tokens": 793,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 793
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33501,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033636000000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 7035,
+    "cacheReadInputTokens": 271617,
+    "cacheCreationInputTokens": 47249,
+    "webSearchRequests": 0,
+    "costUSD": 0.5730714,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1539,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "`drv.motion.veering_left` passed the gate on the first run (verdict `OK`). That used 1 of the 6 runs, and `task_result.md` is written.\n\n**The concept** (`library/TrafficSpec/Concepts/motion/veering_left.lean`): the body requires all three of the following:\n- **Moving:** x is moving, by calling `drv_motion_moving` with `speed_floor`.\n- **Forward:** the velocity's component along lane c's designated direction is positive (dX·vX + dY·vY > 0).\n- **Left of the direction:** the cross product of the direction with the velocity, left positive, exceeds `sine_tolerance` times x's speed (dX·vY − dY·vX > sine_tolerance · kin_speed x). There is no division by a measured value, as the record requires.\n\nThe direction is `st_lane_direction c` and the velocity `kin_velocity x`, each read through its `\"x\"` and `\"y\"` components; Core supplies the direction normalised. If lane c has no direction and x is moving, the body comes out unknown.\n\n**The witnesses** (`library/TrafficSpecWitness/Concepts/motion/veering_left.lean`): each scenario has three scenes one second apart, with one car on lane 100 (heading east) and lane 101 to its left. The instance sets `speed_floor` to 0.1 m/s and `sine_tolerance` to 1/10.\n- **holds:** the car's velocity is (9.6, 2.8) m/s at 10 m/s, so the sine of its angle to the lane is 0.28, above 0.1.\n- **fails:** the car drives due east at 10 m/s, parallel to the lane, so the cross product is 0.\n- **blind:** the same car as in `holds`, but lane 100 has no direction and `st.lane_direction` is marked absent.\n\nI declared no narrowings, because the contract fixes every comparison as strict and names every atom and parameter. The one choice left to me was tagging the zero in the \"forward\" comparison as m/s.",
+  "ttft_ms": 3158,
+  "type": "result",
+  "duration_ms": 66463,
+  "uuid": "ae2339fd-3517-457f-84b7-6cc0dab6cb5c",
+  "ttft_stream_ms": 1074,
+  "time_to_request_ms": 63,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 12,
+   "input_hooks": 1,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 13,
+  "time_to_request_cpu_ms": 96,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 16,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1074,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 33501,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0033636000000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 7035,
+    "cacheReadInputTokens": 271617,
+    "cacheCreationInputTokens": 47249,
+    "webSearchRequests": 0,
+    "costUSD": 0.5730714,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1539,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

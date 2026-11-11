@@ -1,0 +1,52 @@
+'TrafficSpec.Rules.NRS_484B_560_7a.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_560_7a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"or":[{"args":[{"var":"x"},{"var":"r"}],"derived":"drv_motion_entering_region","params":[]},{"args":[{"var":"x"},{"var":"r"}],"derived":"drv_position_within_clearance_since_entry","params":[{"lit":{"den":250,"num":1143},"unit":"metre"}]}]},"exists_region":{"lit":"railway_crossing"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"obligation":{"or":[{"not":{"args":[{"var":"x"}],"derived":"drv_motion_halted","params":[{"param":"p.speed_resolution"}]}},{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"l"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"l"}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"or":[{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}},{"since":[{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"lit":{"den":250,"num":1143},"unit":"metre"}},{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}]}]},"exists_region":{"lit":"railway_crossing"},"var":"r"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_560_7a","intentions":[],"laws":["NRS-484B-560-7a"],"narrowings":[],"obligation":{"or":[{"not":{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}}},{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"and":[{"args":[{"var":"d"},{"lit":"stop"}],"atom":"dev_human_direction_indication","params":[]},{"body":{"and":[{"args":[{"var":"d"},{"var":"l"}],"atom":"dev_governs","params":[]},{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"l"}]}]},"exists_device":{"lit":"human_direction"},"var":"d"}]},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_railway_crossing,drv_motion_entering_region,drv_position_within_clearance_since_entry,drv_motion_halted,dev_human_direction,dev_human_direction_role,dev_human_direction_indication,st_travel_region,dev_governs,rel_occupies
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	x
+OCC	?r
+OCC	x,r
+OCC	x,r
+OCC	x
+OCC	?d
+OCC	d
+OCC	d
+OCC	?l
+OCC	d,l
+OCC	x,l
+LITERAL	1143/250	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	6
+TIME	lint	100
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	25
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	39
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	18
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	31
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	36
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	29
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	39
+TIME	witnesses	217
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_560_7a.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_560_7a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_560_7a	7	6
+TIME	adequacy_start	5
+TIME	adequacy	1804
+DONE

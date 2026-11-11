@@ -1,0 +1,66 @@
+{
+ "concept_id": "drv.position.entered_via",
+ "kind": "formula",
+ "contract": "Road user x is inside region r on its current entry and came in through region c: x's footprint overlaps r (rel.occupies) at the observation and at every observation since the observation at which this overlap began (the footprint overlapping r there and not at the observation before), and at that beginning x's footprint also overlapped c. Unknown where the beginning of the current overlap is not observed: an overlap already under way at x's first observation, or an unobserved overlap of r or c at an observation that decides it. Not denoted: that c is an approach to r (the caller states the entry topology), the direction x moved, or where x was before the beginning.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  },
+  {
+   "name": "c",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "x's footprint overlaps r (rel.occupies) at the observation and at every observation since the observation at which this overlap began",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; held at every observation since its last rise (past mirror of until)."
+  },
+  {
+   "span": "at that beginning x's footprint also overlapped c",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies of x and c read at the observation at which the overlap of r rose."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x overlaps c and not r at t0, overlaps c and r at t1, overlaps r only at t2; judged at t2."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x overlaps region c2 and not r at t0, overlaps c2 and r at t1 without overlapping c, overlaps r at t2; judged at t2."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "rel.occupies of x and c is not observed at t1, the observation at which x's overlap of r began; judged at t2.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_1",
+  "NRS_484B_253_o1",
+  "NRS_484B_253_o2",
+  "NRS_484B_257_1_o2"
+ ]
+}

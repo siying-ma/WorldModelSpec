@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.entering_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.entering_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.entering_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}},"contract":"Road user x enters structure region r at the observation: its footprint overlaps r (rel.occupies) at the observation and did not at the observation before. The entry is that one observation; the later observations at which the overlap continues are not the entry again. Unknown where the overlap is unobserved at the observation or at the one before, or where there is no observation of x before it. Not denoted: x's direction or speed, the region x came from, or its whole body being inside r: an overlap by any part of the footprint counts.","definition":null,"id":"drv.motion.entering_region","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies
+READS	rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"rises":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}
+WITNESS	holds	drv.motion.entering_region@w
+WITNESS	fails	drv.motion.entering_region@w
+WITNESS	blind	drv.motion.entering_region@w
+OCC	x,r
+INST	drv.motion.entering_region@w	ok
+TIME	checks	1
+TIME	lint	8
+SCEN	holds	drv.motion.entering_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.entering_region@w/holds	9
+SCEN	fails	drv.motion.entering_region@w	violated	violated	ok
+TIME	scenario:drv.motion.entering_region@w/fails	7
+SCEN	blind	drv.motion.entering_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.entering_region@w/blind	11
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.entering_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.entering_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.entering_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.entering_region@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	24
+DONE

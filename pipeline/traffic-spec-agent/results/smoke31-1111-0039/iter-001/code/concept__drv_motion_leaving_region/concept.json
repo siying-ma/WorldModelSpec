@@ -1,0 +1,52 @@
+{
+ "concept_id": "drv.motion.leaving_region",
+ "kind": "formula",
+ "contract": "Road user x leaves structure region r at the observation: its footprint overlapped r (rel.occupies) at the observation before and does not overlap it at the observation. The exit is that one observation; the later observations at which x stays off r are not the exit again. Unknown where the overlap is unobserved at the observation or at the one before, or where there is no observation of x before it. Not denoted: x's direction or speed, or the region x moves into.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [],
+ "elements": [
+  {
+   "span": "its footprint overlapped r (rel.occupies) at the observation before and does not overlap it at the observation",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies: 'a road user's footprint overlaps a lane / region'; its negation became true at the observation."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x's footprint overlaps r at t0 and does not at t1; judged at t1."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x's footprint overlaps r at t0 and at t1; judged at t1."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "rel.occupies of x and r is not observed at t1.",
+   "masked": [
+    "rel.occupies"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_263_o1",
+  "NRS_484B_263_o2"
+ ]
+}

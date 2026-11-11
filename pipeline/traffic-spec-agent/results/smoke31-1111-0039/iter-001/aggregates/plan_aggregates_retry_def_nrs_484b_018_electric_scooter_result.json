@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 68223,
+  "stop_reason": "end_turn",
+  "session_id": "dc54ede5-8b3a-4b17-a038-d438d51ad71f",
+  "total_cost_usd": 0.22151650000000003,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7463,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 8037,
+   "output_tokens_details": {
+    "thinking_tokens": 4333
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7463,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 8037,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 7463,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7463
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7450,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007555,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 8037,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7463,
+    "webSearchRequests": 0,
+    "costUSD": 0.22076100000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4333,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484B-018\", \"term\": \"electric scooter\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484B-018::electric_scooter\", \"quote\": \"“Electric scooter” means a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider.\", \"reason\": \"The definition denotes a set of devices ridden on the highway, whose eligibility the road-user classes can classify.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484B-018::electric_scooter\", \"term\": \"electric scooter\", \"definition\": \"DEF-NRS-484B-018\",\n   \"classifications\": [\n     {\"class\": \"ru.bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Devices moved by human power or used exclusively upon stationary rails\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor\"}], \"reason\": \"A human-powered bicycle is excepted from the vehicle definition the term requires, and it has no electric motor.\"},\n     {\"class\": \"ru.bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A motor vehicle designed to carry many passengers is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor\"}], \"reason\": \"A child pedestrian is a person, not a vehicle with handlebars and an electric motor.\"},\n     {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"The class contract admits vehicles merely marked as commercially licensed, and the words neither admit nor exclude such a marked device that otherwise meets the handlebar, motor, weight and speed conditions.\"},\n     {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(2) Electric bicycles\"}, {\"definition\": \"DEF-NRS-484B-017\", \"words\": \"The term does not include a moped or an electric scooter.\"}], \"reason\": \"Electric bicycles are excepted from the vehicle definition the term requires, and the electric-bicycle definition expressly excludes electric scooters.\"},\n     {\"class\": \"ru.electric_scooter\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position and propelled by its electric motor or by propulsion provided by the rider\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(4) An electric scooter\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must have a maximum speed of not more than 20 miles per hour when powered solely by its electric motor\"}], \"reason\": \"The definition describes this class's devices but requires them to be a vehicle, whose definition expressly excepts an electric scooter, so the words contradict each other rather than deciding membership; and its weight and speed limits are not carried by the class contract, so even without that conflict they would admit only some members.\"},\n     {\"class\": \"ru.emergency_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}], \"reason\": \"The words neither admit nor exclude a device of a designated emergency class, such as a police unit, that meets the handlebar, motor, weight and speed conditions.\"},\n     {\"class\": \"ru.fire_apparatus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}], \"reason\": \"A fire-fighting vehicle is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.moped\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-125\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}], \"reason\": \"The moped definition expressly excludes electric scooters, so no moped is an electric scooter.\"},\n     {\"class\": \"ru.motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"propelled by its electric motor or by propulsion provided by the rider\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"The words admit self-propelled devices with handlebars within the weight and speed limits, but neither admit nor exclude the class as a whole, whose members mostly exceed those limits.\"},\n     {\"class\": \"ru.motorcycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must have a maximum speed of not more than 20 miles per hour when powered solely by its electric motor\"}], \"reason\": \"An electric two-wheeler ridden astride with handlebars meets the descriptive words, but the weight and speed limits admit only some such members, and the class contract does not carry them.\"},\n     {\"class\": \"ru.official_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor that is designed to be ridden on in an upright or seated position\"}], \"reason\": \"The words neither admit nor exclude an official or contracted service device, such as a municipal unit, that meets the handlebar, motor, weight and speed conditions.\"},\n     {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(3) Electric personal assistive mobility devices as defined in NRS 482.029\"}], \"reason\": \"A pedestrian is a person afoot or on a device the definitions treat as on foot, not a vehicle; the assistive mobility devices that make a person a pedestrian are excepted from vehicle.\"},\n     {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"a vehicle with handlebars and an electric motor\"}], \"reason\": \"Such a pedestrian is a person, not a vehicle with handlebars and an electric motor.\"},\n     {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"Devices moved by human power or used exclusively upon stationary rails\"}], \"reason\": \"On-track equipment is excepted from the vehicle definition the term requires.\"},\n     {\"class\": \"ru.school_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A bus for carrying school children is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.taxicab\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A passenger vehicle for hire is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A tour bus or lengthened passenger vehicle is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.trailer_or_combination\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"propelled by its electric motor or by propulsion provided by the rider\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A drawn vehicle or a combination is not a single device of at most 100 pounds propelled by its own motor or its rider.\"},\n     {\"class\": \"ru.transit_bus\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A transit bus is not a device ridden on with handlebars weighing at most 100 pounds.\"},\n     {\"class\": \"ru.truck\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-018\", \"words\": \"designed to be ridden on in an upright or seated position\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"Must not weigh more than 100 pounds without a rider\"}], \"reason\": \"A motor vehicle with a body built for carrying goods is not a device ridden on with handlebars weighing at most 100 pounds.\"}\n   ]}]}\n```",
+  "ttft_ms": 42140,
+  "type": "result",
+  "duration_ms": 67588,
+  "uuid": "1325024e-5ee8-4f07-9fef-d3eb7862cee5",
+  "ttft_stream_ms": 605,
+  "time_to_request_ms": 74,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 22,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 6,
+   "input_hooks": 2,
+   "transcript_persist": 13,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 0,
+   "client_creation": 2,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 24,
+  "time_to_request_cpu_ms": 110,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 9,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 606,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7450,
+    "outputTokens": 21,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007555,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 8037,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7463,
+    "webSearchRequests": 0,
+    "costUSD": 0.22076100000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4333,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

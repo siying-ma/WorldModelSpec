@@ -1,0 +1,77 @@
+'TrafficSpec.Rules.NRS_484B_270_3_o2.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_270_3_o2.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_270_3_o2","intentions":[],"laws":["NRS-484B-270-3"],"narrowings":[{"kind":"no_atom","span":"s12","why":"'a disabled vehicle': no atom of the surface denotes a vehicle's inability to move under its own power; sig.hazard (both indicators flashing) and kin.engine_running (propulsion available, not a stand-in for motion) are evidence at most and do not carry the words."},{"kind":"no_atom","span":"s17","why":"'In an emergency': no atom of the surface denotes an emergency situation at the observation; sig.hazard and ru.emergency_vehicle (not a stand-in for a responding emergency vehicle) do not carry the words."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"not":{"or":[{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.access_crossing_reach"}},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"r"}]},{"or":[{"body":{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"body":{"since":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"},{"var":"b"}],"derived":"drv_motion_entering_region","params":[]},{"body":{"and":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"and":[{"args":[{"var":"z"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"not":{"args":[{"var":"z"},{"var":"b"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}]}]}]},"exists_user":"z"}]}]},"defined_when":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"},{"or":[{"or":[{"args":[{"var":"x"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"x"}],"atom":"ru_emergency_vehicle","params":[]}]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}]}]}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_3_o2","intentions":[],"laws":["NRS-484B-270-3"],"narrowings":[{"kind":"no_atom","span":"s12","why":"'a disabled vehicle': no atom of the surface denotes a vehicle's inability to move under its own power; sig.hazard (both indicators flashing) and kin.engine_running (propulsion available, not a stand-in for motion) are evidence at most and do not carry the words."},{"kind":"no_atom","span":"s17","why":"'In an emergency': no atom of the surface denotes an emergency situation at the observation; sig.hazard and ru.emergency_vehicle (not a stand-in for a responding emergency vehicle) do not carry the words."}],"obligation":{"body":{"not":{"or":[{"args":[{"var":"x"},{"var":"b"}],"derived":"drv_motion_entering_region","params":[]},{"or":[{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"}],"derived":"drv_motion_halted","params":[{"param":"p.speed_resolution"}]}]},{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]}]}]}]}},"forall_region":{"lit":"bicycle_lane_or_path"},"var":"b"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"not":{"or":[{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.access_crossing_reach"}},"exists_region":{"lit":"driveway_or_alley_entrance"},"var":"r"}]},{"or":[{"body":{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"body":{"since":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"and":[{"rises":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]}},{"body":{"and":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"and":[{"args":[{"var":"z"},{"lit":"DEF-NRS-484A-285::traffic"}],"atom":"ru_aggregate","params":[]},{"and":[{"not":{"args":[{"var":"z"},{"var":"b"}],"atom":"rel_occupies","params":[]}},{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}]}]}]},"exists_user":"z"}]}]},"defined_when":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]}}]},"exists_region":{"lit":"bicycle_lane_or_path"},"var":"b"},{"or":[{"or":[{"args":[{"var":"x"}],"atom":"ru_official_vehicle","params":[]},{"args":[{"var":"x"}],"atom":"ru_emergency_vehicle","params":[]}]},{"body":{"and":[{"args":[{"var":"d"},{"lit":"police_officer"}],"atom":"dev_human_direction_role","params":[]},{"body":{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"args":[{"var":"d"},{"var":"r"}],"atom":"dev_governs","params":[]}]},"exists_region":{"lit":"travel_region"},"var":"r"}]},"exists_device":{"lit":"human_direction"},"var":"d"}]}]}]}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_270_3_o2","intentions":[],"laws":["NRS-484B-270-3"],"narrowings":[{"kind":"no_atom","span":"s12","why":"'a disabled vehicle': no atom of the surface denotes a vehicle's inability to move under its own power; sig.hazard (both indicators flashing) and kin.engine_running (propulsion available, not a stand-in for motion) are evidence at most and do not carry the words."},{"kind":"no_atom","span":"s17","why":"'In an emergency': no atom of the surface denotes an emergency situation at the observation; sig.hazard and ru.emergency_vehicle (not a stand-in for a responding emergency vehicle) do not carry the words."}],"obligation":{"body":{"not":{"or":[{"rises":{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]}},{"or":[{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}}]},{"and":[{"args":[{"var":"x"},{"var":"b"}],"atom":"rel_occupies","params":[]},{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}}]}]}]}},"forall_region":{"lit":"bicycle_lane_or_path"},"var":"b"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_moving,st_driveway_or_alley_entrance,st_region_geometry_distance,st_bicycle_lane_or_path,rel_occupies,drv_motion_entering_region,prim_closest_approach_within,prim_closest_approach_distance,ru_official_vehicle,ru_emergency_vehicle,dev_human_direction,dev_human_direction_role,st_travel_region,dev_governs,drv_motion_halted
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-285::traffic
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+MANIFEST	branch_8	
+OCC	x
+OCC	x
+OCC	?r
+OCC	x,r
+OCC	?b
+OCC	x,b
+OCC	x,b
+OCC	x,b
+OCC	x,b
+OCC	?z
+OCC	z,x
+OCC	z
+OCC	z,b
+OCC	x,z
+OCC	x,z
+OCC	x
+OCC	x
+OCC	?d
+OCC	d
+OCC	?r
+OCC	x,r
+OCC	d,r
+OCC	?b
+OCC	x,b
+OCC	x,b
+OCC	x
+OCC	x,b
+OCC	x
+TIME	occurrences	0
+TIME	checks	11
+TIME	lint	136
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	38
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	22
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	18
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	40
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	14
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	19
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	39
+SCEN	branch_4	compliant	compliant	ok
+TIME	scenario:branch_4	24
+SCEN	branch_5	not_applicable	not_applicable	ok
+TIME	scenario:branch_5	19
+SCEN	branch_6	not_applicable	not_applicable	ok
+TIME	scenario:branch_6	18
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	26
+SCEN	branch_8	violated	violated	ok
+TIME	scenario:branch_8	23
+TIME	witnesses	300
+DONE_WITNESSES

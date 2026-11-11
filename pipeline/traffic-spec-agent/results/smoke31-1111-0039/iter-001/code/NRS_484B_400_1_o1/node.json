@@ -1,0 +1,228 @@
+{
+ "node_id": "NRS_484B_400_1_o1",
+ "law_refs": [
+  "NRS-484B-400-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "If the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "intends to turn",
+   "role": "trigger"
+  },
+  {
+   "id": "e3",
+   "text": "at an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "e4",
+   "text": "and:",
+   "role": "boilerplate"
+  },
+  {
+   "id": "e5",
+   "text": "The turn is a right turn,",
+   "role": "trigger"
+  },
+  {
+   "id": "e6",
+   "text": "both the approach for the right turn and the right turn must be made from the right turn lane",
+   "role": "obligation"
+  },
+  {
+   "id": "e7",
+   "text": "if the highway has a right turn lane",
+   "role": "condition"
+  },
+  {
+   "id": "e8",
+   "text": "as set forth in subsection 4 of NRS 484B.223 [NRS-484B-223-4a, NRS-484B-223-4b],",
+   "role": "reference"
+  },
+  {
+   "id": "e9",
+   "text": "or must be made from the extreme right lane.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), claimed by id. 'the driver of' is a role read through the vehicle's controlled motion (observable_reading agency)."
+  },
+  {
+   "span": "e3",
+   "atoms": [
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "The intersection the intention is declared at and the turn is made in: st.intersection (\"the region where two roadways meet\"), entered by x (drv.motion.entering_region: \"its footprint overlaps r (rel.occupies) at the observation and did not at the observation before\") from the approach carrier it occupies whose entrance end is i (st.lane_enters: \"the intersection region a directed approach carrier runs into at its entrance end\")."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "kin.yaw_rate",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "The turn made is a right turn where the heading change of x since it entered i (drv.motion.heading_change_since_entry: \"The signed heading change of road user x since its footprint last began to overlap region r, in degrees, left positive\", from kin.yaw_rate) reaches the turn recognition angle to the right. The concept is 'not' a turn by itself; the rule compares it with its bound."
+  },
+  {
+   "span": "e6",
+   "atoms": [
+    "rel.occupies",
+    "st.turn_lane",
+    "st.lane_enters",
+    "st.intersection",
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "The approach for the turn and the turn are made from the right turn lane R where x's footprint overlaps R (rel.occupies) at its entry into i and at every observation of the approach length of path travelled before it at which x occupies a carrier entering i (a .path window, which reads kin.path_length, \"distance travelled along the body's path\"). R is the st.turn_lane (\"a lane designated only for turning; side ∈ {left, right}\") of side right that enters i (st.lane_enters)."
+  },
+  {
+   "span": "e7",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.turn_lane",
+    "st.lane_enters",
+    "st.lane_direction"
+   ],
+   "derived": [
+    "drv.road.opposed_directions"
+   ],
+   "source_spans": [
+    "e8"
+   ],
+   "justification": "The highway has a right turn lane as subsection 4 of NRS 484B.223 sets forth, whose words are borrowed: NRS-484B-223-4a and NRS-484B-223-4b both quote \"a single right lane to be used only for turning\". That is a st.turn_lane (\"a lane designated only for turning\") of side right, entering i (st.lane_enters), lying on the same highway (st.on_way: \"the public way (a highway region) a structure region lies on\"; st.highway) as the carrier x approached through, and serving x's direction: its designated direction (st.lane_direction) not opposed to that carrier's (drv.road.opposed_directions false), so that a turn lane on the opposing approach of the same way is not read."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "e2",
+   "id": "int.turn",
+   "meaning": "The source's current plan for the road user includes a turn, to either hand, at the target region."
+  }
+ ],
+ "compositions": [
+  {
+   "span": "e8",
+   "as": "definition",
+   "source": "NRS-484B-223-4a",
+   "quote": "a single right lane to be used only for turning",
+   "why": "It borrows only the description of the lane, a single right lane to be used only for turning, to say which lane counts as a right turn lane here; whether a vehicle in that lane complies with paragraph (4)(a), driving in it only to turn right, decides nothing in this duty, so that rule need not apply, hold or be complied with."
+  },
+  {
+   "span": "e8",
+   "as": "definition",
+   "source": "NRS-484B-223-4b",
+   "quote": "a single right lane to be used only for turning",
+   "why": "It borrows only the same description of the lane; whether a vehicle in that lane complies with paragraph (4)(b), not travelling through the intersection, decides nothing in this duty, so that rule need not apply, hold or be complied with."
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle; at the observation x's right turn in intersection i is recognized: the heading change since x's latest entry into i (drv.motion.heading_change_since_entry(x, i) with step p.heading_since_step_carla_scene_graph) is at most minus p.turn_recognition_angle there and was not at the observation before; the source declared int.turn for x at i at the observation of that entry (Formula.intent, read through a past operator); and the highway has a right turn lane for x's approach: x entered i from a carrier c with st.lane_enters(c, i) lying on a highway h (st.on_way(c, h)), and some st.turn_lane R of side right enters i (st.lane_enters(R, i)), lies on h (st.on_way(R, h)) and has a designated direction not opposed to c's (drv.road.opposed_directions(R, c) with p.opposed_carriers_cosine false).",
+ "obligation": "At the observation of that entry into i (read through a past operator), x's footprint overlaps such a lane R, and at every observation of the path window of length p.turn_approach_length behind the entry (measured in x's path, kin.path_length) at which x occupies a carrier entering i, it occupies that R: both the approach and the turn are made from the right turn lane.",
+ "params": [
+  "p.turn_recognition_angle",
+  "p.heading_since_step_carla_scene_graph",
+  "p.opposed_carriers_cosine",
+  "p.turn_approach_length"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'the driver of a vehicle' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e6",
+   "why": "'the approach for the right turn' is read as the stretch of path, of the approach length, just before the entry into the intersection, during which every carrier of the intersection x is on must be the right turn lane; a lane change into the turn lane earlier than that stretch complies.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle) approaches i on a through lane c of highway h whose approach also has a right st.turn_lane R entering i; int.turn is declared for x at i; x enters i from c and turns right beyond p.turn_recognition_angle."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same highway; x, with int.turn declared at i, is on R for the whole approach length before its entry, enters i from R and turns right."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x, with int.turn declared at i, turns left in i (heading change positive beyond p.turn_recognition_angle)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x turns right in i from a through lane with int.turn declared, but the source does not record which intersection the turn lane beside it enters, so whether the highway has a right turn lane for this approach is unknown.",
+   "masked": [
+    "st.lane_enters"
+   ]
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_recognition_angle",
+   "unit": "deg",
+   "value": 45,
+   "convention": "Turn recognition: the heading change through an intersection beyond which a passage counts as a turn rather than a straight crossing; half the right angle of a turn at a right-angled junction, leaving room for skewed junctions and lane offsets.",
+   "source": "intersection geometry design conventions (AASHTO Green Book)"
+  },
+  {
+   "name": "p.opposed_carriers_cosine",
+   "unit": "ratio",
+   "value": 0.7,
+   "convention": "Direction tolerance: minus the cosine of the narrowest angle between two carriers' designated directions that counts as opposite directions; carriers within about 45 degrees of exactly opposed count.",
+   "source": "road-network direction conventions of map data"
+  },
+  {
+   "name": "p.turn_approach_length",
+   "unit": "m",
+   "value": 15.0,
+   "convention": "Turn approach: the distance travelled just before entering an intersection over which a turning vehicle's approach is judged; about two passenger-car lengths, shorter than the storage of a short turn bay.",
+   "source": "AASHTO Green Book turn-lane storage practice"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

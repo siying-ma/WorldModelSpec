@@ -1,0 +1,51 @@
+'TrafficSpec.Rules.NRS_484B_127_3.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_127_3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.outside_business_district"],"binders":["x"],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"no_atom","span":"c4","why":"'in a caravan or motorcade' is membership of an organized group of vehicles proceeding together; no atom of the surface denotes it (the record's gap ru.procession_member). The nearest atoms the record maps, rel.ahead_behind_in_lane and rel.same_direction with the motor-vehicle aggregate, hold for any two vehicles following each other in a lane, members of a group or not, as the record's own justification says: written with them, the caravan gap (22.4 m plus two 2 s headways) would bind every following motor vehicle outside a business district. The record's nearest reading (a motor vehicle ahead of x) also contradicts its own branch_1 (the lead car, with nothing ahead, bound and compliant). The same membership ('belongs to x's caravan') is unwritten in the obligation."}],"operationalizations":[{"concepts":["kin.speed","rel.ahead_behind_in_lane","rel.same_direction","rel.surface_gap"],"params":["p.entering_combination_length","p.entry_time_headway","p.same_direction_cosine"],"standard":"sufficient space ... so as to enable any other vehicle or combination of vehicles to enter and occupy such space without danger","surrogate":false}],"residues":["The duty is the same for a caravan vehicle that tows another vehicle and for one that does not: the words say so ('whether or not'); a towing vehicle and what it tows form a combination of vehicles, whose gap to the vehicle ahead is read from the combination's body through the aggregate the standard names."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"r"},{"asm":"asm.outside_business_district"}]},"assumptions":["asm.outside_business_district"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"no_atom","span":"c4","why":"'in a caravan or motorcade' is membership of an organized group of vehicles proceeding together; no atom of the surface denotes it (the record's gap ru.procession_member). The nearest atoms the record maps, rel.ahead_behind_in_lane and rel.same_direction with the motor-vehicle aggregate, hold for any two vehicles following each other in a lane, members of a group or not, as the record's own justification says: written with them, the caravan gap (22.4 m plus two 2 s headways) would bind every following motor vehicle outside a business district. The record's nearest reading (a motor vehicle ahead of x) also contradicts its own branch_1 (the lead car, with nothing ahead, bound and compliant). The same membership ('belongs to x's caravan') is unwritten in the obligation."}],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine"}]}]}]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"param":"p.entering_combination_length"},{"add":[{"mul":[{"param":"p.entry_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}]}]}}]},"forall_user":"y"},"residues":["The duty is the same for a caravan vehicle that tows another vehicle and for one that does not: the words say so ('whether or not'); a towing vehicle and what it tows form a combination of vehicles, whose gap to the vehicle ahead is read from the combination's body through the aggregate the standard names."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"r"},{"asm":"asm.outside_business_district"}]},"assumptions":["asm.outside_business_district"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_127_3","intentions":[],"laws":["NRS-484B-127-3"],"narrowings":[{"kind":"no_atom","span":"c4","why":"'in a caravan or motorcade' is membership of an organized group of vehicles proceeding together; no atom of the surface denotes it (the record's gap ru.procession_member). The nearest atoms the record maps, rel.ahead_behind_in_lane and rel.same_direction with the motor-vehicle aggregate, hold for any two vehicles following each other in a lane, members of a group or not, as the record's own justification says: written with them, the caravan gap (22.4 m plus two 2 s headways) would bind every following motor vehicle outside a business district. The record's nearest reading (a motor vehicle ahead of x) also contradicts its own branch_1 (the lead car, with nothing ahead, bound and compliant). The same membership ('belongs to x's caravan') is unwritten in the obligation."}],"obligation":{"body":{"implies":[{"and":[{"or":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-050::combination_of_vehicles"}],"atom":"ru_aggregate","params":[]}]},{"and":[{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_same_direction","params":[{"param":"p.same_direction_cosine"}]}]}]},{"cmp":"ge","lhs":{"args":[{"var":"x"},{"var":"y"},{"lit":"longitudinal"}],"measure":"rel_surface_gap"},"rhs":{"add":[{"param":"p.entering_combination_length"},{"add":[{"mul":[{"param":"p.entry_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"param":"p.entry_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]}]}]}}]},"forall_user":"y"},"residues":["The duty is the same for a caravan vehicle that tows another vehicle and for one that does not: the words say so ('whether or not'); a towing vehicle and what it tows form a combination of vehicles, whose gap to the vehicle ahead is read from the combination's body through the aggregate the standard names."],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,rel_ahead_behind_in_lane,rel_same_direction,rel_surface_gap,kin_speed
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-320::vehicle	DEF-NRS-484A-050::combination_of_vehicles
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.surface_gap
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+OCC	x
+OCC	?r
+OCC	x,r
+OCC	?y
+OCC	y
+OCC	y
+OCC	y,x
+OCC	y,x
+OCC	x,y
+OCC	x
+OCC	x
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	103
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	17
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	15
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	15
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	15
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	compliant	compliant	ok
+TIME	scenario:branch_2	12
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	11
+SCEN	branch_4	not_applicable	not_applicable	ok
+TIME	scenario:branch_4	15
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	16
+TIME	witnesses	126
+DONE_WITNESSES

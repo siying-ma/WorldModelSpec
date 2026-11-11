@@ -1,0 +1,184 @@
+{
+ "node_id": "NRS_484B_560_7a",
+ "law_refs": [
+  "NRS-484B-560-7a"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "It is unlawful for the driver of any vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "When crossing at grade any track or tracks of a railroad,",
+   "role": "trigger"
+  },
+  {
+   "id": "s3",
+   "text": "to fail to completely cross the track or tracks without stopping due to insufficient: (1) Space for the vehicle on the opposite side of the railroad crossing; or (2) Undercarriage clearance of the vehicle.",
+   "role": "obligation"
+  },
+  {
+   "id": "s4",
+   "text": "As used in this section, “completely cross” means to travel across a railroad track or tracks in such a manner that the trailing end of the vehicle is 15 feet or more past the nearest rail of the railroad track or tracks.",
+   "role": "definitional"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "“vehicle” is the term DEF-NRS-484A-320 defines, admitted as DEF-NRS-484A-320::vehicle, so it is claimed as one atom, ru.aggregate=DEF-NRS-484A-320::vehicle: “membership of a legal aggregate: the atom's literal argument is an aggregate id”; the reading classifies the classes under it by the definition's words “every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except: (1) Devices moved by human power or used exclusively upon stationary rails; (2) Electric bicycles; ... (4) An electric scooter”, so its exclusions are the reading's and are not expanded here. Its exclusion “a relational role such as who drives or controls a vehicle” does not apply: “driver” (DEF-NRS-484A-080, “every person who drives or is in actual physical control of a vehicle”) is not read as membership but through the vehicle's controlled motion (the agency reading on s1)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.railway_crossing",
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.position.within_clearance_since_entry",
+    "drv.motion.entering_region"
+   ],
+   "justification": "“crossing at grade any track or tracks of a railroad” is a level crossing: st.railway_crossing is the “level crossing of a railway with the roadway, and its nearest rail”; “railroad” (DEF-NRS-484A-200) is “a carrier of persons or property upon cars, other than streetcars, operated upon stationary rails”, and the atom's word “railway” already leaves out a streetcar line laid in the street, which is not a railway level crossing, so no further condition is needed. The subject is crossing from its entry onto the crossing (drv.motion.entering_region, over rel.occupies: “a road user's footprint overlaps a lane / region”) until it has completely crossed it, which is drv.position.within_clearance_since_entry(x, r) with the clearance s4 states: the concept reads st.region_geometry, “the ground distance from a road user's body outline to it”. The crossing r is the subject's own: anchored by rel.occupies at the entry and by the distance since, never any crossing of the scene."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "kin.speed",
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "“to fail to completely cross ... without stopping”: “stopping” is DEF-NRS-484A-260, “any halting, even momentarily, of a vehicle, whether occupied or not, except when necessary to avoid conflict with other traffic or in compliance with the directions of a police officer or official traffic-control device”. The halting is drv.motion.halted, “A road user is at a standstill at the observation ... the road user's speed (kin.speed, m/s) is at or below speed_floor ... with no minimum duration”, which keeps “even momentarily”; its own definition id (DEF-NRS-484A-255) is a required stop, but its contract denotes a standstill at an observation whatever the duty, which is what this halting is. A halt while the vehicle is crossing and has not completely crossed is the failure. The definition's exception for a direction of a police officer is carried beside it: dev.human_direction is “a person directing traffic and the direction given; role ∈ {police_officer, ...}; indication ∈ {stop, ...}”, tied to the subject by dev.governs (“the travel regions whose traffic the device controls”) on a travel region (st.travel_region) the subject's footprint overlaps (rel.occupies); dev.governs is not a stand-in for a position, and it is not read as one: it says which road users the direction is given to. The other parts of the definition's exception are read as the narrowings on s3 say."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.region_geometry",
+    "st.railway_crossing",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.position.within_clearance_since_entry"
+   ],
+   "justification": "The section's own definition of “completely cross”: “the trailing end of the vehicle is 15 feet or more past the nearest rail”. Once the body has left the crossing, the point of its outline nearest the crossing is its trailing end, so “trailing end ... 15 feet or more past” is the ground distance from the body outline to the crossing region (st.region_geometry: “the ground distance from a road user's body outline to it (zero when they overlap)”) at or above the literal 15 ft; drv.position.within_clearance_since_entry with clearance 15 ft is true from the entry until that first holds. st.railway_crossing carries the crossing “and its nearest rail”; rel.occupies anchors the entry."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle), and there is a railway level crossing r (st.railway_crossing) that x is crossing and has not completely crossed: drv.position.within_clearance_since_entry(x, r) with clearance the literal 15 ft of s4 — x's footprint entered r (drv.motion.entering_region, over rel.occupies) at the observation or earlier, and at every observation since its body outline has stood less than 15 ft from r (st.region_geometry distance; zero while on r). Read at every observation.",
+ "obligation": "At every observation at which the applicability holds, x is not halted: drv.motion.halted(x) with speed_floor p.speed_resolution is false (a single observation at a standstill is a halt, since stopping is “any halting, even momentarily”). A halt does not violate where it is in compliance with a police officer's direction: some human direction d (dev.human_direction) with role police_officer and indication stop governs (dev.governs) a travel region l (st.travel_region) x's footprint overlaps (rel.occupies) at that observation. The obligation reads x's motion and the direction governing the region x is on; it needs no crossing of its own.",
+ "params": [
+  "p.speed_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "“the driver of any vehicle” is read through the vehicle's controlled motion: the vehicle crossing is taken to be driven, and the duty binds its conduct whoever or whatever is at the controls.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s3",
+   "why": "“due to insufficient: (1) Space for the vehicle on the opposite side of the railroad crossing; or (2) Undercarriage clearance of the vehicle” states why the vehicle stops; neither the room it would need beyond the crossing nor its undercarriage clearance over the crossing's profile is observable, so the cause is read through the conduct it explains: a halt while the vehicle is crossing and has not yet completely crossed. A halt on the crossing for another cause (a breakdown) is not told apart.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s3",
+   "why": "The posted definition of stopping excepts a halt “necessary to avoid conflict with other traffic”. This section makes a halt due to insufficient space for the vehicle on the opposite side — the space that queued traffic or an object fills — the failure it forbids; reading that exception into it would empty clause (1). The rule therefore does not excuse a halt on the crossing because a road user stands ahead of the vehicle. Of the exception for “the directions of a police officer or official traffic-control device”, the police officer's direction to stop is read; no official device directs a halt on the crossing itself (the railway signal or gate directs a halt before it, which a vehicle already crossing has passed, and a signal or stop sign beyond directs a halt at its own line, queueing for which on the tracks is clause (1)), so no device direction is read.",
+   "kind": "reading"
+  },
+  {
+   "span": "s3",
+   "why": "“the nearest rail” is read as the boundary of the crossing region the map carries (st.railway_crossing with its nearest rail): the distance is measured from the body outline to that region, which is at the rail or beyond it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A passenger car (a class the reading includes under DEF-NRS-484A-320::vehicle) drives along a roadway, enters a railway crossing r (st.railway_crossing with its outline) and, with a truck queued just beyond the crossing, halts with its footprint still overlapping r for several observations. No human direction is in the scene."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "The car enters the crossing, travels across it at a steady speed without halting, and halts only well after its body outline has stood more than 15 ft past the crossing region."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The car drives on a roadway with no railway crossing in the scene and halts at a stop line."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but the source does not observe speed, so whether the car is halted on the crossing is unknown.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "The car crosses the rails, leaves the crossing region, and halts behind a queue with its trailing end a short distance past the crossing, less than 15 ft from it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "The car halts on the crossing while a police officer (dev.human_direction, role police_officer, indication stop) governing the roadway the car occupies directs it to stop."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "No other road user is in the scene: the car crosses alone, its body outline reaches more than 15 ft past the crossing, and it halts there."
+  }
+ ],
+ "literals": [
+  {
+   "span": "s4",
+   "text": "15 feet",
+   "value": 15,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed noise of the carla_scene_graph acquisition standard"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

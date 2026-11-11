@@ -1,0 +1,8 @@
+Arguments: `x` (a track), `r` (a region).
+Parameters (bounds the caller sets): (none).
+It holds at an observation exactly when:
+(
+  (it is not the case that (`rel_occupies` holds of `x`, `r` [a road user's footprint overlaps a lane / region (roadway, shoulder, sidewalk, intersection, crosswalk, stop line, safety zone, bicycle lane, median, alley, curb zone, controlled-access lane, structure)])) holds now and did not hold at the previous observation
+  OR
+  (true) holds now and did not hold at the previous observation
+)

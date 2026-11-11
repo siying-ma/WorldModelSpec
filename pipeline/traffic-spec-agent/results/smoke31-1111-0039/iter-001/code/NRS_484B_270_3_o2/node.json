@@ -1,0 +1,339 @@
+{
+ "node_id": "NRS_484B_270_3_o2",
+ "law_refs": [
+  "NRS-484B-270-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a motor vehicle",
+   "role": "sibling"
+  },
+  {
+   "id": "s2",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "s3",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "s4",
+   "text": "to any person riding a bicycle, an electric bicycle or an electric scooter",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "or a pedestrian",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "as provided in subsection 6 of NRS 484B.297 [NRS-484B-297-6]",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "on the pathway or lane.",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "The driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s9",
+   "text": "shall not enter, stop, stand, park or drive within",
+   "role": "obligation"
+  },
+  {
+   "id": "s10",
+   "text": "a pathway or lane provided for bicycles, electric bicycles or electric scooters",
+   "role": "condition"
+  },
+  {
+   "id": "s11",
+   "text": "except: (a) When entering or exiting an alley or driveway;",
+   "role": "exception"
+  },
+  {
+   "id": "s12",
+   "text": "(b) When operating or parking a disabled vehicle;",
+   "role": "exception"
+  },
+  {
+   "id": "s13",
+   "text": "(c) To avoid conflict with other traffic;",
+   "role": "exception"
+  },
+  {
+   "id": "s14",
+   "text": "(d) In the performance of official duties;",
+   "role": "exception"
+  },
+  {
+   "id": "s15",
+   "text": "(e) In compliance with the directions of a police officer;",
+   "role": "exception"
+  },
+  {
+   "id": "s16",
+   "text": "or",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s17",
+   "text": "(f) In an emergency.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is the admitted aggregate DEF-NRS-484A-130::motor_vehicle; 'the driver' is read through its controlled motion."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "rel.occupies",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.entering_region",
+    "drv.motion.halted",
+    "drv.motion.moving"
+   ],
+   "justification": "'enter' is drv.motion.entering_region; 'stop' (prohibited: DEF-NRS-484A-260 'any halting, even momentarily'), 'stand' (DEF-NRS-484A-250 'the halting of a vehicle') and 'park' (DEF-NRS-484A-155 'the standing of a vehicle') are halts, drv.motion.halted; 'drive within' is moving (drv.motion.moving) with the footprint on the lane (rel.occupies). Together they cover every observation at which x's footprint overlaps the lane."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "st.bicycle_lane_or_path",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a pathway or lane provided for bicycles, electric bicycles or electric scooters' is st.bicycle_lane_or_path 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; the place word keeps its whole extent."
+  },
+  {
+   "span": "s11",
+   "atoms": [
+    "st.driveway_or_alley_entrance",
+    "st.region_geometry",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "'When entering or exiting an alley or driveway': x moving (drv.motion.moving) within the access reach (st.region_geometry distance) of a st.driveway_or_alley_entrance ('private road, alley or driveway meeting the highway'; DEF-NRS-484A-190 'Private way or driveway'). The kind does not tell an alley's entrance from a driveway's, and both are named, so its exclusion does not apply."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "sig.hazard",
+    "kin.engine_running"
+   ],
+   "derived": [],
+   "justification": "'a disabled vehicle': no atom carries a vehicle's inability to move under its own power; sig.hazard ('both indicators flashing together') and kin.engine_running (not a stand-in for motion) are the nearest evidence and do not denote it: gap."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "rel.occupies",
+    "st.bicycle_lane_or_path",
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'To avoid conflict with other traffic': a purpose, read through the conduct it explains: x's current overlap of the bicycle lane or path began (drv.motion.entering_region) at an observation at which another member of the admitted traffic aggregate was in predicted conflict with x (prim.closest_approach_within and prim.closest_approach_distance, the same conflict bound as elsewhere in this run)."
+  },
+  {
+   "span": "s14",
+   "atoms": [
+    "ru.official_vehicle",
+    "ru.emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "'In the performance of official duties': a purpose, read through the vehicle's official or emergency class (ru.official_vehicle 'a vehicle in official or contracted road service, identifiable by livery or equipment'; ru.emergency_vehicle). Neither is read as a responding emergency vehicle, which the exception does not require."
+  },
+  {
+   "span": "s15",
+   "atoms": [
+    "dev.human_direction",
+    "dev.governs",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "'In compliance with the directions of a police officer': a dev.human_direction ('a person directing traffic and the direction given') with role police_officer governing (dev.governs) a travel region x occupies (st.travel_region, rel.occupies) or the bicycle lane itself."
+  },
+  {
+   "span": "s17",
+   "atoms": [
+    "sig.hazard",
+    "ru.emergency_vehicle"
+   ],
+   "derived": [],
+   "justification": "'In an emergency': no atom carries an emergency situation; sig.hazard and ru.emergency_vehicle ('Not a stand-in for: a responding emergency vehicle') are the nearest evidence and do not denote it: gap."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a motor vehicle (ru.aggregate=DEF-NRS-484A-130::motor_vehicle) and none of the exceptions holds at this observation: (a) x is moving (drv.motion.moving x with p.speed_resolution) within p.access_crossing_reach of a st.driveway_or_alley_entrance (st_region_geometry_distance); (b) x is disabled (nearest atoms sig.hazard, kin.engine_running; gap proposed); (c) x's current overlap of a bicycle lane or path b began (drv.motion.entering_region x b, every observation since with rel.occupies x b) at an observation at which some road user z other than x, a member of traffic (ru.aggregate=DEF-NRS-484A-285::traffic) not on b, was in predicted conflict with x (prim.closest_approach_within x z with horizon p.immediate_hazard_gap and prim.closest_approach_distance x z below p.conflict_clearance); (d) x is a ru.official_vehicle or a ru.emergency_vehicle; (e) a dev.human_direction with role police_officer governs (dev.governs) a travel region x occupies; (f) an emergency (nearest atoms sig.hazard, ru.emergency_vehicle; gap proposed). This applicability, exceptions included, is what NRS_484B_270_4 composes.",
+ "obligation": "x's footprint overlaps no bicycle lane or path (rel.occupies x b false for every b of kind st.bicycle_lane_or_path): whether entering it (drv.motion.entering_region), halted on it (drv.motion.halted with p.speed_resolution) or moving within it (drv.motion.moving).",
+ "params": [
+  "p.speed_resolution",
+  "p.access_crossing_reach",
+  "p.immediate_hazard_gap",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s8",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s9",
+   "why": "Every halt on the lane is read as forbidden: 'stop' (DEF-NRS-484A-260) excepts halts to avoid conflict or on an officer's or a device's direction, 'stand' excepts halts receiving or discharging passengers, and only a halt that is both is covered by neither word; such a halt is read as forbidden too.",
+   "kind": "reading"
+  },
+  {
+   "span": "s13",
+   "why": "The purpose of avoiding conflict is read through a predicted conflict with other traffic at the observation x moved onto the lane.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s14",
+   "why": "The performance of official duties is read through the vehicle's official or emergency class.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s15",
+   "why": "The officer's role and direction are read through the dev.human_direction present and governing.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x drives 50 m along bicycle lane b at 10 m/s; no driveway or alley entrance within reach, no officer, no conflict at its entry, x is a passenger car of no official class."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x stays in its general-traffic lane and never overlaps a bicycle lane or path."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x is of the bicycle class (not a motor vehicle) riding in b."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.occupies of x and b is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x crosses b at 4 m/s within 2 m of a st.driveway_or_alley_entrance into which it turns."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A dev.human_direction with role police_officer governs b and the lane x occupies; x drives along b."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "x is halted on b (kin.speed 0) for 60 s, away from any driveway, no officer, no official class."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.access_crossing_reach",
+   "unit": "m",
+   "value": 6.0,
+   "convention": "Access reach: the ground distance from a vehicle's body to a driveway or alley entrance within which its presence in a bicycle lane counts as part of entering or exiting it; about one passenger-car length.",
+   "source": "AASHTO design passenger car (P) length 5.8 m"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical gap: the time within which another road user's arrival at the conflict area, or its predicted closest approach, counts as an immediate hazard to a road user about to cross or join its path.",
+   "source": "HCM 7th ed. Exhibit 20-11 base critical headway (major-street left turn)"
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Conflict radius: the centre distance at predicted closest approach below which two road users' paths count as in conflict; about the half-length plus half-width of two passenger cars.",
+   "source": "FHWA Surrogate Safety Assessment Model (Gettman et al. 2008) conflict definition"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "s12",
+   "kind": "atom",
+   "proposal": "ru.disabled | the vehicle cannot move under its own power (breakdown, damage, a flat tyre), as the source records it; decides whether a vehicle's presence or halt in a place is excused | general",
+   "nearest": [
+    "sig.hazard",
+    "kin.engine_running"
+   ]
+  },
+  {
+   "span": "s17",
+   "kind": "atom",
+   "proposal": "env.emergency | a sudden peril at the observation that a road user's conduct answers to (a fire, a medical emergency of an occupant, an imminent collision), as the source records it for that road user; decides whether a road user's presence in a place is excused | general",
+   "nearest": [
+    "sig.hazard",
+    "ru.emergency_vehicle"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

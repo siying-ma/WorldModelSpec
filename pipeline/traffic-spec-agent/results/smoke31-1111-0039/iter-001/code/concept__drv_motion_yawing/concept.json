@@ -1,0 +1,53 @@
+{
+ "concept_id": "drv.motion.yawing",
+ "kind": "formula",
+ "contract": "A road user's heading is changing at the observation: the absolute value of its yaw rate exceeds yaw_floor. Yaw rate (kin.yaw_rate) is in deg/s, left positive, and either hand counts; yaw_floor is the source's yaw-rate resolution. Not denoted: a turn at a junction, a lane change, or the curvature of the road: a road user yaws wherever its path bends, and one running straight does not.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "yaw_floor",
+   "unit": "deg/s",
+   "meaning": "the source's yaw-rate resolution: an absolute yaw rate at or below it counts as no heading change"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the absolute value of its yaw rate exceeds yaw_floor",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is the 'rate of change of heading, positive when the heading turns to the left'; it is 'Not a stand-in for: road curvature', and the concept reads the body's own heading change, not the road's shape."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A car swings its heading while backing around a curb, its yaw rate well above the floor."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A car drives along a straight lane with zero yaw rate."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_2"
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "node_id": "LVMC_11_38_030",
+ "law_refs": [
+  "LVMC-11-38-030"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+   "ru.moped",
+   "ru.electric_scooter"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "No motorcycle or motor scooter",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "shall be ridden upon any sidewalk",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "of the City",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.moped",
+    "ru.electric_scooter"
+   ],
+   "derived": [],
+   "justification": "'motorcycle' is the admitted aggregate DEF-NRS-484A-135::motorcycle ('every motor vehicle equipped with a seat or saddle for the use of the driver and designed to travel on not more than three wheels in contact with the ground, excluding an electric bicycle, a tractor or a moped'), claimed as one atom and never expanded. 'motor scooter' has no applicable definition and the table admits no aggregate for it, so its ordinary words, a scooter propelled by a motor, are carried by the class atoms whose contracts denote such machines: ru.moped ('a low-power two- or three-wheeler with a small engine or motor', the class whose corpus definition names a 'motor-driven scooter') and ru.electric_scooter ('a standing or seated electric scooter with handlebars'); a motor scooter above the moped class is a motor vehicle on not more than three wheels with a seat, so already a member of the motorcycle aggregate. ru.pedestrian is not read: its contract is 'Not a stand-in for: a person on a bicycle or scooter'. 'No' states the prohibition the obligation span carries."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.sidewalk",
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "st.sidewalk is the 'area for pedestrians between roadway and property line', the extent of DEF-NRS-484A-240 ('that portion of a highway between the curb lines or the lateral lines of a highway and the adjacent property lines intended for the use of pedestrians'); its exclusion 'Not a stand-in for: a crosswalk' is kept: a crosswalk is not read as a sidewalk. rel.occupies ('a road user's footprint overlaps a lane / region') anchors 'upon' to the subject's own sidewalk, and 'any' makes every sidewalk region count. 'be ridden' is the machine's controlled motion, drv.motion.moving (speed above the source's resolution), under the agency reading disclosed below."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "s3",
+   "id": "asm.within_city_limits",
+   "meaning": "The place of the observation lies inside the territorial limits of an incorporated city, as declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-135::motorcycle",
+    "ru.moped",
+    "ru.electric_scooter"
+   ]
+  }
+ ],
+ "applicability": "x is a motorcycle (ru.aggregate DEF-NRS-484A-135::motorcycle), a moped (ru.moped) or an electric scooter (ru.electric_scooter), and asm.within_city_limits holds at the observation.",
+ "obligation": "At the observation, x is not both moving (drv.motion.moving(x) with speed_floor p.speed_resolution) and occupying (rel.occupies) any st.sidewalk region.",
+ "params": [
+  "p.speed_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "'be ridden' is read through the machine's controlled motion: a motorcycle or scooter moving above the speed resolution while its footprint overlaps a sidewalk is taken to be ridden there, one standing still is not; who or what is at the controls is not observed.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Inside declared city limits, a motorcycle travels along a sidewalk at walking pace; its footprint overlaps the sidewalk region and its speed is well above the resolution."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Inside declared city limits, a motorcycle travels in a lane of the roadway, overlapping no sidewalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle is ridden along a sidewalk inside declared city limits; it is neither in the motorcycle aggregate nor a moped nor an electric scooter."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Inside declared city limits, a moped moves near the curb; the source declares rel.occupies absent, so whether it is on the sidewalk is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Inside declared city limits, a motorcycle stands parked on a sidewalk with zero speed: it is not ridden there."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "Ground-truth simulator kinematics sampled at 20 Hz and the speed noise of typical odometry"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

@@ -1,0 +1,211 @@
+{
+ "node_id": "NRS_484B_227_1_o2",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "Every vehicle driven",
+   "role": "subject"
+  },
+  {
+   "id": "a2",
+   "text": "upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "a4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "a5",
+   "text": "must not be driven over, across or within any dividing space, barrier or section or make any left turn, semicircular turn or U-turn",
+   "role": "obligation"
+  },
+  {
+   "id": "a7",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "a8",
+   "text": "or at a crossover or intersection",
+   "role": "exception"
+  },
+  {
+   "id": "a9",
+   "text": "established by a public authority",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom; 'driven' is read through the vehicle's controlled motion (agency reading below)."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.median_or_divider",
+    "st.roadway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "A divided highway is 'a highway divided into two or more roadways by means of a physical barrier or dividing section' (DEF-NRS-484A-070): an st.highway ('the entire public way between its boundary lines') on which (st.on_way) an st.median_or_divider lies ('physical barrier or dividing section between roadways'), its parts being st.roadway regions ('separate roadways of a divided highway are separate'). 'upon' is x's footprint overlapping (rel.occupies) a roadway or dividing section lying on that highway; st.highway's exclusion 'Not a stand-in for: the roadway' is respected: the roadway is read as the part of the way it is."
+  },
+  {
+   "span": "a5",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies",
+    "st.roadway",
+    "st.lane_direction",
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.against_carrier_direction"
+   ],
+   "justification": "'any dividing space, barrier or section' is the st.median_or_divider, 'physical barrier or dividing section between roadways', lying on the divided highway; 'driven over, across or within' it is x's footprint overlapping it (rel.occupies) at any observation: on it, crossing it or standing within it. On a divided highway a left, semicircular or U-turn made off an opening, crossover or intersection shows in its outcome: a left turn from a roadway crosses the dividing section on its left (st.median_or_divider, rel.occupies), and a semicircular or U-turn, 'the turning of a vehicle upon a highway so as to proceed in the opposite direction' (DEF-NRS-484B-077), either crosses it or leaves the vehicle proceeding against the designated direction (st.lane_direction) of the roadway it occupies: drv.motion.against_carrier_direction(x, r), from kin.velocity and kin.speed. The concept is 'Not a stand-in for' the heading opposing the carrier, so a vehicle backing is read by its motion."
+  },
+  {
+   "span": "a7",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.median_or_divider carries an 'opening attribute where a crossover exists': 'an opening in the barrier or dividing section or space' is the dividing-section region carrying that attribute, and 'through' it is x's footprint overlapping (rel.occupies) such a region."
+  },
+  {
+   "span": "a8",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a crossover' is the same opening of the dividing section (st.median_or_divider, 'opening attribute where a crossover exists'); 'intersection' is st.intersection, 'the region where two roadways meet', which with DEF-NRS-484A-105 (2) makes 'every crossing of each roadway of such divided highway by an intersecting highway ... a separate intersection'. 'at' is x's footprint overlapping (rel.occupies) such an opening or intersection."
+  },
+  {
+   "span": "a9",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'established by a public authority' (DEF-NRS-484A-195, 'the Department of Transportation or the local authority having jurisdiction') is the legal status of the opening, crossover or intersection; its presence on the road (an st.median_or_divider region with the opening attribute, an st.intersection) is the evidence of that status (status reading below)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and occupies (rel.occupies) an st.roadway or st.median_or_divider region lying on (st.on_way) an st.highway region h on which some st.median_or_divider region lies.",
+ "obligation": "Re-binding h with the same selection: at the observation, unless x occupies an st.median_or_divider region lying on h that carries the opening attribute, or occupies an st.intersection region lying on h, neither (a) x occupies an st.median_or_divider region lying on h, nor (b) x occupies an st.roadway region r lying on h and moves against its designated direction: drv.motion.against_carrier_direction(x, r) with speed_floor p.speed_resolution and opposed_cosine p.opposed_direction_cosine.",
+ "params": [
+  "p.speed_resolution",
+  "p.opposed_direction_cosine"
+ ],
+ "narrowings": [
+  {
+   "span": "a1",
+   "why": "'driven' is read through the vehicle's controlled motion: a vehicle moving on the highway is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a5",
+   "why": "The left, semicircular and U-turns are read through their outcome on the divided highway, not as manoeuvres recognized from the heading: crossing the dividing section, or proceeding against the designated direction of the roadway occupied ('so as to proceed in the opposite direction'); a left turn that leaves the roadway on its left without touching the dividing section is not read, and a vehicle travelling against a roadway's direction without having turned is judged here too.",
+   "kind": "reading"
+  },
+  {
+   "span": "a9",
+   "why": "'established by a public authority' is read through the presence of the opening, crossover or intersection on the road: the feature's presence is the evidence of its establishment.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a highway divided by a grass median, a car drives across the median at a place where the median region carries no opening and no intersection lies."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "On the same divided highway, a car turns left across the median through a median region that carries the opening attribute and then drives in the designated direction of the opposite roadway."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car makes a U-turn on an undivided two-way highway: no median or dividing section lies on the way."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car drives near the median of a divided highway; the source declares rel.occupies absent, so whether it is on the median, an opening or a roadway is not observed.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "On a wide roadway of a divided highway, away from any opening and intersection, a car makes a U-turn without touching the median and drives on against the roadway's designated direction."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "A car makes a U-turn inside an intersection of the divided highway and leaves on the opposite roadway in its designated direction."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "Ground-truth simulator kinematics sampled at 20 Hz and the speed noise of typical odometry"
+  },
+  {
+   "name": "p.opposed_direction_cosine",
+   "unit": "ratio",
+   "value": 0.5,
+   "convention": "Direction tolerance: minus the cosine of the narrowest angle between a velocity and a carrier's designated direction that counts as travel against it; motion at a smaller angle, crossing included, does not.",
+   "source": "Wrong-way detection conventions in trajectory analysis and heading tolerance of ground-truth simulation"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

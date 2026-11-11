@@ -1,0 +1,72 @@
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The sight distance and the curvature \"at x's place\" are read at every lane x's footprint overlaps (rel.occupies over st.lane), the region the lane-width bound reads; where x occupies no lane, these two factors set no bound."}],"operationalizations":[{"concepts":["drv.motion.stopping_distance","env.ice_or_snow","env.precipitation","env.visibility","env.wet_road","kin.extent","kin.speed","rel.ahead_behind_in_lane","rel.occupies","rel.surface_gap","st.curvature","st.lane","st.lane_width","st.sight_distance"],"params":["p.perception_reaction_time","p.braking_decel_dry","p.braking_decel_wet","p.braking_decel_ice","p.curve_lateral_accel","p.lateral_margin_time","p.traffic_time_headway"],"standard":"a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The sight distance and the curvature \"at x's place\" are read at every lane x's footprint overlaps (rel.occupies over st.lane), the region the lane-width bound reads; where x occupies no lane, these two factors set no bound."}],"obligation":{"and":[{"body":{"implies":[{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_ice"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"param":"p.curve_lateral_accel"}},{"cmp":"le","lhs":{"mul":[{"param":"p.lateral_margin_time"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},"rhs":{"sub":[{"args":[{"var":"l"}],"measure":"st_lane_width"},{"args":[{"var":"x"},{"lit":"width"}],"measure":"kin_extent"}]}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"x"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.braking_decel_ice"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[],"measure":"env_visibility"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"mul":[{"param":"p.traffic_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},"rhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"}}]},"forall_user":"y"}]}]},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"s3","why":"The sight distance and the curvature \"at x's place\" are read at every lane x's footprint overlaps (rel.occupies over st.lane), the region the lane-width bound reads; where x occupies no lane, these two factors set no bound."}],"obligation":{"and":[{"body":{"implies":[{"args":[{"var":"x"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_ice"}]}]}]}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"param":"p.curve_lateral_accel"}},{"cmp":"le","lhs":{"mul":[{"param":"p.lateral_margin_time"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},"rhs":{"sub":[{"args":[{"var":"l"}],"measure":"st_lane_width"},{"args":[{"var":"x"},{"lit":"width"}],"measure":"kin_extent"}]}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"p.braking_decel_ice"}]}]}]}},"rhs":{"args":[],"measure":"env_visibility"}},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"x"},{"var":"y"}]}},{"args":[{"var":"y"},{"var":"x"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"le","lhs":{"mul":[{"param":"p.traffic_time_headway"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},"rhs":{"args":[{"var":"x"},{"var":"y"}],"measure":"rel_surface_gap"}}]},"forall_user":"y"}]}]},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,drv_motion_moving,st_lane,rel_occupies,env_ice_or_snow,drv_motion_stopping_distance,env_wet_road,env_precipitation,st_sight_distance,kin_speed,st_curvature,st_lane_width,kin_extent,env_visibility,rel_ahead_behind_in_lane,rel_surface_gap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	env.visibility
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+OCC	x
+OCC	x
+OCC	?l
+OCC	x,l
+OCC	
+OCC	x
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	l
+OCC	x
+OCC	x
+OCC	l
+OCC	x
+OCC	l
+OCC	x
+OCC	
+OCC	x
+OCC	
+OCC	
+OCC	x
+OCC	x
+OCC	
+OCC	?y
+OCC	x,y
+OCC	y,x
+OCC	x
+OCC	x,y
+TIME	occurrences	0
+TIME	checks	16
+TIME	lint	29
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	22
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	19
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	19
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	24
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	16
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	16
+SCEN	branch_3	violated	violated	ok
+TIME	scenario:branch_3	24
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	16
+TIME	witnesses	156
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1a	8	7
+TIME	adequacy_start	6
+TIME	adequacy	1010
+DONE

@@ -1,0 +1,411 @@
+{
+ "digest": "856834b2b917036be19ce0253d910e7188a42631f7d73760ff796faf39b9cf3c",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-025",
+    "term": "bicycle",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-025::bicycle",
+    "quote": "“Bicycle” means a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter, or every such device generally recognized as a bicycle though equipped with two front or two rear wheels except a moped.",
+    "reason": "The definition denotes an extensional set of ridden human-powered devices that the ru.* classes can classify."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-025::bicycle",
+    "term": "bicycle",
+    "definition": "DEF-NRS-484A-025",
+    "classifications": [
+     {
+      "class": "ru.bicycle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter, or every such device generally recognized as a bicycle though equipped with two front or two rear wheels"
+       }
+      ],
+      "reason": "The admitting clause describes exactly a human-powered wheeled device ridden by a person."
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "The definition does not require exclusively human propulsion, so it admits electric bicycles only as human-propelled ridden wheeled devices, and every such member carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.electric_bicycle",
+        "words": "a bicycle with an assisting electric motor"
+       },
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Any electric scooter the words admit is a human-propelled ridden wheeled device, and so carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.moped",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "except a moped"
+       },
+       {
+        "definition": "DEF-NRS-484A-125",
+        "words": "“Moped” means a motor-driven scooter, motor-driven cycle or similar vehicle that is propelled by a small engine"
+       }
+      ],
+      "reason": "The express exception removes every moped."
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Self-propulsion does not expressly rule out human propulsion, so the words admit motor vehicles only as human-propelled ridden wheeled devices, every one of which carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       },
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "except a moped"
+       }
+      ],
+      "reason": "The words do not prohibit combined motor and human propulsion, so any motorcycle admitted and not removed as a moped is a human-propelled ridden wheeled device carrying ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Motor propulsion does not expressly preclude human propulsion, so any bus the words admit is a human-propelled ridden wheeled device carrying ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Neither school designation nor motor propulsion expressly precludes human propulsion, so any school bus the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Transit service and motor propulsion do not expressly exclude human propulsion, so any transit bus the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Livery and for-hire service do not expressly preclude human propulsion, so any such vehicle the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "For-hire markings do not expressly preclude human propulsion, so any taxicab the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.truck",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "A goods-carrying body and motor propulsion do not expressly preclude human propulsion, so any truck the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Commercial mass or licensing does not expressly preclude human propulsion, so any such vehicle the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Emergency designation does not expressly preclude human propulsion, so any emergency vehicle the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "A fire-fighting purpose does not expressly preclude human propulsion, so any fire apparatus the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Official service does not expressly preclude human propulsion, so any official vehicle the words admit carries ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "The definition has no rail exception, but every item of on-track equipment it admits is a human-propelled ridden wheeled device carrying ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter"
+       }
+      ],
+      "reason": "Any trailer or combination satisfying the human-power, riding and wheel requirements is a human-propelled ridden wheeled device carrying ru.bicycle.",
+      "covered_by": [
+       "ru.bicycle"
+      ],
+      "basis": [
+       {
+        "class": "ru.bicycle",
+        "words": "human-powered wheeled vehicle ridden by a person"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride"
+       }
+      ],
+      "reason": "The definition admits only the device a person rides, never the person, and a pedestrian is a person."
+     },
+     {
+      "class": "ru.child",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride"
+       }
+      ],
+      "reason": "The definition admits only the device a person rides, never the person, and a child pedestrian is a person."
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-025",
+        "words": "a device propelled by human power upon which a person may ride"
+       }
+      ],
+      "reason": "The definition admits only the device a person rides, never the person, and this class is a pedestrian person."
+     }
+    ]
+   }
+  ]
+ }
+}

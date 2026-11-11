@@ -1,0 +1,282 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "not": {
+        "same": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "y"
+         }
+        ]
+       }
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "y"
+          },
+          {
+           "lit": "DEF-NRS-484A-130::motor_vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "y"
+          }
+         ],
+         "derived": "drv_interaction_overtaking_alongside",
+         "params": [
+          {
+           "param": "p.same_direction_cosine"
+          },
+          {
+           "param": "p.overtaking_speed_margin"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "y"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "DEF-NRS-484A-025::bicycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "DEF-NRS-484B-017::electric_bicycle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "DEF-NRS-484B-018::electric_scooter"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_270_7b",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-270-7b"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "y"
+           }
+          ]
+         }
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "y"
+            },
+            {
+             "lit": "DEF-NRS-484A-130::motor_vehicle"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "y"
+            }
+           ],
+           "derived": "drv_interaction_overtaking_alongside",
+           "params": [
+            {
+             "param": "p.same_direction_cosine"
+            },
+            {
+             "param": "p.overtaking_speed_margin"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "cmp": "ge",
+         "lhs": {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "y"
+           }
+          ],
+          "measure": "rel_surface_gap"
+         },
+         "rhs": {
+          "param": "p.passing_lateral_clearance"
+         }
+        },
+        {
+         "body": {
+          "implies": [
+           {
+            "and": [
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "z"
+                },
+                {
+                 "var": "x"
+                }
+               ]
+              }
+             },
+             {
+              "not": {
+               "same": [
+                {
+                 "var": "z"
+                },
+                {
+                 "var": "y"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           {
+            "not": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "var": "z"
+                }
+               ],
+               "derived": "prim_closest_approach_within",
+               "params": [
+                {
+                 "param": "p.immediate_hazard_gap"
+                }
+               ]
+              },
+              {
+               "cmp": "lt",
+               "lhs": {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "z"
+                 }
+                ],
+                "params": [
+                 {
+                  "param": "p.immediate_hazard_gap"
+                 }
+                ],
+                "quantity": "prim_closest_approach_distance"
+               },
+               "rhs": {
+                "param": "p.conflict_clearance"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "forall_user": "z"
+        }
+       ]
+      }
+     ]
+    },
+    "forall_user": "y"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "9f3ca5172026b897b84c2213",
+  "candidate_digest": "be791fd437621bbc13eff30d439c8fd473c70e77b46bdd9190886014d6066252"
+ }
+}

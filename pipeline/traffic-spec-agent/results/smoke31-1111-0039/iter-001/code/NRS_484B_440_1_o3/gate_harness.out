@@ -1,0 +1,50 @@
+'TrafficSpec.Rules.NRS_484B_440_1_o3.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_440_1_o3.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":["asm.within_business_or_residence_district"],"binders":["x"],"id":"NRS_484B_440_1_o3","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[{"kind":"reading","span":"g12","why":"The sight distance at x's place is read off the roadway regions x occupies, and is required at each of them where x straddles several."}],"operationalizations":[],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_halted","params":[{"param":"p.speed_resolution"}]},{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"not":{"asm":"asm.within_business_or_residence_district"}},{"not":{"and":[{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}},{"and":[{"args":[{"var":"x"}],"atom":"sig_hazard","params":[]},{"body":{"args":[{"var":"x"},{"var":"rd"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rd"}]}]}}]}]}]}]},"assumptions":["asm.within_business_or_residence_district"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_440_1_o3","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[{"kind":"reading","span":"g12","why":"The sight distance at x's place is read off the roadway regions x occupies, and is required at each of them where x straddles several."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},{"cmp":"ge","lhs":{"args":[{"var":"r"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":25,"num":1524},"unit":"metre"}}]},"forall_region":{"lit":"roadway"},"var":"r"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"body":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"r"},{"and":[{"not":{"asm":"asm.within_business_or_residence_district"}},{"not":{"and":[{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}},{"and":[{"args":[{"var":"x"}],"atom":"sig_hazard","params":[]},{"body":{"args":[{"var":"x"},{"var":"rd"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"roadway"},"var":"rd"}]}]}}]}]}]}]},"assumptions":["asm.within_business_or_residence_district"],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_440_1_o3","intentions":[],"laws":["NRS-484B-440-1"],"narrowings":[{"kind":"reading","span":"g12","why":"The sight distance at x's place is read off the roadway regions x occupies, and is required at each of them where x straddles several."}],"obligation":{"body":{"implies":[{"and":[{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]},{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"}]},{"cmp":"ge","lhs":{"args":[{"var":"r"}],"measure":"st_sight_distance"},"rhs":{"lit":{"den":25,"num":1524},"unit":"metre"}}]},"forall_region":{"lit":"roadway"},"var":"r"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,drv_motion_halted,st_highway,rel_occupies,st_roadway,kin_engine_running,sig_hazard,st_sight_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.sight_distance
+MANIFEST	branch_1	
+OCC	x
+OCC	x
+OCC	?h
+OCC	x,h
+OCC	?r
+OCC	x,r
+OCC	x
+OCC	x
+OCC	?rd
+OCC	x,rd
+OCC	?r
+OCC	x,r
+OCC	?h
+OCC	x,h
+OCC	r
+LITERAL	1524/25	TrafficSpec.PUnit'.metre
+TIME	occurrences	1
+TIME	checks	4
+TIME	lint	27
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	12
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	10
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	not_applicable	not_applicable	ok
+TIME	scenario:branch_1	11
+TIME	witnesses	58
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_440_1_o3.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484B_440_1_o3.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_440_1_o3	10	4
+TIME	adequacy_start	4
+TIME	adequacy	496
+DONE

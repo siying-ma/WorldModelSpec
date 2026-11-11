@@ -1,0 +1,222 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "or": [
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "a"
+        }
+       ],
+       "derived": "drv_motion_entering_region",
+       "params": []
+      },
+      {
+       "args": [
+        {
+         "var": "x"
+        },
+        {
+         "var": "a"
+        }
+       ],
+       "derived": "drv_motion_leaving_region",
+       "params": []
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "controlled_access"
+    },
+    "var": "a"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_263_o1",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-263"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "or": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "a"
+          }
+         ],
+         "derived": "drv_motion_entering_region",
+         "params": []
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "a"
+          }
+         ],
+         "derived": "drv_motion_leaving_region",
+         "params": []
+        }
+       ]
+      },
+      {
+       "not": {
+        "body": {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "y"
+             },
+             {
+              "var": "x"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "y"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "y"
+                },
+                {
+                 "var": "a"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "y"
+                  }
+                 ],
+                 "derived": "drv_motion_moving",
+                 "params": [
+                  {
+                   "param": "p.speed_resolution"
+                  }
+                 ]
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "x"
+                    },
+                    {
+                     "var": "y"
+                    }
+                   ],
+                   "derived": "prim_closest_approach_within",
+                   "params": [
+                    {
+                     "param": "p.immediate_hazard_gap"
+                    }
+                   ]
+                  },
+                  {
+                   "cmp": "lt",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "y"
+                     }
+                    ],
+                    "params": [
+                     {
+                      "param": "p.immediate_hazard_gap"
+                     }
+                    ],
+                    "quantity": "prim_closest_approach_distance"
+                   },
+                   "rhs": {
+                    "param": "p.conflict_clearance"
+                   }
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "exists_user": "y"
+       }
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "controlled_access"
+    },
+    "var": "a"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "235a9daf277cbd18baa0927b",
+  "candidate_digest": "6fd89f4773291a3e6701af05811c60a06b5eab7bbec5750b241a2589f8aad2a0"
+ }
+}

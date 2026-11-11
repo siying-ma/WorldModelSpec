@@ -1,0 +1,119 @@
+{
+ "verdict": "OK",
+ "details": [
+  "5 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "asm": "asm.within_city_limits"
+   },
+   "assumptions": [
+    "asm.within_city_limits"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "or": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "lit": "DEF-NRS-484A-135::motorcycle"
+         }
+        ],
+        "atom": "ru_aggregate",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "ru_moped",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           }
+          ],
+          "atom": "ru_electric_scooter",
+          "params": []
+         }
+        ]
+       }
+      ]
+     },
+     "name": "x"
+    }
+   ],
+   "id": "LVMC_11_38_030",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-38-030"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "and": [
+      {
+       "args": [
+        {
+         "var": "x"
+        }
+       ],
+       "derived": "drv_motion_moving",
+       "params": [
+        {
+         "param": "p.speed_resolution"
+        }
+       ]
+      },
+      {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "w"
+           }
+          ],
+          "atom": "st_sidewalk",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "w"
+           }
+          ],
+          "atom": "rel_occupies",
+          "params": []
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "sidewalk"
+       },
+       "var": "w"
+      }
+     ]
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "3fafe5cad1e24accdf3d1c26",
+  "candidate_digest": "0f1589c17c5da7f5a57a93a025d84534878472feacd443e19600630c842e52fd"
+ }
+}

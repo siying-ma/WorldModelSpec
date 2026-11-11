@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 44528,
+  "stop_reason": "end_turn",
+  "session_id": "e37531ca-a3ca-45ea-8264-2dcdd5918b21",
+  "total_cost_usd": 0.489841,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 40059,
+   "cache_read_input_tokens": 323476,
+   "output_tokens": 5082,
+   "output_tokens_details": {
+    "thinking_tokens": 751
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 40059,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 529,
+     "cache_read_input_tokens": 43798,
+     "cache_creation_input_tokens": 699,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 699
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 29488,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029618,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 5082,
+    "cacheReadInputTokens": 323476,
+    "cacheCreationInputTokens": 40059,
+    "webSearchRequests": 0,
+    "costUSD": 0.4868792,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 751,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on its first run (1 of 6): 3 witnesses, 3 names, 3 atoms read.\n\n- **Concept** (`library/TrafficSpec/Concepts/motion/slowing.lean`): the body says the vehicle's forward speed is above `speed_floor` and its longitudinal acceleration is below `-decel_floor`. Forward speed is the velocity's x and y parts multiplied by the heading's x and y parts and added together. The `kin_heading` measure reads the heading already normalised, so that sum is the speed along the heading, which is what keeps backing out. Both comparisons are strict, as \"exceeds\" and \"is below\" say. No narrowing was needed.\n- **Witness** (`library/TrafficSpecWitness/Concepts/motion/slowing.lean`): the instance sets `speed_floor` to 0.1 m/s and `decel_floor` to 0.1 m/s². Track 1 is a motor vehicle heading east at 8 m/s, seen at 0, 1 and 2 s. Its acceleration is −2 m/s² in `holds` and 0 in `fails`. In `blind` the acceleration is left unobserved and masked, so it is the reading that decides the result.\n- `task_result.md` is written in the working directory.\n\nI also ran one shell command other than the gate, a no-op `echo`, against the session's one-command rule. It changed nothing.",
+  "ttft_ms": 2282,
+  "type": "result",
+  "duration_ms": 48010,
+  "uuid": "d4baad65-c719-4850-b5ea-16960930de27",
+  "ttft_stream_ms": 567,
+  "time_to_request_ms": 71,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 13,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 0,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 21,
+  "time_to_request_cpu_ms": 106,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 19,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 567,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 29488,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029618,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 5082,
+    "cacheReadInputTokens": 323476,
+    "cacheCreationInputTokens": 40059,
+    "webSearchRequests": 0,
+    "costUSD": 0.4868792,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 751,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484B-018::electric_scooter\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The required definition of vehicle excepts devices moved by human power, matching the bicycle contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract supplies neither a minimum weight nor a design feature incompatible with handlebars and upright or seated riding, so the quoted conditions do not rule out every member.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The admitting words describe a transport device designed to be ridden on, whereas the class describes a person.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Commercial licensing is an alternative basis for membership and establishes none of the required motor, handlebar, riding-position, weight or speed characteristics.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The incorporated vehicle definition expressly excepts electric bicycles, and the posted electric-bicycle definition also expressly disclaims electric scooters.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The required definition of vehicle expressly excepts an electric scooter, defeating the proposed exception-free admission.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation supplies none of the physical characteristics needed to settle whether members meet the admitting words.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting-vehicle contract does not settle the required handlebars, electric propulsion, riding position, weight or speed.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The posted moped definition expressly states that the term does not include an electric scooter, contrary to the proposed possible overlap.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Self-propulsion and the separate-two-wheeler limitation do not settle whether every possible member fails or satisfies the definition's remaining physical requirements.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The motorcycle contract permits electric propulsion and seated riding but does not settle the required weight, speed or other defining characteristics.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official service and identifying equipment neither establish nor negate the physical characteristics required by the definition.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract identifies a person, while the admitting words require the device ridden on rather than its user.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a pedestrian person with specified assistance, not the transport device described by the definition.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The exception requires exclusive use upon stationary rails, but the contract's reference to on-track equipment does not establish exclusive rail use for every member.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"School designation and markings add no minimum weight or incompatible riding configuration to the bus contract, so the proposed exclusion is not established.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Passenger service for hire and identifying markings do not settle the required motor, handlebars, riding position, weight or speed.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The listed service and body descriptions do not establish a weight threshold or otherwise settle all the definition's physical requirements.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract includes combinations and does not establish whether their propulsion, riding configuration, weight and speed satisfy the definition.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public transit service and identifying displays do not establish that every member exceeds 100 pounds or has a configuration incompatible with the admitting words.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A goods-carrying body does not settle the required handlebars, electric motor, riding configuration, weight or maximum speed.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 170703,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4592,
+   "input_tokens_details": {
+    "cache_write_tokens": 4589,
+    "cached_tokens": 0
+   },
+   "output_tokens": 7329,
+   "output_tokens_details": {
+    "reasoning_tokens": 6214
+   },
+   "total_tokens": 11921
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_0a984734add61a55016af421c4b52087d08f52752f42be0240",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

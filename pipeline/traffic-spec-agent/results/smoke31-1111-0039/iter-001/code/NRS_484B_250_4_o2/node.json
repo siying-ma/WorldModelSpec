@@ -1,0 +1,294 @@
+{
+ "node_id": "NRS_484B_250_4_o2",
+ "law_refs": [
+  "NRS-484B-250-4"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "When a vehicle enters an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered, but is inoperative at the time the vehicle enters the intersection,",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "the driver of the vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "s4",
+   "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop",
+   "role": "sibling"
+  },
+  {
+   "id": "s5",
+   "text": "at a clearly marked stop line",
+   "role": "sibling"
+  },
+  {
+   "id": "s6",
+   "text": "or, if there is none, before entering the crosswalk on the near side of the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "or, if there is none, at the point nearest the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "s8",
+   "text": "where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "s9",
+   "text": "After making such a stop,",
+   "role": "condition"
+  },
+  {
+   "id": "s10",
+   "text": "the driver shall proceed",
+   "role": "trigger"
+  },
+  {
+   "id": "s11",
+   "text": "cautiously,",
+   "role": "standard"
+  },
+  {
+   "id": "s12",
+   "text": "yielding to vehicles",
+   "role": "obligation"
+  },
+  {
+   "id": "s13",
+   "text": "which have previously completed a stop",
+   "role": "condition"
+  },
+  {
+   "id": "s14",
+   "text": "or are within the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "As in NRS_484B_250_4_o1: 'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle; 'enters an intersection' is drv.motion.entering_region on a st.intersection ('the region where two roadways meet') through rel.occupies 'a road user's footprint overlaps a lane / region'."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.inoperative",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_250_4_o1: dev.inoperative 'a signal head installed and uncovered but showing no valid indication' of a dev.traffic_signal that governs ('the travel regions whose traffic the device controls ... or an intersection') the intersection or the approach carrier (st.lane_enters) x occupies, read at the entry."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'the driver of the vehicle' is read through the vehicle's controlled motion (DEF-NRS-484A-080)."
+  },
+  {
+   "span": "s10",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'shall proceed' after the stop is the subject's entry into the intersection (drv.motion.entering_region, rel.occupies 'a road user's footprint overlaps a lane / region'): the observation at which it proceeds in preference to others or not."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [
+    "drv.motion.entering_region"
+   ],
+   "justification": "'yielding to vehicles' (DEF-NRS-484A-210 right-of-way 'the right ... to proceed in a lawful manner in preference to another vehicle'): x does not enter the intersection while a vehicle of the admitted aggregate is owed precedence; the yield is read at x's entry."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "rel.occupies",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "'which have previously completed a stop': another vehicle y halted (drv.motion.halted, DEF-NRS-484A-255 'complete cessation from movement') on another approach carrier of the intersection (st.lane_enters 'the intersection region a directed approach carrier runs into', rel.occupies) before x's own halt began, and has stayed on that carrier outside the intersection since."
+  },
+  {
+   "span": "s14",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "'are within the intersection': rel.occupies of y and the intersection x enters, at x's entry."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s11",
+   "standard": "proceed cautiously",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.immediate_hazard_gap",
+    "p.conflict_clearance"
+   ],
+   "convention": "Surrogate safety measure of a conflict (FHWA SSAM): at x's entry, no other road user's centre is predicted, under constant velocities, to come within p.conflict_clearance of x's within p.immediate_hazard_gap. The primitives are not a stand-in for contact or the danger of a crash by themselves; the bound the parameters set is the standard's.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [
+  {
+   "span": "s9",
+   "rule": "NRS_484B_250_4_o1",
+   "map": {
+    "x": "x"
+   },
+   "as": "compliance"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate=DEF-NRS-484A-320::vehicle) and enters intersection i (st.intersection) at this observation (drv.motion.entering_region x i) through an approach carrier c (st.travel_region, x occupies c, st.lane_enters c i); a traffic signal (dev.traffic_signal) that governs i or c (dev.governs) is dev.inoperative at this observation; and NRS_484B_250_4_o1 is complied with for x at this observation (rule NRS_484B_250_4_o1 {x -> x}). That rule is engaged at exactly this entry, so its compliance here is the fact 'such a stop' refers to: x halted, on the approach to this entry, at the place it requires.",
+ "obligation": "At this entry: (1) no vehicle y other than x (ru.aggregate=DEF-NRS-484A-320::vehicle) occupies i (rel.occupies y i); (2) no vehicle y other than x waits on another approach carrier c2 of i (st.travel_region, st.lane_enters c2 i, x not on c2) having completed a stop before x: y has occupied c2 and not i at every observation since an observation at which x's halt on c began (x halted, drv.motion.halted with p.speed_resolution, and on c there, and not halted at the observation before) and y was already halted on c2 (halted there and at the observation before); (3) proceeding cautiously: no road user z other than x is in predicted conflict with x, i.e. not both prim.closest_approach_within x z with horizon p.immediate_hazard_gap and prim.closest_approach_distance x z with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.speed_resolution",
+  "p.immediate_hazard_gap",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s2",
+   "why": "The signal head's presence is read as the official status of the traffic-control signal.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "s3",
+   "why": "'the driver' is read through the vehicle's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s11",
+   "why": "'cautiously' names no factor; it is read only through the predicted conflict at the entry, and marked surrogate as a standard of care.",
+   "kind": "reading"
+  },
+  {
+   "span": "s12",
+   "why": "The yield is judged at x's entry into the intersection: an entry while a vehicle is owed precedence is the failure to yield; conduct after the entry is not read for this yield.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Signal d governing i is dev.inoperative; x halts within 0.5 m of the stop line marking its lane c, then enters i while vehicle y occupies i."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "As forbid, but x is the only road user in the scene when it enters i after its halt."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Signal d shows circular_green (not dev.inoperative) when x enters i."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but rel.occupies of y and i is not observed at x's entry.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "x halts at its stop line; vehicle y had halted at the stop line of crossing carrier c2 two seconds before x's halt began and still waits there, outside i; x enters i first."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "As forbid, but x halted 30 m upstream of the stop line marking c (outside the stopping zone) and rolled through the line: the halt was not such a stop, NRS_484B_250_4_o1 is not complied with, and this duty does not arise."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.immediate_hazard_gap",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical gap: the time within which another road user's arrival at the conflict area, or its predicted closest approach, counts as an immediate hazard to a road user about to cross or join its path.",
+   "source": "HCM 7th ed. Exhibit 20-11 base critical headway (major-street left turn)"
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Conflict radius: the centre distance at predicted closest approach below which two road users' paths count as in conflict; about the half-length plus half-width of two passenger cars.",
+   "source": "FHWA Surrogate Safety Assessment Model (Gettman et al. 2008) conflict definition"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

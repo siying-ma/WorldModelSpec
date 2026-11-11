@@ -1,0 +1,51 @@
+'TrafficSpec.Rules.NRS_484B_263_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_263_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_263_o1","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"operationalizations":[{"concepts":["prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.immediate_hazard_gap","p.conflict_clearance"],"standard":"proximity that constitutes an immediate hazard","surrogate":false}],"residues":[],"surrogate":false}
+RULEJSON	{"applicability":{"body":{"or":[{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_entering_region","params":[]},{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_leaving_region","params":[]}]},"exists_region":{"lit":"controlled_access"},"var":"a"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_263_o1","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"obligation":{"body":{"implies":[{"or":[{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_entering_region","params":[]},{"args":[{"var":"x"},{"var":"a"}],"derived":"drv_motion_leaving_region","params":[]}]},{"not":{"body":{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"var":"a"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"y"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"and":[{"args":[{"var":"x"},{"var":"y"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"y"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}]}]}]}]},"exists_user":"y"}}]},"forall_region":{"lit":"controlled_access"},"var":"a"},"residues":[],"surrogate":false}
+RULEXJSON	{"applicability":{"body":{"or":[{"rises":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]},"exists_region":{"lit":"controlled_access"},"var":"a"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_263_o1","intentions":[],"laws":["NRS-484B-263"],"narrowings":[],"obligation":{"body":{"implies":[{"or":[{"rises":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}},{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"a"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}]},{"not":{"body":{"and":[{"not":{"same":[{"var":"y"},{"var":"x"}]}},{"and":[{"args":[{"var":"y"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},{"and":[{"args":[{"var":"y"},{"var":"a"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"y"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"and":[{"args":[{"var":"x"},{"var":"y"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"y"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}]}]}]}]},"exists_user":"y"}}]},"forall_region":{"lit":"controlled_access"},"var":"a"},"residues":[],"surrogate":false}
+ATOMS	ru_aggregate,st_controlled_access,drv_motion_entering_region,drv_motion_leaving_region,rel_occupies,drv_motion_moving,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	kin.speed
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+OCC	x
+OCC	?a
+OCC	x,a
+OCC	x,a
+OCC	?a
+OCC	x,a
+OCC	x,a
+OCC	?y
+OCC	y,x
+OCC	y
+OCC	y,a
+OCC	y
+OCC	x,y
+OCC	x,y
+TIME	occurrences	0
+TIME	checks	8
+TIME	lint	28
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	10
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	9
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	7
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	11
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	8
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	8
+TIME	witnesses	54
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_263_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_263_o1.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_263_o1	9	5
+TIME	adequacy_start	6
+TIME	adequacy	451
+DONE

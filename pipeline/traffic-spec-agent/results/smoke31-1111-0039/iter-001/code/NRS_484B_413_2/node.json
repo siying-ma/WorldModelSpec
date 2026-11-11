@@ -1,0 +1,207 @@
+{
+ "node_id": "NRS_484B_413_2",
+ "law_refs": [
+  "NRS-484B-413-2"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during not less than the last 100 feet traveled",
+   "role": "obligation"
+  },
+  {
+   "id": "f5",
+   "text": "in a business or residential district",
+   "role": "condition"
+  },
+  {
+   "id": "f6",
+   "text": "and not less than the last 300 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "f7",
+   "text": "in any other area",
+   "role": "condition"
+  },
+  {
+   "id": "f8",
+   "text": "prior to changing the course",
+   "role": "trigger"
+  },
+  {
+   "id": "f9",
+   "text": "of a vehicle.",
+   "role": "subject"
+  },
+  {
+   "id": "f10",
+   "text": "This rule shall be observed, regardless of the weather.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal",
+    "kin.path_length",
+    "st.lane_direction",
+    "kin.velocity",
+    "kin.speed",
+    "rel.occupies",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.veering_left",
+    "drv.motion.veering_right"
+   ],
+   "justification": "A signal of intention to turn is the signal itself, not a declared intention (the ontology: \"a signal 'of intention' is the signal\"): sig.turn_indicator (\"the turn indicator state ∈ {off, left, right}\") or sig.hand_signal (\"a driver's or rider's arm signal; meaning ∈ {no_signal, left, right, stop_or_slow, re_enter}\") showing the side of the change of course; sig.turn_indicator is 'not a stand-in' for the turn itself, which is read separately. A direct course is travel along the designated direction of the carrier x occupies (rel.occupies a st.travel_region carrying st.lane_direction); turning right or left or otherwise from it is x's velocity departing to one side of that direction, the proposed concepts drv.motion.veering_left and drv.motion.veering_right (\"it moves forward along the carrier while its velocity points to the left [right] of the carrier's direction by more than a tolerance\", from kin.velocity and kin.speed); following a bend of the carrier is not a departure, since the designated direction bends with it. 'given continuously during not less than the last 100 feet traveled' is a window measured in distance travelled (a .path window, which reads kin.path_length: \"distance travelled along the body's path since the start of the trace, monotone\") at every observation of which the signal of the departure's side is shown; the figure is the law's literal."
+  },
+  {
+   "span": "f6",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "The same .path window (kin.path_length) with the law's other literal, the bound selected where the place is not in a business or residence district (span f7)."
+  },
+  {
+   "span": "f8",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "derived": [
+    "drv.motion.veering_left",
+    "drv.motion.veering_right"
+   ],
+   "justification": "Changing the course is the observation at which a departure to one side begins: drv.motion.veering_left or drv.motion.veering_right holds for a carrier x occupies (rel.occupies) and held for none at the observation before. The signal window ends there."
+  },
+  {
+   "span": "f9",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle (\"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"), claimed by id: the subject x whose course changes."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "f5",
+   "id": "asm.within_business_or_residence_district",
+   "meaning": "The place of the observation lies inside a business district or a residence district declared for the map or the trace."
+  },
+  {
+   "span": "f7",
+   "id": "asm.within_business_or_residence_district",
+   "meaning": "The place of the observation lies inside a business district or a residence district declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "f10",
+   "why": "The duty is the same in every weather: the words exclude no weather and add no condition, so no environment atom is read.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle and at the observation begins a change of course: for some travel region c that x occupies (rel.occupies), drv.motion.veering_left(x, c) or drv.motion.veering_right(x, c) (with p.speed_resolution and p.course_departure_sine) holds there, and at the observation before neither held for any region x occupied.",
+ "obligation": "For a departure to the left, x showed a left signal (sig.turn_indicator left, or sig.hand_signal left) at every observation of the window behind the observation measured in x's distance travelled (.path, kin.path_length), whose length is the literal of span f1 where asm.within_business_or_residence_district holds at the observation and the literal of span f6 where it does not (a bound selected by the condition); for a departure to the right, the right signal likewise. A departure to both sides at once owes the signal of either.",
+ "params": [
+  "p.speed_resolution",
+  "p.course_departure_sine"
+ ],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "'otherwise turn a vehicle from a direct course' is read as the velocity departing to one side of the designated direction of the carrier the vehicle occupies, on lanes, roadways and other carriers that carry a direction; a turn begun where the vehicle occupies only an intersection, which carries no direction, is not recognized.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x (ru.motor_vehicle) on a rural road (asm.within_business_or_residence_district declared false) begins a lane change to the left; its sig.turn_indicator showed left only over a path shorter than the literal of span f6 before the departure began, off before that."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same rural lane change; sig.turn_indicator showed left at every observation of a path longer than the literal of span f6 before the departure."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives along its lane following its designated direction, never departing to either side."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x begins a lane change to the left, but the source observes neither its turn indicator nor any arm signal.",
+   "masked": [
+    "sig.turn_indicator",
+    "sig.hand_signal"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "In a declared business district x begins a departure to the right with sig.turn_indicator right shown over a path longer than the literal of span f1 but shorter than that of span f6."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "x begins a departure to the right with sig.turn_indicator left shown over the whole window: the signal is not of the side of the change."
+  }
+ ],
+ "literals": [
+  {
+   "span": "f1",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "f6",
+   "text": "300 feet",
+   "value": 300,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed resolution of the carla_scene_graph acquisition standard"
+  },
+  {
+   "name": "p.course_departure_sine",
+   "unit": "ratio",
+   "value": 0.05,
+   "convention": "Course-departure tolerance: the sine of the angle between a road user's velocity and its carrier's designated direction beyond which it counts as leaving its direct course rather than tracking the carrier; about three degrees, above heading noise and lane-keeping drift.",
+   "source": "lane-change onset detection practice in naturalistic driving studies"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

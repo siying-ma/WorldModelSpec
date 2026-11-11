@@ -1,0 +1,399 @@
+{
+ "verdict": "OK",
+ "details": [
+  "8 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "rises": {
+     "body": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "c"
+         }
+        ],
+        "atom": "rel_occupies",
+        "params": []
+       },
+       {
+        "or": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "derived": "drv_motion_veering_left",
+          "params": [
+           {
+            "param": "p.speed_resolution"
+           },
+           {
+            "param": "p.course_departure_sine"
+           }
+          ]
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "c"
+           }
+          ],
+          "derived": "drv_motion_veering_right",
+          "params": [
+           {
+            "param": "p.speed_resolution"
+           },
+           {
+            "param": "p.course_departure_sine"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "exists_region": {
+      "lit": "travel_region"
+     },
+     "var": "c"
+    }
+   },
+   "assumptions": [
+    "asm.within_business_or_residence_district",
+    "asm.within_business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_413_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-413-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "or": [
+     {
+      "and": [
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "derived": "drv_motion_veering_left",
+           "params": [
+            {
+             "param": "p.speed_resolution"
+            },
+            {
+             "param": "p.course_departure_sine"
+            }
+           ]
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "travel_region"
+        },
+        "var": "c"
+       },
+       {
+        "and": [
+         {
+          "implies": [
+           {
+            "asm": "asm.within_business_or_residence_district"
+           },
+           {
+            "body": {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "left"
+                }
+               ],
+               "atom": "sig_turn_indicator",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "left"
+                }
+               ],
+               "atom": "sig_hand_signal",
+               "params": []
+              }
+             ]
+            },
+            "holds_for": "path",
+            "length": {
+             "lit": {
+              "den": 25,
+              "num": 762
+             },
+             "unit": "metre"
+            },
+            "subject": "x"
+           }
+          ]
+         },
+         {
+          "implies": [
+           {
+            "not": {
+             "asm": "asm.within_business_or_residence_district"
+            }
+           },
+           {
+            "body": {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "left"
+                }
+               ],
+               "atom": "sig_turn_indicator",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "left"
+                }
+               ],
+               "atom": "sig_hand_signal",
+               "params": []
+              }
+             ]
+            },
+            "holds_for": "path",
+            "length": {
+             "lit": {
+              "den": 25,
+              "num": 2286
+             },
+             "unit": "metre"
+            },
+            "subject": "x"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "and": [
+       {
+        "body": {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "x"
+            },
+            {
+             "var": "c"
+            }
+           ],
+           "derived": "drv_motion_veering_right",
+           "params": [
+            {
+             "param": "p.speed_resolution"
+            },
+            {
+             "param": "p.course_departure_sine"
+            }
+           ]
+          }
+         ]
+        },
+        "exists_region": {
+         "lit": "travel_region"
+        },
+        "var": "c"
+       },
+       {
+        "and": [
+         {
+          "implies": [
+           {
+            "asm": "asm.within_business_or_residence_district"
+           },
+           {
+            "body": {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "right"
+                }
+               ],
+               "atom": "sig_turn_indicator",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "right"
+                }
+               ],
+               "atom": "sig_hand_signal",
+               "params": []
+              }
+             ]
+            },
+            "holds_for": "path",
+            "length": {
+             "lit": {
+              "den": 25,
+              "num": 762
+             },
+             "unit": "metre"
+            },
+            "subject": "x"
+           }
+          ]
+         },
+         {
+          "implies": [
+           {
+            "not": {
+             "asm": "asm.within_business_or_residence_district"
+            }
+           },
+           {
+            "body": {
+             "or": [
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "right"
+                }
+               ],
+               "atom": "sig_turn_indicator",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "x"
+                },
+                {
+                 "lit": "right"
+                }
+               ],
+               "atom": "sig_hand_signal",
+               "params": []
+              }
+             ]
+            },
+            "holds_for": "path",
+            "length": {
+             "lit": {
+              "den": 25,
+              "num": 2286
+             },
+             "unit": "metre"
+            },
+            "subject": "x"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "residues": [
+    "The duty is the same in every weather: the words exclude no weather and add no condition, so no environment atom is read."
+   ],
+   "surrogate": false
+  },
+  "context": "42e1057668c72b0cad9fc73e",
+  "candidate_digest": "9725f4cb73cdb28e2ce563c7bebf67a61ba07c66b527a2aeb7c44eef87210a3f"
+ }
+}

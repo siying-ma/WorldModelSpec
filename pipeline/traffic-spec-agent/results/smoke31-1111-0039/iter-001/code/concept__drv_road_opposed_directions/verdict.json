@@ -1,0 +1,79 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 1 names, reads 1 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "st.lane_direction"
+  ],
+  "refs": [],
+  "canonical_body": "{\"cmp\":\"lt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"}]}]},\"rhs\":{\"neg\":{\"param\":\"$p0\"}}}",
+  "body_json": {
+   "cmp": "lt",
+   "lhs": {
+    "add": [
+     {
+      "mul": [
+       {
+        "args": [
+         {
+          "var": "c1"
+         },
+         {
+          "lit": "x"
+         }
+        ],
+        "measure": "st_lane_direction"
+       },
+       {
+        "args": [
+         {
+          "var": "c2"
+         },
+         {
+          "lit": "x"
+         }
+        ],
+        "measure": "st_lane_direction"
+       }
+      ]
+     },
+     {
+      "mul": [
+       {
+        "args": [
+         {
+          "var": "c1"
+         },
+         {
+          "lit": "y"
+         }
+        ],
+        "measure": "st_lane_direction"
+       },
+       {
+        "args": [
+         {
+          "var": "c2"
+         },
+         {
+          "lit": "y"
+         }
+        ],
+        "measure": "st_lane_direction"
+       }
+      ]
+     }
+    ]
+   },
+   "rhs": {
+    "neg": {
+     "param": "opposed_cosine"
+    }
+   }
+  },
+  "context": "69e7844260cb797032ee6c93",
+  "candidate_digest": "cfc9aa1efda208a88c886b54937bbc9e12f5a6ae53919e2dbaa5b4d2bdc23fdc"
+ }
+}

@@ -1,0 +1,38 @@
+'TrafficSpec.Concepts.motion.stopping_distance.concept' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.stopping_distance.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.stopping_distance.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"deceleration"}]}]}]},"contract":"The distance road user x would cover from the observation to a standstill if it kept its present speed for reaction_time and then slowed at the constant deceleration deceleration: its speed (kin.speed, m/s) times reaction_time, plus the square of its speed divided by twice deceleration; in metres, zero for a body at a standstill. Not denoted: the distance x actually covers before a later halt, the deceleration the surface, the grade or the vehicle allows (the caller passes deceleration), whether anything lies within the distance, or whether x is required to stop.","definition":null,"id":"drv.motion.stopping_distance","kind":"quantity","narrowings":[],"params":[{"name":"reaction_time","unit":"second"},{"name":"deceleration","unit":"metre_per_second_sq"}],"residues":[],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"add":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"param":"reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"x"}],"measure":"kin_speed"},{"args":[{"var":"x"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"ratio"},{"param":"deceleration"}]}]}]}
+WITNESS	holds	drv.motion.stopping_distance@w
+WITNESS	fails	drv.motion.stopping_distance@w
+WITNESS	blind	drv.motion.stopping_distance@w
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+LITERAL	2/1	TrafficSpec.PUnit'.ratio
+LITERAL	2/1	TrafficSpec.PUnit'.ratio
+INST	drv.motion.stopping_distance@w	ok
+TIME	checks	3
+TIME	lint	3
+SCEN	holds	drv.motion.stopping_distance@w	compliant	compliant	ok
+TIME	scenario:drv.motion.stopping_distance@w/holds	10
+SCEN	fails	drv.motion.stopping_distance@w	violated	violated	ok
+TIME	scenario:drv.motion.stopping_distance@w/fails	9
+SCEN	blind	drv.motion.stopping_distance@w	unknown	unknown	ok
+TIME	scenario:drv.motion.stopping_distance@w/blind	13
+TIME	witnesses	32
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.stopping_distance.concept' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.stopping_distance.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.stopping_distance.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.stopping_distance@w	2	2
+TIME	adequacy_start	5
+TIME	adequacy	49
+DONE

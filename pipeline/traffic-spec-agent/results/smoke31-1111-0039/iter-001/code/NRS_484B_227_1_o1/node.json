@@ -1,0 +1,171 @@
+{
+ "node_id": "NRS_484B_227_1_o1",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "Every vehicle driven",
+   "role": "subject"
+  },
+  {
+   "id": "a2",
+   "text": "upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "a3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "obligation"
+  },
+  {
+   "id": "a4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "a5",
+   "text": "must not be driven over, across or within any dividing space, barrier or section or make any left turn, semicircular turn or U-turn",
+   "role": "sibling"
+  },
+  {
+   "id": "a7",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "sibling"
+  },
+  {
+   "id": "a8",
+   "text": "or at a crossover or intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "a9",
+   "text": "established by a public authority",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom; 'driven' is read through the vehicle's controlled motion (agency reading below)."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "st.highway",
+    "st.on_way",
+    "st.median_or_divider",
+    "st.roadway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "A divided highway is 'a highway divided into two or more roadways by means of a physical barrier or dividing section' (DEF-NRS-484A-070): an st.highway ('the entire public way between its boundary lines') on which (st.on_way) an st.median_or_divider lies ('physical barrier or dividing section between roadways'), its parts being st.roadway regions ('separate roadways of a divided highway are separate'). 'upon' is x's footprint overlapping (rel.occupies) a roadway or dividing section lying on that highway; st.highway's exclusion 'Not a stand-in for: the roadway' is respected: the roadway is read as the part of the way it is."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "st.roadway",
+    "rel.occupies",
+    "st.lane_direction",
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.against_carrier_direction"
+   ],
+   "justification": "The roadways of a divided highway each carry one direction; st.lane_direction is the 'direction of travel designated for a structure a vehicle travels in — ... a roadway, one-way roadway'. The right-hand roadway, under right-hand traffic, is the one whose designated direction is the vehicle's direction of travel, so being driven upon another roadway of the highway is moving against the designated direction of the roadway x occupies: drv.motion.against_carrier_direction(x, r), from kin.velocity and kin.speed. The concept is 'Not a stand-in for' the heading opposing the carrier, so a vehicle crossing a roadway at a wide angle is not driven upon it against its direction."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and occupies (rel.occupies) an st.roadway or st.median_or_divider region lying on (st.on_way) an st.highway region h on which some st.median_or_divider region lies.",
+ "obligation": "Re-binding h with the same selection: for every st.roadway region r lying on h that x occupies at the observation, x does not move against r's designated direction: not drv.motion.against_carrier_direction(x, r) with speed_floor p.speed_resolution and opposed_cosine p.opposed_direction_cosine.",
+ "params": [
+  "p.speed_resolution",
+  "p.opposed_direction_cosine"
+ ],
+ "narrowings": [
+  {
+   "span": "a1",
+   "why": "'driven' is read through the vehicle's controlled motion: a vehicle moving on the highway is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a3",
+   "why": "'the right-hand roadway' is read as the roadway whose designated direction (st.lane_direction) is the vehicle's direction of travel, as right-hand traffic makes it; 'only upon' is read as the choice between the highway's roadways, so this node judges travel against a roadway's direction; driving over or within the dividing section is the second obligation of the line, and crossing a roadway at a wider angle than the tolerance is not driving upon it.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a highway divided by a raised median, a car drives along the roadway whose designated direction is opposite to its travel."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "On the same divided highway, a car drives along the roadway in its designated direction."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives on an undivided two-way highway: no median or dividing section lies on the way."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car drives along one roadway of a divided highway; the source declares st.lane_direction absent, so whether it travels against the roadway's direction is not observed.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car that has turned left through a median opening crosses the opposite roadway at a right angle to its designated direction to reach a side street."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "Ground-truth simulator kinematics sampled at 20 Hz and the speed noise of typical odometry"
+  },
+  {
+   "name": "p.opposed_direction_cosine",
+   "unit": "ratio",
+   "value": 0.5,
+   "convention": "Direction tolerance: minus the cosine of the narrowest angle between a velocity and a carrier's designated direction that counts as travel against it; motion at a smaller angle, crossing included, does not.",
+   "source": "Wrong-way detection conventions in trajectory analysis and heading tolerance of ground-truth simulation"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

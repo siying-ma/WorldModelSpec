@@ -1,0 +1,143 @@
+{
+ "node_id": "LVMC_11_43_010_A",
+ "law_refs": [
+  "LVMC-11-43-010-A"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "The following regulations pertain to the operation of",
+   "role": "boilerplate"
+  },
+  {
+   "id": "t2",
+   "text": "vehicles",
+   "role": "subject"
+  },
+  {
+   "id": "t3",
+   "text": "within a roundabout",
+   "role": "condition"
+  },
+  {
+   "id": "t4",
+   "text": "All vehicular travel shall be in a counterclockwise direction",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicles' is the admitted aggregate DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', with its exceptions), claimed as one atom."
+  },
+  {
+   "span": "t3",
+   "atoms": [
+    "st.roundabout",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "st.roundabout is 'a rotary intersection: its central island, its circulatory roadway and its entry and exit approaches', which denotes DEF-LVMC-11-02-130 ('an intersection characterized by a circulatory roadway, channelized approaches and yield control of entering traffic', encompassing 'the area bounded by the outermost curb line' and including 'the crosswalks on any entering or exiting roadway': the entry and exit approaches the contract names). rel.occupies ('a road user's footprint overlaps a lane / region') anchors 'within' to the roundabout the vehicle is in."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.roundabout",
+    "st.region_geometry",
+    "kin.position",
+    "kin.velocity",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.clockwise_about_region"
+   ],
+   "justification": "'vehicular travel' is the motion of the vehicle the subject span binds (the same aggregate). 'in a counterclockwise direction' is the sense of that motion about the roundabout: drv.motion.clockwise_about_region reads the vector from the region's reference point (st.region_geometry, 'the reference point and the boundary polygon of a structure region in the world frame') to the vehicle's position (kin.position) against its velocity (kin.velocity, 'velocity vector', world frame) and speed (kin.speed); its own exclusion makes it no stand-in for travel against a lane direction, so no lane marking or st.lane_direction is read. The duty is violated by clockwise motion; motion toward or away from the centre (entering, leaving) and standstill are neither sense and do not violate it."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and occupies (rel.occupies) some st.roundabout region at the observation.",
+ "obligation": "For every st.roundabout region r that x occupies at the observation, x is not moving clockwise about r: not drv.motion.clockwise_about_region(x, r) with speed_floor p.speed_resolution and sine_tolerance p.circulation_sine_tolerance.",
+ "params": [
+  "p.speed_resolution",
+  "p.circulation_sine_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "t4",
+   "why": "'counterclockwise' is read as the sense of the vehicle's motion about the roundabout region's reference point (st.region_geometry), taken as the centre its circulatory roadway runs around, viewed from above; the duty is judged by the absence of the opposite (clockwise) sense, so a vehicle at rest or moving radially within the tolerance (entering or leaving) complies.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car on the circulatory roadway of a roundabout drives around the central island clockwise, its velocity tangential to the island."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car on the circulatory roadway drives around the central island counter-clockwise."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car drives clockwise around a block on ordinary streets; it occupies no roundabout region."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car is on the circulatory roadway of a roundabout and moving; the source declares kin.velocity absent, so the sense of its motion is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car on an entry approach inside the roundabout's outline drives straight toward the central island before yielding: its motion is radial, neither sense."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "Ground-truth simulator kinematics sampled at 20 Hz and the speed noise of typical odometry"
+  },
+  {
+   "name": "p.circulation_sine_tolerance",
+   "unit": "ratio",
+   "value": 0.2,
+   "convention": "Direction tolerance: the sine of the largest angle off a radial line within which motion about a point counts as neither sense of rotation, covering heading and position noise on entry and exit paths.",
+   "source": "Measurement tolerance of velocity direction in ground-truth simulation"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

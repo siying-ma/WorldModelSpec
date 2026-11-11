@@ -1,0 +1,164 @@
+{
+ "verdict": "OK",
+ "details": [
+  "9 witnesses, 7 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "s"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "not": {
+          "args": [
+           {
+            "var": "s"
+           }
+          ],
+          "atom": "st_shoulder_paved",
+          "params": []
+         }
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "shoulder"
+      },
+      "var": "s"
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "e"
+          }
+         ],
+         "atom": "rel_occupies",
+         "params": []
+        },
+        {
+         "not": {
+          "args": [
+           {
+            "var": "e"
+           }
+          ],
+          "atom": "st_road_edge_paved",
+          "params": []
+         }
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "road_edge"
+      },
+      "var": "e"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_210_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-210-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "and": [
+       {
+        "not": {
+         "same": [
+          {
+           "var": "x"
+          },
+          {
+           "var": "y"
+          }
+         ]
+        }
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "y"
+           },
+           {
+            "lit": "DEF-NRS-484A-320::vehicle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "var": "y"
+           }
+          ],
+          "derived": "drv_interaction_passing_on_right",
+          "params": [
+           {
+            "param": "p.same_direction_cosine"
+           },
+           {
+            "param": "p.overtaking_speed_margin"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "exists_user": "y"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "501cd53c3d75703cd4c6344f",
+  "candidate_digest": "e50c55227209ba9745f5105676db99c3e2098e0c068ecc78881a748db85e3256"
+ }
+}

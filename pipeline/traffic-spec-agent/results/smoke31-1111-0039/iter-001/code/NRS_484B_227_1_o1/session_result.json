@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 138674,
+  "stop_reason": "end_turn",
+  "session_id": "12385f00-8bda-42d6-84a8-9cf6a7310a52",
+  "total_cost_usd": 0.9115012,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 62990,
+   "cache_read_input_tokens": 519647,
+   "output_tokens": 14990,
+   "output_tokens_details": {
+    "thinking_tokens": 6200
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 62990,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 598,
+     "cache_read_input_tokens": 66104,
+     "cache_creation_input_tokens": 1324,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1324
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37548,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037718,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 14990,
+    "cacheReadInputTokens": 519647,
+    "cacheCreationInputTokens": 62990,
+    "webSearchRequests": 0,
+    "costUSD": 0.9077294,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6200,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 15,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the second of six runs (6 witnesses), and `task_result.md` is written.\n\n**Rule** (`NRS_484B_227_1_o1.lean`):\n- **Who it covers:** `x` must be a vehicle under the definition the node cites (`DEF-NRS-484A-320::vehicle`).\n- **When it applies:** some highway has a median on it, and `x` occupies a roadway or a median on that highway.\n- **The duty:** on any such highway, for every roadway `x` occupies, `x` must not move against that roadway's designated direction. This uses the `against_carrier_direction` concept with `p.speed_resolution` and `p.opposed_direction_cosine`.\n\n**One departure from the record's wording.** The record says the duty re-selects the highway \"with the same selection\", and the first gate run returned VACUOUS on exactly that. The \"x occupies a median\" part of the selection can never change a verdict inside the duty. The duty only speaks about roadways `x` occupies on that highway, and that already implies `x` is on the highway. So the duty now re-selects the highway as \"has a median, and `x` occupies a roadway on it\". The duty covers exactly the same highways as before, so I didn't record a narrowing. The applicability still has both parts. The plan agent could word future records this way to avoid the problem.\n\n**Witnesses:** I built the five planned scenes on a highway with a westbound roadway, an eastbound roadway and a median with an opening. The `blind` scene masks only `st.lane_direction`. I added `branch_2`, a car in the median opening and on no roadway, which expects compliant. It's the only scene where the rule applies because the car is on the median rather than a roadway.\n\nThe node didn't look wrong and no concept misbehaved, so there's no `dependency_defect.json`.",
+  "ttft_ms": 21110,
+  "type": "result",
+  "duration_ms": 147986,
+  "uuid": "61564e5c-36fd-4815-afc9-77d6ccbeef62",
+  "ttft_stream_ms": 1109,
+  "time_to_request_ms": 98,
+  "time_to_request_phases_ms": {
+   "other": 18,
+   "system_prompt": 30,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 6,
+  "time_to_request_cpu_ms": 152,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 10,
+   "cpu_ms": 18,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1109,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 37548,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037718,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 14990,
+    "cacheReadInputTokens": 519647,
+    "cacheCreationInputTokens": 62990,
+    "webSearchRequests": 0,
+    "costUSD": 0.9077294,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6200,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

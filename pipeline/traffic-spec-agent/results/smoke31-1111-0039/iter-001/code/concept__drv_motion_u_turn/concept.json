@@ -1,0 +1,82 @@
+{
+ "concept_id": "drv.motion.u_turn",
+ "kind": "formula",
+ "contract": "Road user x has turned so as to proceed in the opposite direction: the turning that the corpus defines as \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\", observed as a reversal of x's heading. It holds at an observation where the absolute value of x's signed heading change over the window behind it (prim.heading_change with window; degrees, left positive) differs from the literal half turn by no more than reversal_tolerance: the heading now points the opposite way within the tolerance, and a heading change that has gone past the half turn by more than the tolerance (a loop back toward the first direction) does not count. A turning made in several movements, forward and backing, counts, since the heading change is integrated through all of them. The act begins within the window behind the observation of recognition; it is recognized at the observation at which this condition rises; it holds at the later observations at which the reversal still lies within the window behind them, which are not the act again, and it ends when the reversal leaves that window. Unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing. Not denoted: a turning by less than a reversal, or the place of the turning: the caller states the highway or the zone.",
+ "definition": "DEF-NRS-484B-077",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "the longest time over which a reversal of heading, in one movement or several, is recognized as one turning: the window behind the observation over which the heading change is integrated"
+  },
+  {
+   "name": "reversal_tolerance",
+   "unit": "deg",
+   "meaning": "the largest difference between the size of the heading change and the half turn within which the road user counts as proceeding in the opposite direction"
+  }
+ ],
+ "act": {
+  "boundary": "window",
+  "window": "window",
+  "onset": "The act begins within the window behind the observation of recognition",
+  "recognition": "it is recognized at the observation at which this condition rises",
+  "extent": "it holds at the later observations at which the reversal still lies within the window behind them, which are not the act again, and it ends when the reversal leaves that window",
+  "history": "Unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing"
+ },
+ "elements": [
+  {
+   "span": "the absolute value of x's signed heading change over the window behind it (prim.heading_change with window; degrees, left positive)",
+   "atoms": [
+    "prim.heading_change"
+   ],
+   "concepts": [],
+   "justification": "prim.heading_change: \"the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from kin.yaw_rate; unknown where the window is truncated, sampled too sparsely, or a yaw rate is missing\"; its window is the formal window. Integration through forward and backing movements carries \"whether accomplished by one continuous movement or not\"."
+  }
+ ],
+ "residues": [
+  {
+   "span": "upon a highway",
+   "why": "The place is the caller's: the concept reads x's heading only, and the calling rule states the region (the highway or the zone) the turning is made in."
+  },
+  {
+   "span": "so as to proceed in the opposite direction",
+   "why": "Read as the reversal of x's own heading. A road user following a bend of the way that itself turns through a half turn within the window also reverses its heading; no atom of the closed set states the course of the way along x's path, so the two are not told apart."
+  }
+ ],
+ "literals": [
+  {
+   "value": 180,
+   "unit": "deg",
+   "why": "the half turn: a heading pointing the opposite way"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x drives along a street, swings left across the centre line and completes the turning heading the opposite way within the window; the size of prim.heading_change differs from the half turn by less than reversal_tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x turns right at a junction; the size of prim.heading_change over the window is about a quarter turn."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x reverses its heading, but its yaw rate is missing during the window.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_363_3"
+ ]
+}

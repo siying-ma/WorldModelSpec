@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 673908,
+  "stop_reason": "end_turn",
+  "session_id": "28ef133e-1424-4271-aa25-5f8195e3fb7d",
+  "total_cost_usd": 3.7305486,
+  "usage": {
+   "input_tokens": 58,
+   "cache_creation_input_tokens": 196976,
+   "cache_read_input_tokens": 3834980,
+   "output_tokens": 69146,
+   "output_tokens_details": {
+    "thinking_tokens": 50007
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 196976,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 969,
+     "cache_read_input_tokens": 199200,
+     "cache_creation_input_tokens": 2214,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2214
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45776,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0045926000000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 58,
+    "outputTokens": 69146,
+    "cacheReadInputTokens": 3834980,
+    "cacheCreationInputTokens": 196976,
+    "webSearchRequests": 0,
+    "costUSD": 3.725956,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 50007,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_016dFmiyzP1pbUhrRQerSPVx",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke31-1111-0039 --node_id NRS_484B_400_1_o2 --help 2>/dev/null | head -0; true",
+     "description": "(no-op placeholder avoided)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 32,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returns **OK** for NRS_484B_400_1_o2 (6 witnesses), using 4 of the 6 runs.\n\n**The rule** (`library/TrafficSpec/Rules/NRS_484B/NRS_484B_400_1_o2.lean`)\n- **When it applies:** a vehicle's right turn in an intersection is recognised at the moment its heading change since entering first reaches minus the turn angle. In addition, when it entered:\n  - the turn intention was declared for it at that intersection;\n  - it was on an approach lane into that intersection on a highway;\n  - that highway has no right-turn lane for this approach (right side, entering the same intersection, direction not opposed to the vehicle's).\n- **What it requires:** when it entered, the vehicle was in a lane whose position number equals the lane count (the rightmost lane). Over the 15 m before the entry, whenever it was in a lane approaching that intersection, it was in that rightmost lane.\n- **Restated selection:** the obligation repeats the whole selection of intersection, approach lane and highway, and requires the duty for every match.\n\n**One addition the record doesn't spell out:** I added \"the approach lane is not itself an intersection.\" It follows from the lane-entry atom's own definition of an approach lane. But that atom reads unknown, not false, on an intersection, and without the addition a \"not applicable\" result can't be reached. A reviewer should look at it. I declared no narrowings.\n\n**Witnesses** (`library/TrafficSpecWitness/NRS_484B/NRS_484B_400_1_o2.lean`): beyond the four planned ones, I added two:\n- `branch_1`: a lane change from the left lane to the rightmost lane inside the 15 m approach, which is a violation.\n- `branch_2`: four turn lanes that don't count, each failing exactly one requirement. Without it the gate rejected the rule (VACUOUS) because those checks never mattered in any scene.\n\nEach witness is judged only from just after the entry to the end of the trace, because before the entry the turn can't be measured and the result would be unknown.\n\n**Gate runs:**\n1. UNUSED_CLAIM. I ran it on the untouched skeleton by mistake, which wasted a run. Separately, an attempted command with an extra pipe was blocked by the permission layer and never ran.\n2. WITNESS_FAIL. The trace check rejected scenes where the heading didn't match the yaw rate, and a lane change that jumped 4 m in one step. I rebuilt the motion so heading, position and distance travelled are consistent.\n3. VACUOUS, fixed by adding `branch_2`.\n4. OK.\n\n**One reading to be aware of:** a vehicle straddling the left lane and the rightmost lane meets the requirement, because the record only asks that it occupy the rightmost lane wherever it occupies an approach lane.\n\nThe full report is in `task_result.md` in the working directory.",
+  "ttft_ms": 59749,
+  "type": "result",
+  "duration_ms": 799978,
+  "uuid": "0631a964-2698-4467-8b2a-2a9896cc6e82",
+  "ttft_stream_ms": 1105,
+  "time_to_request_ms": 68,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 20,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 18,
+  "time_to_request_cpu_ms": 102,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 11,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1105,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 45776,
+    "outputTokens": 30,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0045926000000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 58,
+    "outputTokens": 69146,
+    "cacheReadInputTokens": 3834980,
+    "cacheCreationInputTokens": 196976,
+    "webSearchRequests": 0,
+    "costUSD": 3.725956,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 50007,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

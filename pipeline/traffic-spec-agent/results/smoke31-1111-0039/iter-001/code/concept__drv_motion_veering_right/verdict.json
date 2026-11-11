@@ -1,0 +1,183 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 4 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.velocity",
+   "st.lane_direction"
+  ],
+  "refs": [
+   "drv.motion.moving"
+  ],
+  "canonical_body": "{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p0\"}},{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"}]}]},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre_per_second\"}},{\"cmp\":\"lt\",\"lhs\":{\"sub\":[{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"}]}]},\"rhs\":{\"neg\":{\"mul\":[{\"param\":\"$p1\"},{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"}]}}}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "gt",
+     "lhs": {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "measure": "kin_speed"
+     },
+     "rhs": {
+      "param": "speed_floor"
+     }
+    },
+    {
+     "and": [
+      {
+       "cmp": "gt",
+       "lhs": {
+        "add": [
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         }
+        ]
+       },
+       "rhs": {
+        "lit": {
+         "den": 1,
+         "num": 0
+        },
+        "unit": "metre_per_second"
+       }
+      },
+      {
+       "cmp": "lt",
+       "lhs": {
+        "sub": [
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         },
+         {
+          "mul": [
+           {
+            "args": [
+             {
+              "var": "c"
+             },
+             {
+              "lit": "y"
+             }
+            ],
+            "measure": "st_lane_direction"
+           },
+           {
+            "args": [
+             {
+              "var": "x"
+             },
+             {
+              "lit": "x"
+             }
+            ],
+            "measure": "kin_velocity"
+           }
+          ]
+         }
+        ]
+       },
+       "rhs": {
+        "neg": {
+         "mul": [
+          {
+           "param": "sine_tolerance"
+          },
+          {
+           "args": [
+            {
+             "var": "x"
+            }
+           ],
+           "measure": "kin_speed"
+          }
+         ]
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "context": "586edc1aa76470ad839035a7",
+  "candidate_digest": "b92daa49013abfcd29162d9f2ac1ff10e52bded2222587b5d97207628366d2b1"
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "concept_id": "drv.motion.stopping_distance",
+ "kind": "quantity",
+ "contract": "The distance road user x would cover from the observation to a standstill if it kept its present speed for reaction_time and then slowed at the constant deceleration deceleration: its speed (kin.speed, m/s) times reaction_time, plus the square of its speed divided by twice deceleration; in metres, zero for a body at a standstill. Not denoted: the distance x actually covers before a later halt, the deceleration the surface, the grade or the vehicle allows (the caller passes deceleration), whether anything lies within the distance, or whether x is required to stop.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "reaction_time",
+   "unit": "s",
+   "meaning": "the time over which x keeps its speed before braking begins"
+  },
+  {
+   "name": "deceleration",
+   "unit": "m/s^2",
+   "meaning": "the constant deceleration at which x slows once braking begins; strictly positive"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed (kin.speed, m/s)",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the “magnitude of velocity” in m/s, the one measured input of the distance. Not a stand-in for acceleration: the deceleration is the caller's parameter, never read from kin.accel_longitudinal."
+  }
+ ],
+ "residues": [],
+ "literals": [
+  {
+   "value": 2,
+   "unit": "ratio",
+   "why": "the factor of uniformly decelerated motion: a body slowing at constant deceleration from a speed covers the square of the speed divided by twice the deceleration"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x moves at a steady speed; the instance fixes reaction_time and deceleration, and its bounds bracket the speed times reaction_time plus the squared speed over twice deceleration: the value lies in the bounds."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x moves at a higher steady speed with the same instance parameters and the same bounds: the computed distance lies above the upper bound."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As holds, but the source does not observe x's speed at the observation.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_600_1a",
+  "NRS_484D_215_1_o1"
+ ]
+}

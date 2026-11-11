@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 150319,
+  "stop_reason": "end_turn",
+  "session_id": "eb9c4210-7c13-45ca-81df-d59b4110085f",
+  "total_cost_usd": 1.3979227999999997,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 112921,
+   "cache_read_input_tokens": 764049,
+   "output_tokens": 16883,
+   "output_tokens_details": {
+    "thinking_tokens": 8644
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 112921,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 713,
+     "cache_read_input_tokens": 116081,
+     "cache_creation_input_tokens": 1278,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1278
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39935,
+    "outputTokens": 39,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004013,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 16883,
+    "cacheReadInputTokens": 764049,
+    "cacheCreationInputTokens": 112921,
+    "webSearchRequests": 0,
+    "costUSD": 1.3939098,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 8644,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the first run, using 1 of the 6 runs: all 5 witnesses got their expected verdicts, and the rule uses all 9 names the node claims.\n\n**How the rule reads the node:**\n- **Who it covers:** a pedestrian under `DEF-NRS-484A-165::pedestrian`.\n- **When it applies:** the pedestrian is now on a highway and off every sidewalk, and has stayed that way since a moment when they were on a sidewalk of that highway, moving, with an obstruction within `p.obstruction_encounter_reach` of their body.\n- **Exception (c):** the rule does not apply while the pedestrian is in a bicycle lane or path with an obstruction within the same reach.\n- **The duty:** the pedestrian's body stays within `p.pedestrian_detour_offset` of the sidewalk they left. The obligation writes out the whole sidewalk-and-highway selection again, as rule 3c requires.\n\nI added no narrowings of my own; every span is written the way the node maps it.\n\n**Witnesses** (a barrier blocks the sidewalk, and the pedestrian leaves it at t = 0):\n- **forbid:** walks 4 m from the sidewalk → violated.\n- **permit:** walks 0.5 m from it, then returns → compliant.\n- **idle:** never leaves the sidewalk → not applicable.\n- **blind:** same as forbid with `st.region_geometry` masked → unknown.\n- **branch_1:** walks in a bicycle lane 3 m from the sidewalk, with a second barrier 0.5 m away → not applicable.\n\nI only changed the two files I own.\n\nFiles are in `/local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent`:\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_297_6_o2.lean`\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_297_6_o2.lean`\n- `results/smoke31-1111-0039/iter-001/code/NRS_484B_297_6_o2/task_result.md`",
+  "ttft_ms": 14517,
+  "type": "result",
+  "duration_ms": 156083,
+  "uuid": "e28ff8aa-0e3f-485a-91cb-e7d892ad4aeb",
+  "ttft_stream_ms": 619,
+  "time_to_request_ms": 96,
+  "time_to_request_phases_ms": {
+   "other": 16,
+   "system_prompt": 33,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 140,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 9,
+   "cpu_ms": 18,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 619,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 39935,
+    "outputTokens": 39,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004013,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 16883,
+    "cacheReadInputTokens": 764049,
+    "cacheCreationInputTokens": 112921,
+    "webSearchRequests": 0,
+    "costUSD": 1.3939098,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 8644,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

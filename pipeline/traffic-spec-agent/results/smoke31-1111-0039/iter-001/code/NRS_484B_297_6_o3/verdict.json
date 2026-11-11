@@ -1,0 +1,256 @@
+{
+ "verdict": "OK",
+ "details": [
+  "4 witnesses, 9 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "body": {
+       "body": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "w"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         {
+          "and": [
+           {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "x"
+               },
+               {
+                "var": "h"
+               }
+              ],
+              "atom": "rel_occupies",
+              "params": []
+             },
+             {
+              "body": {
+               "not": {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "v"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               }
+              },
+              "forall_region": {
+               "lit": "sidewalk"
+              },
+              "var": "v"
+             }
+            ]
+           },
+           {
+            "since": [
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "h"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "body": {
+                 "not": {
+                  "args": [
+                   {
+                    "var": "x"
+                   },
+                   {
+                    "var": "v"
+                   }
+                  ],
+                  "atom": "rel_occupies",
+                  "params": []
+                 }
+                },
+                "forall_region": {
+                 "lit": "sidewalk"
+                },
+                "var": "v"
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "x"
+                 },
+                 {
+                  "var": "w"
+                 }
+                ],
+                "atom": "rel_occupies",
+                "params": []
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "x"
+                   }
+                  ],
+                  "derived": "drv_motion_moving",
+                  "params": [
+                   {
+                    "param": "p.speed_resolution"
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "cmp": "le",
+                   "lhs": {
+                    "args": [
+                     {
+                      "var": "x"
+                     },
+                     {
+                      "var": "o"
+                     }
+                    ],
+                    "measure": "st_region_geometry_distance"
+                   },
+                   "rhs": {
+                    "param": "p.obstruction_encounter_reach"
+                   }
+                  },
+                  "exists_region": {
+                   "lit": "obstruction"
+                  },
+                  "var": "o"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "exists_region": {
+        "lit": "highway"
+       },
+       "var": "h"
+      },
+      "exists_region": {
+       "lit": "sidewalk"
+      },
+      "var": "w"
+     },
+     {
+      "body": {
+       "cmp": "gt",
+       "lhs": {
+        "args": [
+         {
+          "var": "x"
+         },
+         {
+          "var": "o2"
+         }
+        ],
+        "measure": "st_region_geometry_distance"
+       },
+       "rhs": {
+        "param": "p.obstruction_encounter_reach"
+       }
+      },
+      "forall_region": {
+       "lit": "obstruction"
+      },
+      "var": "o2"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "lit": "DEF-NRS-484A-165::pedestrian"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "x"
+    }
+   ],
+   "id": "NRS_484B_297_6_o3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-297-6"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "body": {
+      "args": [
+       {
+        "var": "x"
+       },
+       {
+        "var": "w2"
+       }
+      ],
+      "atom": "rel_occupies",
+      "params": []
+     },
+     "exists_region": {
+      "lit": "sidewalk"
+     },
+     "var": "w2"
+    },
+    "length": {
+     "param": "p.sidewalk_return_time"
+    },
+    "subject": "x",
+    "within": "time"
+   },
+   "residues": [
+    "A permission to travel against the direction of traffic; the duty to return to the sidewalk is the same whichever way the pedestrian walks."
+   ],
+   "surrogate": false
+  },
+  "context": "f4e5d5dc6b9cf31fc3f6d331",
+  "candidate_digest": "2f2666d865f37dfb9eb8d18f96cfaeaaf7a0d306de07109e90b5a1660580493c"
+ }
+}

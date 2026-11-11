@@ -1,0 +1,166 @@
+{
+ "node_id": "NRS_484B_113_2",
+ "law_refs": [
+  "NRS-484B-113-2"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "b1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "b2",
+   "text": "Shall not back into an intersection, on or over a crosswalk, or around a",
+   "role": "obligation"
+  },
+  {
+   "id": "b5",
+   "text": "street",
+   "role": "condition"
+  },
+  {
+   "id": "b6",
+   "text": "corner",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "b1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom. 'driver' is no aggregate: DEF-NRS-484A-080 'every person who drives or is in actual physical control of a vehicle' names a relational role, read through the vehicle's controlled motion (agency reading below), so the duty binds the vehicle's conduct."
+  },
+  {
+   "span": "b2",
+   "atoms": [
+    "st.intersection",
+    "st.crosswalk",
+    "rel.occupies",
+    "kin.velocity",
+    "kin.heading",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.reversing",
+    "drv.motion.yawing"
+   ],
+   "justification": "Three alternatives of one prohibition. (1) 'back into an intersection': st.intersection is 'the region where two roadways meet, bounded by the prolongation of their edges; a junction where an alley meets another way ... is no intersection', which denotes DEF-NRS-484A-105 (1) 'the area embraced within the prolongation or connection of the lateral curb lines' and (3) 'The junction of an alley with a street, road or highway shall not constitute an intersection'; its exclusion 'Not a stand-in for: a crosswalk or a stop line' is kept: entry into the intersection region itself is read. 'back' is drv.motion.reversing (velocity along heading below minus the resolution, never kin.gear, which is 'Not a stand-in for: the direction of motion'). 'into' is the observation at which x's footprint begins to overlap the intersection (rel.occupies rising) while reversing. (2) 'on or over a crosswalk': st.crosswalk is the 'marked crossing, or the unmarked prolongation of sidewalks at an intersection', which denotes both limbs of DEF-NRS-484A-065 ('That part of a highway at an intersection included within the connections of the lateral lines of the sidewalks' and 'Any portion of a highway at an intersection or elsewhere distinctly indicated for pedestrian crossing'). 'on or over' is x's footprint overlapping the crosswalk (rel.occupies) at an observation at which x is reversing (drv.motion.reversing): on it, or passing over it. (3) 'around a' corner, said of backing, is reversing (drv.motion.reversing, from kin.velocity and kin.heading) while the heading changes (drv.motion.yawing, the absolute kin.yaw_rate above the resolution: 'rate of change of heading'); kin.yaw_rate's exclusion 'Not a stand-in for: road curvature' is respected: the vehicle's own heading change is read, not the road's shape."
+  },
+  {
+   "span": "b6",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "A street corner is the corner where ways meet: read as the st.intersection region ('the region where two roadways meet, bounded by the prolongation of their edges'), whose corners are where the curb lines prolonged by DEF-NRS-484A-105 meet; rel.occupies anchors the backing vehicle to it. The highway part of DEF-NRS-484A-265 ('the entire width between the boundary lines of every highway ... open to the use of the public for purposes of vehicular traffic') is the ways the intersection lies on; its city part is carried by the assumption on 'street'."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "b5",
+   "id": "asm.within_city_limits",
+   "meaning": "The place of the observation lies inside the territorial limits of an incorporated city, as declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle).",
+ "obligation": "At the observation none of the following holds: (a) x is reversing (drv.motion.reversing(x), speed_floor p.speed_resolution) and its footprint begins here to overlap (rel.occupies rising) some st.intersection region; (b) x is reversing and occupies (rel.occupies) some st.crosswalk region; (c) asm.within_city_limits holds, x is reversing and yawing (drv.motion.yawing(x), yaw_floor p.yaw_rate_resolution), and x occupies some st.intersection region.",
+ "params": [
+  "p.speed_resolution",
+  "p.yaw_rate_resolution"
+ ],
+ "narrowings": [
+  {
+   "span": "b1",
+   "why": "'The driver of a vehicle' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "b2",
+   "why": "'around a' street corner is read as reversing while the heading changes (drv.motion.yawing); the street corner is read as the intersection region whose corner the vehicle backs around: backing around it is reversing with the heading changing while the footprint overlaps an intersection; the curb corner outside the intersection outline is not a mapped region and is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car reverses along a street and its rear footprint begins to overlap the intersection region at the end of the block."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car reverses into a parking bay mid-block, overlapping no intersection and no crosswalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A bicycle, a device moved by human power and so no vehicle, is walked backwards across a crosswalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car's footprint overlaps a crosswalk; the source declares kin.velocity absent, so whether it is reversing is not observed.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "A car stopped past the stop line reverses so that its footprint overlaps the marked crosswalk behind it."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "Inside declared city limits, a car already within an intersection reverses while its heading swings to the side, backing around the corner into the cross street."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "Outside declared city limits, a car already within an intersection and clear of every crosswalk reverses while its heading swings: no street corner is involved and no entry into the intersection occurs."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "Ground-truth simulator kinematics sampled at 20 Hz and the speed noise of typical odometry"
+  },
+  {
+   "name": "p.yaw_rate_resolution",
+   "unit": "deg/s",
+   "value": 2.0,
+   "convention": "Sensor resolution: the smallest yaw rate the acquisition standard separates from a straight path; a yaw rate at or below it counts as no heading change.",
+   "source": "Yaw-rate noise of ground-truth simulator kinematics and of automotive inertial sensors"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.halted.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.halted.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.halted.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"speed_floor"}},"contract":"A road user is at a standstill at the observation. This is the corpus definition of a required stop, \"complete cessation from movement\", observed on sampled speeds: the road user's speed (kin.speed, m/s) is at or below speed_floor, the source's speed resolution, below which a reading counts as no movement. The state holds at each observation at which the speed is that low, with no minimum duration. Not denoted: where the road user stands, why it stands, or whether its engine runs or a brake is set.","definition":"DEF-NRS-484A-255","id":"drv.motion.halted","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"}],"residues":["The definition's scope words ('when required') say which duties it serves; the caller is the duty that requires the stop, so the concept carries no condition for them."],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"speed_floor"}}
+WITNESS	holds	drv.motion.halted@w
+WITNESS	fails	drv.motion.halted@w
+WITNESS	blind	drv.motion.halted@w
+OCC	x
+INST	drv.motion.halted@w	ok
+TIME	checks	2
+TIME	lint	2
+SCEN	holds	drv.motion.halted@w	compliant	compliant	ok
+TIME	scenario:drv.motion.halted@w/holds	10
+SCEN	fails	drv.motion.halted@w	violated	violated	ok
+TIME	scenario:drv.motion.halted@w/fails	7
+SCEN	blind	drv.motion.halted@w	unknown	unknown	ok
+TIME	scenario:drv.motion.halted@w/blind	9
+TIME	witnesses	26
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.halted.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.halted.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.halted.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.halted@w	1	2
+TIME	adequacy_start	4
+TIME	adequacy	30
+DONE

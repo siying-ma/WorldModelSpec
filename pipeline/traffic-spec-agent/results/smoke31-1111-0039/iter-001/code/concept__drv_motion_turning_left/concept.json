@@ -1,0 +1,69 @@
+{
+ "concept_id": "drv.motion.turning_left",
+ "kind": "formula",
+ "contract": "Road user x is turning to its left at the observation: it is moving (drv.motion.moving with speed_floor) and its yaw rate (kin.yaw_rate, deg/s, left positive) exceeds yaw_floor, the source's yaw-rate resolution. It does not tell a turn at a junction from following a left-hand bend: the caller states the place. Not denoted: a completed turn manoeuvre, an intention to turn, or a turn indicator.",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution, below which a reading counts as no motion"
+  },
+  {
+   "name": "yaw_floor",
+   "unit": "deg/s",
+   "meaning": "the source's yaw-rate resolution, below which a reading counts as no heading change"
+  }
+ ],
+ "elements": [
+  {
+   "span": "it is moving (drv.motion.moving with speed_floor)",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [
+    "drv.motion.moving"
+   ],
+   "justification": "drv.motion.moving: 'its speed exceeds speed_floor'."
+  },
+  {
+   "span": "its yaw rate (kin.yaw_rate, deg/s, left positive) exceeds yaw_floor",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading, positive when the heading turns to the left'; not a stand-in for road curvature, which the contract does not claim to tell apart."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x has kin.speed 5 m/s and kin.yaw_rate 15 deg/s."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x has kin.speed 5 m/s and kin.yaw_rate -15 deg/s (turning right)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x has kin.speed 5 m/s and kin.yaw_rate is not observed.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_253_o1",
+  "NRS_484B_253_o2"
+ ]
+}

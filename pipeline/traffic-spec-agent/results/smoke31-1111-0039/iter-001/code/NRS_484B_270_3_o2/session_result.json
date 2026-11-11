@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 360896,
+  "stop_reason": "end_turn",
+  "session_id": "b21ac10e-cb41-4d90-8eab-d9c525ea730a",
+  "total_cost_usd": 2.1594989,
+  "usage": {
+   "input_tokens": 34,
+   "cache_creation_input_tokens": 130676,
+   "cache_read_input_tokens": 1642010,
+   "output_tokens": 39059,
+   "output_tokens_details": {
+    "thinking_tokens": 23176
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 130676,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 785,
+     "cache_read_input_tokens": 132827,
+     "cache_creation_input_tokens": 2287,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2287
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43559,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0043729,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 34,
+    "outputTokens": 39059,
+    "cacheReadInputTokens": 1642010,
+    "cacheCreationInputTokens": 130676,
+    "webSearchRequests": 0,
+    "costUSD": 2.1551259999999997,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23176,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_019DNSHD3HfdTcL2s2TLXCs6",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke31-1111-0039 --node_id NRS_484B_270_3_o2 --help 2>/dev/null | head -0; true",
+     "description": "(no-op placeholder)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 32,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The final gate verdict is **UNEXPRESSED**, as intended: the node can't be fully written yet. Exceptions s12 (\"a disabled vehicle\") and s17 (\"in an emergency\") have no atom that means them. The record already flags both as gaps and says its mapped atoms (hazard lamps, engine running, emergency-vehicle class) don't carry those words. I declared both spans `no_atom`, which files the plan's proposed `ru.disabled` and `env.emergency` gaps for the repair session.\n\nEverything else in the rule is in the files. I checked it with a temporary always-false stub that only let the gate get past the s12/s17 problem. With that stub, the build, the static checks, the claims check and all 12 witnesses passed, and the only check still failing flagged the stub's own two atoms. The stub is gone now and the `no_atom` declarations are back. All 6 gate runs are used.\n\nWhat I fixed along the way:\n- **`blind` witness**: it came out unknown partly because exception (c) searches back to the start of the trace, not only because of the masked occupancy. I guarded that search with `definedWhen (rel_occupies x b)`. No true/false result changes; only the reason given for an unknown result does. I also set `blind` to be judged from its second instant onward, since the first has no earlier observation to detect an entry.\n- **`halted` and `moving` leaves**: the gate said they did no work, because every violating scene was already decided at the moment of entry. I added `branch_7` (enters b beside a driveway, which is excused, then stands on b out of reach) and `branch_8` (the same entry, then drives on along b), both expecting violated.\n- I also added `branch_4` (swerving onto b to avoid a conflict, compliant), `branch_5` (official vehicle) and `branch_6` (emergency vehicle).\n\nChoices the node left open: \"within\" in exception (a) is read as at most 6 m, and \"below\" in exception (c) as strictly less than 3 m.\n\nAt the start I mistakenly tried a command other than the gate (the gate with `--help` added). It was denied and never ran; it is recorded in the result file.\n\nFiles are in `NRS_484B_270_3_o2` (working directory):\n- task_result.md",
+  "ttft_ms": 47072,
+  "type": "result",
+  "duration_ms": 392965,
+  "uuid": "3c49c0b8-01f7-45c7-a26d-b5cdf255e516",
+  "ttft_stream_ms": 720,
+  "time_to_request_ms": 59,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 18,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 2,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 92,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 720,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43559,
+    "outputTokens": 34,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0043729,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 34,
+    "outputTokens": 39059,
+    "cacheReadInputTokens": 1642010,
+    "cacheCreationInputTokens": 130676,
+    "webSearchRequests": 0,
+    "costUSD": 2.1551259999999997,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 23176,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,321 @@
+{
+ "node_id": "NRS_484B_297_6_o2",
+ "law_refs": [
+  "NRS-484B-297-6"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "A pedestrian",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "walking or otherwise traveling on a sidewalk",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "who encounters an obstruction to his or her mobility on the sidewalk,",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "including, without limitation, a short section of the sidewalk that is missing or impassable,",
+   "role": "condition"
+  },
+  {
+   "id": "s5",
+   "text": "may proceed",
+   "role": "condition"
+  },
+  {
+   "id": "s6",
+   "text": "with due care",
+   "role": "sibling"
+  },
+  {
+   "id": "s7",
+   "text": "on the immediately adjacent highway to move around such an obstruction.",
+   "role": "condition"
+  },
+  {
+   "id": "s8",
+   "text": "Such a pedestrian:",
+   "role": "subject"
+  },
+  {
+   "id": "s9",
+   "text": "(a) Must walk or otherwise travel as far to the side of the highway near the sidewalk",
+   "role": "obligation"
+  },
+  {
+   "id": "s10",
+   "text": "as possible;",
+   "role": "standard"
+  },
+  {
+   "id": "s11",
+   "text": "(b) May walk or otherwise travel on the highway in the direction he or she was walking or traveling on the sidewalk, regardless of the direction of traffic;",
+   "role": "condition"
+  },
+  {
+   "id": "s12",
+   "text": "(c) May walk or otherwise travel in a lane provided for bicycles, electric bicycles or electric scooters",
+   "role": "exception"
+  },
+  {
+   "id": "s13",
+   "text": "if the area between the lane and the sidewalk is impassable;",
+   "role": "exception"
+  },
+  {
+   "id": "s14",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "s15",
+   "text": "(d) Must return to the sidewalk",
+   "role": "sibling"
+  },
+  {
+   "id": "s16",
+   "text": "as soon as practicable.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'pedestrian' is the admitted aggregate DEF-NRS-484A-165::pedestrian."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "rel.occupies",
+    "st.sidewalk",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.motion.moving"
+   ],
+   "justification": "As in NRS_484B_297_6_o1: rel.occupies of a st.sidewalk while moving."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_297_6_o1: a st.obstruction within the encounter reach (st.region_geometry) while on the sidewalk."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "st.obstruction",
+    "st.sidewalk",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_297_6_o1: a missing or impassable section is no object; nearest atoms with a gap."
+  },
+  {
+   "span": "s5",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.sidewalk",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "'may proceed': the pedestrian is on the highway the sidewalk lies on (st.on_way) and off every sidewalk (rel.occupies)."
+  },
+  {
+   "span": "s7",
+   "atoms": [
+    "rel.occupies",
+    "st.highway",
+    "st.sidewalk",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "As in NRS_484B_297_6_o1: on the highway the sidewalk lies on, off every sidewalk, since leaving it at the obstruction."
+  },
+  {
+   "span": "s8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'Such a pedestrian' refers back to the pedestrian of the admitted aggregate in that situation."
+  },
+  {
+   "span": "s9",
+   "atoms": [
+    "st.region_geometry",
+    "st.sidewalk",
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "'walk ... as far to the side of the highway near the sidewalk': the pedestrian's ground distance to the sidewalk it left (st.region_geometry 'the ground distance from a road user's body outline to it'); st.region_geometry is not a stand-in for occupancy, which s5 reads separately."
+  },
+  {
+   "span": "s12",
+   "atoms": [
+    "st.bicycle_lane_or_path",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "'a lane provided for bicycles, electric bicycles or electric scooters' is st.bicycle_lane_or_path 'lane or separate path reserved for bicycles and the devices a jurisdiction groups with them'; the pedestrian travels in it (rel.occupies)."
+  },
+  {
+   "span": "s13",
+   "atoms": [
+    "st.obstruction",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "'the area between the lane and the sidewalk is impassable': nearest atoms, a st.obstruction within the encounter reach of the pedestrian; an impassable area that is no object, and its lying between the lane and the sidewalk, have no atom: gap."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s10",
+   "standard": "as far to the side as possible",
+   "concepts": [
+    "st.region_geometry"
+   ],
+   "params": [
+    "p.pedestrian_detour_offset"
+   ],
+   "convention": "Pedestrian detour width (HCM pedestrian space plus shy distance): the pedestrian's body stays within p.pedestrian_detour_offset of the sidewalk it left (st.region_geometry distance), one pedestrian width beside the sidewalk edge.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "s11",
+   "why": "A permission to travel against the direction of traffic; the duty to keep to the side near the sidewalk is the same whichever way the pedestrian walks.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ]
+  }
+ ],
+ "applicability": "As NRS_484B_297_6_o1: x is a pedestrian (ru.aggregate=DEF-NRS-484A-165::pedestrian); for a sidewalk w (st.sidewalk) and a highway h (st.highway) with st.on_way w h, x occupies h and no sidewalk at this observation and has done so at every observation since an observation at which x occupied w, was moving (drv.motion.moving x with p.speed_resolution) and was within p.obstruction_encounter_reach of an obstruction (st.obstruction; st_region_geometry_distance). Exception (c): the duty does not apply where x occupies a st.bicycle_lane_or_path and an obstruction (st.obstruction) lies within p.obstruction_encounter_reach of x (nearest reading of 'the area between the lane and the sidewalk is impassable'; gap proposed).",
+ "obligation": "x's ground distance to the sidewalk w it left (st_region_geometry_distance x w) is at most p.pedestrian_detour_offset.",
+ "params": [
+  "p.speed_resolution",
+  "p.obstruction_encounter_reach",
+  "p.pedestrian_detour_offset"
+ ],
+ "narrowings": [
+  {
+   "span": "s7",
+   "why": "'to move around such an obstruction' is read through leaving the sidewalk where the obstruction was encountered and staying off it since.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s10",
+   "why": "'as possible' is read as one fixed detour width beside the sidewalk; what is possible at the place (the obstruction's own extent into the highway) is not read.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "x leaves sidewalk w at a st.obstruction of kind barrier and walks on the roadway of h 4 m from w, outside any bicycle lane."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x leaves w at the barrier and walks 0.5 m from w until it returns to the sidewalk."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x walks on sidewalk w and never leaves it."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "As forbid, but st.region_geometry is absent from the source.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x walks in a st.bicycle_lane_or_path 3 m from w while a st.obstruction lies within 1 m of x."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "carla_scene_graph acquisition standard: speed resolution of the recorded kinematics"
+  },
+  {
+   "name": "p.obstruction_encounter_reach",
+   "unit": "m",
+   "value": 2.0,
+   "convention": "Encounter reach: the ground distance from a pedestrian's body to an obstruction within which the pedestrian has come up against it.",
+   "source": "HCM pedestrian body ellipse and shy distance to fixed objects"
+  },
+  {
+   "name": "p.pedestrian_detour_offset",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Pedestrian detour width: the largest distance from the sidewalk at which a pedestrian walking on the adjacent highway counts as keeping to the side nearest the sidewalk; one pedestrian design width plus shy distance.",
+   "source": "HCM pedestrian space (body ellipse about 0.6 m by 0.5 m) plus shy distance"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "s4",
+   "kind": "atom",
+   "proposal": "st.impassable_section | a stretch of a sidewalk, or of the ground between a sidewalk and the roadway, that a pedestrian cannot traverse because its surface is missing or blocked, carried as a region with a boundary and the way it lies on; decides where a pedestrian may leave the sidewalk and where it may travel | general",
+   "nearest": [
+    "st.obstruction",
+    "st.sidewalk"
+   ]
+  },
+  {
+   "span": "s13",
+   "kind": "atom",
+   "proposal": "st.impassable_section | a stretch of a sidewalk, or of the ground between a sidewalk and the roadway, that a pedestrian cannot traverse because its surface is missing or blocked, carried as a region with a boundary and the way it lies on; decides where a pedestrian may leave the sidewalk and where it may travel | general",
+   "nearest": [
+    "st.obstruction",
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

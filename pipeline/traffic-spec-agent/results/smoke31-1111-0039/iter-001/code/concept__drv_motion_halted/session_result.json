@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 35520,
+  "stop_reason": "end_turn",
+  "session_id": "2ed254e9-a809-41a8-8cd1-9b39fa867250",
+  "total_cost_usd": 0.408128,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 36173,
+   "cache_read_input_tokens": 153095,
+   "output_tokens": 4259,
+   "output_tokens_details": {
+    "thinking_tokens": 648
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 36173,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 507,
+     "cache_read_input_tokens": 39812,
+     "cache_creation_input_tokens": 799,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 799
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28925,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.002905,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 10,
+    "outputTokens": 4259,
+    "cacheReadInputTokens": 153095,
+    "cacheCreationInputTokens": 36173,
+    "webSearchRequests": 0,
+    "costUSD": 0.40522299999999994,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 648,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 8,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The `drv.motion.halted` concept passed the gate (`OK`) on the first of six runs.\n\n**The concept:** the body says the road user's speed is at or below `speed_floor` at the observation:\n`.cmp (.measure \"kin_speed\" [aX]) .le pSpeedFloor`. There's no time operator around it because the contract sets no minimum duration. When the speed isn't observed, the result is unknown. The contract left nothing open, so I declared no narrowings.\n\n**The witnesses:** one instance with `speed_floor` set to 0.1 m/s. The road user is track 1, a motor vehicle heading east, and each trace has three observations 1 s apart.\n- **holds:** the vehicle stands at (0, 0) at 0 m/s, which gives compliant.\n- **fails:** the vehicle drives east at 4 m/s, which gives violated.\n- **blind:** the vehicle stands still but its speed is never set, and the manifest leaves out `kin.speed`, which gives unknown.\n\nThe record had no problems, so I didn't write a defect report. Everything is in `task_result.md` in the working directory.\n\nFiles changed:\n- `/local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent/library/TrafficSpec/Concepts/motion/halted.lean`\n- `/local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent/library/TrafficSpecWitness/Concepts/motion/halted.lean`",
+  "ttft_ms": 6493,
+  "type": "result",
+  "duration_ms": 39133,
+  "uuid": "14affbcc-33fc-4d1a-8e56-cb8be9a93784",
+  "ttft_stream_ms": 595,
+  "time_to_request_ms": 69,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 19,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 13,
+   "input_hooks": 1,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 4,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 19,
+  "time_to_request_cpu_ms": 102,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 17,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 595,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28925,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.002905,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 10,
+    "outputTokens": 4259,
+    "cacheReadInputTokens": 153095,
+    "cacheCreationInputTokens": 36173,
+    "webSearchRequests": 0,
+    "costUSD": 0.40522299999999994,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 648,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

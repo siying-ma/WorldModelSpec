@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.leaving_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.leaving_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.leaving_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]},"contract":"Road user x leaves structure region r at the observation: its footprint overlapped r (rel.occupies) at the observation before and does not overlap it at the observation. The exit is that one observation; the later observations at which x stays off r are not the exit again. Unknown where the overlap is unobserved at the observation or at the one before, or where there is no observation of x before it. Not denoted: x's direction or speed, or the region x moves into.","definition":null,"id":"drv.motion.leaving_region","kind":"formula","narrowings":[],"params":[],"residues":[],"supersedes":null}
+ATOMS	rel_occupies
+READS	rel_occupies
+AGGREGATES	
+HARDAGG	
+BODY	{"or":[{"rises":{"not":{"args":[{"var":"x"},{"var":"r"}],"atom":"rel_occupies","params":[]}}},{"rises":"tt"}]}
+WITNESS	holds	drv.motion.leaving_region@w
+WITNESS	fails	drv.motion.leaving_region@w
+WITNESS	blind	drv.motion.leaving_region@w
+OCC	x,r
+INST	drv.motion.leaving_region@w	ok
+TIME	checks	1
+TIME	lint	7
+SCEN	holds	drv.motion.leaving_region@w	compliant	compliant	ok
+TIME	scenario:drv.motion.leaving_region@w/holds	8
+SCEN	fails	drv.motion.leaving_region@w	violated	violated	ok
+TIME	scenario:drv.motion.leaving_region@w/fails	6
+SCEN	blind	drv.motion.leaving_region@w	unknown	unknown	ok
+TIME	scenario:drv.motion.leaving_region@w/blind	10
+TIME	witnesses	24
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.leaving_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.leaving_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.leaving_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.leaving_region@w	1	2
+TIME	adequacy_start	5
+TIME	adequacy	23
+DONE

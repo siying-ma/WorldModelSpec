@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 720470,
+  "stop_reason": "end_turn",
+  "session_id": "d263f272-df04-493b-b77b-e2f1c28efa87",
+  "total_cost_usd": 3.6592986,
+  "usage": {
+   "input_tokens": 38,
+   "cache_creation_input_tokens": 198711,
+   "cache_read_input_tokens": 2650098,
+   "output_tokens": 76739,
+   "output_tokens_details": {
+    "thinking_tokens": 58636
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 198711,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 999,
+     "cache_read_input_tokens": 201476,
+     "cache_creation_input_tokens": 1673,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1673
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46405,
+    "outputTokens": 37,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004659000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 38,
+    "outputTokens": 76739,
+    "cacheReadInputTokens": 2650098,
+    "cacheCreationInputTokens": 198711,
+    "webSearchRequests": 0,
+    "costUSD": 3.6546396000000008,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 58636,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01UnE3c74MXGxstJPvsbMwnD",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke31-1111-0039 --node_id NRS_484B_250_4_o1 --help 2>/dev/null | head -0",
+     "description": "(not run)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 25,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for NRS_484B_250_4_o1: 11 witnesses, 18 names, one narrowing I declared. I used 4 of the 6 gate runs.\n\n**Runs**\n1. **UNUSED_CLAIM**: I ran the gate on the harness's skeletons before writing anything. That run was wasted.\n2. **WITNESS_FAIL**: the lane and the intersection named two highways that existed only in branch_3's scene. I now set those links only in that scene.\n3. **VACUOUS** on two obligation conditions, both fixed by changing which witnesses exercise them:\n   - \"Signal d governs the approach lane\": no violated witness used it, so in branch_1 (violated) the signal now governs the lane instead of the intersection.\n   - \"Approach start for the no-line, no-crosswalk case\": no violated witness covered it, so I added branch_6 (violated), where x halts 6 m short of the intersection with no crossing way in view, then enters.\n4. **OK**.\n\n**How the rule is written**\n- **Applicability:** x enters intersection i through a lane c that runs into i, and a traffic signal governing i or c is inoperative.\n- **Obligation:** the halt is owed at the first place the words name that exists: the stop line, else the near-side crosswalk, else the point nearest the intersection.\n  - The search runs back from the entry. It stops at the start of the approach (x outside the 2 m stopping zone) or at x's exit from i after an earlier entry.\n  - If the recording begins before either point, the result is unknown.\n  - Where x enters through several lanes and they give different verdicts, the result is unknown, as the node requires.\n\n**Choices the node left open**\n- **Lane ≠ intersection:** I added a condition that the approach lane is not the intersection itself. The intersection is also a travel region, and on it the \"lane enters intersection\" relation can only read unknown, which made the whole rule unknown. I explained this in the rule header and did not declare it as a narrowing.\n- **Narrowing on s4:** the \"previous entry\" limit is measured at x's exit from i, because the language has no \"previous observation\" operator. A halt made while x still overlaps i after an earlier entry therefore doesn't count.\n\n**Note for the plan (doesn't block acceptance):** the node's history bound mostly cancels the \"farther upstream, where the crossing way is in view\" option for the no-line, no-crosswalk case. Any later observation outside the 2 m zone starts a new approach, so such a halt counts only if the next observation is already inside the zone (branch_3 shows this case). If the plan wants those halts to count, the stopping zone for that case needs redefining.\n\nSeparately, one command was blocked as needing approval: I tried to run the gate with `--help`, which I shouldn't have done. Nothing depended on it.\n\nFiles are in the working directory:\n- task_result.md",
+  "ttft_ms": 41216,
+  "type": "result",
+  "duration_ms": 840555,
+  "uuid": "5cac98da-a296-4f6d-825a-808896885f5d",
+  "ttft_stream_ms": 679,
+  "time_to_request_ms": 104,
+  "time_to_request_phases_ms": {
+   "other": 19,
+   "system_prompt": 30,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 14,
+   "input_hooks": 3,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 4,
+   "message_normalization": 1,
+   "client_creation": 3,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 152,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 10,
+   "cpu_ms": 19,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 679,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 46405,
+    "outputTokens": 37,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004659000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 38,
+    "outputTokens": 76739,
+    "cacheReadInputTokens": 2650098,
+    "cacheCreationInputTokens": 198711,
+    "webSearchRequests": 0,
+    "costUSD": 3.6546396000000008,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 58636,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

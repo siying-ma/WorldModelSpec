@@ -1,0 +1,44 @@
+'TrafficSpec.Rules.NRS_484D_100_1.rule' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.NRS_484D_100_1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"s9","why":"“When directed by an official traffic control device” to display lighted lamps: the record maps it to dev.regulatory_sign governing (dev.governs) a travel region (st.travel_region) the vehicle occupies, with an atom gap, and no catalogue code of dev.regulatory_sign (nor any dev.zone_sign kind) directs road users to display lamps. Written with those atoms, any regulatory sign — no_parking, one_way — would engage the duty by day, which the words do not say. No atom of the surface carries a lamps-on direction; the plan's gap `dev.lamps_on_sign` (or a code lamps_on of dev.regulatory_sign) is needed."}],"operationalizations":[],"residues":["“of this State” names the jurisdiction whose law this is; the run applies Nevada's law to the highways of the maps it reads, so every highway the rule reads is one this State's law governs and the duty is the same whether or not the words are stated.","The class-specific lamp sets the chapter requires (headlamps, tail lamps, clearance lamps, by class of vehicle) are provisions not in this corpus; the rule reads the headlamps every vehicle moving at these times shows (narrowing on s5), and the class-by-class sets are not captured."],"surrogate":false}
+RULEJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_halted","params":[{"param":"p.speed_resolution"}]},{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}}]}},{"or":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"lt","lhs":{"args":[],"measure":"env_visibility"},"rhs":{"lit":{"den":5,"num":1524},"unit":"metre"}}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"s9","why":"“When directed by an official traffic control device” to display lighted lamps: the record maps it to dev.regulatory_sign governing (dev.governs) a travel region (st.travel_region) the vehicle occupies, with an atom gap, and no catalogue code of dev.regulatory_sign (nor any dev.zone_sign kind) directs road users to display lamps. Written with those atoms, any regulatory sign — no_parking, one_way — would engage the duty by day, which the words do not say. No atom of the surface carries a lamps-on direction; the plan's gap `dev.lamps_on_sign` (or a code lamps_on of dev.regulatory_sign) is needed."}],"obligation":{"or":[{"args":[{"var":"x"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"x"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]},"residues":["“of this State” names the jurisdiction whose law this is; the run applies Nevada's law to the highways of the maps it reads, so every highway the rule reads is one this State's law governs and the duty is the same whether or not the words are stated.","The class-specific lamp sets the chapter requires (headlamps, tail lamps, clearance lamps, by class of vehicle) are provisions not in this corpus; the rule reads the headlamps every vehicle moving at these times shows (narrowing on s5), and the class-by-class sets are not captured."],"surrogate":false}
+RULEXJSON	{"applicability":{"and":[{"body":{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},"exists_region":{"lit":"highway"},"var":"h"},{"and":[{"not":{"and":[{"cmp":"le","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"not":{"args":[{"var":"x"}],"atom":"kin_engine_running","params":[]}}]}},{"or":[{"args":[],"atom":"env_darkness","params":[]},{"cmp":"lt","lhs":{"args":[],"measure":"env_visibility"},"rhs":{"lit":{"den":5,"num":1524},"unit":"metre"}}]}]}]},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484D_100_1","intentions":[],"laws":["NRS-484D-100-1"],"narrowings":[{"kind":"no_atom","span":"s9","why":"“When directed by an official traffic control device” to display lighted lamps: the record maps it to dev.regulatory_sign governing (dev.governs) a travel region (st.travel_region) the vehicle occupies, with an atom gap, and no catalogue code of dev.regulatory_sign (nor any dev.zone_sign kind) directs road users to display lamps. Written with those atoms, any regulatory sign — no_parking, one_way — would engage the duty by day, which the words do not say. No atom of the surface carries a lamps-on direction; the plan's gap `dev.lamps_on_sign` (or a code lamps_on of dev.regulatory_sign) is needed."}],"obligation":{"or":[{"args":[{"var":"x"},{"lit":"low_beam"}],"atom":"sig_headlamp","params":[]},{"args":[{"var":"x"},{"lit":"high_beam"}],"atom":"sig_headlamp","params":[]}]},"residues":["“of this State” names the jurisdiction whose law this is; the run applies Nevada's law to the highways of the maps it reads, so every highway the rule reads is one this State's law governs and the duty is the same whether or not the words are stated.","The class-specific lamp sets the chapter requires (headlamps, tail lamps, clearance lamps, by class of vehicle) are provisions not in this corpus; the rule reads the headlamps every vehicle moving at these times shows (narrowing on s5), and the class-by-class sets are not captured."],"surrogate":false}
+ATOMS	ru_aggregate,st_highway,rel_occupies,drv_motion_halted,kin_engine_running,env_darkness,env_visibility,sig_headlamp
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	sig.headlamp
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+OCC	x
+OCC	?h
+OCC	x,h
+OCC	x
+OCC	x
+OCC	
+OCC	
+OCC	x
+OCC	x
+LITERAL	1524/5	TrafficSpec.PUnit'.metre
+TIME	occurrences	0
+TIME	checks	4
+TIME	lint	38
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	11
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	14
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	not_applicable	not_applicable	ok
+TIME	scenario:branch_2	10
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	9
+TIME	witnesses	73
+DONE_WITNESSES

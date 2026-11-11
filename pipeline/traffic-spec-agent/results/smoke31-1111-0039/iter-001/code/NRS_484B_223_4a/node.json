@@ -1,0 +1,165 @@
+{
+ "node_id": "NRS_484B_223_4a",
+ "law_refs": [
+  "NRS-484B-223-4a"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "If a highway has been designed to provide",
+   "role": "condition"
+  },
+  {
+   "id": "d2",
+   "text": "a single right lane to be used only for turning",
+   "role": "condition"
+  },
+  {
+   "id": "d3",
+   "text": "a vehicle must",
+   "role": "subject"
+  },
+  {
+   "id": "d4",
+   "text": "Be driven in the right turn lane only for the purpose of making a right turn",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "st.highway",
+    "st.on_way"
+   ],
+   "derived": [],
+   "justification": "st.highway is 'the entire public way between its boundary lines', denoting DEF-NRS-484A-095 ('the entire width between the boundary lines of every way dedicated to a public authority ...'); st.on_way ('the public way (a highway region) a structure region lies on — a lane, roadway, ...') ties the turn lane to that highway. 'has been designed to provide' is the lane's presence on the map (status reading below)."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "st.turn_lane",
+    "st.lane",
+    "st.lane_adjacency"
+   ],
+   "derived": [],
+   "justification": "st.turn_lane is 'a lane designated only for turning; side ∈ {left, right}', with side right: 'a ... right lane to be used only for turning'. 'single' is read as no neighbouring lane being a right turn lane too: st.lane_adjacency gives the 'left / right neighbouring lane of the same direction' (its exclusion 'Not a stand-in for: the marking between two lanes' is respected: lanes, not markings, are compared), so a pair of adjacent right turn lanes is not a single one."
+  },
+  {
+   "span": "d3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'a vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom; 'must' introduces the duty the obligation spans state."
+  },
+  {
+   "span": "d4",
+   "atoms": [
+    "st.turn_lane",
+    "st.lane",
+    "st.lane_adjacency",
+    "st.intersection",
+    "st.lane_enters",
+    "rel.occupies",
+    "kin.yaw_rate"
+   ],
+   "derived": [
+    "drv.motion.heading_change_since_entry"
+   ],
+   "justification": "'the right turn lane' is the lane L the condition singles out (st.turn_lane, side right); 'driven in' it is x's footprint overlapping it (rel.occupies). Driving in it other than for the turn shows where x leaves it into the neighbouring lane on its left (st.lane_adjacency, 'left / right neighbouring lane of the same direction') short of the intersection it enters (st.intersection), instead of turning. The right turn the lane serves is made at the intersection L runs into: st.lane_enters ('the intersection region a directed approach carrier runs into at its entrance end'), an st.intersection ('the region where two roadways meet', DEF-NRS-484A-105). 'making a right turn' is read by the heading change of x since its footprint began to overlap that intersection (drv.motion.heading_change_since_entry, integrated from kin.yaw_rate, left positive) reaching minus the turn recognition angle by the time x leaves it; kin.yaw_rate is 'Not a stand-in for: road curvature', and the quantity is compared at the exit, after the whole passage. 'the purpose of' is read through the conduct it explains (reading below)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and x occupies (rel.occupies) at the observation, or occupied at an earlier observation, a single right turn lane L: an st.turn_lane region of side right lying on (st.on_way) an st.highway region, with no lane adjacent to it (st.lane_adjacency) that is also an st.turn_lane of side right.",
+ "obligation": "Re-binding L with the same selection and I as the st.intersection region L enters (st.lane_enters): at the observation neither (a) x stops here occupying L (rel.occupies of x and L false here and true at the previous observation) while occupying the lane adjacent to L on its left (st.lane_adjacency) and not occupying I; nor (b) x stops here occupying I, having begun to overlap I at an observation at which it occupied L, and its heading change since that entry (drv.motion.heading_change_since_entry(x, I), step p.heading_since_step_carla_scene_graph) is greater than minus p.turn_recognition_angle: it left the intersection without turning right.",
+ "params": [
+  "p.heading_since_step_carla_scene_graph",
+  "p.turn_recognition_angle"
+ ],
+ "narrowings": [
+  {
+   "span": "d1",
+   "why": "'has been designed to provide' is read through the lane's presence as mapped: a right turn lane on the highway evidences the design.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "d4",
+   "why": "'Be driven' is read through the vehicle's controlled motion in the lane, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d4",
+   "why": "'only for the purpose of making a right turn' is read through the conduct the purpose explains: a vehicle in the lane leaves it either by turning right (into the intersection the lane enters, with a right turn, or off to the right before it); leaving it back into the neighbouring lane on its left short of the intersection, or leaving the intersection it entered from the lane without a right turn, is the lane used for another purpose.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A car enters the single right turn lane to pass a queue of through traffic, then moves back into the through lane on its left before reaching the intersection."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car drives in the single right turn lane, enters the intersection the lane runs into and turns a quarter turn to the right before leaving it."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "A car approaches an intersection on a highway whose approach has no right turn lane."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car enters the intersection from the single right turn lane and leaves it; the source declares kin.yaw_rate absent, so whether it turned right is not observed.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "A car changes back out of the rightmost of two adjacent right turn lanes: the highway provides a dual, not a single, right turn lane."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "A car in the single right turn lane drives straight through the intersection and leaves it with its heading unchanged."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_recognition_angle",
+   "unit": "deg",
+   "value": 45,
+   "convention": "Turn recognition: the heading change through an intersection beyond which a passage counts as a turn rather than a straight crossing; half the right angle of a turn at a right-angled junction, leaving room for skewed junctions and lane offsets.",
+   "source": "Intersection geometry conventions (AASHTO Green Book turning paths) and manoeuvre classification in trajectory datasets"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

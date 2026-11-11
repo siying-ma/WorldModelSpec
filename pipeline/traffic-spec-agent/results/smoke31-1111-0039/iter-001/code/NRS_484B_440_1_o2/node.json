@@ -1,0 +1,257 @@
+{
+ "node_id": "NRS_484B_440_1_o2",
+ "law_refs": [
+  "NRS-484B-440-1"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "Upon any highway",
+   "role": "trigger"
+  },
+  {
+   "id": "g2",
+   "text": "outside of a business or residence district",
+   "role": "condition"
+  },
+  {
+   "id": "g3",
+   "text": "no person shall stop, park or leave standing",
+   "role": "sibling"
+  },
+  {
+   "id": "g4",
+   "text": "any vehicle, whether attended or unattended,",
+   "role": "subject"
+  },
+  {
+   "id": "g5",
+   "text": "upon the paved or main-traveled part of the highway",
+   "role": "trigger"
+  },
+  {
+   "id": "g6",
+   "text": "when it is practicable to stop, park or so leave such vehicle off such part of the highway,",
+   "role": "sibling"
+  },
+  {
+   "id": "g7",
+   "text": "but in every event",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g8",
+   "text": "an unobstructed width of the highway",
+   "role": "obligation"
+  },
+  {
+   "id": "g9",
+   "text": "opposite a standing vehicle",
+   "role": "trigger"
+  },
+  {
+   "id": "g10",
+   "text": "shall be left for the free passage of other vehicles",
+   "role": "standard"
+  },
+  {
+   "id": "g11",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "g12",
+   "text": "a clear view of such stopped vehicles shall be available from a distance of 200 feet in each direction upon such highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "g13",
+   "text": "This section shall not apply to the driver of any vehicle which is disabled while on the paved or main-traveled portion of a highway in such manner and to such extent that it is impossible to avoid stopping and temporarily leaving such disabled vehicle in such position.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "rel.occupies",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "st.highway: \"the entire public way between its boundary lines, including sidewalks and shoulders\"; x is upon it where its footprint overlaps it (rel.occupies)."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed by id; 'whether attended or unattended' excludes no member."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "The standing vehicles 'in every event' are those of the first clause, upon the paved or main-traveled part: the st.roadway (\"the part of a highway improved for vehicular traffic, excluding shoulder\"), overlapped by x's footprint (rel.occupies)."
+  },
+  {
+   "span": "g8",
+   "atoms": [
+    "st.lane",
+    "st.on_way",
+    "st.highway",
+    "rel.occupies",
+    "st.region_geometry"
+   ],
+   "derived": [],
+   "justification": "A width of the highway opposite the vehicle is a lane beside it: a st.lane (\"a longitudinal strip of roadway for one line of vehicles\") on the same highway (st.on_way, st.highway) whose ground distance from x's body (st.region_geometry) is at most the beside reach, so that a lane segment far along the way is not read, and that x's footprint does not overlap (rel.occupies). Unobstructed: no other halted road user beside x occupies it."
+  },
+  {
+   "span": "g9",
+   "atoms": [
+    "kin.speed",
+    "rel.longitudinal_overlap"
+   ],
+   "derived": [
+    "drv.motion.halted"
+   ],
+   "justification": "'a standing vehicle' (DEF-NRS-484A-250, \"the halting of a vehicle, whether occupied or not\") is x halted (drv.motion.halted, kin.speed at or below the resolution); its purpose is not observable (observable_reading purpose). Opposite it is the stretch alongside its body: another halted road user is opposite where their footprints overlap along x's heading (rel.longitudinal_overlap positive), a projection, 'not' a contact or a distance."
+  },
+  {
+   "span": "g13",
+   "atoms": [
+    "kin.engine_running",
+    "sig.hazard",
+    "rel.occupies",
+    "st.roadway"
+   ],
+   "derived": [],
+   "justification": "A vehicle disabled on the roadway is read through its nearest observables, as in the first obligation of this line: engine or motor not running (kin.engine_running: \"so that propulsion is available\", false) with hazard lamps flashing (sig.hazard: \"both indicators flashing together\"), while it occupies the roadway (rel.occupies, st.roadway). kin.engine_running is 'not a stand-in' for motion or a halt; the gap records that the disability itself has no atom."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "g10",
+   "standard": "an unobstructed width left for the free passage of other vehicles",
+   "concepts": [
+    "st.lane_width",
+    "rel.longitudinal_overlap",
+    "drv.motion.halted"
+   ],
+   "params": [
+    "p.free_passage_width",
+    "p.opposite_lane_reach",
+    "p.speed_resolution"
+   ],
+   "convention": "Free-passage convention: the width left for passage is a lane beside the standing vehicle, not overlapped by it and not taken by another halted road user alongside it, whose measured width (st.lane_width) is at least a design passenger-car width plus lateral clearance.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [
+  {
+   "span": "g2",
+   "id": "asm.within_business_or_residence_district",
+   "meaning": "The place of the observation lies inside a business district or a residence district declared for the map or the trace."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x carries ru.aggregate=DEF-NRS-484A-320::vehicle; at the observation x is halted (drv.motion.halted with p.speed_resolution) with its footprint overlapping a st.roadway of a st.highway h (rel.occupies, st.on_way); asm.within_business_or_residence_district does not hold; and x is not disabled there: not (kin.engine_running false and sig.hazard on).",
+ "obligation": "Some st.lane L on h (st.on_way(L, h)) that x's footprint does not overlap, within p.opposite_lane_reach of x's body (st.region_geometry distance), has st.lane_width at least p.free_passage_width, and no road user other than x that is halted (drv.motion.halted with p.speed_resolution) and overlaps x along x's heading (rel.longitudinal_overlap positive) occupies L.",
+ "params": [
+  "p.speed_resolution",
+  "p.free_passage_width",
+  "p.opposite_lane_reach"
+ ],
+ "narrowings": [
+  {
+   "span": "g8",
+   "why": "'an unobstructed width of the highway' is read as a whole lane beside the vehicle, free of halted road users alongside it; a part-lane, a shoulder, or an obstruction that is not a road user (st.obstruction) is not counted.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a rural two-lane highway x (ru.motor_vehicle) halts in one lane while another vehicle halts in the other lane alongside it (rel.longitudinal_overlap positive): no lane beside x is free."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "x halts in one lane of a rural two-lane highway; the other lane, within p.opposite_lane_reach, has st.lane_width above p.free_passage_width and no other road user is in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "x drives along the rural roadway without halting."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "x halts in one lane of a rural two-lane highway with the other lane empty, but the source does not observe lane widths.",
+   "masked": [
+    "st.lane_width"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "x halts with its engine not running and its hazard lamps flashing: the disabled-vehicle exception applies."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.speed_resolution",
+   "unit": "m/s",
+   "value": 0.2,
+   "convention": "Sensor resolution: the smallest speed the acquisition standard separates from standstill; a speed at or below it counts as no motion.",
+   "source": "speed resolution of the carla_scene_graph acquisition standard"
+  },
+  {
+   "name": "p.free_passage_width",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Free-passage width: the smallest width of an unoccupied lane beside a standing vehicle that lets another vehicle pass; a design passenger-car width plus lateral clearance.",
+   "source": "AASHTO Green Book design-vehicle widths and lane widths"
+  },
+  {
+   "name": "p.opposite_lane_reach",
+   "unit": "m",
+   "value": 1.0,
+   "convention": "Beside reach: the largest ground distance from a standing vehicle's body to a lane within which the lane counts as opposite the vehicle; covers the lateral gap between the body and the next lane's edge.",
+   "source": "lane-keeping offset conventions"
+  }
+ ],
+ "gaps": [
+  {
+   "span": "g13",
+   "kind": "atom",
+   "proposal": "`ru.disabled` | a vehicle that cannot proceed under its own power, by a mechanical failure, crash damage or a flat tyre, as the source records it **Not a stand-in for:** a vehicle parked with its engine off, or one showing hazard lamps | general — decides whether moving the vehicle off the roadway can be carried out, which the disabled-vehicle exception turns on",
+   "nearest": [
+    "kin.engine_running",
+    "sig.hazard"
+   ]
+  }
+ ],
+ "planned_on": {}
+}

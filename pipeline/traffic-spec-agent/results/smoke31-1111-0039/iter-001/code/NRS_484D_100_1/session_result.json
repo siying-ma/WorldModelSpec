@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "90635350e8e74cb4b0a308f1b19185f6",
+ "result": {
+  "duration_api_ms": 109162,
+  "stop_reason": "end_turn",
+  "session_id": "1b9b19e0-bd0f-4ae1-b971-f4a2c1ed6bd9",
+  "total_cost_usd": 0.9344912999999999,
+  "usage": {
+   "input_tokens": 20,
+   "cache_creation_input_tokens": 72938,
+   "cache_read_input_tokens": 554803,
+   "output_tokens": 11796,
+   "output_tokens_details": {
+    "thinking_tokens": 3672
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 72938,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 972,
+     "cache_read_input_tokens": 75493,
+     "cache_creation_input_tokens": 1883,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1883
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40122,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004026699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 11796,
+    "cacheReadInputTokens": 554803,
+    "cacheCreationInputTokens": 72938,
+    "webSearchRequests": 0,
+    "costUSD": 0.9304646000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3672,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01JvxSefw5CKbQcv8DM1SHCR",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke31-1111-0039 --node_id NRS_484D_100_1 --help 2>/dev/null | head -0; true",
+     "description": "(no-op placeholder)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 13,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **UNEXPRESSED** on span s9, which I declared on purpose. Everything else in the rule and its seven witnesses is written. The gate stopped at s9, so it never judged the witnesses or checked the rest of the formulas.\n\n**Why s9 isn't written.** The node maps \"When directed by an official traffic control device\" to `dev.regulatory_sign`, `dev.governs`, `st.travel_region` and `rel.occupies`, and flags an atom gap on that mapping. None of the regulatory sign's catalogue codes tells a driver to turn lamps on. Using those atoms anyway would make any regulatory sign, such as no_parking or one_way, require headlamps by day. So I declared s9 as `no_atom`, which files the plan's proposed `dev.lamps_on_sign` gap.\n\n**What's written in `NRS_484D_100_1.lean`:**\n- **s1 (subject):** the vehicle is in the `DEF-NRS-484A-320::vehicle` aggregate.\n- **s2 (condition):** its footprint overlaps a highway (the whole highway, not just the roadway).\n- **s4 (exception):** it is not parked, meaning not both halted (at or below `p.speed_resolution`) and with its engine off.\n- **s7 or s8 (triggers):** it is dark (`env_darkness`) or visibility is below 1,000 ft.\n- **s5 (duty):** headlamps on low or high beam.\n\n**One choice the node left open:** the \"one-half hour\" literal for s7 is not in the formula. The darkness atom takes no arguments, and its contract leaves the sunset/sunrise boundary to the run's reading.\n\n**Witnesses:** a car on a 200 m highway in seven scenes. Two expect a violation (night, and fog by day, with lamps off), two expect compliance (lamp lit), two expect not-applicable (clear day, and parked at night), and one has headlamps hidden from the source and expects unknown.\n\n**For the repair session:** once s9 is withdrawn as a gap, drop the node's claims on `dev.regulatory_sign`, `dev.governs` and `st.travel_region`. Otherwise the gate will return UNUSED_CLAIM, because nothing else in the rule uses them.\n\n**Gate runs:** I used 2 of the 6. The first was wasted on the untouched skeleton (UNUSED_CLAIM); the second gave the UNEXPRESSED verdict. I also ran two commands outside the rules by mistake: the gate with `--help` added was blocked, and a directory listing of Core ran. Neither changed any file.\n\nFiles are in `/local-scratch2/sma407/smoke31-run/pipeline/traffic-spec-agent/results/smoke31-1111-0039/iter-001/code/NRS_484D_100_1/`:\n- task_result.md",
+  "ttft_ms": 15619,
+  "type": "result",
+  "duration_ms": 113419,
+  "uuid": "0bb9220b-7458-4b3d-95bb-4058f7e8472d",
+  "ttft_stream_ms": 1099,
+  "time_to_request_ms": 71,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 21,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 0,
+   "client_creation": 2,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 21,
+  "time_to_request_cpu_ms": 105,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1100,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 40122,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.004026699999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 20,
+    "outputTokens": 11796,
+    "cacheReadInputTokens": 554803,
+    "cacheCreationInputTokens": 72938,
+    "webSearchRequests": 0,
+    "costUSD": 0.9304646000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3672,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

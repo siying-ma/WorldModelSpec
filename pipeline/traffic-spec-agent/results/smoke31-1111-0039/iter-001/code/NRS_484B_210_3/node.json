@@ -1,0 +1,150 @@
+{
+ "node_id": "NRS_484B_210_3",
+ "law_refs": [
+  "NRS-484B-210-3"
+ ],
+ "subject": {
+  "binder": "x",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "shall not overtake and pass another vehicle upon the right",
+   "role": "obligation"
+  },
+  {
+   "id": "f3",
+   "text": "when such movement requires driving off the paved portion of the highway",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' is the admitted aggregate DEF-NRS-484A-320::vehicle, claimed as one atom. 'driver' (DEF-NRS-484A-080, 'every person who drives or is in actual physical control of a vehicle') is a relational role read through the vehicle's controlled motion (agency reading below)."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.same_direction",
+    "rel.longitudinal_overlap",
+    "rel.bearing",
+    "kin.speed"
+   ],
+   "derived": [
+    "drv.interaction.passing_on_right"
+   ],
+   "justification": "'another vehicle' is a road user of the admitted aggregate DEF-NRS-484A-320::vehicle other than the subject, quantified because it is present only sometimes. 'overtake and pass ... upon the right' is drv.interaction.passing_on_right(x, y): headings aligned (rel.same_direction), bodies side by side along x's heading (rel.longitudinal_overlap, 'the bodies overlap along the subject's heading (side by side)'), y on x's left (rel.bearing, 'for \"on the right of\"'), x faster than y (kin.speed). rel.longitudinal_overlap is 'neither a contact nor a distance between the bodies' and is read only as side-by-side."
+  },
+  {
+   "span": "f3",
+   "atoms": [
+    "st.shoulder",
+    "st.road_edge",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "The paved portion of the highway (DEF-NRS-484A-095, 'the entire width between the boundary lines of every way') is told from the unpaved by the paved attributes the ontology carries: st.shoulder 'the part of the highway beside the roadway not intended for vehicular traffic; paved attribute' and st.road_edge 'curb or edge of the roadway; paved attribute for the surface beyond it'. 'driving off the paved portion' is x's footprint overlapping (rel.occupies) a shoulder whose paved attribute is false, or a road edge whose surface beyond is unpaved. 'such movement requires' is read by the movement as made: the pass that is made with the vehicle off the pavement at the same observation is the one the words name."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "x",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "x is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and, at the observation, x is off the paved portion of the highway: it occupies (rel.occupies) a st.shoulder region whose paved attribute is false, or a st.road_edge whose paved attribute (the surface beyond it) is false.",
+ "obligation": "At the observation there is no road user y other than x that is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle) and that x is passing on y's right: not drv.interaction.passing_on_right(x, y) with aligned_cosine p.same_direction_cosine and speed_margin p.overtaking_speed_margin.",
+ "params": [
+  "p.same_direction_cosine",
+  "p.overtaking_speed_margin"
+ ],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "'The driver of a vehicle' is read through the vehicle's controlled motion: a vehicle moving on the road is taken to be driven, and the duty binds that vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "f2",
+   "why": "'overtake and pass' is judged at the side-by-side phase of the movement (drv.interaction.passing_on_right): an approach from behind on the unpaved surface that never comes alongside, and the return ahead of the other vehicle after the bodies no longer overlap, are not judged by this node.",
+   "kind": "reading"
+  },
+  {
+   "span": "f3",
+   "why": "'driving' off the pavement is read through the vehicle's controlled motion over the unpaved surface, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "On a two-lane highway a car moves onto the unpaved shoulder and drives alongside a slower car that waits to turn left, the slower car on its left, the bodies side by side."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "A car alone in the scene pulls onto the unpaved shoulder and slows to a stop: it passes no vehicle, and the duty binds it alone."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "On a highway with two lanes in its direction, a car passes a slower car on its right within the paved right lane, never leaving the pavement."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "A car on the unpaved shoulder moves faster than a car beside it; the source declares rel.bearing absent, so on which side of it the other car lies is not observed.",
+   "masked": [
+    "rel.bearing"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "A car crawling on the unpaved shoulder is overtaken by a faster car in the lane on its left: the subject is slower and passes no one."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.same_direction_cosine",
+   "unit": "ratio",
+   "value": 0.9,
+   "convention": "Heading alignment tolerance: the cosine of the largest angle between two headings that still counts as travelling the same way.",
+   "source": "Measurement tolerance of heading in ground-truth simulation and lane-keeping heading variation"
+  },
+  {
+   "name": "p.overtaking_speed_margin",
+   "unit": "m/s",
+   "value": 0.5,
+   "convention": "Speed resolution of a speed difference: the smallest excess of the subject's speed over the other's that counts as gaining on it rather than keeping pace.",
+   "source": "Speed noise of ground-truth simulator kinematics, doubled for a difference of two readings"
+  }
+ ],
+ "gaps": [],
+ "planned_on": {}
+}

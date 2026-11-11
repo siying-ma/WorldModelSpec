@@ -1,0 +1,72 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 1 names, reads 1 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed"
+  ],
+  "refs": [],
+  "canonical_body": "{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},{\"param\":\"$p0\"}]},{\"div\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"}]},{\"mul\":[{\"lit\":{\"den\":1,\"num\":2},\"unit\":\"ratio\"},{\"param\":\"$p1\"}]}]}]}",
+  "body_json": {
+   "add": [
+    {
+     "mul": [
+      {
+       "args": [
+        {
+         "var": "x"
+        }
+       ],
+       "measure": "kin_speed"
+      },
+      {
+       "param": "reaction_time"
+      }
+     ]
+    },
+    {
+     "div": [
+      {
+       "mul": [
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "measure": "kin_speed"
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "measure": "kin_speed"
+        }
+       ]
+      },
+      {
+       "mul": [
+        {
+         "lit": {
+          "den": 1,
+          "num": 2
+         },
+         "unit": "ratio"
+        },
+        {
+         "param": "deceleration"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "context": "8143fe45f847de1bd3d7598e",
+  "candidate_digest": "2177797b6c3da76d473eaf18b4bb64976c0ce0db0b0379f63a248d7cc0657bec"
+ }
+}

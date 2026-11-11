@@ -1,0 +1,49 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 1 names, reads 1 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.yaw_rate"
+  ],
+  "refs": [],
+  "canonical_body": "{\"cmp\":\"le\",\"lhs\":{\"abs\":{\"sub\":[{\"abs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"}},{\"lit\":{\"den\":1,\"num\":180},\"unit\":\"degree\"}]}},\"rhs\":{\"param\":\"$p1\"}}",
+  "body_json": {
+   "cmp": "le",
+   "lhs": {
+    "abs": {
+     "sub": [
+      {
+       "abs": {
+        "args": [
+         {
+          "var": "x"
+         }
+        ],
+        "params": [
+         {
+          "param": "window"
+         }
+        ],
+        "quantity": "prim_heading_change"
+       }
+      },
+      {
+       "lit": {
+        "den": 1,
+        "num": 180
+       },
+       "unit": "degree"
+      }
+     ]
+    }
+   },
+   "rhs": {
+    "param": "reversal_tolerance"
+   }
+  },
+  "context": "e9b278c294c77535cbfd964c",
+  "candidate_digest": "210ab2c43a53fc20031f6c572d4394e4ce13ee5c1f7146ca028d7c70c2f8fe12"
+ }
+}

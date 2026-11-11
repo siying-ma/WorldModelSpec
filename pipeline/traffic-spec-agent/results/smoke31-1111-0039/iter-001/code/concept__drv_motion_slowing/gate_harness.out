@@ -1,0 +1,35 @@
+'TrafficSpec.Concepts.motion.slowing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.slowing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.slowing.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"x","sort":{"sort":"track"}}],"body":{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"param":"speed_floor"}},{"cmp":"lt","lhs":{"args":[{"var":"x"}],"measure":"kin_accel_longitudinal"},"rhs":{"neg":{"param":"decel_floor"}}}]},"contract":"Road user x is slowing while moving forward at the observation: the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, read normalised) exceeds speed_floor, and its longitudinal acceleration (kin.accel_longitudinal, m/s², signed along the heading) is below minus decel_floor, the source's acceleration resolution. Not denoted: slowing while backing, a brake lamp or a brake input, a halt, or how much the speed has fallen.","definition":null,"id":"drv.motion.slowing","kind":"formula","narrowings":[],"params":[{"name":"speed_floor","unit":"metre_per_second"},{"name":"decel_floor","unit":"metre_per_second_sq"}],"residues":[],"supersedes":null}
+ATOMS	kin_velocity,kin_heading,kin_accel_longitudinal
+READS	kin_velocity,kin_heading,kin_accel_longitudinal
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"gt","lhs":{"add":[{"mul":[{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"x"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"param":"speed_floor"}},{"cmp":"lt","lhs":{"args":[{"var":"x"}],"measure":"kin_accel_longitudinal"},"rhs":{"neg":{"param":"decel_floor"}}}]}
+WITNESS	holds	drv.motion.slowing@w
+WITNESS	fails	drv.motion.slowing@w
+WITNESS	blind	drv.motion.slowing@w
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+OCC	x
+INST	drv.motion.slowing@w	ok
+TIME	checks	3
+TIME	lint	2
+SCEN	holds	drv.motion.slowing@w	compliant	compliant	ok
+TIME	scenario:drv.motion.slowing@w/holds	10
+SCEN	fails	drv.motion.slowing@w	violated	violated	ok
+TIME	scenario:drv.motion.slowing@w/fails	7
+SCEN	blind	drv.motion.slowing@w	unknown	unknown	ok
+TIME	scenario:drv.motion.slowing@w/blind	10
+TIME	witnesses	27
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.slowing.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.slowing.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.slowing.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.slowing@w	2	2
+TIME	adequacy_start	4
+TIME	adequacy	52
+DONE

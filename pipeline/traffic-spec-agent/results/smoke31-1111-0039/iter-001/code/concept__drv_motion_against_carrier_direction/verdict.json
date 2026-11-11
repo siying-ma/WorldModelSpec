@@ -1,0 +1,113 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 4 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.velocity",
+   "st.lane_direction"
+  ],
+  "refs": [
+   "drv.motion.moving"
+  ],
+  "canonical_body": "{\"and\":[{\"cmp\":\"gt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p0\"}},{\"cmp\":\"lt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"x\"}],\"measure\":\"st_lane_direction\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a1\"},{\"lit\":\"y\"}],\"measure\":\"st_lane_direction\"}]}]},\"rhs\":{\"neg\":{\"mul\":[{\"param\":\"$p1\"},{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"}]}}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "gt",
+     "lhs": {
+      "args": [
+       {
+        "var": "x"
+       }
+      ],
+      "measure": "kin_speed"
+     },
+     "rhs": {
+      "param": "speed_floor"
+     }
+    },
+    {
+     "cmp": "lt",
+     "lhs": {
+      "add": [
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "kin_velocity"
+         },
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "x"
+           }
+          ],
+          "measure": "st_lane_direction"
+         }
+        ]
+       },
+       {
+        "mul": [
+         {
+          "args": [
+           {
+            "var": "x"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "kin_velocity"
+         },
+         {
+          "args": [
+           {
+            "var": "r"
+           },
+           {
+            "lit": "y"
+           }
+          ],
+          "measure": "st_lane_direction"
+         }
+        ]
+       }
+      ]
+     },
+     "rhs": {
+      "neg": {
+       "mul": [
+        {
+         "param": "opposed_cosine"
+        },
+        {
+         "args": [
+          {
+           "var": "x"
+          }
+         ],
+         "measure": "kin_speed"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "context": "8a06e4b6f8329eb50586bde6",
+  "candidate_digest": "ff4abb03a9f16937e5dc659f3387113787379c30f630e10fb2926f4acc7b7344"
+ }
+}

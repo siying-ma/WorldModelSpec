@@ -1,0 +1,62 @@
+{
+ "concept_id": "drv.motion.halted",
+ "kind": "formula",
+ "contract": "A road user is at a standstill at the observation. This is the corpus definition of a required stop, \"complete cessation from movement\", observed on sampled speeds: the road user's speed (kin.speed, m/s) is at or below speed_floor, the source's speed resolution, below which a reading counts as no movement. The state holds at each observation at which the speed is that low, with no minimum duration. Not denoted: where the road user stands, why it stands, or whether its engine runs or a brake is set.",
+ "definition": "DEF-NRS-484A-255",
+ "args": [
+  {
+   "name": "x",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "speed_floor",
+   "unit": "m/s",
+   "meaning": "the source's speed resolution: a speed at or below it counts as no movement"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the road user's speed (kin.speed, m/s) is at or below speed_floor",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed: 'magnitude of velocity' in m/s; the definition's absolute 'complete cessation from movement' is observed only within the resolution speed_floor names."
+  }
+ ],
+ "residues": [
+  {
+   "span": "when required",
+   "why": "The definition's scope words ('when required') say which duties it serves; the caller is the duty that requires the stop, so the concept carries no condition for them."
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "x has kin.speed 0.0 m/s at the observation."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "x has kin.speed 4.0 m/s at the observation."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source does not observe kin.speed for x.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_4_o1",
+  "NRS_484B_250_4_o2",
+  "NRS_484B_257_1_o1",
+  "NRS_484B_270_3_o2"
+ ]
+}

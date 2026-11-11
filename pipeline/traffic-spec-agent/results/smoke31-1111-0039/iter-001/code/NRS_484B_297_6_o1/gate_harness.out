@@ -1,0 +1,44 @@
+'TrafficSpec.Rules.NRS_484B_297_6_o1.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_297_6_o1.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["x"],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[{"kind":"no_atom","span":"s4","why":"'a short section of the sidewalk that is missing or impassable' is no physical object: st.obstruction ('a physical object on or beside the roadway that is not a road user') covers a section blocked by an object only, and no atom of the surface denotes a missing or untraversable stretch of sidewalk; the record's gap (st.impassable_section) stands."}],"operationalizations":[{"concepts":["prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.immediate_hazard_gap","p.conflict_clearance"],"standard":"due care","surrogate":true}],"residues":["A permission to travel against the direction of traffic; no duty of this node concerns the pedestrian's direction, so the duty is the same whichever way the pedestrian walks."],"surrogate":true}
+RULEJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[{"kind":"no_atom","span":"s4","why":"'a short section of the sidewalk that is missing or impassable' is no physical object: st.obstruction ('a physical object on or beside the roadway that is not a road user') covers a section blocked by an object only, and no atom of the surface denotes a missing or untraversable stretch of sidewalk; the record's gap (st.impassable_section) stands."}],"obligation":{"implies":[{"args":[{"var":"x"}],"derived":"drv_motion_moving","params":[{"param":"p.speed_resolution"}]},{"body":{"implies":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"not":{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"z"}]},"residues":["A permission to travel against the direction of traffic; no duty of this node concerns the pedestrian's direction, so the duty is the same whichever way the pedestrian walks."],"surrogate":true}
+RULEXJSON	{"applicability":{"body":{"body":{"and":[{"args":[{"var":"w"},{"var":"h"}],"atom":"st_on_way","params":[]},{"and":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"since":[{"and":[{"args":[{"var":"x"},{"var":"h"}],"atom":"rel_occupies","params":[]},{"body":{"not":{"args":[{"var":"x"},{"var":"s"}],"atom":"rel_occupies","params":[]}},"forall_region":{"lit":"sidewalk"},"var":"s"}]},{"and":[{"args":[{"var":"x"},{"var":"w"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"cmp":"le","lhs":{"args":[{"var":"x"},{"var":"o"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"p.obstruction_encounter_reach"}},"exists_region":{"lit":"obstruction"},"var":"o"}]}]}]}]}]},"exists_region":{"lit":"highway"},"var":"h"},"exists_region":{"lit":"sidewalk"},"var":"w"},"assumptions":[],"binders":[{"cls":{"args":[{"var":"x"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]},"name":"x"}],"id":"NRS_484B_297_6_o1","intentions":[],"laws":["NRS-484B-297-6"],"narrowings":[{"kind":"no_atom","span":"s4","why":"'a short section of the sidewalk that is missing or impassable' is no physical object: st.obstruction ('a physical object on or beside the roadway that is not a road user') covers a section blocked by an object only, and no atom of the surface denotes a missing or untraversable stretch of sidewalk; the record's gap (st.impassable_section) stands."}],"obligation":{"implies":[{"cmp":"gt","lhs":{"args":[{"var":"x"}],"measure":"kin_speed"},"rhs":{"param":"p.speed_resolution"}},{"body":{"implies":[{"not":{"same":[{"var":"z"},{"var":"x"}]}},{"not":{"and":[{"args":[{"var":"x"},{"var":"z"}],"derived":"prim_closest_approach_within","params":[{"param":"p.immediate_hazard_gap"}]},{"cmp":"lt","lhs":{"args":[{"var":"x"},{"var":"z"}],"params":[{"param":"p.immediate_hazard_gap"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.conflict_clearance"}}]}}]},"forall_user":"z"}]},"residues":["A permission to travel against the direction of traffic; no duty of this node concerns the pedestrian's direction, so the duty is the same whichever way the pedestrian walks."],"surrogate":true}
+ATOMS	ru_aggregate,st_sidewalk,st_highway,st_on_way,rel_occupies,drv_motion_moving,st_obstruction,st_region_geometry_distance,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.occupies
+OCC	x
+OCC	?w
+OCC	?h
+OCC	w,h
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,h
+OCC	?s
+OCC	x,s
+OCC	x,w
+OCC	x
+OCC	?o
+OCC	x,o
+OCC	x
+OCC	?z
+OCC	z,x
+OCC	x,z
+OCC	x,z
+TIME	occurrences	0
+TIME	checks	10
+TIME	lint	56
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	19
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	17
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	11
+SCEN	blind	unknown	?	blind: unknown for [window_truncated:since], not for an atom the manifest masks
+TIME	scenario:blind	20
+TIME	witnesses	67
+DONE_WITNESSES
