@@ -699,7 +699,8 @@ RUN_ID=<run id> MODEL=<claude model> REVIEWER_MODEL=<openai model> WORKERS=4 \
 ```
 
 `scripts/run-generation.sh` checks, before any model time is spent: git `user.name` and
-`user.email`, a clean checkout (no staged change, no change to a tracked file), that the run branch
+`user.email`, a clean checkout (no staged change, no change to a tracked file; on `resume`, none but to the
+run's own files), that the run branch
 is new (no `results/<run id>`, or only the law subset `scripts.subset_laws` wrote there) and this
 checkout is at the tip of `remote/full-train-generation` (`new`), or that the run
 branch is checked out, not behind the remote and free of merges since its baseline (`resume`), a dry-run push, the
@@ -730,11 +731,16 @@ iteration bound with work left; it stops with status 0 on `awaiting_labels`, `aw
 `complete`; with 4 on `paused_budget` ("raise the named limit explicitly and resume": the stop reason
 names the option, its used count, its limit and the laws affected) or `awaiting_operator` ("operator
 decision needed; see stop_reason and TO_USER.md"), after pushing the checkpoint and handing the run to
-neither stage, never continued as an iteration limit; with 1 on any other status (diagnostics in
-`.runtime/<run id>/`); and with 3 when a push still fails after its retries: no further model call is
-made, and the next `resume` pushes the same commit first. Continue
-an interrupted remote stage with `RUN_ID=<run id> scripts/run-generation.sh resume` in the same
-checkout.
+neither stage, never continued as an iteration limit; with 5 on `infrastructure_failure` (sessions could
+not be launched: an account limit or an API error; resume once they can); with 1 on any other status
+(diagnostics in `.runtime/<run id>/`); and with 3 when a push still fails after its retries: no further
+model call is made, and the next `resume` pushes the same commit first. A stop inside an iteration (any of
+these statuses, a crash, a killed launcher or a restarted machine) leaves no checkpoint: the iteration's
+work stays in the run's own files (those `handoff export` lists, and the run's directory and library
+record directories), and `resume` accepts a checkout whose only tracked changes are there, the loop
+taking the iteration up; a change to any other tracked file is refused, and `new` needs a clean
+checkout. Continue an interrupted remote stage with `RUN_ID=<run id> scripts/run-generation.sh resume`
+in the same checkout.
 
 ### The local label check
 

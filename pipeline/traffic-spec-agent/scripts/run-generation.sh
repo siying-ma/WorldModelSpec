@@ -36,9 +36,14 @@
 # Exit status: 0 the stage ended at a checkpoint (handed over, complete, or the launch count spent);
 # 1 the loop stopped otherwise (diagnostics in .runtime/<id>/); 2 a preflight check refused before any
 # model call; 3 a checkpoint could not be pushed (the same commit is pushed first by the next launch);
-# 4 the run paused for the operator at a pushed checkpoint, handed to neither stage: `paused_budget` (raise
-# the limit its stop_reason names explicitly, then resume) or `awaiting_operator` (a decision is needed: see
-# stop_reason in results/<id>/summary.json and TO_USER.md). Neither is ever continued as an iteration limit.
+# 4 the run paused for the operator, handed to neither stage: `paused_budget` (raise the limit its
+# stop_reason names explicitly, then resume) or `awaiting_operator` (a decision is needed: see stop_reason in
+# results/<id>/summary.json and TO_USER.md); 5 sessions could not be launched (`infrastructure_failure`: an
+# account limit or an API error; resume once they can). None of 1, 4, 5 is ever continued as an iteration
+# limit. A stop inside an iteration leaves no checkpoint: the iteration's work stays in the run's own files
+# (those `handoff export` lists, and the run's directory and library record directories), and `resume`
+# accepts a checkout whose only tracked changes are there, the loop taking the iteration up; `new`, and any
+# change to another tracked file, still need a clean checkout.
 # `stage-enter`: 0 the stage is entered, confirmed and pushed (also when it already was); 1 the harness's
 # transition or confirmation stopped after it began (run the same stage-enter again); 2 refused before
 # anything changed (a refusal of the harness included: the checkpoint's code is put back); 3 a commit could
@@ -106,6 +111,7 @@ PYTHON=${PYTHON:-python}
 PUSH_RETRIES=${PUSH_RETRIES:-5}; PUSH_WAIT=${PUSH_WAIT:-60}
 RUN_DIR=results/$RUN_ID
 LOG_DIR=.runtime/$RUN_ID
+RUN_ROOTS=(library/TrafficSpec/Rules library/TrafficSpec/Concepts library/TrafficSpecWitness library/TrafficSpec/Gaps)   # the run's library records
 
 die() { echo "[launcher] $*" >&2; exit "${2:-2}"; }
 mkdir -p "$LOG_DIR"
@@ -134,8 +140,7 @@ stage_run_files() {                                    # the listed files only, 
   cp "$list" "$LOG_DIR/pathspec.txt"                   # paths relative to this directory, as git reads them here
   stage_record_files >> "$LOG_DIR/pathspec.txt"
   git add -f --pathspec-from-file="$LOG_DIR/pathspec.txt"
-  git ls-files -- "$RUN_DIR" library/TrafficSpec/Rules library/TrafficSpec/Concepts library/TrafficSpecWitness \
-      library/TrafficSpec/Gaps | grep -vxF -f "$LOG_DIR/pathspec.txt" \
+  git ls-files -- "$RUN_DIR" "${RUN_ROOTS[@]}" | grep -vxF -f "$LOG_DIR/pathspec.txt" \
       | while IFS= read -r gone; do git rm -q --cached -- "$gone"; done || true
 }
 
@@ -163,6 +168,25 @@ print(x)
 PY
 }
 summary_field() { "$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2]) or "")' "$RUN_DIR/summary.json" "$1" 2>/dev/null || true; }
+changes_outside_run() {                               # tracked changes, staged or not, to files that are not the run's own
+  [ -n "$(git diff --name-only HEAD)" ] || return 0
+  git diff --name-only -z HEAD | "$PYTHON" -c '
+import sys
+from harness.tools.handoff import artifact_files
+prefix, run_id, roots = sys.argv[1], sys.argv[2], sys.argv[3:]
+own = set(artifact_files(run_id))
+for top in sys.stdin.read().split("\0"):
+    rel = top[len(prefix):] if top.startswith(prefix) else None
+    if top and (rel is None or not (rel in own or any(rel.startswith(r + "/") for r in roots))):
+        print(top)' "$(git rev-parse --show-prefix)" "$RUN_ID" "$RUN_DIR" "${RUN_ROOTS[@]}"
+}
+stop_status() {                                        # the launcher's exit status for a loop status that ends the launches
+  case "$1" in
+    paused_budget|awaiting_operator) echo 4;;
+    infrastructure_failure) echo 5;;
+    *) echo 1;;
+  esac
+}
 written() { "$PYTHON" -c 'import os,sys; p=sys.argv[1]; print(os.stat(p).st_mtime_ns if os.path.exists(p) else "none")' "$1"; }   # when the loop last wrote its status
 
 # ---------------------------------------------------------------- stages
@@ -466,8 +490,13 @@ for v in SESSION_CAP REPAIR_CAP JUDGE_CAP VERIFIER_CAP CLAUDE_BUDGET OPENAI_BUDG
   fi
 done
 git config user.name >/dev/null && git config user.email >/dev/null || die "set git user.name and user.email"
-git diff --cached --quiet || die "the index holds staged changes; this launcher commits only the run's files — unstage them"
-[ -z "$(git status --porcelain --untracked-files=no)" ] || die "the checkout has uncommitted changes to tracked files; use a clean, separate checkout"
+if [ "$ACTION" = resume ]; then                       # a stop inside an iteration leaves the run's own files changed: the loop takes them up
+  others=$(changes_outside_run) || die "the run's own files could not be listed (python -c \"from harness.tools.handoff import artifact_files\" failed)"
+  [ -z "$others" ] || die "the checkout has uncommitted changes to tracked files that are not the run's own; use a clean, separate checkout: $(echo $others)"
+else
+  git diff --cached --quiet || die "the index holds staged changes; this launcher commits only the run's files — unstage them"
+  [ -z "$(git status --porcelain --untracked-files=no)" ] || die "the checkout has uncommitted changes to tracked files; use a clean, separate checkout"
+fi
 CURRENT=$(git symbolic-ref --quiet --short HEAD || true)
 git fetch -q "$REMOTE" 2>/dev/null || die "cannot fetch from $REMOTE"
 REMOTE_HAS=$(git ls-remote --heads "$REMOTE" "refs/heads/$BRANCH" | wc -l)
@@ -566,7 +595,13 @@ for launch in $(seq 1 "$LAUNCHES"); do
   log "loop exit $code: status $status${stop:+, stop $stop}; generation complete: ${generation:-unknown}"
   if ! "$PYTHON" -m harness handoff export "$RUN_ID" --source_baseline "$(git rev-parse HEAD)" >>"$LOG_DIR/launcher.log" 2>&1; then
     cp "$RUN_DIR/summary.json" "$LOG_DIR/diagnostics-summary.json"; tail -n 40 "$LOG_DIR/loop.log" > "$LOG_DIR/diagnostics.txt"
-    log "no checkpoint after status $status (see $LOG_DIR/launcher.log and $LOG_DIR/diagnostics.txt): stopped"; exit 1
+    rc=$(stop_status "$status")
+    case "$rc" in
+      4) log "no checkpoint after status $status: $(summary_field stop_reason); the iteration's work is kept for a resume";;
+      5) log "no checkpoint after status $status (sessions could not be launched: an account limit or an API error): $(summary_field stop_reason); resume later, the iteration's work is kept";;
+      *) log "no checkpoint after status $status (see $LOG_DIR/launcher.log and $LOG_DIR/diagnostics.txt): stopped";;
+    esac
+    exit "$rc"
   fi
   commit_checkpoint "$status${stop:+, $stop}"
   push_checkpoint
@@ -578,7 +613,7 @@ for launch in $(seq 1 "$LAUNCHES"); do
     awaiting_operator:*) log "operator decision needed; see stop_reason and TO_USER.md: $(summary_field stop_reason)"; exit 4;;
     *:iteration_limit) continue;;
     *) cp "$RUN_DIR/summary.json" "$LOG_DIR/diagnostics-summary.json"
-       log "status $status is no iteration-limit checkpoint: stopped after pushing it"; exit 1;;
+       log "status $status is no iteration-limit checkpoint: stopped after pushing it"; exit "$(stop_status "$status")";;
   esac
 done
 log "$LAUNCHES launch(es) done; resume with: RUN_ID=$RUN_ID STAGE=$STAGE $0 resume"
