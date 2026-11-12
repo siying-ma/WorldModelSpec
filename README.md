@@ -8,7 +8,7 @@ gaps block the others, and why; it is not a final result.
 ## Start the job
 
 ```bash
-git clone --branch remote/full-train-generation --single-branch \
+git clone --branch remote/full-train-generation \
   git@github.com:siying-ma/WorldModelSpec.git
 cd WorldModelSpec/pipeline/traffic-spec-agent
 bash setup.sh                                                   # Lean and Python packages, once per machine
@@ -23,6 +23,8 @@ that account uses another config directory, and keep it set for every later comm
 
 `launch.sh` first runs `launch/full221/preflight.sh` (clone at the branch tip and clean, accounts and keys, tools,
 disk, the 221 laws, the Lean build, the doctor). If any check fails, nothing starts: send `preflight-<run id>.txt`.
+Keep the clone's normal all-branch fetch configuration: the launcher needs `origin/runs/<run id>` after each
+checkpoint to verify the run branch and to resume after a failed push. Do not clone with `--single-branch`.
 
 ## The configuration (written in `launch/full221/launch.sh`)
 
