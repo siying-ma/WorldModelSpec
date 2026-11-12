@@ -1,0 +1,397 @@
+{
+ "digest": "17ea2f2183b9ea642523e4e1b1e9b0ee1ec9665dfd0b1def26490d96e9d69cb6",
+ "answer": {
+  "selection": [
+   {
+    "definition": "DEF-NRS-484A-020",
+    "term": "authorized emergency vehicle",
+    "representation": "aggregate",
+    "target": "DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "quote": "“Authorized emergency vehicle” means a vehicle permitted to depart from certain traffic laws",
+    "reason": "The definition denotes a set of vehicles, tracked road users classifiable by the ru.* classes, while being equipped and operated in the manner provided by law is a condition the using rule carries."
+   }
+  ],
+  "aggregates": [
+   {
+    "aggregate_id": "DEF-NRS-484A-020::authorized_emergency_vehicle",
+    "term": "authorized emergency vehicle",
+    "definition": "DEF-NRS-484A-020",
+    "classifications": [
+     {
+      "class": "ru.emergency_vehicle",
+      "status": "included",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "The class is a vehicle of a class the jurisdiction designates as emergency, which is the legal permission the definition admits; being equipped and operated as provided is a scene condition carried by the rule."
+     },
+     {
+      "class": "ru.fire_apparatus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "Fire apparatus is admitted only as an emergency vehicle the law permits to depart from traffic laws, and its contract makes every member a sub-kind of ru.emergency_vehicle, which is included.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.fire_apparatus",
+        "words": "a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own)"
+       },
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A motor vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.commercial_motor_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A commercial motor vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.motorcycle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A motorcycle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.moped",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A moped is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.official_vehicle",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "An official vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.school_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A school bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.taxicab",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A taxicab is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.tour_bus_or_limousine",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A tour bus or limousine is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.trailer_or_combination",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A trailer or combination is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.transit_bus",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A transit bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.truck",
+      "status": "covered",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law"
+       }
+      ],
+      "reason": "A truck is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.",
+      "covered_by": [
+       "ru.emergency_vehicle"
+      ],
+      "basis": [
+       {
+        "class": "ru.emergency_vehicle",
+        "words": "vehicle of a class the jurisdiction designates as emergency"
+       }
+      ]
+     },
+     {
+      "class": "ru.bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "except: (1) Devices moved by human power"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_bicycle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(2) Electric bicycles"
+       }
+      ]
+     },
+     {
+      "class": "ru.electric_scooter",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "(4) An electric scooter"
+       }
+      ]
+     },
+     {
+      "class": "ru.rail_vehicle",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "used exclusively upon stationary rails"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ]
+     },
+     {
+      "class": "ru.child",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ]
+     },
+     {
+      "class": "ru.pedestrian_with_white_cane_or_guide_animal",
+      "status": "excluded",
+      "quotes": [
+       {
+        "definition": "DEF-NRS-484A-020",
+        "words": "means a vehicle"
+       },
+       {
+        "definition": "DEF-NRS-484A-320",
+        "words": "every device in, upon or by which any person or property is or may be transported or drawn upon a highway"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

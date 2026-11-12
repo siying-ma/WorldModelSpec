@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 47001,
+  "stop_reason": "end_turn",
+  "session_id": "75723b9a-c42e-4cb0-b847-75439887d940",
+  "total_cost_usd": 0.5045994,
+  "usage": {
+   "input_tokens": 18,
+   "cache_creation_input_tokens": 40748,
+   "cache_read_input_tokens": 315809,
+   "output_tokens": 5624,
+   "output_tokens_details": {
+    "thinking_tokens": 664
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 40748,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 558,
+     "cache_read_input_tokens": 44211,
+     "cache_creation_input_tokens": 975,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 975
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28916,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029016000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 5624,
+    "cacheReadInputTokens": 315809,
+    "cacheCreationInputTokens": 40748,
+    "webSearchRequests": 0,
+    "costUSD": 0.5016978000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 664,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 13,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The concept `drv.position.near_region` and its witnesses now pass the gate: it returned **OK** on the second of six runs, with 3 witnesses reading 1 atom.\n\n**Body:** `.cmp (.measure \"st_region_geometry_distance\" [aA, aR]) .le pReach`. It is true when the ground distance from road user a's body outline to region r is at or below `reach`, and that distance is zero when they overlap. It does not read occupancy, as the contract requires. I declared no narrowings, because the contract fixes the measure, the comparison and the bound.\n\n**Witnesses:** the instance sets `reach` to 3 m. The crosswalk (region 100) is the rectangle x 10–14 m, y −5 to 5 m. The vehicle (track 1) faces east and stands still; its half-length is 2 m and its half-width 1 m.\n- **`holds`:** the vehicle's front is 1 m before the crosswalk, so the result is compliant.\n- **`fails`:** the vehicle is 48 m away, so the result is violated.\n- **`blind`:** the crosswalk has no outline and `st.region_geometry` is declared absent, so the result is unknown.\n\n**Gate runs:**\n1. **WITNESS_FAIL:** the `blind` scenes had a crosswalk with no boundary while occupancy was still observed, and the trace linter rejects that combination. I set `occupancyObserved := []` in those scenes, since a source without the crosswalk's outline can't observe occupancy of it either. The body was unchanged.\n2. **OK.**\n\nThe record was correct as written, so there is nothing for the plan agent to change. `task_result.md` is in the working directory.",
+  "ttft_ms": 2000,
+  "type": "result",
+  "duration_ms": 54009,
+  "uuid": "18ee3a24-9d51-40c8-9cb3-ce49ce063e63",
+  "ttft_stream_ms": 708,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 11,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 98,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 17,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 708,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 28916,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0029016000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 18,
+    "outputTokens": 5624,
+    "cacheReadInputTokens": 315809,
+    "cacheCreationInputTokens": 40748,
+    "webSearchRequests": 0,
+    "costUSD": 0.5016978000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 664,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

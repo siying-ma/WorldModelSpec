@@ -1,0 +1,159 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (holds_wrongly) at t=1000 ms: At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither was behind the other at the earlier observation, when their headings were opposed; the body nevertheless accepts the recognition observation itself as the SINCE witness. — contract: fails, body: holds; contract: \"The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition.\"",
+   "ruling": "upheld",
+   "why": "In the executed facts, the headings are opposed at t=0 ([1,0] vs [-1,0]), so a is not behind b at any observation before t=1000. The body's SINCE accepts a behind b at the recognition observation itself as the witness, but the contract requires that witness at an earlier observation. The unknown clause does not apply either, because the headings were not aligned since the recording began, so the contract's verdict is fails. — \"provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "82d6330603d7400a52010ef17f7b5dbf26d9fe1d9aaaa1ebbbd3787e9c954c10",
+ "rulings_at": 1,
+ "final": true,
+ "outcome": {
+  "status": "returned",
+  "reasons": [
+   "divergence 1 (holds_wrongly) at t=1000 ms: At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither … — contract: fails, body: holds; contract: \"The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of …\" — upheld: In the executed facts, the headings are opposed at t=0 ([1,0] vs [-1,0]), so a is not behind b at any observation before t=1000. The body's SINCE accepts a behind b at the recognition observation itself as the witness, but the contract requires that witness at an earlier observation. The unknown clause does not apply either, because the headings were not aligned since the recording began, so the contract's verdict is fails. — \"provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition\""
+  ],
+  "advisories": [],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "8904d6cb3333f879fb7f",
+   "row": {
+    "key": "concept:drv.interaction.overtakes",
+    "subject": "drv.interaction.overtakes",
+    "iteration": 1,
+    "item": "divergence 1 (holds_wrongly) at t=1000 ms: At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither was behind the other at the earlier observation, when their headings were opposed; the body nevertheless accepts the recognition observation itself as the SINCE witness. — contract: fails, body: holds; contract: \"The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition.\"",
+    "ruling": "upheld",
+    "reason": "In the executed facts, the headings are opposed at t=0 ([1,0] vs [-1,0]), so a is not behind b at any observation before t=1000. The body's SINCE accepts a behind b at the recognition observation itself as the witness, but the contract requires that witness at an earlier observation. The unknown clause does not apply either, because the headings were not aligned since the recording began, so the contract's verdict is fails. — \"provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition\"",
+    "schema": "concept_case/1",
+    "case_id": "235cf35823c89b8f3593410521f21c95eb64c4dbd1946f9b23ea4de35a7857b4",
+    "kind": "holds_wrongly",
+    "situation": "At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither was behind the other at the earlier observation, when their headings were opposed; the body nevertheless accepts the recognition observation itself as the SINCE witness.",
+    "contract_words": "The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition.",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "alignment": [
+       0.5,
+       "ratio"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1,
+     "b": 2
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "position": [
+           0,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        },
+        {
+         "track": 2,
+         "kin": {
+          "position": [
+           0,
+           10
+          ],
+          "heading": [
+           -1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "t": 1000,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "position": [
+           0,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        },
+        {
+         "track": 2,
+         "kin": {
+          "position": [
+           10,
+           30
+          ],
+          "heading": [
+           1,
+           -1
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 1000,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "7b31ea5cd6eba8d452c9c785e8d63a8ee99565af03a4162d262cdc061c02998e",
+    "body_digest": "4d9bb6145d46913ce469cbc2705e4c0557bda15209d6fef1848c416a65c77489",
+    "obligation": "open",
+    "ruling_id": "8904d6cb3333f879fb7f",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

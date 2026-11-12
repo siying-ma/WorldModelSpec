@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.turning_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.turning_right.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"and":[{"not":{"args":[{"var":"a"}],"derived":"drv_motion_at_rest","params":[{"param":"speed_tolerance"}]}},{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"},"rhs":{"neg":{"param":"yaw_tolerance"}}}]},"contract":"Road user a is turning to the right at an observation: it moves and its heading turns to the right. Measured as a not at rest (drv.motion.at_rest with the speed tolerance does not hold) and its yaw rate (kin.yaw_rate, deg/s, left positive) at or below the negative of the yaw tolerance, the rate below which a change of heading counts as none. A state at each observation while a turn is under way, not a completed manoeuvre: it does not say how far the turn goes, and it holds alike where the road user follows a bend of the road to the right. Not a stand-in for the turn indicator or for a declared intention to turn.","definition":null,"id":"drv.motion.turning_right","kind":"formula","narrowings":[],"params":[{"name":"yaw_tolerance","unit":"degree_per_second"},{"name":"speed_tolerance","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	drv_motion_at_rest,kin_yaw_rate
+READS	kin_speed,kin_yaw_rate
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"not":{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tolerance"}}},{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_yaw_rate"},"rhs":{"neg":{"param":"yaw_tolerance"}}}]}
+WITNESS	holds	drv.motion.turning_right@w
+WITNESS	fails	drv.motion.turning_right@w
+WITNESS	blind	drv.motion.turning_right@w
+OCC	a
+OCC	a
+INST	drv.motion.turning_right@w	ok
+TIME	checks	4
+TIME	lint	7
+SCEN	holds	drv.motion.turning_right@w	compliant	compliant	ok
+TIME	scenario:drv.motion.turning_right@w/holds	7
+SCEN	fails	drv.motion.turning_right@w	violated	violated	ok
+TIME	scenario:drv.motion.turning_right@w/fails	5
+SCEN	blind	drv.motion.turning_right@w	unknown	unknown	ok
+TIME	scenario:drv.motion.turning_right@w/blind	8
+TIME	witnesses	20
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.turning_right.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.turning_right.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.turning_right.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	drv.motion.turning_right@w	2	2
+TIME	adequacy_start	17
+TIME	adequacy	28
+DONE

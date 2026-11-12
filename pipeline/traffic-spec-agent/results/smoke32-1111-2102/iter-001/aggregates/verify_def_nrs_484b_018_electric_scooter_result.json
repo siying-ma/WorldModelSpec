@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484B-018::electric_scooter\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The nested definition of vehicle excepts devices moved by human power, matching this class's human-powered contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The bus contract supplies neither a minimum weight nor a prohibition on handlebars, so the posted requirements do not establish class-wide exclusion.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The child contract permits wheelchair users, and a qualifying motorized wheelchair need not satisfy the quoted scooter contract.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Commercial licensing can satisfy this contract without establishing that every qualifying handlebar electric vehicle carries the proposed scooter class.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The nested definition of vehicle expressly excepts electric bicycles, so the posted words decide this class rather than leave it unresolved.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The supplied nested definition of vehicle expressly excepts 'An electric scooter,' providing a directly applicable exception to the proposed inclusion.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Emergency designation and the cited physical features do not establish that every qualifying member satisfies the quoted scooter contract.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The fire-fighting vehicle contract states no minimum weight or incompatible physical feature that establishes the proposed exclusion.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The posted moped definition expressly states that the term does not include an electric scooter.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract establishes no minimum weight and does not rule out qualifying self-propelled devices outside its separately classified powered-two-wheeler exclusion.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Riding astride is compatible with a seated position, and the contract supplies no weight, speed or propulsion restriction that establishes exclusion.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official road service and the cited physical features do not ensure that every qualifying member carries the proposed scooter class.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The pedestrian contract includes motorized-wheelchair users, whose qualifying devices need not satisfy the quoted scooter contract.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The pedestrian and assistance conditions do not establish that every qualifying device used by such a pedestrian carries the proposed scooter class.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract establishes neither a weight above 100 pounds nor the exclusive stationary-rail use required by the nested vehicle exception.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Designation and markings for carrying schoolchildren establish no minimum weight or other incompatibility with the posted physical requirements.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Passenger-for-hire use and identifying markings establish neither excessive weight nor an incompatibility with handlebars and electric propulsion.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract specifies service, form and livery but no minimum weight or other feature that establishes class-wide exclusion.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract includes combinations, and the quoted propulsion alternatives do not rule out a qualifying electrically propelled combination.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Public transit service and identifying displays establish no minimum weight or prohibition on the other required physical features.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A body built to carry goods establishes no minimum weight or incompatibility with the specified handlebars, riding position and electric propulsion.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 196628,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 4867,
+   "input_tokens_details": {
+    "cache_write_tokens": 4864,
+    "cached_tokens": 0
+   },
+   "output_tokens": 8667,
+   "output_tokens_details": {
+    "reasoning_tokens": 7550
+   },
+   "total_tokens": 13534
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_0ecbc543d36bb0db016af5466f414487d08c45a7b074f3edcd",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 397801,
+  "stop_reason": "end_turn",
+  "session_id": "0f6b80ef-1dc9-4d19-a25c-2d12c44076a1",
+  "total_cost_usd": 2.4719392,
+  "usage": {
+   "input_tokens": 24,
+   "cache_creation_input_tokens": 166475,
+   "cache_read_input_tokens": 1366039,
+   "output_tokens": 43118,
+   "output_tokens_details": {
+    "thinking_tokens": 30022
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 166475,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 965,
+     "cache_read_input_tokens": 169364,
+     "cache_creation_input_tokens": 1549,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1549
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 44579,
+    "outputTokens": 35,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044754,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 43118,
+    "cacheReadInputTokens": 1366039,
+    "cacheCreationInputTokens": 166475,
+    "webSearchRequests": 0,
+    "costUSD": 2.4674638,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 30022,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01PWKdo7KhzfpcvYqFND6Ump",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke32-1111-2102 --node_id NRS_484B_250_4_o1 --help 2>&1 | head -0; true",
+     "description": "(no-op placeholder avoided)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 16,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for NRS_484B_250_4_o1 on the second of the 6 allowed runs. All 10 witnesses gave their expected verdicts.\n\n**Gate runs**\n1. **VACUOUS**: the \"signal head governs the intersection itself\" case was never tested, because every scene had the head governing lane c. The rule was right, so I only added a witness (`branch_5`, expected violated) where the inoperative head governs the intersection.\n2. **OK**.\n\n**How the rule reads the law**\n- **Entry into the intersection:** ego's footprint overlaps the intersection now but did not at the observation before. At that earlier observation it was on a carrier whose entrance end is that intersection.\n- **Signal condition:** at the entry, at least one signal head governs that carrier or the intersection, and every such head is inoperative.\n- **Where ego must stop:** the stop line marking the carrier. If none marks it, the crosswalk marking it, with ego's body not over the crosswalk. If neither, the edge of the intersection, outside it. A halt counts when ego is at rest on the carrier, within the stop-point tolerance of that place and not past it.\n- **How far back the halt is looked for:** the rule searches back from the entry. The search stops at the last time ego was upstream outside the stopping zone, or at ego's previous entry into the intersection. If neither is in the recording, the verdict is unknown.\n- **Ego entering through several carriers at once:** the verdict is unknown when it differs between them. This follows the contract that a rule never picks the carrier that favours the road user.\n\n**Choices the law left open:** a reference point exactly on the stop line counts as not past it. Where more than one stop line or crosswalk marks the carrier, a halt at any of them counts. Neither choice is narrower than the law's words, so I declared no narrowings.\n\n**Witnesses:** besides the seven the plan required, I added `branch_3` (no marking, ego doesn't stop: violated), `branch_4` (halt short of the crosswalk: compliant) and `branch_5` (signal governing the intersection itself: violated). Ego's occupancy is computed from its whole body, so a body spanning two regions occupies both.\n\nBefore the first gate run I accidentally sent a second shell command (the gate with `--help`). The permission layer blocked it, so it never ran and used no gate run.\n\nFiles are in `/local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent`:\n- `library/TrafficSpec/Rules/NRS_484B/NRS_484B_250_4_o1.lean`\n- `library/TrafficSpecWitness/NRS_484B/NRS_484B_250_4_o1.lean`\n- `results/smoke32-1111-2102/iter-001/code/NRS_484B_250_4_o1/task_result.md`",
+  "ttft_ms": 9016,
+  "type": "result",
+  "duration_ms": 467140,
+  "uuid": "5609e430-c5a4-4a06-90a2-ffa5ae2d9afb",
+  "ttft_stream_ms": 669,
+  "time_to_request_ms": 64,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 14,
+  "time_to_request_cpu_ms": 104,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 6,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 669,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 44579,
+    "outputTokens": 35,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0044754,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 24,
+    "outputTokens": 43118,
+    "cacheReadInputTokens": 1366039,
+    "cacheCreationInputTokens": 166475,
+    "webSearchRequests": 0,
+    "costUSD": 2.4674638,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 30022,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

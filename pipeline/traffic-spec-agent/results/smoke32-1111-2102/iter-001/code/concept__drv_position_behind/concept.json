@@ -1,0 +1,73 @@
+{
+ "concept_id": "drv.position.behind",
+ "kind": "formula",
+ "contract": "Road user a is behind road user b at an observation: their headings are aligned and b's body lies wholly ahead of a's along a's heading. Measured as headings aligned (rel.same_direction with the alignment tolerance, the cosine of the largest angle between the headings counted as aligned), the bearing of b from a (rel.bearing) pointing forward in a's frame, and the two footprints' projections on a's heading sharing no length (rel.longitudinal_overlap below zero). Either road user may be at rest. Not a stand-in for following in the same lane: b may travel in another lane.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "alignment",
+   "unit": "ratio",
+   "meaning": "the cosine of the largest angle between the two headings counted as aligned"
+  }
+ ],
+ "elements": [
+  {
+   "span": "headings aligned (rel.same_direction with the alignment tolerance, the cosine of the largest angle between the headings counted as aligned)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: 'headings aligned: the cosine of the angle between the headings is above its tolerance'."
+  },
+  {
+   "span": "the bearing of b from a (rel.bearing) pointing forward in a's frame",
+   "atoms": [
+    "rel.bearing"
+   ],
+   "concepts": [],
+   "justification": "rel.bearing: 'direction of b from a in a's frame (for ... \"immediately to the rear\")'; a forward component tells ahead from behind, which the overlap alone does not."
+  },
+  {
+   "span": "the two footprints' projections on a's heading sharing no length (rel.longitudinal_overlap below zero)",
+   "atoms": [
+    "rel.longitudinal_overlap"
+   ],
+   "concepts": [],
+   "justification": "rel.longitudinal_overlap: 'the length the two footprints' projections on that axis share, negative for the gap between the projections'; it is a projection, so it is used for 'wholly ahead' and never as a distance or a contact. rel.ahead_behind_in_lane is not read, since it holds only within one lane."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a travels in the left lane with a gap between its front and the rear of b, which is at rest in the right lane, headings aligned."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a is alongside b: their projections on a's heading share a length."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares rel.longitudinal_overlap absent.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_30_030"
+ ]
+}

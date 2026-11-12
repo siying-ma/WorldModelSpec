@@ -1,0 +1,80 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.heading",
+   "kin.velocity"
+  ],
+  "refs": [],
+  "canonical_body": "{\"cmp\":\"lt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]}]},\"rhs\":{\"neg\":{\"param\":\"$p0\"}}}",
+  "body_json": {
+   "cmp": "lt",
+   "lhs": {
+    "add": [
+     {
+      "mul": [
+       {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "lit": "x"
+         }
+        ],
+        "measure": "kin_velocity"
+       },
+       {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "lit": "x"
+         }
+        ],
+        "measure": "kin_heading"
+       }
+      ]
+     },
+     {
+      "mul": [
+       {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "lit": "y"
+         }
+        ],
+        "measure": "kin_velocity"
+       },
+       {
+        "args": [
+         {
+          "var": "a"
+         },
+         {
+          "lit": "y"
+         }
+        ],
+        "measure": "kin_heading"
+       }
+      ]
+     }
+    ]
+   },
+   "rhs": {
+    "neg": {
+     "param": "motion_tolerance"
+    }
+   }
+  },
+  "context": "771e55d44881f7f1acbbee74",
+  "candidate_digest": "4919c0fad8babe02495cc6ec636ee61092ac442cf38ad082de7a1e7229f9b78d"
+ }
+}

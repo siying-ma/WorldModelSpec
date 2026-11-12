@@ -1,0 +1,298 @@
+{
+ "node_id": "NRS_484B_257_1_o1",
+ "law_refs": [
+  "NRS-484B-257-1"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "g1",
+   "text": "Except when traffic is being controlled by a police officer or a traffic-control signal:",
+   "role": "exception"
+  },
+  {
+   "id": "g2",
+   "text": "When proper signs have been erected,",
+   "role": "condition"
+  },
+  {
+   "id": "g3",
+   "text": "the driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "g4",
+   "text": "shall stop or yield",
+   "role": "obligation"
+  },
+  {
+   "id": "g5",
+   "text": "at a clearly marked stop line",
+   "role": "condition"
+  },
+  {
+   "id": "g6",
+   "text": "or, if there is none, before entering the crosswalk on the near side of the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "g7",
+   "text": "or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "condition"
+  },
+  {
+   "id": "g8",
+   "text": "After having stopped or, in the event of a yield sign, slowed or stopped,",
+   "role": "sibling"
+  },
+  {
+   "id": "g9",
+   "text": "the driver",
+   "role": "sibling"
+  },
+  {
+   "id": "g10",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "g11",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "g12",
+   "text": "to other vehicles which have entered the intersection from such through highway",
+   "role": "sibling"
+  },
+  {
+   "id": "g13",
+   "text": "or which are approaching so closely on such through highway as to constitute an immediate hazard",
+   "role": "sibling"
+  },
+  {
+   "id": "g14",
+   "text": "during the time such driver is moving across or within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "g1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "dev.human_direction",
+    "dev.traffic_signal",
+    "dev.governs",
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "\"traffic\": the admitted aggregate DEF-NRS-484A-285::traffic, of which ego, a vehicle using the highway, is a member. \"being controlled by a police officer\": a dev.human_direction of role police_officer ('a person directing traffic and the direction given'; DEF-NRS-484A-180 'every officer authorized to direct or regulate traffic') governing (dev.governs) ego's approach carrier c or the intersection i at ego's entry. \"or a traffic-control signal\": a dev.traffic_signal head governing c or i that is not inoperative (dev.inoperative, 'showing no valid indication', does not hold) at the entry: a dark head controls no traffic."
+  },
+  {
+   "span": "g2",
+   "atoms": [
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "\"proper signs\": a stop sign (dev.stop_sign, 'regulatory sign requiring a full halt') or a yield sign (dev.yield_sign, 'regulatory sign requiring yielding without a mandatory halt') governing (dev.governs) ego's approach carrier c, whose entrance end is the intersection i (st.lane_enters); \"proper\" and \"erected\" are the signs' legal status, read through their presence (status reading). A sign is not a signal."
+  },
+  {
+   "span": "g3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle; \"the driver\" read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "g4",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [
+    "drv.motion.at_rest",
+    "drv.motion.decelerating"
+   ],
+   "justification": "\"stop\": a stop when required, DEF-NRS-484A-255 \"complete cessation from movement\" (DEF-NRS-484A-260 governs a stop 'when prohibited'): drv.motion.at_rest, owed under a stop sign. \"yield\" at the place, under a yield sign alone: the line's own later words state what it is, \"in the event of a yield sign, slowed or stopped\": at rest at the place, or slowed, read as ego decelerating (drv.motion.decelerating, its acceleration along its heading below the negative tolerance) at some observation within the distance window p.yield_slowing_distance travelled before it is within the place's stopping zone, a .path window that reads kin.path_length."
+  },
+  {
+   "span": "g5",
+   "atoms": [
+    "st.stop_line",
+    "st.entrance_of",
+    "st.region_geometry",
+    "st.lane_direction",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "st.stop_line, 'the transverse line marking where vehicles halt for a device', tied to ego's approach carrier c by st.entrance_of, never by distance. \"at\" the line: ego's body within p.stop_point_tolerance of it (st.region_geometry) and not past it, side read along c's designated direction (st.lane_direction, prim.region_offset_along). \"clearly marked\": the represented line is read as the clearly marked one (status reading)."
+  },
+  {
+   "span": "g6",
+   "atoms": [
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.lane_direction",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "\"if there is none\": the source's list of stop lines marking c is complete and none marks it. \"the crosswalk on the near side\": the st.crosswalk marking c (st.entrance_of). \"before entering\": ego halts short of it with its footprint not overlapping it (rel.occupies false), within p.stop_point_tolerance outside it (st.region_geometry), side read along c (st.lane_direction, prim.region_offset_along)."
+  },
+  {
+   "span": "g7",
+   "atoms": [
+    "st.intersection",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.lane_enters"
+   ],
+   "derived": [],
+   "justification": "\"if there is none\": neither a stop line nor a crosswalk marks c (lists complete). \"then at the point nearest the intersection\": c's entrance end at i (st.lane_enters); the act counts there where ego's footprint does not overlap i (rel.occupies false) and its body lies within p.stop_point_tolerance of i (st.region_geometry). \"where the driver has a view of approaching traffic on the through highway\": a perception, read through the place it secures (perception reading)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (driven: agency reading) and the judged observation is an entry of ego into an intersection i (its footprint overlaps i and did not at the observation before, when it occupied a carrier c whose entrance end is i; st.lane_enters) where a stop sign or a yield sign governs c (dev.stop_sign, dev.yield_sign, dev.governs); not where, at that entry, a police officer directs (dev.human_direction role police_officer governing c or i) or a traffic signal head governing c or i is not inoperative (dev.traffic_signal, dev.inoperative).",
+ "obligation": "Event and target: the entry of ego into i through c. Place: the stop line marking c (st.stop_line, st.entrance_of) where one is recorded; else, where the source's list for c is complete and no stop line marks it, the crosswalk marking c, the act there being short of it with ego's footprint not overlapping it; else the entrance end of c at i, outside i. Act: where a stop sign governs c, a halt, ego at rest (drv.motion.at_rest, p.rest_speed_tolerance) on c with its body within p.stop_point_tolerance of the place (st.region_geometry) and not past it, side read along c's designated direction (st.lane_direction, sign of prim.region_offset_along); where only a yield sign governs c, that halt, or an observation at which ego, on c, is within the place's stopping zone and not past the place and had decelerated (drv.motion.decelerating, p.decel_tolerance, p.rest_speed_tolerance) at some observation of the .path window of length p.yield_slowing_distance behind it. Search: from the entry back to the approach start, the last observation before the entry at which ego, on a carrier the place marks, is outside the place's stopping zone upstream (off the place, short of it along c's direction and farther from it than p.stop_point_tolerance), or back to ego's previous entry into i, whichever comes first; nothing else ends it, not the start of the recording, not ego's first observation, not a distance travelled. Only an observed exit from the stopping zone upstream begins a new approach; crossing the place, a lateral move, a change of carrier within the same entry or a reverse within the zone does not, and none loses an act already done. Verdict: compliant where the search finds the act; violated where it reaches the approach start or the previous entry without it; unknown where it reaches neither (the approach began before the recording), where whether the entry occurred is unknown, where which place governs turns on an unobserved association or an incomplete list, or where the sign's governance of c is unobserved.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.decel_tolerance",
+  "p.yield_slowing_distance"
+ ],
+ "narrowings": [
+  {
+   "span": "g3",
+   "why": "'the driver' is read through ego's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "g2",
+   "why": "'proper' and 'erected' are read through the presence of the stop or yield sign governing ego's approach.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "g5",
+   "why": "'clearly marked' is read through the presence of the represented stop line; the paint's clarity is not modelled.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "g7",
+   "why": "'where the driver has a view of approaching traffic on the through highway' is read through the place it secures: the entrance end of ego's approach carrier, outside the intersection.",
+   "kind": "observable_reading",
+   "category": "perception"
+  },
+  {
+   "span": "g4",
+   "why": "'yield' at the place under a yield sign is read as the line's own words state it, 'slowed or stopped'; 'slowed' is read as a deceleration within a distance window before the stopping zone, not as a reduction to any particular speed.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "A stop sign governs ego's approach lane c and a stop line marks c; no officer and no signal. Ego approaches from beyond the stopping zone and enters the intersection without being at rest at any observation since the approach start."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego comes to rest within p.stop_point_tolerance of the line, short of it, then enters."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No stop sign or yield sign governs ego's approach; ego enters an intersection whose approaches carry no signs."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares dev.governs absent: whether the stop sign governs ego's approach cannot be read.",
+   "masked": [
+    "dev.governs"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "Stop sign governs c, stop line marks c. The recording begins with ego already within the stopping zone of the line moving slowly; ego enters without being at rest at any recorded observation; the approach start precedes the recording and no previous entry is recorded.",
+   "boundary": "the approach start: the observation at which ego, on c, was last outside the stop line's stopping zone upstream, which precedes the recording"
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Only a yield sign governs c. Ego decelerates on the approach within p.yield_slowing_distance before the stopping zone of the line and enters without stopping."
+  },
+  {
+   "name": "branch_2",
+   "expected": "not_applicable",
+   "narrative": "A stop sign governs c, but at ego's entry a police officer (dev.human_direction role police_officer) directs traffic at the intersection."
+  },
+  {
+   "name": "branch_3",
+   "expected": "violated",
+   "narrative": "Only a yield sign governs c. Ego keeps a constant speed from beyond the stopping zone into the intersection, never decelerating and never at rest."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Stop-point tolerance of the ontology's approach convention: the body-to-mark distance within which a halt counts as made at the mark, and beyond which the road user is outside the stopping zone.",
+   "source": "MUTCD (2009) Section 3B.16 stop line placement; positioning accuracy of stop-compliance studies."
+  },
+  {
+   "name": "p.decel_tolerance",
+   "unit": "m/s^2",
+   "value": 0.5,
+   "convention": "Longitudinal deceleration below which a sampled acceleration counts as none: above coasting and sensor noise, below deliberate braking.",
+   "source": "Naturalistic-driving braking-event detection practice (SHRP 2; 100-Car study)."
+  },
+  {
+   "name": "p.yield_slowing_distance",
+   "unit": "m",
+   "value": 30.0,
+   "convention": "Distance travelled before the stopping zone within which a slowing for a yield sign counts as made for that sign: the braking distance of an urban approach.",
+   "source": "AASHTO Green Book stopping sight distance at urban approach speeds."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

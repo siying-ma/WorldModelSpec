@@ -1,0 +1,262 @@
+{
+ "node_id": "NRS_484B_250_4_o1",
+ "law_refs": [
+  "NRS-484B-250-4"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "When a vehicle enters an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "a2",
+   "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered,",
+   "role": "condition"
+  },
+  {
+   "id": "a3",
+   "text": "but is inoperative at the time the vehicle enters the intersection,",
+   "role": "condition"
+  },
+  {
+   "id": "a4",
+   "text": "the driver of the vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop",
+   "role": "obligation"
+  },
+  {
+   "id": "a6",
+   "text": "at a clearly marked stop line",
+   "role": "condition"
+  },
+  {
+   "id": "a7",
+   "text": "or, if there is none, before entering the crosswalk on the near side of the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "a8",
+   "text": "or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "condition"
+  },
+  {
+   "id": "a9",
+   "text": "After making such a stop,",
+   "role": "sibling"
+  },
+  {
+   "id": "a10",
+   "text": "the driver",
+   "role": "sibling"
+  },
+  {
+   "id": "a11",
+   "text": "shall proceed cautiously,",
+   "role": "sibling"
+  },
+  {
+   "id": "a12",
+   "text": "yielding to vehicles",
+   "role": "sibling"
+  },
+  {
+   "id": "a13",
+   "text": "which have previously completed a stop or are within the intersection.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle. \"enters an intersection\": the observation at which ego's footprint comes to overlap (rel.occupies) an intersection i (st.intersection, 'the region where two roadways meet'), having occupied at the observation before, and not overlapping i, a carrier c (a travel region of a kind st.lane_enters admits) whose entrance end is i (st.lane_enters, 'the intersection region a directed approach carrier runs into at its entrance end'); never inferred from distance or heading."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "\"traffic-control signal\" (DEF-NRS-484A-290 'any official traffic-control device ... by which traffic is alternately directed to stop or proceed'): a dev.traffic_signal head, 'a signal head', not a pedestrian head, which is no vehicular signal. \"controlled by\": the head governs (dev.governs, 'the travel regions whose traffic the device controls ... or an intersection') the intersection i or ego's approach carrier c; dev.governs is not a position. \"installed and has its vehicular signals uncovered\": the head is present with its uncovered attribute ('uncovered attribute for an installed head whose faces are not covered'); its official status is read through its presence."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "dev.inoperative: 'a signal head installed and uncovered but showing no valid indication', exactly the words. \"at the time the vehicle enters\": read at the entry observation. The signal is inoperative where every head governing c or i is inoperative there, and at least one such head exists."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"the vehicle\": the same vehicle as a1 (admitted aggregate DEF-NRS-484A-320::vehicle); \"the driver\" read through its controlled motion (agency reading)."
+  },
+  {
+   "span": "a5",
+   "atoms": [],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"shall stop\": a stop when required, DEF-NRS-484A-255 \"complete cessation from movement\" (DEF-NRS-484A-260 governs a stop 'when prohibited' and does not apply to a required stop): drv.motion.at_rest. \"proceed as if a stop sign had been erected at each entrance\": ego owes at its own entrance what a stop-sign approach owes, the halt this node judges at the place a6-a8 name and the yield its sibling NRS_484B_250_4_o2 judges; the signs at the other entrances bind the other vehicles, each judged as its own subject."
+  },
+  {
+   "span": "a6",
+   "atoms": [
+    "st.stop_line",
+    "st.entrance_of",
+    "st.region_geometry",
+    "st.lane_direction",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "st.stop_line, 'the transverse line marking where vehicles halt for a device', tied to ego's approach carrier c by st.entrance_of ('the carrier whose entrance into an intersection a stop line or a crosswalk marks'), never by distance. \"at\" the line: ego's body within p.stop_point_tolerance of it (st.region_geometry distance) and not past it, the side read along c's designated direction (st.lane_direction, sign of prim.region_offset_along), as the ontology's approach convention states. \"clearly marked\": the represented line is read as the clearly marked one (status reading)."
+  },
+  {
+   "span": "a7",
+   "atoms": [
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.lane_direction",
+    "prim.region_offset_along"
+   ],
+   "derived": [],
+   "justification": "\"if there is none\": the source's list of stop lines marking c is complete and none marks it. \"the crosswalk on the near side\": the st.crosswalk marking c (st.entrance_of), the crossing ego reaches first. \"before entering\": ego halts short of it with its footprint not overlapping it (rel.occupies false), within p.stop_point_tolerance outside it (st.region_geometry), side read along c (st.lane_direction, prim.region_offset_along)."
+  },
+  {
+   "span": "a8",
+   "atoms": [
+    "st.intersection",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.lane_enters"
+   ],
+   "derived": [],
+   "justification": "\"if there is none\": neither a stop line nor a crosswalk marks c (lists complete). \"the point nearest the intersection\": c's entrance end at i (st.lane_enters); the halt counts there where ego's footprint does not overlap i (rel.occupies false) and its body lies within p.stop_point_tolerance of i (st.region_geometry). \"where the driver has a view of approaching traffic on the through highway\": a perception, read through the place it secures (perception reading): the point nearest the intersection is its edge, from which the view of the crossing way is widest."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (driven: agency reading) and the judged observation is an entry of ego into an intersection i: ego's footprint overlaps i (rel.occupies, st.intersection) and at the observation before it did not, and occupied a carrier c whose entrance end is i (st.lane_enters); at that entry at least one traffic signal head (dev.traffic_signal) governs c or i (dev.governs) and every such head is inoperative (dev.inoperative).",
+ "obligation": "Event and target: the entry of ego into i through c described in the applicability. Place: the stop line marking c (st.stop_line, st.entrance_of) where one is recorded; else, where the source's list for c is complete and no stop line marks it, the crosswalk marking c (st.crosswalk, st.entrance_of), a halt there being short of it with ego's footprint not overlapping it; else the entrance end of c at i, a halt there being outside i. A halt counts at the place where ego is at rest (drv.motion.at_rest, p.rest_speed_tolerance) on c with its body within p.stop_point_tolerance of the place (st.region_geometry) and not past it, the side read along c's designated direction (st.lane_direction, sign of prim.region_offset_along). Search: from the entry back to the approach start, the last observation before the entry at which ego, on a carrier the place marks, is outside the place's stopping zone upstream (off the place, short of it along c's direction and farther from it than p.stop_point_tolerance), or back to ego's previous entry into i, whichever comes first; nothing else ends it, not the start of the recording, not ego's first observation, not a distance travelled. Only an observed exit from the stopping zone upstream begins a new approach; crossing the place, a lateral move, a change of carrier within the same entry or a reverse within the zone does not, and none loses a halt already made. Verdict: compliant where the search finds such a halt; violated where it reaches the approach start or the previous entry without one; unknown where it reaches neither (the approach began before the recording), where whether the entry occurred is unknown (no observation of ego before it, ego on no mapped carrier, or c's association with the place unobserved), where which place governs turns on an unobserved association or an incomplete list, or where the signal's state at the entry is unobserved.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.stop_point_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "a4",
+   "why": "'the driver' is read through ego's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a6",
+   "why": "'clearly marked' is read through the presence of the represented stop line; the paint's clarity is not modelled and the reading relaxes no choice of place.",
+   "kind": "observable_reading",
+   "category": "status"
+  },
+  {
+   "span": "a8",
+   "why": "'where the driver has a view of approaching traffic on the through highway' is read through the place it secures: the point nearest the intersection, the entrance end of ego's approach carrier, outside the intersection.",
+   "kind": "observable_reading",
+   "category": "perception"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The single traffic signal head governing ego's approach lane c is installed, uncovered and inoperative; a stop line marks c. Ego approaches from beyond the stopping zone and enters the intersection without being at rest at any observation since the approach start."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego comes to rest within p.stop_point_tolerance of the stop line, short of it, then enters."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The signal governing c shows circular_green when ego enters; it is not inoperative."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares dev.inoperative absent: whether the signal is inoperative at the entry cannot be read.",
+   "masked": [
+    "dev.inoperative"
+   ]
+  },
+  {
+   "name": "history_boundary",
+   "expected": "unknown",
+   "narrative": "Signal inoperative; a stop line marks c. The recording begins with ego already within the stopping zone of the line moving slowly; ego enters without being at rest at any recorded observation. The approach start lies before the recording and no previous entry is recorded.",
+   "boundary": "the approach start: the observation at which ego, on c, was last outside the stop line's stopping zone upstream, which precedes the recording"
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "No stop line marks c (list complete); a crosswalk marks c. Ego comes to rest with its footprint overlapping the crosswalk, then enters; it was at rest nowhere short of the crosswalk."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Neither a stop line nor a crosswalk marks c (lists complete). Ego comes to rest outside the intersection within p.stop_point_tolerance of its edge, then enters."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Stop-point tolerance of the ontology's approach convention: the body-to-mark distance within which a halt counts as made at the mark, and beyond which the road user is outside the stopping zone.",
+   "source": "MUTCD (2009) Section 3B.16 stop line placement; positioning accuracy of stop-compliance studies."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

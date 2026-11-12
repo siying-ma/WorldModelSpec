@@ -1,0 +1,52 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 2 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.yaw_rate"
+  ],
+  "refs": [
+   "drv.motion.at_rest"
+  ],
+  "canonical_body": "{\"and\":[{\"not\":{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p1\"}}},{\"cmp\":\"ge\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_yaw_rate\"},\"rhs\":{\"param\":\"$p0\"}}]}",
+  "body_json": {
+   "and": [
+    {
+     "not": {
+      "cmp": "le",
+      "lhs": {
+       "args": [
+        {
+         "var": "a"
+        }
+       ],
+       "measure": "kin_speed"
+      },
+      "rhs": {
+       "param": "speed_tolerance"
+      }
+     }
+    },
+    {
+     "cmp": "ge",
+     "lhs": {
+      "args": [
+       {
+        "var": "a"
+       }
+      ],
+      "measure": "kin_yaw_rate"
+     },
+     "rhs": {
+      "param": "yaw_tolerance"
+     }
+    }
+   ]
+  },
+  "context": "7fcdac09c5110db523bdb673",
+  "candidate_digest": "f8106358f8b92cb03a639a5169745a95bd054f0350d31967b66360a808ab6731"
+ }
+}

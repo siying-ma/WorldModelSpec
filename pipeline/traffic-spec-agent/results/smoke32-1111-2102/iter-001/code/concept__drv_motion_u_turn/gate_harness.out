@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"and":[{"cmp":"ge","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"min_angle"}},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"max_angle"}}]},"contract":"Road user a makes a U-turn: \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\". Observed as a heading change within the window behind the observation, to either hand, whose magnitude lies within the reversal band: from the lower bound, at or beyond which the road user's direction counts as reversed, up to the upper bound, beyond which it has turned past the opposite direction. Measured as the magnitude of the signed heading change over the window (prim.heading_change, degrees). The window admits a turn made in several movements, forward and reverse. The act is recognized at the observation at which the magnitude first reaches the lower bound. Its observed beginning lies within the window behind that observation. The concept holds at every observation at which the magnitude lies within the band, and ends where it leaves the band. It is unknown where the window reaches past the start of the recording or a yaw rate in it is missing. Not a stand-in for backing: a reversal of travel without a change of heading is no U-turn.","definition":"DEF-NRS-484B-077","id":"drv.motion.u_turn","kind":"formula","narrowings":[],"params":[{"name":"window","unit":"second"},{"name":"min_angle","unit":"degree"},{"name":"max_angle","unit":"degree"}],"residues":["The place of the turn is read by the calling rule, which binds the region.","The class of the road user is the calling rule's: a is whatever road user it passes."],"supersedes":null}
+ATOMS	prim_heading_change
+READS	prim_heading_change
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"ge","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"min_angle"}},{"cmp":"le","lhs":{"abs":{"args":[{"var":"a"}],"params":[{"param":"window"}],"quantity":"prim_heading_change"}},"rhs":{"param":"max_angle"}}]}
+WITNESS	holds	drv.motion.u_turn@w
+WITNESS	fails	drv.motion.u_turn@w
+WITNESS	blind	drv.motion.u_turn@w
+OCC	a
+OCC	a
+INST	drv.motion.u_turn@w	ok
+TIME	checks	2
+TIME	lint	13
+SCEN	holds	drv.motion.u_turn@w	compliant	compliant	ok
+TIME	scenario:drv.motion.u_turn@w/holds	46
+SCEN	fails	drv.motion.u_turn@w	violated	violated	ok
+TIME	scenario:drv.motion.u_turn@w/fails	26
+SCEN	blind	drv.motion.u_turn@w	unknown	unknown	ok
+TIME	scenario:drv.motion.u_turn@w/blind	42
+TIME	witnesses	114
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.u_turn.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.u_turn.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.u_turn@w	2	2
+TIME	adequacy_start	5
+TIME	adequacy	240
+DONE

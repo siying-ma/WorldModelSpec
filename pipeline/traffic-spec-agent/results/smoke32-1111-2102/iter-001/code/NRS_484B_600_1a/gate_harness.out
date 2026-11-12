@@ -1,0 +1,79 @@
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["ego"],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"u4","why":"The place at which st.sight_distance and st.curvature are read is each lane ego occupies (st.lane, rel.occupies), the regions the width clause selects; no other region of ego's place is read."}],"operationalizations":[{"concepts":["drv.motion.stopping_distance","env.ice_or_snow","env.precipitation","env.visibility","env.wet_road","kin.speed","rel.ahead_behind_in_lane","rel.occupies","rel.surface_gap","st.curvature","st.lane","st.lane_width","st.sight_distance"],"params":["p.perception_reaction_time","p.stopping_decel_dry","p.stopping_decel_wet","p.stopping_decel_ice","p.curve_lateral_accel","p.lane_width_speed_time"],"standard":"a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"ego"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"ego"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"u4","why":"The place at which st.sight_distance and st.curvature are read is each lane ego occupies (st.lane, rel.occupies), the regions the width clause selects; no other region of ego's place is read."}],"obligation":{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_ice"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[],"measure":"env_visibility"}},{"and":[{"body":{"implies":[{"args":[{"var":"ego"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_dry"}],"quantity":"drv_motion_stopping_distance"},"then":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_wet"}],"quantity":"drv_motion_stopping_distance"}},"then":{"args":[{"var":"ego"}],"params":[{"param":"p.perception_reaction_time"},{"param":"p.stopping_decel_ice"}],"quantity":"drv_motion_stopping_distance"}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"param":"p.curve_lateral_accel"}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.lane_width_speed_time"}]},"rhs":{"args":[{"var":"l"}],"measure":"st_lane_width"}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"ego"}]}},{"args":[{"var":"u"},{"var":"ego"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"ge","lhs":{"args":[{"var":"ego"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]}}]},"forall_user":"u"}]}]},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"ego"},{"lit":"DEF-NRS-484A-320::vehicle"}],"atom":"ru_aggregate","params":[]},"name":"ego"}],"id":"NRS_484B_600_1a","intentions":[],"laws":["NRS-484B-600-1a"],"narrowings":[{"kind":"reading","span":"u4","why":"The place at which st.sight_distance and st.curvature are read is each lane ego occupies (st.lane, rel.occupies), the regions the width clause selects; no other region of ego's place is read."}],"obligation":{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_ice"}]}]}]}},"rhs":{"args":[],"measure":"env_visibility"}},{"and":[{"body":{"implies":[{"args":[{"var":"ego"},{"var":"l"}],"atom":"rel_occupies","params":[]},{"and":[{"cmp":"le","lhs":{"cond":{"args":[],"atom":"env_ice_or_snow","params":[]},"else":{"cond":{"or":[{"args":[],"atom":"env_wet_road","params":[]},{"args":[],"atom":"env_precipitation","params":[]}]},"else":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_dry"}]}]}]},"then":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_wet"}]}]}]}},"then":{"add":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]},{"div":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"mul":[{"lit":{"den":1,"num":2},"unit":"count"},{"param":"p.stopping_decel_ice"}]}]}]}},"rhs":{"args":[{"var":"l"}],"measure":"st_sight_distance"}},{"and":[{"cmp":"le","lhs":{"mul":[{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"args":[{"var":"ego"}],"measure":"kin_speed"}]},{"args":[{"var":"l"}],"measure":"st_curvature"}]},"rhs":{"param":"p.curve_lateral_accel"}},{"cmp":"le","lhs":{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.lane_width_speed_time"}]},"rhs":{"args":[{"var":"l"}],"measure":"st_lane_width"}}]}]}]},"forall_region":{"lit":"lane"},"var":"l"},{"body":{"implies":[{"and":[{"not":{"same":[{"var":"u"},{"var":"ego"}]}},{"args":[{"var":"u"},{"var":"ego"}],"atom":"rel_ahead_behind_in_lane","params":[]}]},{"cmp":"ge","lhs":{"args":[{"var":"ego"},{"var":"u"}],"measure":"rel_surface_gap"},"rhs":{"mul":[{"args":[{"var":"ego"}],"measure":"kin_speed"},{"param":"p.perception_reaction_time"}]}}]},"forall_user":"u"}]}]},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,env_ice_or_snow,drv_motion_stopping_distance,env_wet_road,env_precipitation,env_visibility,st_lane,rel_occupies,st_sight_distance,kin_speed,st_curvature,st_lane_width,rel_ahead_behind_in_lane,rel_surface_gap
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-320::vehicle
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	st.sight_distance
+MANIFEST	branch_1	
+MANIFEST	branch_2	
+MANIFEST	branch_3	
+MANIFEST	branch_4	
+MANIFEST	branch_5	
+MANIFEST	branch_6	
+MANIFEST	branch_7	
+OCC	ego
+OCC	
+OCC	ego
+OCC	
+OCC	
+OCC	ego
+OCC	ego
+OCC	
+OCC	?l
+OCC	ego,l
+OCC	
+OCC	ego
+OCC	
+OCC	
+OCC	ego
+OCC	ego
+OCC	l
+OCC	ego
+OCC	ego
+OCC	l
+OCC	ego
+OCC	l
+OCC	?u
+OCC	u,ego
+OCC	u,ego
+OCC	ego,u
+OCC	ego
+TIME	occurrences	0
+TIME	checks	7
+TIME	lint	28
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	11
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	18
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	11
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	19
+SCEN	branch_1	violated	violated	ok
+TIME	scenario:branch_1	10
+SCEN	branch_2	violated	violated	ok
+TIME	scenario:branch_2	11
+SCEN	branch_3	compliant	compliant	ok
+TIME	scenario:branch_3	11
+SCEN	branch_4	violated	violated	ok
+TIME	scenario:branch_4	11
+SCEN	branch_5	violated	violated	ok
+TIME	scenario:branch_5	12
+SCEN	branch_6	violated	violated	ok
+TIME	scenario:branch_6	11
+SCEN	branch_7	violated	violated	ok
+TIME	scenario:branch_7	14
+TIME	witnesses	139
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_600_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_600_1a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_600_1a	7	10
+TIME	adequacy_start	7
+TIME	adequacy	590
+DONE

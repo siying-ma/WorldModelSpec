@@ -1,0 +1,4 @@
+Arguments: `a` (a track), `r` (a region).
+Parameters (bounds the caller sets): `reach` in m.
+It holds at an observation exactly when:
+the measured `st_region_geometry_distance` of `a`, `r` [the reference point and the boundary polygon of a structure region in the world frame, and the ground distance from a road user's body outline to it (zero when they overlap); a source that maps regions without their outline declares it absent, and every such distance is then unknown **Not a stand-in for:** occupancy — a footprint inside a boundary is `rel.occupies`, which a source may observe without geometry] is at most `reach` (a parameter the caller sets)

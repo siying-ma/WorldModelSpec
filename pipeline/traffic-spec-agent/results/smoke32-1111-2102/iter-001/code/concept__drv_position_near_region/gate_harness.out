@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.position.near_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.near_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.near_region.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"r","sort":{"sort":"region"}}],"body":{"cmp":"le","lhs":{"args":[{"var":"a"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"reach"}},"contract":"Road user a is at region r at an observation: r lies within the reach of a's body, the distance within which a region counts as the place the road user is at. Measured as the ground distance from a's body outline to r (st.region_geometry, m; zero when they overlap) at or below the reach. Not a stand-in for occupancy: a body within the reach may lie wholly outside the region.","definition":null,"id":"drv.position.near_region","kind":"formula","narrowings":[],"params":[{"name":"reach","unit":"metre"}],"residues":[],"supersedes":null}
+ATOMS	st_region_geometry_distance
+READS	st_region_geometry_distance
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"args":[{"var":"a"},{"var":"r"}],"measure":"st_region_geometry_distance"},"rhs":{"param":"reach"}}
+WITNESS	holds	drv.position.near_region@w
+WITNESS	fails	drv.position.near_region@w
+WITNESS	blind	drv.position.near_region@w
+OCC	a,r
+INST	drv.position.near_region@w	ok
+TIME	checks	2
+TIME	lint	5
+SCEN	holds	drv.position.near_region@w	compliant	compliant	ok
+TIME	scenario:drv.position.near_region@w/holds	10
+SCEN	fails	drv.position.near_region@w	violated	violated	ok
+TIME	scenario:drv.position.near_region@w/fails	9
+SCEN	blind	drv.position.near_region@w	unknown	unknown	ok
+TIME	scenario:drv.position.near_region@w/blind	9
+TIME	witnesses	28
+DONE_WITNESSES
+'TrafficSpec.Concepts.position.near_region.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.near_region.instances' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.near_region.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.position.near_region@w	1	2
+TIME	adequacy_start	8
+TIME	adequacy	29
+DONE

@@ -1,0 +1,270 @@
+{
+ "node_id": "NRS_484B_227_1_o3",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "d2",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "d3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "sibling"
+  },
+  {
+   "id": "d4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "d5",
+   "text": "must not be driven over, across or within any dividing space, barrier or section",
+   "role": "sibling"
+  },
+  {
+   "id": "d6",
+   "text": "or make any left turn, semicircular turn or U-turn,",
+   "role": "obligation"
+  },
+  {
+   "id": "d7",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "d8",
+   "text": "or at a crossover or intersection established by a public authority.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"Every vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole through ru.aggregate."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "st.highway",
+    "st.median_or_divider",
+    "st.on_way",
+    "st.roadway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"divided highway\" (DEF-NRS-484A-070: \"a highway divided into two or more roadways by means of a physical barrier or dividing section\"): a highway h (st.highway) on which (st.on_way) a median or divider lies (st.median_or_divider). \"upon\": ego's footprint overlaps (rel.occupies) a roadway lying on h (st.roadway) or a median or divider of h. \"driven\": controlled motion (agency reading)."
+  },
+  {
+   "span": "d6",
+   "atoms": [],
+   "derived": [
+    "drv.motion.left_turn",
+    "drv.motion.u_turn"
+   ],
+   "justification": "\"left turn\": drv.motion.left_turn, a leftward heading change within the turn band over the window, not the turn indicator and not a declared intention. \"U-turn\": drv.motion.u_turn, whose contract quotes DEF-NRS-484B-077 \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\". \"semicircular turn\": a turn through a half circle reverses the direction of travel, the observable the U-turn concept recognizes, so it is read by drv.motion.u_turn. Alternative acts sharing one occasion."
+  },
+  {
+   "span": "d7",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"through an opening\": ego's footprint overlaps (rel.occupies) a median or divider of h whose opening attribute is set ('opening attribute where a crossover exists') at some moment of the turn: a turn made through an opening passes through it, it is not inside it throughout."
+  },
+  {
+   "span": "d8",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"a crossover\": a median or divider of h with the opening attribute; \"intersection\": ego's footprint overlaps (rel.occupies) an st.intersection lying on h at some moment of the turn. \"established by a public authority\": status read through the feature's presence."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle; driven: agency reading); at the judged observation ego's left turn (drv.motion.left_turn with p.turn_window, p.left_turn_min_angle, p.left_turn_max_angle) or U-turn (drv.motion.u_turn with p.turn_window, p.u_turn_min_angle, p.u_turn_max_angle) is recognized (the concept rises), and at some observation while it was under way ego's footprint overlapped (rel.occupies) a roadway (st.roadway) or a median or divider lying on a highway h on which a median or divider lies (st.on_way, st.highway, st.median_or_divider).",
+ "obligation": "Violated at that recognition unless, at some observation while the turn was under way, ego's footprint overlapped a median or divider of h with the opening attribute set, or an intersection lying on h (st.intersection, st.on_way); compliant where it did.",
+ "params": [
+  "p.turn_window",
+  "p.left_turn_min_angle",
+  "p.left_turn_max_angle",
+  "p.u_turn_min_angle",
+  "p.u_turn_max_angle",
+  "p.turn_yaw_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "d2",
+   "why": "'driven' is read through ego's controlled motion: a vehicle on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d8",
+   "why": "'established by a public authority' is read through the presence of the crossover or intersection on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ego, on the right-hand roadway of a divided highway, turns left across the solid median, where no opening exists, into a driveway on the far side; its left turn is recognized and at no moment of it did ego overlap an opening or an intersection."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Ego makes a left turn at an intersection of the divided highway; its footprint overlaps the intersection during the turn."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Ego makes a left turn from a two-way road whose highway carries no median or divider."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares kin.yaw_rate absent: whether ego turned cannot be read.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Ego reverses direction mid-block on a divided highway by a multi-point U-turn across the median where no opening exists."
+  },
+  {
+   "name": "occasion_d2",
+   "expected": "violated",
+   "narrative": "Ego is on a roadway of the divided highway during the first part of its left turn only, then crosses into a side driveway; at no moment of the turn did it overlap an opening or an intersection."
+  },
+  {
+   "name": "occasion_d2_outside",
+   "expected": "not_applicable",
+   "narrative": "Ego left the divided highway onto an undivided street before its turn began, then made a left turn there; during the turn it is on no region of a divided highway."
+  },
+  {
+   "name": "occasion_d7",
+   "expected": "compliant",
+   "narrative": "Ego makes a left turn across the median through an opening: during part of the turn its footprint overlaps the median region with the opening attribute set."
+  },
+  {
+   "name": "occasion_d7_outside",
+   "expected": "violated",
+   "narrative": "Ego passed through a median opening before its turn began; the turn itself crosses the median where no opening exists and no intersection lies."
+  },
+  {
+   "name": "occasion_d8",
+   "expected": "compliant",
+   "narrative": "Ego makes a U-turn whose middle part lies within an intersection of the divided highway."
+  },
+  {
+   "name": "occasion_d8_outside",
+   "expected": "violated",
+   "narrative": "Ego was in an intersection of the divided highway only before its U-turn began; it makes the U-turn mid-block across a median with no opening."
+  }
+ ],
+ "occasion": {
+  "act": [
+   "drv.motion.left_turn",
+   "drv.motion.u_turn"
+  ],
+  "boundary": "window",
+  "window": "p.turn_window",
+  "under_way": {
+   "words": "make any left turn, semicircular turn or U-turn",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "derived": [],
+   "justification": "Within the window behind the recognition, the turn is under way from the first observation at which the magnitude of ego's yaw rate (kin.yaw_rate) is at or above p.turn_yaw_tolerance to the recognition; before it ego's heading was not changing at that rate. This reads ego's motion, not a region it occupies."
+  },
+  "spans": {
+   "d2": "some_moment",
+   "d7": "some_moment",
+   "d8": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.turn_window",
+   "unit": "s",
+   "value": 15.0,
+   "convention": "Window within which a turn at a junction or across a median, including a U-turn made in several movements, is completed.",
+   "source": "Turning-movement durations in naturalistic intersection data (single turns of a few seconds; multi-point U-turns longer)."
+  },
+  {
+   "name": "p.left_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "Lower bound of a turn: a leftward heading change below it is a drift or lane change, not a turn onto another way.",
+   "source": "Turning-movement classification in trajectory datasets (inD, NGSIM intersection data)."
+  },
+  {
+   "name": "p.left_turn_max_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "Upper bound of a left turn, above which the direction of travel counts as reversed (a U-turn).",
+   "source": "Turning-movement classification in trajectory datasets (inD, NGSIM intersection data)."
+  },
+  {
+   "name": "p.u_turn_min_angle",
+   "unit": "deg",
+   "value": 150.0,
+   "convention": "Heading change at or beyond which the direction of travel counts as reversed.",
+   "source": "Turning-movement classification in trajectory datasets (inD, NGSIM intersection data)."
+  },
+  {
+   "name": "p.u_turn_max_angle",
+   "unit": "deg",
+   "value": 210.0,
+   "convention": "Heading change beyond which the road user has turned past the opposite direction (a loop rather than a reversal).",
+   "source": "Turning-movement classification in trajectory datasets (inD, NGSIM intersection data)."
+  },
+  {
+   "name": "p.turn_yaw_tolerance",
+   "unit": "deg/s",
+   "value": 5.0,
+   "convention": "Yaw rate below which a change of heading counts as none: above lane-keeping yaw noise, below the yaw rates of turning at a junction.",
+   "source": "Vehicle-dynamics practice for turn-onset detection from yaw-rate sensors."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

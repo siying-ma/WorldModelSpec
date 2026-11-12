@@ -1,0 +1,81 @@
+{
+ "concept_id": "drv.motion.u_turn",
+ "kind": "formula",
+ "contract": "Road user a makes a U-turn: \"the turning of a vehicle upon a highway so as to proceed in the opposite direction, whether accomplished by one continuous movement or not\". Observed as a heading change within the window behind the observation, to either hand, whose magnitude lies within the reversal band: from the lower bound, at or beyond which the road user's direction counts as reversed, up to the upper bound, beyond which it has turned past the opposite direction. Measured as the magnitude of the signed heading change over the window (prim.heading_change, degrees). The window admits a turn made in several movements, forward and reverse. The act is recognized at the observation at which the magnitude first reaches the lower bound. Its observed beginning lies within the window behind that observation. The concept holds at every observation at which the magnitude lies within the band, and ends where it leaves the band. It is unknown where the window reaches past the start of the recording or a yaw rate in it is missing. Not a stand-in for backing: a reversal of travel without a change of heading is no U-turn.",
+ "definition": "DEF-NRS-484B-077",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "window",
+   "unit": "s",
+   "meaning": "the window behind the observation within which the turn, in one movement or several, is completed"
+  },
+  {
+   "name": "min_angle",
+   "unit": "deg",
+   "meaning": "the heading change at or beyond which the direction counts as reversed"
+  },
+  {
+   "name": "max_angle",
+   "unit": "deg",
+   "meaning": "the heading change beyond which the road user has turned past the opposite direction"
+  }
+ ],
+ "act": {
+  "boundary": "window",
+  "window": "window",
+  "onset": "Its observed beginning lies within the window behind that observation.",
+  "recognition": "The act is recognized at the observation at which the magnitude first reaches the lower bound.",
+  "extent": "The concept holds at every observation at which the magnitude lies within the band, and ends where it leaves the band.",
+  "history": "It is unknown where the window reaches past the start of the recording or a yaw rate in it is missing."
+ },
+ "elements": [
+  {
+   "span": "the magnitude of the signed heading change over the window (prim.heading_change, degrees)",
+   "atoms": [
+    "prim.heading_change"
+   ],
+   "concepts": [],
+   "justification": "prim.heading_change: 'the signed heading change (degrees, left positive) of a road user over the window behind the observation, integrated from kin.yaw_rate'; integrated over the window it sums every movement of a multi-point turn, forward and reverse."
+  }
+ ],
+ "residues": [
+  {
+   "span": "upon a highway",
+   "why": "The place of the turn is read by the calling rule, which binds the region."
+  },
+  {
+   "span": "of a vehicle",
+   "why": "The class of the road user is the calling rule's: a is whatever road user it passes."
+  }
+ ],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle reverses its direction by a forward, a reverse and a forward movement within the window; the magnitude of its heading change reaches the band."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle backs along the road with no change of heading."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_227_1_o3"
+ ]
+}

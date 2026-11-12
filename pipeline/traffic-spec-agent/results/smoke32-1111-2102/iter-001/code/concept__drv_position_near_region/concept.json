@@ -1,0 +1,57 @@
+{
+ "concept_id": "drv.position.near_region",
+ "kind": "formula",
+ "contract": "Road user a is at region r at an observation: r lies within the reach of a's body, the distance within which a region counts as the place the road user is at. Measured as the ground distance from a's body outline to r (st.region_geometry, m; zero when they overlap) at or below the reach. Not a stand-in for occupancy: a body within the reach may lie wholly outside the region.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "reach",
+   "unit": "m",
+   "meaning": "the ground distance from the body within which a region counts as the place the road user is at"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the ground distance from a's body outline to r (st.region_geometry, m; zero when they overlap)",
+   "atoms": [
+    "st.region_geometry"
+   ],
+   "concepts": [],
+   "justification": "st.region_geometry: 'the ground distance from a road user's body outline to it (zero when they overlap)'; its 'Not a stand-in for: occupancy' is respected: the concept states nearness, never overlap."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle stands with its front a short distance before a crosswalk, within the reach."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle stands far beyond the reach from the crosswalk."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source maps the crosswalk without its outline and declares st.region_geometry absent.",
+   "masked": [
+    "st.region_geometry"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_30_030"
+ ]
+}

@@ -1,0 +1,42 @@
+'TrafficSpec.Rules.NRS_484B_280_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_280_1a.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"assumptions":[],"binders":["ego"],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"operationalizations":[{"concepts":["drv.motion.at_rest","prim.closest_approach_distance","prim.closest_approach_within"],"params":["p.conflict_horizon","p.pedestrian_conflict_clearance","p.rest_speed_tolerance"],"standard":"due care","surrogate":true}],"residues":[],"surrogate":true}
+RULEJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"ego"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"ego"}],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"ego"}]}},{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]},{"or":[{"args":[{"var":"ego"}],"derived":"drv_motion_at_rest","params":[{"param":"p.rest_speed_tolerance"}]},{"and":[{"not":{"args":[{"var":"ego"},{"var":"p"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"ego"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"ego"},{"var":"p"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.pedestrian_conflict_clearance"}}]}}]}]}]},"forall_user":"p"},"residues":[],"surrogate":true}
+RULEXJSON	{"applicability":"tt","assumptions":[],"binders":[{"cls":{"args":[{"var":"ego"},{"lit":"DEF-NRS-484A-130::motor_vehicle"}],"atom":"ru_aggregate","params":[]},"name":"ego"}],"id":"NRS_484B_280_1a","intentions":[],"laws":["NRS-484B-280-1a"],"narrowings":[],"obligation":{"body":{"implies":[{"and":[{"not":{"same":[{"var":"p"},{"var":"ego"}]}},{"args":[{"var":"p"},{"lit":"DEF-NRS-484A-165::pedestrian"}],"atom":"ru_aggregate","params":[]}]},{"or":[{"cmp":"le","lhs":{"args":[{"var":"ego"}],"measure":"kin_speed"},"rhs":{"param":"p.rest_speed_tolerance"}},{"and":[{"not":{"args":[{"var":"ego"},{"var":"p"}],"atom":"rel_contact","params":[]}},{"not":{"and":[{"args":[{"var":"ego"},{"var":"p"}],"derived":"prim_closest_approach_within","params":[{"param":"p.conflict_horizon"}]},{"cmp":"lt","lhs":{"args":[{"var":"ego"},{"var":"p"}],"params":[{"param":"p.conflict_horizon"}],"quantity":"prim_closest_approach_distance"},"rhs":{"param":"p.pedestrian_conflict_clearance"}}]}}]}]}]},"forall_user":"p"},"residues":[],"surrogate":true}
+ATOMS	ru_aggregate,drv_motion_at_rest,rel_contact,prim_closest_approach_within,prim_closest_approach_distance
+COMPOSES	
+AGGREGATES	DEF-NRS-484A-130::motor_vehicle	DEF-NRS-484A-165::pedestrian
+MANIFEST	forbid	
+MANIFEST	permit	
+MANIFEST	idle	
+MANIFEST	blind	rel.contact
+MANIFEST	branch_1	
+OCC	ego
+OCC	?p
+OCC	p,ego
+OCC	p
+OCC	ego
+OCC	ego,p
+OCC	ego,p
+OCC	ego,p
+TIME	occurrences	0
+TIME	checks	5
+TIME	lint	33
+SCEN	forbid	violated	violated	ok
+TIME	scenario:forbid	11
+SCEN	permit	compliant	compliant	ok
+TIME	scenario:permit	10
+SCEN	idle	not_applicable	not_applicable	ok
+TIME	scenario:idle	9
+SCEN	blind	unknown	unknown	ok
+TIME	scenario:blind	9
+SCEN	branch_1	compliant	compliant	ok
+TIME	scenario:branch_1	6
+TIME	witnesses	45
+DONE_WITNESSES
+'TrafficSpec.Rules.NRS_484B_280_1a.rule' does not depend on any axioms
+'TrafficSpecWitness.NRS_484B_280_1a.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	NRS_484B_280_1a	5	4
+TIME	adequacy_start	6
+TIME	adequacy	130
+DONE

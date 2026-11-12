@@ -1,0 +1,94 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (holds_wrongly) at t=0 ms: The road user points northeast and moves southwest with velocity [-0.7071066, -0.7071066] m/s. Its rearward component along the unit heading is approximately 0.999999744 m/s, below the 1 m/s motion tolerance, but the heading's micrometre-truncated normalization makes the body compute a rearward component greater than 1 m/s. — contract: fails, body: holds; contract: \"Measured as the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector) lying below the negative of the motion tolerance, the speed below which a sampled motion counts as none.\"",
+   "ruling": "dismissed",
+   "why": "The contract measures the component along its heading by naming the atom kin.heading. That atom's contract states that a formula reads the heading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. On the executed facts (heading [1, 1], velocity [-0.7071066, -0.7071066], tolerance 1 m/s), the component as kin.heading delivers it lies just past -1 m/s, so reading the contract through its named atom gives the body's verdict. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "c7a9949b287ec47b1fd98edeedf6f78b0c6152554f122bc26c9e114018936c4f",
+ "rulings_at": 0,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "dismissed: divergence 1 (holds_wrongly) at t=0 ms: The road user points northeast and moves southwest with velocity [-0.7071066, -0.7071066] m/s. Its rearward component along the unit heading is approximately … — contract: fails, body: holds; contract: \"Measured as the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector) …\" — The contract measures the component along its heading by naming the atom kin.heading. That atom's contract states that a formula reads the heading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. On the executed facts (heading [1, 1], velocity [-0.7071066, -0.7071066], tolerance 1 m/s), the component as kin.heading delivers it lies just past -1 m/s, so reading the contract through its named atom gives the body's verdict. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶\""
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "7f869ca9451a2a963ab1",
+   "row": {
+    "key": "concept:drv.motion.backing",
+    "subject": "drv.motion.backing",
+    "iteration": 1,
+    "item": "divergence 1 (holds_wrongly) at t=0 ms: The road user points northeast and moves southwest with velocity [-0.7071066, -0.7071066] m/s. Its rearward component along the unit heading is approximately 0.999999744 m/s, below the 1 m/s motion tolerance, but the heading's micrometre-truncated normalization makes the body compute a rearward component greater than 1 m/s. — contract: fails, body: holds; contract: \"Measured as the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector) lying below the negative of the motion tolerance, the speed below which a sampled motion counts as none.\"",
+    "ruling": "dismissed",
+    "reason": "The contract measures the component along its heading by naming the atom kin.heading. That atom's contract states that a formula reads the heading as the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶. On the executed facts (heading [1, 1], velocity [-0.7071066, -0.7071066], tolerance 1 m/s), the component as kin.heading delivers it lies just past -1 m/s, so reading the contract through its named atom gives the body's verdict. — \"a formula reads it normalised: divided by its larger absolute component, then by its length taken to a micrometre, so the vector read is the unit vector times a factor of at least 1 and below 1 + 2·10⁻⁶\"",
+    "schema": "concept_case/1",
+    "case_id": "2a0d99e690bfb6bc7ebf91a59302ec603f2cbbbeaad024472ac6140f923ae46b",
+    "kind": "holds_wrongly",
+    "situation": "The road user points northeast and moves southwest with velocity [-0.7071066, -0.7071066] m/s. Its rearward component along the unit heading is approximately 0.999999744 m/s, below the 1 m/s motion tolerance, but the heading's micrometre-truncated normalization makes the body compute a rearward component greater than 1 m/s.",
+    "contract_words": "Measured as the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector) lying below the negative of the motion tolerance, the speed below which a sampled motion counts as none.",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "motion_tolerance": [
+       1,
+       "m/s"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "heading": [
+           1,
+           1
+          ],
+          "velocity": [
+           -0.7071066,
+           -0.7071066
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 0,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "4693dd89c69493e7c06a7e7ee85ff60dc93088447fa77aed42945a7091f0a8f7",
+    "body_digest": "4be9eaa343c410747c06568b78dbf96aa97b977901bb21576b65d0d25e0ec1e6",
+    "obligation": null,
+    "ruling_id": "7f869ca9451a2a963ab1",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

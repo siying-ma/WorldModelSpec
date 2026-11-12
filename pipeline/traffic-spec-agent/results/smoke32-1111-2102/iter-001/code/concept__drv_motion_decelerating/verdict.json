@@ -1,0 +1,105 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.accel_longitudinal",
+   "kin.heading",
+   "kin.velocity"
+  ],
+  "refs": [
+   "drv.motion.backing"
+  ],
+  "canonical_body": "{\"and\":[{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_accel_longitudinal\"},\"rhs\":{\"neg\":{\"param\":\"$p0\"}}},{\"not\":{\"cmp\":\"lt\",\"lhs\":{\"add\":[{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"x\"}],\"measure\":\"kin_heading\"}]},{\"mul\":[{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_velocity\"},{\"args\":[{\"var\":\"$a0\"},{\"lit\":\"y\"}],\"measure\":\"kin_heading\"}]}]},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "le",
+     "lhs": {
+      "args": [
+       {
+        "var": "a"
+       }
+      ],
+      "measure": "kin_accel_longitudinal"
+     },
+     "rhs": {
+      "neg": {
+       "param": "decel_tolerance"
+      }
+     }
+    },
+    {
+     "not": {
+      "cmp": "lt",
+      "lhs": {
+       "add": [
+        {
+         "mul": [
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "x"
+            }
+           ],
+           "measure": "kin_velocity"
+          },
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "x"
+            }
+           ],
+           "measure": "kin_heading"
+          }
+         ]
+        },
+        {
+         "mul": [
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "y"
+            }
+           ],
+           "measure": "kin_velocity"
+          },
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "lit": "y"
+            }
+           ],
+           "measure": "kin_heading"
+          }
+         ]
+        }
+       ]
+      },
+      "rhs": {
+       "neg": {
+        "param": "speed_tolerance"
+       }
+      }
+     }
+    }
+   ]
+  },
+  "context": "7d4269653f48d24ad2962fd8",
+  "candidate_digest": "69b72c9b68ff83d2bd3af7e4b90a2218879acf3b141bc1cb1fe8851d52be8cca"
+ }
+}

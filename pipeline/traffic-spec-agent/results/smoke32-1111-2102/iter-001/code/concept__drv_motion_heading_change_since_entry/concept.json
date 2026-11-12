@@ -1,0 +1,69 @@
+{
+ "concept_id": "drv.motion.heading_change_since_entry",
+ "kind": "quantity",
+ "contract": "The heading change of road user a since it entered region r: the signed change of the direction its body points (degrees, left positive), accumulated from the observation at which a's footprint last came to overlap r, where it is zero, to the observation, whether or not a still overlaps r. Measured by integrating a's yaw rate (kin.yaw_rate, deg/s, left positive) from the observation at which a's occupancy of r (rel.occupies) last became true, with the step bound, the largest interval between consecutive observations integrated across. It is unknown where that entry is not observed (a occupied r from the start of the recording, or an unknown occupancy could hide the entry), where an interval between consecutive observations since the observation before the entry exceeds the step bound, or where a yaw rate since the entry is missing. Not a stand-in for a turn: it is a magnitude that a caller bounds, and a road user that follows a bend of the way through r accumulates the bend's heading change.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "r",
+   "sort": "region"
+  }
+ ],
+ "params": [
+  {
+   "name": "step",
+   "unit": "ms",
+   "meaning": "the step bound: the largest interval between consecutive observations the integration crosses"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the observation at which a's occupancy of r (rel.occupies) last became true",
+   "atoms": [
+    "rel.occupies"
+   ],
+   "concepts": [],
+   "justification": "rel.occupies is 'a road user's footprint overlaps a lane / region'; its rise marks the entry from which the heading change is counted."
+  },
+  {
+   "span": "integrating a's yaw rate (kin.yaw_rate, deg/s, left positive)",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is the 'rate of change of heading, positive when the heading turns to the left'; its exclusion 'Not a stand-in for: road curvature' is stated in the contract: the concept counts the road user's own heading change, bend or turn alike."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a enters r heading along one axis, turns left a quarter turn inside r and leaves it; the instance bounds the value to a left band and the value read at the exit lies within it."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a crosses r without turning; the value read at the exit stays near zero, outside the instance's left band."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "as in holds, but the source supplies no yaw rate, so the heading change is unknown.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_307_9a_o1",
+  "NRS_484B_307_9b_o1",
+  "NRS_484B_307_9b_o2",
+  "NRS_484B_307_9b_o3",
+  "NRS_484B_307_9b_o4"
+ ]
+}

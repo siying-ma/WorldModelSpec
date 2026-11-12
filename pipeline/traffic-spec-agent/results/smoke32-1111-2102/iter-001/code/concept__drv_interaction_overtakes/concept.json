@@ -1,0 +1,72 @@
+{
+ "concept_id": "drv.interaction.overtakes",
+ "kind": "formula",
+ "contract": "Road user a overtakes and passes road user b: travelling with headings aligned, a goes from wholly behind b to wholly ahead of it. The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition. Its observed beginning is the last observation at which a was behind b before the recognition. The concept holds at the recognition observation only. Where the recording shows no observation of a behind b before a becomes wholly ahead of it, with the headings aligned at every observation since the recording began, whether a overtook b is unknown, never false. Not a stand-in for a lane change or for contact between the bodies; it does not say in which lane either travels.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  },
+  {
+   "name": "b",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "alignment",
+   "unit": "ratio",
+   "meaning": "the cosine of the largest angle between the two headings counted as aligned"
+  }
+ ],
+ "act": {
+  "boundary": "event",
+  "onset": "Its observed beginning is the last observation at which a was behind b before the recognition.",
+  "recognition": "The act is recognized at the observation at which a becomes wholly ahead of b",
+  "extent": "The concept holds at the recognition observation only.",
+  "history": "Where the recording shows no observation of a behind b before a becomes wholly ahead of it, with the headings aligned at every observation since the recording began, whether a overtook b is unknown, never false."
+ },
+ "elements": [
+  {
+   "span": "drv.position.behind of b relative to a becomes true",
+   "concepts": [
+    "drv.position.behind"
+   ],
+   "atoms": [],
+   "justification": "drv.position.behind states one road user wholly behind the other with aligned headings; read both ways it gives the beginning (a behind b) and the recognition (b behind a)."
+  },
+  {
+   "span": "the headings stayed aligned (rel.same_direction with the alignment tolerance)",
+   "atoms": [
+    "rel.same_direction"
+   ],
+   "concepts": [],
+   "justification": "rel.same_direction: 'headings aligned: the cosine of the angle between the headings is above its tolerance'; held at every observation from the beginning to the recognition, so an oncoming crossing is no pass."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a, in the left lane wholly behind b with aligned headings, comes alongside and becomes wholly ahead of b; the concept holds at that observation."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a comes alongside b and stays alongside to the end of the recording, never wholly ahead."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares rel.longitudinal_overlap absent.",
+   "masked": [
+    "rel.longitudinal_overlap"
+   ]
+  }
+ ],
+ "used_by": [
+  "LVMC_11_30_030"
+ ]
+}

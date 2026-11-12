@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 51442,
+  "stop_reason": "end_turn",
+  "session_id": "b9c74015-1d76-47b4-a39c-ea74b0ddd9a3",
+  "total_cost_usd": 0.19150540000000002,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7316,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 6596,
+   "output_tokens_details": {
+    "thinking_tokens": 2268
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7316,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6596,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 7316,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7316
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7274,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007404,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 6596,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7316,
+    "webSearchRequests": 0,
+    "costUSD": 0.19076500000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2268,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484A-020\", \"term\": \"authorized emergency vehicle\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484A-020::authorized_emergency_vehicle\", \"quote\": \"“Authorized emergency vehicle” means a vehicle permitted to depart from certain traffic laws\", \"reason\": \"The definition denotes a set of vehicles, tracked road users classifiable by the ru.* classes, while being equipped and operated in the manner provided by law is a condition the using rule carries.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484A-020::authorized_emergency_vehicle\", \"term\": \"authorized emergency vehicle\", \"definition\": \"DEF-NRS-484A-020\",\n   \"classifications\": [\n     {\"class\": \"ru.emergency_vehicle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"The class is a vehicle of a class the jurisdiction designates as emergency, which is the legal permission the definition admits; being equipped and operated as provided is a scene condition carried by the rule.\"},\n     {\"class\": \"ru.fire_apparatus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"Fire apparatus is admitted only as an emergency vehicle the law permits to depart from traffic laws, and its contract makes every member a sub-kind of ru.emergency_vehicle, which is included.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.fire_apparatus\", \"words\": \"a fire-fighting vehicle (a sub-kind of `ru.emergency_vehicle` that law names on its own)\"}, {\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.motor_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A motor vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A commercial motor vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.motorcycle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A motorcycle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.moped\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A moped is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.official_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"An official vehicle is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.school_bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A school bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.taxicab\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A taxicab is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A tour bus or limousine is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.trailer_or_combination\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A trailer or combination is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.transit_bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A transit bus is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.truck\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"a vehicle permitted to depart from certain traffic laws when equipped and operated in the manner provided by law\"}], \"reason\": \"A truck is admitted only when the law permits it to depart from traffic laws, that is when it is of a class the jurisdiction designates as emergency, so every admitted member carries ru.emergency_vehicle.\", \"covered_by\": [\"ru.emergency_vehicle\"], \"basis\": [{\"class\": \"ru.emergency_vehicle\", \"words\": \"vehicle of a class the jurisdiction designates as emergency\"}]},\n     {\"class\": \"ru.bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"except: (1) Devices moved by human power\"}]},\n     {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(2) Electric bicycles\"}]},\n     {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(4) An electric scooter\"}]},\n     {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"used exclusively upon stationary rails\"}]},\n     {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}]},\n     {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}]},\n     {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-020\", \"words\": \"means a vehicle\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}]}\n   ]}]}\n```",
+  "ttft_ms": 22961,
+  "type": "result",
+  "duration_ms": 50861,
+  "uuid": "5818dedf-16e1-41f0-bc34-df8a43b87216",
+  "ttft_stream_ms": 1835,
+  "time_to_request_ms": 76,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 24,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 6,
+   "input_hooks": 3,
+   "transcript_persist": 10,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 26,
+  "time_to_request_cpu_ms": 114,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 11,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1835,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7274,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007404,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 6596,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7316,
+    "webSearchRequests": 0,
+    "costUSD": 0.19076500000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2268,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

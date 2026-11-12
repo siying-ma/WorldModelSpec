@@ -1,0 +1,165 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 2 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "rel.bearing",
+   "rel.longitudinal_overlap",
+   "rel.same_direction"
+  ],
+  "refs": [
+   "drv.position.behind"
+  ],
+  "canonical_body": "{\"and\":[{\"rises\":{\"and\":[{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a0\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a0\"},{\"lit\":\"ahead\"}],\"atom\":\"rel_bearing\",\"params\":[]},{\"cmp\":\"lt\",\"lhs\":{\"args\":[{\"var\":\"$a1\"},{\"var\":\"$a0\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}}]}]}},{\"since\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"atom\":\"rel_same_direction\",\"params\":[{\"param\":\"$p0\"}]},{\"and\":[{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"},{\"lit\":\"ahead\"}],\"atom\":\"rel_bearing\",\"params\":[]},{\"cmp\":\"lt\",\"lhs\":{\"args\":[{\"var\":\"$a0\"},{\"var\":\"$a1\"}],\"measure\":\"rel_longitudinal_overlap\"},\"rhs\":{\"lit\":{\"den\":1,\"num\":0},\"unit\":\"metre\"}}]}]}]}]}",
+  "body_json": {
+   "and": [
+    {
+     "rises": {
+      "and": [
+       {
+        "args": [
+         {
+          "var": "b"
+         },
+         {
+          "var": "a"
+         }
+        ],
+        "atom": "rel_same_direction",
+        "params": [
+         {
+          "param": "alignment"
+         }
+        ]
+       },
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "b"
+           },
+           {
+            "var": "a"
+           },
+           {
+            "lit": "ahead"
+           }
+          ],
+          "atom": "rel_bearing",
+          "params": []
+         },
+         {
+          "cmp": "lt",
+          "lhs": {
+           "args": [
+            {
+             "var": "b"
+            },
+            {
+             "var": "a"
+            }
+           ],
+           "measure": "rel_longitudinal_overlap"
+          },
+          "rhs": {
+           "lit": {
+            "den": 1,
+            "num": 0
+           },
+           "unit": "metre"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "since": [
+      {
+       "args": [
+        {
+         "var": "a"
+        },
+        {
+         "var": "b"
+        }
+       ],
+       "atom": "rel_same_direction",
+       "params": [
+        {
+         "param": "alignment"
+        }
+       ]
+      },
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "a"
+          },
+          {
+           "var": "b"
+          }
+         ],
+         "atom": "rel_same_direction",
+         "params": [
+          {
+           "param": "alignment"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "a"
+            },
+            {
+             "var": "b"
+            },
+            {
+             "lit": "ahead"
+            }
+           ],
+           "atom": "rel_bearing",
+           "params": []
+          },
+          {
+           "cmp": "lt",
+           "lhs": {
+            "args": [
+             {
+              "var": "a"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "measure": "rel_longitudinal_overlap"
+           },
+           "rhs": {
+            "lit": {
+             "den": 1,
+             "num": 0
+            },
+            "unit": "metre"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "context": "a9dfc383dc349f78d5f2c9fe",
+  "candidate_digest": "dfaacb25bd130995638a578dd30d655c16853fa6cbf03eabd3b6767af6220190"
+ }
+}

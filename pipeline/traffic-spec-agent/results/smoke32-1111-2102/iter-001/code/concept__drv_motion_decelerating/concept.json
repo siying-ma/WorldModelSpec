@@ -1,0 +1,67 @@
+{
+ "concept_id": "drv.motion.decelerating",
+ "kind": "formula",
+ "contract": "Road user a is decelerating at an observation: its forward speed is falling. Measured as its acceleration along its heading (kin.accel_longitudinal, m/s², signed) at or below the negative of the deceleration tolerance, the magnitude below which a sampled acceleration counts as none, while a is not backing (drv.motion.backing with the speed tolerance does not hold), since for a backing road user a negative value is a gain of speed. Not a stand-in for its speed or for the brake lamp: a lit lamp without a deceleration is no deceleration.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "decel_tolerance",
+   "unit": "m/s^2",
+   "meaning": "the deceleration magnitude below which a sampled acceleration counts as none"
+  },
+  {
+   "name": "speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the speed below which a sampled motion along the heading counts as none"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its acceleration along its heading (kin.accel_longitudinal, m/s², signed)",
+   "atoms": [
+    "kin.accel_longitudinal"
+   ],
+   "concepts": [],
+   "justification": "kin.accel_longitudinal: 'acceleration along heading, signed', 'Not a stand-in for: speed'; a value below the negative tolerance is a falling forward speed."
+  },
+  {
+   "span": "while a is not backing (drv.motion.backing with the speed tolerance does not hold)",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.backing"
+   ],
+   "justification": "drv.motion.backing tells a rearward motion, for which the sign of the acceleration along the heading means the opposite."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle moving forward brakes; its longitudinal acceleration is below the negative tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle moves forward at constant speed with its brake lamp lit."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.accel_longitudinal absent.",
+   "masked": [
+    "kin.accel_longitudinal"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_257_1_o1",
+  "NRS_484B_257_1_o2"
+ ]
+}

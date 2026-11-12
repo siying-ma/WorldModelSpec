@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 57906,
+  "stop_reason": "end_turn",
+  "session_id": "0cf468c5-3777-42b6-9773-810980b4ba48",
+  "total_cost_usd": 0.1921222,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7059,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 6731,
+   "output_tokens_details": {
+    "thinking_tokens": 3707
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7059,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6731,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 7059,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7059
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7022,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007132000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 6731,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7059,
+    "webSearchRequests": 0,
+    "costUSD": 0.191409,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3707,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"selection\": [{\"definition\": \"DEF-NRS-484B-017\", \"term\": \"electric bicycle\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484B-017::electric_bicycle\", \"quote\": \"“Electric bicycle” means a device upon which a person may ride, having two or three wheels, or every such device generally recognized as a bicycle that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts\", \"reason\": \"The definition denotes an extensional set of rideable devices, which the ru.* classes can classify.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484B-017::electric_bicycle\", \"term\": \"electric bicycle\", \"definition\": \"DEF-NRS-484B-017\",\n  \"classifications\": [\n   {\"class\": \"ru.bicycle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The first alternative admits any rideable device on two or three wheels, but the bicycle contract does not fix a wheel count, and the motor-assisted alternative does not reach the bicycle class's human-powered members, so the words admit some members of the class but do not decide all of them.\"},\n   {\"class\": \"ru.bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"A bus is a device a person may ride, and the first alternative admits it if it has two or three wheels; the bus contract does not fix a wheel count, so the words do not decide its members.\"},\n   {\"class\": \"ru.child\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}, {\"definition\": \"DEF-NRS-482-029\", \"words\": \"a self-balancing, two nontandem wheeled device, designed to transport only one person\"}], \"reason\": \"A child afoot is not a device, but a child pedestrian on an electric personal assistive mobility device rides a two-wheeled device the first alternative reaches, so the words do not decide every member.\"},\n   {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract fixes mass or licensing rather than a wheel count, so whether a member has two or three wheels, and is therefore admitted by the first alternative, is not decided.\"},\n   {\"class\": \"ru.electric_bicycle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"every such device generally recognized as a bicycle that has fully operable pedals, a seat or saddle for the rider, an electric motor which produces not more than 750 watts and meets the requirements of one of the following three classes\"}], \"reason\": \"The class is the bicycle with an assisting electric motor that the second alternative and its three-class taxonomy admit.\"},\n   {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"The term does not include a moped or an electric scooter.\"}], \"reason\": \"The exception leaves electric scooters out.\"},\n   {\"class\": \"ru.emergency_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"Members a person may ride on two or three wheels are admitted by the first alternative, but the contract does not fix a wheel count, so the words do not decide every member.\"},\n   {\"class\": \"ru.fire_apparatus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.moped\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"The term does not include a moped or an electric scooter.\"}], \"reason\": \"The exception leaves mopeds out.\"},\n   {\"class\": \"ru.motor_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"Members on two or three wheels are admitted by the first alternative, but the contract does not fix a wheel count, so the words do not decide every member.\"},\n   {\"class\": \"ru.motorcycle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"Every motorcycle is ridden on two or three wheels. The first alternative admits it without the pedal or 750-watt requirements, and no exception names motorcycles.\"},\n   {\"class\": \"ru.official_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.pedestrian\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}, {\"definition\": \"DEF-NRS-482-029\", \"words\": \"a self-balancing, two nontandem wheeled device, designed to transport only one person\"}], \"reason\": \"A person afoot is not a device, but a pedestrian on an electric personal assistive mobility device rides a two-wheeled device the first alternative reaches, so the words do not decide every member.\"},\n   {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"A pedestrian afoot is not a device, and the contract does not settle whether a member rides a two- or three-wheeled device the first alternative reaches.\"},\n   {\"class\": \"ru.rail_vehicle\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"On-track equipment may be ridden, but the contract does not fix a wheel count, so admission by the first alternative is not decided.\"},\n   {\"class\": \"ru.school_bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.taxicab\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.trailer_or_combination\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count or whether a person may ride the member, so admission by the first alternative is not decided.\"},\n   {\"class\": \"ru.transit_bus\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"},\n   {\"class\": \"ru.truck\", \"status\": \"unresolved\", \"quotes\": [{\"definition\": \"DEF-NRS-484B-017\", \"words\": \"a device upon which a person may ride, having two or three wheels\"}], \"reason\": \"The contract does not fix a wheel count, so whether a member is admitted by the first alternative is not decided.\"}\n  ]}]}",
+  "ttft_ms": 36520,
+  "type": "result",
+  "duration_ms": 57161,
+  "uuid": "866876bb-16fa-4791-ad8a-8cc4761344df",
+  "ttft_stream_ms": 2428,
+  "time_to_request_ms": 78,
+  "time_to_request_phases_ms": {
+   "other": 14,
+   "system_prompt": 26,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 6,
+   "input_hooks": 2,
+   "transcript_persist": 11,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 28,
+  "time_to_request_cpu_ms": 117,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 2429,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7022,
+    "outputTokens": 22,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007132000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 6731,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7059,
+    "webSearchRequests": 0,
+    "costUSD": 0.191409,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3707,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

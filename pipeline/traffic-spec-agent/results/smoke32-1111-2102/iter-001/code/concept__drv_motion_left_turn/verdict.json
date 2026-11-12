@@ -1,0 +1,57 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 1 names, reads 1 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.yaw_rate"
+  ],
+  "refs": [],
+  "canonical_body": "{\"and\":[{\"cmp\":\"ge\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"},\"rhs\":{\"param\":\"$p1\"}},{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"params\":[{\"param\":\"$p0\"}],\"quantity\":\"prim_heading_change\"},\"rhs\":{\"param\":\"$p2\"}}]}",
+  "body_json": {
+   "and": [
+    {
+     "cmp": "ge",
+     "lhs": {
+      "args": [
+       {
+        "var": "a"
+       }
+      ],
+      "params": [
+       {
+        "param": "window"
+       }
+      ],
+      "quantity": "prim_heading_change"
+     },
+     "rhs": {
+      "param": "min_angle"
+     }
+    },
+    {
+     "cmp": "le",
+     "lhs": {
+      "args": [
+       {
+        "var": "a"
+       }
+      ],
+      "params": [
+       {
+        "param": "window"
+       }
+      ],
+      "quantity": "prim_heading_change"
+     },
+     "rhs": {
+      "param": "max_angle"
+     }
+    }
+   ]
+  },
+  "context": "77070cbb7ffce68a19ba0602",
+  "candidate_digest": "b048c9a6cab21236869184ca27e7638202cb5353a4aebb59ded4a205800800aa"
+ }
+}

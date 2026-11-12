@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-130::motor_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a human-powered device, which the vehicle definition expressly excludes.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a motor vehicle, matching the self-propelled, non-rail admitting clause without a class-specific exception.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract describes a pedestrian person rather than a transport device, and using a motorized wheelchair does not make that person a vehicle.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"An admitted member must satisfy the self-propelled, non-rail vehicle contract or a separately classed motorcycle or moped contract, making the quoted coverage complete.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The controlling definition expressly excludes electric scooters.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Emergency designation does not independently establish admission, while every admitted member satisfies one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The fire-fighting designation adds no independent admission criterion, and every admitted member satisfies one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The jurisdiction-defined moped is engine-propelled and non-rail, and its definition separates it from the expressly excluded electric bicycles and electric scooters.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract supplies the admitting clause's self-propulsion and non-rail requirements while separating the jurisdiction's separately classed powered two-wheelers.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a motor vehicle on two or three wheels, which the admitting clause reaches without an exception for motorcycles.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Official service and identifying equipment add no independent admission criterion, while every admitted member satisfies one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract describes a person rather than a transport device, so a wheelchair's propulsion does not bring its occupant within the vehicle definition.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract still describes a pedestrian person, and neither assistance nor wheelchair use turns that person into a transport device.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes on-track equipment, which fails the express requirement that a motor vehicle not be operated upon rails.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a bus, whose motor-vehicle contract supplies self-propulsion and non-rail operation.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Hire status alone does not establish admission, but every admitted passenger vehicle satisfies one of the three quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The lengthened passenger-vehicle branch does not exclude separately classed powered two-wheelers, so an admitted member need not carry the sole covering class ru.motor_vehicle.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"supported\",\n      \"reason\": \"A merely drawn trailer fails self-propulsion, while any combination admitted as a self-propelled non-rail vehicle must itself satisfy one of the quoted covering contracts.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract describes a bus, whose motor-vehicle contract meets the admitting clause regardless of its transit service.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The contract expressly describes a motor vehicle, and its goods-carrying purpose introduces no exception to the admitting clause.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 281209,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5711,
+   "input_tokens_details": {
+    "cache_write_tokens": 5708,
+    "cached_tokens": 0
+   },
+   "output_tokens": 11470,
+   "output_tokens_details": {
+    "reasoning_tokens": 10358
+   },
+   "total_tokens": 17181
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_07407beebe99efbb016af540a9db0087d0bb80b417941fedc4",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

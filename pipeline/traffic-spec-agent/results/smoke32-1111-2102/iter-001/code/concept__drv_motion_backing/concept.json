@@ -1,0 +1,54 @@
+{
+ "concept_id": "drv.motion.backing",
+ "kind": "formula",
+ "contract": "A road user is backing at an observation: it moves in the direction opposite to the one its body points. Measured as the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector) lying below the negative of the motion tolerance, the speed below which a sampled motion counts as none. Not a stand-in for the gear selected: a vehicle in reverse gear that stands still or rolls forward is not backing, and one in a forward gear that rolls backwards is.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "motion_tolerance",
+   "unit": "m/s",
+   "meaning": "the speed below which a sampled motion along the heading counts as none"
+  }
+ ],
+ "elements": [
+  {
+   "span": "the component of its velocity (kin.velocity, m/s, world frame) along its heading (kin.heading, unit vector)",
+   "atoms": [
+    "kin.velocity",
+    "kin.heading"
+   ],
+   "concepts": [],
+   "justification": "kin.velocity 'velocity vector' and kin.heading 'direction the body points': their product along the heading is negative when the body moves rearward. kin.gear is not read: its contract says it is 'Not a stand-in for: the direction of motion'."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A vehicle's velocity points opposite its heading at a speed above the motion tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A vehicle in reverse gear stands still."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.velocity absent.",
+   "masked": [
+    "kin.velocity"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_113_3"
+ ]
+}

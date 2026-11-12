@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 564000,
+  "stop_reason": "end_turn",
+  "session_id": "a03e0419-94c6-47a3-a09c-d4acfe8424d1",
+  "total_cost_usd": 2.7446371,
+  "usage": {
+   "input_tokens": 28,
+   "cache_creation_input_tokens": 161212,
+   "cache_read_input_tokens": 1424814,
+   "output_tokens": 58286,
+   "output_tokens_details": {
+    "thinking_tokens": 43875
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 161212,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 803,
+     "cache_read_input_tokens": 164075,
+     "cache_creation_input_tokens": 1575,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1575
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41303,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041463,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 28,
+    "outputTokens": 58286,
+    "cacheReadInputTokens": 1424814,
+    "cacheCreationInputTokens": 161212,
+    "webSearchRequests": 0,
+    "costUSD": 2.7404908,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 43875,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01AC73qfwhenvS46bq3fCovV",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke32-1111-2102 --node_id NRS_484B_227_1_o3 --help 2>/dev/null | head -0; true",
+     "description": "(no-op placeholder avoided)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 16,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on its first run (13 witnesses, 12 names, composes nothing). I wrote `task_result.md` in the working directory.\n\n**Rule**:\n- **Vehicle (d1):** ego must belong to the vehicle aggregate (`DEF-NRS-484A-320::vehicle`).\n- **When it applies:** at the moment a left turn or a U-turn is recognized (the concept starts to hold), on a highway `h` that has a median or divider. At some moment while the turn was under way, ego must have overlapped a roadway or a median on `h`.\n- **What it requires:** at some moment of the turn, ego overlapped either a median opening on `h` or an intersection on `h`. The obligation repeats the whole selection of `h` from the applicability.\n- **\"Under way\":** ego's yaw rate (absolute value) was at or above `p.turn_yaw_tolerance` within the turn window behind that moment.\n- **Narrowings:** none declared. The record's own observable readings are not restated.\n\n**One approximation.** The record says the turn's start must lie in the window behind the *recognition*, but the formula language has no way to refer back to the recognition from inside the outer window. So the yaw search runs in an equal-length window behind each moment instead. This only gives a different answer when two separate turns happen within about two windows of each other. I didn't use the unbounded past operator (`since`) because it reports unknown for every moment before the first observed yaw. That would turn the \"outside\" occasion witnesses from decided into unknown. This isn't a reading of a span, so I recorded it in the rule header and `task_result.md` rather than as a narrowing.\n\n**Witnesses:** all 11 planned scenarios, plus two of mine:\n- **`branch_2` (compliant):** ego finishes its turn inside a wide median crossover and never touches a roadway, so the \"median on `h`\" part of d2 decides the case by itself.\n- **`branch_3` (violated):** a U-turn that starts in a lot beside the highway. Its left-turn phase is recognized off the highway (not applicable), so only the U-turn recognition decides the verdict.\n\nEvery scene is 42 s at 1 s spacing, judged from t = 30 s to 41 s, where all the 15 s look-back windows are covered.\n\nTwo commands other than the gate were issued. One listing of the Core directory ran. A `--help` call to the harness was denied by the permission layer and never ran.",
+  "ttft_ms": 78913,
+  "type": "result",
+  "duration_ms": 593259,
+  "uuid": "155a659d-f40e-4571-8fec-79eb4eb84e6b",
+  "ttft_stream_ms": 595,
+  "time_to_request_ms": 67,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 20,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 5,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 16,
+  "time_to_request_cpu_ms": 102,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 8,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 595,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41303,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041463,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 28,
+    "outputTokens": 58286,
+    "cacheReadInputTokens": 1424814,
+    "cacheCreationInputTokens": 161212,
+    "webSearchRequests": 0,
+    "costUSD": 2.7404908,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 43875,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

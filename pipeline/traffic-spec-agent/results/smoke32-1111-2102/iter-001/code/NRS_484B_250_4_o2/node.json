@@ -1,0 +1,293 @@
+{
+ "node_id": "NRS_484B_250_4_o2",
+ "law_refs": [
+  "NRS-484B-250-4"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "a1",
+   "text": "When a vehicle enters an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "a2",
+   "text": "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered,",
+   "role": "condition"
+  },
+  {
+   "id": "a3",
+   "text": "but is inoperative at the time the vehicle enters the intersection,",
+   "role": "condition"
+  },
+  {
+   "id": "a4",
+   "text": "the driver of the vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "a5",
+   "text": "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop",
+   "role": "sibling"
+  },
+  {
+   "id": "a6",
+   "text": "at a clearly marked stop line",
+   "role": "sibling"
+  },
+  {
+   "id": "a7",
+   "text": "or, if there is none, before entering the crosswalk on the near side of the intersection",
+   "role": "sibling"
+  },
+  {
+   "id": "a8",
+   "text": "or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.",
+   "role": "sibling"
+  },
+  {
+   "id": "a9",
+   "text": "After making such a stop,",
+   "role": "condition"
+  },
+  {
+   "id": "a10",
+   "text": "the driver",
+   "role": "subject"
+  },
+  {
+   "id": "a11",
+   "text": "shall proceed cautiously,",
+   "role": "standard"
+  },
+  {
+   "id": "a12",
+   "text": "yielding to vehicles",
+   "role": "obligation"
+  },
+  {
+   "id": "a13",
+   "text": "which have previously completed a stop or are within the intersection.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle. \"enters an intersection\": the observation at which ego's footprint comes to overlap (rel.occupies) an intersection i (st.intersection), having occupied at the observation before a carrier c whose entrance end is i (st.lane_enters); read through a past operator, since the judged observations follow it."
+  },
+  {
+   "span": "a2",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.governs"
+   ],
+   "derived": [],
+   "justification": "\"traffic-control signal\": a dev.traffic_signal head ('a signal head') governing (dev.governs) i or c; installed and uncovered: present with its uncovered attribute. Not a pedestrian head."
+  },
+  {
+   "span": "a3",
+   "atoms": [
+    "dev.inoperative"
+   ],
+   "derived": [],
+   "justification": "dev.inoperative: 'a signal head installed and uncovered but showing no valid indication', read at the observation of ego's entry into i (\"at the time the vehicle enters\"), through a past operator: every head governing c or i inoperative there, at least one."
+  },
+  {
+   "span": "a4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"the vehicle\": ego (admitted aggregate DEF-NRS-484A-320::vehicle); \"the driver\" read through its controlled motion (agency reading)."
+  },
+  {
+   "span": "a9",
+   "atoms": [
+    "st.stop_line",
+    "st.crosswalk",
+    "st.entrance_of",
+    "st.region_geometry",
+    "rel.occupies",
+    "st.lane_direction",
+    "prim.region_offset_along"
+   ],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"such a stop\" is the stop a5-a8 require, carried in full: ego at rest (drv.motion.at_rest, \"complete cessation from movement\") on its approach carrier c at the governing place, the stop line marking c (st.stop_line, st.entrance_of), else short of the crosswalk marking c with its footprint not overlapping it (st.crosswalk, rel.occupies), else outside i at c's entrance end, body within p.stop_point_tolerance of the place (st.region_geometry), side read along c (st.lane_direction, prim.region_offset_along), found between the approach start and ego's entry into i as NRS_484B_250_4_o1 states. A halt elsewhere is not such a stop. \"After\": the judged observations follow that halt."
+  },
+  {
+   "span": "a10",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"the driver\": of ego, a vehicle (admitted aggregate DEF-NRS-484A-320::vehicle), read through its controlled motion (agency reading)."
+  },
+  {
+   "span": "a12",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"yielding\": granting precedence: ego does not proceed while a vehicle it yields to is in conflict with it, so at every judged observation ego is at rest (drv.motion.at_rest) or not in conflict with that vehicle (operationalization of a11). \"vehicles\": road users of the admitted aggregate DEF-NRS-484A-320::vehicle other than ego."
+  },
+  {
+   "span": "a13",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"are within the intersection\": b's footprint overlaps i (rel.occupies, st.intersection). \"have previously completed a stop\": b, on a carrier c_b other than c whose entrance end is i (st.lane_enters), came to rest there (drv.motion.at_rest) and the rest it came to began before ego's halt on c began, and b still occupies c_b; once b enters i it is within the intersection."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "a11",
+   "standard": "proceed cautiously",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_clearance"
+   ],
+   "convention": "Traffic-conflict technique: ego proceeds cautiously toward a vehicle it yields to where, projected at their current velocities, their centres do not approach within the time-to-collision horizon to a distance below the clearance at which their bodies would touch; the positions and velocities enter by degree.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (driven: agency reading) that entered an intersection i from a carrier c (st.lane_enters) at an observation at which at least one traffic signal head governed c or i (dev.traffic_signal, dev.governs) and every such head was inoperative (dev.inoperative), and that made, between the approach start and that entry, the stop a9 describes at the governing place on c (drv.motion.at_rest, p.rest_speed_tolerance, p.stop_point_tolerance); judged at every observation from that entry while ego's footprint overlaps i (rel.occupies). Where the history the stop's search needs precedes the recording, the applicability is unknown.",
+ "obligation": "For every vehicle b other than ego that overlaps i, or that occupies a carrier c_b other than c whose entrance end is i and came to rest there (drv.motion.at_rest) at an onset of rest earlier than the onset of ego's halt on c: ego is at rest (drv.motion.at_rest) or not in conflict with b, that is not both prim.closest_approach_within(ego, b) with horizon p.conflict_horizon and prim.closest_approach_distance(ego, b) with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.stop_point_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "a4",
+   "why": "'the driver' is read through ego's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "a11",
+   "why": "'cautiously' is read through the conflict with the vehicles ego yields to: ego proceeds without a projected closest approach to such a vehicle below the clearance within the horizon; caution toward other road users is not read by this rule.",
+   "kind": "reading"
+  },
+  {
+   "span": "a12",
+   "why": "A vehicle with precedence that keeps waiting at its own entrance is not in conflict with ego; ego proceeding while it waits is not read as a failure to yield.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "The signal governing ego's approach c is inoperative. Ego comes to rest at the stop line marking c, then enters the intersection while a vehicle b that is already within the intersection crosses ego's path; projected at constant velocities their centres approach within p.conflict_horizon below p.conflict_clearance while ego moves."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego stays at rest at the line until b has cleared the intersection, then proceeds with no projected conflict."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "The signal governing c shows circular_red then circular_green; it is not inoperative when ego enters."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares dev.inoperative absent.",
+   "masked": [
+    "dev.inoperative"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Signal inoperative. Vehicle b came to rest at its own stop line before ego came to rest at ego's line; b then moves toward the intersection while ego enters, and their projected closest approach falls below the clearance within the horizon."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Signal inoperative; ego stops at the line and crosses with no other road user in the scene."
+  },
+  {
+   "name": "branch_3",
+   "expected": "not_applicable",
+   "narrative": "As forbid, except that ego's only halt was far upstream of the stop line, outside its stopping zone, and ego did not halt at the line: no such stop was made, so this duty does not arise (NRS_484B_250_4_o1 judges the missing halt)."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.stop_point_tolerance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Stop-point tolerance of the ontology's approach convention: the body-to-mark distance within which a halt counts as made at the mark, and beyond which the road user is outside the stopping zone.",
+   "source": "MUTCD (2009) Section 3B.16 stop line placement; positioning accuracy of stop-compliance studies."
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a projected approach of the centres within this time counts toward the danger of a crash.",
+   "source": "Hayward (1972) time-to-collision; Hyden (1987) Swedish Traffic Conflict Technique; van der Horst (1990) TTC thresholds."
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Centre-to-centre distance at the projected closest approach below which the bodies of two passenger vehicles would touch or nearly touch (about a half-length plus a half-width of a design passenger car).",
+   "source": "AASHTO Green Book, design vehicle P dimensions."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

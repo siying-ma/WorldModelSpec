@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 110296,
+  "stop_reason": "end_turn",
+  "session_id": "a9a2d7d2-024d-4e0e-8233-9cce8e7f2350",
+  "total_cost_usd": 0.8216882000000001,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 62346,
+   "cache_read_input_tokens": 343101,
+   "output_tokens": 12527,
+   "output_tokens_details": {
+    "thinking_tokens": 5055
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 62346,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 655,
+     "cache_read_input_tokens": 65652,
+     "cache_creation_input_tokens": 1132,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1132
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36880,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037040000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 12527,
+    "cacheReadInputTokens": 343101,
+    "cacheCreationInputTokens": 62346,
+    "webSearchRequests": 0,
+    "costUSD": 0.8179841999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5055,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 13,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** on the second of six runs: all 7 witnesses pass and 9 names are used. The rule needs no other rule.\n\n**What the rule says**\n- **Who:** ego must be a vehicle under `DEF-NRS-484A-320::vehicle`.\n- **When it applies:** ego is on a roadway of a highway that has a median or divider on it.\n- **Exceptions:** it does not apply while ego is inside a median opening (a crossover) or inside an intersection on that highway.\n- **The duty:** every median or divider on that highway must be on ego's left, meaning a positive lateral offset from ego. That puts ego on the right-hand roadway.\n\n**Gate runs**\n1. **VACUOUS:** I had also written the exceptions into the duty. They changed no witness there, because the \"when it applies\" part already excludes those moments. I removed them from the duty. They now appear only in \"when it applies\", which matches the node's wording (\"not judged at an observation…\").\n2. **OK.**\n\n**Choices I made where the node left room**\n- **Exceptions not repeated in the duty.** One limit follows: if ego were on two divided highways at once and only one had an exception, the duty would still check the excepted one. None of the witnesses builds that case.\n- **\"Driven upon\" means on a roadway.** The d2 note also mentions being on the median, but I followed the node's own \"when it applies\" statement, which requires a roadway. Driving inside the dividing section is d5, which belongs to a different node.\n- **No narrowings declared.**\n\n**Witnesses**\n- The five the node planned (forbid, permit, idle, blind, branch_1) are built as described.\n- I added **branch_2** (not applicable): ego on the wrong roadway but inside an intersection on the highway. This tests the intersection exception.\n- I added **branch_3** (violated): the same scene as branch_1 but with no opening in the median. This tests the opening condition.\n\n`task_result.md` is in the working directory.",
+  "ttft_ms": 33275,
+  "type": "result",
+  "duration_ms": 120182,
+  "uuid": "3dca0d33-2703-4f94-b941-2b20d46003ad",
+  "ttft_stream_ms": 644,
+  "time_to_request_ms": 55,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 17,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "transcript_persist": 2,
+   "tool_pool_refresh": 1,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 5,
+  "time_to_request_cpu_ms": 87,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 644,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36880,
+    "outputTokens": 32,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0037040000000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 12527,
+    "cacheReadInputTokens": 343101,
+    "cacheCreationInputTokens": 62346,
+    "webSearchRequests": 0,
+    "costUSD": 0.8179841999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5055,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

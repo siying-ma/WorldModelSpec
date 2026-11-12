@@ -1,0 +1,165 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 5 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "args": [
+     {
+      "var": "ego"
+     }
+    ],
+    "derived": "drv_motion_backing",
+    "params": [
+     {
+      "param": "p.rest_speed_tolerance"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "NRS_484B_113_3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-113-3"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "and": [
+        {
+         "not": {
+          "same": [
+           {
+            "var": "u"
+           },
+           {
+            "var": "ego"
+           }
+          ]
+         }
+        },
+        {
+         "or": [
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "u"
+              },
+              {
+               "lit": "DEF-NRS-484A-285::traffic"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "not": {
+              "args": [
+               {
+                "var": "u"
+               }
+              ],
+              "derived": "drv_motion_at_rest",
+              "params": [
+               {
+                "param": "p.rest_speed_tolerance"
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "args": [
+            {
+             "var": "u"
+            },
+            {
+             "lit": "DEF-NRS-484A-165::pedestrian"
+            }
+           ],
+           "atom": "ru_aggregate",
+           "params": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "not": {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "ego"
+           },
+           {
+            "var": "u"
+           }
+          ],
+          "derived": "prim_closest_approach_within",
+          "params": [
+           {
+            "param": "p.conflict_horizon"
+           }
+          ]
+         },
+         {
+          "cmp": "lt",
+          "lhs": {
+           "args": [
+            {
+             "var": "ego"
+            },
+            {
+             "var": "u"
+            }
+           ],
+           "params": [
+            {
+             "param": "p.conflict_horizon"
+            }
+           ],
+           "quantity": "prim_closest_approach_distance"
+          },
+          "rhs": {
+           "param": "p.conflict_clearance"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "forall_user": "u"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "6d870e789cccaad7876e84a0",
+  "candidate_digest": "543fbc09db2434cc1c6c90bad9b5b78c9793ca98ef4b5fdcba42d1183c8a0813"
+ }
+}

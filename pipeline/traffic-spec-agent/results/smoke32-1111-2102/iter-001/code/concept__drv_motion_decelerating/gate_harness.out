@@ -1,0 +1,32 @@
+'TrafficSpec.Concepts.motion.decelerating.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.decelerating.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.decelerating.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"and":[{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_accel_longitudinal"},"rhs":{"neg":{"param":"decel_tolerance"}}},{"not":{"args":[{"var":"a"}],"derived":"drv_motion_backing","params":[{"param":"speed_tolerance"}]}}]},"contract":"Road user a is decelerating at an observation: its forward speed is falling. Measured as its acceleration along its heading (kin.accel_longitudinal, m/s², signed) at or below the negative of the deceleration tolerance, the magnitude below which a sampled acceleration counts as none, while a is not backing (drv.motion.backing with the speed tolerance does not hold), since for a backing road user a negative value is a gain of speed. Not a stand-in for its speed or for the brake lamp: a lit lamp without a deceleration is no deceleration.","definition":null,"id":"drv.motion.decelerating","kind":"formula","narrowings":[],"params":[{"name":"decel_tolerance","unit":"metre_per_second_sq"},{"name":"speed_tolerance","unit":"metre_per_second"}],"residues":[],"supersedes":null}
+ATOMS	kin_accel_longitudinal,drv_motion_backing
+READS	kin_accel_longitudinal,kin_velocity,kin_heading
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_accel_longitudinal"},"rhs":{"neg":{"param":"decel_tolerance"}}},{"not":{"cmp":"lt","lhs":{"add":[{"mul":[{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"x"}],"measure":"kin_heading"}]},{"mul":[{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_velocity"},{"args":[{"var":"a"},{"lit":"y"}],"measure":"kin_heading"}]}]},"rhs":{"neg":{"param":"speed_tolerance"}}}}]}
+WITNESS	holds	drv.motion.decelerating@w
+WITNESS	fails	drv.motion.decelerating@w
+WITNESS	blind	drv.motion.decelerating@w
+OCC	a
+OCC	a
+INST	drv.motion.decelerating@w	ok
+TIME	checks	3
+TIME	lint	2
+SCEN	holds	drv.motion.decelerating@w	compliant	compliant	ok
+TIME	scenario:drv.motion.decelerating@w/holds	7
+SCEN	fails	drv.motion.decelerating@w	violated	violated	ok
+TIME	scenario:drv.motion.decelerating@w/fails	6
+SCEN	blind	drv.motion.decelerating@w	unknown	unknown	ok
+TIME	scenario:drv.motion.decelerating@w/blind	9
+TIME	witnesses	22
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.decelerating.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.decelerating.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.decelerating.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.motion.decelerating@w	2	2
+TIME	adequacy_start	6
+TIME	adequacy	36
+DONE

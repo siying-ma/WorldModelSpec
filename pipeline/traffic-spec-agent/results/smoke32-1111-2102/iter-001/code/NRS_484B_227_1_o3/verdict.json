@@ -1,0 +1,503 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 12 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "and": [
+     {
+      "or": [
+       {
+        "rises": {
+         "args": [
+          {
+           "var": "ego"
+          }
+         ],
+         "derived": "drv_motion_left_turn",
+         "params": [
+          {
+           "param": "p.turn_window"
+          },
+          {
+           "param": "p.left_turn_min_angle"
+          },
+          {
+           "param": "p.left_turn_max_angle"
+          }
+         ]
+        }
+       },
+       {
+        "rises": {
+         "args": [
+          {
+           "var": "ego"
+          }
+         ],
+         "derived": "drv_motion_u_turn",
+         "params": [
+          {
+           "param": "p.turn_window"
+          },
+          {
+           "param": "p.u_turn_min_angle"
+          },
+          {
+           "param": "p.u_turn_max_angle"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "body": {
+       "and": [
+        {
+         "body": {
+          "args": [
+           {
+            "var": "md"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "md"
+        },
+        {
+         "not": {
+          "body": {
+           "not": {
+            "and": [
+             {
+              "not": {
+               "body": {
+                "not": {
+                 "cmp": "ge",
+                 "lhs": {
+                  "abs": {
+                   "args": [
+                    {
+                     "var": "ego"
+                    }
+                   ],
+                   "measure": "kin_yaw_rate"
+                  }
+                 },
+                 "rhs": {
+                  "param": "p.turn_yaw_tolerance"
+                 }
+                }
+               },
+               "holds_for": "time",
+               "length": {
+                "param": "p.turn_window"
+               },
+               "subject": "ego"
+              }
+             },
+             {
+              "or": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "r"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "st_on_way",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "roadway"
+                },
+                "var": "r"
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "m"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "st_on_way",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "var": "m"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "median_or_divider"
+                },
+                "var": "m"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.turn_window"
+          },
+          "subject": "ego"
+         }
+        }
+       ]
+      },
+      "exists_region": {
+       "lit": "highway"
+      },
+      "var": "h"
+     }
+    ]
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "NRS_484B_227_1_o3",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "body": {
+          "args": [
+           {
+            "var": "md"
+           },
+           {
+            "var": "h"
+           }
+          ],
+          "atom": "st_on_way",
+          "params": []
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "md"
+        },
+        {
+         "not": {
+          "body": {
+           "not": {
+            "and": [
+             {
+              "not": {
+               "body": {
+                "not": {
+                 "cmp": "ge",
+                 "lhs": {
+                  "abs": {
+                   "args": [
+                    {
+                     "var": "ego"
+                    }
+                   ],
+                   "measure": "kin_yaw_rate"
+                  }
+                 },
+                 "rhs": {
+                  "param": "p.turn_yaw_tolerance"
+                 }
+                }
+               },
+               "holds_for": "time",
+               "length": {
+                "param": "p.turn_window"
+               },
+               "subject": "ego"
+              }
+             },
+             {
+              "or": [
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "r"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "st_on_way",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "var": "r"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "roadway"
+                },
+                "var": "r"
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "m"
+                    },
+                    {
+                     "var": "h"
+                    }
+                   ],
+                   "atom": "st_on_way",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "var": "m"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                },
+                "exists_region": {
+                 "lit": "median_or_divider"
+                },
+                "var": "m"
+               }
+              ]
+             }
+            ]
+           }
+          },
+          "holds_for": "time",
+          "length": {
+           "param": "p.turn_window"
+          },
+          "subject": "ego"
+         }
+        }
+       ]
+      },
+      {
+       "not": {
+        "body": {
+         "not": {
+          "and": [
+           {
+            "not": {
+             "body": {
+              "not": {
+               "cmp": "ge",
+               "lhs": {
+                "abs": {
+                 "args": [
+                  {
+                   "var": "ego"
+                  }
+                 ],
+                 "measure": "kin_yaw_rate"
+                }
+               },
+               "rhs": {
+                "param": "p.turn_yaw_tolerance"
+               }
+              }
+             },
+             "holds_for": "time",
+             "length": {
+              "param": "p.turn_window"
+             },
+             "subject": "ego"
+            }
+           },
+           {
+            "or": [
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "o"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "o"
+                    }
+                   ],
+                   "atom": "st_median_or_divider_opening",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "var": "o"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  }
+                 ]
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "median_or_divider"
+              },
+              "var": "o"
+             },
+             {
+              "body": {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "i"
+                  },
+                  {
+                   "var": "h"
+                  }
+                 ],
+                 "atom": "st_on_way",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "ego"
+                  },
+                  {
+                   "var": "i"
+                  }
+                 ],
+                 "atom": "rel_occupies",
+                 "params": []
+                }
+               ]
+              },
+              "exists_region": {
+               "lit": "intersection"
+              },
+              "var": "i"
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "holds_for": "time",
+        "length": {
+         "param": "p.turn_window"
+        },
+        "subject": "ego"
+       }
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "2f7c3d73342c06fdcc28c2ff",
+  "candidate_digest": "8e0ebb2e0ee8afe16fe9407c16449b89f4d90f505df59dfc81db93cd7fc0fe63"
+ }
+}

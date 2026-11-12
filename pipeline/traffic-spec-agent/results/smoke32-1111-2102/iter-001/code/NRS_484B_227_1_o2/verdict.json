@@ -1,0 +1,251 @@
+{
+ "verdict": "OK",
+ "details": [
+  "6 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "body": {
+        "args": [
+         {
+          "var": "md"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "md"
+      },
+      {
+       "or": [
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "r"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "ego"
+             },
+             {
+              "var": "r"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "roadway"
+         },
+         "var": "r"
+        },
+        {
+         "body": {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "mu"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "ego"
+             },
+             {
+              "var": "mu"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         "exists_region": {
+          "lit": "median_or_divider"
+         },
+         "var": "mu"
+        }
+       ]
+      }
+     ]
+    },
+    "exists_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "NRS_484B_227_1_o2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-227-1"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "body": {
+     "implies": [
+      {
+       "body": {
+        "args": [
+         {
+          "var": "md"
+         },
+         {
+          "var": "h"
+         }
+        ],
+        "atom": "st_on_way",
+        "params": []
+       },
+       "exists_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "md"
+      },
+      {
+       "body": {
+        "implies": [
+         {
+          "and": [
+           {
+            "args": [
+             {
+              "var": "m"
+             },
+             {
+              "var": "h"
+             }
+            ],
+            "atom": "st_on_way",
+            "params": []
+           },
+           {
+            "args": [
+             {
+              "var": "ego"
+             },
+             {
+              "var": "m"
+             }
+            ],
+            "atom": "rel_occupies",
+            "params": []
+           }
+          ]
+         },
+         {
+          "or": [
+           {
+            "args": [
+             {
+              "var": "m"
+             }
+            ],
+            "atom": "st_median_or_divider_opening",
+            "params": []
+           },
+           {
+            "body": {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "i"
+                },
+                {
+                 "var": "h"
+                }
+               ],
+               "atom": "st_on_way",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "ego"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              }
+             ]
+            },
+            "exists_region": {
+             "lit": "intersection"
+            },
+            "var": "i"
+           }
+          ]
+         }
+        ]
+       },
+       "forall_region": {
+        "lit": "median_or_divider"
+       },
+       "var": "m"
+      }
+     ]
+    },
+    "forall_region": {
+     "lit": "highway"
+    },
+    "var": "h"
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "8bcc6bea11f2da17c7aec0b7",
+  "candidate_digest": "5450abddbf7a1015b26a34acce6626c07068ca1b98aac4731c72aa5331cc69b5"
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "concept_id": "drv.motion.turning_right",
+ "kind": "formula",
+ "contract": "Road user a is turning to the right at an observation: it moves and its heading turns to the right. Measured as a not at rest (drv.motion.at_rest with the speed tolerance does not hold) and its yaw rate (kin.yaw_rate, deg/s, left positive) at or below the negative of the yaw tolerance, the rate below which a change of heading counts as none. A state at each observation while a turn is under way, not a completed manoeuvre: it does not say how far the turn goes, and it holds alike where the road user follows a bend of the road to the right. Not a stand-in for the turn indicator or for a declared intention to turn.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "yaw_tolerance",
+   "unit": "deg/s",
+   "meaning": "the yaw rate magnitude below which a change of heading counts as none"
+  },
+  {
+   "name": "speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the speed at or below which the road user counts as at rest"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a not at rest (drv.motion.at_rest with the speed tolerance does not hold)",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "drv.motion.at_rest holds at each observation at which the speed is at or below the speed tolerance; its negation is the road user moving."
+  },
+  {
+   "span": "its yaw rate (kin.yaw_rate, deg/s, left positive) at or below the negative of the yaw tolerance",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate is 'positive when the heading turns to the left', so a rightward turn is a yaw rate below the negative tolerance; 'Not a stand-in for: road curvature' is stated: a bend followed to the right is included."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a moves through a junction with a yaw rate well below the negative of the tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a moves along a straight road with a yaw rate near zero."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "a moves, but the source supplies no yaw rate.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_413_2"
+ ],
+ "differs_from": {
+  "concept": "drv.motion.turning_left",
+  "why": "the opposite hand: the yaw rate at or below the negative of the tolerance rather than at or above it"
+ }
+}

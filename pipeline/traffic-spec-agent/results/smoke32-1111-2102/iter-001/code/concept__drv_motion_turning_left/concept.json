@@ -1,0 +1,67 @@
+{
+ "concept_id": "drv.motion.turning_left",
+ "kind": "formula",
+ "contract": "Road user a is turning to the left at an observation: it moves and its heading turns to the left. Measured as a not at rest (drv.motion.at_rest with the speed tolerance does not hold) and its yaw rate (kin.yaw_rate, deg/s, left positive) at or above the yaw tolerance, the rate below which a change of heading counts as none. A state at each observation while a turn is under way, not a completed manoeuvre: it does not say how far the turn goes, and it holds alike where the road user follows a bend of the road to the left. Not a stand-in for the turn indicator or for a declared intention to turn.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "yaw_tolerance",
+   "unit": "deg/s",
+   "meaning": "the yaw rate below which a change of heading counts as none"
+  },
+  {
+   "name": "speed_tolerance",
+   "unit": "m/s",
+   "meaning": "the speed at or below which a sampled speed counts as no movement"
+  }
+ ],
+ "elements": [
+  {
+   "span": "a not at rest (drv.motion.at_rest with the speed tolerance does not hold)",
+   "atoms": [],
+   "concepts": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "drv.motion.at_rest states no movement; its negation is a moving road user, so a vehicle turning its wheels on the spot is not turning."
+  },
+  {
+   "span": "its yaw rate (kin.yaw_rate, deg/s, left positive)",
+   "atoms": [
+    "kin.yaw_rate"
+   ],
+   "concepts": [],
+   "justification": "kin.yaw_rate: 'rate of change of heading, positive when the heading turns to the left'; it is not road curvature, and the contract says the concept holds alike on a bend."
+  }
+ ],
+ "residues": [],
+ "literals": [],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "A moving vehicle's yaw rate is leftward above the tolerance."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "A moving vehicle drives straight with a yaw rate near zero."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "The source declares kin.yaw_rate absent.",
+   "masked": [
+    "kin.yaw_rate"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_250_1",
+  "NRS_484B_253_o2"
+ ]
+}

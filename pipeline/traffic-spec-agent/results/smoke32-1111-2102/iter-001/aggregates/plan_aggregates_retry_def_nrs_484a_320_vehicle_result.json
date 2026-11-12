@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 29696,
+  "stop_reason": "end_turn",
+  "session_id": "8e4af28a-d5a2-4abd-8ed9-1f242c41f741",
+  "total_cost_usd": 0.13743460000000002,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7357,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 3876,
+   "output_tokens_details": {
+    "thinking_tokens": 1007
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7357,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 3876,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 7357,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7357
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7316,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007416,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 3876,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7357,
+    "webSearchRequests": 0,
+    "costUSD": 0.136693,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1007,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484A-320\", \"term\": \"vehicle\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484A-320::vehicle\", \"quote\": \"“Vehicle” means every device in, upon or by which any person or property is or may be transported or drawn upon a highway, except:\", \"reason\": \"The definition denotes an extensional set of transporting devices, bounded by a closed list of exceptions, whose membership the road-user classes can carry.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484A-320::vehicle\", \"term\": \"vehicle\", \"definition\": \"DEF-NRS-484A-320\",\n   \"classifications\": [\n     {\"class\": \"ru.bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(1) Devices moved by human power or used exclusively upon stationary rails\"}], \"reason\": \"A human-powered bicycle is a device moved by human power, which the exception leaves out.\"},\n     {\"class\": \"ru.bus\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A bus is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.child\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"The contract describes a person, not a device. A person is what a device transports, so the admitting clause reaches no member.\"},\n     {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A commercial motor vehicle is a device that transports persons or property upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.electric_bicycle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(2) Electric bicycles;\"}], \"reason\": \"The definition expressly excepts electric bicycles.\"},\n     {\"class\": \"ru.electric_scooter\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(4) An electric scooter.\"}], \"reason\": \"The definition expressly excepts an electric scooter.\"},\n     {\"class\": \"ru.emergency_vehicle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"An emergency vehicle is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.fire_apparatus\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"Fire apparatus is a device that transports persons and property upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.moped\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}, {\"definition\": \"DEF-NRS-484A-125\", \"words\": \"The term does not include an electric bicycle or an electric scooter.\"}], \"reason\": \"A moped is an engine-propelled device that transports a person. It is not an electric bicycle or an electric scooter, so no exception reaches it.\"},\n     {\"class\": \"ru.motor_vehicle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A motor vehicle is a self-propelled, non-rail device that transports persons or property, and no exception reaches it.\"},\n     {\"class\": \"ru.motorcycle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A motorcycle is a motor-propelled device that transports a person upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.official_vehicle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"An official vehicle is a device that transports persons or property upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.pedestrian\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}, {\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(3) Electric personal assistive mobility devices as defined in NRS 482.029\"}], \"reason\": \"Every alternative in the contract describes a person rather than a device. The device-only admitting clause therefore reaches no member, and electric personal assistive mobility devices are expressly excepted in any case.\"},\n     {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"The contract describes a pedestrian person with specified assistance, not a transporting device, so the admitting clause reaches no member.\"},\n     {\"class\": \"ru.rail_vehicle\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"(1) Devices moved by human power or used exclusively upon stationary rails\"}], \"reason\": \"On-track equipment is a device used exclusively upon stationary rails, which the exception leaves out.\"},\n     {\"class\": \"ru.school_bus\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A school bus is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.taxicab\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A taxicab is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A tour bus or limousine is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.trailer_or_combination\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A trailer, or a combination including one, is a device by which property is transported or drawn upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.transit_bus\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A transit bus is a device that transports persons upon a highway, and no exception reaches it.\"},\n     {\"class\": \"ru.truck\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-320\", \"words\": \"every device in, upon or by which any person or property is or may be transported or drawn upon a highway\"}], \"reason\": \"A truck is a device that transports property upon a highway, and no exception reaches it.\"}\n   ]}]}\n```",
+  "ttft_ms": 10417,
+  "type": "result",
+  "duration_ms": 29358,
+  "uuid": "ea827c57-051e-482e-9b77-4611845c45d7",
+  "ttft_stream_ms": 1679,
+  "time_to_request_ms": 312,
+  "time_to_request_phases_ms": {
+   "other": 17,
+   "system_prompt": 16,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 229,
+   "tool_schema_build": 6,
+   "message_normalization": 1,
+   "client_creation": 11,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 17,
+  "time_to_request_cpu_ms": 243,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 10,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1680,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 7316,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0007416,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 3876,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 7357,
+    "webSearchRequests": 0,
+    "costUSD": 0.136693,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1007,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

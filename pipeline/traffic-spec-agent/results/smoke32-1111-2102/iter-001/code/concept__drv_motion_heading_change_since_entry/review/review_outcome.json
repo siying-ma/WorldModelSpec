@@ -1,0 +1,27 @@
+{
+ "reviewer_verdict": "accept",
+ "rulings": [],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "736897e17b7f7f6ed32f05145edd19e0cf389e490df85326e9b5b6cfd06599ad",
+ "rulings_at": 1,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "Tested continued accumulation after leaving the region: the body returned the contract's 90 deg.",
+   "Tested zero at observed entry with the pre-entry yaw rate unobserved: the body returned 0 deg, agreeing with the contract.",
+   "Tested accumulation beyond a full revolution: the body returned 450 deg without wrapping, agreeing with the contract.",
+   "Tested a newly observed re-entry after initial occupancy and an older interval exceeding the step bound: the body returned -45 deg from the latest entry, agreeing with the contract."
+  ],
+  "defer_stage": null
+ },
+ "rows": []
+}

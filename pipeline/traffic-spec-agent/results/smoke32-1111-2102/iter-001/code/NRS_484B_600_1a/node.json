@@ -1,0 +1,214 @@
+{
+ "node_id": "NRS_484B_600_1a",
+ "law_refs": [
+  "NRS-484B-600-1a"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "u1",
+   "text": "It is unlawful for any person to drive or operate",
+   "role": "subject"
+  },
+  {
+   "id": "u2",
+   "text": "a vehicle of any kind or character",
+   "role": "subject"
+  },
+  {
+   "id": "u3",
+   "text": "at: A rate of speed",
+   "role": "obligation"
+  },
+  {
+   "id": "u4",
+   "text": "greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions.",
+   "role": "standard"
+  }
+ ],
+ "elements": [
+  {
+   "span": "u1",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'to drive or operate' is read through the vehicle's controlled motion (observable_reading agency): its speed (kin.speed, 'magnitude of velocity'), whoever or whatever controls it."
+  },
+  {
+   "span": "u2",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "'vehicle' admitted as DEF-NRS-484A-320::vehicle: 'every device in, upon or by which any person or property is or may be transported or drawn upon a highway', except 'Devices moved by human power or used exclusively upon stationary rails', 'Electric bicycles', electric personal assistive mobility devices and 'An electric scooter'; claimed whole. 'of any kind or character' adds no restriction."
+  },
+  {
+   "span": "u3",
+   "atoms": [
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "'A rate of speed' is kin.speed, 'magnitude of velocity' in m/s; kin.accel_longitudinal's 'Not a stand-in for: speed' confirms speed is read directly."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "u4",
+   "standard": "a rate of speed greater than is reasonable or proper, having due regard for the traffic, surface and width of the highway, the weather and other highway conditions",
+   "concepts": [
+    "drv.motion.stopping_distance",
+    "kin.speed",
+    "st.sight_distance",
+    "env.visibility",
+    "env.wet_road",
+    "env.ice_or_snow",
+    "env.precipitation",
+    "st.curvature",
+    "st.lane",
+    "st.lane_width",
+    "rel.occupies",
+    "rel.ahead_behind_in_lane",
+    "rel.surface_gap"
+   ],
+   "params": [
+    "p.perception_reaction_time",
+    "p.stopping_decel_dry",
+    "p.stopping_decel_wet",
+    "p.stopping_decel_ice",
+    "p.curve_lateral_accel",
+    "p.lane_width_speed_time"
+   ],
+   "convention": "Stopping-sight-distance model of highway design (AASHTO Green Book), with the curve side-friction and lane-width relations of the same guides. Surface and weather select the deceleration: p.stopping_decel_ice where env.ice_or_snow holds, else p.stopping_decel_wet where env.wet_road or env.precipitation holds, else p.stopping_decel_dry (Term.cond over drv.motion.stopping_distance calls with p.perception_reaction_time). The stopping distance may not exceed the sight distance of the place (st.sight_distance) nor the visibility distance (env.visibility); for every road user ahead of ego in its lane (rel.ahead_behind_in_lane), the traffic, the gap (rel.surface_gap) may not fall below the speed times p.perception_reaction_time; the speed squared times the curvature (st.curvature) may not exceed p.curve_lateral_accel; the speed times p.lane_width_speed_time may not exceed the width (st.lane_width) of the lane ego occupies (st.lane, rel.occupies). Each measured magnitude enters its bound. The standard is the whole duty: the rule is a surrogate.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle); the duty is judged at every observation.",
+ "obligation": "At every observation, with D the stopping distance of ego (drv.motion.stopping_distance with p.perception_reaction_time and the deceleration selected by Term.cond: p.stopping_decel_ice where env.ice_or_snow holds, else p.stopping_decel_wet where env.wet_road or env.precipitation holds, else p.stopping_decel_dry): D is at or below st.sight_distance at ego's place and at or below env.visibility; ego's speed (kin.speed) squared times st.curvature at its place is at or below p.curve_lateral_accel; for every lane l ego occupies (rel.occupies), ego's speed times p.lane_width_speed_time is at or below st.lane_width of l; and for every road user u other than ego that is ahead of ego in its lane (rel.ahead_behind_in_lane), the gap between them (rel.surface_gap) is at or above ego's speed times p.perception_reaction_time. With no such road user the last clause is met.",
+ "params": [
+  "p.perception_reaction_time",
+  "p.stopping_decel_dry",
+  "p.stopping_decel_wet",
+  "p.stopping_decel_ice",
+  "p.curve_lateral_accel",
+  "p.lane_width_speed_time"
+ ],
+ "narrowings": [
+  {
+   "span": "u1",
+   "why": "'drive or operate' is read through the vehicle's motion, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "u4",
+   "why": "The factors are read only through the contracts named: traffic through the road users ahead in ego's lane (crossing and oncoming traffic, and its density, are not read); surface through wet and icy or snow-covered states; width through the width of the lane ego occupies; weather through precipitation and visibility distance; the catch-all 'other highway conditions' only through curvature and the sight distance of the place (grade, darkness and works are not read).",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "ego, a passenger car, drives at highway speed on a dry straight road in dense fog: its stopping distance far exceeds the visibility distance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "ego drives at a moderate speed on a dry, straight, wide road in clear weather with a long sight distance and no road user close ahead."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "ego is a bicycle (ru.bicycle), a device moved by human power that the vehicle aggregate does not include."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "as in permit, but the source does not supply sight distances, so whether the stopping distance fits within the sight distance is unknown.",
+   "masked": [
+    "st.sight_distance"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "ego drives on an icy road at a speed whose dry stopping distance fits within the sight distance but whose icy stopping distance does not."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "ego takes a sharp bend at a speed whose lateral acceleration exceeds the side-friction limit, on a dry road with ample sight distance and no other road user."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "ego drives alone on the road at a moderate speed in clear weather: no road user is ahead and every bound holds."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.perception_reaction_time",
+   "unit": "s",
+   "value": 2.5,
+   "convention": "Brake reaction time of the stopping-sight-distance model: the time from the appearance of a hazard to the application of the brakes.",
+   "source": "AASHTO Green Book, stopping sight distance"
+  },
+  {
+   "name": "p.stopping_decel_dry",
+   "unit": "m/s^2",
+   "value": 4.5,
+   "convention": "Deceleration a driver attains in a controlled stop on a dry paved surface.",
+   "source": "AASHTO Green Book and braking studies (Fambro et al., NCHRP 400)"
+  },
+  {
+   "name": "p.stopping_decel_wet",
+   "unit": "m/s^2",
+   "value": 3.4,
+   "convention": "Deceleration of the stopping-sight-distance model, which most drivers attain on a wet pavement.",
+   "source": "AASHTO Green Book, stopping sight distance"
+  },
+  {
+   "name": "p.stopping_decel_ice",
+   "unit": "m/s^2",
+   "value": 1.5,
+   "convention": "Deceleration attainable on an icy or snow-covered surface, from the low friction coefficient of such surfaces.",
+   "source": "winter road friction measurements (PIARC)"
+  },
+  {
+   "name": "p.curve_lateral_accel",
+   "unit": "m/s^2",
+   "value": 2.0,
+   "convention": "Side-friction limit of horizontal curve design: the lateral acceleration a curve may impose on a vehicle at a comfortable, safe speed.",
+   "source": "AASHTO Green Book, horizontal curve side friction factors"
+  },
+  {
+   "name": "p.lane_width_speed_time",
+   "unit": "s",
+   "value": 0.16,
+   "convention": "Lane width per unit of speed from the lane-width and design-speed relation of highway design guides (a full-width lane for a high design speed): the speed times it may not exceed the lane's width.",
+   "source": "AASHTO Green Book lane widths by design speed"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

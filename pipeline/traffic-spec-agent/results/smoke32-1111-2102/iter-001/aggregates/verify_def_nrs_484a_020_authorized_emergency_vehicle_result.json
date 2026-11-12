@@ -1,0 +1,34 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "{\n  \"aggregate_id\": \"DEF-NRS-484A-020::authorized_emergency_vehicle\",\n  \"classifications\": [\n    {\n      \"class\": \"ru.bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition requires a vehicle, and the vehicle definition expressly excepts devices moved by human power, matching this class's contract.\"\n    },\n    {\n      \"class\": \"ru.bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words do not establish that every bus permitted to depart from traffic laws belongs to a class the jurisdiction designates as emergency.\"\n    },\n    {\n      \"class\": \"ru.child\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The admitting words require a vehicle, whereas this class describes a pedestrian person, so they reach no member under its contract.\"\n    },\n    {\n      \"class\": \"ru.commercial_motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the permission clause nor the quoted contract establishes that every qualifying commercial vehicle carries ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.electric_bicycle\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition requires a vehicle, and the nested vehicle definition expressly excepts electric bicycles.\"\n    },\n    {\n      \"class\": \"ru.electric_scooter\",\n      \"verdict\": \"supported\",\n      \"reason\": \"The definition requires a vehicle, and the nested vehicle definition expressly excepts an electric scooter.\"\n    },\n    {\n      \"class\": \"ru.emergency_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The contract establishes emergency-class designation, but the posted words do not equate that designation with permission to depart from traffic laws.\"\n    },\n    {\n      \"class\": \"ru.fire_apparatus\",\n      \"verdict\": \"supported\",\n      \"reason\": \"Every fire apparatus admitted by the vehicle-and-permission clause carries ru.emergency_vehicle under the explicit sub-kind contract, and that covering class is proposed included.\"\n    },\n    {\n      \"class\": \"ru.moped\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words do not establish that every moped satisfying the permission requirement belongs to a jurisdiction-designated emergency class.\"\n    },\n    {\n      \"class\": \"ru.motor_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Permission to depart from traffic laws does not, under the posted words or contracts, establish membership in ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.motorcycle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the admitting clause nor the contracts requires every qualifying motorcycle to carry the proposed covering class.\"\n    },\n    {\n      \"class\": \"ru.official_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Official-service membership and permission to depart from traffic laws do not establish emergency-class designation under the posted words.\"\n    },\n    {\n      \"class\": \"ru.pedestrian\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The admitting words require a vehicle, while the contract describes a person rather than the wheelchair or device the person uses.\"\n    },\n    {\n      \"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\",\n      \"verdict\": \"contradicted\",\n      \"reason\": \"The contract describes a pedestrian person, not a vehicle, so the admitting words reach no member of this class.\"\n    },\n    {\n      \"class\": \"ru.rail_vehicle\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The exception requires exclusive use upon stationary rails, but the contract's description of on-track equipment does not establish that exclusivity.\"\n    },\n    {\n      \"class\": \"ru.school_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The posted words do not establish that every school bus satisfying the permission requirement carries ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.taxicab\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"A qualifying taxicab's permission to depart from traffic laws is not shown to entail the emergency designation required by the covering contract.\"\n    },\n    {\n      \"class\": \"ru.tour_bus_or_limousine\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"Neither the permission clause nor the class contracts establishes emergency-class membership for every qualifying tour bus or limousine.\"\n    },\n    {\n      \"class\": \"ru.trailer_or_combination\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The words do not require an admitted trailer or combination to belong to a class the jurisdiction designates as emergency.\"\n    },\n    {\n      \"class\": \"ru.transit_bus\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The posted words do not connect a transit bus's permission to depart from traffic laws with membership in ru.emergency_vehicle.\"\n    },\n    {\n      \"class\": \"ru.truck\",\n      \"verdict\": \"underdetermined\",\n      \"reason\": \"The admitting words can reach a permitted truck without the posted contracts establishing that it carries the proposed emergency covering class.\"\n    }\n  ]\n}",
+  "num_turns": 1,
+  "duration_ms": 87682,
+  "total_cost_usd": null,
+  "usage": {
+   "input_tokens": 5379,
+   "input_tokens_details": {
+    "cache_write_tokens": 5376,
+    "cached_tokens": 0
+   },
+   "output_tokens": 4110,
+   "output_tokens_details": {
+    "reasoning_tokens": 2987
+   },
+   "total_tokens": 9489
+  },
+  "vendor": "openai",
+  "model": "gpt-6.1-sol",
+  "response_id": "resp_0ffd809dd279b2a0016af53cefd81087d0b1390eae595f663b",
+  "status": "completed"
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

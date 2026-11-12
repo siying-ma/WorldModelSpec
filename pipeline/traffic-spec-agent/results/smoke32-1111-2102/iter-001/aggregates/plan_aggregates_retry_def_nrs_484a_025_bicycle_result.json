@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 56609,
+  "stop_reason": "end_turn",
+  "session_id": "456c6420-4178-4b5d-ba79-96e315b69fe0",
+  "total_cost_usd": 0.21248110000000003,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 8059,
+   "cache_read_input_tokens": 1545,
+   "output_tokens": 7344,
+   "output_tokens_details": {
+    "thinking_tokens": 2019
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 8059,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 7344,
+     "cache_read_input_tokens": 1545,
+     "cache_creation_input_tokens": 8059,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 8059
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 8021,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0008121000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 7344,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 8059,
+    "webSearchRequests": 0,
+    "costUSD": 0.21166900000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2019,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "```json\n{\"selection\": [{\"definition\": \"DEF-NRS-484A-025\", \"term\": \"bicycle\", \"representation\": \"aggregate\", \"target\": \"DEF-NRS-484A-025::bicycle\", \"quote\": \"“Bicycle” means a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter, or every such device generally recognized as a bicycle though equipped with two front or two rear wheels except a moped.\", \"reason\": \"The definition denotes an extensional set of ridden human-powered wheeled devices, which the ru.* classes can classify.\"}],\n \"aggregates\": [{\"aggregate_id\": \"DEF-NRS-484A-025::bicycle\", \"term\": \"bicycle\", \"definition\": \"DEF-NRS-484A-025\",\n   \"classifications\": [\n    {\"class\": \"ru.bicycle\", \"status\": \"included\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels either of which is over 14 inches in diameter, or every such device generally recognized as a bicycle\"}]},\n    {\"class\": \"ru.moped\", \"status\": \"excluded\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"except a moped\"}]},\n    {\"class\": \"ru.bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of buses, but every bus they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.child\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words admit only ridden human-powered wheeled devices, so any member of this class they admit is one, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.commercial_motor_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.electric_bicycle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"An assisting motor does not negate human propulsion, and every electric bicycle the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}, {\"class\": \"ru.electric_bicycle\", \"words\": \"a bicycle with an assisting electric motor\"}]},\n    {\"class\": \"ru.electric_scooter\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484B-018\", \"words\": \"propelled by its electric motor or by propulsion provided by the rider\"}], \"reason\": \"The posted scooter definition permits rider-provided propulsion, and every scooter the bicycle words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.emergency_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.fire_apparatus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.motor_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"Self-propulsion does not expressly preclude an additional human-powered mode, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.motorcycle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The motorcycle contract does not prohibit human propulsion alongside a motor, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.official_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.pedestrian\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words admit only ridden human-powered wheeled devices, so any member of this class they admit is one, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.pedestrian_with_white_cane_or_guide_animal\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words admit only ridden human-powered wheeled devices, so any member of this class they admit is one, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.rail_vehicle\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The bicycle definition contains no rail exclusion, and every on-track device the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.school_bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"School designation and markings do not require exclusive motor propulsion, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.taxicab\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.tour_bus_or_limousine\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The lengthened passenger-vehicle branch is not restricted to motor propulsion, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.trailer_or_combination\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"The words state no exclusion of this class, but every member they could admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.transit_bus\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"Transit service and route displays do not require exclusive motor propulsion, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]},\n    {\"class\": \"ru.truck\", \"status\": \"covered\", \"quotes\": [{\"definition\": \"DEF-NRS-484A-025\", \"words\": \"a device propelled by human power upon which a person may ride, having two tandem wheels\"}, {\"definition\": \"DEF-NRS-484A-025\", \"words\": \"or every such device generally recognized as a bicycle though equipped with two front or two rear wheels\"}], \"reason\": \"A goods-carrying body and motor propulsion do not expressly prohibit additional human propulsion, and every member the words admit is a human-powered wheeled device a person rides, which carries ru.bicycle.\", \"covered_by\": [\"ru.bicycle\"], \"basis\": [{\"class\": \"ru.bicycle\", \"words\": \"human-powered wheeled vehicle ridden by a person\"}]}\n   ]}]}\n```",
+  "ttft_ms": 22170,
+  "type": "result",
+  "duration_ms": 56117,
+  "uuid": "2c683af5-b2ea-43c4-b89d-bde5970e75b8",
+  "ttft_stream_ms": 3296,
+  "time_to_request_ms": 75,
+  "time_to_request_phases_ms": {
+   "other": 13,
+   "system_prompt": 22,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 5,
+   "input_hooks": 3,
+   "transcript_persist": 12,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 0,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 25,
+  "time_to_request_cpu_ms": 114,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 7,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 3296,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 8021,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0008121000000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 2,
+    "outputTokens": 7344,
+    "cacheReadInputTokens": 1545,
+    "cacheCreationInputTokens": 8059,
+    "webSearchRequests": 0,
+    "costUSD": 0.21166900000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2019,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

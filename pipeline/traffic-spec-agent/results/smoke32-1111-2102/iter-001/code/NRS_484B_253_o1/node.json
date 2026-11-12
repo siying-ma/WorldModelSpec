@@ -1,0 +1,282 @@
+{
+ "node_id": "NRS_484B_253_o1",
+ "law_refs": [
+  "NRS-484B-253"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "f1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "f2",
+   "text": "within an intersection",
+   "role": "condition"
+  },
+  {
+   "id": "f3",
+   "text": "intending to turn to the left",
+   "role": "condition"
+  },
+  {
+   "id": "f4",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "f5",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "f6",
+   "text": "to any vehicle approaching from the opposite direction",
+   "role": "condition"
+  },
+  {
+   "id": "f7",
+   "text": "which is within the intersection",
+   "role": "condition"
+  },
+  {
+   "id": "f8",
+   "text": "or so close thereto as to constitute an immediate hazard,",
+   "role": "standard"
+  },
+  {
+   "id": "f9",
+   "text": "but such driver,",
+   "role": "boilerplate"
+  },
+  {
+   "id": "f10",
+   "text": "having so yielded",
+   "role": "sibling"
+  },
+  {
+   "id": "f11",
+   "text": "and having given a signal when and as required,",
+   "role": "sibling"
+  },
+  {
+   "id": "f12",
+   "text": "may make such left turn",
+   "role": "sibling"
+  },
+  {
+   "id": "f13",
+   "text": "and the drivers of all other vehicles approaching the intersection from the opposite direction",
+   "role": "sibling"
+  },
+  {
+   "id": "f14",
+   "text": "shall yield",
+   "role": "sibling"
+  },
+  {
+   "id": "f15",
+   "text": "the right-of-way",
+   "role": "sibling"
+  },
+  {
+   "id": "f16",
+   "text": "to the vehicle making the left turn.",
+   "role": "sibling"
+  }
+ ],
+ "elements": [
+  {
+   "span": "f1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle; \"The driver\" read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "f2",
+   "atoms": [
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"within an intersection\": ego's footprint overlaps (rel.occupies) an intersection i (st.intersection, 'the region where two roadways meet'); i is the region the intention f3 is declared at."
+  },
+  {
+   "span": "f4",
+   "atoms": [],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"yield\": granting precedence (DEF-NRS-484A-210 \"unless one grants precedence to the other\"): ego does not proceed while the vehicle with the right-of-way is in conflict with it, so ego is at rest (drv.motion.at_rest) or not in conflict (operationalization of f5)."
+  },
+  {
+   "span": "f6",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.lane_enters",
+    "st.lane_direction",
+    "st.travel_region",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"any vehicle\": every road user b other than ego of the admitted aggregate DEF-NRS-484A-320::vehicle. \"approaching from the opposite direction\": read, as rel.oncoming's contract directs, through the carriers: b's approach carrier (the carrier whose entrance end is i that b occupies, or the one from which it entered i; st.lane_enters, rel.occupies) and ego's (the carrier from which ego entered i) carry opposed designated directions (st.lane_direction), not through the current headings, which a turn changes."
+  },
+  {
+   "span": "f7",
+   "atoms": [
+    "rel.occupies",
+    "st.intersection"
+   ],
+   "derived": [],
+   "justification": "\"which is within the intersection\": b's footprint overlaps the same i (rel.occupies)."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "f5",
+   "standard": "the right-of-way: DEF-NRS-484A-210 \"approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other\"",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_clearance"
+   ],
+   "convention": "Traffic-conflict technique: two road users are in conflict where, projected at their current velocities, their centres approach within the time-to-collision horizon and their closest-approach centre distance is below the clearance at which their bodies would touch. Direction, speed and proximity enter by degree through the projected velocities and positions.",
+   "surrogate": false
+  },
+  {
+   "span": "f8",
+   "standard": "so close thereto as to constitute an immediate hazard",
+   "concepts": [
+    "st.region_geometry",
+    "kin.speed"
+   ],
+   "params": [
+    "p.immediate_hazard_time"
+   ],
+   "convention": "Gap acceptance: an approaching vehicle is an immediate hazard where its time to reach the intersection is below the critical headway for a left turn, read as the ground distance from its body to the intersection (st.region_geometry) at or below its speed (kin.speed) times the critical headway; distance and speed enter by degree.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "f3",
+   "id": "int.left_turn",
+   "meaning": "The road user's current plan includes turning left at the target region."
+  }
+ ],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (driven: agency reading) whose footprint overlaps an intersection i (rel.occupies, st.intersection) and which declares int.left_turn at i at the judged observation.",
+ "obligation": "For every vehicle b other than ego whose approach to i is opposite to ego's (b's approach carrier, the carrier entering i that b occupies or the one from which it entered i, and the carrier from which ego entered i carry directions whose dot product is below minus p.opposite_direction_tolerance; st.lane_direction, st.lane_enters) and that either overlaps i or occupies its approach carrier with the ground distance from its body to i (st.region_geometry) at or below its speed (kin.speed) times p.immediate_hazard_time: ego is at rest (drv.motion.at_rest, p.rest_speed_tolerance) or not in conflict with b, that is not both prim.closest_approach_within(ego, b) with horizon p.conflict_horizon and prim.closest_approach_distance(ego, b) with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_clearance",
+  "p.immediate_hazard_time",
+  "p.opposite_direction_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "f1",
+   "why": "'The driver' is read through ego's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ego is within the intersection and declares int.left_turn there. An oncoming vehicle b on the opposite approach is at a distance from the intersection below its speed times p.immediate_hazard_time; ego moves across b's path and their projected closest approach falls within p.conflict_horizon below p.conflict_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego stays at rest in the intersection until b has passed, then turns."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Ego is within the intersection with a declared plan to go straight (int.left_turn false)."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares st.lane_direction absent: whether b approaches from the opposite direction cannot be read.",
+   "masked": [
+    "st.lane_direction"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "Ego, within the intersection with int.left_turn, turns left with no other road user in the scene."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "An oncoming vehicle b is on the opposite approach at a distance above its speed times p.immediate_hazard_time and not within the intersection; ego turns."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a projected approach of the centres within this time counts toward the danger of a crash.",
+   "source": "Hayward (1972) time-to-collision; Hyden (1987) Swedish Traffic Conflict Technique; van der Horst (1990) TTC thresholds."
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Centre-to-centre distance at the projected closest approach below which the bodies of two passenger vehicles would touch or nearly touch (about a half-length plus a half-width of a design passenger car).",
+   "source": "AASHTO Green Book, design vehicle P dimensions."
+  },
+  {
+   "name": "p.immediate_hazard_time",
+   "unit": "s",
+   "value": 4.1,
+   "convention": "Critical headway of gap acceptance: an approaching vehicle whose time to reach the intersection is below it is too close for a turning or crossing manoeuvre to be completed ahead of it.",
+   "source": "Highway Capacity Manual, 6th ed., base critical headway for a major-street left turn."
+  },
+  {
+   "name": "p.opposite_direction_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Cosine of the largest angle off exactly opposed at which two approach directions still count as opposite (thirty degrees), covering skewed approaches.",
+   "source": "Trajectory-processing conventions for opposing-movement classification at intersections (inD)."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

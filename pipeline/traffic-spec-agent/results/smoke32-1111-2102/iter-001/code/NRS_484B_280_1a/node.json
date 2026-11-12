@@ -1,0 +1,155 @@
+{
+ "node_id": "NRS_484B_280_1a",
+ "law_refs": [
+  "NRS-484B-280-1a"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "p1",
+   "text": "A driver of a motor vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "p2",
+   "text": "shall: Exercise due care",
+   "role": "standard"
+  },
+  {
+   "id": "p3",
+   "text": "to avoid a collision with a pedestrian.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "p1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ],
+   "derived": [],
+   "justification": "'motor vehicle' is admitted as DEF-NRS-484A-130::motor_vehicle, the definition that applies: 'every vehicle which is self-propelled but not operated upon rails', which 'does not include an electric bicycle or an electric scooter'; the run's reading classifies the classes under that id, so the aggregate is claimed whole and never expanded into class atoms. 'A driver of' names who controls the vehicle, no class: it is read through the vehicle's controlled motion (narrowing, observable_reading agency)."
+  },
+  {
+   "span": "p3",
+   "atoms": [
+    "rel.contact",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [],
+   "justification": "'a collision' is rel.contact: 'the bodies of two road users ... touch or overlap (a collision)'. Its exclusion 'Not a stand-in for: a near miss' does not apply: the collision itself is what the duty is to avoid, and the approach short of contact is read by the operationalization of 'due care', not by this atom. 'a pedestrian' is admitted as DEF-NRS-484A-165::pedestrian: 'a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'; claimed whole and read for every road user of the scene other than ego."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "p2",
+   "standard": "due care",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance",
+    "drv.motion.at_rest"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.pedestrian_conflict_clearance",
+    "p.rest_speed_tolerance"
+   ],
+   "convention": "Traffic-conflict technique: while the motor vehicle moves (drv.motion.at_rest under p.rest_speed_tolerance does not hold), a pedestrian whose centre it approaches within the time-to-collision horizon p.conflict_horizon (prim.closest_approach_within) to a centre distance below p.pedestrian_conflict_clearance (prim.closest_approach_distance) is a conflict the driver's care did not avoid; the projected distance enters the bound itself, so a nearer approach is a graver one. Care is a state of mind and the standard is the whole duty: the rule is a surrogate.",
+   "surrogate": true
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+   ]
+  }
+ ],
+ "applicability": "ego is a motor vehicle (ru.aggregate DEF-NRS-484A-130::motor_vehicle). The duty is judged at every observation.",
+ "obligation": "At every observation, for every road user p of the scene other than ego that is a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian): either ego is at rest (drv.motion.at_rest with p.rest_speed_tolerance), or ego and p are not in contact (rel.contact) and it is not the case that their centres approach within p.conflict_horizon (prim.closest_approach_within) with a centre distance at that closest approach below p.pedestrian_conflict_clearance (prim.closest_approach_distance). With no pedestrian in the scene the duty is met.",
+ "params": [
+  "p.conflict_horizon",
+  "p.pedestrian_conflict_clearance",
+  "p.rest_speed_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "p1",
+   "why": "'A driver' is read through the motor vehicle's controlled motion: the duty binds the vehicle's conduct whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "p2",
+   "why": "'due care' is read only as the avoidance of contact and of a projected close approach to a pedestrian while the vehicle moves; lookout, warning and attention are read only through that outcome, and contact made while the vehicle is at rest is not read as a want of care.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "ego, a passenger car (ru.motor_vehicle), drives along a roadway toward a pedestrian crossing in front of it; the centres are projected to approach within the horizon to a distance below the pedestrian clearance, and ego keeps moving."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "ego drives past a pedestrian walking on the sidewalk well clear of the roadway; no projected approach falls below the clearance within the horizon and there is no contact."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "ego is a bicycle (ru.bicycle), which the motor vehicle aggregate does not include; it rides close past a pedestrian."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "as in permit, the projected approach stays above the clearance, but the source does not observe contact between bodies, so whether ego touches the pedestrian it passes is unknown.",
+   "masked": [
+    "rel.contact"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "ego drives along an empty road with no pedestrian anywhere in the scene: the duty binds ego alone and is met."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a projected approach of the centres within this time counts toward the danger of a crash.",
+   "source": "traffic-conflict technique (time-to-collision thresholds); proposed by NRS_484B_113_3 this iteration"
+  },
+  {
+   "name": "p.pedestrian_conflict_clearance",
+   "unit": "m",
+   "value": 2.5,
+   "convention": "Centre-to-centre distance at the projected closest approach below which the body of a passenger vehicle and a pedestrian would touch or nearly touch: about a design passenger car's half-length plus a pedestrian's body radius.",
+   "source": "design passenger car dimensions (AASHTO design vehicle P) and pedestrian body ellipse (HCM)"
+  },
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "speed-sensor resolution; proposed by LVMC_11_30_030 this iteration"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

@@ -1,0 +1,361 @@
+{
+ "a driver of a motor vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-130::motor_vehicle"
+  ],
+  "node": "NRS_484B_280_1a",
+  "role": "subject"
+ },
+ "a vehicle of any kind or character": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_600_1a",
+  "role": "subject"
+ },
+ "after having stopped or, in the event of a yield sign, slowed or stopped,": {
+  "atoms": [
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "drv.motion.at_rest",
+   "drv.motion.decelerating",
+   "kin.path_length",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.lane_direction",
+   "st.region_geometry",
+   "st.stop_line"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "after making such a stop,": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.lane_direction",
+   "st.region_geometry",
+   "st.stop_line"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "at a clearly marked stop line": {
+  "atoms": [
+   "prim.region_offset_along",
+   "st.entrance_of",
+   "st.lane_direction",
+   "st.region_geometry",
+   "st.stop_line"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "condition"
+ },
+ "at: a rate of speed": {
+  "atoms": [
+   "kin.speed"
+  ],
+  "node": "NRS_484B_600_1a",
+  "role": "obligation"
+ },
+ "but is inoperative at the time the vehicle enters the intersection,": {
+  "atoms": [
+   "dev.inoperative"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "controlled by a traffic-control signal which is installed and has its vehicular signals uncovered,": {
+  "atoms": [
+   "dev.governs",
+   "dev.traffic_signal"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "driven upon a divided highway": {
+  "atoms": [
+   "rel.occupies",
+   "st.highway",
+   "st.median_or_divider",
+   "st.on_way",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_227_1_o3",
+  "role": "trigger"
+ },
+ "during the time such driver is moving across or within the intersection.": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "every vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_227_1_o3",
+  "role": "subject"
+ },
+ "except through an opening in the barrier or dividing section or space": {
+  "atoms": [
+   "rel.occupies",
+   "st.median_or_divider"
+  ],
+  "node": "NRS_484B_227_1_o3",
+  "role": "exception"
+ },
+ "except when traffic is being controlled by a police officer or a traffic-control signal:": {
+  "atoms": [
+   "dev.governs",
+   "dev.human_direction",
+   "dev.inoperative",
+   "dev.traffic_signal",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "exception"
+ },
+ "it is unlawful for any person to drive or operate": {
+  "atoms": [
+   "kin.speed"
+  ],
+  "node": "NRS_484B_600_1a",
+  "role": "subject"
+ },
+ "must be driven only upon the right-hand roadway": {
+  "atoms": [
+   "prim.region_lateral_offset",
+   "rel.occupies",
+   "st.median_or_divider",
+   "st.roadway"
+  ],
+  "node": "NRS_484B_227_1_o1",
+  "role": "obligation"
+ },
+ "must not be driven over, across or within any dividing space, barrier or section": {
+  "atoms": [
+   "rel.occupies",
+   "st.median_or_divider"
+  ],
+  "node": "NRS_484B_227_1_o2",
+  "role": "obligation"
+ },
+ "or at a crossover or intersection established by a public authority.": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.median_or_divider"
+  ],
+  "node": "NRS_484B_227_1_o3",
+  "role": "exception"
+ },
+ "or make any left turn, semicircular turn or u-turn,": {
+  "atoms": [
+   "drv.motion.left_turn",
+   "drv.motion.u_turn"
+  ],
+  "node": "NRS_484B_227_1_o3",
+  "role": "obligation"
+ },
+ "or, if there is none, at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_250_4_o1",
+  "role": "condition"
+ },
+ "or, if there is none, before entering the crosswalk on the near side of the intersection": {
+  "atoms": [
+   "prim.region_offset_along",
+   "rel.occupies",
+   "st.crosswalk",
+   "st.entrance_of",
+   "st.lane_direction",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "condition"
+ },
+ "or, if there is none, then at the point nearest the intersection where the driver has a view of approaching traffic on the through highway.": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.region_geometry"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "condition"
+ },
+ "shall in every case yield": {
+  "atoms": [
+   "drv.motion.backing"
+  ],
+  "node": "NRS_484B_113_3",
+  "role": "obligation"
+ },
+ "shall proceed as if a stop sign had been erected at each entrance to the intersection and shall stop": {
+  "atoms": [
+   "drv.motion.at_rest"
+  ],
+  "node": "NRS_484B_250_4_o1",
+  "role": "obligation"
+ },
+ "shall stop or yield": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "drv.motion.decelerating",
+   "kin.path_length"
+  ],
+  "node": "NRS_484B_257_1_o1",
+  "role": "obligation"
+ },
+ "shall yield": {
+  "atoms": [
+   "drv.motion.at_rest"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "obligation"
+ },
+ "the driver": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "subject"
+ },
+ "the driver of a vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "subject"
+ },
+ "the driver of a vehicle:": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_113_3",
+  "role": "subject"
+ },
+ "the driver of the vehicle": {
+  "atoms": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "subject"
+ },
+ "to any vehicle approaching from the opposite direction": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.lane_direction",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "condition"
+ },
+ "to avoid a collision with a pedestrian.": {
+  "atoms": [
+   "rel.contact",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+  ],
+  "node": "NRS_484B_280_1a",
+  "role": "obligation"
+ },
+ "to moving traffic and pedestrians.": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "ru.aggregate=DEF-NRS-484A-165::pedestrian",
+   "ru.aggregate=DEF-NRS-484A-285::traffic"
+  ],
+  "node": "NRS_484B_113_3",
+  "role": "condition"
+ },
+ "to other vehicles which have entered the intersection from such through highway": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.highway",
+   "st.intersection",
+   "st.lane_enters",
+   "st.on_way",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "when a vehicle enters an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "trigger"
+ },
+ "when proper signs have been erected,": {
+  "atoms": [
+   "dev.governs",
+   "dev.stop_sign",
+   "dev.yield_sign",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_257_1_o2",
+  "role": "condition"
+ },
+ "which have previously completed a stop or are within the intersection.": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "rel.occupies",
+   "st.intersection",
+   "st.lane_enters",
+   "st.travel_region"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "condition"
+ },
+ "which is within the intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "condition"
+ },
+ "within an intersection": {
+  "atoms": [
+   "rel.occupies",
+   "st.intersection"
+  ],
+  "node": "NRS_484B_253_o1",
+  "role": "condition"
+ },
+ "yielding to vehicles": {
+  "atoms": [
+   "drv.motion.at_rest",
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ],
+  "node": "NRS_484B_250_4_o2",
+  "role": "obligation"
+ }
+}

@@ -1,0 +1,31 @@
+'TrafficSpec.Concepts.motion.at_rest.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.at_rest.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.at_rest.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}}],"body":{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tolerance"}},"contract":"A road user is at rest at an observation: the observable form of a stop where one is required, \"complete cessation from movement\". It holds at each observation at which the road user's speed (kin.speed, m/s) is at or below the speed tolerance, the speed at or below which a sampled measurement counts as no movement, and at no other. Not a stand-in for the brake lamp or the brake input, which are actuations and not motion, or for a halt at a particular place, which a caller states with its own relations.","definition":"DEF-NRS-484A-255","id":"drv.motion.at_rest","kind":"formula","narrowings":[],"params":[{"name":"speed_tolerance","unit":"metre_per_second"}],"residues":["The definition's 'when required' names the occasion a calling rule fixes (where and before what the stop is owed), not a property of the motion."],"supersedes":null}
+ATOMS	kin_speed
+READS	kin_speed
+AGGREGATES	
+HARDAGG	
+BODY	{"cmp":"le","lhs":{"args":[{"var":"a"}],"measure":"kin_speed"},"rhs":{"param":"speed_tolerance"}}
+WITNESS	holds	drv.motion.at_rest@w
+WITNESS	fails	drv.motion.at_rest@w
+WITNESS	blind	drv.motion.at_rest@w
+OCC	a
+INST	drv.motion.at_rest@w	ok
+TIME	checks	2
+TIME	lint	2
+SCEN	holds	drv.motion.at_rest@w	compliant	compliant	ok
+TIME	scenario:drv.motion.at_rest@w/holds	7
+SCEN	fails	drv.motion.at_rest@w	violated	violated	ok
+TIME	scenario:drv.motion.at_rest@w/fails	6
+SCEN	blind	drv.motion.at_rest@w	unknown	unknown	ok
+TIME	scenario:drv.motion.at_rest@w/blind	8
+TIME	witnesses	21
+DONE_WITNESSES
+'TrafficSpec.Concepts.motion.at_rest.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.motion.at_rest.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.motion.at_rest.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	drv.motion.at_rest@w	1	2
+TIME	adequacy_start	11
+TIME	adequacy	24
+DONE

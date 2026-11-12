@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 83756,
+  "stop_reason": "end_turn",
+  "session_id": "f8375234-2caf-4b6a-846d-5cab1a184fd1",
+  "total_cost_usd": 0.6881536,
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 56230,
+   "cache_read_input_tokens": 298305,
+   "output_tokens": 8778,
+   "output_tokens_details": {
+    "thinking_tokens": 3370
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 56230,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 529,
+     "cache_read_input_tokens": 59665,
+     "cache_creation_input_tokens": 1003,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1003
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30266,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030366000000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 8778,
+    "cacheReadInputTokens": 298305,
+    "cacheCreationInputTokens": 56230,
+    "webSearchRequests": 0,
+    "costUSD": 0.6851170000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3370,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 10,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The U-turn concept is written and the gate passed it with **`OK`** on the first run (1 of 6 used). It reported \"3 witnesses, 1 names, reads 1 atom(s)\".\n\n**The rule** (`library/TrafficSpec/Concepts/motion/u_turn.lean`): at each moment, the size of the heading change over the window behind it must be at least `min_angle` and at most `max_angle`, both ends included.\n- I measure the turn with the record's one claimed measurement, `prim_heading_change`, and take its absolute value so a turn to either hand counts.\n- A vehicle that only backs up has no heading change, so the result is false.\n- When the window reaches back before the start of the recording, or a yaw rate is missing, the measurement itself returns unknown, which is what the contract asks for.\n- The contract left nothing open to interpretation, so I recorded no narrowings.\n\n**The test cases** (`library/TrafficSpecWitness/Concepts/motion/u_turn.lean`), using a 10 s window and a 160°–200° band:\n- **holds:** a car makes a three-point turn (forward, reverse, forward) at 30°/s, for 180° in total. It is judged at t = 15–19 s, when the whole turn is inside the window.\n- **fails:** a car backs west for 12 s without turning. It is judged at t = 10–12 s, the first moments with a full 10 s of history.\n- **blind:** the same trace as `holds`, with the yaw-rate measurement marked absent.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 5298,
+  "type": "result",
+  "duration_ms": 88274,
+  "uuid": "05f090ee-3e56-40e8-a095-cb5a265d00be",
+  "ttft_stream_ms": 1157,
+  "time_to_request_ms": 93,
+  "time_to_request_phases_ms": {
+   "other": 21,
+   "system_prompt": 23,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 13,
+   "input_hooks": 3,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 3,
+   "init_message": 2,
+   "engine_pickup": 2,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 43,
+  "time_to_request_cpu_ms": 148,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 4,
+   "cpu_ms": 20,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1157,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30266,
+    "outputTokens": 20,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030366000000000004,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 14,
+    "outputTokens": 8778,
+    "cacheReadInputTokens": 298305,
+    "cacheCreationInputTokens": 56230,
+    "webSearchRequests": 0,
+    "costUSD": 0.6851170000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3370,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

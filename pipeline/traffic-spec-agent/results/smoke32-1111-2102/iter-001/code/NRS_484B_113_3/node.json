@@ -1,0 +1,173 @@
+{
+ "node_id": "NRS_484B_113_3",
+ "law_refs": [
+  "NRS-484B-113-3"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "The driver of a vehicle:",
+   "role": "subject"
+  },
+  {
+   "id": "s2",
+   "text": "Shall in every case yield",
+   "role": "obligation"
+  },
+  {
+   "id": "s3",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "s4",
+   "text": "to moving traffic and pedestrians.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole through ru.aggregate; \"The driver\" is a relational role, read through the vehicle's controlled motion (agency reading), never an aggregate."
+  },
+  {
+   "span": "s2",
+   "atoms": [],
+   "derived": [
+    "drv.motion.backing"
+   ],
+   "justification": "To yield the right-of-way is to grant precedence (DEF-NRS-484A-210: \"unless one grants precedence to the other\"): ego does not continue its movement while a party it must yield to is in conflict with it. The movement the section governs is backing (reading on this span): drv.motion.backing, 'it moves in the direction opposite to the one its body points', which is not a stand-in for the selected gear. \"in every case\": every backing movement, with no exception."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-285::traffic",
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"traffic\": the admitted aggregate DEF-NRS-484A-285::traffic ('pedestrians, ridden or herded animals, vehicles and other conveyances ... using any highway'); \"moving\": not at rest (drv.motion.at_rest does not hold), the contract's speed above the rest tolerance. \"pedestrians\": the admitted aggregate DEF-NRS-484A-165::pedestrian, every pedestrian whether moving or not: pedestrians are already traffic, so \"moving\" qualifies traffic, else the words would name pedestrians in vain. Each is a road user other than ego, quantified in the rule."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "s3",
+   "standard": "the right-of-way: DEF-NRS-484A-210 \"approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other\"",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_clearance"
+   ],
+   "convention": "Traffic-conflict technique: two road users are in conflict where, projected at their current velocities, their centres approach within the time-to-collision horizon and their closest-approach centre distance is below the clearance at which their bodies would touch. Direction, speed and proximity, the factors the definition names, enter by degree through the projected velocities and positions.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle; driven: agency reading) and is backing at the observation (drv.motion.backing, p.rest_speed_tolerance), the movement the section governs (reading on s2).",
+ "obligation": "At that observation no road user u other than ego that is a member of traffic (ru.aggregate DEF-NRS-484A-285::traffic) not at rest (drv.motion.at_rest, p.rest_speed_tolerance), or a pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian) at rest or not, is in conflict with ego: not both prim.closest_approach_within(ego, u) with horizon p.conflict_horizon and prim.closest_approach_distance(ego, u) with the same horizon below p.conflict_clearance. Ego yields by not backing while such a conflict holds.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_clearance"
+ ],
+ "narrowings": [
+  {
+   "span": "s1",
+   "why": "'The driver' is read through ego's controlled motion: a vehicle moving on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "s2",
+   "why": "The line is subsection (3) of NRS 484B.113, 'Limitations on backing', whose items govern the backing of a vehicle: the yield is read on ego's backing movement. Read without that movement the words would bind every vehicle to yield to every moving road user at every moment, two vehicles each yielding to the other; the reading keeps every case of backing ('in every case').",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ego backs out of a parking space while a motor vehicle t drives along the aisle behind it; projected at constant velocities their centres approach within p.conflict_horizon to a distance below p.conflict_clearance while ego keeps backing."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Ego backs out of a parking space with no other road user in the scene."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Ego drives forward along the aisle; it is not backing."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares kin.velocity absent: whether ego is backing cannot be read.",
+   "masked": [
+    "kin.velocity"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "Ego backs toward a pedestrian standing still on its path; projected at ego's velocity the closest approach falls within the horizon below the clearance."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "Ego backs past a parked vehicle at rest whose body lies close to ego's path; no moving traffic and no pedestrian is present."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a projected approach of the centres within this time counts toward the danger of a crash.",
+   "source": "Hayward (1972) time-to-collision; Hyden (1987) Swedish Traffic Conflict Technique; van der Horst (1990) TTC thresholds."
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Centre-to-centre distance at the projected closest approach below which the bodies of two passenger vehicles would touch or nearly touch (about a half-length plus a half-width of a design passenger car).",
+   "source": "AASHTO Green Book, design vehicle P dimensions."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

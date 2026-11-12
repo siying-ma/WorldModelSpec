@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "c5ecfe079e87436b81519228dc9ac384",
+ "result": {
+  "duration_api_ms": 91353,
+  "stop_reason": "end_turn",
+  "session_id": "0d03bc02-9c88-4b70-84b2-5b5f5314aa76",
+  "total_cost_usd": 0.8729198000000001,
+  "usage": {
+   "input_tokens": 28,
+   "cache_creation_input_tokens": 67541,
+   "cache_read_input_tokens": 716420,
+   "output_tokens": 9309,
+   "output_tokens_details": {
+    "thinking_tokens": 2564
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 67541,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 651,
+     "cache_read_input_tokens": 70972,
+     "cache_creation_input_tokens": 1007,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1007
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30028,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030158,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 28,
+    "outputTokens": 9309,
+    "cacheReadInputTokens": 716420,
+    "cacheCreationInputTokens": 67541,
+    "webSearchRequests": 0,
+    "costUSD": 0.8699040000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2564,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01KKV2QTZFqA1crhXFb7F71w",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core && ls -R | head -50 && grep -rn \"headingSince\" --include=*.lean . | head -40",
+     "description": "List Core files and find headingSince usage"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 19,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `drv.motion.heading_change_since_entry` on the second of six runs (3 witnesses, 3 atoms read).\n\n**The concept.** The body is `Term.headingSince \"a\" (.param \"step\") (.atom \"rel_occupies\" [a, r] [])`. That is a's heading change, built up from its yaw rate. It starts at zero at the last observed point where a's footprint came to overlap r, and keeps counting after a leaves r. The step bound is the `step` parameter, passed straight through. Core's operator already returns unknown in the cases the contract lists, so I recorded no narrowings.\n\n**The witnesses.** r is a 20 m square intersection, a is a motor vehicle at 5 m/s, and there are 7 observations 1 s apart. The instance sets a 2 s step bound and a band of [60°, 120°]. Each scenario is judged only at the exit (t = 5–6 s), because before a enters r the value is unknown by design.\n- **holds:** a turns left at 30 deg/s for three seconds inside r, so the value at the exit is 90°.\n- **fails:** a crosses r without turning, so the value is 0°, below the band.\n- **blind:** the holds trace with the yaw rate masked, so the value is unknown.\n\n**Gate runs.**\n1. **WITNESS_FAIL:** the gate's check of the traces rejected holds and blind because the heading didn't change between scenes even though a 30 deg/s yaw rate was given. I made the headings turn with the yaw rate (east, then two intermediate directions, then north). The body didn't change.\n2. **OK.**\n\nOne request was denied: an `ls`/`grep` over Core early on, because only the gate command may run in the shell. I read the Core files I needed with the Read tool instead.\n\nThe report is in `task_result.md` in the working directory. The record needed no correction.",
+  "ttft_ms": 3570,
+  "type": "result",
+  "duration_ms": 98593,
+  "uuid": "67565f96-9198-4872-a9ca-f0c77d097c32",
+  "ttft_stream_ms": 1020,
+  "time_to_request_ms": 61,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 17,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 11,
+   "input_hooks": 1,
+   "transcript_persist": 3,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 11,
+  "time_to_request_cpu_ms": 95,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 15,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 1020,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 30028,
+    "outputTokens": 26,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0030158,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 28,
+    "outputTokens": 9309,
+    "cacheReadInputTokens": 716420,
+    "cacheCreationInputTokens": 67541,
+    "webSearchRequests": 0,
+    "costUSD": 0.8699040000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2564,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

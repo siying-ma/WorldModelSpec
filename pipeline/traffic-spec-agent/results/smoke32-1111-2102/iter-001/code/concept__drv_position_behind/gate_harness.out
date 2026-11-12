@@ -1,0 +1,34 @@
+'TrafficSpec.Concepts.position.behind.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.behind.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.position.behind.scenarios' depends on axioms: [propext, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},"contract":"Road user a is behind road user b at an observation: their headings are aligned and b's body lies wholly ahead of a's along a's heading. Measured as headings aligned (rel.same_direction with the alignment tolerance, the cosine of the largest angle between the headings counted as aligned), the bearing of b from a (rel.bearing) pointing forward in a's frame, and the two footprints' projections on a's heading sharing no length (rel.longitudinal_overlap below zero). Either road user may be at rest. Not a stand-in for following in the same lane: b may travel in another lane.","definition":null,"id":"drv.position.behind","kind":"formula","narrowings":[],"params":[{"name":"alignment","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	rel_same_direction,rel_bearing,rel_longitudinal_overlap
+READS	rel_same_direction,rel_bearing,rel_longitudinal_overlap
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}
+WITNESS	holds	drv.position.behind@w
+WITNESS	fails	drv.position.behind@w
+WITNESS	blind	drv.position.behind@w
+OCC	a,b
+OCC	a,b
+OCC	a
+OCC	b
+INST	drv.position.behind@w	ok
+TIME	checks	2
+TIME	lint	18
+SCEN	holds	drv.position.behind@w	compliant	compliant	ok
+TIME	scenario:drv.position.behind@w/holds	8
+SCEN	fails	drv.position.behind@w	violated	violated	ok
+TIME	scenario:drv.position.behind@w/fails	7
+SCEN	blind	drv.position.behind@w	unknown	unknown	ok
+TIME	scenario:drv.position.behind@w/blind	9
+TIME	witnesses	24
+DONE_WITNESSES
+'TrafficSpec.Concepts.position.behind.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.position.behind.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.position.behind.scenarios' depends on axioms: [propext, Quot.sound]
+ADEQ_SIZE	drv.position.behind@w	3	2
+TIME	adequacy_start	5
+TIME	adequacy	63
+DONE

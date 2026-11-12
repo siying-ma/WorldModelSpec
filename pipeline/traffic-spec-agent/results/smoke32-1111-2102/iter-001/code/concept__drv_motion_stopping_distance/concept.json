@@ -1,0 +1,64 @@
+{
+ "concept_id": "drv.motion.stopping_distance",
+ "kind": "quantity",
+ "contract": "The distance road user a would travel before coming to rest if it began to brake after a reaction time, at the observation: its speed (kin.speed, m/s) times the reaction time, plus the square of its speed divided by twice the deceleration (m). Computed from the current speed only, under a constant deceleration on a level road. Not a stand-in for a sight distance or a gap to another road user, which a caller compares it with, nor for a braking manoeuvre actually made.",
+ "args": [
+  {
+   "name": "a",
+   "sort": "track"
+  }
+ ],
+ "params": [
+  {
+   "name": "reaction_time",
+   "unit": "s",
+   "meaning": "the time from the appearance of a hazard to the application of the brakes"
+  },
+  {
+   "name": "deceleration",
+   "unit": "m/s^2",
+   "meaning": "the constant deceleration of the braking"
+  }
+ ],
+ "elements": [
+  {
+   "span": "its speed (kin.speed, m/s)",
+   "atoms": [
+    "kin.speed"
+   ],
+   "concepts": [],
+   "justification": "kin.speed is the 'magnitude of velocity' in m/s; the distance is computed from it alone, with the caller's reaction time and deceleration."
+  }
+ ],
+ "residues": [],
+ "literals": [
+  {
+   "value": 2,
+   "unit": "count",
+   "why": "the factor of the braking distance: the square of the speed divided by twice the deceleration"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "holds",
+   "expected": "compliant",
+   "narrative": "a moves at a moderate speed; the instance bounds include the value computed from its speed, the reaction time and the deceleration."
+  },
+  {
+   "name": "fails",
+   "expected": "violated",
+   "narrative": "a moves at a high speed; the value exceeds the instance's upper bound."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "the source does not supply a's speed.",
+   "masked": [
+    "kin.speed"
+   ]
+  }
+ ],
+ "used_by": [
+  "NRS_484B_600_1a"
+ ]
+}

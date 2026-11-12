@@ -1,0 +1,171 @@
+{
+ "node_id": "NRS_484B_227_1_o1",
+ "law_refs": [
+  "NRS-484B-227-1"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "d1",
+   "text": "Every vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "d2",
+   "text": "driven upon a divided highway",
+   "role": "trigger"
+  },
+  {
+   "id": "d3",
+   "text": "must be driven only upon the right-hand roadway",
+   "role": "obligation"
+  },
+  {
+   "id": "d4",
+   "text": "and",
+   "role": "boilerplate"
+  },
+  {
+   "id": "d5",
+   "text": "must not be driven over, across or within any dividing space, barrier or section",
+   "role": "sibling"
+  },
+  {
+   "id": "d6",
+   "text": "or make any left turn, semicircular turn or U-turn,",
+   "role": "sibling"
+  },
+  {
+   "id": "d7",
+   "text": "except through an opening in the barrier or dividing section or space",
+   "role": "exception"
+  },
+  {
+   "id": "d8",
+   "text": "or at a crossover or intersection established by a public authority.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "d1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"Every vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole through ru.aggregate."
+  },
+  {
+   "span": "d2",
+   "atoms": [
+    "st.highway",
+    "st.median_or_divider",
+    "st.on_way",
+    "st.roadway",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"divided highway\" (DEF-NRS-484A-070: \"a highway divided into two or more roadways by means of a physical barrier or dividing section\"): a highway h (st.highway, 'the entire public way between its boundary lines') on which (st.on_way, 'the public way ... a structure region lies on') a median or divider lies (st.median_or_divider, 'physical barrier or dividing section between roadways'). \"upon\": ego's footprint overlaps (rel.occupies) a roadway lying on h (st.roadway: 'separate roadways of a divided highway are separate') or a median or divider of h; st.highway is read only as the way the regions lie on, never as the roadway. \"driven\": controlled motion (agency reading)."
+  },
+  {
+   "span": "d3",
+   "atoms": [
+    "st.roadway",
+    "st.median_or_divider",
+    "rel.occupies",
+    "prim.region_lateral_offset"
+   ],
+   "derived": [],
+   "justification": "\"the right-hand roadway\": of the roadways of h, the one lying to the right of the dividing section as ego travels, so every median or divider of h lies to ego's left: prim.region_lateral_offset(ego, m) positive ('the signed lateral offset (m, left positive) of a structure region from a road user'). \"only upon\": at every observation at which ego occupies a roadway of h (rel.occupies, st.roadway)."
+  },
+  {
+   "span": "d7",
+   "atoms": [
+    "st.median_or_divider",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"through an opening in the barrier or dividing section or space\": ego's footprint overlaps (rel.occupies) a median or divider of h whose opening attribute is set (st.median_or_divider: 'opening attribute where a crossover exists'). The exception closes the sentence and covers each duty it lists: passing through an opening necessarily leaves the right-hand roadway."
+  },
+  {
+   "span": "d8",
+   "atoms": [
+    "st.median_or_divider",
+    "st.intersection",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"a crossover\": a median or divider of h with the opening attribute ('opening attribute where a crossover exists'); \"intersection\": ego's footprint overlaps (rel.occupies) an st.intersection lying on h ('an intersection lies on every way that meets there'). \"established by a public authority\": the legal status of a feature, read through its presence (status reading)."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle; driven: agency reading) whose footprint overlaps (rel.occupies) a roadway r (st.roadway) lying on a highway h (st.on_way, st.highway) on which at least one median or divider lies (st.median_or_divider, st.on_way).",
+ "obligation": "At that observation every median or divider m lying on h lies to ego's left: prim.region_lateral_offset(ego, m) is positive. Not judged at an observation at which ego's footprint overlaps a median or divider of h with the opening attribute, or an intersection lying on h (st.intersection, st.on_way).",
+ "params": [],
+ "narrowings": [
+  {
+   "span": "d2",
+   "why": "'driven' is read through ego's controlled motion: a vehicle on the road is taken to be driven.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "d8",
+   "why": "'established by a public authority' is read through the presence of the crossover or intersection on the road.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "Ego travels on the left-hand roadway of a divided highway: the median of the highway lies to ego's right (negative lateral offset)."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Ego travels on the right-hand roadway: the median lies to ego's left."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Ego travels on a two-way road whose highway carries no median or divider."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares rel.occupies absent: which roadway ego is on cannot be read.",
+   "masked": [
+    "rel.occupies"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "not_applicable",
+   "narrative": "Ego crosses the highway through a median opening; at the observation judged its footprint overlaps the median region with the opening attribute set."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

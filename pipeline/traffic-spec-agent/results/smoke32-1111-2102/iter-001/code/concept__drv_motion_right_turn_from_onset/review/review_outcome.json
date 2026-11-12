@@ -1,0 +1,136 @@
+{
+ "reviewer_verdict": "return",
+ "rulings": [
+  {
+   "item": "divergence 1 (fails_wrongly) at t=750 ms: With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison was already true at the intervening non-turning observation. — contract: holds, body: fails; contract: \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle. The concept holds at the recognition observation only.\"",
+   "ruling": "upheld",
+   "why": "In the executed facts turning_right falls at t=500 and rises again at t=750, so 750 is the new observed beginning. The heading change since it is 0, which reaches −0 first at 750, so the contract holds there. The body fails because its rising edge looks at the heading comparison, which was already true at t=500 when measured from the old onset; that is a wrong onset, not a choice of parameter size. — \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle.\""
+  }
+ ],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "216e8831c1b8311e923df6650715ca61cb0b23653afc33d992657185b57cbb99",
+ "rulings_at": 2,
+ "final": true,
+ "outcome": {
+  "status": "returned",
+  "reasons": [
+   "divergence 1 (fails_wrongly) at t=750 ms: With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison … — contract: holds, body: fails; contract: \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is …\" — upheld: In the executed facts turning_right falls at t=500 and rises again at t=750, so 750 is the new observed beginning. The heading change since it is 0, which reaches −0 first at 750, so the contract holds there. The body fails because its rising edge looks at the heading comparison, which was already true at t=500 when measured from the old onset; that is a wrong onset, not a choice of parameter size. — \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle.\""
+  ],
+  "advisories": [],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "bea6199c99eabcc9f23f",
+   "row": {
+    "key": "concept:drv.motion.right_turn_from_onset",
+    "subject": "drv.motion.right_turn_from_onset",
+    "iteration": 1,
+    "item": "divergence 1 (fails_wrongly) at t=750 ms: With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison was already true at the intervening non-turning observation. — contract: holds, body: fails; contract: \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle. The concept holds at the recognition observation only.\"",
+    "ruling": "upheld",
+    "reason": "In the executed facts turning_right falls at t=500 and rises again at t=750, so 750 is the new observed beginning. The heading change since it is 0, which reaches −0 first at 750, so the contract holds there. The body fails because its rising edge looks at the heading comparison, which was already true at t=500 when measured from the old onset; that is a wrong onset, not a choice of parameter size. — \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle.\"",
+    "schema": "concept_case/1",
+    "case_id": "e3e3cf726a855433e1dca7992245cc1d9fc20cc4b1a392b6428eef68a4f91e7e",
+    "kind": "fails_wrongly",
+    "situation": "With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison was already true at the intervening non-turning observation.",
+    "contract_words": "The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle. The concept holds at the recognition observation only.",
+    "contract_verdict": "holds",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "turn_angle": [
+       0,
+       "deg"
+      ],
+      "yaw_tolerance": [
+       1,
+       "deg/s"
+      ],
+      "speed_tolerance": [
+       0.1,
+       "m/s"
+      ],
+      "step": [
+       500,
+       "ms"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": 0
+         }
+        }
+       ]
+      },
+      {
+       "t": 250,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": -20
+         }
+        }
+       ]
+      },
+      {
+       "t": 500,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": 0
+         }
+        }
+       ]
+      },
+      {
+       "t": 750,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": -20
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 750,
+    "verdict": "violated",
+    "value": null,
+    "contract_digest": "1c0c268d00f6a53a2a62b4d6f6126dcf89428ae3663b94dd014ff04ee78ce98d",
+    "body_digest": "184aff7d3c9c4b40c1498f46c7d315a55daea7cbd6181a92f82035193db91e57",
+    "obligation": "open",
+    "ruling_id": "bea6199c99eabcc9f23f",
+    "supersedes": null
+   },
+   "supersedes": null
+  }
+ ]
+}

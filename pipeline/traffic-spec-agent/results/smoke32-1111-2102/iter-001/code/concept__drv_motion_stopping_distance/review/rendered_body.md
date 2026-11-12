@@ -1,0 +1,3 @@
+Arguments: `a` (a track).
+Parameters (bounds the caller sets): `reaction_time` in s, `deceleration` in m/s^2.
+The value is: ((the measured `kin_speed` of `a` [magnitude of velocity] times `reaction_time` (a parameter the caller sets)) plus ((the measured `kin_speed` of `a` [magnitude of velocity] times the measured `kin_speed` of `a` [magnitude of velocity]) divided by (2 count times `deceleration` (a parameter the caller sets))))

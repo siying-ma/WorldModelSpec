@@ -1,0 +1,111 @@
+{
+ "verdict": "OK",
+ "details": [
+  "3 witnesses, 3 names, reads 3 atom(s)"
+ ],
+ "extras": {
+  "reads": [
+   "kin.speed",
+   "kin.time",
+   "kin.yaw_rate"
+  ],
+  "refs": [
+   "drv.motion.turning_right"
+  ],
+  "canonical_body": "{\"and\":[{\"and\":[{\"not\":{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p2\"}}},{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_yaw_rate\"},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}}]},{\"rises\":{\"cmp\":\"le\",\"lhs\":{\"heading_since\":\"$a0\",\"max_step\":{\"param\":\"$p3\"},\"onset\":{\"and\":[{\"not\":{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_speed\"},\"rhs\":{\"param\":\"$p2\"}}},{\"cmp\":\"le\",\"lhs\":{\"args\":[{\"var\":\"$a0\"}],\"measure\":\"kin_yaw_rate\"},\"rhs\":{\"neg\":{\"param\":\"$p1\"}}}]}},\"rhs\":{\"neg\":{\"param\":\"$p0\"}}}}]}",
+  "body_json": {
+   "and": [
+    {
+     "and": [
+      {
+       "not": {
+        "cmp": "le",
+        "lhs": {
+         "args": [
+          {
+           "var": "a"
+          }
+         ],
+         "measure": "kin_speed"
+        },
+        "rhs": {
+         "param": "speed_tolerance"
+        }
+       }
+      },
+      {
+       "cmp": "le",
+       "lhs": {
+        "args": [
+         {
+          "var": "a"
+         }
+        ],
+        "measure": "kin_yaw_rate"
+       },
+       "rhs": {
+        "neg": {
+         "param": "yaw_tolerance"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "rises": {
+      "cmp": "le",
+      "lhs": {
+       "heading_since": "a",
+       "max_step": {
+        "param": "step"
+       },
+       "onset": {
+        "and": [
+         {
+          "not": {
+           "cmp": "le",
+           "lhs": {
+            "args": [
+             {
+              "var": "a"
+             }
+            ],
+            "measure": "kin_speed"
+           },
+           "rhs": {
+            "param": "speed_tolerance"
+           }
+          }
+         },
+         {
+          "cmp": "le",
+          "lhs": {
+           "args": [
+            {
+             "var": "a"
+            }
+           ],
+           "measure": "kin_yaw_rate"
+          },
+          "rhs": {
+           "neg": {
+            "param": "yaw_tolerance"
+           }
+          }
+         }
+        ]
+       }
+      },
+      "rhs": {
+       "neg": {
+        "param": "turn_angle"
+       }
+      }
+     }
+    }
+   ]
+  },
+  "context": "83f966f30c048e8d3f13e439",
+  "candidate_digest": "1422b3def60c49f5b94b5343e894550deba70dd245915d3b241b878f4faabb1c"
+ }
+}
