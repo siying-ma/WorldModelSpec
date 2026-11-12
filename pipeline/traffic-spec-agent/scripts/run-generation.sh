@@ -38,12 +38,16 @@
 # model call; 3 a checkpoint could not be pushed (the same commit is pushed first by the next launch);
 # 4 the run paused for the operator, handed to neither stage: `paused_budget` (raise the limit its
 # stop_reason names explicitly, then resume) or `awaiting_operator` (a decision is needed: see stop_reason in
-# results/<id>/summary.json and TO_USER.md); 5 sessions could not be launched (`infrastructure_failure`: an
-# account limit or an API error; resume once they can). None of 1, 4, 5 is ever continued as an iteration
-# limit. A stop inside an iteration leaves no checkpoint: the iteration's work stays in the run's own files
-# (those `handoff export` lists, and the run's directory and library record directories), and `resume`
-# accepts a checkout whose only tracked changes are there, the loop taking the iteration up; `new`, and any
-# change to another tracked file, still need a clean checkout.
+# results/<id>/summary.json and TO_USER.md); 5 `infrastructure_failure`, uncharged: something the iteration
+# needs did not run, and its stop_reason says what (a session the account or the API refused, the toolchain,
+# the check of accepted records before integration, the integration, or the validator itself); whether a
+# resume is due depends on that reason. None of 1, 4, 5 is ever continued as an iteration
+# limit. A stop inside an iteration leaves no checkpoint: the iteration's work stays in the files a checkpoint
+# commits (those `handoff export` lists: the run's directory, every file under the library's record
+# directories, the registries and the reading; and deletions under those directories), and `resume` accepts a
+# checkout whose only tracked changes are there, the loop taking the iteration up. That is no proof that each
+# such file was written by this run: it holds because the checkout serves one run only. `new`, and any change
+# to another tracked file, still need a clean checkout.
 # `stage-enter`: 0 the stage is entered, confirmed and pushed (also when it already was); 1 the harness's
 # transition or confirmation stopped after it began (run the same stage-enter again); 2 refused before
 # anything changed (a refusal of the harness included: the checkpoint's code is put back); 3 a commit could
@@ -168,7 +172,7 @@ print(x)
 PY
 }
 summary_field() { "$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2]) or "")' "$RUN_DIR/summary.json" "$1" 2>/dev/null || true; }
-changes_outside_run() {                               # tracked changes, staged or not, to files that are not the run's own
+changes_outside_run() {                               # tracked changes, staged or not, to files a checkpoint of the run does not commit
   [ -n "$(git diff --name-only HEAD)" ] || return 0
   git diff --name-only -z HEAD | "$PYTHON" -c '
 import sys
@@ -490,9 +494,9 @@ for v in SESSION_CAP REPAIR_CAP JUDGE_CAP VERIFIER_CAP CLAUDE_BUDGET OPENAI_BUDG
   fi
 done
 git config user.name >/dev/null && git config user.email >/dev/null || die "set git user.name and user.email"
-if [ "$ACTION" = resume ]; then                       # a stop inside an iteration leaves the run's own files changed: the loop takes them up
-  others=$(changes_outside_run) || die "the run's own files could not be listed (python -c \"from harness.tools.handoff import artifact_files\" failed)"
-  [ -z "$others" ] || die "the checkout has uncommitted changes to tracked files that are not the run's own; use a clean, separate checkout: $(echo $others)"
+if [ "$ACTION" = resume ]; then                       # a stop inside an iteration leaves the checkpoint files changed: the loop takes them up
+  others=$(changes_outside_run) || die "the run's checkpoint files could not be listed (python -c \"from harness.tools.handoff import artifact_files\" failed)"
+  [ -z "$others" ] || die "the checkout has uncommitted changes to tracked files outside the run's checkpoint files; use a clean, separate checkout: $(echo $others)"
 else
   git diff --cached --quiet || die "the index holds staged changes; this launcher commits only the run's files — unstage them"
   [ -z "$(git status --porcelain --untracked-files=no)" ] || die "the checkout has uncommitted changes to tracked files; use a clean, separate checkout"
@@ -598,7 +602,7 @@ for launch in $(seq 1 "$LAUNCHES"); do
     rc=$(stop_status "$status")
     case "$rc" in
       4) log "no checkpoint after status $status: $(summary_field stop_reason); the iteration's work is kept for a resume";;
-      5) log "no checkpoint after status $status (sessions could not be launched: an account limit or an API error): $(summary_field stop_reason); resume later, the iteration's work is kept";;
+      5) log "no checkpoint after status $status: $(summary_field stop_reason); the iteration's work is kept for a resume";;
       *) log "no checkpoint after status $status (see $LOG_DIR/launcher.log and $LOG_DIR/diagnostics.txt): stopped";;
     esac
     exit "$rc"

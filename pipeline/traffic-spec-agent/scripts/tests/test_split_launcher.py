@@ -319,7 +319,7 @@ class Launcher(unittest.TestCase):
                     git(self.work, "add", "pipeline/agent/harness/store/state.py")
                 again = self.launch("resume", [{"status": "awaiting_labels"}])
                 self.assertEqual(again.returncode, 2, again.stdout + again.stderr)
-                self.assertIn("not the run's own", again.stderr)
+                self.assertIn("outside the run's checkpoint files", again.stderr)
                 self.assertIn("pipeline/agent/harness/store/state.py", again.stderr)
                 self.assertEqual(len(self.loops()), 2)                                     # no further loop
                 git(self.work, "reset", "-q", "--", "pipeline/agent/harness/store/state.py")
