@@ -8,6 +8,7 @@ road user's rules without an explicit id; they are listed separately.
 
 | concrete line | refs → view | lawfully-phrases |
 |---|---|---|
+| `NRS-484B-117-1` | `DEF-NRS-239C-065` → definition<br>`DEF-NRS-648-016` → definition | — |
 | `NRS-484B-250-1` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-2` | `NRS-484B-250-4` → concrete | — |
 | `NRS-484B-250-3` | `NRS-484B-250-4` → concrete | — |
@@ -52,7 +53,7 @@ road user's rules without an explicit id; they are listed separately.
 ## Tally of reference targets from concrete lines
 
 - concrete: 50
-- definition: 10
+- definition: 12
 - judgement: 16
 
 ## Concrete lines that depend on a line outside the concrete view
