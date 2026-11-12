@@ -55,7 +55,7 @@
 #
 # The launcher itself: RUN_ID (required)  BRANCH (runs/$RUN_ID)  REMOTE (origin)  LAUNCHES (iterations this
 #   invocation, 20)  BASELINE_BRANCH (remote/full-train-generation)  LABEL_DATASET (STAGE=labels: the dataset folder)  OPENAI_KEY_FILE
-#   (~/.config/traffic-spec/openai.env, sourced when it exists; never printed or committed)  PYTHON (python)
+#   (~/.config/traffic-spec/openai.env, sourced when it exists; never printed or committed)  PYTHON (python3)
 #   PUSH_RETRIES (5)  PUSH_WAIT (60 s)  SKIP_BUILD (1: no `lake build` in the preflight)
 #
 # The run's options (OPTION_TABLE below: variable, loop option, the value a new run takes when unset):
@@ -111,7 +111,7 @@ LABEL_REPAIR_ATTEMPTS|--label_repair_attempts|2
 LABEL_REPAIR_BUDGET|--label_repair_budget|10
 '
 OPENAI_KEY_FILE=${OPENAI_KEY_FILE:-$HOME/.config/traffic-spec/openai.env}
-PYTHON=${PYTHON:-python}
+PYTHON=${PYTHON:-python3}
 PUSH_RETRIES=${PUSH_RETRIES:-5}; PUSH_WAIT=${PUSH_WAIT:-60}
 RUN_DIR=results/$RUN_ID
 LOG_DIR=.runtime/$RUN_ID

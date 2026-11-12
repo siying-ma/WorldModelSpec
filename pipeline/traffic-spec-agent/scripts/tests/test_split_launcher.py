@@ -334,6 +334,18 @@ class Launcher(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         self.assertEqual([x["max_iterations"] for x in self.loops()], [1, 2])
 
+    def test_python3_is_the_default_interpreter(self):
+        """A machine may have `python3` and no `python`: with PYTHON unset the launcher runs `python3` only."""
+        calls = self.t / "python3.log"
+        (self.bin / "python3").write_text(f'#!/bin/sh\necho call >> "{calls}"\nexec "{sys.executable}" "$@"\n')
+        (self.bin / "python").write_text("#!/bin/sh\nexit 97\n")                       # never called
+        for name in ("python3", "python"):
+            (self.bin / name).chmod(0o755)
+        out = self.launch("new", [{"status": "awaiting_labels"}], unset=("PYTHON",))
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertTrue(calls.exists())
+        self.assertEqual(len(self.loops()), 1)
+
     def test_a_pause_for_the_operator_stops_at_its_checkpoint_and_hands_over_to_no_one(self):
         """`paused_budget` and `awaiting_operator` stop with 4 after the checkpoint is pushed, with the
         hint for each; a leftover `iteration_limit` beside them never continues the launches."""
