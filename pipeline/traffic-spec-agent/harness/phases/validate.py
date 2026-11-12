@@ -90,12 +90,14 @@ def validate_a_for_run(run: Run | None, plan_dir: Path, laws: dict[str, corpus.L
         index, accepted, accepted_concepts, mode = MappingIndex(plan_dir / "mapping.json"), {}, {}, "train"
     concept_outcomes = validate_a.validate_concepts(concepts, defs, onto, accepted_concepts, users, mode)
     valid_concepts = [o.concept for o in concept_outcomes if o.kind == validate_a.ACCEPT]
-    rejected = GapLedger.for_run(paths.GAPS_DIR, run).rejected()
+    gap_ledger = GapLedger.for_run(paths.GAPS_DIR, run)
+    rejected = gap_ledger.rejected()
     from ..model import definitions as definitions_mod
     sources = (definitions_mod.source_texts(run) if run is not None
                else {**{str(d.get("id")): str(d.get("text", "")) for d in defs}, **{i: l.text for i, l in laws.items()}})
     outcomes = validate_a.validate(nodes, laws, onto, reading, index, accepted, accepted_concepts, valid_concepts,
-                                   known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes, sources=sources)
+                                   known_nodes=known_nodes, rejected_gaps=rejected, prior_nodes=prior_nodes, sources=sources,
+                                   ledger_gaps=gap_ledger.rows)
     return nodes, concepts, outcomes, concept_outcomes
 
 

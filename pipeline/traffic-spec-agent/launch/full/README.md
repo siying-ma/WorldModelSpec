@@ -1,5 +1,7 @@
 # Full training generation run
 
+> **Superseded by [`launch/full221`](../full221/README.md)** (staged runs, no default budget, hard limits): do not use this folder.
+
 The full run generates all 221 laws of the training split. Set up the machine first, as the repository's root `README.md` describes.
 
 > **Do not launch this run on the current baseline.** This branch will be rebuilt on newer pipeline code before the full run. The requester will tell you when it is ready.

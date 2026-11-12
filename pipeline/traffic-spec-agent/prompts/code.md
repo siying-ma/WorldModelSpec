@@ -97,13 +97,10 @@ You are a one-shot session with a budget of gate runs. Nothing waits for a reply
    (`kind := "no_operator"`) — you declare that instead of a reading: the gate returns the node
    as `UNEXPRESSED` for the repair session to withdraw the span as a gap or re-map it, and a
    second such declaration on the same span files the gap with your words; a reading written
-   around a missing operator is not a narrowing. Where the record carries a gap on a span, the
-   plan doubts the atoms it maps that span to: write the span with them if they carry its words,
-   and otherwise declare `no_atom` or `no_operator` on it, which files the plan's gap at once.
-   `no_atom` means no atom of the surface can carry the words. Words that an atom of the surface
-   can carry, but which the node does not claim, are a defect of the node's mapping, whether or not
-   the record carries a gap on the span: you never declare `no_atom` on them and never write them
-   with that atom; the node is wrong, and you report it. The gate holds every narrowing to a span of the
+   around a missing operator is not a narrowing. `no_atom` means no atom of the surface can carry
+   the words. Words that an atom of the surface can carry, but which the node does not claim, are a
+   defect of the node's mapping: you never declare `no_atom` on them and never write them with that
+   atom; the node is wrong, and you report it. The gate holds every narrowing to a span of the
    node's duty or its standards; a span that decides when the rule applies (a trigger, subject,
    condition or exception) is never narrowed, nor written with a weaker fact than the qualified one
    the record states: it is carried as the node maps it, or the node is wrong and you report it. Your narrowings are kept on the rule's record and shown to every later planning and repair

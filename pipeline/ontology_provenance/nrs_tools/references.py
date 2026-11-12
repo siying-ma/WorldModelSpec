@@ -27,6 +27,15 @@ DEFS = [
  (D_135A, 'LVMC', None, '11.52.135', ['A'], "How a parking space designated for the handicapped is signed."),
 ]
 
+# Term definitions of other chapters that a corpus definition or line incorporates by citation
+# ("as defined in NRS 482.029", "has the meaning ascribed to it in NRS 489.113"): (chapter, section).
+# Their sections are kept verbatim in sources/<chapter>.json, which hold only these sections.
+INCORPORATED = [
+ ('482', '029'), ('482', '0295'), ('482', '0962'), ('482', '3833'), ('482', '3837'), ('482', '3839'),
+ ('482A', '025'), ('482A', '030'), ('482A', '036'),
+ ('489', '113'), ('239C', '065'), ('648', '016'),
+]
+
 def _sec(prefix): return prefix  # marker: expand to every id starting with prefix
 
 # A phrase that names no provision is NOT annotated: the ids would be the editor's reading of

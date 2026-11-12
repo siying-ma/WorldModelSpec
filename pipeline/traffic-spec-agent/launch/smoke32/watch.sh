@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Observe one launch of a smoke31 run, read-only: every 10 minutes it appends one line to
+# Observe one launch of a smoke32 run, read-only: every 10 minutes it appends one line to
 # .runtime/<run id>/watch.log with the run's live state (state.json: the iteration, its stage, the laws by
 # ledger state), the last iteration's end (summary.json: status and stop), and the spend against the run's
 # budgets from usage.jsonl by the harness's own fold, settled apart from reserved: a settled request counts
@@ -7,8 +7,8 @@
 # both, so ALERT is written when Claude's or the total's settled plus reserved spend passes 80% of its limit.
 # It ends at the first report after the launcher ends, logging its exit status, or ALERT when the launcher
 # is gone with no exit status written. It never signals, edits or stops anything; its log ends in .log,
-# which the coding gate's tree digest leaves out. Started by launch/smoke31/detach.sh with every launch.
-#   bash launch/smoke31/watch.sh <run id> <launcher pid> <launch file prefix>
+# which the coding gate's tree digest leaves out. Started by launch/smoke32/detach.sh with every launch.
+#   bash launch/smoke32/watch.sh <run id> <launcher pid> <launch file prefix>
 RUN_ID=${1:?run id}; LPID=${2:?launcher pid}; PREFIX=${3:?launch file prefix}
 R=results/$RUN_ID; LOG=.runtime/$RUN_ID/watch.log
 mkdir -p ".runtime/$RUN_ID"

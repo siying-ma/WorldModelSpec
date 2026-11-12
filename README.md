@@ -15,6 +15,7 @@ The generation stage plans, codes and checks traffic laws. It reads no driving r
 git clone --branch remote/full-train-generation <repository url> wms
 cd wms/pipeline/traffic-spec-agent
 bash setup.sh                                  # Lean toolchain and Python packages (needs Python 3.11+)
+git config user.name "<name>" && git config user.email "<email>"   # this clone only: the launcher commits checkpoints
 export PATH=$HOME/.elan/bin:$PATH              # and `source .venv/bin/activate` if setup.sh created one
 python -m harness split                        # must print: train
 (cd library && lake build && lake build monitor explain)
@@ -28,10 +29,11 @@ Each run has its own folder under `pipeline/traffic-spec-agent/launch/`, with it
 | Run | Laws | Guide |
 |---|---|---|
 | **Demo** | the 22 demo laws | [`launch/demo/README.md`](pipeline/traffic-spec-agent/launch/demo/README.md) |
-| **smoke31** | 29 training laws, the rehearsal of the full run | [`launch/smoke31/README.md`](pipeline/traffic-spec-agent/launch/smoke31/README.md) |
-| **Full training** | all 221 training laws; not to be started on the current baseline | [`launch/full/README.md`](pipeline/traffic-spec-agent/launch/full/README.md) |
+| **smoke32** | 15 training laws, the check of the fixes before the gap-discovery run | [`launch/smoke32/README.md`](pipeline/traffic-spec-agent/launch/smoke32/README.md) |
+| **full221** | all 221 training laws, generation stage only: the gap-discovery run | [`launch/full221/README.md`](pipeline/traffic-spec-agent/launch/full221/README.md) |
+| Full training (superseded by full221) | not to be started | [`launch/full/README.md`](pipeline/traffic-spec-agent/launch/full/README.md) |
 
-Start only the run you were asked for. **What to do after any exit, how to resume and what to send back** is in the operator guide: [`pipeline/traffic-spec-agent/REMOTE_LAUNCH.md`](pipeline/traffic-spec-agent/REMOTE_LAUNCH.md).
+Start only the run you were asked for. **What to do after any exit, how to resume and what to send back** is in the operator guide: [`pipeline/traffic-spec-agent/REMOTE_LAUNCH.md`](pipeline/traffic-spec-agent/REMOTE_LAUNCH.md); for full221, in its own runbook.
 
 ## Notes
 

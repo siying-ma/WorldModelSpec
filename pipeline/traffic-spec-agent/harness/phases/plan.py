@@ -747,7 +747,7 @@ def run_node_repair(run: Run, node, reasons: list[str], last_task: Path, law: co
         others = [s for s in siblings if s.id != node.id]
         outcomes = validate_a.validate([rec2] + others, laws, onto, reading, index, accepted, run.all_concepts(), [],
                                        rejected_gaps=GapLedger.for_run(paths.GAPS_DIR, run).rejected(),
-                                       sources=definitions_mod.source_texts(run))
+                                       sources=definitions_mod.source_texts(run), ledger_gaps=GapLedger.for_run(paths.GAPS_DIR, run).rows)
         errs += [r for o in outcomes if o.node.id == node.id for r in o.reasons]
         # a mapping the repair changed on words a sibling also carries: the same-words rule lands on the sibling, and is the repair's to keep or dispute
         errs += [f"{node.id}: your mapping of shared words differs from the held sibling's — {r}" for o in outcomes if o.node.id != node.id

@@ -726,10 +726,13 @@ def replan(run, txn, law: corpus.Law, defs: list[dict], to_user: list[str]) -> t
 # ---------------------------------------------------------------------------------------------
 def awaiting(run, ledger) -> list[str]:
     """The planned laws awaiting their label repair, in ledger order; a law whose active repair waits
-    on a law not yet accepted (`waits_on`) is not one until that law is."""
+    on a law not yet accepted (`waits_on`) is not one until that law is, and a law outside the active
+    stage's scope is not one in that stage."""
+    from ..loop import in_scope, label_scope
+    scope = label_scope(run)
     return [e.law for e in ledger.entries.values()
             if e.state == "planned" and run.label_states.get(e.law, {}).get("state") == "awaiting_label_repair"
-            and not waits_on(run, ledger, e.law)]
+            and in_scope(scope, e.law) and not waits_on(run, ledger, e.law)]
 
 
 def used(run) -> int:
@@ -1058,12 +1061,24 @@ def _repair(run, ledger, txn, law, defs, onto, repairs, plans, out: Output, gaps
     # the label states, merged at the commit onto their values then: the check's own fields; the target's counts
     # take this commit's one increment, and its session ends; another law keeps its counts and its session
     now = run.label_states.get(law.id, {})
-    updates = {law.id: {**label_state(run, law.id, chk, nodes, txn.area / "label", txn.id), "repairs": int(now.get("repairs", 0)) + 1,
+    from ..loop import context_base, label_key, semantic_inputs, staged
+    # in a run with a stage record, each state is keyed on the candidate it was checked on, never on the run before it:
+    # its records, its reading and its library's files (in force inside it), under the run's own context base
+    base = context_base(run.opts, semantic_inputs(run.opts)) if staged(run) else None
+
+    def keyed(l, ns):
+        if base is None:
+            return None
+        with txn.inside():
+            return label_key(run, l, list(ns), base=base, view=txn.view, reading=txn.reading)
+    updates = {law.id: {**label_state(run, law.id, chk, nodes, txn.area / "label", txn.id, key=keyed(law.id, nodes)),
+                        "repairs": int(now.get("repairs", 0)) + 1,
                         "sessions": int(now.get("sessions", 0)) + 1, "active": None}}
     for other, c in txn.label_checks.items():
         if other != law.id and other in run.label_states and other in ledger.entries:
             old = run.label_states[other]
-            updates[other] = {k: v for k, v in label_state(run, other, c, old["nodes"], txn.area / "label", txn.id).items() if k != "repairs"}
+            updates[other] = {k: v for k, v in label_state(run, other, c, old["nodes"], txn.area / "label", txn.id,
+                                                            key=keyed(other, old["nodes"])).items() if k != "repairs"}
     txn.commit(routed=routed, label_updates=updates)
     for l, e in routed.entries.items():               # the ledger in memory as committed
         if l in ledger.entries:

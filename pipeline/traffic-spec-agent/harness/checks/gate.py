@@ -81,7 +81,7 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "recheck_answers.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
-                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md", "AGGREGATE_DOWNGRADES.md",
+                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md", "AGGREGATE_DOWNGRADES.md", "OBSERVABLE_READINGS.md",
                          "gaps_measured.jsonl", "candidate_journal.json"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
@@ -289,6 +289,7 @@ import {nodeid.witness_module(node_id)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
+{index_sync.WITNESS_RUN_DEFS}
 def main (args : List String) : IO Unit := do
 {_PHASES}
   let r := {rns}.rule
@@ -352,7 +353,7 @@ def main (args : List String) : IO Unit := do
   let tWit ← IO.monoMsNow
   for sc in scs' do
     let tSc ← IO.monoMsNow
-    match sc.run rules allConcepts with
+    match witnessRun rules sc allConcepts with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
     out.flush
@@ -1280,6 +1281,7 @@ import {nodeid.concept_witness_module(cid)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
+{index_sync.WITNESS_RUN_DEFS}
 def main (args : List String) : IO Unit := do
 {_PHASES}
   let c := {ns}.concept
@@ -1349,7 +1351,7 @@ def main (args : List String) : IO Unit := do
   let tWit ← IO.monoMsNow
   for sc in scs' do
     let tSc ← IO.monoMsNow
-    match sc.run rules cs with
+    match witnessRun rules sc cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
     out.flush

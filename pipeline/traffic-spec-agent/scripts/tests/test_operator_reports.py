@@ -241,7 +241,7 @@ class CurrentView(unittest.TestCase):
         none = self.repo / "absent"
         with mock.patch.multiple(paths, REPO=self.repo, RESULTS=self.repo / "results", RULES_DIR=none, CONCEPTS_DIR=none,
                                  WITNESS_DIR=none, GAPS_DIR=none, INDEX_FILE=none / "i", WITNESS_ROOT_FILE=none / "w"), \
-                mock.patch.object(handoff, "checkpoint_problems", lambda run_id: []), \
+                mock.patch.object(handoff, "checkpoint_problems", lambda run_id, for_transition=False: []), \
                 mock.patch.object(handoff, "toolchain", lambda: {}), \
                 mock.patch.object(handoff, "code_digest", lambda: {"files": {}, "digest": "d"}), \
                 mock.patch("harness.store.owner.acquire_for_command", lambda name: None):

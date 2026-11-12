@@ -9,6 +9,8 @@
   verify        rebuild the library and run every witness, against a run's reading
   label_check   score a run's frozen library on the labelled training recordings
   handoff       export a run's checkpoint for another machine, or verify one before continuing it
+  stage         a run's stages: enter the next one, adopt a run made before stages, confirm a transition's commit,
+                verify or restore a closed stage's snapshot, show the stage record
   status        the run's ledger counts
   reopen        put a run's failed or decision-blocked laws back to open
   gap           list the gaps, or record the operator's decision on one
@@ -557,6 +559,10 @@ class Cli:
         if action == "list":
             print(ledger.render()); return 0
         if action == "decide":
+            from .store import stages
+            why = stages.unfinished_transitions(paths.RESULTS)   # the gap ledger is part of every run's handed files
+            if why:
+                raise SystemExit(f"[gap decide] refused: {why} — nothing was written")
             if not gap_id or not state or not decision:
                 raise SystemExit("gap decide <id> --state <retired|rejected|accepted> --decision \"<words>\" [--retired_by|--resolved_by ...]")
             ledger.decide(gap_id, state, decision, retired_by, resolved_by)
@@ -613,7 +619,11 @@ def _latest_blueprint(run) -> Path:
 
 
 def main() -> None:
-    """Run a command; a command's integer result is the process's exit status."""
+    """Run a command; a command's integer result is the process's exit status. `stage` parses its own
+    flags (`--from`, `--prompts-approved`, a commit id), which are passed on as written."""
+    if sys.argv[1:2] == ["stage"]:
+        from .tools import stage
+        sys.exit(stage.main(sys.argv[2:]))
     code = fire.Fire(Cli)
     if isinstance(code, int) and not isinstance(code, bool):
         sys.exit(code)

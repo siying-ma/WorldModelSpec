@@ -2,6 +2,8 @@
 
 This page is for whoever starts the pipeline's generation stage on a remote machine. It covers setup, the launch command, resuming, and reading the outcome.
 
+For the 221-law gap-discovery run, follow [`launch/full221/README.md`](launch/full221/README.md): it has its own preflight, launch and resume scripts, and governs where it differs from this page.
+
 The generation stage plans, codes and gate-checks traffic laws with Claude. It also runs two OpenAI checks, the concept review and the aggregate verifier. It reads no driving recordings, and it does not include a semantic review of each rule: that stage is not part of this pipeline yet.
 
 ## 1. Prerequisites (once per machine)

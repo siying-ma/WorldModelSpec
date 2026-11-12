@@ -14,8 +14,28 @@ LAWS_ROOT = Path(__file__).resolve().parents[2] / "traffic-spec-agent" / "laws"
 CORPUS_DIR = LAWS_ROOT / "full_list"          # the four JSONL views and definitions.jsonl
 AUDIT_DIR = LAWS_ROOT / "audit_and_scripts"   # OVERLAPS.md, CONCRETE_DEPENDENCIES.md
 
-NRS = {c: nrs_tree.load(c) for c in ('484A', '484B', '484D', '486')}
+from references import INCORPORATED
+NRS = {c: nrs_tree.load(c) for c in ('484A', '484B', '484D', '486') + tuple(sorted({ch for ch, _ in INCORPORATED}))}
 LVMC = lvmc_tree.load()
+
+_INCORPORATION = re.compile(r'(?:defined (?:in|by)|meaning ascribed to (?:it|them) in)\s+(?:(?:subsections?|paragraphs?) [\w(), ]+? of\s+)?NRS\s+(\d+[A-Z]?)\.(\d+)')
+
+def missing_incorporations(texts, definition_ids):
+    """(text id, cited section) for each place a text takes a term's meaning from an NRS section
+    ("as defined in NRS 482.029", "has the meaning ascribed to it in NRS 489.113") whose
+    definition `DEF-NRS-<chapter>-<section>` is not among `definition_ids`."""
+    return [(o['id'], f"NRS {ch}.{sec}") for o in texts for ch, sec in _INCORPORATION.findall(o['text'])
+            if f"DEF-NRS-{ch}-{sec}" not in definition_ids]
+
+def mark_incorporations(text, definition_ids):
+    """`text` with the definition id `[DEF-NRS-<chapter>-<section>]` after each NRS section it takes a
+    term's meaning from, where that definition is among `definition_ids`, as a cited provision is
+    marked: the definition the text names is the one its term means."""
+    def mark(m):
+        did = f"DEF-NRS-{m.group(1)}-{m.group(2)}"
+        follows = text[m.end():m.end() + len(did) + 3]
+        return m.group(0) + (f" [{did}]" if did in definition_ids and not follows.startswith(f" [{did}]") else '')
+    return _INCORPORATION.sub(mark, text)
 
 def split_title(title, root_text):
     title = re.sub(r'\s+', ' ', title).strip()
@@ -456,6 +476,13 @@ if __name__ == '__main__':
                 terms = [t.strip() for t in m.groups() if t]
                 title, tree, get = section('NRS', ch, sec)
                 recs.append((f"DEF-NRS-{ch}-{sec}", 'NRS', terms, f"NRS {ch}.{sec}", clean(flatten(tree))))
+        # the term definitions of other chapters a corpus text incorporates by citation
+        for ch, sec in INCORPORATED:
+            e = NRS[ch][sec]
+            m = re.match(r'^\s*[\u201c"]([^\u201d"]+)[\u201d"]\s+(?:and\s+[\u201c"]([^\u201d"]+)[\u201d"]\s+)?defined', e['title'])
+            assert m, ('an incorporated section is no term definition', ch, sec, e['title'])
+            title, tree, get = section('NRS', ch, sec)
+            recs.append((f"DEF-NRS-{ch}-{sec}", 'NRS', [t.strip() for t in m.groups() if t], f"NRS {ch}.{sec}", clean(flatten(tree))))
         title, tree, get = section('NRS', '484B', '637')
         recs.append(("DEF-NRS-484B-637-1", 'NRS', ['Low-speed vehicle', 'Neighborhood occupantless vehicle'], "NRS 484B.637(1), (4)",
                      clean(flatten(get(tree, '1')) + ' ' + flatten(get(tree, '4')))))
@@ -464,8 +491,16 @@ if __name__ == '__main__':
                 title, tree, get = section('LVMC', None, sec)
                 recs.append((f"DEF-LVMC-{sec.replace('.', '-')}", 'LVMC', [title.split('\u2014')[0].strip()], f"LVMC {sec}", clean(flatten(tree))))
         return recs
+    term_recs = term_definitions()
+    definition_ids = {r[0] for r in term_recs} | {d[0] for d in DEFS}
+    for o in out:                                      # a law's cited term definitions, marked like its cited provisions
+        marked = mark_incorporations(o['text'], definition_ids)
+        if marked != o['text']:
+            o['text'] = marked
+            o['refs'] = list(o.get('refs', [])) + [x for x in re.findall(r'\[(DEF-NRS-[\w-]+)\]', marked) if x not in o.get('refs', [])]
     with open(CORPUS_DIR / 'definitions.jsonl', 'w', encoding='utf-8') as f:
-        for did, applies, terms, label, text in term_definitions():
+        for did, applies, terms, label, text in term_recs:
+            text = mark_incorporations(text, definition_ids)
             hit = [t for t in terms if re.search(r'\b' + re.escape(t.lower()) + r'(?:s|es)?\b', corpus_text)]
             f.write(json.dumps({'id': did, 'kind': 'term', 'applies_to': applies, 'terms': terms,
                                 'title': ' / '.join(terms) + ' defined', 'text': text, 'source': label,
@@ -482,6 +517,11 @@ if __name__ == '__main__':
             f.write(json.dumps({'id': did, 'kind': 'provision', 'applies_to': dsrc, 'title': title, 'text': clean(' '.join(parts)),
                                 'source': label + ', '.join(path_label(p) for p in dpaths) if any(dpaths) else label,
                                 'note': note, 'used_by': used}, ensure_ascii=False) + '\n')
+    # ---- every term a corpus text takes from a cited section is itself a definition of the corpus ----
+    defs_written = [json.loads(l) for l in open(CORPUS_DIR / 'definitions.jsonl', encoding='utf-8')]
+    missing = missing_incorporations(defs_written + out, {d['id'] for d in defs_written})
+    assert not missing, ('a text takes a term from a section that is no definition of the corpus: '
+                         'add it to INCORPORATED in references.py', missing)
     # ---- OVERLAPS.md: the record of every decision ----
     by_kept = {}
     for d, (kept, why) in DROP.items():

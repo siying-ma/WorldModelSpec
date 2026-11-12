@@ -28,13 +28,20 @@ Current (2026-09-18, Nevada Revised Statutes target):
   judgement S-Q / concrete C) with the reason for each exclusion and each blocking mark.
 - `nrs_tools/sources/` — the parsed section files the generator reads (`484A.json`, `484B.json`,
   `484D.json`, `486.json`, `lvmc.json`) and the text of the City's Transportation Engineering Fact
-  Sheets (March 2025), which were read and found to contribute no obligations of their own.
+  Sheets (March 2025), which were read and found to contribute no obligations of their own. Beside
+  them, `482.json`, `482A.json`, `489.json`, `239C.json` and `648.json` hold only the term
+  definitions a corpus text takes a meaning from by citation (`INCORPORATED` in
+  `nrs_tools/references.py`), written by `nrs_tools/incorporated_sources.py` from saved official
+  chapter pages; `INCORPORATED_SOURCES.json` records each page's capture, address and SHA-256.
+  `make_laws.py` refuses a corpus in which a text cites a definition of another section that is not
+  in the corpus, and marks each such citation with the definition's id.
 - `LONGTAIL_ENCOUNTER_RATES_2026-10-12.md` and `NICHE_VOCABULARY_SURVEY_2026-10-02.md` — the
   external evidence behind the scope of 2026-10-13 (which laws lie outside ordinary urban Las Vegas
   driving); the decisions are `EXCLUDED` in `nrs_tools/tiers.py`.
 
-Regenerating the corpus: run `make_laws.py` from a directory that holds the four NRS chapter files
-(`484A.json` … `486.json`) and `lvmc/lvmc.json` (links to `nrs_tools/sources/`), then
+Regenerating the corpus: run `make_laws.py` from a directory that holds the NRS chapter files
+(`484A.json` … `486.json` and the incorporated chapters' files) and `lvmc/lvmc.json` (links to
+`nrs_tools/sources/`), then
 `python -m nrs_tools.publish`, `python -m nrs_tools.split` and, with the full Core split active,
 `python -m nrs_tools.atoms_train`, all from `pipeline/ontology_provenance/` except the first.
 

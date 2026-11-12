@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Superseded by launch/full221 (staged runs, explicit budgets): this script refuses, so no run is started from it.
+echo "[launch/full] superseded: use launch/full221 (see launch/full221/README.md); nothing was started" >&2; exit 2
 # Launch the full generation run: every law of the training split (221 laws), from this checkout of
 # remote/full-train-generation.
 # Run from pipeline/traffic-spec-agent:  bash launch/full/launch.sh   (RUN_ID may be set; it defaults to fulltrain-<date>)

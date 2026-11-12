@@ -118,11 +118,36 @@ def _iteration_of(d: Path) -> int:
     raise ValueError(d)
 
 
-class Fixture:
-    """A temporary repository with the scripted world patched in."""
+def legacy_run(opts: Options) -> None:
+    """Test only: make `opts.run_id` a run of the kind made before stages existed, by writing its
+    `options.json` as the loop writes a new run's (no stage policy marker, no stage record) before its
+    first launch; the loop then takes it up as a run with options and no snapshot, on the checks it
+    had before stages. Nothing is written for a run that exists, or for a launch the loop refuses on
+    its options or inputs alone, so such a refusal still meets a new run id."""
+    from dataclasses import replace
+    from harness.store.state import Run, chain_version_refusal
+    run = Run(opts)
+    if not paths.run_is_new(run.dir) or (opts.base_run and chain_version_refusal(opts.base_run, opts.run_id)) \
+            or loop.launch_refusal(opts):
+        return
+    try:
+        loop.input_refusal(run, opts)
+        given = replace(opts)
+        loop.normalise_options(given)
+        semantic = loop.semantic_inputs(given)
+    except (SystemExit, Exception):
+        return
+    run.dir.mkdir(parents=True, exist_ok=True)
+    loop.write_options(run, given, semantic, [])
 
-    def __init__(self, world: World, **opt):
+
+class Fixture:
+    """A temporary repository with the scripted world patched in. Its runs are made as before stages
+    existed (`legacy_run`) unless `staged`: then a new run is created by the loop, with its stage record."""
+
+    def __init__(self, world: World, staged: bool = False, **opt):
         self.w = world
+        self.staged = staged
         self.tmp = Path(tempfile.mkdtemp(prefix="recovery-"))
         self.root = self.tmp / "repo"
         self.opt = opt
@@ -195,7 +220,8 @@ class Fixture:
         s.enter_context(mock.patch.object(surface, "primitive_reads", lambda: {}))
         s.enter_context(mock.patch.object(render, "render", lambda *a, **k: "prompt"))
         s.enter_context(mock.patch.object(loop, "doctor_ok", lambda: None))
-        s.enter_context(mock.patch.object(owner, "acquire", lambda *a, **k: "nonce"))
+        # the takeover without the lock: its check of unfinished stage transitions, made before anything is written, kept
+        s.enter_context(mock.patch.object(owner, "acquire", lambda *a, **k: owner.transitions_refusal(k.get("allow")) or "nonce"))
         s.enter_context(mock.patch.object(openai_runner, "available", lambda: True))
         s.enter_context(mock.patch.object(definitions_mod, "write_table", lambda *a, **k: None))
         s.enter_context(mock.patch.object(definitions_mod, "load_table", lambda *a, **k: {}))
@@ -367,6 +393,13 @@ class Fixture:
                     failing.append(f"`{i}`: scripted")
             return [], failing, []
         s.enter_context(mock.patch.object(integrate_phase, "recheck_contexts", recheck_contexts))
+        if not self.staged:
+            real_loop = loop._run_loop
+
+            def legacy_loop(opts):
+                legacy_run(opts)
+                return real_loop(opts)
+            s.enter_context(mock.patch.object(loop, "_run_loop", legacy_loop))
         return self
 
     def __exit__(self, *exc):
