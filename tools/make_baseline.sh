@@ -18,11 +18,11 @@
 #   2. a new clone of MAIN_REPO at OUT, with no remote; BASE_TIP fetched from BASE_REPO and LAYER_SHA from
 #      LAYER_REPO, each checked against the id given;
 #   3. the new tree is MAIN_SHA's tree with the layer's files taken from LAYER_SHA, and only these:
-#      README.md, pipeline/traffic-spec-agent/REMOTE_LAUNCH.md, pipeline/traffic-spec-agent/launch/,
+#      README.md, pipeline/traffic-spec-agent/launch/,
 #      tools/make_baseline.sh; it is committed with BASE_TIP as its only parent, so the push is a fast-forward
 #      (the commit copies main's tree: main's commit is not thereby in the branch's history);
 #   4. checks on the new commit: it differs from MAIN_SHA only in the layer's files, and its pipeline
-#      directory differs from the candidate only in REMOTE_LAUNCH.md and launch/; then in OUT the active
+#      directory differs from the candidate only in launch/; then in OUT the active
 #      split is train, the library builds, the doctor exits 0 and the checkout stays clean;
 #   5. a record (OUT.record.txt): the four input commits, the new commit, the handoff code digest and the
 #      checks' results; then the push command, printed with BASE_REPO as the address: it checks that the
@@ -35,7 +35,7 @@ CANDIDATE_REPO=${CANDIDATE_REPO:-/local-scratch2/sma407/scratch_core/s2/traffic-
 LAYER_REPO=${LAYER_REPO:-$(git -C "$(dirname "$0")" rev-parse --show-toplevel)}
 BASE_REPO=${BASE_REPO:?set BASE_REPO to the repository url that holds remote/full-train-generation}
 BR=remote/full-train-generation
-LAYER_PATHS=(README.md pipeline/traffic-spec-agent/REMOTE_LAUNCH.md pipeline/traffic-spec-agent/launch tools/make_baseline.sh)
+LAYER_PATHS=(README.md pipeline/traffic-spec-agent/launch tools/make_baseline.sh)
 for v in MAIN_SHA CANDIDATE_SHA LAYER_SHA BASE_TIP; do
   val=${!v:-}; [[ "$val" =~ ^[0-9a-f]{40}$ ]] || die "$v must be a full 40-character commit id"
 done
@@ -93,7 +93,7 @@ while IFS= read -r f; do allowed "$f" || die "the new commit differs from main i
   < <(git diff --name-only "$MAIN_SHA" "$NEW")
 git fetch -q "$CANDIDATE_REPO" "$CANDIDATE_SHA" 2>/dev/null || git fetch -q "$CANDIDATE_REPO" "+refs/heads/*:refs/candidate/*"
 while IFS= read -r f; do
-  case "$f" in REMOTE_LAUNCH.md|launch/*) ;; *) die "the pipeline differs from the candidate in $f";; esac
+  case "$f" in launch/*) ;; *) die "the pipeline differs from the candidate in $f";; esac
 done < <(git diff --name-only "$CANDIDATE_SHA" "$NEW:pipeline/traffic-spec-agent")
 cd pipeline/traffic-spec-agent
 export PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$OUT/pipeline/ontology_provenance${PYTHONPATH:+:$PYTHONPATH}"

@@ -4,12 +4,14 @@
 # logs under .runtime/preflight-<run id>/. Every check prints PASS or FAIL (INFO lines are printed only for the
 # record); the exit status is the number of FAILs, capped at 1 (0: all passed).
 # Run from pipeline/traffic-spec-agent of the clone the run will use:
-#   RUN_ID=<run id> EXPECTED_BASELINE=<commit> bash launch/full221/preflight.sh 2>&1 | tee preflight-<run id>.txt
-# Optional: MIN_FREE_GB (20, on the checkout's disk), MIN_CONFIG_FREE_GB (5, on CLAUDE_CONFIG_DIR's disk),
+#   RUN_ID=<run id> bash launch/full221/preflight.sh          (launch.sh runs it first, with the run's id)
+# Optional: MIN_FREE_GB (20, on the checkout's disk), MIN_CONFIG_FREE_GB (5, on the Claude config directory's disk),
 # OPENAI_KEY_FILE (~/.config/traffic-spec/openai.env), PYTHON (python), REMOTE (origin).
 set -uo pipefail
 export PYTHONDONTWRITEBYTECODE=1
-RUN_ID=${RUN_ID:-}; EXPECTED_BASELINE=${EXPECTED_BASELINE:-}
+RUN_ID=${RUN_ID:-}
+CONFIG=${CLAUDE_CONFIG_DIR:-$HOME/.claude}                 # the claude CLI's config directory (its default when unset)
+ACCOUNT_FILE=${CLAUDE_CONFIG_DIR:+$CLAUDE_CONFIG_DIR/.claude.json}; ACCOUNT_FILE=${ACCOUNT_FILE:-$HOME/.claude.json}
 MIN_FREE_GB=${MIN_FREE_GB:-20}; MIN_CONFIG_FREE_GB=${MIN_CONFIG_FREE_GB:-5}
 OPENAI_KEY_FILE=${OPENAI_KEY_FILE:-$HOME/.config/traffic-spec/openai.env}
 PYTHON=${PYTHON:-python}; REMOTE=${REMOTE:-origin}
@@ -22,8 +24,6 @@ free_gb() { df -Pk "$1" 2>/dev/null | awk 'NR == 2 { print int($4 / 1048576) }';
 
 # ---------------------------------------------------------------- the inputs and the place
 [ -n "$RUN_ID" ] && pass "RUN_ID is $RUN_ID" || fail "RUN_ID is not set (export RUN_ID=full221-\$(date +%m%d-%H%M), once)"
-[[ $EXPECTED_BASELINE =~ ^[0-9a-f]{40}$ ]] && pass "EXPECTED_BASELINE is $EXPECTED_BASELINE" \
-  || fail "EXPECTED_BASELINE must be the full 40-character commit id the requester named (given '$EXPECTED_BASELINE')"
 if [ -d harness ] && [ -f scripts/run-generation.sh ] && [ "$(git rev-parse --show-prefix 2>/dev/null)" = pipeline/traffic-spec-agent/ ]; then
   pass "running in pipeline/traffic-spec-agent of a WorldModelSpec clone ($(pwd))"
 else
@@ -34,11 +34,10 @@ LOGS=.runtime/preflight-${RUN_ID:-unnamed}; mkdir -p "$LOGS"
 
 # ---------------------------------------------------------------- the checkout
 HEAD=$(git rev-parse HEAD)
-[ "$HEAD" = "$EXPECTED_BASELINE" ] && pass "HEAD is EXPECTED_BASELINE" || fail "HEAD is $HEAD, not EXPECTED_BASELINE"
 TIP=$(git ls-remote "$REMOTE" "refs/heads/$BASELINE_BRANCH" 2>/dev/null | cut -f1)
 if [ -z "$TIP" ]; then fail "$REMOTE has no branch $BASELINE_BRANCH (or cannot be reached): clone the repository with --branch $BASELINE_BRANCH"
-elif [ "$TIP" = "$EXPECTED_BASELINE" ]; then pass "$REMOTE/$BASELINE_BRANCH is at EXPECTED_BASELINE"
-else fail "$REMOTE/$BASELINE_BRANCH is at $TIP, not EXPECTED_BASELINE: ask the requester which commit to run"; fi
+elif [ "$TIP" = "$HEAD" ]; then pass "HEAD is the tip of $REMOTE/$BASELINE_BRANCH ($HEAD)"
+else fail "HEAD is $HEAD, but $REMOTE/$BASELINE_BRANCH is at $TIP: make a fresh clone of the branch"; fi
 git diff --cached --quiet && [ -z "$(git status --porcelain --untracked-files=no)" ] \
   && pass "no tracked file is changed or staged" || fail "the checkout has changed or staged tracked files: use a fresh clone ($(git status --porcelain --untracked-files=no | head -n 3 | tr '\n' ' '))"
 if [ -n "$RUN_ID" ]; then
@@ -54,8 +53,8 @@ fi
   && pass "git identity: $(git config user.name) <$(git config user.email)>" || fail "git user.name / user.email not set (git config user.name ...; git config user.email ...)"
 
 # ---------------------------------------------------------------- accounts and keys
-if [ -n "${CLAUDE_CONFIG_DIR:-}" ]; then
-  ACCOUNT=$("$PYTHON" - "$CLAUDE_CONFIG_DIR/.claude.json" <<'PY' 2>/dev/null
+if true; then
+  ACCOUNT=$("$PYTHON" - "$ACCOUNT_FILE" <<'PY' 2>/dev/null
 import json, sys
 a = json.load(open(sys.argv[1])).get("oauthAccount") or {}
 if not a.get("emailAddress"):
@@ -63,10 +62,8 @@ if not a.get("emailAddress"):
 print(f"{a.get('emailAddress')}, organization {a.get('organizationName') or '-'}, plan {a.get('planDisplayName') or a.get('billingType') or '-'}")
 PY
 )
-  [ -n "$ACCOUNT" ] && pass "CLAUDE_CONFIG_DIR=$CLAUDE_CONFIG_DIR bills: $ACCOUNT" \
-    || fail "CLAUDE_CONFIG_DIR=$CLAUDE_CONFIG_DIR has no logged-in account (run: CLAUDE_CONFIG_DIR=$CLAUDE_CONFIG_DIR claude, then /login)"
-else
-  fail "CLAUDE_CONFIG_DIR is not set: export it to the config directory of the account the requester named"
+  [ -n "$ACCOUNT" ] && pass "the claude CLI (config ${CLAUDE_CONFIG_DIR:-default}) bills: $ACCOUNT" \
+    || fail "the claude CLI (config ${CLAUDE_CONFIG_DIR:-default}) has no logged-in account: run claude once and /login"
 fi
 [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ] && pass "ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN are unset" \
   || fail "ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN is set: unset it (the CLI would bill it instead of the account)"
@@ -107,10 +104,10 @@ pgrep -u "$(id -u)" -f 'python[0-9.]* -m harness loop' >/dev/null \
 # ---------------------------------------------------------------- disk and corpus
 G=$(free_gb .); [ -n "$G" ] && [ "$G" -ge "$MIN_FREE_GB" ] && pass "free disk here: ${G} GB (at least $MIN_FREE_GB)" \
   || fail "free disk here: ${G:-unknown} GB, less than $MIN_FREE_GB"
-if [ -n "${CLAUDE_CONFIG_DIR:-}" ] && [ -d "$CLAUDE_CONFIG_DIR" ]; then
-  G=$(free_gb "$CLAUDE_CONFIG_DIR"); [ -n "$G" ] && [ "$G" -ge "$MIN_CONFIG_FREE_GB" ] \
-    && pass "free disk for CLAUDE_CONFIG_DIR (session transcripts): ${G} GB (at least $MIN_CONFIG_FREE_GB)" \
-    || fail "free disk for CLAUDE_CONFIG_DIR: ${G:-unknown} GB, less than $MIN_CONFIG_FREE_GB"
+if [ -d "$CONFIG" ]; then
+  G=$(free_gb "$CONFIG"); [ -n "$G" ] && [ "$G" -ge "$MIN_CONFIG_FREE_GB" ] \
+    && pass "free disk for the Claude config directory $CONFIG (session transcripts): ${G} GB (at least $MIN_CONFIG_FREE_GB)" \
+    || fail "free disk for the Claude config directory $CONFIG: ${G:-unknown} GB, less than $MIN_CONFIG_FREE_GB"
 fi
 SPLIT=$("$PYTHON" -m harness split 2>/dev/null | grep -o 'train\|full' | head -n 1)
 [ "$SPLIT" = train ] && pass "the active split is train" || fail "the active split is '${SPLIT:-unknown}', not train"

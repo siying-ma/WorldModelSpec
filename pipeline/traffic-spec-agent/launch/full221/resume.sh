@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Resume the full221 run from the checkout that started it (on its run branch runs/<run id>), only when its last
-# exit allows it (see launch/full221/README.md).
+# exit allows it (see the repository's README).
 # Run from pipeline/traffic-spec-agent:  RUN_ID=<run id> LAUNCHES=<n> bash launch/full221/resume.sh
 # LAUNCHES (default 30) bounds this invocation's launches of the loop. Every other setting is the run's saved one:
 # a budget, a model, the stage or the laws given here is refused, since the run's limits are hard and its stage
