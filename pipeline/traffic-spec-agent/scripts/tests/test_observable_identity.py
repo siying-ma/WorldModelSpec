@@ -1,7 +1,9 @@
 """Development regression tests for observable readings carried by road-user identity classes: the
-validator returns a reading, of any category, whose span only identity classes (`ru.`, aggregates
-included) carry, with the ontology's own words for what the category is read through; a reading
-carried by conduct, a feature or a concept passes; a reading carried by identity classes and other
+validator returns a reading of a purpose, a perception, an intention or a status whose span only
+identity classes (`ru.`, aggregates included) carry, with the ontology's own words for what the
+category is read through; an agency reading so carried passes (the subject's class names the vehicle
+whose controlled motion the ontology reads "the driver" through) and is listed; a reading carried by
+conduct, a feature or a concept passes; a reading carried by identity classes and other
 ids passes and is listed for the operator, as is a record that names a duty, a role or a status
 with identity classes only and declares no reading. The list is a run record like `TO_USER.md`.
 Every check is static; no model is called."""
@@ -61,16 +63,18 @@ class IdentityOnlyIsReturned(unittest.TestCase):
         self.assertIn("ru.official_vehicle, ru.emergency_vehicle", s14[0])
         self.assertIn("a purpose by the conduct it explains", s14[0])
 
-    def test_an_agency_reading_carried_by_an_aggregate_alone_is_returned(self):
+    def test_an_agency_reading_carried_by_an_aggregate_alone_passes_and_is_listed(self):
         errs = identity_errors(Node(fixture()))
-        s8 = [e for e in errs if "span s8 (agency)" in e]
-        self.assertEqual(len(s8), 1, errs)
-        self.assertIn("\"the driver\" are read through the vehicle's controlled motion", s8[0])
+        self.assertEqual([e for e in errs if "span s8" in e], [], errs)
         synthetic = node({"s1": ["ru.aggregate=DEF-X::vehicle"], "s2": ["kin.speed"]}, {"s1": "agency"})
-        self.assertEqual(len(identity_errors(synthetic)), 1)
+        self.assertEqual(identity_errors(synthetic), [])
+        listed = observable_view.entries({"L_9_o1": ("x", synthetic.raw)})["a"]
+        self.assertEqual([(e["span"], e["words"], e["category"], e["carriers"], e["refused"]) for e in listed],
+                         [("s1", "The driver of a vehicle", "agency", ["ru.aggregate=DEF-X::vehicle"], False)])
 
-    def test_every_category_is_returned(self):
-        for cat in sorted(validate_a.OBSERVABLE_CATEGORIES):
+    def test_every_category_but_agency_is_returned(self):
+        self.assertEqual(set(validate_a.OBSERVABLE_THROUGH), validate_a.OBSERVABLE_CATEGORIES - {"agency"})
+        for cat in sorted(validate_a.OBSERVABLE_THROUGH):
             n = node({"s2": ["kin.speed"], "s3": ["ru.official_vehicle"]}, {"s3": cat})
             errs = identity_errors(n)
             self.assertEqual(len(errs), 1, cat)
@@ -78,7 +82,6 @@ class IdentityOnlyIsReturned(unittest.TestCase):
 
     def test_the_quoted_words_are_the_ontology_own(self):
         text = re.sub(r"\s+", " ", (paths.REPO / "ontology" / "ATOMS.md").read_text(encoding="utf-8"))
-        self.assertEqual(set(validate_a.OBSERVABLE_THROUGH), validate_a.OBSERVABLE_CATEGORIES)
         for cat, quote in validate_a.OBSERVABLE_THROUGH.items():
             for part in quote.split(" [...] "):
                 self.assertIn(part, text, cat)
@@ -105,8 +108,8 @@ class ConductOrFeaturePasses(unittest.TestCase):
 
 class OperatorControl(unittest.TestCase):
     """The operator's control: the class stays and only the duty changes, or the duty is performed in
-    another class. No trace tells a duty performed from one not performed, so a reading that rests on
-    the class alone decides both cases alike and is returned in every variant; what passes is a
+    another class. No trace tells a duty performed from one not performed, so a reading of a purpose
+    or a status that rests on the class alone decides both cases alike and is returned in every variant; what passes is a
     reading through conduct or a feature, or the nearest atoms with a gap (no reading), which the
     operator's list shows."""
 
@@ -117,7 +120,7 @@ class OperatorControl(unittest.TestCase):
     def test_a_class_never_reads_a_duty(self):
         for cls in (["ru.official_vehicle"], ["ru.emergency_vehicle"], ["ru.official_vehicle", "ru.emergency_vehicle"],
                     ["ru.aggregate=DEF-X::authorized_emergency_vehicle"], ["ru.motor_vehicle"]):
-            for cat in ("purpose", "status", "agency"):
+            for cat in ("purpose", "status"):
                 self.assertEqual(len(identity_errors(self.exception(cls, cat))), 1, (cls, cat))
 
     def test_what_remains_is_conduct_or_a_gap(self):
@@ -166,6 +169,9 @@ class Report(unittest.TestCase):
         self.assertIn("`NRS_484B_270_3_o2` span s14 \"(d) In the performance of official duties;\" · `purpose` · carried by "
                       "`ru.official_vehicle`, `ru.emergency_vehicle`", a)
         self.assertIn("the validator returns this record", a)
+        s8 = next(l for l in a.splitlines() if "`NRS_484B_270_3_o2` span s8 " in l)
+        self.assertIn("`agency`", s8)
+        self.assertNotIn("validator returns", s8)                              # an agency reading is listed, never returned
         self.assertIn("`NRS_484B_270_3_o2` span s13", a)                       # every reading, refused or not
         self.assertIn("`L_9_o2` span s1", b)
         self.assertIn("`NRS_484B_270_3_o2` span s13", b)                       # the traffic aggregate beside the conflict it reads

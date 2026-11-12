@@ -14,7 +14,7 @@ import json
 import re
 from pathlib import Path
 
-from ..checks.validate_a import OBSERVABLE_READING, identity_and_more, identity_only, span_carriers
+from ..checks.validate_a import OBSERVABLE_READING, OBSERVABLE_THROUGH, identity_and_more, identity_only, span_carriers
 from ..model.blueprint import Node
 from ..store import jsonl
 
@@ -88,7 +88,8 @@ def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict]]:
             sid = n.get("span")
             ids = span_carriers(node, sid)
             e = {"node": nid, "source": src, "span": sid, "words": (spans.get(sid) or {}).get("text", ""),
-                 "category": n.get("category"), "carriers": ids, "identity_only": identity_only(ids)}
+                 "category": n.get("category"), "carriers": ids, "identity_only": identity_only(ids),
+                 "refused": n.get("category") in OBSERVABLE_THROUGH and identity_only(ids)}
             a.append(e)
             if identity_and_more(ids):
                 b.append(e)
@@ -104,7 +105,8 @@ def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict]]:
 
 def _line(e: dict) -> str:
     what = f"`{e['category']}`" if "category" in e else "matches " + ", ".join(f"\"{w}\"" for w in e["wordings"])
-    flag = " — carried by identity classes only: the validator returns this record" if e.get("identity_only") else ""
+    flag = (" — carried by identity classes only: the validator returns this record" if e.get("refused")
+            else " — carried by identity classes only" if e.get("identity_only") else "")
     return (f"- `{e['node']}` span {e['span']} \"{e['words']}\" · {what} · carried by "
             f"{', '.join(f'`{i}`' for i in e['carriers']) or 'nothing'} · from `{e['source']}`{flag}")
 
