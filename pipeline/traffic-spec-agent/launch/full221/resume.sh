@@ -2,7 +2,7 @@
 # Resume the full221 run from the checkout that started it (on its run branch runs/<run id>), only when its last
 # exit allows it (see the repository's README).
 # Run from pipeline/traffic-spec-agent:  RUN_ID=<run id> LAUNCHES=<n> bash launch/full221/resume.sh
-# LAUNCHES (default 30) bounds this invocation's launches of the loop. Every other setting is the run's saved one:
+# LAUNCHES (default 40) bounds this invocation's launches of the loop. Every other setting is the run's saved one:
 # a budget, a model, the stage or the laws given here is refused, since the run's limits are hard and its stage
 # is generation. WORKERS may be lowered, only on the requester's word. The account and the exit status: see
 # launch/full221/detach.sh.
@@ -29,5 +29,5 @@ for v in CLAUDE_BUDGET OPENAI_BUDGET TOTAL_BUDGET SESSION_CAP REPAIR_CAP JUDGE_C
 done
 [ "${STAGE:-generation}" = generation ] || { echo "refusing: this run is a generation-stage run; STAGE=$STAGE is never launched by the operator" >&2; exit 2; }
 source launch/full221/detach.sh
-export RUN_ID STAGE=generation LAUNCHES=${LAUNCHES:-30}
+export RUN_ID STAGE=generation LAUNCHES=${LAUNCHES:-40}
 start_detached resume "resume-$RUN_ID-$(date +%m%d-%H%M)"

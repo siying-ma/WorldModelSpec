@@ -9,8 +9,8 @@ gaps block the others, and why; it is not a final result.
 
 ```bash
 git clone --branch remote/full-train-generation --single-branch \
-  git@github.com:siying-ma/WorldModelSpec.git wms
-cd wms/pipeline/traffic-spec-agent
+  git@github.com:siying-ma/WorldModelSpec.git
+cd WorldModelSpec/pipeline/traffic-spec-agent
 bash setup.sh                                                   # Lean and Python packages, once per machine
 git config user.name "<name>" && git config user.email "<email>"   # the run commits and pushes checkpoints
 export PATH=$HOME/.elan/bin:$PATH
@@ -30,7 +30,7 @@ disk, the 221 laws, the Lean build, the doctor). If any check fails, nothing sta
 |---|---|
 | Laws | all 221 laws of the training split (`laws/example/train/laws.jsonl`) |
 | Stage | generation only |
-| Workers | 12 Claude sessions at once |
+| Workers | 16 Claude sessions at once |
 | Claude model | `claude-opus-5-5[1m]` (planning and coding effort high, judging medium) |
 | OpenAI model | `gpt-6.1-sol` for the concept reviewer and the aggregate verifier (effort high) |
 | Budget limits, whole run | Claude $1,500, OpenAI $30, total $1,530; aggregate verifier $20 |
@@ -40,19 +40,19 @@ The limits stop the run before a session that would not fit; they are not raised
 
 ## Progress and resuming
 
-The first `launch.sh` runs one iteration, so that a resume is tried early. Each finished iteration is committed
-and pushed to the branch `runs/<run id>`. The launcher runs in the background; a report line is appended every
-10 minutes to `.runtime/<run id>/watch.log`, and its exit status is written to `launch-<run id>.exit` (or
-`resume-<run id>-<time>.exit`) when it ends.
+The job runs by itself until generation has nothing left to do; no step needs you in between. The launcher runs
+in the background (closing the terminal does not stop it). Each finished iteration is committed and pushed to the
+branch `runs/<run id>`; a report line is appended every 10 minutes to `.runtime/<run id>/watch.log`; when the
+launcher ends, its exit status is written to `launch-<run id>.exit`.
 
 | Exit | `status` in `results/<run id>/summary.json` | What to do |
 |---|---|---|
-| 0 | `incomplete` (iteration limit) | `RUN_ID=<run id> bash launch/full221/resume.sh` |
-| 0 | `awaiting_labels` or `complete` | Done: send back (below) |
+| 0 | `awaiting_labels` or `complete` | Done (the normal end): send back (below) |
+| 0 | `incomplete` (the 40-iteration safety bound was used up) | Send back; do not resume without our word |
 | 4 | `paused_budget` or `awaiting_operator` | Stop and send back; do not resume |
 | 1 | an error | Stop and send back; do not resume |
 | 2 | refused before spending | Fix what the message says, run the same command again |
-| 3 | a checkpoint was not pushed | Fix the network or credentials, then resume |
+| 3 | a checkpoint was not pushed | Fix the network or credentials, then `RUN_ID=<run id> bash launch/full221/resume.sh` |
 
 Report as well if there has been no new checkpoint for 8 hours while the spend in `watch.log` has not moved for
 2 hours. The whole run is expected to take about a day.
