@@ -1,8 +1,9 @@
 # Sourced by the full221 scripts. start_detached ACTION PREFIX starts scripts/run-generation.sh ACTION in its own
 # session (setsid nohup: closing the terminal or the ssh connection does not stop it) with the caller's exported
-# settings, then returns. It records the launcher's pid in PREFIX.pid and, when the launcher ends, its exit
-# status in PREFIX.exit: the script's own status says only that it started. It also starts
-# launch/full221/watch.sh, which reports on the run until the launcher ends.
+# settings, then returns. It records the launcher's own pid in PREFIX.pid (ending that process stops the
+# launches; the loop it started finishes its iteration) and, when the launcher ends, its exit status in
+# PREFIX.exit (143 when it was ended that way): the script's own status says only that it started. It also
+# starts launch/full221/watch.sh, which reports on the run until the launcher ends.
 # The account: the claude CLI bills its logged-in account (CLAUDE_CONFIG_DIR's when set, the default login
 # otherwise; the same for every launch of the run); ANTHROPIC_API_KEY is cleared so that no launch can bill a key.
 unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL ANTHROPIC_VERTEX_BASE_URL ANTHROPIC_BEDROCK_BASE_URL
@@ -14,9 +15,11 @@ start_detached() {
   local action=$1 prefix=$2
   [ ! -e "$prefix.pid" ] || { echo "refusing: $prefix.pid exists (a launch with this name was started before)"; return 2; }
   echo "claude account: CLAUDE_CONFIG_DIR=${CLAUDE_CONFIG_DIR:-the default login}"
-  setsid nohup bash -c 'scripts/run-generation.sh "$1"; echo $? > "$2.exit"' _ "$action" "$prefix" > "$prefix.out" 2>&1 < /dev/null &
-  local pid=$!
-  echo "$pid" > "$prefix.pid"
+  setsid nohup bash -c 'scripts/run-generation.sh "$1" & echo $! > "$2.pid"; wait $!; echo $? > "$2.exit"' _ "$action" "$prefix" \
+    > "$prefix.out" 2>&1 < /dev/null &
+  local pid= i
+  for i in $(seq 1 100); do [ -s "$prefix.pid" ] && pid=$(cat "$prefix.pid") && break; sleep 0.1; done
+  [ -n "$pid" ] || { echo "refusing: the launcher did not start (see $prefix.out)"; return 1; }
   setsid nohup bash launch/full221/watch.sh "$RUN_ID" "$pid" "$prefix" > /dev/null 2>&1 < /dev/null &
   echo "started $action of $RUN_ID (pid $pid)"
   echo "  output: $prefix.out; progress: .runtime/$RUN_ID/launcher.log"

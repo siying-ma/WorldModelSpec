@@ -6,7 +6,7 @@
 # Run from pipeline/traffic-spec-agent of the clone the run will use:
 #   RUN_ID=<run id> bash launch/full221/preflight.sh          (launch.sh runs it first, with the run's id)
 # Optional: MIN_FREE_GB (20, on the checkout's disk), MIN_CONFIG_FREE_GB (5, on the Claude config directory's disk),
-# OPENAI_KEY_FILE (~/.config/traffic-spec/openai.env), PYTHON (python), REMOTE (origin).
+# OPENAI_KEY_FILE (~/.config/traffic-spec/openai.env), PYTHON (python3), REMOTE (origin).
 set -uo pipefail
 export PYTHONDONTWRITEBYTECODE=1
 RUN_ID=${RUN_ID:-}
@@ -14,7 +14,7 @@ CONFIG=${CLAUDE_CONFIG_DIR:-$HOME/.claude}                 # the claude CLI's co
 ACCOUNT_FILE=${CLAUDE_CONFIG_DIR:+$CLAUDE_CONFIG_DIR/.claude.json}; ACCOUNT_FILE=${ACCOUNT_FILE:-$HOME/.claude.json}
 MIN_FREE_GB=${MIN_FREE_GB:-20}; MIN_CONFIG_FREE_GB=${MIN_CONFIG_FREE_GB:-5}
 OPENAI_KEY_FILE=${OPENAI_KEY_FILE:-$HOME/.config/traffic-spec/openai.env}
-PYTHON=${PYTHON:-python}; REMOTE=${REMOTE:-origin}
+PYTHON=${PYTHON:-python3}; REMOTE=${REMOTE:-origin}
 BASELINE_BRANCH=remote/full-train-generation; LAWS=laws/example/train/laws.jsonl; N_LAWS=221
 FAILS=0
 pass() { echo "PASS  $*"; }

@@ -81,6 +81,15 @@ sys.exit(2)
 '''
 
 
+FAKE_HANDOFF = r'''
+from pathlib import Path
+def artifact_files(run_id):
+    rd = Path("results") / run_id
+    files = sorted(str(p) for p in rd.rglob("*") if p.is_file() and "handoff" not in p.parts)
+    return files + sorted(str(p) for p in Path("library/TrafficSpec/Rules").rglob("*") if p.is_file())
+'''
+
+
 def git(cwd, *args, check=True):
     return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=check)
 
@@ -105,6 +114,9 @@ class Launcher(unittest.TestCase):
         (self.agent / "harness" / "store" / "state.py").write_text(
             "from dataclasses import dataclass\n@dataclass\nclass Options:\n    label_deferred: bool = False\n    label_stage: bool = False\n")
         (self.agent / "harness" / "__main__.py").write_text(FAKE_MAIN)
+        (self.agent / "harness" / "tools").mkdir()
+        (self.agent / "harness" / "tools" / "__init__.py").write_text("")
+        (self.agent / "harness" / "tools" / "handoff.py").write_text(FAKE_HANDOFF)   # the run's own files, as the export lists them
         shutil.copy2(LAUNCHER.parents[1] / "harness" / "store" / "paths.py", self.agent / "harness" / "store" / "paths.py")   # the real rule of a new run
         (self.agent / "library" / "TrafficSpec" / "Rules").mkdir(parents=True)
         (self.agent / "library" / "TrafficSpec" / "Rules" / ".keep").write_text("")
@@ -261,13 +273,78 @@ class Launcher(unittest.TestCase):
         self.assertEqual(git(self.remote, "branch", "--list", "runs/t1").stdout.strip(), "")    # nothing committed or pushed
 
     def test_a_status_other_than_an_iteration_limit_stops(self):
-        out = self.launch("new", [{"status": "paused_budget", "stage": "nodes"}, {"status": "complete"}])
+        out = self.launch("new", [{"status": "protocol_failure", "stage": "nodes"}, {"status": "complete"}])
         self.assertEqual(out.returncode, 1)
         self.assertEqual(len(self.loops()), 1)
         self.assertIn("no checkpoint", out.stdout + out.stderr + (self.agent / ".runtime/t1/launcher.log").read_text())
         out = self.launch("resume", [{"status": "complete"}])                         # the unfinished iteration resumes: bound 1
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
         self.assertEqual([x["max_iterations"] for x in self.loops()], [1, 1])
+
+    def test_a_stop_inside_an_iteration_after_a_checkpoint_resumes_on_the_runs_own_changes(self):
+        """After a checkpoint the run's files are tracked: a stop inside the next iteration leaves them
+        changed, with no checkpoint. The exit status names the stop (4 a pause for the operator, 5 sessions
+        that could not be launched, 1 any other), and `resume` takes the iteration up from that checkout."""
+        for status, code in (("paused_budget", 4), ("infrastructure_failure", 5), ("protocol_failure", 1)):
+            with self.subTest(status=status):
+                self.setUp()
+                out = self.launch("new", [
+                    {"status": "incomplete", "stop": "iteration_limit", "files": {"library/TrafficSpec/Rules/X/X_1.lean": "-- rule\n"}},
+                    {"status": status, "stage": "nodes",
+                     "files": {"library/TrafficSpec/Rules/X/X_1.lean": "-- rule, repaired\n", "results/t1/notes.txt": "n\n"}}])
+                self.assertEqual(out.returncode, code, out.stdout + out.stderr)
+                self.assertIn("no checkpoint", out.stdout)
+                checkpoint = git(self.remote, "rev-parse", "runs/t1").stdout.strip()
+                changed = git(self.work, "status", "--porcelain", "--untracked-files=no").stdout
+                self.assertIn("pipeline/agent/library/TrafficSpec/Rules/X/X_1.lean", changed)   # the iteration's work, kept
+                self.assertIn("pipeline/agent/results/t1/state.json", changed)
+                again = self.launch("resume", [{"status": "awaiting_labels"}])
+                self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+                self.assertEqual([x["max_iterations"] for x in self.loops()], [1, 2, 2])      # the unfinished iteration resumed
+                self.assertEqual(git(self.remote, "rev-parse", "runs/t1~1").stdout.strip(), checkpoint)
+                self.assertEqual(git(self.remote, "show", "runs/t1:pipeline/agent/library/TrafficSpec/Rules/X/X_1.lean").stdout,
+                                 "-- rule, repaired\n")
+                self.assertEqual(git(self.work, "status", "--porcelain", "--untracked-files=no").stdout, "")
+
+    def test_a_resume_refuses_a_change_to_a_file_that_is_not_the_runs_own(self):
+        """The run's own changes do not open the door to others: a tracked file outside the run's files
+        (code, staged or not) is refused before any loop, beside the run's kept changes; `new` stays clean-only."""
+        out = self.launch("new", [{"status": "incomplete", "stop": "iteration_limit"},
+                                  {"status": "infrastructure_failure", "stage": "nodes", "files": {"results/t1/notes.txt": "n\n"}}])
+        self.assertEqual(out.returncode, 5, out.stdout + out.stderr)
+        for staged in (False, True):
+            with self.subTest(staged=staged):
+                (self.agent / "harness" / "store" / "state.py").write_text("# edited\n")
+                if staged:
+                    git(self.work, "add", "pipeline/agent/harness/store/state.py")
+                again = self.launch("resume", [{"status": "awaiting_labels"}])
+                self.assertEqual(again.returncode, 2, again.stdout + again.stderr)
+                self.assertIn("outside the run's checkpoint files", again.stderr)
+                self.assertIn("pipeline/agent/harness/store/state.py", again.stderr)
+                self.assertEqual(len(self.loops()), 2)                                     # no further loop
+                git(self.work, "reset", "-q", "--", "pipeline/agent/harness/store/state.py")
+                git(self.work, "checkout", "--", "pipeline/agent/harness/store/state.py")
+
+    def test_sessions_that_could_not_be_launched_stop_with_5_after_their_checkpoint(self):
+        out = self.launch("new", [{"status": "infrastructure_failure"}, {"status": "complete"}])
+        self.assertEqual(out.returncode, 5, out.stdout + out.stderr)
+        self.assertEqual(len(self.loops()), 1)
+        self.assertIn("infrastructure_failure", git(self.remote, "log", "-1", "--format=%s", "runs/t1").stdout)
+        out = self.launch("resume", [{"status": "complete"}])
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertEqual([x["max_iterations"] for x in self.loops()], [1, 2])
+
+    def test_python3_is_the_default_interpreter(self):
+        """A machine may have `python3` and no `python`: with PYTHON unset the launcher runs `python3` only."""
+        calls = self.t / "python3.log"
+        (self.bin / "python3").write_text(f'#!/bin/sh\necho call >> "{calls}"\nexec "{sys.executable}" "$@"\n')
+        (self.bin / "python").write_text("#!/bin/sh\nexit 97\n")                       # never called
+        for name in ("python3", "python"):
+            (self.bin / name).chmod(0o755)
+        out = self.launch("new", [{"status": "awaiting_labels"}], unset=("PYTHON",))
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        self.assertTrue(calls.exists())
+        self.assertEqual(len(self.loops()), 1)
 
     def test_a_pause_for_the_operator_stops_at_its_checkpoint_and_hands_over_to_no_one(self):
         """`paused_budget` and `awaiting_operator` stop with 4 after the checkpoint is pushed, with the

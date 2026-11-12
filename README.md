@@ -17,12 +17,15 @@ export PATH=$HOME/.elan/bin:$PATH
 bash launch/full221/launch.sh
 ```
 
-Before you start: log in to the Claude account to bill (`claude`, then `/login`; set `CLAUDE_CONFIG_DIR` first if
+Before you start: the server needs git, curl and Python 3.11 or newer as `python3` (`setup.sh` checks it). Log in to the Claude account to bill (`claude`, then `/login`; set `CLAUDE_CONFIG_DIR` first if
 that account uses another config directory, and keep it set for every later command), and put the OpenAI key in
 `~/.config/traffic-spec/openai.env` as `OPENAI_API_KEY=...` with mode 600.
 
 `launch.sh` first runs `launch/full221/preflight.sh` (clone at the branch tip and clean, accounts and keys, tools,
 disk, the 221 laws, the Lean build, the doctor). If any check fails, nothing starts: send `preflight-<run id>.txt`.
+It then runs the isolation gate `launch/full221/isolation_probe.sh` (about a minute, at most $3 on the Claude account):
+in a throwaway clone outside yours, two short sessions with the run's own permissions try to read files no session
+may read. If it does not pass, nothing starts: send the directory `~/wms-isolation-probe/<run id>/`.
 Keep the clone's normal all-branch fetch configuration: the launcher needs `origin/runs/<run id>` after each
 checkpoint to verify the run branch and to resume after a failed push. Do not clone with `--single-branch`.
 
@@ -52,9 +55,17 @@ launcher ends, its exit status is written to `launch-<run id>.exit`.
 | 0 | `awaiting_labels` or `complete` | Done (the normal end): send back (below) |
 | 0 | `incomplete` (the 40-iteration safety bound was used up) | Send back; do not resume without our word |
 | 4 | `paused_budget` or `awaiting_operator` | Stop and send back; do not resume |
+| 5 | `infrastructure_failure`: something the iteration needs did not run; `stop_reason` in `summary.json` (also the last line of `.runtime/<run id>/launcher.log`) says what | Resume yourself only when `stop_reason` reads `<…> session could not be launched: …` followed by `rate limit`, `session refused` (a usage, weekly, daily or session limit, overloaded, credit balance) or `API error`: wait until that has cleared, then `RUN_ID=<run id> bash launch/full221/resume.sh`. Any other reason, `no result line` included (the CLI may have crashed or been killed), or 5 again at once after a resume: stop and send back |
 | 1 | an error | Stop and send back; do not resume |
+| 143 | the launcher was ended (as below, when we asked) | Resume only when we ask |
 | 2 | refused before spending | Fix what the message says, run the same command again |
 | 3 | a checkpoint was not pushed | Fix the network or credentials, then `RUN_ID=<run id> bash launch/full221/resume.sh` |
+| none | no `.exit` file: the server restarted, or a process was killed | `RUN_ID=<run id> bash launch/full221/resume.sh` from the same clone. It first checks that nothing of the run still runs (its launcher, its `harness loop`, or a Claude session or any process working under `results/<run id>/`); otherwise it refuses with exit 2 and lists them. Wait until they have ended (a loop left alone finishes its iteration) and run it again; if a listed process does not end and you cannot tell why, stop and send back |
+
+A stop inside an iteration leaves that iteration's files changed in the clone: leave them as they are. The
+resume continues the iteration from them. It accepts changes only to the files a checkpoint of the run commits
+(the run's results and the library's rule, concept, witness and gap records) and refuses a change to any other
+file; it cannot tell which run wrote a record, so this clone serves this run only.
 
 Report as well if there has been no new checkpoint for 8 hours while the spend in `watch.log` has not moved for
 2 hours. The whole run is expected to take about a day.
@@ -63,13 +74,17 @@ Report as well if there has been no new checkpoint for 8 hours while the spend i
 
 The run id, `git log --oneline origin/runs/<run id> -3`, the last `.exit` file, `results/<run id>/summary.json`,
 `results/<run id>/TO_USER.md`, `.runtime/<run id>/watch.log` and `.runtime/<run id>/launcher.log`, and the output
-of `bash launch/full221/watch.sh --once <run id>` (the spend). Then, on a second fresh clone of the branch
-`runs/<run id>`, after `bash setup.sh`: `python -m harness handoff verify <run id>` and its output.
+of `bash launch/full221/watch.sh --once <run id>` (the spend), and the directory `~/wms-isolation-probe/<run id>/`. Then, on a second fresh clone of the branch
+`runs/<run id>`, after `bash setup.sh`: `python3 -m harness handoff verify <run id>` and its output.
 
 ## Rules
 
 - Start only this job, from a fresh clone; never edit files under `pipeline/traffic-spec-agent` while it runs.
+- One operator works this clone, one command at a time: `resume.sh` checks for the run's processes and then
+  starts, with no lock between the two, so it does not guard against two resumes typed at the same moment.
 - Never raise a budget, never force-push, never resume after exit 1 or 4 without our word.
 - Never run `harness stage`, `gap decide`, `reopen`, or a labels or review stage.
-- To stop the run when asked: end only the launcher process (its pid is in `launch-<run id>.pid` or
-  `resume-<run id>-<time>.pid`), never the `harness loop` process; the loop finishes its iteration and stops.
+- To stop the run when asked: `kill <pid>` with the pid in the newest `launch-<run id>.pid` or
+  `resume-<run id>-<time>.pid` (the launcher itself; its `.exit` then reads 143), never the `harness loop`
+  process; the loop finishes its iteration and stops, and `resume.sh` continues it when we ask (it waits
+  until that loop has ended).

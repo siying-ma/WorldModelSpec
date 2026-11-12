@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Start the 221-law run: the generation stage only, over every law of the training split, from a fresh clone of
 # remote/full-train-generation at its tip. It first runs launch/full221/preflight.sh (nothing is spent unless every
-# check passes), then starts the launcher in the background and returns. The run's settings are written below and
+# check passes) and the isolation gate launch/full221/isolation_probe.sh (at most $3), then starts the launcher in the background and returns. The run's settings are written below and
 # kept by every resume; none is taken from the shell.
 # Run from pipeline/traffic-spec-agent:  bash launch/full221/launch.sh      (RUN_ID may be set; default full221-<MMDD-HHMM>)
 set -euo pipefail
@@ -23,6 +23,10 @@ set +e                                               # a failed preflight is a r
 bash launch/full221/preflight.sh 2>&1 | tee "preflight-$RUN_ID.txt"; PRE=${PIPESTATUS[0]}
 set -e
 [ "$PRE" -eq 0 ] || { echo "preflight failed: nothing was started (send preflight-$RUN_ID.txt)" >&2; exit 2; }
+set +e                                               # the isolation gate: no session may read a held-out file
+bash launch/full221/isolation_probe.sh "$RUN_ID"; PROBE=$?
+set -e
+[ "$PROBE" -eq 0 ] || { echo "isolation probe failed: nothing was started (send ~/wms-isolation-probe/$RUN_ID/)" >&2; exit 2; }
 source launch/full221/detach.sh
 echo "run $RUN_ID at $(git rev-parse --short HEAD): Claude \$$CLAUDE_BUDGET, OpenAI \$$OPENAI_BUDGET, total \$$TOTAL_BUDGET, verifier \$$VERIFIER_CAP, $WORKERS workers"
 start_detached new "launch-$RUN_ID"

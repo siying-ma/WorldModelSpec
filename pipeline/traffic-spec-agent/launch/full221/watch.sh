@@ -15,7 +15,7 @@ if [ "${1:-}" = --once ]; then ONCE=1; shift; fi
 RUN_ID=${1:?run id}
 R=results/$RUN_ID; LOG=.runtime/$RUN_ID/watch.log
 report() {
-  python - "$R" <<'PY'
+  "${PYTHON:-python3}" - "$R" <<'PY'
 import json, sys, time
 from collections import Counter
 from pathlib import Path
