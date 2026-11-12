@@ -101,7 +101,9 @@ You are a one-shot session. Nothing waits for a reply.
    that the ontology lists; a declared intention or an observable reading carries it only where the
    plan's rule for it allows; a span that adds no restriction, the duty being the same whether or not
    its words hold, is a residue of scope `none` whose `why` says so; any other such span is mapped to
-   its nearest atoms with a gap.
+   its nearest atoms with a gap. A record that carries a gap is not coded: its gaps are filed and
+   block the law until a later record, validated, carries the span without that gap. A record that
+   answers a decided gap names it in `gap_resolutions` as the plan does.
    A feature such a span names without a size is carried by its presence, never by a size bound
    the words do not state. A condition that refers to an act, state, party or place stated
    elsewhere keeps that referent with every qualification the referring words retain (its subject,
@@ -395,7 +397,8 @@ binders[{name, class_elements}], applicability, obligation, params,
 param_proposals[{name, unit, value, convention, source}],
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected, narrative, masked (blind only, a list), boundary (history_boundary only)}],
 occasion{act (a concept id, or a list of them for alternative acts), boundary: "window" | "event" (absent: "window"), window (boundary "window"), onset{words, atoms, derived, justification} (boundary "event"), recognition (boundary "event"), gap (boundary "event", only where the formula language cannot write it: the span of an `operator` gap), under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4e only),
-literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}]
+literals[{span, text, value, unit}], gaps[{span, kind: "atom" | "operator", proposal, nearest}],
+gap_resolutions[{gap, span, basis}]
 ```
 
 The concept schema (during a law-level label repair only):

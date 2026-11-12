@@ -433,7 +433,7 @@ def validate_records(txn: "Candidate", nodes: list[Node], concepts: list[Concept
             accepted_n = {k: Node(v) for k, v in view.all_nodes().items() if k not in nids}
             for o in validate_a.validate(nodes, laws, onto, txn.reading, MappingIndex(view.mapping_file), accepted_n, view.all_concepts(), [],
                                          rejected_gaps=GapLedger.for_run(paths.GAPS_DIR, view).rejected(),
-                                         sources=definitions_mod.source_texts(view)):
+                                         sources=definitions_mod.source_texts(view), ledger_gaps=GapLedger.for_run(paths.GAPS_DIR, view).rows):
                 out.append(CheckResult("validate", o.node.id, "pass" if o.kind == validate_a.ACCEPT else "fail", list(o.reasons)))
     except validate_a.ValidatorFault as e:
         out.append(CheckResult("validate", "validator", "unavailable", [str(e)]))
@@ -593,7 +593,9 @@ class Candidate:
         """Why a change set, with the declared ids proposed beside it, may not be applied (empty when
         it may). A node's parameter proposal of a name either candidate reading holds under another
         convention (whitespace aside) is refused whatever its value, as validation refuses it: a name
-        means one thing, and entering the proposal would give it a second meaning."""
+        means one thing, and entering the proposal would give it a second meaning. A node record that
+        carries a gap is refused: such a node is never coded or accepted, and only a plan's registration
+        files its gaps."""
         run, out, seen = self.run, [], set()
         decls = Reading(self.view.reading_file).declarations()
         ws = lambda text: " ".join(str(text or "").split())
@@ -626,6 +628,11 @@ class Candidate:
             if ch.kind == "concept" and ch.record is not None:
                 out += self._same_id(ch, changes)
             if ch.kind == "node" and ch.record is not None:
+                gapped = sorted(str(g.get("span")) for g in ch.record.get("gaps") or [] if isinstance(g, dict))
+                if gapped:                                 # a record that carries a gap is never coded or accepted
+                    out.append(f"`{ch.ident}`: the record carries a gap on span(s) {gapped}; a node that carries a gap is not "
+                               "coded or accepted: its gaps are filed when a plan registers it and block its law until the operator "
+                               "decides them, so carry the span without a gap or re-plan the law")
                 for d in ch.record.get("assumptions", []) + ch.record.get("intentions", []):
                     have = decls.get(d.get("id")) if isinstance(d, dict) else None
                     if have is not None and not same_meaning(have.get("meaning"), d.get("meaning")):

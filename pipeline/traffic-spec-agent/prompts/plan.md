@@ -219,8 +219,10 @@ reply. The operator steers asynchronously through `USER_HINTS.md`.
 2. **Account for every substantive span** exactly once: an element (atoms, or concepts under `derived`),
    an operationalization (a standard), an assumption (a legal region class the ontology names as
    an assumption), a declared intention (below), a composition (another rule, see rule 5), or a
-   residue (words the vocabulary cannot carry). A gap is not a carrier: it annotates a span an element or an operationalization
-   carries with its nearest atoms (step 6). Two exceptions to "exactly once": a `reference` span naming several
+   residue (words the vocabulary cannot carry). A gap is not a carrier: it annotates a span that an element or an
+   operationalization maps to its nearest atoms (step 6) only to show why they do not carry the span's distinction, never
+   as the way the span is coded. A node that carries a gap is not coded, and its law stays blocked until a later record,
+   validated, carries the span without that gap. Two exceptions to "exactly once": a `reference` span naming several
    rules carries one composition per rule; a `sibling` span carries nothing in this node.
    A residue is for words of the **obligation side** the rule does not capture. A `trigger`,
    `subject`, `condition` or `exception` span the vocabulary cannot carry is never left out:
@@ -488,9 +490,12 @@ For each law in the list:
 5. Plan the four scenarios (rule 9), and the `history_boundary` scenario for a duty of rule 4c.
    The `blind` scenario names the claimed atom whose absence must make the rule report unknown.
 6. If any span is a gap, complete the gap record (span, kind `atom` or `operator`, proposal in the
-   ontology's row format or the operator, nearest atoms with the excluding clause), and still map
-   the span to those nearest atoms or concepts: the coding session tries them, and the gap is filed
-   only if it confirms the words cannot be written with them.
+   ontology's row format or the operator, nearest atoms with the excluding clause), and map the span
+   to those nearest atoms or concepts only so that every span is accounted for: they show why the
+   vocabulary falls short, never how the span is coded. A node that carries a gap is not coded: its
+   gaps are filed when it is registered, and its law stays blocked until a later record, validated,
+   carries the span without that gap. Propose a gap only where no atom, concept or allowed reading
+   carries the words.
 
 Then write `PLAN.md`: one paragraph per node (decision, reason, reversal signal; for a condition
 that refers to words stated elsewhere, the referring and the defining spans, and, for a law planned
@@ -509,16 +514,25 @@ binders[{name, class_elements}], applicability, obligation, params, narrowings[{
 scenarios[{name: "forbid" | "permit" | "idle" | "blind" | "branch_<n>" | "occasion_<span>" | "occasion_<span>_outside" | "history_boundary", expected: "violated" | "compliant" | "not_applicable" | "unknown", narrative, masked: ["<atom id>", …] (blind only, a list), boundary (history_boundary only: the approach its trace lacks)}],
 occasion{act (a concept id, or a list of them for alternative acts), boundary: "window" | "event" (absent: "window"), window (boundary "window"), onset{words, atoms, derived, justification} (boundary "event"), recognition (boundary "event"), gap (boundary "event", only where the formula language cannot write it: the span of an `operator` gap), under_way{words, atoms, derived, justification}, spans{"<span id>": "at_recognition" | "some_moment" | "throughout"}} (rule 4b only),
 literals[{span, text, value, unit}], param_proposals[{name, unit, value, convention, source}],
-gaps[{span, kind: "atom" | "operator", proposal, nearest}]
+gaps[{span, kind: "atom" | "operator", proposal, nearest}],
+gap_resolutions[{gap, span, basis}]
 ```
 
 A gap has two kinds and no other: `atom`, when no atom and no enumeration value of the ontology
 carries the span (the proposal is the ontology row that would, starting with its new id), and
 `operator`, when the formula language cannot express it (the proposal is the operator, starting
 with its new name). An atom gap never proposes an atom the ontology has, and an operator gap never
-proposes what the formula language already writes. A gap is filed, and blocks its law until the
-operator decides it, only when the coding session confirms the span cannot be written with the
-atoms and operators you map it to; nothing else is a gap.
+proposes what the formula language already writes. A gap a node carries is filed when the node is
+registered, and blocks its law until a later record, validated, carries the span without that gap;
+the coding session does not write that node. Where a record carries no gap on a span and the coding
+session cannot write the span with the atoms and operators you map it to, it declares the span
+unstatable and the node goes to its repair session, which re-maps the span or withdraws it as a
+gap; a second such declaration on the same words files the gap. Nothing else is a gap.
+A gap the operator has retired or rejected is answered by a record that carries its words without
+it. Such a record names, in `gap_resolutions`, each such gap: its id, the span that now carries the
+words, and the basis of the new representation (the atom or revision that retired it, or the
+reading the rejection allows). A record that leaves out the gap of an earlier record on the same
+words of the law, without naming a gap the operator has decided, is returned.
 A gap's proposal names the distinction of the driving task the missing atom or operator would
 decide: the action the law requires or forbids, where it is required, its time or order, the
 road users it concerns, or whether a plan can be carried out. That a word has no atom of its own is

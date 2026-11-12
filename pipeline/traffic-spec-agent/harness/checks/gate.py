@@ -289,6 +289,7 @@ import {nodeid.witness_module(node_id)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
+{index_sync.WITNESS_RUN_DEFS}
 def main (args : List String) : IO Unit := do
 {_PHASES}
   let r := {rns}.rule
@@ -352,7 +353,7 @@ def main (args : List String) : IO Unit := do
   let tWit ← IO.monoMsNow
   for sc in scs' do
     let tSc ← IO.monoMsNow
-    match sc.run rules allConcepts with
+    match witnessRun rules sc allConcepts with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
     out.flush
@@ -1280,6 +1281,7 @@ import {nodeid.concept_witness_module(cid)}
 #print axioms {wns}.scenarios
 {_OCC_DEFS}
 {relations.lean_defs()}
+{index_sync.WITNESS_RUN_DEFS}
 def main (args : List String) : IO Unit := do
 {_PHASES}
   let c := {ns}.concept
@@ -1349,7 +1351,7 @@ def main (args : List String) : IO Unit := do
   let tWit ← IO.monoMsNow
   for sc in scs' do
     let tSc ← IO.monoMsNow
-    match sc.run rules cs with
+    match witnessRun rules sc cs with
     | .ok v => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t{{v.tag}}\\tok"
     | .error e => IO.println s!"SCEN\\t{{sc.name}}\\t{{sc.rule}}\\t{{sc.expected.tag}}\\t?\\t{{e}}"
     out.flush

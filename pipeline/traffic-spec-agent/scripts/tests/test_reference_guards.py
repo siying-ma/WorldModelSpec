@@ -395,7 +395,7 @@ class CandidatePath(unittest.TestCase):
             txn = NS(view=view, reading=Reading(Path(t) / "reading.json"))
             with mock.patch.object(state, "chain_laws", lambda v: laws), \
                     mock.patch.object(definitions, "source_texts", lambda v: {i: l.text for i, l in laws.items()}), \
-                    mock.patch.object(gaps.GapLedger, "for_run", classmethod(lambda cls, *a: NS(rejected=lambda: {}))):
+                    mock.patch.object(gaps.GapLedger, "for_run", classmethod(lambda cls, *a: NS(rejected=lambda: {}, rows=[]))):
                 return cand.validate_records(txn, [Node(copy.deepcopy(rec))], [])
 
     def unavailable(self, recs: list[dict], usable: set[str], changed: list[str]):

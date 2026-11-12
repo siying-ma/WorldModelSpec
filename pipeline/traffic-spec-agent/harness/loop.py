@@ -2190,6 +2190,21 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             e = ledger.entries.get(law)
             if e is not None and e.state in ("returned", "failed") and e.outcome_iteration == run.iteration:
                 e.reasons = e.reasons + [w for w in why if w not in e.reasons]
+        # a validated record that carries a gap is not coded: each of its gaps is filed now, on the occurrence
+        # of its words in the law, and the law is blocked on them once its other nodes of this iteration are
+        # decided; a gap matching one the operator rejected or retired sends the law back to its planner
+        # with that decision instead
+        prog["gap_routes"] = {}
+        for law, vs in sorted(by_law_verdicts.items()):
+            carrying = [v.node for v in vs if v.kind == "accept" and v.node.gaps()]
+            if not carrying or law not in ledger.entries or ledger.entries[law].state != "planned":
+                continue
+            ids, routed = [], []
+            for n in carrying:
+                got, back = file_planned_gaps(gap_ledger, n, by_id[law].text, opts.run_id, run.iteration, gaps_filed)
+                ids += [g for g in got if g not in ids]
+                routed += back
+            prog["gap_routes"][law] = {"nodes": [n.id for n in carrying], "gaps": ids, "routed": routed}
         # the pins: each validated record names the version of every other law's node it was planned on
         plan_now = active_plan_records(run, node_ledger, [v.node for v in verdicts])   # every record the validator knew
         # a held record keeps the pin it was planned with, or has none: only the plan's records and the repairs' new ones are pinned
@@ -2204,9 +2219,12 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         if v.node.id in prog.get("pins", {}) and "planned_on" not in v.node.raw:
             v.node.raw["planned_on"] = prog["pins"][v.node.id]
     decided_ok = {nid for nid, o in prog["nodes"].items() if o == "OK"}
+    gap_held = {i for r in prog.get("gap_routes", {}).values() for i in r["nodes"]}
     for law, vs in by_law_verdicts.items():
         planned = law in ledger.entries and ledger.entries[law].state == "planned" and not any(v.kind != "accept" for v in vs)
         for v in vs:
+            if v.node.id in gap_held:
+                continue
             if v.node.id in run.all_nodes():
                 if planned:
                     notes.append(f"`{v.node.id}`: re-emitted unchanged; already accepted, not coded again")
@@ -2426,7 +2444,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
     failed_ids: set[str] = set()
     planned_now = {law for law, e in ledger.entries.items() if e.state == "planned"}
     live = lambda n: n.law in planned_now or prog["nodes"].get(n.id) == "OK"
-    to_code = [n for n in carried if live(n)] + [n for n in to_code if n.id not in {c.id for c in carried} and live(n)]
+    to_code = [n for n in carried if live(n) and n.id not in gap_held] + [n for n in to_code if n.id not in {c.id for c in carried} and live(n)]
     deferred_now: list[dict] = []
     held_why: dict[str, str] = prog.setdefault("held_why", {})   # a held node's id → the state it is held in, for the feedback
 
@@ -2650,22 +2668,17 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                       for u in unexpressed}
             hit = ledger.record_outcomes(n.law, sorted(set(key_of.values())), limit=2) if unexpressed else []
             hit_keys = {h.rsplit(" ×", 1)[0] for h in hit}
-            planned_gaps = {g.get("span"): g for g in n.gaps()}
-            confirmed = {u.get("span") for u in unexpressed if u.get("span") in planned_gaps}
-            hit_spans = {sp for sp, k in key_of.items() if k in hit_keys} | confirmed
-            if hit_spans:                             # the coder said twice, or the planner and the coder agree, that the words cannot be stated
+            hit_spans = {sp for sp, k in key_of.items() if k in hit_keys}
+            if hit_spans:                             # the coder said twice that the words cannot be stated
                 ids, routed = [], []
                 for u in unexpressed:
                     if u.get("span") not in hit_spans:
                         continue
                     kind = "atom" if u.get("kind") == "no_atom" else "operator"
                     span_text = n.spans().get(u.get("span"), {}).get("text", "")
-                    pg = planned_gaps.get(u.get("span"), {})
-                    gid, decided = _file_gap(gap_ledger, {"span": u.get("span"), "kind": pg.get("kind", kind),
-                                                          "proposal": pg.get("proposal") or u.get("why", ""), "nearest": pg.get("nearest", []),
+                    gid, decided = _file_gap(gap_ledger, {"span": u.get("span"), "kind": kind, "proposal": u.get("why", ""), "nearest": [],
                                                           "span_text": span_text, "law_refs": [n.law], "node_id": n.id,
-                                                          "occurrence": key_of[u.get("span")].split(":", 2)[2],
-                                                          "linked_to": pg.get("linked_to"), "excluding_clause": pg.get("excluding_clause")},
+                                                          "occurrence": key_of[u.get("span")].split(":", 2)[2]},
                                              opts.run_id, run.iteration, gaps_filed)
                     if decided:
                         routed.append(f"gap {gid} on span {u.get('span')} was {decided[0]} by the operator: {decided[1]}")
@@ -2674,7 +2687,7 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
                 node_ledger.failed(n.id, n.law, reasons_g + routed, str(ndir), run.iteration)
                 if ids:
                     ledger.block(n.law, ids, reasons_g)
-                    why_filed = "the plan proposed the gap and the coding session confirmed it" if confirmed else "two coding sessions declared the span cannot be stated"
+                    why_filed = "two coding sessions declared the span cannot be stated"
                     to_user.append(f"gap(s) {', '.join(ids)} filed for `{n.law}`: {why_filed}; "
                                    f"decide with `python -m harness gap decide <id> --state ... --decision ...`")
                     notes.append(f"`{n.id}`: gate UNEXPRESSED on {sorted(hit_spans)} ({why_filed}) — gap(s) {ids} filed, law blocked")
@@ -2805,9 +2818,6 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
             callers = run.accepted_concepts[cd].setdefault("callers", []) if cd in run.accepted_concepts else None
             if callers is not None and n.id not in callers:
                 callers.append(n.id)
-        for g in n.gaps():                             # the plan doubted the vocabulary; the coder wrote the span with it
-            to_user.append(f"`{n.law}` ({n.id}): the plan proposed a {g.get('kind')} gap on span {g.get('span')}, but the coding "
-                           "session wrote the span with the mapped atoms and the rule was accepted; no gap is filed")
         for x in n.get("narrowings", []):              # each word read through conduct, for the operator to review
             if isinstance(x, dict) and x.get("kind") == "observable_reading":
                 words = n.spans().get(x.get("span"), {}).get("text", "")
@@ -2830,6 +2840,23 @@ def _iteration(run: Run, opts: Options, prog: dict, persist, ledger: Ledger, con
         run, [("node", n.id) for n in added] + [("concept", c) for c in concepts_now
                                                 if c in result.get("kept_concepts", concepts_now) and c in run.accepted_concepts],
         Reading(run.reading_file), {"core": sem["core"], "ontology": sem["ontology"]}, run.iteration)
+    if not prog.get("gap_routes_applied"):
+        # the laws whose records carry a gap, once their other nodes of this iteration are integrated: blocked on the gaps filed,
+        # or, when every gap matched one the operator decided, returned to the planner with those decisions
+        for law, r in prog.get("gap_routes", {}).items():
+            why = [f"`{i}` carries a gap and is not coded: its gaps are filed and block the law until the operator decides them"
+                   for i in r["nodes"]]
+            if r["gaps"]:
+                ledger.block(law, r["gaps"], why + r["routed"])
+                to_user.append(f"gap(s) {', '.join(r['gaps'])} filed for `{law}`: its plan carries them; "
+                               f"decide with `python -m harness gap decide <id> --state ... --decision ...`")
+                notes.append(f"`{law}`: {sorted(r['nodes'])} carry gap(s) {r['gaps']}, filed; not coded, law blocked")
+            else:
+                ledger.return_law(law, [f"`{i}` carries a gap the operator already decided and is not coded" for i in r["nodes"]]
+                                  + r["routed"], run.iteration)
+                notes.append(f"`{law}`: {sorted(r['nodes'])} carry gap(s) the operator decided — returned to the planner with the "
+                             "decision: " + "; ".join(r["routed"])[:300])
+        prog["gap_routes_applied"] = True
     prog["stage"] = "integrated"; persist()
     aggregate_phase.write_current_view(run, closure=True)   # the nodes accepted now reach the aggregates they claim
     accept_ready(run, opts, ledger, training, to_user)
@@ -3448,6 +3475,30 @@ def _file_gap(gap_ledger: GapLedger, proposal: dict, run_id: str, iteration: int
         gaps_filed.append({"id": gid, "kind": proposal.get("kind"), "span": proposal.get("span_text") or proposal.get("span"),
                            "law_refs": proposal.get("law_refs", [])})
     return gid, None
+
+
+def file_planned_gaps(gap_ledger: GapLedger, n: Node, law_text: str, run_id: str, iteration: int,
+                      gaps_filed: list) -> tuple[list[str], list[str]]:
+    """File every gap a validated record carries, each keyed by the occurrence of its span's words in
+    the law (`<law>@<law digest>:<start>-<end>`, the key a coder's unstatable span is filed under).
+    Returns the ids of the gaps now pending, and one line per gap that matched a gap the operator
+    already rejected or retired, with that decision (such a gap is not filed again)."""
+    offs = blueprint.span_offsets(n.get("segmentation", []), law_text)
+    digest = review_phase.law_digest(law_text)
+    ids, routed = [], []
+    for g in n.gaps():
+        sid = g.get("span")
+        at = offs.get(str(sid))
+        gid, decided = _file_gap(gap_ledger, {"span": sid, "kind": g.get("kind"), "proposal": g.get("proposal", ""), "nearest": g.get("nearest", []),
+                                              "span_text": n.spans().get(sid, {}).get("text", ""), "law_refs": [n.law], "node_id": n.id,
+                                              **({"occurrence": f"{n.law}@{digest}:{at[0]}-{at[1]}"} if at else {}),
+                                              "linked_to": g.get("linked_to"), "excluding_clause": g.get("excluding_clause")},
+                                 run_id, iteration, gaps_filed)
+        if decided:
+            routed.append(f"`{n.id}` carries gap {gid} on span {sid}, which the operator {decided[0]}: {decided[1]}")
+        elif gid not in ids:
+            ids.append(gid)
+    return ids, routed
 
 
 def gate_evidence(task: Path) -> str:

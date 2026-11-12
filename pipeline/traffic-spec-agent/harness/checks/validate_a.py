@@ -223,7 +223,7 @@ def check_closed_set(node: Node, onto: Ontology, concept_ids: set[str] | None = 
             if not onto.knows(ident) and ident not in concept_ids:
                 if e.get("span") in proposed:
                     errs.append(f"{node.id}: span {e.get('span')} carries a gap and maps to `{ident}`, which does not exist: map the span "
-                                "to its nearest atoms or concepts (the coder tries them first) and let the gap's proposal name what is missing")
+                                "to its nearest atoms or concepts and let the gap's proposal name what is missing")
                 elif nodeid.is_concept_id(ident):
                     errs.append(f"{node.id}: concept `{ident}` is neither accepted nor proposed in this plan (a concept record for span {e.get('span')})")
                 else:
@@ -846,6 +846,70 @@ def _cited_gap_errors(node: Node, sid, gap, rejected_gaps: dict[str, dict], offs
     return []
 
 
+_OCCURRENCE = re.compile(r"^(?P<law>.+)@[^@:]*:(?P<start>\d+)-(?P<end>\d+)$")
+#: What carries a span's words in a record (a residue does not: it names words the record leaves out).
+_CARRIERS = ("elements", "operationalizations", "assumptions", "intentions", "compositions")
+
+
+def check_gap_resolutions(node: Node, law_text: str, ledger_gaps: list[dict]) -> list[str]:
+    """A gap of the ledger is withdrawn only by a record that answers the operator's decision on it.
+    For each gap filed on this law (its `occurrence`, `<law>@<digest>:<start>-<end>`), a record whose
+    spans that carry the gap's words carry no gap there withdraws it: the gap must be decided
+    (`retired` or `rejected`) and `gap_resolutions` must name it with one of those spans and a
+    non-empty `basis`. Every `gap_resolutions` entry names a gap of the ledger decided on this law and
+    a span of the record that holds the words the gap was filed on. An entry proves only the link
+    between the operator's decision and the record, never that the new representation is right: no
+    semantics is checked here. A ledger with no gap of the law (a fresh run) asks nothing."""
+    errs: list[str] = []
+    rows = {str(r.get("id")): r for r in ledger_gaps if isinstance(r, dict) and r.get("id")}
+    spans = node.spans()
+    offsets = span_offsets(node.get("segmentation", []), law_text)
+    entries = [x for x in node.get("gap_resolutions") or [] if isinstance(x, dict)]
+    for x in entries:
+        gid, sid = x.get("gap"), x.get("span")
+        r = rows.get(str(gid))
+        if r is None:
+            errs.append(f"{node.id}: `gap_resolutions` names gap {gid!r}, which is no gap of the ledger")
+        elif node.law not in r.get("law_refs", []):
+            errs.append(f"{node.id}: `gap_resolutions` names gap {gid}, which was filed on {sorted(r.get('law_refs', []))}, not on this law")
+        elif r.get("state") not in ("retired", "rejected"):
+            errs.append(f"{node.id}: `gap_resolutions` names gap {gid}, which the operator has not decided (it is {r.get('state')}): "
+                        "an undecided gap is withdrawn by no record")
+        if sid not in spans:
+            errs.append(f"{node.id}: `gap_resolutions` entry for gap {gid} names span {sid!r}, which is no span of the record")
+        elif r is not None and node.law in r.get("law_refs", []):
+            m = _OCCURRENCE.match(str(r.get("occurrence") or ""))
+            at = offsets.get(str(sid))
+            if m and at and not (at[0] < int(m["end"]) and int(m["start"]) < at[1]):
+                errs.append(f"{node.id}: `gap_resolutions` entry for gap {gid} names span {sid}, which does not hold the words the gap "
+                            f"was filed on (characters {m['start']}–{m['end']}): an entry answers the gap on its own words")
+        if not _ws(x.get("basis")):
+            errs.append(f"{node.id}: `gap_resolutions` entry for gap {gid} states no `basis` (the atom or revision that retired it, "
+                        "or the reading the rejection allows)")
+    carried = {x.get("span") for key in _CARRIERS for x in node.get(key) or [] if isinstance(x, dict)}
+    gapped = {g.get("span") for g in node.gaps() if isinstance(g, dict)}
+    for gid, r in sorted(rows.items()):
+        m = _OCCURRENCE.match(str(r.get("occurrence") or ""))
+        if not m or m["law"] != node.law:
+            continue
+        start, end = int(m["start"]), int(m["end"])
+        over = sorted(str(sid) for sid, (a, b) in offsets.items() if a < end and start < b)
+        if not over or gapped & set(over):
+            continue                                    # the words are not in the record, or it still carries a gap on them
+        at = [sid for sid in over if sid in carried]
+        if not at:
+            continue                                    # the record does not carry those words (a sibling's, or another node's)
+        if r.get("state") not in ("retired", "rejected"):
+            errs.append(f"{node.id}: span(s) {at} carry the words of gap {gid} (characters {start}–{end}) without it, and the operator "
+                        f"has not decided it (it is {r.get('state')}): the record carries the gap there until the operator decides it")
+            continue
+        if not any(x.get("gap") == gid and x.get("span") in at and _ws(x.get("basis")) for x in entries):
+            errs.append(f"{node.id}: span(s) {at} carry the words of gap {gid} (characters {start}–{end}), which the operator "
+                        f"{r.get('state')}, without it: name it in `gap_resolutions` as {{gap: {gid}, span: one of {at}, basis: the "
+                        "atom or revision that retired it, or the reading the rejection allows}")
+    return errs
+
+
 def check_reemission(node: Node, accepted: dict[str, Node], law_text: str) -> list[str]:
     """A node the run already accepted is never re-planned: a record under its id must carry the
     same obligation span and the same atoms (a re-emission the harness will not code again)."""
@@ -1133,13 +1197,15 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
              index: MappingIndex, accepted: dict[str, Node],
              accepted_concepts: dict[str, dict] | None = None, plan_concepts: list[ConceptRecord] | None = None,
              known_nodes: list[Node] | None = None, rejected_gaps: dict[str, dict] | None = None,
-             prior_nodes: list[Node] | None = None, sources: dict[str, str] | None = None) -> list[Outcome]:
+             prior_nodes: list[Node] | None = None, sources: dict[str, str] | None = None,
+             ledger_gaps: list[dict] | None = None) -> list[Outcome]:
     """`known_nodes` are nodes of the same iteration's other plan batches: a composition may name
     them, they are not validated here. `sources` holds the posted text of every law and posted
     definition of the run's active corpus, by id: what a `definition` reference may borrow from
     (absent, the laws given here). `prior_nodes` are those of them validated before these (the
     earlier batches): the ids they declare are in the catalogue these nodes reuse. `rejected_gaps` maps each rejected gap of the ledger to the
-    laws it was decided on and the occurrence it was filed on (`{laws, occurrence}`)."""
+    laws it was decided on and the occurrence it was filed on (`{laws, occurrence}`). `ledger_gaps` are
+    the rows of the run's gap ledger, each with its state (`check_gap_resolutions`)."""
     outcomes: list[Outcome] = []
     accepted_concepts = accepted_concepts or {}
     plan_concepts = plan_concepts or []
@@ -1210,15 +1276,15 @@ def validate(nodes: list[Node], laws: dict[str, Law], onto: Ontology, reading: R
         errs += check_source_spans(n)
         errs += check_residue_scope(n)
         errs += check_narrowings(n, rejected_gaps, law.text)
+        errs += check_gap_resolutions(n, law.text, ledger_gaps or [])
         errs += check_declarations(n, catalogue)
         errs += check_reemission(n, accepted, law.text)
         errs += check_region_places(n.id, n.claimed_atoms(), onto)
         errs += [reason for reason, members in cycle_errs if n.id in members]
         obligation_residue = any(n.spans().get(r.get("span"), {}).get("role") == "obligation" for r in n.get("residues", []))
         # the obligation itself in a residue closes the law: the vocabulary cannot carry the duty, and
-        # no re-plan changes that. A gap the plan proposes does not block here: the node is coded with the
-        # span mapped to its nearest atoms, and the gap is filed only when the coder confirms the words
-        # cannot be written with them (the gate's `UNEXPRESSED` on that span)
+        # no re-plan changes that. A record that carries a gap is accepted here: the loop files its gaps at
+        # registration and blocks its law on them, and the record is never coded
         if obligation_residue and not gaps:
             return Outcome(n, FAIL, [f"{n.id}: the obligation itself is a residue — not expressible"] + errs)
         elif errs:
@@ -1310,6 +1376,7 @@ NODE_SCHEMA = {
     "literals?": [{"span": "id", "text": "str", "value?": "any", "unit?": "str"}],
     "param_proposals?": [{"name": "id", "unit?": "str", "value?": "any", "convention?": "any", "source?": "any"}],
     "gaps?": [{"span": "id", "kind?": "str", "proposal?": "any", "nearest?": "any"}],
+    "gap_resolutions?": [{"gap": "id", "span": "id", "basis?": "str"}],
 }
 CONCEPT_SCHEMA = {
     "concept_id": "id", "kind": "str", "contract": "str", "definition?": "str",

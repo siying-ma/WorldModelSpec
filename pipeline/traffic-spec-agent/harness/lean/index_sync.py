@@ -6,6 +6,37 @@ from ..store import jsonl, paths
 from ..model import nodeid
 
 
+#: How a witness is held, by the gate and by the library's verification alike: Core's `Scenario.run`,
+#: except that a `blind` witness Core refuses is admitted where its mask is what leaves it unknown.
+#: Masking an atom that a rule reads only inside operators looking into the past (`since`, `rises`,
+#: `once`, …) leaves their search unsettled back to the trace start, so the unknown carries a window
+#: truncated there beside the masked atom. Such a witness passes when, run as a history boundary,
+#: it is unknown for masked atoms and truncations alone, and the same trace with nothing masked is
+#: decided (compliant or violated): only the mask differs, so the mask is the cause. Any other reason
+#: is still refused, and a trace unknown with nothing masked lacks a history the mask does not
+#: explain, so it is refused too.
+WITNESS_RUN_DEFS = '''/-- A witness held as the gate holds it: Core's `Scenario.run`, and a `blind` witness Core refuses
+    admitted only where its mask is the cause: unknown for masked atoms and windows truncated at the
+    trace start, and decided on the same trace with nothing masked. -/
+def witnessRun (rules : List TrafficSpec.Rule) (sc : TrafficSpec.Scenario) (cs : List TrafficSpec.Concept) :
+    Except String TrafficSpec.Verdict :=
+  match sc.run rules cs with
+  | .ok v => .ok v
+  | .error e =>
+    if sc.name != "blind" || !sc.boundary.isEmpty || sc.manifest.absentIds.isEmpty then .error e
+    else match ({ sc with boundary := "the masked observations" } : TrafficSpec.Scenario).run rules cs with
+      | .error _ => .error e
+      | .ok v =>
+        let full : TrafficSpec.Scenario := { sc with manifest := TrafficSpec.Build.manifest [] sc.manifest.reidGap }
+        let decides := fun (x : TrafficSpec.Verdict) =>
+          match ({ full with expected := x } : TrafficSpec.Scenario).run rules cs with
+          | .ok _ => true
+          | .error _ => false
+        if decides .compliant || decides .violated then .ok v
+        else .error s!"{e}; with nothing masked the same trace is unknown too, so the mask does not explain the history it lacks"
+'''
+
+
 def rule_files() -> list[Path]:
     return sorted(paths.RULES_DIR.rglob("*.lean")) if paths.RULES_DIR.exists() else []
 
@@ -117,7 +148,7 @@ def write_index(only_nodes: list[str] | None = None, only_concepts: list[str] | 
         "/-\n  TrafficSpecWitness — generated registry of witnesses (harness index_sync); do not edit. Nothing\n"
         "  that runs the library imports this.\n-/\nimport TrafficSpec\nimport TrafficSpec.Core.Evidence.Builders\n" +
         ("\n".join(wimports) + "\n" if wimports else "") +
-        "namespace TrafficSpecWitness\nopen TrafficSpec\n/-- Every registered node scenario, in file order. -/\n"
+        "namespace TrafficSpecWitness\nopen TrafficSpec\n" + WITNESS_RUN_DEFS + "/-- Every registered node scenario, in file order. -/\n"
         f"def allScenarios : List Scenario := {wbody}\n"
         "/-- Every registered concept instance and its scenarios, in file order. -/\n"
         f"def allInstances : List Concept.Instance := {ibody}\n"
@@ -130,6 +161,6 @@ def write_index(only_nodes: list[str] | None = None, only_concepts: list[str] | 
         "    `<owner id>\\t<scenario>: <why>`, so a failure names the node or concept it belongs to. -/\n"
         "def failures (ρ : Reading) : List String :=\n"
         "  taggedScenarios.flatMap fun (owner, scs) => scs.filterMap fun sc =>\n"
-        "    match ({ sc with reading := ρ } : Scenario).run witnessRules allConcepts with\n"
+        "    match witnessRun witnessRules ({ sc with reading := ρ } : Scenario) allConcepts with\n"
         "    | .ok _ => none\n    | .error e => some s!\"{owner}\\t{e}\"\nend TrafficSpecWitness\n",
         encoding="utf-8")
