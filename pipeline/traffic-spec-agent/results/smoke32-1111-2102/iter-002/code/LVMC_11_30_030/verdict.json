@@ -1,0 +1,456 @@
+{
+ "verdict": "OK",
+ "details": [
+  "13 witnesses, 6 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "and": [
+      {
+       "and": [
+        {
+         "args": [
+          {
+           "var": "b"
+          },
+          {
+           "lit": "DEF-NRS-484A-320::vehicle"
+          }
+         ],
+         "atom": "ru_aggregate",
+         "params": []
+        },
+        {
+         "not": {
+          "same": [
+           {
+            "var": "b"
+           },
+           {
+            "var": "ego"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "or": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "ego"
+            },
+            {
+             "var": "b"
+            }
+           ],
+           "derived": "drv_position_behind",
+           "params": [
+            {
+             "param": "p.same_direction_tolerance"
+            }
+           ]
+          },
+          {
+           "body": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "b"
+               }
+              ],
+              "derived": "drv_motion_at_rest",
+              "params": [
+               {
+                "param": "p.rest_speed_tolerance"
+               }
+              ]
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "b"
+                 },
+                 {
+                  "var": "w"
+                 }
+                ],
+                "derived": "drv_position_near_region",
+                "params": [
+                 {
+                  "param": "p.crosswalk_reach"
+                 }
+                ]
+               },
+               {
+                "body": {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "p"
+                    },
+                    {
+                     "lit": "DEF-NRS-484A-165::pedestrian"
+                    }
+                   ],
+                   "atom": "ru_aggregate",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "p"
+                    },
+                    {
+                     "var": "w"
+                    }
+                   ],
+                   "derived": "drv_position_near_region",
+                   "params": [
+                    {
+                     "param": "p.crosswalk_reach"
+                    }
+                   ]
+                  }
+                 ]
+                },
+                "exists_user": "p"
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "crosswalk"
+           },
+           "var": "w"
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "rises": {
+            "args": [
+             {
+              "var": "ego"
+             },
+             {
+              "var": "b"
+             }
+            ],
+            "derived": "drv_interaction_overtakes",
+            "params": [
+             {
+              "param": "p.same_direction_tolerance"
+             }
+            ]
+           }
+          },
+          {
+           "body": {
+            "since": [
+             {
+              "not": {
+               "args": [
+                {
+                 "var": "ego"
+                },
+                {
+                 "var": "b"
+                }
+               ],
+               "derived": "drv_position_behind",
+               "params": [
+                {
+                 "param": "p.same_direction_tolerance"
+                }
+               ]
+              }
+             },
+             {
+              "and": [
+               {
+                "args": [
+                 {
+                  "var": "b"
+                 }
+                ],
+                "derived": "drv_motion_at_rest",
+                "params": [
+                 {
+                  "param": "p.rest_speed_tolerance"
+                 }
+                ]
+               },
+               {
+                "and": [
+                 {
+                  "args": [
+                   {
+                    "var": "b"
+                   },
+                   {
+                    "var": "w"
+                   }
+                  ],
+                  "derived": "drv_position_near_region",
+                  "params": [
+                   {
+                    "param": "p.crosswalk_reach"
+                   }
+                  ]
+                 },
+                 {
+                  "body": {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "p"
+                      },
+                      {
+                       "lit": "DEF-NRS-484A-165::pedestrian"
+                      }
+                     ],
+                     "atom": "ru_aggregate",
+                     "params": []
+                    },
+                    {
+                     "args": [
+                      {
+                       "var": "p"
+                      },
+                      {
+                       "var": "w"
+                      }
+                     ],
+                     "derived": "drv_position_near_region",
+                     "params": [
+                      {
+                       "param": "p.crosswalk_reach"
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  "exists_user": "p"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "exists_region": {
+            "lit": "crosswalk"
+           },
+           "var": "w"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "exists_user": "b"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "LVMC_11_30_030",
+   "intentions": [],
+   "laws": [
+    "LVMC-11-30-030"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "not": {
+     "body": {
+      "and": [
+       {
+        "and": [
+         {
+          "args": [
+           {
+            "var": "b"
+           },
+           {
+            "lit": "DEF-NRS-484A-320::vehicle"
+           }
+          ],
+          "atom": "ru_aggregate",
+          "params": []
+         },
+         {
+          "not": {
+           "same": [
+            {
+             "var": "b"
+            },
+            {
+             "var": "ego"
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "and": [
+         {
+          "rises": {
+           "args": [
+            {
+             "var": "ego"
+            },
+            {
+             "var": "b"
+            }
+           ],
+           "derived": "drv_interaction_overtakes",
+           "params": [
+            {
+             "param": "p.same_direction_tolerance"
+            }
+           ]
+          }
+         },
+         {
+          "body": {
+           "since": [
+            {
+             "not": {
+              "args": [
+               {
+                "var": "ego"
+               },
+               {
+                "var": "b"
+               }
+              ],
+              "derived": "drv_position_behind",
+              "params": [
+               {
+                "param": "p.same_direction_tolerance"
+               }
+              ]
+             }
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "b"
+                }
+               ],
+               "derived": "drv_motion_at_rest",
+               "params": [
+                {
+                 "param": "p.rest_speed_tolerance"
+                }
+               ]
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "b"
+                  },
+                  {
+                   "var": "w"
+                  }
+                 ],
+                 "derived": "drv_position_near_region",
+                 "params": [
+                  {
+                   "param": "p.crosswalk_reach"
+                  }
+                 ]
+                },
+                {
+                 "body": {
+                  "and": [
+                   {
+                    "args": [
+                     {
+                      "var": "p"
+                     },
+                     {
+                      "lit": "DEF-NRS-484A-165::pedestrian"
+                     }
+                    ],
+                    "atom": "ru_aggregate",
+                    "params": []
+                   },
+                   {
+                    "args": [
+                     {
+                      "var": "p"
+                     },
+                     {
+                      "var": "w"
+                     }
+                    ],
+                    "derived": "drv_position_near_region",
+                    "params": [
+                     {
+                      "param": "p.crosswalk_reach"
+                     }
+                    ]
+                   }
+                  ]
+                 },
+                 "exists_user": "p"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          "exists_region": {
+           "lit": "crosswalk"
+          },
+          "var": "w"
+         }
+        ]
+       }
+      ]
+     },
+     "exists_user": "b"
+    }
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "686ca8ad2aa3c1f0aacf2413",
+  "candidate_digest": "1370138361f7902333f97001e451b8baa41385b0a6bd272c887116ea83065c9d"
+ }
+}

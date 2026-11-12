@@ -1,18 +1,17 @@
 {
  "run": "smoke32-1111-2102",
- "iteration": 1,
- "status": "incomplete",
- "stop_reason": "the iteration bound (1) was reached",
+ "iteration": 2,
+ "status": "awaiting_labels",
+ "stop_reason": "generation paused: nothing runnable is left without a label check; 10 law(s) await their labels: ['LVMC-11-30-030', 'NRS-484B-113-3', 'NRS-484B-227-1', 'NRS-484B-250-1', 'NRS-484B-250-4', 'NRS-484B-253', 'NRS-484B-257-1', 'NRS-484B-280-1a', 'NRS-484B-413-2', 'NRS-484B-600-1a']",
  "laws": {
   "planned": 10,
   "blocked": 4,
   "returned": 1
  },
- "accepted_nodes": 11,
- "accepted_concepts": 12,
+ "accepted_nodes": 15,
+ "accepted_concepts": 14,
  "concepts": {
-  "accepted": 12,
-  "returned": 2
+  "accepted": 14
  },
  "gate_costs": {
   "cost_failures": 0,
@@ -22,24 +21,23 @@
  "gaps_total": 8,
  "gaps_created_by_this_run": 8,
  "never_planned": [],
- "stop": "iteration_limit",
+ "stop": "",
  "stage": "done",
  "pending": {
   "awaiting_labels": [
+   "LVMC-11-30-030",
    "NRS-484B-113-3",
    "NRS-484B-227-1",
+   "NRS-484B-250-1",
    "NRS-484B-250-4",
+   "NRS-484B-253",
    "NRS-484B-257-1",
    "NRS-484B-280-1a",
+   "NRS-484B-413-2",
    "NRS-484B-600-1a"
   ],
   "awaiting_label_repair": [],
-  "generating": [
-   "LVMC-11-30-030",
-   "NRS-484B-250-1",
-   "NRS-484B-253",
-   "NRS-484B-413-2"
-  ],
+  "generating": [],
   "to_plan": [
    "NRS-484B-307-9a"
   ],
@@ -58,17 +56,16 @@
    "generated": [
     "NRS-484B-113-3",
     "NRS-484B-227-1",
+    "NRS-484B-250-1",
     "NRS-484B-250-4",
+    "NRS-484B-253",
     "NRS-484B-257-1",
     "NRS-484B-280-1a",
-    "NRS-484B-600-1a"
-   ],
-   "generating": [
-    "NRS-484B-250-1",
-    "NRS-484B-253",
     "NRS-484B-413-2",
+    "NRS-484B-600-1a",
     "LVMC-11-30-030"
    ],
+   "generating": [],
    "waiting_provider": {},
    "to_plan": {
     "NRS-484B-307-9a": "`NRS_484B_307_9a_o1` composes or calls `NRS_484B_307_9b_o1` (missing), `NRS_484B_307_9b_o2` (missing), `NRS_484B_307_9b_o3` (missing), `NRS_484B_307_9b_o4` (missing), not usable for building: a superseded or missing record, or a fenced concept, is replaced by a re-plan (map the words to a usable record or a successor); no attempt counted"
@@ -117,7 +114,7 @@
   },
   "stop": {
    "budget": false,
-   "iteration_limit": true,
+   "iteration_limit": false,
    "infrastructure": false
   }
  }

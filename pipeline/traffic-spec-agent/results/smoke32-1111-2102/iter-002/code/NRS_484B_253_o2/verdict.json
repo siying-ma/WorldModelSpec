@@ -1,0 +1,845 @@
+{
+ "verdict": "OK",
+ "details": [
+  "12 witnesses, 12 names, composes NRS_484B_253_o1"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "body": {
+     "body": {
+      "body": {
+       "and": [
+        {
+         "and": [
+          {
+           "args": [
+            {
+             "var": "ego"
+            },
+            {
+             "var": "ce"
+            }
+           ],
+           "atom": "rel_occupies",
+           "params": []
+          },
+          {
+           "args": [
+            {
+             "var": "ce"
+            },
+            {
+             "var": "i"
+            }
+           ],
+           "atom": "st_lane_enters",
+           "params": []
+          }
+         ]
+        },
+        {
+         "and": [
+          {
+           "not": {
+            "same": [
+             {
+              "var": "t"
+             },
+             {
+              "var": "ego"
+             }
+            ]
+           }
+          },
+          {
+           "and": [
+            {
+             "args": [
+              {
+               "var": "t"
+              },
+              {
+               "lit": "DEF-NRS-484A-320::vehicle"
+              }
+             ],
+             "atom": "ru_aggregate",
+             "params": []
+            },
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "t"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "t"
+                  },
+                  {
+                   "var": "i"
+                  }
+                 ],
+                 "int": "int.left_turn"
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "t"
+                    }
+                   ],
+                   "derived": "drv_motion_turning_left",
+                   "params": [
+                    {
+                     "param": "p.turn_yaw_tolerance"
+                    },
+                    {
+                     "param": "p.rest_speed_tolerance"
+                    }
+                   ]
+                  },
+                  {
+                   "body": {
+                    "and": [
+                     {
+                      "args": [
+                       {
+                        "var": "ct"
+                       },
+                       {
+                        "var": "i"
+                       }
+                      ],
+                      "atom": "st_lane_enters",
+                      "params": []
+                     },
+                     {
+                      "and": [
+                       {
+                        "cmp": "lt",
+                        "lhs": {
+                         "add": [
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "ct"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "st_lane_direction"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "ce"
+                              },
+                              {
+                               "lit": "x"
+                              }
+                             ],
+                             "measure": "st_lane_direction"
+                            }
+                           ]
+                          },
+                          {
+                           "mul": [
+                            {
+                             "args": [
+                              {
+                               "var": "ct"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "st_lane_direction"
+                            },
+                            {
+                             "args": [
+                              {
+                               "var": "ce"
+                              },
+                              {
+                               "lit": "y"
+                              }
+                             ],
+                             "measure": "st_lane_direction"
+                            }
+                           ]
+                          }
+                         ]
+                        },
+                        "rhs": {
+                         "neg": {
+                          "param": "p.opposite_direction_tolerance"
+                         }
+                        }
+                       },
+                       {
+                        "and": [
+                         {
+                          "since": [
+                           {
+                            "args": [
+                             {
+                              "var": "t"
+                             }
+                            ],
+                            "derived": "drv_motion_turning_left",
+                            "params": [
+                             {
+                              "param": "p.turn_yaw_tolerance"
+                             },
+                             {
+                              "param": "p.rest_speed_tolerance"
+                             }
+                            ]
+                           },
+                           {
+                            "and": [
+                             {
+                              "rises": {
+                               "args": [
+                                {
+                                 "var": "t"
+                                }
+                               ],
+                               "derived": "drv_motion_turning_left",
+                               "params": [
+                                {
+                                 "param": "p.turn_yaw_tolerance"
+                                },
+                                {
+                                 "param": "p.rest_speed_tolerance"
+                                }
+                               ]
+                              }
+                             },
+                             {
+                              "since": [
+                               {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "t"
+                                   },
+                                   {
+                                    "var": "i"
+                                   }
+                                  ],
+                                  "atom": "rel_occupies",
+                                  "params": []
+                                 },
+                                 {
+                                  "map": {
+                                   "ego": "t"
+                                  },
+                                  "rule": "NRS_484B_253_o1"
+                                 }
+                                ]
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "t"
+                                   },
+                                   {
+                                    "var": "ct"
+                                   }
+                                  ],
+                                  "atom": "rel_occupies",
+                                  "params": []
+                                 },
+                                 {
+                                  "not": {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    },
+                                    {
+                                     "var": "i"
+                                    }
+                                   ],
+                                   "atom": "rel_occupies",
+                                   "params": []
+                                  }
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         },
+                         {
+                          "since": [
+                           {
+                            "not": {
+                             "rises": {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "var": "ct"
+                               }
+                              ],
+                              "atom": "rel_occupies",
+                              "params": []
+                             }
+                            }
+                           },
+                           {
+                            "or": [
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "left"
+                               }
+                              ],
+                              "atom": "sig_turn_indicator",
+                              "params": []
+                             },
+                             {
+                              "args": [
+                               {
+                                "var": "t"
+                               },
+                               {
+                                "lit": "left"
+                               }
+                              ],
+                              "atom": "sig_hand_signal",
+                              "params": []
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       }
+                      ]
+                     }
+                    ]
+                   },
+                   "exists_region": {
+                    "lit": "travel_region"
+                   },
+                   "var": "ct"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "exists_user": "t"
+     },
+     "exists_region": {
+      "lit": "travel_region"
+     },
+     "var": "ce"
+    },
+    "exists_region": {
+     "lit": "intersection"
+    },
+    "var": "i"
+   },
+   "assumptions": [],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "NRS_484B_253_o2",
+   "intentions": [
+    "int.left_turn"
+   ],
+   "laws": [
+    "NRS-484B-253"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "or": [
+     {
+      "args": [
+       {
+        "var": "ego"
+       }
+      ],
+      "derived": "drv_motion_at_rest",
+      "params": [
+       {
+        "param": "p.rest_speed_tolerance"
+       }
+      ]
+     },
+     {
+      "body": {
+       "body": {
+        "body": {
+         "implies": [
+          {
+           "and": [
+            {
+             "and": [
+              {
+               "args": [
+                {
+                 "var": "ego"
+                },
+                {
+                 "var": "ce"
+                }
+               ],
+               "atom": "rel_occupies",
+               "params": []
+              },
+              {
+               "args": [
+                {
+                 "var": "ce"
+                },
+                {
+                 "var": "i"
+                }
+               ],
+               "atom": "st_lane_enters",
+               "params": []
+              }
+             ]
+            },
+            {
+             "and": [
+              {
+               "not": {
+                "same": [
+                 {
+                  "var": "t"
+                 },
+                 {
+                  "var": "ego"
+                 }
+                ]
+               }
+              },
+              {
+               "and": [
+                {
+                 "args": [
+                  {
+                   "var": "t"
+                  },
+                  {
+                   "lit": "DEF-NRS-484A-320::vehicle"
+                  }
+                 ],
+                 "atom": "ru_aggregate",
+                 "params": []
+                },
+                {
+                 "and": [
+                  {
+                   "args": [
+                    {
+                     "var": "t"
+                    },
+                    {
+                     "var": "i"
+                    }
+                   ],
+                   "atom": "rel_occupies",
+                   "params": []
+                  },
+                  {
+                   "and": [
+                    {
+                     "args": [
+                      {
+                       "var": "t"
+                      },
+                      {
+                       "var": "i"
+                      }
+                     ],
+                     "int": "int.left_turn"
+                    },
+                    {
+                     "and": [
+                      {
+                       "args": [
+                        {
+                         "var": "t"
+                        }
+                       ],
+                       "derived": "drv_motion_turning_left",
+                       "params": [
+                        {
+                         "param": "p.turn_yaw_tolerance"
+                        },
+                        {
+                         "param": "p.rest_speed_tolerance"
+                        }
+                       ]
+                      },
+                      {
+                       "body": {
+                        "and": [
+                         {
+                          "args": [
+                           {
+                            "var": "ct"
+                           },
+                           {
+                            "var": "i"
+                           }
+                          ],
+                          "atom": "st_lane_enters",
+                          "params": []
+                         },
+                         {
+                          "and": [
+                           {
+                            "cmp": "lt",
+                            "lhs": {
+                             "add": [
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "ct"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "ce"
+                                  },
+                                  {
+                                   "lit": "x"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              },
+                              {
+                               "mul": [
+                                {
+                                 "args": [
+                                  {
+                                   "var": "ct"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                },
+                                {
+                                 "args": [
+                                  {
+                                   "var": "ce"
+                                  },
+                                  {
+                                   "lit": "y"
+                                  }
+                                 ],
+                                 "measure": "st_lane_direction"
+                                }
+                               ]
+                              }
+                             ]
+                            },
+                            "rhs": {
+                             "neg": {
+                              "param": "p.opposite_direction_tolerance"
+                             }
+                            }
+                           },
+                           {
+                            "and": [
+                             {
+                              "since": [
+                               {
+                                "args": [
+                                 {
+                                  "var": "t"
+                                 }
+                                ],
+                                "derived": "drv_motion_turning_left",
+                                "params": [
+                                 {
+                                  "param": "p.turn_yaw_tolerance"
+                                 },
+                                 {
+                                  "param": "p.rest_speed_tolerance"
+                                 }
+                                ]
+                               },
+                               {
+                                "and": [
+                                 {
+                                  "rises": {
+                                   "args": [
+                                    {
+                                     "var": "t"
+                                    }
+                                   ],
+                                   "derived": "drv_motion_turning_left",
+                                   "params": [
+                                    {
+                                     "param": "p.turn_yaw_tolerance"
+                                    },
+                                    {
+                                     "param": "p.rest_speed_tolerance"
+                                    }
+                                   ]
+                                  }
+                                 },
+                                 {
+                                  "since": [
+                                   {
+                                    "and": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "t"
+                                       },
+                                       {
+                                        "var": "i"
+                                       }
+                                      ],
+                                      "atom": "rel_occupies",
+                                      "params": []
+                                     },
+                                     {
+                                      "map": {
+                                       "ego": "t"
+                                      },
+                                      "rule": "NRS_484B_253_o1"
+                                     }
+                                    ]
+                                   },
+                                   {
+                                    "and": [
+                                     {
+                                      "args": [
+                                       {
+                                        "var": "t"
+                                       },
+                                       {
+                                        "var": "ct"
+                                       }
+                                      ],
+                                      "atom": "rel_occupies",
+                                      "params": []
+                                     },
+                                     {
+                                      "not": {
+                                       "args": [
+                                        {
+                                         "var": "t"
+                                        },
+                                        {
+                                         "var": "i"
+                                        }
+                                       ],
+                                       "atom": "rel_occupies",
+                                       "params": []
+                                      }
+                                     }
+                                    ]
+                                   }
+                                  ]
+                                 }
+                                ]
+                               }
+                              ]
+                             },
+                             {
+                              "since": [
+                               {
+                                "not": {
+                                 "rises": {
+                                  "args": [
+                                   {
+                                    "var": "t"
+                                   },
+                                   {
+                                    "var": "ct"
+                                   }
+                                  ],
+                                  "atom": "rel_occupies",
+                                  "params": []
+                                 }
+                                }
+                               },
+                               {
+                                "or": [
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "t"
+                                   },
+                                   {
+                                    "lit": "left"
+                                   }
+                                  ],
+                                  "atom": "sig_turn_indicator",
+                                  "params": []
+                                 },
+                                 {
+                                  "args": [
+                                   {
+                                    "var": "t"
+                                   },
+                                   {
+                                    "lit": "left"
+                                   }
+                                  ],
+                                  "atom": "sig_hand_signal",
+                                  "params": []
+                                 }
+                                ]
+                               }
+                              ]
+                             }
+                            ]
+                           }
+                          ]
+                         }
+                        ]
+                       },
+                       "exists_region": {
+                        "lit": "travel_region"
+                       },
+                       "var": "ct"
+                      }
+                     ]
+                    }
+                   ]
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "not": {
+            "and": [
+             {
+              "args": [
+               {
+                "var": "ego"
+               },
+               {
+                "var": "t"
+               }
+              ],
+              "derived": "prim_closest_approach_within",
+              "params": [
+               {
+                "param": "p.conflict_horizon"
+               }
+              ]
+             },
+             {
+              "cmp": "lt",
+              "lhs": {
+               "args": [
+                {
+                 "var": "ego"
+                },
+                {
+                 "var": "t"
+                }
+               ],
+               "params": [
+                {
+                 "param": "p.conflict_horizon"
+                }
+               ],
+               "quantity": "prim_closest_approach_distance"
+              },
+              "rhs": {
+               "param": "p.conflict_clearance"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "forall_user": "t"
+       },
+       "forall_region": {
+        "lit": "travel_region"
+       },
+       "var": "ce"
+      },
+      "forall_region": {
+       "lit": "intersection"
+      },
+      "var": "i"
+     }
+    ]
+   },
+   "residues": [],
+   "surrogate": false
+  },
+  "context": "3209a974630375d390d2f77b",
+  "candidate_digest": "d6ec670d774970b144f7b89c36cc817a5241e0bdc6d5e7151ba0bf41b6cb9119"
+ }
+}

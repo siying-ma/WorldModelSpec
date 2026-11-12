@@ -1,0 +1,192 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "653e420f27964e7b8bcd4044f9b0ad83",
+ "result": {
+  "duration_api_ms": 205979,
+  "stop_reason": "end_turn",
+  "session_id": "4f650d52-5a21-41fb-abf2-5b59dcb73d7d",
+  "total_cost_usd": 1.3514314,
+  "usage": {
+   "input_tokens": 40,
+   "cache_creation_input_tokens": 83181,
+   "cache_read_input_tokens": 1232634,
+   "output_tokens": 21783,
+   "output_tokens_details": {
+    "thinking_tokens": 9292
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 83181,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 723,
+     "cache_read_input_tokens": 86341,
+     "cache_creation_input_tokens": 1278,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1278
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36231,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0036366000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 21783,
+    "cacheReadInputTokens": 1232634,
+    "cacheCreationInputTokens": 83181,
+    "webSearchRequests": 0,
+    "costUSD": 1.3477948,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9292,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01MadXTc1pQdWow8Tg7JMgyY",
+    "tool_input": {
+     "command": "cd /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Core && ls -R | head -50 && grep -n \"since\\|rises\\|windowTruncated\" Language/*.lean | head -80"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 26,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `drv.interaction.overtakes` on the 4th of 6 runs (3 witnesses, 3 atoms read).\n\n**Body.** It holds only at the observation where a becomes wholly ahead of b, provided a was wholly behind b earlier and the headings stayed aligned from then until now:\n- \"Wholly behind\" is `behind(a,b) ∧ ¬behind(b,a)`.\n- \"Wholly ahead\" is `behind(b,a) ∧ ¬behind(a,b)`.\n- The formula is `rises(whollyAhead) ∧ since(rel_same_direction(a,b), whollyBehind)`.\n- If no wholly-behind observation is recorded and the headings were aligned from the start, `since` runs back to the start of the trace. The result is then unknown rather than false, as the contract requires.\n- I made no narrowings; the contract's words map directly onto `rises` and `since`.\n\n**Witnesses.** Two cars travel east, a in the left lane and b in the right. In `holds`, a passes b and becomes wholly ahead at t = 4000 ms. In `fails`, a comes alongside b and stays there to the end.\n\nThree gate runs failed on the `blind` witness before the fourth passed:\n1. **Masking didn't hide the overlap.** Masking `rel.longitudinal_overlap` only removes a measured value; Core still worked it out from position, heading and body size. So the `blind` scenes leave out body sizes and supply the overlap as a measured value, which the mask then removes.\n2. **Occupancy was rejected.** Tracks without a body size can't be marked as having observed occupancy, so those scenes set `occupancyObserved := []`. The concept never reads occupancy.\n3. **A second unknown appeared.** With the overlap hidden, `since` also ran back to the trace start, and the gate only accepts unknowns caused by the masked atom. I added a first instant to all three traces where a is still merging at about 28°, outside the 9/10 alignment tolerance. That settles `since` as false there, so the masked atom is the only cause of unknown.\n\nThe steps are written up in `task_result.md` in the working directory.",
+  "ttft_ms": 11521,
+  "type": "result",
+  "duration_ms": 218319,
+  "uuid": "34a731ec-2e04-4b36-a6f8-8f5aeb91e0e5",
+  "ttft_stream_ms": 701,
+  "time_to_request_ms": 73,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 20,
+   "resume_other": 1,
+   "process_user_input": 3,
+   "input_attachments": 18,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 0,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 23,
+  "time_to_request_cpu_ms": 114,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 25,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 702,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 36231,
+    "outputTokens": 27,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0036366000000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 40,
+    "outputTokens": 21783,
+    "cacheReadInputTokens": 1232634,
+    "cacheCreationInputTokens": 83181,
+    "webSearchRequests": 0,
+    "costUSD": 1.3477948,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9292,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

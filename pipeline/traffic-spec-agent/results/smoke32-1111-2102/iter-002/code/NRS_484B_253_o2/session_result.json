@@ -1,0 +1,193 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "653e420f27964e7b8bcd4044f9b0ad83",
+ "result": {
+  "duration_api_ms": 420498,
+  "stop_reason": "end_turn",
+  "session_id": "a9a0c1da-53db-479f-a57a-eca1ab0ca928",
+  "total_cost_usd": 2.5985435000000003,
+  "usage": {
+   "input_tokens": 38,
+   "cache_creation_input_tokens": 159304,
+   "cache_read_input_tokens": 2067852,
+   "output_tokens": 45303,
+   "output_tokens_details": {
+    "thinking_tokens": 29677
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 159304,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 985,
+     "cache_read_input_tokens": 162135,
+     "cache_creation_input_tokens": 1607,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 1607
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43146,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0043291,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 38,
+    "outputTokens": 45303,
+    "cacheReadInputTokens": 2067852,
+    "cacheCreationInputTokens": 159304,
+    "webSearchRequests": 0,
+    "costUSD": 2.5942144000000007,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 29677,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [
+   {
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01McwNRnXrBxrYXYrqPNBZKA",
+    "tool_input": {
+     "command": "python -m harness gate --run_id smoke32-1111-2102 --node_id NRS_484B_253_o2 --help 2>&1 | head -5; true",
+     "description": "(skipped)"
+    }
+   }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 25,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "The gate returned **OK** for `NRS_484B_253_o2` on the third of six allowed runs: all 12 witnesses pass and the rule composes `NRS_484B_253_o1`.\n\n**Gate runs**\n1. **`UNUSED_CLAIM`**: run on the untouched skeleton to see the baseline. Then I wrote the rule and the witnesses.\n2. **`WITNESS_FAIL`**: the gate said it couldn't produce any of the turning traces, because t kept the same heading between scenes while its yaw rate said it was turning. I changed t's headings during the turn to step about 15° left per second (rational unit vectors near 16°, 31°, 44° and 58°), with each scene's yaw rate matching the step. Then I rechecked the conflict geometry.\n3. **OK**.\n\nOne slip: I once ran the gate command with `--help` appended, which breaks the \"exactly this command\" rule. The sandbox blocked it and it didn't run.\n\n**The rule** (in `NRS_484B_253_o2.lean`)\n- **Applicability:** there is an intersection `i`, a lane `ce` that ego is on and that leads into `i`, and another vehicle `t` such that:\n  - `t` is inside `i`, has declared a left turn at `i`, and is turning left now;\n  - `t` entered `i` from a lane `ct` whose direction is opposite to `ce`'s;\n  - `t` has been turning continuously since the turn started. \"Having so yielded\" is checked at that start: from `t`'s last moment on `ct` outside `i` up to the start, `t` was in `i` and complied with `NRS_484B_253_o1`. It is not checked during the turn.\n  - `t` signalled left (indicator or arm) at some point after it last came onto `ct`.\n- **Obligation:** ego is at rest, or for every `i`, `ce` and `t` matching the same selection, ego and `t` are not in conflict. Conflict means their projected closest approach falls within `p.conflict_horizon` and is closer than `p.conflict_clearance`.\n- I added no narrowings, because the record already decides every reading.\n\n**Witnesses** (in the witness file `NRS_484B_253_o2.lean`): the 8 planned scenarios, plus four of my own so each part of the formula changes some verdict:\n- `branch_5` (compliant): ego is moving but far away, so the closest approach is beyond the horizon.\n- `branch_6` (compliant): the closest approach is within the horizon but over 5 m apart.\n- `branch_7` (not applicable): ego approaches from a perpendicular lane, not the opposite one.\n- `branch_8` (not applicable): `t` is a bicycle, not a vehicle under the definition.\n\nI couldn't read `NRS_484B_253_o1` itself, so the scenes rely on its compliance behaving as the record describes; the passing gate confirms that for these scenes.\n\n`task_result.md` is written in the working directory.",
+  "ttft_ms": 4771,
+  "type": "result",
+  "duration_ms": 464985,
+  "uuid": "712a0af6-429e-4cc8-b6b6-b4fcda2648d0",
+  "ttft_stream_ms": 659,
+  "time_to_request_ms": 70,
+  "time_to_request_phases_ms": {
+   "other": 12,
+   "system_prompt": 21,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 2,
+   "transcript_persist": 6,
+   "tool_pool_refresh": 2,
+   "init_message": 1,
+   "engine_pickup": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 20,
+  "time_to_request_cpu_ms": 107,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 13,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 659,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 43146,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0043291,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 38,
+    "outputTokens": 45303,
+    "cacheReadInputTokens": 2067852,
+    "cacheCreationInputTokens": 159304,
+    "webSearchRequests": 0,
+    "costUSD": 2.5942144000000007,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 29677,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

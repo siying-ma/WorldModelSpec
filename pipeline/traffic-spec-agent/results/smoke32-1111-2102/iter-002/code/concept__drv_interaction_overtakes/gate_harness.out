@@ -1,0 +1,35 @@
+'TrafficSpec.Concepts.interaction.overtakes.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtakes.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtakes.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+DECL	{"args":[{"name":"a","sort":{"sort":"track"}},{"name":"b","sort":{"sort":"track"}}],"body":{"and":[{"rises":{"and":[{"args":[{"var":"b"},{"var":"a"}],"derived":"drv_position_behind","params":[{"param":"alignment"}]},{"not":{"args":[{"var":"a"},{"var":"b"}],"derived":"drv_position_behind","params":[{"param":"alignment"}]}}]}},{"since":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"a"},{"var":"b"}],"derived":"drv_position_behind","params":[{"param":"alignment"}]},{"not":{"args":[{"var":"b"},{"var":"a"}],"derived":"drv_position_behind","params":[{"param":"alignment"}]}}]}]}]},"contract":"Road user a overtakes and passes road user b: travelling with headings aligned, a goes from wholly behind b to wholly ahead of it. a is wholly behind b at an observation where drv.position.behind of a relative to b holds and drv.position.behind of b relative to a does not; a is wholly ahead of b where drv.position.behind of b relative to a holds and drv.position.behind of a relative to b does not. Where both hold, as headings that are aligned but not parallel allow for bodies apart sideways, a is neither wholly behind nor wholly ahead of b. The act is recognized at the observation at which a becomes wholly ahead of b, provided that a was wholly behind b at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition. Its observed beginning is the last observation at which a was wholly behind b before the recognition. The concept holds at the recognition observation only. Where the recording shows no observation of a wholly behind b before a becomes wholly ahead of it, with the headings aligned at every observation since the recording began, whether a overtook b is unknown, never false. Not a stand-in for a lane change or for contact between the bodies; it does not say in which lane either travels.","definition":null,"id":"drv.interaction.overtakes","kind":"formula","narrowings":[],"params":[{"name":"alignment","unit":"ratio"}],"residues":[],"supersedes":null}
+ATOMS	drv_position_behind,rel_same_direction
+READS	rel_same_direction,rel_bearing,rel_longitudinal_overlap
+AGGREGATES	
+HARDAGG	
+BODY	{"and":[{"rises":{"and":[{"and":[{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"b"},{"var":"a"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"b"},{"var":"a"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},{"not":{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}}]}},{"since":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"and":[{"args":[{"var":"a"},{"var":"b"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"a"},{"var":"b"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"a"},{"var":"b"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]},{"not":{"and":[{"args":[{"var":"b"},{"var":"a"}],"atom":"rel_same_direction","params":[{"param":"alignment"}]},{"and":[{"args":[{"var":"b"},{"var":"a"},{"lit":"ahead"}],"atom":"rel_bearing","params":[]},{"cmp":"lt","lhs":{"args":[{"var":"b"},{"var":"a"}],"measure":"rel_longitudinal_overlap"},"rhs":{"lit":{"den":1,"num":0},"unit":"metre"}}]}]}}]}]}]}
+WITNESS	holds	drv.interaction.overtakes@w
+WITNESS	fails	drv.interaction.overtakes@w
+WITNESS	blind	drv.interaction.overtakes@w
+OCC	b,a
+OCC	a,b
+OCC	a,b
+OCC	a,b
+OCC	b,a
+INST	drv.interaction.overtakes@w	ok
+TIME	checks	38
+TIME	lint	4
+SCEN	holds	drv.interaction.overtakes@w	compliant	compliant	ok
+TIME	scenario:drv.interaction.overtakes@w/holds	41
+SCEN	fails	drv.interaction.overtakes@w	violated	violated	ok
+TIME	scenario:drv.interaction.overtakes@w/fails	33
+SCEN	blind	drv.interaction.overtakes@w	unknown	unknown	ok
+TIME	scenario:drv.interaction.overtakes@w/blind	40
+TIME	witnesses	114
+DONE_WITNESSES
+'TrafficSpec.Concepts.interaction.overtakes.concept' does not depend on any axioms
+'TrafficSpecWitness.Concepts.interaction.overtakes.instances' depends on axioms: [propext, Quot.sound]
+'TrafficSpecWitness.Concepts.interaction.overtakes.scenarios' depends on axioms: [propext, Classical.choice, Quot.sound]
+ADEQ_SIZE	drv.interaction.overtakes@w	5	2
+TIME	adequacy_start	29
+TIME	adequacy	245
+DONE

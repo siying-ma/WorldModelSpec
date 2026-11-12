@@ -1,0 +1,300 @@
+{
+ "node_id": "NRS_484B_250_1",
+ "law_refs": [
+  "NRS-484B-250-1"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "e1",
+   "text": "The driver of a vehicle",
+   "role": "subject"
+  },
+  {
+   "id": "e2",
+   "text": "approaching an intersection",
+   "role": "trigger"
+  },
+  {
+   "id": "e3",
+   "text": "shall yield",
+   "role": "obligation"
+  },
+  {
+   "id": "e4",
+   "text": "the right-of-way",
+   "role": "standard"
+  },
+  {
+   "id": "e5",
+   "text": "to a vehicle which has entered the intersection from a different highway.",
+   "role": "condition"
+  },
+  {
+   "id": "e6",
+   "text": "Except as otherwise provided in subsection 4 [NRS-484B-250-4],",
+   "role": "reference"
+  },
+  {
+   "id": "e7",
+   "text": "this section does not apply at intersections controlled by official traffic-control devices",
+   "role": "exception"
+  },
+  {
+   "id": "e8",
+   "text": "or to vehicles approaching each other from opposite directions,",
+   "role": "exception"
+  },
+  {
+   "id": "e9",
+   "text": "when the driver of one of the vehicles is intending to",
+   "role": "exception"
+  },
+  {
+   "id": "e10",
+   "text": "or is making a left turn.",
+   "role": "exception"
+  }
+ ],
+ "elements": [
+  {
+   "span": "e1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle; \"The driver\" read through the vehicle's controlled motion (agency reading)."
+  },
+  {
+   "span": "e2",
+   "atoms": [
+    "st.intersection",
+    "st.travel_region",
+    "st.lane_enters",
+    "rel.occupies"
+   ],
+   "derived": [],
+   "justification": "\"approaching an intersection\": ego occupies (rel.occupies) a carrier c whose entrance end is the intersection i (st.lane_enters: 'a road user occupying one such carrier approaches through it whatever its motion') and does not overlap i, or enters i at the judged observation from such a c. Not inferred from heading or distance."
+  },
+  {
+   "span": "e3",
+   "atoms": [],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"yield\": granting precedence (DEF-NRS-484A-210 \"unless one grants precedence to the other\"): ego does not proceed while the vehicle with the right-of-way is in conflict with it, so ego is at rest (drv.motion.at_rest) or not in conflict (operationalization of e4)."
+  },
+  {
+   "span": "e5",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "rel.occupies",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region",
+    "st.on_way",
+    "st.highway"
+   ],
+   "derived": [],
+   "justification": "\"a vehicle\": a road user b other than ego of the admitted aggregate DEF-NRS-484A-320::vehicle. \"has entered the intersection\": b's footprint overlaps i (rel.occupies) after an entry from a carrier c_b whose entrance end is i (st.lane_enters), read through a past operator. \"from a different highway\": c_b lies (st.on_way) on a highway (st.highway) on which ego's carrier c does not lie; the intersection itself lies on every way that meets there and is no evidence of either."
+  },
+  {
+   "span": "e7",
+   "atoms": [
+    "dev.traffic_signal",
+    "dev.stop_sign",
+    "dev.yield_sign",
+    "dev.governs",
+    "st.intersection",
+    "st.lane_enters",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"official traffic-control devices\" (DEF-NRS-484A-145 'every sign, signal, marking and device ... placed or erected by a public authority or railroad for the purpose of regulating, warning or guiding traffic'), qualified by the law's own word \"controlled\": the devices that control an intersection, a traffic signal head (dev.traffic_signal), a stop sign (dev.stop_sign) or a yield sign (dev.yield_sign), governing (dev.governs) the intersection i or any carrier whose entrance end is i (st.lane_enters), whichever entrance it governs. The word leaves out devices that only warn or guide (speed-limit and zone signs, warning signs, markings) and devices of other kinds. \"official\": status read through the device's presence."
+  },
+  {
+   "span": "e8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle",
+    "st.lane_enters",
+    "st.lane_direction",
+    "st.travel_region"
+   ],
+   "derived": [],
+   "justification": "\"vehicles approaching each other from opposite directions\": ego and b, vehicles (admitted aggregate DEF-NRS-484A-320::vehicle), whose approach carriers into i (ego's carrier c, and the carrier c_b from which b entered; st.lane_enters) carry opposed designated directions (st.lane_direction), read through the carriers as rel.oncoming's contract directs, never through current headings, which a turn changes."
+  },
+  {
+   "span": "e10",
+   "atoms": [],
+   "derived": [
+    "drv.motion.turning_left"
+   ],
+   "justification": "\"or is making a left turn\": ego or b is turning left (drv.motion.turning_left: moving, its heading turning to the left at or above the yaw tolerance), a turn under way at the judged observation, at the intersection i the words concern."
+  }
+ ],
+ "operationalizations": [
+  {
+   "span": "e4",
+   "standard": "the right-of-way: DEF-NRS-484A-210 \"approaching under such circumstances of direction, speed and proximity as to give rise to the danger of a crash unless one grants precedence to the other\"",
+   "concepts": [
+    "prim.closest_approach_within",
+    "prim.closest_approach_distance"
+   ],
+   "params": [
+    "p.conflict_horizon",
+    "p.conflict_clearance"
+   ],
+   "convention": "Traffic-conflict technique: two road users are in conflict where, projected at their current velocities, their centres approach within the time-to-collision horizon and their closest-approach centre distance is below the clearance at which their bodies would touch. Direction, speed and proximity enter by degree through the projected velocities and positions.",
+   "surrogate": false
+  }
+ ],
+ "assumptions": [],
+ "intentions": [
+  {
+   "span": "e9",
+   "id": "int.left_turn",
+   "meaning": "The road user's current plan includes turning left at the target region."
+  }
+ ],
+ "compositions": [
+  {
+   "span": "e6",
+   "rule": "NRS_484B_250_4_o1",
+   "map": {
+    "ego": "ego"
+   },
+   "as": "unless",
+   "scopes": "e7"
+  },
+  {
+   "span": "e6",
+   "rule": "NRS_484B_250_4_o2",
+   "map": {
+    "ego": "ego"
+   },
+   "as": "unless",
+   "scopes": "e7"
+  }
+ ],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (driven: agency reading) approaching an intersection i (on a carrier c whose entrance end is i, not overlapping i, or entering i from c at the judged observation); and no traffic signal, stop sign or yield sign governs i or any carrier entering i (dev.traffic_signal, dev.stop_sign, dev.yield_sign, dev.governs, st.lane_enters), this exception being suspended where NRS_484B_250_4_o1 or NRS_484B_250_4_o2 applies to ego.",
+ "obligation": "For every vehicle b other than ego whose footprint overlaps i after an entry from a carrier c_b lying on a highway on which c does not lie (st.on_way): not where c and c_b carry opposed directions (st.lane_direction, the dot product of the two directions below minus p.opposite_direction_tolerance) and ego or b declares int.left_turn at i or is turning left (drv.motion.turning_left with p.turn_yaw_tolerance and p.rest_speed_tolerance); otherwise ego is at rest (drv.motion.at_rest, p.rest_speed_tolerance) or not in conflict with b: not both prim.closest_approach_within(ego, b) with horizon p.conflict_horizon and prim.closest_approach_distance(ego, b) with the same horizon below p.conflict_clearance.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.conflict_horizon",
+  "p.conflict_clearance",
+  "p.opposite_direction_tolerance",
+  "p.turn_yaw_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "e1",
+   "why": "'The driver' is read through ego's controlled motion.",
+   "kind": "observable_reading",
+   "category": "agency"
+  },
+  {
+   "span": "e7",
+   "why": "'official' is read through the presence of the device governing the intersection or an approach to it.",
+   "kind": "observable_reading",
+   "category": "status"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "No device governs the intersection or its approaches. Ego approaches on highway A; vehicle b has entered from highway B and is crossing; ego keeps moving and enters while their projected closest approach lies within p.conflict_horizon below p.conflict_clearance."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego slows and comes to rest at the edge of the intersection until b has cleared, then enters with no projected conflict."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "Stop signs govern the approaches of highway B: the intersection is controlled by official traffic-control devices, and no inoperative signal is involved."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares st.lane_enters absent: whether ego approaches the intersection cannot be read.",
+   "masked": [
+    "st.lane_enters"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "compliant",
+   "narrative": "No device governs the intersection. Vehicle b entered from the opposite approach of ego's own highway A; no vehicle from a different highway is within the intersection; ego enters."
+  },
+  {
+   "name": "branch_2",
+   "expected": "violated",
+   "narrative": "An inoperative traffic signal governs the intersection (NRS_484B_250_4_o1 applies to ego's entry), so the device exception is suspended; ego enters in conflict with b, which entered from highway B."
+  },
+  {
+   "name": "branch_3",
+   "expected": "compliant",
+   "narrative": "No device governs the intersection and ego approaches and enters with no other road user in the scene."
+  }
+ ],
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.conflict_horizon",
+   "unit": "s",
+   "value": 3.0,
+   "convention": "Time-to-collision horizon of the traffic-conflict technique: a projected approach of the centres within this time counts toward the danger of a crash.",
+   "source": "Hayward (1972) time-to-collision; Hyden (1987) Swedish Traffic Conflict Technique; van der Horst (1990) TTC thresholds."
+  },
+  {
+   "name": "p.conflict_clearance",
+   "unit": "m",
+   "value": 3.0,
+   "convention": "Centre-to-centre distance at the projected closest approach below which the bodies of two passenger vehicles would touch or nearly touch (about a half-length plus a half-width of a design passenger car).",
+   "source": "AASHTO Green Book, design vehicle P dimensions."
+  },
+  {
+   "name": "p.opposite_direction_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Cosine of the largest angle off exactly opposed at which two approach directions still count as opposite (thirty degrees), covering skewed approaches.",
+   "source": "Trajectory-processing conventions for opposing-movement classification at intersections (inD)."
+  },
+  {
+   "name": "p.turn_yaw_tolerance",
+   "unit": "deg/s",
+   "value": 5.0,
+   "convention": "Yaw rate below which a change of heading counts as none: above lane-keeping yaw noise, below the yaw rates of turning at a junction.",
+   "source": "Vehicle-dynamics practice for turn-onset detection from yaw-rate sensors."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {
+  "NRS_484B_250_4_o1": "4d75f76dd343f0b5e3d6de0483838fb602121dd3e1add441cbf9b31b44c165a1",
+  "NRS_484B_250_4_o2": "b9ff988fae1ffca19ef7d4429238638e568af87a126d6b22c796e3c5ce6076c0"
+ }
+}

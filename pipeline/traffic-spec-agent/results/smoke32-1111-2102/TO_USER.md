@@ -1,5 +1,7 @@
 ## Iteration 1
 
+_Observed during iteration 1: these items record what the run reported then, not its current state (the aggregate downgrades that hold now are in `AGGREGATE_DOWNGRADES.md`)._
+
 - aggregate `DEF-NRS-484A-020::authorized_emergency_vehicle` admitted with 14 class(es) downgraded to unresolved (ru.emergency_vehicle (underdetermined), ru.motor_vehicle (underdetermined), ru.bus (underdetermined), ru.commercial_motor_vehicle (underdetermined), ru.motorcycle (underdetermined), ru.moped (underdetermined), ru.official_vehicle (underdetermined), ru.school_bus (underdetermined), ru.taxicab (underdetermined), ru.tour_bus_or_limousine (underdetermined), ru.trailer_or_combination (underdetermined), ru.transit_bus (underdetermined), ru.truck (underdetermined), ru.fire_apparatus (cover_target_not_admitted)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
 - aggregate `DEF-NRS-484A-025::bicycle` admitted with 3 class(es) downgraded to unresolved (ru.child (gate_contradiction), ru.pedestrian (gate_contradiction), ru.pedestrian_with_white_cane_or_guide_animal (gate_contradiction)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
 - aggregate `DEF-NRS-484A-125::moped` admitted with 13 class(es) downgraded to unresolved (ru.bus (underdetermined), ru.commercial_motor_vehicle (underdetermined), ru.emergency_vehicle (underdetermined), ru.fire_apparatus (underdetermined), ru.motor_vehicle (underdetermined), ru.official_vehicle (underdetermined), ru.rail_vehicle (underdetermined), ru.school_bus (underdetermined), ru.taxicab (underdetermined), ru.tour_bus_or_limousine (underdetermined), ru.trailer_or_combination (underdetermined), ru.transit_bus (underdetermined), ru.truck (underdetermined)); what holds now, with the records it reaches, is in `AGGREGATE_DOWNGRADES.md`
@@ -78,3 +80,22 @@
 - `NRS-484B-257-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-280-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
 - `NRS-484B-600-1a`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+
+## Iteration 2
+
+- parameter `p.rest_speed_tolerance` = 0.1 m/s proposed by `LVMC_11_30_030` (Stop-detection noise floor: the speed at or below which a sampled speed counts a); review it in /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.crosswalk_reach` = 5.0 m proposed by `LVMC_11_30_030` (Reach within which a road user counts as at a crossing: a vehicle halted for a c); review it in /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.same_direction_tolerance` = 0.866 ratio proposed by `LVMC_11_30_030` (Cosine of the largest angle between two headings counted as the same direction o); review it in /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- parameter `p.opposite_direction_tolerance` = 0.866 ratio proposed by `NRS_484B_250_1` (Cosine of the largest angle off exactly opposed at which two approach directions); review it in /local-scratch2/sma407/smoke32-run/pipeline/traffic-spec-agent/library/TrafficSpec/Readings/lasvegas.json
+- `LVMC-11-30-030` (LVMC_11_30_030) reads "to permit a pedestrian to cross the roadway" (purpose) through conduct: The purpose 'to permit a pedestrian to cross the roadway' is read through the conduct it explains: a pedestrian at the crosswalk b is at rest at, at the same moment; a halt at a crossing with a pedestrian at it is taken as a halt for that p
+- `LVMC-11-30-030` (LVMC_11_30_030) reads "the driver of any other vehicle approaching from the rear" (agency) through conduct: 'the driver' is read through ego's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.
+- `NRS-484B-253` (NRS_484B_253_o2) reads "and the drivers of all other vehicles approaching the intersection from the opposite direction" (agency) through conduct: 'the drivers' are read through the vehicles' controlled motion.
+- `NRS-484B-253` span f10 composes accepted `NRS_484B_253_o1` (as: compliance) — both rules can flag the same episode
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "The driver of a vehicle" (agency) through conduct: 'The driver' is read through ego's controlled motion.
+- `NRS-484B-250-1` (NRS_484B_250_1) reads "this section does not apply at intersections controlled by official traffic-control devices" (status) through conduct: 'official' is read through the presence of the device governing the intersection or an approach to it.
+- `NRS-484B-250-1` span e6 composes accepted `NRS_484B_250_4_o1` (as: unless) — both rules can flag the same episode
+- `NRS-484B-250-1` span e6 composes accepted `NRS_484B_250_4_o2` (as: unless) — both rules can flag the same episode
+- `NRS-484B-250-1`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-253`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `NRS-484B-413-2`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)
+- `LVMC-11-30-030`: every node of its plan passed the gate; not accepted — it awaits its label check (awaiting_labels)

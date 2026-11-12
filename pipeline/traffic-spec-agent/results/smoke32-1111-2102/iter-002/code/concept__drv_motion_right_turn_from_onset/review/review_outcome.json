@@ -1,0 +1,141 @@
+{
+ "reviewer_verdict": "accept",
+ "rulings": [],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "3072d75ba892fd91196aaa503b8a5268aa58cc18ff8ac8843968230129b064f4",
+ "rulings_at": 3,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "an upheld challenge is met by this body under the current contract; it stays an obligation: challenge e3e3cf726a85 (t=750 ms), rechecked: the current contract: holds; the body: holds",
+   "With turn_angle = 0 deg, an observed onset following observed non-turning states was tested: the body holds at the onset, agreeing with the contract.",
+   "A new rightward stretch following an earlier stretch that accumulated the turn angle was tested: the body fails at the new onset, agreeing that the earlier stretch's heading change is not part of the new act."
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "f6511a1e29a71d28f10a",
+   "row": {
+    "key": "concept:drv.motion.right_turn_from_onset",
+    "subject": "drv.motion.right_turn_from_onset",
+    "iteration": 2,
+    "item": "divergence 1 (fails_wrongly) at t=750 ms: With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison was already true at the intervening non-turning observation. — contract: holds, body: fails; contract: \"The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle. The concept holds at the recognition observation only.\"",
+    "ruling": "upheld",
+    "reason": "rechecked under the current contract: holds — turning_right is false at t=500 (yaw rate 0) and true at t=750 (speed 5, yaw rate -20 ≤ -1), so the observed beginning is t=750. With turn_angle 0, the zero heading change there already reaches -0, so the act is recognized at t=750. — \"The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle: at the beginning itself where the heading change there, which is zero, already reaches it\"; the body: holds",
+    "schema": "concept_case/1",
+    "case_id": "e3e3cf726a855433e1dca7992245cc1d9fc20cc4b1a392b6428eef68a4f91e7e",
+    "kind": "fails_wrongly",
+    "situation": "With turn_angle set to zero, a second observed right-turn onset is itself a recognition observation. The body misses it because the heading-change comparison was already true at the intervening non-turning observation.",
+    "contract_words": "The act's observed beginning is the observation at which drv.motion.turning_right last became true. The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle. The concept holds at the recognition observation only.",
+    "contract_verdict": "holds",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "turn_angle": [
+       0,
+       "deg"
+      ],
+      "yaw_tolerance": [
+       1,
+       "deg/s"
+      ],
+      "speed_tolerance": [
+       0.1,
+       "m/s"
+      ],
+      "step": [
+       500,
+       "ms"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": 0
+         }
+        }
+       ]
+      },
+      {
+       "t": 250,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": -20
+         }
+        }
+       ]
+      },
+      {
+       "t": 500,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": 0
+         }
+        }
+       ]
+      },
+      {
+       "t": 750,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "speed": 5,
+          "yaw_rate": -20
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 750,
+    "verdict": "compliant",
+    "value": null,
+    "contract_digest": "21b2b299c9633a7764f7cd935d89c2ae908252a2bbc15c05dece2cd09a8b3e1f",
+    "body_digest": "2009efdeee5be810376e51e4e97c9065b3d1d7b008fb5ccea77959c3d2fc83dd",
+    "obligation": "satisfied",
+    "lineage": "e3e3cf726a855433e1dca7992245cc1d9fc20cc4b1a392b6428eef68a4f91e7e",
+    "predecessor": null,
+    "recheck": {
+     "answer": {
+      "verdict": "holds"
+     },
+     "quote": "The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle: at the beginning itself where the heading change there, which is zero, already reaches it",
+     "contract_digest": "21b2b299c9633a7764f7cd935d89c2ae908252a2bbc15c05dece2cd09a8b3e1f"
+    },
+    "ruling_id": "f6511a1e29a71d28f10a",
+    "supersedes": "bea6199c99eabcc9f23f"
+   },
+   "supersedes": null
+  }
+ ]
+}

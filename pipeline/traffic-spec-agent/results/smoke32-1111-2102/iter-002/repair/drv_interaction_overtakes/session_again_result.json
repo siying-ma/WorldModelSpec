@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "653e420f27964e7b8bcd4044f9b0ad83",
+ "result": {
+  "duration_api_ms": 58935,
+  "stop_reason": "end_turn",
+  "session_id": "a8411056-f152-4f44-b7da-6adbada6f4ef",
+  "total_cost_usd": 0.5244981,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 47852,
+   "cache_read_input_tokens": 48310,
+   "output_tokens": 6391,
+   "output_tokens_details": {
+    "thinking_tokens": 3986
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 47852,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 681,
+     "cache_read_input_tokens": 45160,
+     "cache_creation_input_tokens": 5842,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5842
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41716,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041841000000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 6391,
+    "cacheReadInputTokens": 48310,
+    "cacheCreationInputTokens": 47852,
+    "webSearchRequests": 0,
+    "costUSD": 0.5203139999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3986,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised `drv.interaction.overtakes` record to `record.jsonl`. The harness still has to validate it, and then it gets coded, gated and reviewed again.\n\n**What the review found:** the coder's body accepted \"a behind b\" at the recognition observation itself as the earlier witness. That happens because `drv.position.behind` is measured along each road user's own heading. When headings are aligned but not parallel and the bodies are apart sideways, each road user can be \"behind\" the other at the same moment. In the reviewer's case, the headings were opposed at the first observation. So a was never behind b before the recognition, the contract says the concept fails, and the body said it holds.\n\n**What I changed:**\n- **Contract:** it now defines the two states so they can't overlap:\n  - *a wholly behind b* means `drv.position.behind` of a relative to b holds and of b relative to a does not.\n  - *a wholly ahead of b* is the reverse.\n  - Where both hold, a is neither behind nor ahead.\n\n  Because the states are now mutually exclusive, the \"earlier observation\" can't be the recognition itself. The beginning, the recognition, the history clause and the act fields all use these words.\n- **Elements:** there is now one element for \"wholly behind\" and one for \"wholly ahead\", both mapped to `drv.position.behind`. The headings element stays on `rel.same_direction`.\n- **`differs_from`:** I added it against `drv.position.behind`, which was the validator's defect on the previous version. It says that concept is a position at one observation, while this one is an act over time that calls it both ways.\n- **Scenarios:** unchanged (`holds`, `fails`, and `blind` with `rel.longitudinal_overlap` masked).\n\n**What changed in meaning:** the record is not accepted and nothing accepted depends on it, so I reworded the contract under the same id. But a position where each road user is behind the other no longer counts as either \"behind\" or \"ahead\". By rule 3, that means `LVMC_11_30_030`, the only law using this concept, should be planned again with it before it is coded.",
+  "ttft_ms": 39361,
+  "type": "result",
+  "duration_ms": 58353,
+  "uuid": "a6573dda-7ee2-460b-a96a-a77f7e73bcb8",
+  "ttft_stream_ms": 562,
+  "time_to_request_ms": 94,
+  "time_to_request_phases_ms": {
+   "other": 14,
+   "system_prompt": 23,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 24,
+   "input_hooks": 2,
+   "transcript_persist": 4,
+   "tool_pool_refresh": 3,
+   "init_message": 3,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 8,
+  "time_to_request_cpu_ms": 155,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 39,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 562,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 41716,
+    "outputTokens": 25,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0041841000000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 6391,
+    "cacheReadInputTokens": 48310,
+    "cacheCreationInputTokens": 47852,
+    "webSearchRequests": 0,
+    "costUSD": 0.5203139999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3986,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

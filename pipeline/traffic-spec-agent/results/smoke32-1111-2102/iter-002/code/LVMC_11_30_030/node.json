@@ -1,0 +1,238 @@
+{
+ "node_id": "LVMC_11_30_030",
+ "law_refs": [
+  "LVMC-11-30-030"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "s1",
+   "text": "Whenever any vehicle is stopped",
+   "role": "trigger"
+  },
+  {
+   "id": "s2",
+   "text": "at a marked crosswalk or at any unmarked crosswalk at an intersection",
+   "role": "condition"
+  },
+  {
+   "id": "s3",
+   "text": "to permit a pedestrian to cross the roadway",
+   "role": "condition"
+  },
+  {
+   "id": "s4",
+   "text": "the driver of any other vehicle approaching from the rear",
+   "role": "subject"
+  },
+  {
+   "id": "s5",
+   "text": "shall not overtake and pass such stopped vehicle.",
+   "role": "obligation"
+  }
+ ],
+ "elements": [
+  {
+   "span": "s1",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.at_rest"
+   ],
+   "justification": "\"any vehicle\": the admitted aggregate DEF-NRS-484A-320::vehicle, claimed whole through ru.aggregate ('membership of a legal aggregate'), never expanded into classes; it is a road user b other than ego (\"any other vehicle\" in s4), quantified in the rule, not a binder. \"is stopped\": drv.motion.at_rest, whose contract carries \"complete cessation from movement\" as a speed at or below the rest tolerance; it is b's state of motion, not its brake lamp and not a halt at a named place (the place is s2)."
+  },
+  {
+   "span": "s2",
+   "atoms": [
+    "st.crosswalk",
+    "st.region_geometry"
+   ],
+   "derived": [
+    "drv.position.near_region"
+   ],
+   "justification": "st.crosswalk: 'marked crossing, or the unmarked prolongation of sidewalks at an intersection (st.intersection); marked attribute'. A marked crosswalk is one with the marked attribute set; an unmarked crosswalk is by this contract already the prolongation at an intersection, so \"at an intersection\" adds nothing the contract does not state and the two alternatives together read every crosswalk the atom denotes; 'Not a stand-in for: a crosswalk' (st.sidewalk) does not apply. \"at\" the crosswalk: drv.position.near_region of b and the crosswalk w with the crosswalk reach, which reads st.region_geometry ('the ground distance from a road user's body outline to it (zero when they overlap)'): a vehicle halted for a crossing stands before it, so occupancy (rel.occupies) would miss it. w is one crosswalk, bound once; s3 reads the same w."
+  },
+  {
+   "span": "s3",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-165::pedestrian"
+   ],
+   "derived": [
+    "drv.position.near_region"
+   ],
+   "justification": "Why b is stopped is a purpose, not observable (ontology §9): it is read through the conduct it explains, a pedestrian at the same crosswalk w at the same moment b is at rest at w. \"a pedestrian\": the admitted aggregate DEF-NRS-484A-165::pedestrian ('a person afoot, a person in a manual or motorized wheelchair, or a person on an electric personal assistive mobility device'), claimed whole. At w: drv.position.near_region of the pedestrian and w with the crosswalk reach (on the crossing included, distance zero). \"to cross the roadway\": a crosswalk is the portion of a highway for pedestrian crossing (DEF-NRS-484A-065), so the pedestrian at it is the one crossing; the roadway is not read separately."
+  },
+  {
+   "span": "s4",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.position.behind"
+   ],
+   "justification": "\"the driver of any other vehicle\": ego, a vehicle (admitted aggregate DEF-NRS-484A-320::vehicle), not b; \"the driver\" is read through the vehicle's controlled motion (agency reading). \"approaching from the rear\": drv.position.behind of ego relative to b (headings aligned, b wholly ahead of ego along ego's heading) at the beginning of the pass; it is not a stand-in for following in the same lane (rel.ahead_behind_in_lane), since the passing vehicle usually travels in the adjacent lane."
+  },
+  {
+   "span": "s5",
+   "atoms": [],
+   "derived": [
+    "drv.interaction.overtakes"
+   ],
+   "justification": "\"overtake and pass\": drv.interaction.overtakes, ego going from wholly behind b to wholly ahead of it with aligned headings, recognized at the observation at which ego becomes wholly ahead; it is not a lane change and not contact. \"such stopped vehicle\": the same b that s1-s3 bind, at rest at w with a pedestrian at w."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [],
+ "intentions": [],
+ "compositions": [],
+ "residues": [],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "Ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle; driven: agency reading). The duty is engaged with respect to another vehicle b (not ego) and a crosswalk w where, at one and the same observation, b is at rest (drv.motion.at_rest, p.rest_speed_tolerance), b is at w (drv.position.near_region, p.crosswalk_reach) and some pedestrian (ru.aggregate DEF-NRS-484A-165::pedestrian) is at w (drv.position.near_region, p.crosswalk_reach): at that observation where ego is behind b (drv.position.behind, p.same_direction_tolerance), and at the observation at which an overtaking of b by ego is recognized where that conjunction held at some observation while the overtaking was under way (from its onset to its recognition).",
+ "obligation": "Ego does not overtake and pass such a b: drv.interaction.overtakes(ego, b) with p.same_direction_tolerance is not recognized where, at some one observation while that overtaking was under way (from the last observation at which ego was behind b to the recognition), b was at rest at a crosswalk w with a pedestrian at w. Violated at the recognition of such an overtaking; compliant otherwise.",
+ "params": [
+  "p.rest_speed_tolerance",
+  "p.crosswalk_reach",
+  "p.same_direction_tolerance"
+ ],
+ "narrowings": [
+  {
+   "span": "s3",
+   "why": "The purpose 'to permit a pedestrian to cross the roadway' is read through the conduct it explains: a pedestrian at the crosswalk b is at rest at, at the same moment; a halt at a crossing with a pedestrian at it is taken as a halt for that pedestrian.",
+   "kind": "observable_reading",
+   "category": "purpose"
+  },
+  {
+   "span": "s4",
+   "why": "'the driver' is read through ego's controlled motion: a vehicle moving on the road is taken to be driven, whoever or whatever controls it.",
+   "kind": "observable_reading",
+   "category": "agency"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "b, a motor vehicle in the right lane, is at rest within the crosswalk reach of a marked crosswalk w while a pedestrian occupies w. Ego, a motor vehicle in the left lane with aligned heading, is wholly behind b, moves alongside it and becomes wholly ahead of b while b is still at rest and the pedestrian still on w."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "Same scene; ego comes to rest in the left lane wholly behind b and stays behind until the pedestrian has left w and b has moved off; ego never becomes wholly ahead of b while b is at rest at w with a pedestrian there."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "No vehicle is at rest at any crosswalk and no crosswalk is near: ego overtakes a slower moving vehicle mid-block."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "Scene of forbid, but the source declares kin.speed absent: whether b is at rest, and whether ego moves while beside b, cannot be read.",
+   "masked": [
+    "kin.speed"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "As forbid, but w is an unmarked crosswalk (marked attribute false), the prolongation of the sidewalks at an intersection."
+  },
+  {
+   "name": "occasion_s1",
+   "expected": "violated",
+   "narrative": "b rolls slowly toward w with a pedestrian on w and comes to rest within the crosswalk reach of w only once ego is already alongside it; ego then becomes wholly ahead of b."
+  },
+  {
+   "name": "occasion_s1_outside",
+   "expected": "not_applicable",
+   "narrative": "b was at rest at w with a pedestrian at w before ego's pass began; b starts to move before ego comes alongside, so that throughout the pass b is moving, still within the crosswalk reach of w, with the pedestrian still at w."
+  },
+  {
+   "name": "occasion_s2",
+   "expected": "violated",
+   "narrative": "b, at rest short of w beyond the crosswalk reach while a pedestrian is at w, creeps forward and comes to rest again within the reach of w while ego is alongside; ego becomes wholly ahead of b."
+  },
+  {
+   "name": "occasion_s2_outside",
+   "expected": "not_applicable",
+   "narrative": "b was at rest within the reach of w with a pedestrian at w before ego's pass began, then crossed w and came to rest again far from any crosswalk, where ego, behind it, passes it; during the pass b is at no crosswalk."
+  },
+  {
+   "name": "occasion_s3",
+   "expected": "violated",
+   "narrative": "b is at rest at w with no pedestrian near; a pedestrian steps from the sidewalk onto w only once ego is alongside b; ego becomes wholly ahead of b."
+  },
+  {
+   "name": "occasion_s3_outside",
+   "expected": "not_applicable",
+   "narrative": "b is at rest at w; the pedestrian left w and the crosswalk reach before ego's pass began; during the pass no pedestrian is at w."
+  }
+ ],
+ "occasion": {
+  "act": "drv.interaction.overtakes",
+  "boundary": "event",
+  "onset": {
+   "words": "approaching from the rear",
+   "atoms": [],
+   "derived": [
+    "drv.position.behind"
+   ],
+   "justification": "The pass's observed beginning is the last observation at which ego is behind b with aligned headings (drv.position.behind), as the concept's contract states."
+  },
+  "recognition": "the observation at which ego becomes wholly ahead of b",
+  "under_way": {
+   "words": "overtake and pass",
+   "atoms": [
+    "rel.longitudinal_overlap",
+    "kin.speed"
+   ],
+   "derived": [],
+   "justification": "From the onset to the recognition ego is side by side with b, the footprints' projections on ego's heading sharing a length (rel.longitudinal_overlap at or above zero), and ego moves (kin.speed above p.rest_speed_tolerance); before the onset ego is wholly behind b. An observation inside the pass is told from one before it by ego's motion relative to b, never by a region."
+  },
+  "spans": {
+   "s1": "some_moment",
+   "s2": "some_moment",
+   "s3": "some_moment"
+  }
+ },
+ "literals": [],
+ "param_proposals": [
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "Naturalistic-driving and simulator stop-detection practice (SHRP 2 event coding; CARLA ground-truth velocity resolution)."
+  },
+  {
+   "name": "p.crosswalk_reach",
+   "unit": "m",
+   "value": 5.0,
+   "convention": "Reach within which a road user counts as at a crossing: a vehicle halted for a crosswalk stands within the stop-line set-back before it plus a positioning margin; a pedestrian waiting at the kerb stands within the same reach.",
+   "source": "MUTCD (2009) Section 3B.16, stop and yield line placement before a crosswalk."
+  },
+  {
+   "name": "p.same_direction_tolerance",
+   "unit": "ratio",
+   "value": 0.866,
+   "convention": "Cosine of the largest angle between two headings counted as the same direction of travel (thirty degrees), covering lane curvature and lane changes.",
+   "source": "Trajectory-processing conventions for same-direction classification (NGSIM, highD)."
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}

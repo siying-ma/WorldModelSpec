@@ -1,0 +1,162 @@
+{
+ "reviewer_verdict": "accept",
+ "rulings": [],
+ "unconfirmed": [],
+ "unusable": [],
+ "schema_defects": [],
+ "undecided": {
+  "facts": 0,
+  "contract": 0,
+  "unstated": 0
+ },
+ "inputs": "44d069cbbc40fa7c83f56e96bca7abd92957fcb4290379cbbb7b878fb0e58889",
+ "rulings_at": 4,
+ "final": true,
+ "outcome": {
+  "status": "accepted",
+  "reasons": [],
+  "advisories": [
+   "an upheld challenge is met by this body under the current contract; it stays an obligation: challenge 235cf35823c8 (t=1000 ms), rechecked: the current contract: fails; the body: fails"
+  ],
+  "defer_stage": null
+ },
+ "rows": [
+  {
+   "id": "8fb452134ceb5b1924e4",
+   "row": {
+    "key": "concept:drv.interaction.overtakes",
+    "subject": "drv.interaction.overtakes",
+    "iteration": 2,
+    "item": "divergence 1 (holds_wrongly) at t=1000 ms: At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither was behind the other at the earlier observation, when their headings were opposed; the body nevertheless accepts the recognition observation itself as the SINCE witness. — contract: fails, body: holds; contract: \"The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition.\"",
+    "ruling": "upheld",
+    "reason": "rechecked under the current contract: fails — At t = 1000 ms the headings are aligned (cosine ≈ 0.707 > 0.5). Each body lies forward of the other along that one's heading with no longitudinal overlap, so drv.position.behind holds both ways. a is therefore not wholly ahead of b, and no recognition occurs at this observation. The unknown case does not apply either, because the headings were opposed at t = 0 ms. — \"Where both hold, as headings that are aligned but not parallel allow for bodies apart sideways, a is neither wholly behind nor wholly ahead of b. The act is recognized at the observation at which a becomes wholly ahead of b\"; the body: fails",
+    "schema": "concept_case/1",
+    "case_id": "235cf35823c89b8f3593410521f21c95eb64c4dbd1946f9b23ea4de35a7857b4",
+    "kind": "holds_wrongly",
+    "situation": "At the second observation, different but aligned headings and lateral separation make each user wholly behind the other in its own heading projection. Neither was behind the other at the earlier observation, when their headings were opposed; the body nevertheless accepts the recognition observation itself as the SINCE witness.",
+    "contract_words": "The act is recognized at the observation at which a becomes wholly ahead of b, that is, at which drv.position.behind of b relative to a becomes true, provided that a was behind b (drv.position.behind of a relative to b) at an earlier observation and the headings stayed aligned (rel.same_direction with the alignment tolerance) at every observation from that one to the recognition.",
+    "contract_verdict": "fails",
+    "contract_value": null,
+    "instance": {
+     "literals": {},
+     "nats": {},
+     "params": {
+      "alignment": [
+       0.5,
+       "ratio"
+      ]
+     }
+    },
+    "grounding": {
+     "a": 1,
+     "b": 2
+    },
+    "regions": {},
+    "trace": {
+     "scenes": [
+      {
+       "t": 0,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "position": [
+           0,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        },
+        {
+         "track": 2,
+         "kin": {
+          "position": [
+           0,
+           10
+          ],
+          "heading": [
+           -1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "t": 1000,
+       "users": [
+        {
+         "track": 1,
+         "kin": {
+          "position": [
+           0,
+           0
+          ],
+          "heading": [
+           1,
+           0
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        },
+        {
+         "track": 2,
+         "kin": {
+          "position": [
+           10,
+           30
+          ],
+          "heading": [
+           1,
+           -1
+          ],
+          "extent": [
+           1,
+           0.5,
+           0.5
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "at": 1000,
+    "verdict": "violated",
+    "value": null,
+    "contract_digest": "b2c42ab6bcc77d4bcf0ce7ddc5c6045a86dd61821bf92ff3c35b65c73c844a79",
+    "body_digest": "2ee09957a6b48a94dfa80518d6b545add3b329c23714be593679a41076cfc0b4",
+    "obligation": "satisfied",
+    "lineage": "235cf35823c89b8f3593410521f21c95eb64c4dbd1946f9b23ea4de35a7857b4",
+    "predecessor": null,
+    "recheck": {
+     "answer": {
+      "verdict": "fails"
+     },
+     "quote": "Where both hold, as headings that are aligned but not parallel allow for bodies apart sideways, a is neither wholly behind nor wholly ahead of b. The act is recognized at the observation at which a becomes wholly ahead of b",
+     "contract_digest": "b2c42ab6bcc77d4bcf0ce7ddc5c6045a86dd61821bf92ff3c35b65c73c844a79"
+    },
+    "ruling_id": "8fb452134ceb5b1924e4",
+    "supersedes": "8904d6cb3333f879fb7f"
+   },
+   "supersedes": null
+  }
+ ]
+}

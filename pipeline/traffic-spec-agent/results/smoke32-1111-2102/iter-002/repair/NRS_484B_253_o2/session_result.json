@@ -1,0 +1,184 @@
+{
+ "code": 0,
+ "timed_out": false,
+ "attempt": 1,
+ "generation": "653e420f27964e7b8bcd4044f9b0ad83",
+ "result": {
+  "duration_api_ms": 74339,
+  "stop_reason": "end_turn",
+  "session_id": "4871c437-b390-4168-865b-3d7587f5e8be",
+  "total_cost_usd": 0.7558559,
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 71704,
+   "cache_read_input_tokens": 70642,
+   "output_tokens": 8083,
+   "output_tokens_details": {
+    "thinking_tokens": 3629
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 71704,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 850,
+     "cache_read_input_tokens": 67492,
+     "cache_creation_input_tokens": 7362,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7362
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-haiku-5-5": {
+    "inputTokens": 64050,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0064195,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 8083,
+    "cacheReadInputTokens": 70642,
+    "cacheCreationInputTokens": 71704,
+    "webSearchRequests": 0,
+    "costUSD": 0.7494364,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3629,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've written the revised record for `NRS_484B_253_o2` to `record.jsonl`. It hasn't been checked yet; the harness validates it next and the coder writes the Lean.\n\n**What was wrong:** \"having so yielded\" (f10) required the left-turning vehicle `t` to comply with `NRS_484B_253_o1` at every observation, including the one being judged. Both rules use the same conflict test, and that test works the same in both directions. So whenever the other driver was in conflict with the turning `t`, `t` was also failing `o1`, and the rule stopped applying. It could never be violated, which is why `forbid`, `blind` and `branch_3` came out not_applicable.\n\n**What changed in the record:**\n- **f10 is now read as past.** `t` must have complied with `o1` from the moment it entered the intersection from its approach lane up to and including the start of its turn. The start is the observation where `drv.motion.turning_left` last rose, with the turn continuing without a break to the judged observation. Compliance is no longer required during the turn itself.\n- **The obligation repeats that whole selection** of the intersection, the other driver's approach lane and `t`, as the rules require.\n- **f13 \"approaching the intersection\"** is simplified to the other driver being on a lane that leads into the intersection. The old record split this into two cases that together meant the same thing.\n- **\"Entered from its approach lane\"** now requires `t` to be on that lane while not overlapping the intersection. This is the coder's fix: the intersection itself counts as a travel region, so without this it could be picked as `t`'s approach lane.\n- **The intention entry** now just reuses the existing `int.left_turn` id, without restating its meaning.\n\n**Scenarios:**\n- **`forbid`** now has `t` start its turn while the other driver is too far off to be in conflict. `t` turns slowly, and the conflict only arises later in the same turn. That is the one situation where the duty can be broken.\n- **`permit`** is tightened: the other driver is at rest at every observation where a conflict would otherwise arise.\n- **`branch_2`** now says outright that the conflict exists when `t` starts its turn.\n- **Two new scenarios:** `branch_3` (violated: `t` signals with its arm, indicator off), which the coder had already added, and `branch_4` (not_applicable: the other driver is alone in the scene). The rules require a scene with no turning vehicle present.\n\nThe left-signal reading (f11), the conflict test (f15), the parameters and the \"drivers read through the vehicles' controlled motion\" reading are unchanged.",
+  "ttft_ms": 38473,
+  "type": "result",
+  "duration_ms": 73488,
+  "uuid": "27783c00-8b1a-491e-8e79-daba5d2372aa",
+  "ttft_stream_ms": 802,
+  "time_to_request_ms": 82,
+  "time_to_request_phases_ms": {
+   "other": 14,
+   "system_prompt": 24,
+   "resume_other": 1,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 2,
+   "transcript_persist": 7,
+   "tool_pool_refresh": 2,
+   "init_message": 2,
+   "engine_pickup": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 32,
+  "time_to_request_cpu_ms": 128,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "queued_commands",
+   "slowest_producer_ms": 7,
+   "cpu_ms": 14,
+   "major_faults": 0
+  },
+  "first_content_frame_ms": 803,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "model_usage_since_last_result": {
+   "claude-haiku-5-5": {
+    "inputTokens": 64050,
+    "outputTokens": 29,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0,
+    "webSearchRequests": 0,
+    "costUSD": 0.0064195,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-haiku-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   },
+   "claude-opus-5-5[1m]": {
+    "inputTokens": 4,
+    "outputTokens": 8083,
+    "cacheReadInputTokens": 70642,
+    "cacheCreationInputTokens": 71704,
+    "webSearchRequests": 0,
+    "costUSD": 0.7494364,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3629,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  }
+ },
+ "failure": null,
+ "cut_off": null,
+ "stopped": false
+}

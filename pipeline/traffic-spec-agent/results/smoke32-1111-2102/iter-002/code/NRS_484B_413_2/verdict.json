@@ -1,0 +1,409 @@
+{
+ "verdict": "OK",
+ "details": [
+  "7 witnesses, 8 names, composes nothing"
+ ],
+ "extras": {
+  "rule_json": {
+   "applicability": {
+    "or": [
+     {
+      "args": [
+       {
+        "var": "ego"
+       }
+      ],
+      "derived": "drv_motion_left_turn_from_onset",
+      "params": [
+       {
+        "param": "p.left_turn_min_angle"
+       },
+       {
+        "param": "p.turn_yaw_tolerance"
+       },
+       {
+        "param": "p.rest_speed_tolerance"
+       },
+       {
+        "param": "p.heading_since_step_carla_scene_graph"
+       }
+      ]
+     },
+     {
+      "args": [
+       {
+        "var": "ego"
+       }
+      ],
+      "derived": "drv_motion_right_turn_from_onset",
+      "params": [
+       {
+        "param": "p.right_turn_min_angle"
+       },
+       {
+        "param": "p.turn_yaw_tolerance"
+       },
+       {
+        "param": "p.rest_speed_tolerance"
+       },
+       {
+        "param": "p.heading_since_step_carla_scene_graph"
+       }
+      ]
+     }
+    ]
+   },
+   "assumptions": [
+    "asm.business_or_residence_district",
+    "asm.business_or_residence_district"
+   ],
+   "binders": [
+    {
+     "cls": {
+      "args": [
+       {
+        "var": "ego"
+       },
+       {
+        "lit": "DEF-NRS-484A-320::vehicle"
+       }
+      ],
+      "atom": "ru_aggregate",
+      "params": []
+     },
+     "name": "ego"
+    }
+   ],
+   "id": "NRS_484B_413_2",
+   "intentions": [],
+   "laws": [
+    "NRS-484B-413-2"
+   ],
+   "narrowings": [],
+   "obligation": {
+    "and": [
+     {
+      "implies": [
+       {
+        "args": [
+         {
+          "var": "ego"
+         }
+        ],
+        "derived": "drv_motion_left_turn_from_onset",
+        "params": [
+         {
+          "param": "p.left_turn_min_angle"
+         },
+         {
+          "param": "p.turn_yaw_tolerance"
+         },
+         {
+          "param": "p.rest_speed_tolerance"
+         },
+         {
+          "param": "p.heading_since_step_carla_scene_graph"
+         }
+        ]
+       },
+       {
+        "since": [
+         {
+          "args": [
+           {
+            "var": "ego"
+           }
+          ],
+          "derived": "drv_motion_turning_left",
+          "params": [
+           {
+            "param": "p.turn_yaw_tolerance"
+           },
+           {
+            "param": "p.rest_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "rises": {
+             "args": [
+              {
+               "var": "ego"
+              }
+             ],
+             "derived": "drv_motion_turning_left",
+             "params": [
+              {
+               "param": "p.turn_yaw_tolerance"
+              },
+              {
+               "param": "p.rest_speed_tolerance"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "body": {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "ego"
+                  },
+                  {
+                   "lit": "left"
+                  }
+                 ],
+                 "atom": "sig_turn_indicator",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "ego"
+                  },
+                  {
+                   "lit": "left"
+                  }
+                 ],
+                 "atom": "sig_hand_signal",
+                 "params": []
+                }
+               ]
+              },
+              "holds_for": "path",
+              "length": {
+               "lit": {
+                "den": 25,
+                "num": 762
+               },
+               "unit": "metre"
+              },
+              "subject": "ego"
+             },
+             {
+              "or": [
+               {
+                "asm": "asm.business_or_residence_district"
+               },
+               {
+                "body": {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "lit": "left"
+                    }
+                   ],
+                   "atom": "sig_turn_indicator",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "lit": "left"
+                    }
+                   ],
+                   "atom": "sig_hand_signal",
+                   "params": []
+                  }
+                 ]
+                },
+                "holds_for": "path",
+                "length": {
+                 "lit": {
+                  "den": 25,
+                  "num": 2286
+                 },
+                 "unit": "metre"
+                },
+                "subject": "ego"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "implies": [
+       {
+        "args": [
+         {
+          "var": "ego"
+         }
+        ],
+        "derived": "drv_motion_right_turn_from_onset",
+        "params": [
+         {
+          "param": "p.right_turn_min_angle"
+         },
+         {
+          "param": "p.turn_yaw_tolerance"
+         },
+         {
+          "param": "p.rest_speed_tolerance"
+         },
+         {
+          "param": "p.heading_since_step_carla_scene_graph"
+         }
+        ]
+       },
+       {
+        "since": [
+         {
+          "args": [
+           {
+            "var": "ego"
+           }
+          ],
+          "derived": "drv_motion_turning_right",
+          "params": [
+           {
+            "param": "p.turn_yaw_tolerance"
+           },
+           {
+            "param": "p.rest_speed_tolerance"
+           }
+          ]
+         },
+         {
+          "and": [
+           {
+            "rises": {
+             "args": [
+              {
+               "var": "ego"
+              }
+             ],
+             "derived": "drv_motion_turning_right",
+             "params": [
+              {
+               "param": "p.turn_yaw_tolerance"
+              },
+              {
+               "param": "p.rest_speed_tolerance"
+              }
+             ]
+            }
+           },
+           {
+            "and": [
+             {
+              "body": {
+               "or": [
+                {
+                 "args": [
+                  {
+                   "var": "ego"
+                  },
+                  {
+                   "lit": "right"
+                  }
+                 ],
+                 "atom": "sig_turn_indicator",
+                 "params": []
+                },
+                {
+                 "args": [
+                  {
+                   "var": "ego"
+                  },
+                  {
+                   "lit": "right"
+                  }
+                 ],
+                 "atom": "sig_hand_signal",
+                 "params": []
+                }
+               ]
+              },
+              "holds_for": "path",
+              "length": {
+               "lit": {
+                "den": 25,
+                "num": 762
+               },
+               "unit": "metre"
+              },
+              "subject": "ego"
+             },
+             {
+              "or": [
+               {
+                "asm": "asm.business_or_residence_district"
+               },
+               {
+                "body": {
+                 "or": [
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "lit": "right"
+                    }
+                   ],
+                   "atom": "sig_turn_indicator",
+                   "params": []
+                  },
+                  {
+                   "args": [
+                    {
+                     "var": "ego"
+                    },
+                    {
+                     "lit": "right"
+                    }
+                   ],
+                   "atom": "sig_hand_signal",
+                   "params": []
+                  }
+                 ]
+                },
+                "holds_for": "path",
+                "length": {
+                 "lit": {
+                  "den": 25,
+                  "num": 2286
+                 },
+                 "unit": "metre"
+                },
+                "subject": "ego"
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "residues": [
+    "The duty holds in every weather: no condition of the weather restricts it, so the duty is the same whether or not its words hold."
+   ],
+   "surrogate": false
+  },
+  "context": "d98b751dd7009358c9e12ab1",
+  "candidate_digest": "5e75628a0cfdead8b361cbcfd4d8f3f72ddef961927249ba5f5029f505bca84e"
+ }
+}

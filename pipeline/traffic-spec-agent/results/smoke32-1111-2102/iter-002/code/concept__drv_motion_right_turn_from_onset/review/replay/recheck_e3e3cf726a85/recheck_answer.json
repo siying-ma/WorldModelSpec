@@ -1,0 +1,8 @@
+{
+ "digest": "d03618d0b586822eafd6ffbd00c7269669a180d1742204597414d688debb5ab4",
+ "answer": {
+  "verdict": "holds",
+  "reason": "turning_right is false at t=500 (yaw rate 0) and true at t=750 (speed 5, yaw rate -20 ≤ -1), so the observed beginning is t=750. With turn_angle 0, the zero heading change there already reaches -0, so the act is recognized at t=750.",
+  "quote": "The act is recognized at the observation at which the heading change since that beginning first reaches the negative of the turn angle: at the beginning itself where the heading change there, which is zero, already reaches it"
+ }
+}

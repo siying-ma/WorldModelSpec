@@ -1,0 +1,218 @@
+{
+ "node_id": "NRS_484B_413_2",
+ "law_refs": [
+  "NRS-484B-413-2"
+ ],
+ "subject": {
+  "binder": "ego",
+  "class_elements": [
+   "ru.aggregate=DEF-NRS-484A-320::vehicle"
+  ]
+ },
+ "segmentation": [
+  {
+   "id": "t1",
+   "text": "A signal of intention to turn right or left, or otherwise turn a vehicle from a direct course, shall be given continuously during",
+   "role": "obligation"
+  },
+  {
+   "id": "t4",
+   "text": "not less than the last 100 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "t5",
+   "text": "in a business or residential district",
+   "role": "condition"
+  },
+  {
+   "id": "t6",
+   "text": "and not less than the last 300 feet traveled",
+   "role": "condition"
+  },
+  {
+   "id": "t7",
+   "text": "in any other area",
+   "role": "condition"
+  },
+  {
+   "id": "t8",
+   "text": "prior to changing the course of a vehicle.",
+   "role": "trigger"
+  },
+  {
+   "id": "t9",
+   "text": "This rule shall be observed, regardless of the weather.",
+   "role": "condition"
+  }
+ ],
+ "elements": [
+  {
+   "span": "t1",
+   "atoms": [
+    "sig.turn_indicator",
+    "sig.hand_signal",
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [],
+   "justification": "A signal 'of intention' is the signal itself: sig.turn_indicator, 'the turn indicator state ∈ {off, left, right}', or sig.hand_signal, 'a driver's or rider's arm signal; meaning ∈ {no_signal, left, right, stop_or_slow, re_enter}', on the side of the turn ('to turn right or left, or otherwise turn ... from a direct course'), the turn itself being read by t8's concepts. 'given continuously during' is that matching signal at every observation of the window (holdsFor): an observation with the indicator off and no matching arm signal breaks it. 'Not a stand-in for: the turn or lane change itself' is respected: the signal is judged separately from the turn. 'a vehicle' is DEF-NRS-484A-320::vehicle ('every device in, upon or by which any person or property is or may be transported or drawn upon a highway', except 'Devices moved by human power', 'Electric bicycles', electric personal assistive mobility devices and 'An electric scooter'), claimed whole."
+  },
+  {
+   "span": "t4",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "'the last 100 feet traveled' is a window measured in the distance ego travelled behind the onset (a .path window), read through kin.path_length, 'distance travelled along the body's path since the start of the trace, monotone'; the figure is the law's literal. It selects the window where t5 holds."
+  },
+  {
+   "span": "t6",
+   "atoms": [
+    "kin.path_length"
+   ],
+   "derived": [],
+   "justification": "'the last 300 feet traveled' is the same .path window with the law's other literal, through kin.path_length; it selects the window where t7 holds."
+  },
+  {
+   "span": "t8",
+   "atoms": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ],
+   "derived": [
+    "drv.motion.left_turn_from_onset",
+    "drv.motion.right_turn_from_onset",
+    "drv.motion.turning_left",
+    "drv.motion.turning_right"
+   ],
+   "justification": "'changing the course of a vehicle' is a change of its heading to one side from an observed onset: drv.motion.left_turn_from_onset or drv.motion.right_turn_from_onset, each recognizing a continuous turning stretch whose heading change reaches the turn angle. 'prior to' places the window before the observed onset: the observation at which drv.motion.turning_left (or drv.motion.turning_right) last became true before the recognition, as those concepts' act records declare it. 'a vehicle' is DEF-NRS-484A-320::vehicle, claimed whole."
+  }
+ ],
+ "operationalizations": [],
+ "assumptions": [
+  {
+   "span": "t5",
+   "id": "asm.business_or_residence_district",
+   "meaning": "The map or the trace declares the territory at the road user's position a business district or a residence district."
+  },
+  {
+   "span": "t7",
+   "id": "asm.business_or_residence_district",
+   "meaning": "The map or the trace declares the territory at the road user's position a business district or a residence district."
+  }
+ ],
+ "intentions": [],
+ "compositions": [],
+ "residues": [
+  {
+   "span": "t9",
+   "why": "The duty holds in every weather: no condition of the weather restricts it, so the duty is the same whether or not its words hold.",
+   "scope": "none"
+  }
+ ],
+ "binders": [
+  {
+   "name": "ego",
+   "class_elements": [
+    "ru.aggregate=DEF-NRS-484A-320::vehicle"
+   ]
+  }
+ ],
+ "applicability": "ego is a vehicle (ru.aggregate DEF-NRS-484A-320::vehicle). The judged observation is the recognition of a left turn from an observed onset (drv.motion.left_turn_from_onset with p.left_turn_min_angle, p.turn_yaw_tolerance, p.rest_speed_tolerance, p.heading_since_step_carla_scene_graph) or of a right turn from an observed onset (drv.motion.right_turn_from_onset with p.right_turn_min_angle and the same tolerances).",
+ "obligation": "Event, recognition and history (rule 4d): the event is the change of course; it is recognized at the judged observation; its observed onset is the last observation at which drv.motion.turning_left (for a left turn; drv.motion.turning_right for a right turn, each with p.turn_yaw_tolerance and p.rest_speed_tolerance) became true, the turning state having held at every observation since (a since operator: turning since (rise of turning and W)). W, read at that onset: where asm.business_or_residence_district holds there, at every observation of the window of the literal 100 ft of path travelled by ego behind the onset (holdsFor .path, kin.path_length), ego's turn indicator is left (sig.turn_indicator = left) or its arm signal means left (sig.hand_signal = left); where it does not hold, the same over the window of the literal 300 ft. For a right turn the matching side is right. The window ends at the onset and is the words' own bound; a window that reaches past the start of the recording is unknown (windowTruncated), as is the duty where the assumption is undeclared and the two windows decide differently. Conduct after the onset is not read.",
+ "params": [
+  "p.left_turn_min_angle",
+  "p.right_turn_min_angle",
+  "p.turn_yaw_tolerance",
+  "p.rest_speed_tolerance",
+  "p.heading_since_step_carla_scene_graph"
+ ],
+ "narrowings": [
+  {
+   "span": "t1",
+   "why": "A change of course is read as a turn whose heading change from its observed onset reaches the turn angle; a lane change or a gentle departure from the course, whose heading change stays below it, is not read, and a road bend followed through that angle in one turning stretch is read as a turn.",
+   "kind": "reading"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "forbid",
+   "expected": "violated",
+   "narrative": "ego, a passenger car, with the business-or-residence-district assumption declared, drives along a straight roadway and turns left at an intersection; its left indicator lights only over the final few metres before the turn begins, so at the onset the window of the last 100 ft holds observations with the indicator off and no arm signal."
+  },
+  {
+   "name": "permit",
+   "expected": "compliant",
+   "narrative": "as in forbid, but the left indicator is lit at every observation over well more than the last 100 ft travelled before the turn's onset."
+  },
+  {
+   "name": "idle",
+   "expected": "not_applicable",
+   "narrative": "ego drives straight along a straight roadway and makes no turn."
+  },
+  {
+   "name": "blind",
+   "expected": "unknown",
+   "narrative": "as in forbid, but the source does not observe turn indicators and observes no arm signal, so whether a signal was given is unknown.",
+   "masked": [
+    "sig.turn_indicator"
+   ]
+  },
+  {
+   "name": "branch_1",
+   "expected": "violated",
+   "narrative": "ego turns right with the assumption declared false (any other area); its right indicator is lit over the last 100 ft before the onset but not over the last 300 ft."
+  },
+  {
+   "name": "branch_2",
+   "expected": "compliant",
+   "narrative": "ego, the assumption declared, turns left with its indicator off but its arm signal meaning left at every observation over the last 100 ft before the onset."
+  }
+ ],
+ "literals": [
+  {
+   "span": "t4",
+   "text": "100 feet",
+   "value": 100,
+   "unit": "ft"
+  },
+  {
+   "span": "t6",
+   "text": "300 feet",
+   "value": 300,
+   "unit": "ft"
+  }
+ ],
+ "param_proposals": [
+  {
+   "name": "p.left_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "Lower bound of a turn: a leftward heading change below it is a drift or lane change, not a turn onto another way.",
+   "source": "junction turning geometry; proposed by NRS_484B_227_1_o3 this iteration"
+  },
+  {
+   "name": "p.right_turn_min_angle",
+   "unit": "deg",
+   "value": 60.0,
+   "convention": "Lower bound of a right turn: a rightward heading change below it is a drift or lane change, not a turn onto another way.",
+   "source": "junction turning geometry, mirrored from the left-turn band"
+  },
+  {
+   "name": "p.turn_yaw_tolerance",
+   "unit": "deg/s",
+   "value": 5.0,
+   "convention": "Yaw rate below which a change of heading counts as none: above lane-keeping yaw noise, below the yaw rates of turning at a junction.",
+   "source": "vehicle yaw-rate noise and junction turning rates; proposed by NRS_484B_227_1_o3 this iteration"
+  },
+  {
+   "name": "p.rest_speed_tolerance",
+   "unit": "m/s",
+   "value": 0.1,
+   "convention": "Stop-detection noise floor: the speed at or below which a sampled speed counts as no movement, set at the resolution of the speed measurement so that a complete cessation from movement is recognized despite sensor jitter.",
+   "source": "speed-sensor resolution; proposed by LVMC_11_30_030 this iteration"
+  }
+ ],
+ "gaps": [],
+ "gap_resolutions": [],
+ "planned_on": {}
+}
