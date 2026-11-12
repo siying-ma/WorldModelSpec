@@ -107,5 +107,5 @@ if [ "${VENV_CREATED}" -eq 1 ]; then
   echo "  source .venv/bin/activate"
 fi
 cat <<'EOF'
-  python -m harness init
+  python3 -m harness init
 EOF
