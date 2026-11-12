@@ -1,4 +1,4 @@
-"""Feedback: AUTO_NOTES.md for the next plan, the run's TO_USER.md for the operator (gap decisions, parameter reviews, questions, laws closed), and summary.json with the run's status."""
+"""Feedback: AUTO_NOTES.md for the next plan, the run's TO_USER.md for the operator (gap decisions, parameter reviews, questions, laws closed) and its list of observable readings, and summary.json with the run's status."""
 from __future__ import annotations
 import json
 import re
@@ -107,6 +107,8 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
     if scope != "all":
         to_user = list(to_user) + [scope_line(scope)]
     write_to_user(run, list(dict.fromkeys(l for l in to_user if l)))      # one line per decision, however often it was raised
+    from .observable_view import write_current_view as write_observable_view
+    write_observable_view(run)                                            # the operator's list of observable readings, rebuilt with the report
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "status": "running", "stop_reason": "",
                "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
                "concepts": concept_ledger.counts() if concept_ledger is not None else {}, "gate_costs": costs,

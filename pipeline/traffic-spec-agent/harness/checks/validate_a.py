@@ -733,6 +733,45 @@ NARROWABLE_ROLES = {"obligation", "standard"}
 #: to, and the closed list of what such a word may be.
 OBSERVABLE_READING = "observable_reading"
 OBSERVABLE_CATEGORIES = {"intention", "perception", "status", "purpose", "agency"}
+#: The family of road-user identity classes (`ru.`, the aggregates included): an atom of it states
+#: what a road user is, never what it does, why, what it perceives or what a feature on the road shows.
+IDENTITY_FAMILY = "ru."
+#: What the ontology reads each category of observable reading through, in its own words: a purpose,
+#: a perception and an imminent movement through conduct or its outcome, who controls a vehicle
+#: through its controlled motion, a legal status through the feature on the road that displays it.
+OBSERVABLE_THROUGH = {
+    "purpose": "a span that turns on one is read through the conduct or the outcome it governs: [...] a purpose by the conduct it explains",
+    "perception": "a span that turns on one is read through the conduct or the outcome it governs: [...] a duty to perceive, ascertain or "
+                  "make sure by the outcome the check is there to secure (the movement made with the clearances the reading sets)",
+    "intention": "a span that turns on one is read through the conduct or the outcome it governs: an imminent movement (\"about to …\") "
+                 "by the movement it leads to",
+    "agency": "\"drives\", \"operates\" and \"the driver\" are read through the vehicle's controlled motion",
+    "status": "The feature's presence on the road is the observable evidence of that status: a rule reads the feature and presumes the status",
+}
+
+
+def span_carriers(node: Node, sid) -> list[str]:
+    """The ids that carry span `sid`: its elements' atoms and derived concepts, and its
+    operationalizations' concepts."""
+    out: list[str] = []
+    for e in node.get("elements", []) or []:
+        if isinstance(e, dict) and e.get("span") == sid:
+            out += [i for key in ("atoms", "derived") for i in (e.get(key) or []) if isinstance(i, str)]
+    for o in node.get("operationalizations", []) or []:
+        if isinstance(o, dict) and o.get("span") == sid:
+            out += [i for i in concepts_of(o) if isinstance(i, str)]
+    return out
+
+
+def identity_only(ids: list[str]) -> bool:
+    """The carriers are road-user identity classes and nothing else: no atom of another family, no
+    concept, no primitive."""
+    return bool(ids) and all(i.startswith(IDENTITY_FAMILY) for i in ids)
+
+
+def identity_and_more(ids: list[str]) -> bool:
+    """The carriers mix road-user identity classes with ids of another family."""
+    return any(i.startswith(IDENTITY_FAMILY) for i in ids) and not identity_only(ids)
 
 
 def check_declarations(node: Node, catalogue: dict[str, str]) -> list[str]:
@@ -789,7 +828,9 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, dict] | None = None, l
     operationalization: the span exists, has role obligation or standard, is so carried, and the
     narrowing says why. An `observable_reading` (a word with no observable counterpart, read through
     the conduct or feature it refers to, of a category in the closed list) may also be declared on a
-    trigger, subject, condition or exception span an element carries. Otherwise a span that decides
+    trigger, subject, condition or exception span an element carries. Whatever its category, an
+    observable reading is never carried by road-user identity classes alone: a class is no conduct
+    and no feature. Otherwise a span that decides
     when the rule applies is never narrowed; a span nothing
     carries is a residue or a gap, not a narrowing. A narrowing of either kind may name in `gap` a
     rejected gap of the ledger (`rejected_gaps`: id ↦ {laws, occurrence}): the operator's decision
@@ -812,6 +853,14 @@ def check_narrowings(node: Node, rejected_gaps: dict[str, dict] | None = None, l
                 errs.append(f"{node.id}: observable reading on span {sid} ({role}); it is declared on a span that decides when the rule applies or on its duty")
             elif sid not in carried:
                 errs.append(f"{node.id}: observable reading on span {sid}, which no element carries: the element maps the conduct or feature the words are read through")
+            elif identity_only(ids := span_carriers(node, sid)):
+                through = OBSERVABLE_THROUGH.get(n.get("category"))
+                errs.append(f"{node.id}: observable reading on span {sid} ({n.get('category')}) is carried only by road-user identity classes "
+                            f"({', '.join(ids)}); a class states what a road user is, never what it does, why, what it perceives or what a "
+                            f"feature on the road shows, so it is no evidence for these words"
+                            + (f". The ontology reads them so: \"{through}\"" if through else "")
+                            + ". Carry the span by the conduct or the feature the words are read through; where no observable conduct or "
+                              "feature tells the words apart, map the span to its nearest atoms with a gap, or let the rule stay unknown")
             if n.get("category") not in OBSERVABLE_CATEGORIES:
                 errs.append(f"{node.id}: observable reading on span {sid} has category {n.get('category')!r}, not one of {sorted(OBSERVABLE_CATEGORIES)}")
             if not _ws(n.get("why")):

@@ -56,7 +56,7 @@ PROTECTED = ["harness", "prompts", "ontology", "laws", "scripts", "config", "lib
 #: pattern over the whole tree would deny the session what it exists to write.
 RUN_RECORDS = ["results/*/ledger.jsonl", "results/*/concept_ledger.jsonl", "results/*/accepted_nodes.jsonl",
                "results/*/accepted_concepts.jsonl", "results/*/state.json", "results/*/mapping.json",
-               "results/*/options.json", "results/*/reading.json", "results/*/summary.json", "results/*/AUTO_NOTES.md", "results/*/TO_USER.md", "results/*/AGGREGATE_DOWNGRADES.md",
+               "results/*/options.json", "results/*/reading.json", "results/*/summary.json", "results/*/AUTO_NOTES.md", "results/*/TO_USER.md", "results/*/AGGREGATE_DOWNGRADES.md", "results/*/OBSERVABLE_READINGS.md",
                "results/*/iter-*/validate/**", "results/*/iter-*/integrate/**",
                "results/*/library_snapshot/**"]
 #: What a kind of session may not touch of the other phases' output.

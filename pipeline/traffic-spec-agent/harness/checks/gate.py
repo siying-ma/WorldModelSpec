@@ -81,7 +81,7 @@ DIGEST_SKIP_RESULTS_DIRS = {"_verify", "_discarded"}
 DIGEST_SKIP_RUN_FILES = {"ledger.jsonl", "concept_ledger.jsonl", "node_ledger.jsonl", "accepted_nodes.jsonl", "accepted_concepts.jsonl",
                          "state.json", "mapping.json", "summary.json", "AUTO_NOTES.md",
                          "rulings.jsonl", "recheck_answers.jsonl", "usage.jsonl", "reading.json", "definition_resolution.json",
-                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md", "AGGREGATE_DOWNGRADES.md",
+                         "aggregate_selection.jsonl", "aggregate_certificates.jsonl", "aggregate_input_manifest.json", "TO_USER.md", "AGGREGATE_DOWNGRADES.md", "OBSERVABLE_READINGS.md",
                          "gaps_measured.jsonl", "candidate_journal.json"}
 DIGEST_SKIP_SUFFIXES = (".log", ".pid", ".lock")
 
