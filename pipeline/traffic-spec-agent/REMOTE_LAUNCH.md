@@ -43,14 +43,16 @@ You are given a run id, the list of law ids, and the settings. If the run covers
 python -m scripts.subset_laws <run id> laws/example/train/laws.jsonl <law id> <law id> ...
 ```
 
-Then launch it with the given settings. Use `nohup` or `tmux`, because a run takes hours. For example:
+Then launch it with the given settings. Use `nohup` or `tmux`, because a run takes hours. The form of the command (every amount and the worker count come from the requester; there are no default amounts, and none may be copied from an earlier run):
 
 ```bash
 RUN_ID=<run id> LAWS=results/<run id>/laws/laws.jsonl \
-MODEL='claude-opus-5-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium WORKERS=12 \
-CLAUDE_BUDGET=300 OPENAI_BUDGET=25 TOTAL_BUDGET=325 ACQUISITION_PROFILE=carla_scene_graph \
+MODEL='claude-opus-5-5[1m]' REVIEWER_MODEL=gpt-6.1-sol JUDGE_EFFORT=medium WORKERS=<given> \
+CLAUDE_BUDGET=<given> OPENAI_BUDGET=<given> TOTAL_BUDGET=<given> VERIFIER_CAP=<given> ACQUISITION_PROFILE=carla_scene_graph \
 nohup scripts/run-generation.sh new > launch-<run id>.out 2>&1 &
 ```
+
+For the 221-law run, do not use this command: use `launch/full221/launch.sh`, which checks the baseline and refuses without all four amounts.
 
 After each finished iteration, the launcher commits a checkpoint to the branch `runs/<run id>` and pushes it.
 

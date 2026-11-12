@@ -226,7 +226,7 @@ The launch's `.exit` file then reads `143`. Wait for `loop ended` (it can take h
 
 - Check free space now and then: `df -h . "$CLAUDE_CONFIG_DIR"`. Report when either falls under 10 GB; do not delete anything to make room.
 - Never delete `results/`, `.runtime/`, `library/.lake`, the `.pid`/`.out`/`.exit` files or `CLAUDE_CONFIG_DIR`'s session files while the run lives, nor after it until the requester confirms receipt.
-- Do not run other heavy jobs on the machine during the run; the run uses 16 parallel sessions and Lean builds.
+- Do not run other heavy jobs on the machine during the run; the run uses 12 parallel sessions (`WORKERS=12`) and Lean builds.
 - See what runs: `pgrep -af '[r]un-generation.sh|[h]arness loop|[w]atch.sh'`. One launcher, one loop and one watcher at a time is normal; anything more, report.
 - After the requester confirms receipt, they will tell you what to keep; the run's clone stays until then.
 
