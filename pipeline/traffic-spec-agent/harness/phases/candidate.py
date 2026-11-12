@@ -929,9 +929,10 @@ class Candidate:
         then the acceptances that no longer hold revoked and routed (`revalidate_acceptance`), on a copy.
         The copy names what it was derived for (`routed_for`) and carries the label states revoking
         changed (`label_changes`) and the operator's lines (`said`)."""
-        from ..loop import LABEL_ROUTES, label_state, route_entry, revalidate_acceptance
+        from ..loop import LABEL_ROUTES, in_scope, label_scope, label_state, route_entry, revalidate_acceptance
         routed = copy.deepcopy(self.ledger)
         said: list[str] = []
+        scope = label_scope(self.run)                     # a law outside the stage's scope is never accepted by it
         for other, chk in sorted(self.label_checks.items()):
             if other == target or other not in routed.entries:
                 continue
@@ -939,6 +940,8 @@ class Candidate:
             if e.state in ("blocked", "failed"):
                 continue
             new = {"accepted": "accepted", "waiting": "planned", "awaiting_label_repair": "planned", "failed": "blocked"}[LABEL_ROUTES[chk.outcome]]
+            if new == "accepted" and not in_scope(scope, other):
+                continue
             if new != e.state:
                 e.state = new
                 if new == "blocked":

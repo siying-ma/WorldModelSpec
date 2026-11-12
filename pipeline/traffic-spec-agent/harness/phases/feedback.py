@@ -24,6 +24,26 @@ def gate_costs(ledger: Ledger, concept_ledger=None) -> dict:
                                         | {e.concept for e in concepts if e.core_panics or e.cost_failures >= GATE_COST_BOUND})}
 
 
+def scope_report(run: Run, ledger: Ledger) -> dict | str:
+    """The laws the run's active stage is limited to: "all", or `{laws: n, of: N, out_of_scope: {law:
+    state}}` with n the laws of the ledger in its scope, N the ledger's laws, and each law out of it
+    with its label state or else its ledger state."""
+    from ..loop import label_scope
+    scope = label_scope(run)
+    if scope is None:
+        return "all"
+    states = getattr(run, "label_states", None) or {}
+    return {"laws": sum(1 for law in ledger.entries if law in scope), "of": len(ledger.entries),
+            "out_of_scope": {e.law: states.get(e.law, {}).get("state") or e.state for e in ledger.entries.values() if e.law not in scope}}
+
+
+def scope_line(scope: dict) -> str:
+    """The operator's line for a stage limited to a scope: what it covers, and what it leaves out."""
+    out = ", ".join(f"`{law}` ({st})" for law, st in sorted(scope["out_of_scope"].items())) or "none"
+    return (f"scope {scope['laws']}/{scope['of']}: this stage checks, repairs and accepts only the laws in its scope; "
+            f"nothing it reports is complete for the run's other laws — out of scope: {out}")
+
+
 def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str], gaps_filed: list[dict],
                    concept_ledger=None, deferred: list[dict] | None = None,
                    coder_narrowings: dict[str, list[dict]] | None = None, held_why: dict[str, str] | None = None) -> None:
@@ -83,12 +103,17 @@ def write_feedback(run: Run, ledger: Ledger, notes: list[str], to_user: list[str
         to_user = list(to_user) + [f"gates that counted no attempt so far: {costs['cost_failures']} ended on the evaluation's cost, "
                                    f"{costs['core_panics']} panicked (a Core defect); held for you: "
                                    + (", ".join(f"`{i}`" for i in costs["held_for_operator"]) or "none")]
+    scope = scope_report(run, ledger)
+    if scope != "all":
+        to_user = list(to_user) + [scope_line(scope)]
     write_to_user(run, list(dict.fromkeys(l for l in to_user if l)))      # one line per decision, however often it was raised
     summary = {"run": run.opts.run_id, "iteration": run.iteration, "status": "running", "stop_reason": "",
                "laws": ledger.counts(), "accepted_nodes": len(run.accepted_nodes), "accepted_concepts": len(run.accepted_concepts),
                "concepts": concept_ledger.counts() if concept_ledger is not None else {}, "gate_costs": costs,
                "gaps_total": len(gap_rows := GapLedger(paths.GAPS_DIR).rows),
                "gaps_created_by_this_run": sum(1 for g in gap_rows if str(g.get("proposed_in", "")).startswith(run.opts.run_id + "/"))}
+    if scope != "all":
+        summary["scope"] = scope
     (run.dir / "summary.json").write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
@@ -109,7 +134,9 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
     `stop` is `iteration_limit` when the launch stopped at its iteration bound with work left (the one
     stop after which a launcher starts the next iteration), else empty; `stage` is the stage the last
     iteration reached; `pending` lists the laws by what each waits on; `generation` says, computed
-    again now, whether every law's generation is complete (`generation_report`)."""
+    again now, whether every law's generation is complete (`generation_report`). A run whose active
+    stage is limited to a scope (`scope_report`) has `scope` with `n/N` and the laws out of it, and
+    its reason begins `scope n/N`; its `complete` is the scope's (`complete_for: "scope"`), never the run's."""
     f = run.dir / "summary.json"
     f.parent.mkdir(parents=True, exist_ok=True)
     summary = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"run": run.opts.run_id}
@@ -118,6 +145,18 @@ def write_status(run: Run, ledger: Ledger, status: str, reason: str, stop: str =
                     "stop": stop, "stage": ((run.load_state() or {}).get("prog") or {}).get("stage") if hasattr(run, "load_state") else None,
                     "pending": pending_lists(run, ledger),
                     "generation": generation_report(run, ledger, status, stop)})
+    try:
+        scope = scope_report(run, ledger)
+    except Exception as e:                           # a stage record that cannot be read: no reading of the scope, never "all"
+        scope = {"unreadable": f"{type(e).__name__}: {str(e)[:300]}"}
+    if scope != "all":
+        summary["scope"] = scope
+        if "laws" in scope:
+            if status == "complete":
+                summary["complete_for"] = "scope"
+            if not reason.startswith(f"scope {scope['laws']}/{scope['of']}"):
+                summary["stop_reason"] = f"scope {scope['laws']}/{scope['of']}: " + reason + (
+                    " — complete for the scope, not for the run" if status == "complete" else "")
     f.write_text(json.dumps(summary, indent=1, ensure_ascii=False), encoding="utf-8")
     return summary
 
@@ -130,7 +169,8 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
     be computed (a record or file that cannot be read). The laws are listed by what holds each one:
     a provider it waits on ([node, provider, code]), the planner, the operator (with its tokens),
     a failure, a revoked acceptance; with the composition cycles a validator found, the providers
-    whose laws wait for the operator, the gaps, and the launch's stop."""
+    whose laws wait for the operator, the gaps, and the launch's stop; and `scope`, "all" or `{laws: n,
+    of: N}` for a stage limited to n of the run's N laws (`complete` stays the whole run's)."""
     if status in ("data_integrity_failure", "stale_aggregate"):   # the state it would be read from is not trusted: never an earlier `true`
         return {"complete": None, "reason_if_null": f"the run stopped on `{status}`: its state cannot be read as it stands"}
     try:
@@ -164,7 +204,9 @@ def generation_report(run: Run, ledger: Ledger, status: str = "", stop: str = ""
                 else:
                     laws["generating"].append(e.law)
         complete = len(laws["generated"]) == len(ledger.entries)
+        scope = scope_report(run, ledger)
         return {"complete": complete, "reason_if_null": None, "laws": laws,
+                "scope": scope if scope == "all" else {"laws": scope["laws"], "of": scope["of"]},
                 "cycles": [r for e in ledger.entries.values() for r in e.reasons if r.startswith("composition cycle")],
                 "provider_failures": provider_failures, "gaps": gaps,
                 "stop": {"budget": status == "paused_budget", "iteration_limit": stop == "iteration_limit",

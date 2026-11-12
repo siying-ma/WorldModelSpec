@@ -8,6 +8,7 @@ import re
 from dataclasses import asdict, replace
 from pathlib import Path
 import shutil
+import time
 from .checks import aggregates, gate, validate_a
 from .model import acquisition, blueprint, corpus, nodeid, ontology
 from .lean import index_sync, lean
@@ -20,13 +21,13 @@ from .phases import plan as plan_phase, review as review_phase, validate as vali
 from .phases import aggregate as aggregate_phase
 from .model import definitions as definitions_mod
 from .store.ledger import TERMINAL, JUDGE_STAGES
-from .store import jsonl
+from .store import jsonl, stages
 from .store.paths import run_is_new
 from .store.budget import BudgetPaused
 from .model.reading import Reading
 from .store.state import (Availability, FENCED, MISSING, OPERATOR, PLANNER_CODES, SUPERSEDED, UNPUBLISHED, USABLE, base_code)
 from .store.state import (Options, Run, RUN_VERSION, acceptance_policy, acceptance_policy_refusal, chain_version_refusal, commit_state,
-                          policy_defects, saved_version_refusal, snapshot_defects)
+                          policy_defects, saved_version_refusal, snapshot_defects, stage_policy_refusal)
 from .model.mapping import MappingIndex
 
 
@@ -1372,9 +1373,10 @@ def run_loop(opts: Options) -> dict:
         return {"status": status, "stop_reason": str(e), "iterations": run.iteration, "laws": ledger.counts()}
 
 
-def write_options(run: Run, opts: Options, semantic: dict, saved_roots: list[str]) -> None:
-    """The run's saved options: its contract (the acceptance policy and the semantic inputs) and how
-    this launch was given them."""
+def write_options(run: Run, opts: Options, semantic: dict, saved_roots: list[str], stage_policy: str | None = None) -> None:
+    """The run's saved options: its contract (the acceptance policy and the semantic inputs), its
+    stage policy marker when it has one (`STAGE_POLICY`, written once and kept), and how this launch
+    was given them."""
     precedence = Path(opts.definition_precedence or definitions_mod.DEFAULT_PRECEDENCE)
     jsonl.write_atomic(run.dir / "options.json", json.dumps({**asdict(opts), "laws": str(opts.laws), "ontology": str(opts.ontology),
                                                              "base_reading": str(opts.reading), "reading": str(run.reading_file),
@@ -1382,7 +1384,36 @@ def write_options(run: Run, opts: Options, semantic: dict, saved_roots: list[str
                                                              "model_prices": str(opts.model_prices) if opts.model_prices else None,
                                                              "definition_precedence_sha256": definitions_mod.precedence_digest(precedence),
                                                              "repo_roots": [r for r in saved_roots if r != str(paths.REPO)] + [str(paths.REPO)],
-                                                             "semantic": semantic}, indent=1))
+                                                             "semantic": semantic,
+                                                             **({"stage_policy": stage_policy} if stage_policy is not None else {})},
+                                                            indent=1))
+
+
+#: The marker of a run created with a stage record, in its `options.json`: such a run is resumed only
+#: on its stage record, and one whose record is missing is refused, never taken for a run made before
+#: stages existed. The marker guards against a record lost or never written; it is not a defence
+#: against saved files forged by hand (options without it are read as such an older run).
+STAGE_POLICY = "staged_v1"
+
+
+def first_stage(run: Run, opts: Options, semantic: dict) -> dict:
+    """The `open` row of a new run's first stage: `G0`, a generation stage, or for a test run
+    (`--mode test`) `T0`, a test stage that also names its base run and the digest of that run's
+    records it is built over; on this checkout's code (with the commit `--source_commit` names, or
+    none), the run's semantic inputs and acceptance policy (no review), all of its laws, and the
+    digests of the gate, the scoring and the generated prompt text it is run under."""
+    from .tools import handoff
+    from .phases import label_check
+    kind = "test" if opts.mode == "test" else "generation"
+    extra = {"base_run": {"run_id": opts.base_run, "digest": semantic.get("base_run")}} if kind == "test" else {}
+    return {"event": "open", "run_id": opts.run_id, "stage_id": "T0" if kind == "test" else "G0", "stage_kind": kind, **extra,
+            "launch_kinds": list(stages.LAUNCH_KINDS[kind]), "previous_stage_id": None,
+            "transition_id": f"init-{opts.run_id}", "input_checkpoint": None,
+            "code_baseline": {"source_commit": opts.source_commit, "code": handoff.code_digest()}, "state_schema": RUN_VERSION,
+            "semantic": semantic, "acceptance_policy": {**acceptance_policy(opts), "review": "none"}, "scope": "all",
+            "changed_files": [], "effects": {"gate": integrate_phase.gate_digest(), "scoring": label_check.scoring_version(),
+                                             "generated_prompts": semantic.get("generated_prompts")},
+            "opened_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
 
 
 #: The files a run writes only once it has run past its initialisation (its first committed snapshot
@@ -1421,6 +1452,51 @@ def metadata_refusal(run: Run) -> str | None:
     return None
 
 
+def test_base_refusal(base_run: str | None) -> str | None:
+    """Why the base-run chain starting at `base_run` cannot be built on: a run of it is a test run (its
+    active stage of kind `test`, or, for a run made before stages existed, its saved mode `test`),
+    whose results are no training evidence; None otherwise."""
+    seen, rid = set(), base_run
+    while rid and rid not in seen:
+        seen.add(rid)
+        try:
+            st = stages.active_stage(paths.run_dir(rid))
+        except jsonl.DataIntegrityError as e:
+            return f"the base run `{rid}` has a stage record that cannot be read ({e})"
+        try:
+            saved = jsonl.read_json(paths.run_dir(rid) / "options.json", None) or {}
+        except jsonl.DataIntegrityError as e:
+            return f"the base run `{rid}` has options that cannot be read ({e})"
+        if (st is not None and st.get("stage_kind") == "test") or saved.get("mode") == "test":   # a test run made before stages too
+            return f"`{rid}` is a test run: {stages.TEST_REFUSAL}"
+        rid = saved.get("base_run")
+    return None
+
+
+def launch_kind(opts: Options) -> str | None:
+    """What a launch does, as a stage's `launch_kinds` names it: `generation` for `--label_deferred`,
+    `labels` for `--label_stage`, `test` for a test run (`--mode test`, which checks no labels); None
+    for a launch that gives neither (it may both generate and check labels), which only a run without
+    a stage record runs."""
+    if opts.mode == "test" and not (opts.label_deferred or opts.label_stage or opts.label_repair):
+        return "test"
+    return "generation" if opts.label_deferred else "labels" if opts.label_stage else None
+
+
+def stage_launch_refusal(stage: dict, opts: Options) -> str | None:
+    """Why a launch with options `opts` may not run in the active stage `stage` (its `open` row), or
+    None: it must be one of the split launches, of a kind the stage allows, and its acceptance policy
+    the stage's."""
+    kind = launch_kind(opts)
+    if kind is None:
+        return stages.UNSPLIT_REFUSAL
+    kinds = stage.get("launch_kinds")
+    if not isinstance(kinds, list) or kind not in kinds:
+        return (f"the active stage `{stage.get('stage_id')}` ({stage.get('stage_kind')}) allows the launch kinds {kinds!r}, and this "
+                f"is a `{kind}` launch: another kind of launch runs only in a stage entered by a transition")
+    return stage_policy_refusal(stage, opts)
+
+
 def input_refusal(run: Run, opts: Options) -> None:
     """Refuse a launch on the inputs it names, read only, before anything of the run is written: the
     ontology must carry the active Core's atoms, the base reading must be read whole and, before the
@@ -1455,16 +1531,27 @@ def _run_loop(opts: Options) -> dict:
     new = run_is_new(run.dir)
     # another run version's run, or a base chain holding one, is refused on its raw saved version before anything is read whole
     refusal = (None if new else saved_version_refusal(run.dir)) or (chain_version_refusal(opts.base_run, opts.run_id)
-                                                                      if opts.base_run else None)
+                                                                      if opts.base_run else None) or test_base_refusal(opts.base_run)
     if refusal:
         raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed or started: {refusal} — nothing of this run was rewritten")
+    from .tools import handoff                          # a run with a stage record is pinned to its active stage
+    stage, refusal = (None, None) if new else handoff.active_stage(run.dir)
+    refusal = refusal or (None if new else stages.transition_refusal(run.dir))
+    if refusal:
+        raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal} — nothing of this run was rewritten")
     refusal = None if new else metadata_refusal(run)
     if refusal:
         raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal}; restore its checkpoint, or start a new run id "
                          "— nothing of this run was rewritten")
     saved_first = None if new else jsonl.read_json(run.dir / "options.json", None)
+    marker = STAGE_POLICY if new else saved_first.get("stage_policy")
+    if not new and marker is not None and (marker != STAGE_POLICY or stage is None):
+        raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: " + (
+            f"its options.json names the stage policy {marker!r}, which this harness does not know" if marker != STAGE_POLICY else
+            f"its options.json marks it a staged run ({STAGE_POLICY}) and its stage record {stages.STAGES_FILE} is missing: a staged "
+            "run is never resumed without its stage record — restore the run's checkpoint") + " — nothing of this run was rewritten")
     if saved_first is not None:                         # another policy is refused before anything is touched (the version was checked above)
-        refusal = acceptance_policy_refusal(saved_first, opts)
+        refusal = stage_launch_refusal(stage, opts) if stage is not None else acceptance_policy_refusal(saved_first, opts)
         if refusal:
             raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: {refusal} — nothing of this run was rewritten")
     refusal = launch_refusal(opts)                      # the options and the environment, before anything is written
@@ -1474,10 +1561,26 @@ def _run_loop(opts: Options) -> dict:
     saved_roots = (saved_first or {}).get("repo_roots") or []
     paths.register_roots(saved_roots)                   # saved paths of a run that ran at another root read in this repository
     input_refusal(run, opts)
+    if new and opts.mode == "test":                      # a new test run is a staged run in its test stage T0
+        if launch_kind(opts) != "test":
+            raise SystemExit(f"[loop] run `{opts.run_id}` cannot be started: a test run checks no labels and is never reviewed: "
+                             "give none of --label_repair, --label_deferred, --label_stage — nothing of this run was rewritten")
+    elif new:                                            # a new run is a staged run: its first stage is a generation stage
+        refusal = stages.UNSPLIT_REFUSAL if launch_kind(opts) is None else None
+        if refusal is None and launch_kind(opts) not in stages.LAUNCH_KINDS["generation"]:
+            refusal = (f"a new run starts in the generation stage G0, which allows the launch kinds "
+                       f"{list(stages.LAUNCH_KINDS['generation'])}, and this is a `{launch_kind(opts)}` launch: start it with "
+                       "--label_deferred")
+        if refusal:
+            raise SystemExit(f"[loop] run `{opts.run_id}` cannot be started: {refusal} — nothing of this run was rewritten")
     semantic = semantic_inputs(opts)
     if saved_first is not None:                         # every resume, snapshot or not, before any recovery, rewrite or session
-        was = saved_first.get("semantic") or {}
+        was = (saved_first.get("semantic") or {}) if stage is None else (stage.get("semantic") or {})
         changed = sorted(k for k in set(was) | set(semantic) if was.get(k) != semantic.get(k))
+        if changed and stage is not None:
+            raise SystemExit(f"[loop] run `{opts.run_id}` was built against other inputs than its active stage "
+                             f"`{stage.get('stage_id')}` ({', '.join(changed)} changed); other inputs are entered only through a "
+                             "stage transition — nothing of this run was rewritten")
         if changed:
             raise SystemExit(f"[loop] run `{opts.run_id}` was built against other inputs ({', '.join(changed)} changed); "
                              "start a new run id — nothing of this run was rewritten")
@@ -1486,12 +1589,15 @@ def _run_loop(opts: Options) -> dict:
             raise SystemExit(f"[loop] run `{opts.run_id}` cannot be resumed: its reading {run.reading_file.name} holds reviewed values "
                              "other than those its saved semantic inputs fixed; restore its checkpoint, or start a new run id "
                              "— nothing of this run was rewritten")
-    run.dir.mkdir(parents=True, exist_ok=True)
-    if new:                                              # a new run's contract is its first file
-        write_options(run, opts, semantic, saved_roots)
+    # the library is taken before anything of the run is written: no stage transition of any run is
+    # unfinished then, checked with the lock held, before any journal is completed (`owner.acquire`)
     owner.acquire(opts.run_id, force=opts.force_takeover)
-    from .tools import handoff                          # a run that crossed machines resumes only on its own baseline and artifacts
-    handoff.check_on_launch(run)
+    run.dir.mkdir(parents=True, exist_ok=True)
+    if new:                                              # a new run's stage record is its first file, its contract the second
+        stage = first_stage(run, opts, semantic)
+        jsonl.write_atomic(run.dir / stages.STAGES_FILE, json.dumps(stage, ensure_ascii=False) + "\n")
+        write_options(run, opts, semantic, saved_roots, marker)
+    handoff.check_on_launch(run)                        # a run that crossed machines resumes only on its own baseline and artifacts
     from .phases import candidate as candidate_phase           # a candidate's commit a stop cut short is completed first
     recovered = candidate_phase.recover(run)
     if recovered:
@@ -1508,7 +1614,8 @@ def _run_loop(opts: Options) -> dict:
     bad = reading_defects(json.loads(run.reading_file.read_text(encoding="utf-8")))   # the run's own copy, read whole
     if bad:
         raise SystemExit(f"[loop] the reading {run.reading_file} cannot be read whole: " + "; ".join(bad[:6]))
-    write_options(run, opts, semantic, saved_roots)
+    # a run with a stage record keeps the semantic inputs it first recorded: its stages record their own
+    write_options(run, opts, semantic if new or stage is None else saved_first.get("semantic"), saved_roots, marker)
     doctor_ok()
     snap = run.restore_state()                            # projections completed from the snapshot before anything reads them
     run.load_accepted()
@@ -2786,9 +2893,11 @@ def accept_ready(run: Run, opts: Options, ledger: Ledger, training, to_user: lis
     """A law is accepted when it is label-ready (`label_ready`: every node of its plan, and of every
     law its nodes reach, usable for building), whichever iteration coded it; with `label_repair`, once
     its label check on those nodes routes it there (`label_route`); an accepted law whose acceptance
-    no longer holds is revoked first and after (`revalidate_acceptance`);
+    no longer holds is revoked first and after (`revalidate_acceptance`), and so is one whose label result
+    is not evidence for its current inputs (`revoke_stale_labels`, a run with a stage record);
     with `label_deferred`, it is not accepted here: its generated nodes are kept and it is recorded
     `awaiting_labels` (`defer_labels`)."""
+    revoke_stale_labels(run, ledger, to_user)
     revalidate_acceptance(run, ledger, to_user)
     if opts.label_repair:
         if opts.label_deferred:
@@ -2855,14 +2964,18 @@ def label_ready(run: Run, ledger: Ledger) -> dict[str, list[str]]:
     """The planned laws ready for their label check, each with its nodes: its own generation complete
     (`own_generated`), and so is that of every law its nodes reach (`reached_laws`), each checked
     alone, never by asking whether that law is ready in turn. A law already awaiting a label repair on
-    the same nodes is not checked again (its repair checks it)."""
+    the same nodes is not checked again (its repair checks it), unless its check is not evidence for its
+    current inputs (`stale_labels`, a run with a stage record). A law out of the active stage's scope
+    (`label_scope`) is never ready: the stage does not check it."""
     out = {}
     av = Availability(run, entries=ledger.entries)
+    scope = label_scope(run)
+    stale = stale_labels(run, ledger, ("planned",))
     for e in ledger.entries.values():
         st = run.label_states.get(e.law, {})
-        if e.state == "planned" and own_generated(run, ledger, e.law, av) \
+        if e.state == "planned" and in_scope(scope, e.law) and own_generated(run, ledger, e.law, av) \
                 and all(own_generated(run, ledger, l, av) for l in reached_laws(run, ledger, e.law)) \
-                and not (st.get("state") == "awaiting_label_repair" and st.get("nodes") == list(e.nodes)):
+                and not (st.get("state") == "awaiting_label_repair" and st.get("nodes") == list(e.nodes) and e.law not in stale):
             out[e.law] = list(e.nodes)
     return out
 
@@ -2957,9 +3070,11 @@ def defer_labels(run: Run, ledger: Ledger, to_user: list[str]) -> list[str]:
 def label_work(run: Run, opts: Options, ledger: Ledger) -> list[str]:
     """The label work a launch with the training recordings can do now: each law to check (label-ready,
     not routed on those nodes, or routed `awaiting_labels`; a law left `waiting` is checked again once
-    every provider its wait names is usable, its nodes unchanged or not), and each law awaiting its label repair while
+    every provider its wait names is usable, its nodes unchanged or not), each accepted law whose label
+    result is not evidence for its current inputs (`stale_labels`), and each law awaiting its label repair while
     the run's repair budget lasts (a law whose own repairs are spent is work too: it is held for the
-    operator). None under `label_deferred` or without `label_repair`."""
+    operator); only laws in the active stage's scope (`label_scope`). None under `label_deferred` or
+    without `label_repair`."""
     if not opts.label_repair or opts.label_deferred:
         return []
     from .phases import label_repair as label_repair_phase
@@ -2970,8 +3085,12 @@ def label_work(run: Run, opts: Options, ledger: Ledger) -> list[str]:
         av = Availability(run, entries=ledger.entries)
         return any(av.code(p, law) != USABLE for _n, p, _c in st["waiting_on"] if p not in ledger.entries)
     out = [law for law, nodes in label_ready(run, ledger).items() if not still_waiting(law, nodes)]
+    scope = label_scope(run)
+    out += [law for law in stale_labels(run, ledger, ("accepted",)) if in_scope(scope, law)]
     budget_left = label_repair_phase.used(run) < opts.label_repair_budget
     for law in label_repair_phase.awaiting(run, ledger):
+        if not in_scope(scope, law):
+            continue
         spent = int(run.label_states[law].get("repairs", 0)) >= opts.label_repair_attempts
         if (budget_left or spent) and law not in out:
             out.append(law)
@@ -2986,7 +3105,10 @@ def pause_reason(run: Run, opts: Options, ledger: Ledger, concept_ledger: Concep
     from the label stage. Otherwise: `paused_budget` when a law awaits a label repair the run's repair
     budget no longer funds (its own repairs not spent); `complete` when every law is terminal;
     `awaiting_operator` when a law is open and nothing but an operator's decision can move it (a gap,
-    a blocked or failed law it waits on, a cycle, a label check that cannot complete)."""
+    a blocked or failed law it waits on, a cycle, a label check that cannot complete). A stage limited
+    to a scope (`label_scope`) judges `complete` and `awaiting_operator` on the laws in its scope only,
+    says `scope n/N` and lists the laws out of it with their states: its `complete` is the scope's,
+    never the run's."""
     from .phases import label_repair as label_repair_phase
     from .phases.feedback import pending_lists
     if opts.label_stage:
@@ -2999,8 +3121,9 @@ def pause_reason(run: Run, opts: Options, ledger: Ledger, concept_ledger: Concep
         labels = label_work(run, replace(opts, label_deferred=False), ledger)
         if labels:
             return "awaiting_labels", f"generation paused: nothing runnable is left without a label check; {len(labels)} law(s) await their labels: {labels}"
+    scope = label_scope(run)
     unfunded = [law for law in label_repair_phase.awaiting(run, ledger)
-                if int(run.label_states[law].get("repairs", 0)) < opts.label_repair_attempts]
+                if in_scope(scope, law) and int(run.label_states[law].get("repairs", 0)) < opts.label_repair_attempts]
     used = label_repair_phase.used(run)
     if unfunded and used >= opts.label_repair_budget:
         return "paused_budget", (f"the run-wide label repair count is spent: option --label_repair_budget, used {used} of its limit "
@@ -3008,6 +3131,21 @@ def pause_reason(run: Run, opts: Options, ledger: Ledger, concept_ledger: Concep
                                  "(no dollar budget and no law's own --label_repair_attempts funds one): raise --label_repair_budget "
                                  "explicitly and resume")
     holds = dependency_holds(ledger)
+    if scope is not None:                                # a scoped stage judges, and says, only its own laws
+        inside = [e for e in ledger.entries.values() if e.law in scope]
+        state = lambda e: run.label_states.get(e.law, {}).get("state") or e.state
+        outside = {e.law: state(e) for e in ledger.entries.values() if e.law not in scope}
+        tail = f"; out of scope, not checked or accepted in this stage: {outside}"
+        generated = set((feedback_phase.generation_report(run, ledger).get("laws") or {}).get("generated", []))
+        if all(e.state in TERMINAL for e in inside) and not (set(holds) & scope) and {e.law for e in inside} <= generated:
+            return "complete", (f"scope {len(inside)}/{len(ledger.entries)}: every law in the stage's scope is accepted, blocked or "
+                                f"failed — complete for the scope, not for the run" + tail)
+        open_laws = {e.law: state(e) for e in inside if e.state not in TERMINAL or e.law in holds}
+        waits = {law: deps for law, deps in dependency_waits(run, ledger).items() if law in scope}
+        return "awaiting_operator", (f"scope {len(inside)}/{len(ledger.entries)}: neither stage has work and laws in scope are open, "
+                                     f"waiting on an operator decision: {open_laws}"
+                                     + "".join(f"; `{law}` waits on {', '.join(f'`{d}` ({st})' for d, st in deps)}" for law, deps in waits.items())
+                                     + f"; blocked {[l for l in pending_lists(run, ledger)['blocked'] if l in scope]}" + tail)
     if all(e.state in TERMINAL for e in ledger.entries.values()) and not holds \
             and feedback_phase.generation_report(run, ledger).get("complete"):
         return "complete", "every law is accepted, blocked or failed"
@@ -3110,20 +3248,132 @@ def held_runnable(n: Node, ledger: Ledger, av: Availability) -> bool:
     return (routes <= {"usable"} and "" not in codes) or "planner" in routes
 
 
-def label_state(run: Run, law: str, chk, nodes: list[str], where: Path, candidate: str) -> dict:
+def label_state(run: Run, law: str, chk, nodes: list[str], where: Path, candidate: str, key: str | None = None) -> dict:
     """The routed state of a law's label check: its outcome, coverage, nodes and versions, the files
-    of the check and its evidence (relative to the run), and the label repairs the law has used."""
-    return {"state": LABEL_ROUTES[chk.outcome], "outcome": chk.outcome, "coverage": chk.coverage, "iteration": run.iteration,
-            "nodes": list(nodes), "versions": chk.versions, "candidate": candidate,
-            "check": str((where / "laws" / f"{law}.json").relative_to(run.dir)),
-            "check_sha": label_check_sha(where / "laws" / f"{law}.json"),
-            "evidence": str((where / "evidence" / f"{law}.md").relative_to(run.dir)),
-            "repairs": run.label_states.get(law, {}).get("repairs", 0)}
+    of the check and its evidence (relative to the run), the label repairs the law has used, and, in a
+    run with a stage record, the `key` of the inputs it was computed on (`label_key`): `key` when the
+    caller computed it on the library the check ran on (a candidate's), else on the run's."""
+    st = {"state": LABEL_ROUTES[chk.outcome], "outcome": chk.outcome, "coverage": chk.coverage, "iteration": run.iteration,
+          "nodes": list(nodes), "versions": chk.versions, "candidate": candidate,
+          "check": str((where / "laws" / f"{law}.json").relative_to(run.dir)),
+          "check_sha": label_check_sha(where / "laws" / f"{law}.json"),
+          "evidence": str((where / "evidence" / f"{law}.md").relative_to(run.dir)),
+          "repairs": run.label_states.get(law, {}).get("repairs", 0)}
+    if staged(run):                                      # in a run with a stage record, the inputs it is evidence for
+        st["key"] = key if key is not None else label_key(run, law, list(nodes))
+    return st
 
 
 def label_check_sha(f: Path) -> str | None:
     import hashlib
     return hashlib.sha256(f.read_bytes()).hexdigest() if f.is_file() else None
+
+
+def active_stage(run: Run) -> dict | None:
+    """The run's active stage, or None for a run without a stage record (or a state with no run directory)."""
+    from .store import stages
+    d = getattr(run, "dir", None)
+    return stages.active_stage(d) if d is not None else None
+
+
+def staged(run: Run) -> bool:
+    """Whether the run has a stage record: only then is a law's label result evidence by its `key`."""
+    return active_stage(run) is not None
+
+
+def label_scope(run: Run) -> set[str] | None:
+    """The laws the run's active stage limits its label work and acceptance to, or None for every law
+    (no stage record, or a stage of scope "all")."""
+    from .store import stages
+    laws = stages.scope_laws(active_stage(run))
+    return None if laws is None else set(laws)
+
+
+def in_scope(scope: set[str] | None, law: str) -> bool:
+    return scope is None or law in scope
+
+
+def plan_closure(run: Run, nodes: list[str]) -> list[str]:
+    """The nodes of a plan and every node they reach along their composition edges, each once, in the
+    records of `run` (a run, or a candidate's view of it)."""
+    records, seen, stack = run.all_nodes(), set(), list(nodes)
+    while stack:
+        i = stack.pop()
+        if i in seen:
+            continue
+        seen.add(i)
+        if i in records:
+            stack += [str(c.get("rule")) for c in Node(records[i]).dependencies() if c.get("rule")]
+    return sorted(seen)
+
+
+#: The versions of a run's comparison set a label key holds besides the law's own recordings.
+KEY_SET_FIELDS = ("data_version", "label_contract", "scoring", "limits")
+
+
+def label_key(run: Run, law: str, nodes: list[str], base: dict | None = None, view=None, reading=None) -> str:
+    """The inputs a law's label check depends on, as one digest: the dependency context
+    (`integrate.context_version`) of each node of its plan and of every node they compose, the law's
+    entry in the run's fixed comparison set (`comparison_set.json`: its recordings), each of those
+    recordings' label, trace and manifest digests, and the set's data version, label contract,
+    scoring and execution limits. Read from the run's own files, so any stage computes it again; a
+    node whose context cannot be computed counts as None, which no recorded key holds. A label check
+    that ran on a candidate library is keyed on that library (`view` and its `reading`): the key then
+    names what was checked, and once the candidate is published it equals the run's own key exactly
+    when the published records are the ones checked; where they are not, the law is checked again."""
+    from .phases.integrate import _digest
+    records = view if view is not None else run
+    reading = reading if reading is not None else Reading(run.reading_file)
+    base = base if base is not None else context_base(run.opts, semantic_inputs(run.opts))
+
+    def ctx(i: str) -> str | None:
+        try:
+            return integrate_phase.context_version(records, "node", i, reading, base)
+        except (KeyError, ValueError, OSError):
+            return None
+    fixed = jsonl.read_json(run.dir / "comparison_set.json", None) or {}
+    entry = (fixed.get("laws") or {}).get(law)
+    cases = {r: {k: ((fixed.get("cases") or {}).get(r) or {}).get(k) for k in ("label", "trace", "manifest")}
+             for r in (entry or {}).get("recordings", [])}
+    return _digest({"contexts": {i: ctx(i) for i in plan_closure(records, nodes)}, "law": entry, "cases": cases,
+                    **{k: fixed.get(k) for k in KEY_SET_FIELDS}})[:24]
+
+
+def stale_labels(run: Run, ledger: Ledger, states: tuple[str, ...]) -> dict[str, tuple[str | None, str]]:
+    """In a run with a stage record, under `label_repair`: each law in the ledger state `states` whose
+    label result is not evidence for the inputs it would be judged on now (its recorded `key`, or the
+    lack of one, differs from `label_key` on its plan), with (recorded key, current key). Empty for a
+    run without a stage record, whose label results are taken as they are."""
+    if not staged(run) or not getattr(run.opts, "label_repair", False):
+        return {}
+    out, base = {}, None
+    for e in ledger.entries.values():
+        if e.state not in states or not e.nodes:
+            continue
+        st = run.label_states.get(e.law) or {}
+        if e.state == "planned" and st.get("state") != "awaiting_label_repair":
+            continue
+        base = base or context_base(run.opts, semantic_inputs(run.opts))
+        now = label_key(run, e.law, list(e.nodes), base)
+        if st.get("key") != now:
+            out[e.law] = (st.get("key"), now)
+    return out
+
+
+def revoke_stale_labels(run: Run, ledger: Ledger, to_user: list[str]) -> list[str]:
+    """Every accepted law whose label result is not evidence for its current inputs (`stale_labels`)
+    loses its acceptance (`revoke_law`: label state `waiting`, its earlier check kept as history,
+    `revoked_reason` naming the recorded and the current label key); the next label check judges it
+    again. A law out of the stage's scope loses it too, and waits for a stage that holds it. Returns
+    the laws revoked."""
+    stale = stale_labels(run, ledger, ("accepted",))
+    for law, (was, now) in sorted(stale.items()):
+        reason = (f"acceptance revoked in iteration {run.iteration}: its label result was computed on other inputs "
+                  f"(label key {was or 'none'}, now {now}); checked again, no attempt counted")
+        revoke_law(run, ledger, law, reason, [])
+        run.label_states[law]["revoked_reason"].update(cause="stale_label_key", label_key={"recorded": was, "current": now})
+        to_user.append(f"`{law}`: {reason}")
+    return sorted(stale)
 
 
 def route_law(run: Run, ledger: Ledger, law: str, chk, nodes: list[str], where: Path, candidate: str, to_user: list[str]) -> str:

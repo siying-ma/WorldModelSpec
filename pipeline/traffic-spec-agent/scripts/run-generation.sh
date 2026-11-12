@@ -7,15 +7,31 @@
 #     `awaiting_labels` when nothing runnable is left without a label check.
 #   STAGE=labels (the machine with the training recordings): checks every law whose plan is gated on
 #     its recordings and repairs it (--label_stage); it plans and codes nothing new.
+#   STAGE=review (and stage-enter with KIND=review) is refused before any model call or change: no reviewer is
+#     registered (the harness's refusal text). Which stage may follow which is the harness's `stage enter` rule.
 #
 #   RUN_ID=<id> scripts/run-generation.sh new      # a new run on a new branch runs/<id>, from the code baseline's tip
 #   RUN_ID=<id> scripts/run-generation.sh resume   # continue the run on its branch, from its persisted progress
+#   RUN_ID=<id> NEW_BASE=<commit> KIND=<kind> FROM=<stage> TRANSITION=<id> [SCOPE=<file>] [PROMPTS_APPROVED=<digest>] \
+#     scripts/run-generation.sh stage-enter        # the run enters a new stage on the code of NEW_BASE
 #
 # Branches. The code baseline is the branch remote/full-train-generation (BASELINE_BRANCH). Each run has its
 # own branch runs/<id>, created by `new` from the baseline's tip; the launcher only appends checkpoint commits
 # to it, on that baseline, and development code is never merged into an active run: `resume` refuses a run
 # branch that does not descend from the run's baseline commit or holds a merge commit after it, and the loop
-# refuses any change to the code the run is pinned to. Newer code means a new run.
+# refuses any change to the code the run is pinned to. Newer code means a new run, or, for a run with a stage
+# record (results/<id>/stages.jsonl), a new stage:
+#
+# Stages. `stage-enter` runs on the checked-out run branch at its last pushed checkpoint, clean. It replaces
+# exactly the code files (those the code patterns of the harness's handoff module match, as of NEW_BASE and of
+# the checkpoint, with the doctor's split tool; additions and deletions included; never a run artifact) by
+# NEW_BASE's, runs `python -m harness stage enter` on that code, commits all of it as one non-merge commit
+# `stage <new id>: baseline <NEW_BASE>` (with a `Stage-Transition: <id>` line), pushes it, runs `python -m
+# harness stage confirm --transition <id> --commit <it>`, and commits and pushes the transition's `done` state. Run again after
+# a stop anywhere, it continues. For a staged run `resume` requires instead: no transition short of `done`,
+# STAGE a launch kind of the active stage, the branch descending from the stage's transition commit (the one
+# `stage confirm` recorded; a first stage without one keeps the baseline rule above) with no merge after it,
+# and the code here equal to the stage's code baseline.
 #
 # Exit status: 0 the stage ended at a checkpoint (handed over, complete, or the launch count spent);
 # 1 the loop stopped otherwise (diagnostics in .runtime/<id>/); 2 a preflight check refused before any
@@ -23,6 +39,10 @@
 # 4 the run paused for the operator at a pushed checkpoint, handed to neither stage: `paused_budget` (raise
 # the limit its stop_reason names explicitly, then resume) or `awaiting_operator` (a decision is needed: see
 # stop_reason in results/<id>/summary.json and TO_USER.md). Neither is ever continued as an iteration limit.
+# `stage-enter`: 0 the stage is entered, confirmed and pushed (also when it already was); 1 the harness's
+# transition or confirmation stopped after it began (run the same stage-enter again); 2 refused before
+# anything changed (a refusal of the harness included: the checkpoint's code is put back); 3 a commit could
+# not be pushed (the same stage-enter pushes it first).
 #
 # The launcher itself: RUN_ID (required)  BRANCH (runs/$RUN_ID)  REMOTE (origin)  LAUNCHES (iterations this
 #   invocation, 20)  BASELINE_BRANCH (remote/full-train-generation)  LABEL_DATASET (STAGE=labels: the dataset folder)  OPENAI_KEY_FILE
@@ -46,7 +66,7 @@
 set -euo pipefail
 
 ACTION=${1:-}
-case "$ACTION" in new|resume) ;; *) echo "usage: RUN_ID=<id> $0 new|resume" >&2; exit 2;; esac
+case "$ACTION" in new|resume|stage-enter) ;; *) echo "usage: RUN_ID=<id> $0 new|resume|stage-enter" >&2; exit 2;; esac
 cd "$(dirname "$0")/.."                                # the agent directory (pipeline/traffic-spec-agent)
 # the doctor's corpus and split tools: the run's checkout is the WorldModelSpec layout, which carries them beside this directory
 export PYTHONPATH="$(cd .. && pwd)/ontology_provenance${PYTHONPATH:+:$PYTHONPATH}"
@@ -94,8 +114,325 @@ mkdir -p "$(dirname "$EXCLUDE")"
 grep -qxF '.runtime/' "$EXCLUDE" 2>/dev/null || echo '.runtime/' >> "$EXCLUDE"   # logs stay local
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOG_DIR/launcher.log"; }
 
+# ---------------------------------------------------------------- checkpoints
+push_checkpoint() {                                    # push HEAD (the same commit) with retries; 3 when it stays refused
+  local i
+  for i in $(seq 1 "$PUSH_RETRIES"); do
+    if git push -q "$REMOTE" "HEAD:refs/heads/$BRANCH" 2>>"$LOG_DIR/push.log"; then
+      git branch -q --set-upstream-to="$REMOTE/$BRANCH" 2>/dev/null || true
+      return 0
+    fi
+    log "push failed (attempt $i of $PUSH_RETRIES); retrying the same commit in $PUSH_WAIT s"
+    sleep "$PUSH_WAIT"
+  done
+  log "the checkpoint $(git rev-parse --short HEAD) is not on $REMOTE; no further model call — rerun to push it first"
+  exit 3
+}
+
+stage_run_files() {                                    # the listed files only, ignored ones included; deletions recorded
+  local list="$RUN_DIR/handoff/files.txt"
+  cp "$list" "$LOG_DIR/pathspec.txt"                   # paths relative to this directory, as git reads them here
+  stage_record_files >> "$LOG_DIR/pathspec.txt"
+  git add -f --pathspec-from-file="$LOG_DIR/pathspec.txt"
+  git ls-files -- "$RUN_DIR" library/TrafficSpec/Rules library/TrafficSpec/Concepts library/TrafficSpecWitness \
+      library/TrafficSpec/Gaps | grep -vxF -f "$LOG_DIR/pathspec.txt" \
+      | while IFS= read -r gone; do git rm -q --cached -- "$gone"; done || true
+}
+
+commit_checkpoint() {
+  stage_run_files
+  if git diff --cached --quiet; then log "checkpoint: nothing changed"; return 0; fi
+  git commit -q -m "$RUN_ID: $STAGE checkpoint, iteration $(state_field iteration) ($1)" \
+      -m "handoff $(manifest_field export_id); source baseline $(manifest_field baseline.source_commit); code $(manifest_field baseline.code.digest)"
+}
+
+state_field() { "$PYTHON" - "$RUN_DIR" "$1" <<'PY'
+import json, sys
+d = sys.argv[1]
+s = json.load(open(f"{d}/state.json"))
+k = sys.argv[2]
+print(s.get("iteration", 0) if k == "iteration" else (s.get("prog") or {}).get("stage", ""))
+PY
+}
+manifest_field() { "$PYTHON" - "$RUN_DIR/handoff/manifest.json" "$1" <<'PY'
+import json, sys
+x = json.load(open(sys.argv[1]))
+for k in sys.argv[2].split("."):
+    x = (x or {}).get(k)
+print(x)
+PY
+}
+summary_field() { "$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2]) or "")' "$RUN_DIR/summary.json" "$1" 2>/dev/null || true; }
+written() { "$PYTHON" -c 'import os,sys; p=sys.argv[1]; print(os.stat(p).st_mtime_ns if os.path.exists(p) else "none")' "$1"; }   # when the loop last wrote its status
+
+# ---------------------------------------------------------------- stages
+review_refusal() {                                     # why no review stage runs or is entered: the harness's own words
+  "$PYTHON" -c 'from harness.store.stages import REVIEW_REFUSAL; print(REVIEW_REFUSAL)' 2>/dev/null \
+    || echo "no review stage: this checkout's harness has no stages"
+}
+stage_record_files() {                                 # a staged run's stage record, snapshots and last transition state, with its checkpoint
+  local f
+  for f in stages.jsonl stage_transition.json; do [ ! -f "$RUN_DIR/$f" ] || echo "$RUN_DIR/$f"; done
+  [ ! -d "$RUN_DIR/stages" ] || find "$RUN_DIR/stages" -type f
+}
+transition_field() { "$PYTHON" - "$RUN_DIR/stage_transition.json" "$1" <<'PY'
+import json, sys
+from pathlib import Path
+f = Path(sys.argv[1])
+print((json.loads(f.read_text()) if f.is_file() else {}).get(sys.argv[2]) or "")
+PY
+}
+stage_commit() {                                       # the stage commit of a transition on this branch, by its `Stage-Transition:` line
+  local c
+  for c in $(git log --format=%H -F --grep="Stage-Transition: $1" HEAD); do
+    if grep -qxF "Stage-Transition: $1" <<< "$(git log -1 --format=%B "$c")"; then echo "$c"; return 0; fi
+  done
+}
+
+# The checks of a staged run, by this checkout's harness (the stage's own code). `resume <launch kind>`: no
+# transition is short of `done`; the active stage allows the launch; the code equals the stage's code
+# baseline; prints the commit the run branch must descend from with no merge after it: the transition
+# commit `stage confirm` recorded, or nothing for a first stage (adopted, with no transition commit), which
+# keeps the manifest's baseline commit. `enter <transition>`: the active stage was opened by that transition
+# and its code baseline equals the code here; prints the stage id. A refusal is printed, with status 1.
+stage_check() { "$PYTHON" - "$RUN_DIR" "$1" "$2" <<'PY'
+import sys
+from pathlib import Path
+try:
+    from harness.store import jsonl, stages
+    from harness.tools.handoff import code_digest
+except ImportError as e:
+    print(f"the run has a stage record and this checkout's harness cannot read it ({e})"); sys.exit(1)
+rd, mode, arg = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+
+
+def refuse(msg):
+    print(msg); sys.exit(1)
+
+
+try:
+    stage = stages.active_stage(rd)
+except jsonl.DataIntegrityError as e:
+    refuse(f"the run's stage record does not read: {e}")
+if stage is None:
+    refuse(f"{rd / stages.STAGES_FILE} opens no stage")
+sid = stage["stage_id"]
+if mode == "resume":
+    why = stages.transition_refusal(rd)
+    if why:
+        refuse(why)
+    kinds = list(stage.get("launch_kinds") or ())
+    if arg not in kinds:
+        refuse(f"the run's stage `{sid}` allows {' and '.join(kinds) or 'no'} launches, not STAGE={arg}: "
+               "a stage of another kind is entered with stage-enter")
+elif stage.get("transition_id") != arg:
+    refuse(f"the run's active stage `{sid}` was not opened by the transition {arg}")
+base = stage.get("code_baseline") or {}
+want, have = (base.get("code") or {}).get("files") or {}, code_digest()["files"]
+diff = sorted(k for k in set(want) | set(have) if want.get(k) != have.get(k))
+if diff:
+    more = f" and {len(diff) - 10} more" if len(diff) > 10 else ""
+    refuse(f"the checkout's code differs from the code baseline of the run's stage `{sid}` ({base.get('source_commit')}): "
+           f"{', '.join(diff[:10])}{more}; a stage runs only on its own code (its transition commit)")
+if mode == "enter":
+    print(sid)
+else:
+    tr = stages.transition_state(rd) or {}
+    if tr.get("transition_id") == stage.get("transition_id") and tr.get("commit"):
+        print(tr["commit"])
+    elif stage.get("previous_stage_id") is not None:
+        refuse(f"the run's stage `{sid}` has no confirmed transition commit: finish its transition with stage-enter")
+PY
+}
+
+# The code files a transition to NEW_BASE replaces: every file that the new baseline's own `CODE_PATTERNS` or
+# the current one's match, in NEW_BASE or at HEAD, and the doctor's split tool (`DOCTOR_TOOL`, outside the
+# agent directory). The patterns are read from each commit's handoff module as literals (parsed, never
+# imported: the other commit's code is not this interpreter's) and matched as `Path.glob` does against the
+# commits' trees, so neither the working tree nor this checkout's patterns decide the set. A run artifact
+# (the run's results, rules, concepts, witnesses, gaps) is never in it. Writes NUL-separated
+# repository-relative lists: `replace` (in NEW_BASE), `delete` (not in NEW_BASE), `restore` (at HEAD) and
+# `drop` (not at HEAD), the last two to undo the replacement when the harness refuses the transition.
+code_plan() { "$PYTHON" - "$TOP" "$PREFIX" "$1" "$2" <<'PY'
+import ast, os, posixpath, subprocess, sys
+from fnmatch import fnmatchcase
+top, prefix, new, out = sys.argv[1:5]
+ARTIFACTS = ("results/", "library/TrafficSpec/Rules/", "library/TrafficSpec/Concepts/", "library/TrafficSpecWitness/",
+             "library/TrafficSpec/Gaps/")
+
+
+def git(*a):
+    return subprocess.run(["git", "-C", top, *a], capture_output=True, check=True).stdout
+
+
+def constants(rev):
+    try:
+        src = git("show", f"{rev}:{prefix}harness/tools/handoff.py")
+    except subprocess.CalledProcessError:
+        return {}
+    found = {}
+    for node in ast.parse(src).body:
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(node, ast.AnnAssign) and node.value else []
+        for t in targets:
+            if isinstance(t, ast.Name) and t.id in ("CODE_PATTERNS", "DOCTOR_TOOL"):
+                found[t.id] = ast.literal_eval(node.value)
+    return found
+
+
+def blobs(rev):
+    out = set()
+    for e in git("ls-tree", "-r", "-z", "--full-tree", rev).split(b"\0"):
+        if e:
+            meta, path = e.split(b"\t", 1)
+            if meta.split()[1] == b"blob":
+                out.add(os.fsdecode(path))
+    return out
+
+
+def matches(pat, rel):                                 # `**` is zero or more directories, any other part one name
+    ps, xs = pat.split("/"), rel.split("/")
+
+    def m(i, j):
+        if i == len(ps):
+            return j == len(xs)
+        if ps[i] == "**":
+            return any(m(i + 1, k) for k in range(j, len(xs) + 1))
+        return j < len(xs) and fnmatchcase(xs[j], ps[i]) and m(i + 1, j + 1)
+    return m(0, 0)
+
+
+nc, hc = constants(new), constants("HEAD")
+if not nc.get("CODE_PATTERNS"):
+    print(f"NEW_BASE {new} has no CODE_PATTERNS in {prefix}harness/tools/handoff.py"); sys.exit(1)
+patterns = set(nc["CODE_PATTERNS"]) | set(hc.get("CODE_PATTERNS") or ())
+tools = {posixpath.normpath(prefix + c["DOCTOR_TOOL"]) for c in (nc, hc) if c.get("DOCTOR_TOOL")}
+nb, hb = blobs(new), blobs("HEAD")
+
+
+def code(path):
+    if path in tools:
+        return True
+    rel = path[len(prefix):] if path.startswith(prefix) else None
+    return rel is not None and "__pycache__" not in rel.split("/") and any(matches(p, rel) for p in patterns)
+
+
+paths = sorted(p for p in nb | hb if code(p))
+bad = [p for p in paths if p.startswith(prefix) and p[len(prefix):].startswith(ARTIFACTS)]
+if bad:
+    print(f"the code patterns match run artifacts: {', '.join(bad[:5])}"); sys.exit(1)
+for name, keep in (("replace", lambda p: p in nb), ("delete", lambda p: p not in nb),
+                   ("restore", lambda p: p in hb), ("drop", lambda p: p not in hb)):
+    with open(os.path.join(out, name), "wb") as f:
+        f.write(b"".join(os.fsencode(p) + b"\0" for p in paths if keep(p)))
+PY
+}
+git_paths() {                                          # git <args> over a NUL-separated list of repository-relative paths, when it has any
+  local list=$1; shift
+  [ ! -s "$list" ] || git --literal-pathspecs -C "$TOP" "$@" --pathspec-from-file="$list" --pathspec-file-nul
+}
+
+# `stage-enter`: the run enters a new stage on the code of NEW_BASE (see the head of this file). Every step
+# can be run again after a stop: the harness's transition resumes from its recorded state, the stage commit
+# is found by its `Stage-Transition:` line, and a code replacement begun here on a clean checkpoint is
+# recorded in the launcher's local directory, so a rerun continues it instead of refusing the changed tree.
+stage_enter() {
+  local new kind=${KIND:-} from=${FROM:-} trn=${TRANSITION:-} plan="$PWD/$LOG_DIR/stage-enter" c sid status tid rc
+  local -a extra=()
+  { [ -n "${NEW_BASE:-}" ] && [ -n "$kind" ] && [ -n "$from" ] && [ -n "$trn" ]; } || die "stage-enter needs NEW_BASE, KIND, FROM and TRANSITION"
+  case "$kind" in generation|labels) ;; review) die "$(review_refusal)";; *) die "KIND must be generation, labels or review";; esac
+  if [ -n "${SCOPE:-}" ]; then [ -f "$SCOPE" ] || die "SCOPE must be a file (given '$SCOPE')"; extra+=(--scope "$SCOPE"); fi
+  [ -z "${PROMPTS_APPROVED:-}" ] || extra+=(--prompts_approved "$PROMPTS_APPROVED")
+  "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null || die "$PYTHON is not Python 3.11 or newer"
+  git config user.name >/dev/null && git config user.email >/dev/null || die "set git user.name and user.email"
+  CURRENT=$(git symbolic-ref --quiet --short HEAD || true)
+  [ "$CURRENT" = "$BRANCH" ] || die "stage-enter runs on the checked-out run branch $BRANCH (now: ${CURRENT:-detached})"
+  [ -f "$RUN_DIR/state.json" ] || die "$RUN_DIR/state.json is missing: no run to move to a new stage"
+  git fetch -q "$REMOTE" 2>/dev/null || die "cannot fetch from $REMOTE"
+  new=$(git rev-parse -q --verify "$NEW_BASE^{commit}") || die "NEW_BASE $NEW_BASE is not a commit in this checkout (fetch it first)"
+  [ "$(git ls-remote --heads "$REMOTE" "refs/heads/$BRANCH" | wc -l)" -gt 0 ] \
+    || die "$BRANCH is not on $REMOTE: the run's last checkpoint is pushed before a stage transition"
+  BEHIND=$(git rev-list --count "HEAD..$REMOTE/$BRANCH")
+  [ "$BEHIND" -eq 0 ] || die "$REMOTE/$BRANCH has $BEHIND commit(s) this checkout lacks: another machine wrote the run; pull first"
+  TOP=$(git rev-parse --show-toplevel); PREFIX=$(git rev-parse --show-prefix)
+  mkdir -p "$plan"
+  status=$(transition_field status) && tid=$(transition_field transition_id) || die "$RUN_DIR/stage_transition.json does not read"
+  c=$(stage_commit "$trn")
+  if [ -z "$c" ]; then
+    [ -z "$(git rev-list "$REMOTE/$BRANCH..HEAD")" ] \
+      || die "the checkpoint $(git rev-parse --short HEAD) is not on $REMOTE: push the run's last checkpoint before a stage transition"
+    [ "$tid:$status" != "$trn:done" ] || die "the transition $trn is done, but its stage commit is not on this branch"
+    if [ "$tid" != "$trn" ] && [ "$(cat "$plan/begun" 2>/dev/null)" != "$trn $new $(git rev-parse HEAD)" ]; then
+      git diff --cached --quiet || die "the index holds staged changes; a stage transition starts from a clean checkpoint — unstage them"
+      [ -z "$(git status --porcelain --untracked-files=no)" ] \
+        || die "the checkout has uncommitted changes to tracked files; a stage transition starts from a clean checkpoint"
+      echo "$trn $new $(git rev-parse HEAD)" > "$plan/begun"
+    fi
+    code_plan "$new" "$plan" > "$plan/refusal" || die "$(cat "$plan/refusal")"
+    git_paths "$plan/replace" checkout -q "$new"
+    git_paths "$plan/delete" rm -q -f --ignore-unmatch
+    log "stage-enter $trn: the code of $new is in place ($(tr -cd '\0' < "$plan/replace" | wc -c) file(s), $(tr -cd '\0' < "$plan/delete" | wc -c) deleted)"
+    if [ "$tid:$status" != "$trn:exported" ]; then
+      log "stage-enter $trn: harness stage enter $RUN_ID --kind $kind --from $from"
+      set +e
+      "$PYTHON" -m harness stage enter "$RUN_ID" --kind "$kind" --from "$from" --transition "$trn" --source_commit "$new" \
+        ${extra[@]+"${extra[@]}"} >>"$LOG_DIR/stage.log" 2>&1      # the new stage's baseline is NEW_BASE, whose clean checkout restores it
+      rc=$?
+      set -e
+      status=$(transition_field status); tid=$(transition_field transition_id)
+      if [ "$rc" -ne 0 ] && [ "$tid" = "$trn" ]; then
+        log "the transition $trn stopped at \`$status\` (exit $rc; see $LOG_DIR/stage.log): run the same stage-enter again"; exit 1
+      elif [ "$rc" -ne 0 ]; then                       # refused before it began: the checkpoint's code comes back
+        git_paths "$plan/restore" checkout -q HEAD
+        git_paths "$plan/drop" rm -q -f --ignore-unmatch
+        rm -f "$plan/begun"
+        die "the harness refused the transition $trn (exit $rc); the checkpoint's code is restored. $(tail -n 5 "$LOG_DIR/stage.log")"
+      fi
+    fi
+    if [ "$tid:$status" != "$trn:exported" ]; then
+      log "the transition $trn is at \`$status\` (last transition: ${tid:-none}), not \`exported\`: run the same stage-enter again"; exit 1
+    fi
+    sid=$(stage_check enter "$trn") || { log "$sid"; exit 1; }
+    stage_run_files
+    git commit -q -m "stage $sid: baseline $new" -m "$RUN_ID: $from to $sid ($kind)" -m "Stage-Transition: $trn"
+    rm -f "$plan/begun"
+    c=$(git rev-parse HEAD)
+  else
+    sid=$(git log -1 --format=%s "$c")
+    case "$sid" in "stage "*": baseline $new") sid=${sid#stage }; sid=${sid%%:*};;
+      *) die "the transition $trn was committed as $c on another baseline than $new ($sid)";; esac
+    [ "$(git rev-list --parents -n 1 "$c" | wc -w)" -eq 2 ] && [ -z "$(git rev-list --merges "$c..HEAD")" ] \
+      || die "the run branch holds a merge commit at or after the stage commit $c: development code is never merged into an active run"
+    [ -z "$(git status --porcelain --untracked-files=no -- ":(top)" ":(exclude)$RUN_DIR")" ] \
+      || die "the checkout has uncommitted changes to tracked files outside $RUN_DIR"
+    [ "$tid" = "$trn" ] || die "the stage commit $c of the transition $trn is on this branch, but the run's last transition is ${tid:-none}"
+    if [ "$status" = done ] && [ "$(transition_field commit)" != "$c" ]; then
+      die "the transition $trn was confirmed at $(transition_field commit), not at its stage commit $c"
+    fi
+  fi
+  if [ -n "$(git rev-list "$REMOTE/$BRANCH..HEAD")" ]; then log "stage-enter $trn: pushing $(git rev-parse --short HEAD)"; push_checkpoint; fi
+  if [ "$status" != done ]; then
+    log "stage-enter $trn: harness stage confirm $RUN_ID --transition $trn --commit $c"
+    set +e
+    "$PYTHON" -m harness stage confirm "$RUN_ID" --transition "$trn" --commit "$c" --remote "$REMOTE" --branch "$BRANCH" >>"$LOG_DIR/stage.log" 2>&1
+    rc=$?
+    set -e
+    if [ "$rc" -ne 0 ] || [ "$(transition_field status):$(transition_field commit)" != "done:$c" ]; then
+      log "the confirmation of $trn at $c did not finish (exit $rc; see $LOG_DIR/stage.log): run the same stage-enter again"; exit 1
+    fi
+  fi
+  stage_run_files
+  if ! git diff --cached --quiet; then git commit -q -m "$RUN_ID: stage $sid confirmed" -m "Stage-Transition-Done: $trn at $c"; fi
+  if [ -n "$(git rev-list "$REMOTE/$BRANCH..HEAD")" ]; then push_checkpoint; fi
+  log "stage $sid entered on $new by the transition $trn (stage commit $c): resume with RUN_ID=$RUN_ID STAGE=<a launch kind of $sid> $0 resume"
+}
+if [ "$ACTION" = stage-enter ]; then stage_enter; exit 0; fi   # one line: parsed whole before the code it replaces, this file included
+
 # ---------------------------------------------------------------- preflight: nothing below spends model time
-case "$STAGE" in generation|labels) ;; *) die "STAGE must be generation or labels";; esac
+case "$STAGE" in
+  generation|labels) ;;
+  review) die "$(review_refusal)";;
+  *) die "STAGE must be generation or labels";;
+esac
 given() { [ -n "${!1+x}" ]; }                          # set in this invocation's environment
 if [ "$ACTION" = resume ] && given ACQUISITION_PROFILE; then
   die "a run keeps the acquisition profile it started with: ACQUISITION_PROFILE is given to \`new\` only"
@@ -174,54 +511,18 @@ if [ "${SKIP_BUILD:-0}" != 1 ]; then (cd library && lake build >/dev/null) || di
 "$PYTHON" -m harness doctor >"$LOG_DIR/doctor.log" 2>&1 || die "the doctor failed (see $LOG_DIR/doctor.log)"
 [ "$ACTION" = new ] && git switch -q -c "$BRANCH"     # a new branch from this HEAD: never a reset of an existing one
 
-# ---------------------------------------------------------------- checkpoints
-push_checkpoint() {                                    # push HEAD (the same commit) with retries; 3 when it stays refused
-  local i
-  for i in $(seq 1 "$PUSH_RETRIES"); do
-    if git push -q "$REMOTE" "HEAD:refs/heads/$BRANCH" 2>>"$LOG_DIR/push.log"; then
-      git branch -q --set-upstream-to="$REMOTE/$BRANCH" 2>/dev/null || true
-      return 0
-    fi
-    log "push failed (attempt $i of $PUSH_RETRIES); retrying the same commit in $PUSH_WAIT s"
-    sleep "$PUSH_WAIT"
-  done
-  log "the checkpoint $(git rev-parse --short HEAD) is not on $REMOTE; no further model call — rerun to push it first"
-  exit 3
-}
-
-commit_checkpoint() {                                  # the listed files only, ignored ones included; deletions recorded
-  local list="$RUN_DIR/handoff/files.txt"
-  cp "$list" "$LOG_DIR/pathspec.txt"                   # paths relative to this directory, as git reads them here
-  git add -f --pathspec-from-file="$LOG_DIR/pathspec.txt"
-  git ls-files -- "$RUN_DIR" library/TrafficSpec/Rules library/TrafficSpec/Concepts library/TrafficSpecWitness \
-      library/TrafficSpec/Gaps | grep -vxF -f "$LOG_DIR/pathspec.txt" \
-      | while IFS= read -r gone; do git rm -q --cached -- "$gone"; done || true
-  if git diff --cached --quiet; then log "checkpoint: nothing changed"; return 0; fi
-  git commit -q -m "$RUN_ID: $STAGE checkpoint, iteration $(state_field iteration) ($1)" \
-      -m "handoff $(manifest_field export_id); source baseline $(manifest_field baseline.source_commit); code $(manifest_field baseline.code.digest)"
-}
-
-state_field() { "$PYTHON" - "$RUN_DIR" "$1" <<'PY'
-import json, sys
-d = sys.argv[1]
-s = json.load(open(f"{d}/state.json"))
-k = sys.argv[2]
-print(s.get("iteration", 0) if k == "iteration" else (s.get("prog") or {}).get("stage", ""))
-PY
-}
-manifest_field() { "$PYTHON" - "$RUN_DIR/handoff/manifest.json" "$1" <<'PY'
-import json, sys
-x = json.load(open(sys.argv[1]))
-for k in sys.argv[2].split("."):
-    x = (x or {}).get(k)
-print(x)
-PY
-}
-summary_field() { "$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2]) or "")' "$RUN_DIR/summary.json" "$1" 2>/dev/null || true; }
-written() { "$PYTHON" -c 'import os,sys; p=sys.argv[1]; print(os.stat(p).st_mtime_ns if os.path.exists(p) else "none")' "$1"; }   # when the loop last wrote its status
-
-# a run branch holds its baseline and checkpoint commits only: never development code merged in
-if [ "$ACTION" = resume ] && [ -f "$RUN_DIR/handoff/manifest.json" ]; then
+# a run branch holds its baseline and checkpoint commits only: never development code merged in. A staged run's
+# code is its active stage's baseline, put on the branch by that stage's transition commit (a first stage with
+# no transition commit keeps the run's baseline commit)
+ANCHOR=
+if [ "$ACTION" = resume ] && [ -f "$RUN_DIR/stages.jsonl" ]; then
+  ANCHOR=$(stage_check resume "$STAGE") || die "$ANCHOR"
+fi
+if [ -n "$ANCHOR" ]; then
+  git merge-base --is-ancestor "$ANCHOR" HEAD 2>/dev/null || die "the run branch does not descend from its stage's transition commit $ANCHOR"
+  [ -z "$(git rev-list --merges "$ANCHOR..HEAD")" ] \
+    || die "the run branch holds a merge commit after its stage's transition commit $ANCHOR: development code is never merged into an active run (new code enters by stage-enter)"
+elif [ "$ACTION" = resume ] && [ -f "$RUN_DIR/handoff/manifest.json" ]; then
   RUN_BASE=$(manifest_field baseline.source_commit)
   if [ -n "$RUN_BASE" ] && [ "$RUN_BASE" != None ]; then
     git merge-base --is-ancestor "$RUN_BASE" HEAD 2>/dev/null || die "the run branch does not descend from the run's baseline commit $RUN_BASE"

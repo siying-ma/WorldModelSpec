@@ -8,21 +8,25 @@ from . import jsonl, paths
 from ..model import corpus
 from ..model.blueprint import Node
 
-#: The run version this harness writes into a run's semantic inputs (`options.json` → `semantic` →
-#: `run_version`). A run is read and resumed only by the version that started it: a change that makes
-#: the records, their identities or the meaning of the saved options of earlier runs unsafe to
-#: continue raises it, whether or not any digest changed. Version 3: a run has no feedback mode (a
-#: gated node is accepted on its gate, its law by the label check when `label_repair` is on); a run of
-#: another version, or one that records none, is never taken for this one.
+#: The state schema version this harness writes into a run's semantic inputs (`options.json` →
+#: `semantic` → `run_version`): the layout and meaning of a run's saved files, which decides whether
+#: this harness can read them. Which code a run continues on is not this number's business: a run
+#: without a stage record continues only on the code of its first export, and a run with one on the
+#: code of its active stage. Version 3: a run has no feedback mode (a gated node is accepted on its
+#: gate, its law by the label check when `label_repair` is on). A change of the files' layout or
+#: meaning raises it, and adds the older version to `READABLE_RUN_VERSIONS` only with a migration.
 RUN_VERSION = 3
+#: The state schema versions this harness reads; a run of another version, or one that records none,
+#: is never taken for one of these.
+READABLE_RUN_VERSIONS = frozenset({3})
 
 
 def run_version_refusal(saved_semantic: dict | None) -> str | None:
     """Why a run whose saved semantic inputs are `saved_semantic` cannot be read or resumed by this
-    harness, or None when it was started by this run version. A missing or unknown version is refused,
-    never read as this one."""
+    harness, or None when its files are of a version it reads (`READABLE_RUN_VERSIONS`). A missing or
+    unknown version is refused, never read as a readable one."""
     was = (saved_semantic or {}).get("run_version") if isinstance(saved_semantic, dict) else None
-    if was == RUN_VERSION:
+    if any(was == v for v in READABLE_RUN_VERSIONS):
         return None
     return (f"it was started by harness run version {was if was is not None else '1 (recorded before run versions)'} and this "
             f"harness is version {RUN_VERSION}: a run is resumed only by the version that started it, and both stages of a split "
@@ -131,6 +135,7 @@ class Options:
     label_stage: bool = False                      # with `label_repair`: this launch only checks laws on the training recordings and repairs them; it plans and codes nothing new
     label_repair_budget: int = 10                  # label repairs over the whole run, all laws together (a count, not an amount: the run's spending limits still bound every session)
     dependency: str = "build_usable_v1"            # the cross-law dependency policy (`DEPENDENCY_POLICY`), declared by the code: fixed for the run's life
+    source_commit: Optional[str] = None            # the commit of the checkout a new run starts on, recorded in its first stage's code baseline
 
 
 #: The cross-law dependency policy this harness implements: a node of one law may compose another
@@ -183,6 +188,26 @@ def acceptance_policy_refusal(fixed, opts) -> str | None:
         return None
     return ("the run's acceptance policy is fixed for its life (" + ", ".join(f"{k}: {was.get(k)!r} → {now.get(k)!r}" for k in changed)
             + "); start a new run id")
+
+
+#: The fields of a stage's acceptance policy (its `open` row): the run's policy fields and `review`,
+#: whose only legal value is "none" while the harness registers no reviewer implementation.
+STAGE_POLICY_FIELDS = {**POLICY_FIELDS, "review": lambda v: v == "none"}
+
+
+def stage_policy_refusal(stage: dict, opts) -> str | None:
+    """Why options `opts` (a launch's, or the run's saved ones) may not run in the active stage
+    `stage` (its `open` row), or None: the stage's policy must be whole (`STAGE_POLICY_FIELDS`, nothing
+    filled by default), and the options' policy fields must equal it as `acceptance_policy_refusal`
+    compares them. A stage fixes the policy for its life; only a transition opens another."""
+    fixed, sid = stage.get("acceptance_policy"), stage.get("stage_id")
+    bad = (["it is not an object"] if not isinstance(fixed, dict) else
+           [f"`{k}` is missing" if k not in fixed else f"`{k}` is {fixed[k]!r}, not a legal value"
+            for k, legal in STAGE_POLICY_FIELDS.items() if k not in fixed or not legal(fixed[k])])
+    if bad:
+        return f"the active stage `{sid}` records no whole acceptance policy (" + "; ".join(bad) + "); restore its checkpoint"
+    why = acceptance_policy_refusal({k: fixed[k] for k in POLICY_FIELDS}, opts)
+    return f"in the active stage `{sid}`, {why}" if why else None
 
 
 @dataclass

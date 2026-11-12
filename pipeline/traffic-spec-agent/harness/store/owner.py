@@ -165,12 +165,25 @@ def _previous(fd) -> tuple[dict | None, bool]:
         return None, False
 
 
-def acquire(run_id: str, force: bool = False) -> str:
+def transitions_refusal(allow: tuple[str, str] | None = None) -> None:
+    """Stop while any run of this repository has a stage transition begun and not done other than
+    `allow` (run id, transition id): every run's transition stands on the one library, and only one is
+    carried on at a time (`stages.unfinished_transitions`)."""
+    from . import stages
+    why = stages.unfinished_transitions(paths.RESULTS, allow)
+    if why:
+        raise SystemExit(f"[owner] the library is not taken: {why} — nothing was written")
+
+
+def acquire(run_id: str, force: bool = False, allow: tuple[str, str] | None = None) -> str:
     """Take the library for this process, or stop. The processes of an earlier owner of this library
     that are still alive (by their own environment: its nonce, or this library's path) block the
     takeover, since they may still write the library, unless `force`, which ends them and waits
     for them to end. Processes whose library cannot be told (with the record unreadable, or in a
-    group the record names) also block it, and `force` does not end them. Returns the owner's nonce."""
+    group the record names) also block it, and `force` does not end them. With the lock held and before
+    anything is read, recovered or written, a stage transition begun and not done in any run of this
+    repository refuses the takeover, but the one `allow` names (`transitions_refusal`). Returns the
+    owner's nonce."""
     global _FD, _RECORD
     import fcntl
     if os.environ.get(ENV) and os.environ.get(ENV) != _RECORD.get("nonce"):
@@ -183,6 +196,11 @@ def acquire(run_id: str, force: bool = False) -> str:
     except BlockingIOError:
         fd.close()
         raise SystemExit(f"another process owns the library ({p}); wait for it, or stop it")
+    try:
+        transitions_refusal(allow)
+    except SystemExit:
+        fd.close()
+        raise
     prev, legacy = (None, False) if fresh else _previous(fd)
     # a process is the earlier owner's by its own environment (its nonce, or this library's path);
     # a recorded group id is only a hint, since the number may now name another process's group
@@ -228,8 +246,14 @@ def acquire(run_id: str, force: bool = False) -> str:
 
 def acquire_for_command(name: str) -> None:
     """A mutating command (init, split, reopen, verify, index, a gate run on its own) takes the
-    library like a run does."""
+    library like a run does: never while a stage transition is begun and not done (`acquire`)."""
     acquire(f"command:{name}")
+
+
+def acquire_for_transition(run_id: str, transition: str) -> None:
+    """The stage command takes the library to carry on `transition` of `run_id`, the one transition
+    the takeover lets through."""
+    acquire(f"command:stage {run_id} {transition}", allow=(run_id, transition))
 
 
 def register(pgid: int) -> None:

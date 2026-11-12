@@ -99,6 +99,7 @@ class Profiles(unittest.TestCase):
         from harness.loop import semantic_inputs
         from harness.store.state import Options
         from scripts.tests.test_review_routing import ONTO
+        from scripts.tests.test_recovery import legacy_run
         with tempfile.TemporaryDirectory() as t:
             reading = Path(t) / "reading.json"
             reading.write_text(json.dumps({"params": [REVIEWED], "aggregates": []}))
@@ -263,6 +264,7 @@ class LoopStart(unittest.TestCase):
         from harness import loop
         from harness.store.state import Options
         from scripts.tests.test_review_routing import ONTO
+        from scripts.tests.test_recovery import legacy_run
         with tempfile.TemporaryDirectory() as t:
             base = Path(t) / "reading.json"
             base.write_text(json.dumps(reading))
@@ -277,6 +279,7 @@ class LoopStart(unittest.TestCase):
                     mock.patch.object(loop, "gap_gate", lambda run, opts: None), \
                     mock.patch.object(loop, "doctor_ok", lambda: (_ for _ in ()).throw(AssertionError("started"))):
                 try:
+                    legacy_run(opts)                       # a run made before stages, as this test was written for
                     loop._run_loop(opts)
                 except SystemExit as e:
                     return str(e)
