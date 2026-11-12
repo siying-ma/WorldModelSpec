@@ -23,9 +23,6 @@ that account uses another config directory, and keep it set for every later comm
 
 `launch.sh` first runs `launch/full221/preflight.sh` (clone at the branch tip and clean, accounts and keys, tools,
 disk, the 221 laws, the Lean build, the doctor). If any check fails, nothing starts: send `preflight-<run id>.txt`.
-It then runs the isolation gate `launch/full221/isolation_probe.sh` (about a minute, at most $3 on the Claude account):
-in a throwaway clone outside yours, two short sessions with the run's own permissions try to read files no session
-may read. If it does not pass, nothing starts: send the directory `~/wms-isolation-probe/<run id>/`.
 Keep the clone's normal all-branch fetch configuration: the launcher needs `origin/runs/<run id>` after each
 checkpoint to verify the run branch and to resume after a failed push. Do not clone with `--single-branch`.
 
@@ -48,7 +45,8 @@ The limits stop the run before a session that would not fit; they are not raised
 The job runs by itself until generation has nothing left to do; no step needs you in between. The launcher runs
 in the background (closing the terminal does not stop it). Each finished iteration is committed and pushed to the
 branch `runs/<run id>`; a report line is appended every 10 minutes to `.runtime/<run id>/watch.log`; when the
-launcher ends, its exit status is written to `launch-<run id>.exit`.
+launcher ends, its exit status is written to `launch-<run id>.exit` (after a resume, to that resume's
+`resume-<run id>-<time>.exit`).
 
 | Exit | `status` in `results/<run id>/summary.json` | What to do |
 |---|---|---|
@@ -74,7 +72,7 @@ Report as well if there has been no new checkpoint for 8 hours while the spend i
 
 The run id, `git log --oneline origin/runs/<run id> -3`, the last `.exit` file, `results/<run id>/summary.json`,
 `results/<run id>/TO_USER.md`, `.runtime/<run id>/watch.log` and `.runtime/<run id>/launcher.log`, and the output
-of `bash launch/full221/watch.sh --once <run id>` (the spend), and the directory `~/wms-isolation-probe/<run id>/`. Then, on a second fresh clone of the branch
+of `bash launch/full221/watch.sh --once <run id>` (the spend). Then, on a second fresh clone of the branch
 `runs/<run id>`, after `bash setup.sh`: `python3 -m harness handoff verify <run id>` and its output.
 
 ## Rules
