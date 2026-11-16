@@ -255,7 +255,7 @@ class RolesSeeTheFetchedText(unittest.TestCase):
                     mock.patch.object(plan_phase.ontology, "anchors_text", lambda *_a, **_k: ""), \
                     mock.patch.object(plan_phase, "MappingIndex", lambda _p: NS(render=lambda: "")), \
                     mock.patch.object(plan_phase, "Reading", lambda _p: NS()), \
-                    mock.patch.object(plan_phase, "GapLedger", lambda _p: NS(render=lambda *_a: "")), \
+                    mock.patch.object(plan_phase, "GapLedger", NS(for_run=lambda *_a: NS(render=lambda *_a: ""))), \
                     mock.patch.object(plan_phase.surface, "formula_language", lambda: ""), \
                     mock.patch.object(plan_phase.surface, "concept_language", lambda: ""):
                 with self.assertRaises(Stop):

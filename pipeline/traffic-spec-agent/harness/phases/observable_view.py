@@ -8,13 +8,18 @@ its accepted nodes):
 (b) every observable reading whose span is carried by identity classes together with ids of another
     family: a static check cannot tell whether the other ids are the conduct the words refer to;
 (c) every record that declares no observable reading and carries, by identity classes only, a span
-    whose words name a duty, a role or a status (`DUTY_WORDINGS`)."""
+    whose words name a duty, a role or a status (`DUTY_WORDINGS`);
+(d) every observable reading whose span decides when the rule applies (a trigger, subject, condition
+    or exception span, `SCOPE_ROLES`), grouped by that role, with the span's words, the reading's
+    category, the ids that carry the span, the reading's stated `why` and where the record was read.
+    Whether the words belong to the category the reading claims is for the operator to check; the
+    part lists, it judges no reading."""
 from __future__ import annotations
 import json
 import re
 from pathlib import Path
 
-from ..checks.validate_a import OBSERVABLE_READING, OBSERVABLE_THROUGH, identity_and_more, identity_only, span_carriers
+from ..checks.validate_a import OBSERVABLE_READING, OBSERVABLE_THROUGH, SCOPE_ROLES, identity_and_more, identity_only, span_carriers
 from ..model.blueprint import Node
 from ..store import jsonl
 
@@ -56,6 +61,12 @@ def _rows(path: Path) -> list[dict]:
     return out
 
 
+def source_kind(src: str) -> str:
+    """Which record a source path names: an iteration's plan, a repair session's record, or the
+    accepted nodes."""
+    return "accepted" if src == "accepted_nodes.jsonl" else "repair" if "/repair/" in src else "plan"
+
+
 def run_records(run_dir: Path, accepted: dict[str, dict]) -> dict[str, tuple[str, dict]]:
     """node id ↦ (where the record was read, the record): the latest record of each node over the
     run's iterations in order (each iteration's plan, then its repairs), and each accepted node no
@@ -72,11 +83,14 @@ def run_records(run_dir: Path, accepted: dict[str, dict]) -> dict[str, tuple[str
     return out
 
 
-def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict]]:
-    """The three parts of the report over `records` (node id ↦ (source, record)), each entry a dict
-    with the node, its source, the span, its words, its category (parts a, b) or matched wordings
-    (part c), and the ids that carry the span."""
+def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict] | dict[str, list[dict]]]:
+    """The four parts of the report over `records` (node id ↦ (source, record)), each entry a dict
+    with the node, its source, the span, its words, its category (parts a, b, d) or matched wordings
+    (part c), and the ids that carry the span; part d is keyed by scope role, and its entries add the
+    role, the reading's `why` and the kind of source. A span's role is read from the record's
+    segmentation as the validator reads it."""
     a, b, c = [], [], []
+    d: dict[str, list[dict]] = {r: [] for r in sorted(SCOPE_ROLES)}
     for nid, (src, rec) in sorted(records.items()):
         node = Node(rec)
         try:
@@ -93,6 +107,9 @@ def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict]]:
             a.append(e)
             if identity_and_more(ids):
                 b.append(e)
+            role = (spans.get(sid) or {}).get("role")
+            if role in SCOPE_ROLES:
+                d[role].append({**e, "role": role, "why": " ".join(str(n.get("why") or "").split()), "source_kind": source_kind(src)})
         if obs:
             continue
         for sid, s in spans.items():
@@ -100,7 +117,7 @@ def entries(records: dict[str, tuple[str, dict]]) -> dict[str, list[dict]]:
             ids = span_carriers(node, sid)
             if hits and identity_only(ids):
                 c.append({"node": nid, "source": src, "span": sid, "words": s.get("text", ""), "wordings": hits, "carriers": ids})
-    return {"a": a, "b": b, "c": c}
+    return {"a": a, "b": b, "c": c, "d": d}
 
 
 def _line(e: dict) -> str:
@@ -109,6 +126,11 @@ def _line(e: dict) -> str:
             else " — carried by identity classes only" if e.get("identity_only") else "")
     return (f"- `{e['node']}` span {e['span']} \"{e['words']}\" · {what} · carried by "
             f"{', '.join(f'`{i}`' for i in e['carriers']) or 'nothing'} · from `{e['source']}`{flag}")
+
+
+def _scope_line(e: dict) -> str:
+    return (f"- `{e['node']}` span {e['span']} ({e['role']}) \"{' '.join(str(e['words']).split())}\" · `{e['category']}` · carried by "
+            f"{', '.join(f'`{i}`' for i in e['carriers']) or 'nothing'} · why: \"{e['why']}\" · from `{e['source']}` ({e['source_kind']})")
 
 
 def render(parts: dict[str, list[dict]], iteration: int) -> str:
@@ -123,6 +145,11 @@ def render(parts: dict[str, list[dict]], iteration: int) -> str:
     out += ["", "## (c) Records with no observable reading whose span names a duty, a role or a status and is carried "
                 "by identity classes only", ""]
     out += [_line(e) for e in parts["c"]] or ["(none)"]
+    out += ["", "## (d) Observable readings on a span that decides when the rule applies, by its role "
+                "(whether the words belong to the category claimed is for the operator to check; nothing here judges a reading)"]
+    for role, es in parts.get("d", {}).items():
+        out += ["", f"### {role}", ""]
+        out += [_scope_line(e) for e in es] or ["(none)"]
     return "\n".join(out) + "\n"
 
 
